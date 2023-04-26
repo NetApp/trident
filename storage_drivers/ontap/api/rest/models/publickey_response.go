@@ -20,13 +20,14 @@ import (
 type PublickeyResponse struct {
 
 	// links
-	Links *PublickeyResponseLinks `json:"_links,omitempty"`
+	Links *PublickeyResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Publickey `json:"records,omitempty"`
+	// publickey response inline records
+	PublickeyResponseInlineRecords []*Publickey `json:"records,omitempty"`
 }
 
 // Validate validates this publickey response
@@ -37,7 +38,7 @@ func (m *PublickeyResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePublickeyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *PublickeyResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PublickeyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PublickeyResponse) validatePublickeyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PublickeyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PublickeyResponseInlineRecords); i++ {
+		if swag.IsZero(m.PublickeyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PublickeyResponseInlineRecords[i] != nil {
+			if err := m.PublickeyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *PublickeyResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePublickeyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *PublickeyResponse) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *PublickeyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PublickeyResponse) contextValidatePublickeyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PublickeyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PublickeyResponseInlineRecords[i] != nil {
+			if err := m.PublickeyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *PublickeyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PublickeyResponseLinks publickey response links
+// PublickeyResponseInlineLinks publickey response inline links
 //
-// swagger:model PublickeyResponseLinks
-type PublickeyResponseLinks struct {
+// swagger:model publickey_response_inline__links
+type PublickeyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type PublickeyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this publickey response links
-func (m *PublickeyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this publickey response inline links
+func (m *PublickeyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *PublickeyResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PublickeyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PublickeyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *PublickeyResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PublickeyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PublickeyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *PublickeyResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this publickey response links based on the context it is used
-func (m *PublickeyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this publickey response inline links based on the context it is used
+func (m *PublickeyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *PublickeyResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *PublickeyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PublickeyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *PublickeyResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *PublickeyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PublickeyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *PublickeyResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *PublickeyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PublickeyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *PublickeyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PublickeyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PublickeyResponseLinks
+func (m *PublickeyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PublickeyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

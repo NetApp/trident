@@ -66,10 +66,10 @@ type SoftwarePackageGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Version.
-	VersionPathParameter string
+	Version string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *SoftwarePackageGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the software package get params
-func (o *SoftwarePackageGetParams) WithFieldsQueryParameter(fields []string) *SoftwarePackageGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the software package get params
+func (o *SoftwarePackageGetParams) WithFields(fields []string) *SoftwarePackageGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the software package get params
-func (o *SoftwarePackageGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the software package get params
+func (o *SoftwarePackageGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithVersionPathParameter adds the version to the software package get params
-func (o *SoftwarePackageGetParams) WithVersionPathParameter(version string) *SoftwarePackageGetParams {
-	o.SetVersionPathParameter(version)
+// WithVersion adds the version to the software package get params
+func (o *SoftwarePackageGetParams) WithVersion(version string) *SoftwarePackageGetParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionPathParameter adds the version to the software package get params
-func (o *SoftwarePackageGetParams) SetVersionPathParameter(version string) {
-	o.VersionPathParameter = version
+// SetVersion adds the version to the software package get params
+func (o *SoftwarePackageGetParams) SetVersion(version string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *SoftwarePackageGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *SoftwarePackageGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param version
-	if err := r.SetPathParam("version", o.VersionPathParameter); err != nil {
+	if err := r.SetPathParam("version", o.Version); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *SoftwarePackageGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamSoftwarePackageGet binds the parameter fields
 func (o *SoftwarePackageGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

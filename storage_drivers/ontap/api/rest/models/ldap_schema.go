@@ -21,11 +21,11 @@ import (
 type LdapSchema struct {
 
 	// links
-	Links *LdapSchemaLinks `json:"_links,omitempty"`
+	Links *LdapSchemaInlineLinks `json:"_links,omitempty"`
 
 	// Comment to associate with the schema.
 	// Example: Schema based on Active Directory Services for UNIX (read-only).
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// A global schema that can be used by all the SVMs.
 	// Example: true
@@ -36,13 +36,13 @@ type LdapSchema struct {
 	// Example: AD-SFU-v1
 	// Max Length: 32
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// name mapping
 	NameMapping *LdapSchemaNameMapping `json:"name_mapping,omitempty"`
 
 	// owner
-	Owner *LdapSchemaOwner `json:"owner,omitempty"`
+	Owner *LdapSchemaInlineOwner `json:"owner,omitempty"`
 
 	// rfc2307
 	Rfc2307 *Rfc2307 `json:"rfc2307,omitempty"`
@@ -53,10 +53,10 @@ type LdapSchema struct {
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Read Only: true
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// template
-	Template *LdapSchemaTemplate `json:"template,omitempty"`
+	Template *LdapSchemaInlineTemplate `json:"template,omitempty"`
 }
 
 // Validate validates this ldap schema
@@ -123,11 +123,11 @@ func (m *LdapSchema) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 32); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 32); err != nil {
 		return err
 	}
 
@@ -251,7 +251,7 @@ func (m *LdapSchema) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -398,7 +398,7 @@ func (m *LdapSchema) contextValidateRfc2307bis(ctx context.Context, formats strf
 
 func (m *LdapSchema) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -437,17 +437,17 @@ func (m *LdapSchema) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapSchemaLinks ldap schema links
+// LdapSchemaInlineLinks ldap schema inline links
 //
-// swagger:model LdapSchemaLinks
-type LdapSchemaLinks struct {
+// swagger:model ldap_schema_inline__links
+type LdapSchemaInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ldap schema links
-func (m *LdapSchemaLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap schema inline links
+func (m *LdapSchemaInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -460,7 +460,7 @@ func (m *LdapSchemaLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapSchemaLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LdapSchemaInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -477,8 +477,8 @@ func (m *LdapSchemaLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap schema links based on the context it is used
-func (m *LdapSchemaLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap schema inline links based on the context it is used
+func (m *LdapSchemaInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -491,7 +491,7 @@ func (m *LdapSchemaLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *LdapSchemaLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapSchemaInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -506,7 +506,7 @@ func (m *LdapSchemaLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *LdapSchemaLinks) MarshalBinary() ([]byte, error) {
+func (m *LdapSchemaInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -514,8 +514,8 @@ func (m *LdapSchemaLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapSchemaLinks) UnmarshalBinary(b []byte) error {
-	var res LdapSchemaLinks
+func (m *LdapSchemaInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LdapSchemaInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -523,27 +523,27 @@ func (m *LdapSchemaLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapSchemaOwner ldap schema owner
+// LdapSchemaInlineOwner ldap schema inline owner
 //
-// swagger:model LdapSchemaOwner
-type LdapSchemaOwner struct {
+// swagger:model ldap_schema_inline_owner
+type LdapSchemaInlineOwner struct {
 
 	// links
-	Links *LdapSchemaOwnerLinks `json:"_links,omitempty"`
+	Links *LdapSchemaInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ldap schema owner
-func (m *LdapSchemaOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap schema inline owner
+func (m *LdapSchemaInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -556,7 +556,7 @@ func (m *LdapSchemaOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapSchemaOwner) validateLinks(formats strfmt.Registry) error {
+func (m *LdapSchemaInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -573,8 +573,8 @@ func (m *LdapSchemaOwner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap schema owner based on the context it is used
-func (m *LdapSchemaOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap schema inline owner based on the context it is used
+func (m *LdapSchemaInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -587,7 +587,7 @@ func (m *LdapSchemaOwner) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *LdapSchemaOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapSchemaInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -602,7 +602,7 @@ func (m *LdapSchemaOwner) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *LdapSchemaOwner) MarshalBinary() ([]byte, error) {
+func (m *LdapSchemaInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -610,8 +610,8 @@ func (m *LdapSchemaOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapSchemaOwner) UnmarshalBinary(b []byte) error {
-	var res LdapSchemaOwner
+func (m *LdapSchemaInlineOwner) UnmarshalBinary(b []byte) error {
+	var res LdapSchemaInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -619,17 +619,17 @@ func (m *LdapSchemaOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapSchemaOwnerLinks ldap schema owner links
+// LdapSchemaInlineOwnerInlineLinks ldap schema inline owner inline links
 //
-// swagger:model LdapSchemaOwnerLinks
-type LdapSchemaOwnerLinks struct {
+// swagger:model ldap_schema_inline_owner_inline__links
+type LdapSchemaInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ldap schema owner links
-func (m *LdapSchemaOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap schema inline owner inline links
+func (m *LdapSchemaInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -642,7 +642,7 @@ func (m *LdapSchemaOwnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapSchemaOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LdapSchemaInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -659,8 +659,8 @@ func (m *LdapSchemaOwnerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap schema owner links based on the context it is used
-func (m *LdapSchemaOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap schema inline owner inline links based on the context it is used
+func (m *LdapSchemaInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -673,7 +673,7 @@ func (m *LdapSchemaOwnerLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *LdapSchemaOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapSchemaInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -688,7 +688,7 @@ func (m *LdapSchemaOwnerLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *LdapSchemaOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *LdapSchemaInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -696,8 +696,8 @@ func (m *LdapSchemaOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapSchemaOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res LdapSchemaOwnerLinks
+func (m *LdapSchemaInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LdapSchemaInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -705,23 +705,23 @@ func (m *LdapSchemaOwnerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapSchemaTemplate The existing schema template you want to copy.
+// LdapSchemaInlineTemplate The existing schema template you want to copy.
 //
-// swagger:model LdapSchemaTemplate
-type LdapSchemaTemplate struct {
+// swagger:model ldap_schema_inline_template
+type LdapSchemaInlineTemplate struct {
 
 	// links
-	Links *LdapSchemaTemplateLinks `json:"_links,omitempty"`
+	Links *LdapSchemaInlineTemplateInlineLinks `json:"_links,omitempty"`
 
 	// The name of the schema.
 	// Example: AD-SFU-v1
 	// Max Length: 32
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this ldap schema template
-func (m *LdapSchemaTemplate) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap schema inline template
+func (m *LdapSchemaInlineTemplate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -738,7 +738,7 @@ func (m *LdapSchemaTemplate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapSchemaTemplate) validateLinks(formats strfmt.Registry) error {
+func (m *LdapSchemaInlineTemplate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -755,24 +755,24 @@ func (m *LdapSchemaTemplate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapSchemaTemplate) validateName(formats strfmt.Registry) error {
+func (m *LdapSchemaInlineTemplate) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("template"+"."+"name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("template"+"."+"name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("template"+"."+"name", "body", m.Name, 32); err != nil {
+	if err := validate.MaxLength("template"+"."+"name", "body", *m.Name, 32); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ldap schema template based on the context it is used
-func (m *LdapSchemaTemplate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap schema inline template based on the context it is used
+func (m *LdapSchemaInlineTemplate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -785,7 +785,7 @@ func (m *LdapSchemaTemplate) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *LdapSchemaTemplate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapSchemaInlineTemplate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -800,7 +800,7 @@ func (m *LdapSchemaTemplate) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *LdapSchemaTemplate) MarshalBinary() ([]byte, error) {
+func (m *LdapSchemaInlineTemplate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -808,8 +808,8 @@ func (m *LdapSchemaTemplate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapSchemaTemplate) UnmarshalBinary(b []byte) error {
-	var res LdapSchemaTemplate
+func (m *LdapSchemaInlineTemplate) UnmarshalBinary(b []byte) error {
+	var res LdapSchemaInlineTemplate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -817,17 +817,17 @@ func (m *LdapSchemaTemplate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapSchemaTemplateLinks ldap schema template links
+// LdapSchemaInlineTemplateInlineLinks ldap schema inline template inline links
 //
-// swagger:model LdapSchemaTemplateLinks
-type LdapSchemaTemplateLinks struct {
+// swagger:model ldap_schema_inline_template_inline__links
+type LdapSchemaInlineTemplateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ldap schema template links
-func (m *LdapSchemaTemplateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap schema inline template inline links
+func (m *LdapSchemaInlineTemplateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -840,7 +840,7 @@ func (m *LdapSchemaTemplateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapSchemaTemplateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LdapSchemaInlineTemplateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -857,8 +857,8 @@ func (m *LdapSchemaTemplateLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap schema template links based on the context it is used
-func (m *LdapSchemaTemplateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap schema inline template inline links based on the context it is used
+func (m *LdapSchemaInlineTemplateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -871,7 +871,7 @@ func (m *LdapSchemaTemplateLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *LdapSchemaTemplateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapSchemaInlineTemplateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -886,7 +886,7 @@ func (m *LdapSchemaTemplateLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *LdapSchemaTemplateLinks) MarshalBinary() ([]byte, error) {
+func (m *LdapSchemaInlineTemplateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -894,8 +894,8 @@ func (m *LdapSchemaTemplateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapSchemaTemplateLinks) UnmarshalBinary(b []byte) error {
-	var res LdapSchemaTemplateLinks
+func (m *LdapSchemaInlineTemplateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LdapSchemaInlineTemplateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

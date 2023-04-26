@@ -20,7 +20,7 @@ import (
 type AntiRansomwareAttackReport struct {
 
 	// links
-	Links *AntiRansomwareAttackReportLinks `json:"_links,omitempty"`
+	Links *AntiRansomwareAttackReportInlineLinks `json:"_links,omitempty"`
 
 	// Timestamp at which ransomware attack is observed.
 	// Example: 2021-06-01T20:36:41+05:30
@@ -121,17 +121,17 @@ func (m *AntiRansomwareAttackReport) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareAttackReportLinks anti ransomware attack report links
+// AntiRansomwareAttackReportInlineLinks anti ransomware attack report inline links
 //
-// swagger:model AntiRansomwareAttackReportLinks
-type AntiRansomwareAttackReportLinks struct {
+// swagger:model anti_ransomware_attack_report_inline__links
+type AntiRansomwareAttackReportInlineLinks struct {
 
 	// suspects
 	Suspects *Href `json:"suspects,omitempty"`
 }
 
-// Validate validates this anti ransomware attack report links
-func (m *AntiRansomwareAttackReportLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware attack report inline links
+func (m *AntiRansomwareAttackReportInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSuspects(formats); err != nil {
@@ -144,7 +144,7 @@ func (m *AntiRansomwareAttackReportLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *AntiRansomwareAttackReportLinks) validateSuspects(formats strfmt.Registry) error {
+func (m *AntiRansomwareAttackReportInlineLinks) validateSuspects(formats strfmt.Registry) error {
 	if swag.IsZero(m.Suspects) { // not required
 		return nil
 	}
@@ -161,8 +161,8 @@ func (m *AntiRansomwareAttackReportLinks) validateSuspects(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this anti ransomware attack report links based on the context it is used
-func (m *AntiRansomwareAttackReportLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware attack report inline links based on the context it is used
+func (m *AntiRansomwareAttackReportInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSuspects(ctx, formats); err != nil {
@@ -175,7 +175,7 @@ func (m *AntiRansomwareAttackReportLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *AntiRansomwareAttackReportLinks) contextValidateSuspects(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareAttackReportInlineLinks) contextValidateSuspects(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Suspects != nil {
 		if err := m.Suspects.ContextValidate(ctx, formats); err != nil {
@@ -190,7 +190,7 @@ func (m *AntiRansomwareAttackReportLinks) contextValidateSuspects(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareAttackReportLinks) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareAttackReportInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -198,8 +198,8 @@ func (m *AntiRansomwareAttackReportLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareAttackReportLinks) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareAttackReportLinks
+func (m *AntiRansomwareAttackReportInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareAttackReportInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,49 +66,49 @@ type VolumeEfficiencyPolicyCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* Duration.
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *int64
+	Duration *int64
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* QosPolicy.
 
 	   Filter by qos_policy
 	*/
-	QosPolicyQueryParameter *string
+	QosPolicy *string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type VolumeEfficiencyPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,43 +124,43 @@ type VolumeEfficiencyPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScheduleName.
 
 	   Filter by schedule.name
 	*/
-	ScheduleNameQueryParameter *string
+	ScheduleName *string
 
 	/* StartThresholdPercent.
 
 	   Filter by start_threshold_percent
 	*/
-	StartThresholdPercentQueryParameter *int64
+	StartThresholdPercent *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -180,14 +180,14 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WithDefaults() *VolumeEffici
 // All values with no default are reset to their zero value.
 func (o *VolumeEfficiencyPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VolumeEfficiencyPolicyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -229,180 +229,180 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) SetHTTPClient(client *http.C
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithCommentQueryParameter(comment *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithComment(comment *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithDurationQueryParameter adds the duration to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithDurationQueryParameter(duration *int64) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithDuration(duration *int64) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetDurationQueryParameter(duration *int64) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetDuration(duration *int64) {
+	o.Duration = duration
 }
 
-// WithEnabledQueryParameter adds the enabled to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithEnabled(enabled *bool) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithFields(fields []string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithNameQueryParameter(name *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithName(name *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithOrderBy(orderBy []string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithQosPolicyQueryParameter adds the qosPolicy to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithQosPolicyQueryParameter(qosPolicy *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetQosPolicyQueryParameter(qosPolicy)
+// WithQosPolicy adds the qosPolicy to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithQosPolicy(qosPolicy *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetQosPolicy(qosPolicy)
 	return o
 }
 
-// SetQosPolicyQueryParameter adds the qosPolicy to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetQosPolicyQueryParameter(qosPolicy *string) {
-	o.QosPolicyQueryParameter = qosPolicy
+// SetQosPolicy adds the qosPolicy to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetQosPolicy(qosPolicy *string) {
+	o.QosPolicy = qosPolicy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScheduleNameQueryParameter adds the scheduleName to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithScheduleNameQueryParameter(scheduleName *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetScheduleNameQueryParameter(scheduleName)
+// WithScheduleName adds the scheduleName to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithScheduleName(scheduleName *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetScheduleName(scheduleName)
 	return o
 }
 
-// SetScheduleNameQueryParameter adds the scheduleName to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetScheduleNameQueryParameter(scheduleName *string) {
-	o.ScheduleNameQueryParameter = scheduleName
+// SetScheduleName adds the scheduleName to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetScheduleName(scheduleName *string) {
+	o.ScheduleName = scheduleName
 }
 
-// WithStartThresholdPercentQueryParameter adds the startThresholdPercent to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithStartThresholdPercentQueryParameter(startThresholdPercent *int64) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetStartThresholdPercentQueryParameter(startThresholdPercent)
+// WithStartThresholdPercent adds the startThresholdPercent to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithStartThresholdPercent(startThresholdPercent *int64) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetStartThresholdPercent(startThresholdPercent)
 	return o
 }
 
-// SetStartThresholdPercentQueryParameter adds the startThresholdPercent to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetStartThresholdPercentQueryParameter(startThresholdPercent *int64) {
-	o.StartThresholdPercentQueryParameter = startThresholdPercent
+// SetStartThresholdPercent adds the startThresholdPercent to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetStartThresholdPercent(startThresholdPercent *int64) {
+	o.StartThresholdPercent = startThresholdPercent
 }
 
-// WithSVMNameQueryParameter adds the svmName to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithSvmName(svmName *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithSvmUUID(svmUUID *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithTypeQueryParameter(typeVar *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithType(typeVar *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) WithUUIDQueryParameter(uuid *string) *VolumeEfficiencyPolicyCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) WithUUID(uuid *string) *VolumeEfficiencyPolicyCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the volume efficiency policy collection get params
-func (o *VolumeEfficiencyPolicyCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the volume efficiency policy collection get params
+func (o *VolumeEfficiencyPolicyCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -413,13 +413,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -430,13 +430,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration int64
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := swag.FormatInt64(qrDuration)
 		if qDuration != "" {
@@ -447,13 +447,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -464,7 +464,7 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,13 +492,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -509,7 +509,7 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -520,13 +520,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.QosPolicyQueryParameter != nil {
+	if o.QosPolicy != nil {
 
 		// query param qos_policy
 		var qrQosPolicy string
 
-		if o.QosPolicyQueryParameter != nil {
-			qrQosPolicy = *o.QosPolicyQueryParameter
+		if o.QosPolicy != nil {
+			qrQosPolicy = *o.QosPolicy
 		}
 		qQosPolicy := qrQosPolicy
 		if qQosPolicy != "" {
@@ -537,13 +537,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ScheduleNameQueryParameter != nil {
+	if o.ScheduleName != nil {
 
 		// query param schedule.name
 		var qrScheduleName string
 
-		if o.ScheduleNameQueryParameter != nil {
-			qrScheduleName = *o.ScheduleNameQueryParameter
+		if o.ScheduleName != nil {
+			qrScheduleName = *o.ScheduleName
 		}
 		qScheduleName := qrScheduleName
 		if qScheduleName != "" {
@@ -588,13 +588,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.StartThresholdPercentQueryParameter != nil {
+	if o.StartThresholdPercent != nil {
 
 		// query param start_threshold_percent
 		var qrStartThresholdPercent int64
 
-		if o.StartThresholdPercentQueryParameter != nil {
-			qrStartThresholdPercent = *o.StartThresholdPercentQueryParameter
+		if o.StartThresholdPercent != nil {
+			qrStartThresholdPercent = *o.StartThresholdPercent
 		}
 		qStartThresholdPercent := swag.FormatInt64(qrStartThresholdPercent)
 		if qStartThresholdPercent != "" {
@@ -605,13 +605,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -622,13 +622,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -639,13 +639,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -656,13 +656,13 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -681,7 +681,7 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) WriteToRequest(r runtime.Cli
 
 // bindParamVolumeEfficiencyPolicyCollectionGet binds the parameter fields
 func (o *VolumeEfficiencyPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -698,7 +698,7 @@ func (o *VolumeEfficiencyPolicyCollectionGetParams) bindParamFields(formats strf
 
 // bindParamVolumeEfficiencyPolicyCollectionGet binds the parameter order_by
 func (o *VolumeEfficiencyPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

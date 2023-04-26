@@ -65,7 +65,7 @@ type EmsFilterDeleteParams struct {
 
 	   Filter name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *EmsFilterDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the ems filter delete params
-func (o *EmsFilterDeleteParams) WithNamePathParameter(name string) *EmsFilterDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems filter delete params
+func (o *EmsFilterDeleteParams) WithName(name string) *EmsFilterDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems filter delete params
-func (o *EmsFilterDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems filter delete params
+func (o *EmsFilterDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *EmsFilterDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 

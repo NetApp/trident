@@ -30,10 +30,10 @@ type VscanOnAccess struct {
 	// Example: on-access-test
 	// Max Length: 256
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// scope
-	Scope *VscanOnAccessScope `json:"scope,omitempty"`
+	Scope *VscanOnAccessInlineScope `json:"scope,omitempty"`
 }
 
 // Validate validates this vscan on access
@@ -59,11 +59,11 @@ func (m *VscanOnAccess) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
 		return err
 	}
 
@@ -133,32 +133,32 @@ func (m *VscanOnAccess) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnAccessScope vscan on access scope
+// VscanOnAccessInlineScope vscan on access inline scope
 //
-// swagger:model VscanOnAccessScope
-type VscanOnAccessScope struct {
+// swagger:model vscan_on_access_inline_scope
+type VscanOnAccessInlineScope struct {
 
 	// List of file extensions for which scanning is not performed.
 	// Example: ["mp*","txt"]
 	// Max Items: 16
 	// Min Items: 1
-	ExcludeExtensions []string `json:"exclude_extensions,omitempty"`
+	ExcludeExtensions []*string `json:"exclude_extensions,omitempty"`
 
 	// List of file paths for which scanning must not be performed.
 	// Example: ["\\dir1\\dir2\\name","\\vol\\a b","\\vol\\a,b\\"]
-	ExcludePaths []string `json:"exclude_paths,omitempty"`
+	ExcludePaths []*string `json:"exclude_paths,omitempty"`
 
 	// List of file extensions to be scanned.
 	// Example: ["mp*","txt"]
 	// Max Items: 16
 	// Min Items: 1
-	IncludeExtensions []string `json:"include_extensions,omitempty"`
+	IncludeExtensions []*string `json:"include_extensions,omitempty"`
 
 	// Maximum file size, in bytes, allowed for scanning.
 	// Example: 2147483648
 	// Maximum: 1.099511627776e+12
 	// Minimum: 1024
-	MaxFileSize int64 `json:"max_file_size,omitempty"`
+	MaxFileSize *int64 `json:"max_file_size,omitempty"`
 
 	// Scan only files opened with execute-access.
 	OnlyExecuteAccess *bool `json:"only_execute_access,omitempty"`
@@ -170,8 +170,8 @@ type VscanOnAccessScope struct {
 	ScanWithoutExtension *bool `json:"scan_without_extension,omitempty"`
 }
 
-// Validate validates this vscan on access scope
-func (m *VscanOnAccessScope) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on access inline scope
+func (m *VscanOnAccessInlineScope) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateExcludeExtensions(formats); err != nil {
@@ -196,7 +196,7 @@ func (m *VscanOnAccessScope) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnAccessScope) validateExcludeExtensions(formats strfmt.Registry) error {
+func (m *VscanOnAccessInlineScope) validateExcludeExtensions(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExcludeExtensions) { // not required
 		return nil
 	}
@@ -214,18 +214,21 @@ func (m *VscanOnAccessScope) validateExcludeExtensions(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *VscanOnAccessScope) validateExcludePaths(formats strfmt.Registry) error {
+func (m *VscanOnAccessInlineScope) validateExcludePaths(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExcludePaths) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.ExcludePaths); i++ {
+		if swag.IsZero(m.ExcludePaths[i]) { // not required
+			continue
+		}
 
-		if err := validate.MinLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", m.ExcludePaths[i], 1); err != nil {
+		if err := validate.MinLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", *m.ExcludePaths[i], 1); err != nil {
 			return err
 		}
 
-		if err := validate.MaxLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", m.ExcludePaths[i], 255); err != nil {
+		if err := validate.MaxLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", *m.ExcludePaths[i], 255); err != nil {
 			return err
 		}
 
@@ -234,7 +237,7 @@ func (m *VscanOnAccessScope) validateExcludePaths(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *VscanOnAccessScope) validateIncludeExtensions(formats strfmt.Registry) error {
+func (m *VscanOnAccessInlineScope) validateIncludeExtensions(formats strfmt.Registry) error {
 	if swag.IsZero(m.IncludeExtensions) { // not required
 		return nil
 	}
@@ -252,29 +255,29 @@ func (m *VscanOnAccessScope) validateIncludeExtensions(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *VscanOnAccessScope) validateMaxFileSize(formats strfmt.Registry) error {
+func (m *VscanOnAccessInlineScope) validateMaxFileSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.MaxFileSize) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("scope"+"."+"max_file_size", "body", m.MaxFileSize, 1024, false); err != nil {
+	if err := validate.MinimumInt("scope"+"."+"max_file_size", "body", *m.MaxFileSize, 1024, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("scope"+"."+"max_file_size", "body", m.MaxFileSize, 1.099511627776e+12, false); err != nil {
+	if err := validate.MaximumInt("scope"+"."+"max_file_size", "body", *m.MaxFileSize, 1.099511627776e+12, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this vscan on access scope based on context it is used
-func (m *VscanOnAccessScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vscan on access inline scope based on context it is used
+func (m *VscanOnAccessInlineScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnAccessScope) MarshalBinary() ([]byte, error) {
+func (m *VscanOnAccessInlineScope) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -282,8 +285,8 @@ func (m *VscanOnAccessScope) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnAccessScope) UnmarshalBinary(b []byte) error {
-	var res VscanOnAccessScope
+func (m *VscanOnAccessInlineScope) UnmarshalBinary(b []byte) error {
+	var res VscanOnAccessInlineScope
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

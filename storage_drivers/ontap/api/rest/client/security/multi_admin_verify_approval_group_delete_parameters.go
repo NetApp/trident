@@ -62,10 +62,10 @@ MultiAdminVerifyApprovalGroupDeleteParams contains all the parameters to send to
 type MultiAdminVerifyApprovalGroupDeleteParams struct {
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	// OwnerUUID.
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,26 +120,26 @@ func (o *MultiAdminVerifyApprovalGroupDeleteParams) SetHTTPClient(client *http.C
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the multi admin verify approval group delete params
-func (o *MultiAdminVerifyApprovalGroupDeleteParams) WithNamePathParameter(name string) *MultiAdminVerifyApprovalGroupDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the multi admin verify approval group delete params
+func (o *MultiAdminVerifyApprovalGroupDeleteParams) WithName(name string) *MultiAdminVerifyApprovalGroupDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the multi admin verify approval group delete params
-func (o *MultiAdminVerifyApprovalGroupDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the multi admin verify approval group delete params
+func (o *MultiAdminVerifyApprovalGroupDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the multi admin verify approval group delete params
-func (o *MultiAdminVerifyApprovalGroupDeleteParams) WithOwnerUUIDPathParameter(ownerUUID string) *MultiAdminVerifyApprovalGroupDeleteParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify approval group delete params
+func (o *MultiAdminVerifyApprovalGroupDeleteParams) WithOwnerUUID(ownerUUID string) *MultiAdminVerifyApprovalGroupDeleteParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the multi admin verify approval group delete params
-func (o *MultiAdminVerifyApprovalGroupDeleteParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify approval group delete params
+func (o *MultiAdminVerifyApprovalGroupDeleteParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -151,12 +151,12 @@ func (o *MultiAdminVerifyApprovalGroupDeleteParams) WriteToRequest(r runtime.Cli
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

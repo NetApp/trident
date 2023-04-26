@@ -6,16 +6,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_storage"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -25,7 +25,7 @@ var ctx = context.Background()
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

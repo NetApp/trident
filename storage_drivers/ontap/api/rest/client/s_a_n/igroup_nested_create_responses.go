@@ -52,6 +52,11 @@ IgroupNestedCreateCreated describes a response with status code 201, with defaul
 Created
 */
 type IgroupNestedCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.IgroupNestedResponse
 }
 
@@ -93,6 +98,13 @@ func (o *IgroupNestedCreateCreated) GetPayload() *models.IgroupNestedResponse {
 }
 
 func (o *IgroupNestedCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.IgroupNestedResponse)
 

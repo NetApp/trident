@@ -21,45 +21,45 @@ import (
 // swagger:model nas
 type Nas struct {
 
-	// application components
+	// The name of the CIFS share. Usage: &lt;Share&gt;
+	CifsShareName *string `json:"cifs_share_name,omitempty"`
+
+	// nas inline application components
 	// Required: true
 	// Max Items: 10
 	// Min Items: 1
-	ApplicationComponents []*NasApplicationComponentsItems0 `json:"application_components"`
+	NasInlineApplicationComponents []*NasInlineApplicationComponentsInlineArrayItem `json:"application_components"`
 
 	// The list of CIFS access controls. You must provide either 'user_or_group' or 'access' to enable CIFS access.
-	CifsAccess []*AppCifsAccess `json:"cifs_access,omitempty"`
+	NasInlineCifsAccess []*AppCifsAccess `json:"cifs_access,omitempty"`
 
-	// The name of the CIFS share. Usage: &lt;Share&gt;
-	CifsShareName string `json:"cifs_share_name,omitempty"`
-
-	// exclude aggregates
-	ExcludeAggregates []*NasExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+	// nas inline exclude aggregates
+	NasInlineExcludeAggregates []*NasInlineExcludeAggregatesInlineArrayItem `json:"exclude_aggregates,omitempty"`
 
 	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
-	NfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
+	NasInlineNfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
 
 	// protection type
-	ProtectionType *NasProtectionType `json:"protection_type,omitempty"`
+	ProtectionType *NasInlineProtectionType `json:"protection_type,omitempty"`
 }
 
 // Validate validates this nas
 func (m *Nas) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateApplicationComponents(formats); err != nil {
+	if err := m.validateNasInlineApplicationComponents(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateCifsAccess(formats); err != nil {
+	if err := m.validateNasInlineCifsAccess(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateExcludeAggregates(formats); err != nil {
+	if err := m.validateNasInlineExcludeAggregates(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateNfsAccess(formats); err != nil {
+	if err := m.validateNasInlineNfsAccess(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,29 +73,29 @@ func (m *Nas) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Nas) validateApplicationComponents(formats strfmt.Registry) error {
+func (m *Nas) validateNasInlineApplicationComponents(formats strfmt.Registry) error {
 
-	if err := validate.Required("application_components", "body", m.ApplicationComponents); err != nil {
+	if err := validate.Required("application_components", "body", m.NasInlineApplicationComponents); err != nil {
 		return err
 	}
 
-	iApplicationComponentsSize := int64(len(m.ApplicationComponents))
+	iNasInlineApplicationComponentsSize := int64(len(m.NasInlineApplicationComponents))
 
-	if err := validate.MinItems("application_components", "body", iApplicationComponentsSize, 1); err != nil {
+	if err := validate.MinItems("application_components", "body", iNasInlineApplicationComponentsSize, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxItems("application_components", "body", iApplicationComponentsSize, 10); err != nil {
+	if err := validate.MaxItems("application_components", "body", iNasInlineApplicationComponentsSize, 10); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.ApplicationComponents); i++ {
-		if swag.IsZero(m.ApplicationComponents[i]) { // not required
+	for i := 0; i < len(m.NasInlineApplicationComponents); i++ {
+		if swag.IsZero(m.NasInlineApplicationComponents[i]) { // not required
 			continue
 		}
 
-		if m.ApplicationComponents[i] != nil {
-			if err := m.ApplicationComponents[i].Validate(formats); err != nil {
+		if m.NasInlineApplicationComponents[i] != nil {
+			if err := m.NasInlineApplicationComponents[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
 				}
@@ -108,18 +108,18 @@ func (m *Nas) validateApplicationComponents(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Nas) validateCifsAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.CifsAccess) { // not required
+func (m *Nas) validateNasInlineCifsAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.NasInlineCifsAccess) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.CifsAccess); i++ {
-		if swag.IsZero(m.CifsAccess[i]) { // not required
+	for i := 0; i < len(m.NasInlineCifsAccess); i++ {
+		if swag.IsZero(m.NasInlineCifsAccess[i]) { // not required
 			continue
 		}
 
-		if m.CifsAccess[i] != nil {
-			if err := m.CifsAccess[i].Validate(formats); err != nil {
+		if m.NasInlineCifsAccess[i] != nil {
+			if err := m.NasInlineCifsAccess[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
 				}
@@ -132,18 +132,18 @@ func (m *Nas) validateCifsAccess(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Nas) validateExcludeAggregates(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExcludeAggregates) { // not required
+func (m *Nas) validateNasInlineExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.NasInlineExcludeAggregates) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.ExcludeAggregates); i++ {
-		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+	for i := 0; i < len(m.NasInlineExcludeAggregates); i++ {
+		if swag.IsZero(m.NasInlineExcludeAggregates[i]) { // not required
 			continue
 		}
 
-		if m.ExcludeAggregates[i] != nil {
-			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+		if m.NasInlineExcludeAggregates[i] != nil {
+			if err := m.NasInlineExcludeAggregates[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
 				}
@@ -156,18 +156,18 @@ func (m *Nas) validateExcludeAggregates(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Nas) validateNfsAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.NfsAccess) { // not required
+func (m *Nas) validateNasInlineNfsAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.NasInlineNfsAccess) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.NfsAccess); i++ {
-		if swag.IsZero(m.NfsAccess[i]) { // not required
+	for i := 0; i < len(m.NasInlineNfsAccess); i++ {
+		if swag.IsZero(m.NasInlineNfsAccess[i]) { // not required
 			continue
 		}
 
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].Validate(formats); err != nil {
+		if m.NasInlineNfsAccess[i] != nil {
+			if err := m.NasInlineNfsAccess[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
 				}
@@ -201,19 +201,19 @@ func (m *Nas) validateProtectionType(formats strfmt.Registry) error {
 func (m *Nas) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateApplicationComponents(ctx, formats); err != nil {
+	if err := m.contextValidateNasInlineApplicationComponents(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCifsAccess(ctx, formats); err != nil {
+	if err := m.contextValidateNasInlineCifsAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+	if err := m.contextValidateNasInlineExcludeAggregates(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNfsAccess(ctx, formats); err != nil {
+	if err := m.contextValidateNasInlineNfsAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -227,12 +227,12 @@ func (m *Nas) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *Nas) contextValidateApplicationComponents(ctx context.Context, formats strfmt.Registry) error {
+func (m *Nas) contextValidateNasInlineApplicationComponents(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ApplicationComponents); i++ {
+	for i := 0; i < len(m.NasInlineApplicationComponents); i++ {
 
-		if m.ApplicationComponents[i] != nil {
-			if err := m.ApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
+		if m.NasInlineApplicationComponents[i] != nil {
+			if err := m.NasInlineApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
 				}
@@ -245,12 +245,12 @@ func (m *Nas) contextValidateApplicationComponents(ctx context.Context, formats 
 	return nil
 }
 
-func (m *Nas) contextValidateCifsAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *Nas) contextValidateNasInlineCifsAccess(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.CifsAccess); i++ {
+	for i := 0; i < len(m.NasInlineCifsAccess); i++ {
 
-		if m.CifsAccess[i] != nil {
-			if err := m.CifsAccess[i].ContextValidate(ctx, formats); err != nil {
+		if m.NasInlineCifsAccess[i] != nil {
+			if err := m.NasInlineCifsAccess[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
 				}
@@ -263,12 +263,12 @@ func (m *Nas) contextValidateCifsAccess(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *Nas) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+func (m *Nas) contextValidateNasInlineExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ExcludeAggregates); i++ {
+	for i := 0; i < len(m.NasInlineExcludeAggregates); i++ {
 
-		if m.ExcludeAggregates[i] != nil {
-			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+		if m.NasInlineExcludeAggregates[i] != nil {
+			if err := m.NasInlineExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
 				}
@@ -281,12 +281,12 @@ func (m *Nas) contextValidateExcludeAggregates(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *Nas) contextValidateNfsAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *Nas) contextValidateNasInlineNfsAccess(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.NfsAccess); i++ {
+	for i := 0; i < len(m.NasInlineNfsAccess); i++ {
 
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].ContextValidate(ctx, formats); err != nil {
+		if m.NasInlineNfsAccess[i] != nil {
+			if err := m.NasInlineNfsAccess[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
 				}
@@ -331,16 +331,16 @@ func (m *Nas) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NasApplicationComponentsItems0 nas application components items0
+// NasInlineApplicationComponentsInlineArrayItem nas inline application components inline array item
 //
-// swagger:model NasApplicationComponentsItems0
-type NasApplicationComponentsItems0 struct {
+// swagger:model nas_inline_application_components_inline_array_item
+type NasInlineApplicationComponentsInlineArrayItem struct {
 
 	// export policy
-	ExportPolicy *NasApplicationComponentsItems0ExportPolicy `json:"export_policy,omitempty"`
+	ExportPolicy *NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy `json:"export_policy,omitempty"`
 
 	// flexcache
-	Flexcache *NasApplicationComponentsItems0Flexcache `json:"flexcache,omitempty"`
+	Flexcache *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache `json:"flexcache,omitempty"`
 
 	// The name of the application component.
 	// Required: true
@@ -349,11 +349,11 @@ type NasApplicationComponentsItems0 struct {
 	Name *string `json:"name"`
 
 	// qos
-	Qos *NasApplicationComponentsItems0Qos `json:"qos,omitempty"`
+	Qos *NasInlineApplicationComponentsInlineArrayItemInlineQos `json:"qos,omitempty"`
 
 	// Denotes a Flexgroup.
 	// Enum: [false true]
-	ScaleOut bool `json:"scale_out,omitempty"`
+	ScaleOut *bool `json:"scale_out,omitempty"`
 
 	// The number of shares in the application component.
 	// Required: true
@@ -361,8 +361,11 @@ type NasApplicationComponentsItems0 struct {
 	// Minimum: 1
 	ShareCount *int64 `json:"share_count"`
 
+	// snaplock
+	Snaplock *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock `json:"snaplock,omitempty"`
+
 	// storage service
-	StorageService *NasApplicationComponentsItems0StorageService `json:"storage_service,omitempty"`
+	StorageService *NasInlineApplicationComponentsInlineArrayItemInlineStorageService `json:"storage_service,omitempty"`
 
 	// tiering
 	Tiering *NasApplicationComponentsTiering `json:"tiering,omitempty"`
@@ -372,8 +375,8 @@ type NasApplicationComponentsItems0 struct {
 	TotalSize *int64 `json:"total_size"`
 }
 
-// Validate validates this nas application components items0
-func (m *NasApplicationComponentsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item
+func (m *NasInlineApplicationComponentsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateExportPolicy(formats); err != nil {
@@ -400,6 +403,10 @@ func (m *NasApplicationComponentsItems0) Validate(formats strfmt.Registry) error
 		res = append(res, err)
 	}
 
+	if err := m.validateSnaplock(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStorageService(formats); err != nil {
 		res = append(res, err)
 	}
@@ -418,7 +425,7 @@ func (m *NasApplicationComponentsItems0) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateExportPolicy(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateExportPolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExportPolicy) { // not required
 		return nil
 	}
@@ -435,7 +442,7 @@ func (m *NasApplicationComponentsItems0) validateExportPolicy(formats strfmt.Reg
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateFlexcache(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateFlexcache(formats strfmt.Registry) error {
 	if swag.IsZero(m.Flexcache) { // not required
 		return nil
 	}
@@ -452,7 +459,7 @@ func (m *NasApplicationComponentsItems0) validateFlexcache(formats strfmt.Regist
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateName(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -469,7 +476,7 @@ func (m *NasApplicationComponentsItems0) validateName(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateQos(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateQos(formats strfmt.Registry) error {
 	if swag.IsZero(m.Qos) { // not required
 		return nil
 	}
@@ -486,7 +493,7 @@ func (m *NasApplicationComponentsItems0) validateQos(formats strfmt.Registry) er
 	return nil
 }
 
-var nasApplicationComponentsItems0TypeScaleOutPropEnum []interface{}
+var nasInlineApplicationComponentsInlineArrayItemTypeScaleOutPropEnum []interface{}
 
 func init() {
 	var res []bool
@@ -494,32 +501,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nasApplicationComponentsItems0TypeScaleOutPropEnum = append(nasApplicationComponentsItems0TypeScaleOutPropEnum, v)
+		nasInlineApplicationComponentsInlineArrayItemTypeScaleOutPropEnum = append(nasInlineApplicationComponentsInlineArrayItemTypeScaleOutPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *NasApplicationComponentsItems0) validateScaleOutEnum(path, location string, value bool) error {
-	if err := validate.EnumCase(path, location, value, nasApplicationComponentsItems0TypeScaleOutPropEnum, true); err != nil {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateScaleOutEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, nasInlineApplicationComponentsInlineArrayItemTypeScaleOutPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateScaleOut(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateScaleOut(formats strfmt.Registry) error {
 	if swag.IsZero(m.ScaleOut) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateScaleOutEnum("scale_out", "body", m.ScaleOut); err != nil {
+	if err := m.validateScaleOutEnum("scale_out", "body", *m.ScaleOut); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateShareCount(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateShareCount(formats strfmt.Registry) error {
 
 	if err := validate.Required("share_count", "body", m.ShareCount); err != nil {
 		return err
@@ -536,7 +543,24 @@ func (m *NasApplicationComponentsItems0) validateShareCount(formats strfmt.Regis
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateStorageService(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateSnaplock(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snaplock) { // not required
+		return nil
+	}
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -553,7 +577,7 @@ func (m *NasApplicationComponentsItems0) validateStorageService(formats strfmt.R
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateTiering(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateTiering(formats strfmt.Registry) error {
 	if swag.IsZero(m.Tiering) { // not required
 		return nil
 	}
@@ -570,7 +594,7 @@ func (m *NasApplicationComponentsItems0) validateTiering(formats strfmt.Registry
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) validateTotalSize(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) validateTotalSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("total_size", "body", m.TotalSize); err != nil {
 		return err
@@ -579,8 +603,8 @@ func (m *NasApplicationComponentsItems0) validateTotalSize(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this nas application components items0 based on the context it is used
-func (m *NasApplicationComponentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nas inline application components inline array item based on the context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateExportPolicy(ctx, formats); err != nil {
@@ -592,6 +616,10 @@ func (m *NasApplicationComponentsItems0) ContextValidate(ctx context.Context, fo
 	}
 
 	if err := m.contextValidateQos(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnaplock(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -609,7 +637,7 @@ func (m *NasApplicationComponentsItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) contextValidateExportPolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) contextValidateExportPolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ExportPolicy != nil {
 		if err := m.ExportPolicy.ContextValidate(ctx, formats); err != nil {
@@ -623,7 +651,7 @@ func (m *NasApplicationComponentsItems0) contextValidateExportPolicy(ctx context
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) contextValidateFlexcache(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) contextValidateFlexcache(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Flexcache != nil {
 		if err := m.Flexcache.ContextValidate(ctx, formats); err != nil {
@@ -637,7 +665,7 @@ func (m *NasApplicationComponentsItems0) contextValidateFlexcache(ctx context.Co
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Qos != nil {
 		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
@@ -651,7 +679,21 @@ func (m *NasApplicationComponentsItems0) contextValidateQos(ctx context.Context,
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) contextValidateSnaplock(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItem) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -665,7 +707,7 @@ func (m *NasApplicationComponentsItems0) contextValidateStorageService(ctx conte
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItem) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Tiering != nil {
 		if err := m.Tiering.ContextValidate(ctx, formats); err != nil {
@@ -680,7 +722,7 @@ func (m *NasApplicationComponentsItems0) contextValidateTiering(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -688,8 +730,8 @@ func (m *NasApplicationComponentsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0
+func (m *NasInlineApplicationComponentsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -697,30 +739,30 @@ func (m *NasApplicationComponentsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NasApplicationComponentsItems0ExportPolicy nas application components items0 export policy
+// NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy nas inline application components inline array item inline export policy
 //
-// swagger:model NasApplicationComponentsItems0ExportPolicy
-type NasApplicationComponentsItems0ExportPolicy struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_export_policy
+type NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy struct {
 
 	// The ID of an existing NFS export policy.
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// The name of an existing NFS export policy.
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this nas application components items0 export policy
-func (m *NasApplicationComponentsItems0ExportPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline export policy
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this nas application components items0 export policy based on context it is used
-func (m *NasApplicationComponentsItems0ExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline application components inline array item inline export policy based on context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0ExportPolicy) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -728,8 +770,8 @@ func (m *NasApplicationComponentsItems0ExportPolicy) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0ExportPolicy) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0ExportPolicy
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineExportPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -737,21 +779,21 @@ func (m *NasApplicationComponentsItems0ExportPolicy) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// NasApplicationComponentsItems0Flexcache nas application components items0 flexcache
+// NasInlineApplicationComponentsInlineArrayItemInlineFlexcache nas inline application components inline array item inline flexcache
 //
-// swagger:model NasApplicationComponentsItems0Flexcache
-type NasApplicationComponentsItems0Flexcache struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_flexcache
+type NasInlineApplicationComponentsInlineArrayItemInlineFlexcache struct {
 
 	// Dr-cache is a FlexCache volume create time option that has the same flexgroup-msid as that of the origin of a FlexCache volume. By default, dr-cache is disabled. The flexgroup-msid of the FlexCache volume does not need to be same as that of the origin of a FlexCache volume.
 	// Enum: [false true]
 	DrCache *bool `json:"dr_cache,omitempty"`
 
 	// origin
-	Origin *NasApplicationComponentsItems0FlexcacheOrigin `json:"origin,omitempty"`
+	Origin *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin `json:"origin,omitempty"`
 }
 
-// Validate validates this nas application components items0 flexcache
-func (m *NasApplicationComponentsItems0Flexcache) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline flexcache
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDrCache(formats); err != nil {
@@ -768,7 +810,7 @@ func (m *NasApplicationComponentsItems0Flexcache) Validate(formats strfmt.Regist
 	return nil
 }
 
-var nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum []interface{}
+var nasInlineApplicationComponentsInlineArrayItemInlineFlexcacheTypeDrCachePropEnum []interface{}
 
 func init() {
 	var res []bool
@@ -776,19 +818,19 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum = append(nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum, v)
+		nasInlineApplicationComponentsInlineArrayItemInlineFlexcacheTypeDrCachePropEnum = append(nasInlineApplicationComponentsInlineArrayItemInlineFlexcacheTypeDrCachePropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *NasApplicationComponentsItems0Flexcache) validateDrCacheEnum(path, location string, value bool) error {
-	if err := validate.EnumCase(path, location, value, nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum, true); err != nil {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) validateDrCacheEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, nasInlineApplicationComponentsInlineArrayItemInlineFlexcacheTypeDrCachePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0Flexcache) validateDrCache(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) validateDrCache(formats strfmt.Registry) error {
 	if swag.IsZero(m.DrCache) { // not required
 		return nil
 	}
@@ -801,7 +843,7 @@ func (m *NasApplicationComponentsItems0Flexcache) validateDrCache(formats strfmt
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0Flexcache) validateOrigin(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) validateOrigin(formats strfmt.Registry) error {
 	if swag.IsZero(m.Origin) { // not required
 		return nil
 	}
@@ -818,8 +860,8 @@ func (m *NasApplicationComponentsItems0Flexcache) validateOrigin(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this nas application components items0 flexcache based on the context it is used
-func (m *NasApplicationComponentsItems0Flexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nas inline application components inline array item inline flexcache based on the context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateOrigin(ctx, formats); err != nil {
@@ -832,7 +874,7 @@ func (m *NasApplicationComponentsItems0Flexcache) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0Flexcache) contextValidateOrigin(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) contextValidateOrigin(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Origin != nil {
 		if err := m.Origin.ContextValidate(ctx, formats); err != nil {
@@ -847,7 +889,7 @@ func (m *NasApplicationComponentsItems0Flexcache) contextValidateOrigin(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0Flexcache) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -855,8 +897,8 @@ func (m *NasApplicationComponentsItems0Flexcache) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0Flexcache) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0Flexcache
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcache) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineFlexcache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -864,22 +906,22 @@ func (m *NasApplicationComponentsItems0Flexcache) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// NasApplicationComponentsItems0FlexcacheOrigin nas application components items0 flexcache origin
+// NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin nas inline application components inline array item inline flexcache inline origin
 //
-// swagger:model NasApplicationComponentsItems0FlexcacheOrigin
-type NasApplicationComponentsItems0FlexcacheOrigin struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_flexcache_inline_origin
+type NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin struct {
 
 	// component
 	// Required: true
-	Component *NasApplicationComponentsItems0FlexcacheOriginComponent `json:"component"`
+	Component *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent `json:"component"`
 
 	// svm
 	// Required: true
-	Svm *NasApplicationComponentsItems0FlexcacheOriginSvm `json:"svm"`
+	Svm *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm `json:"svm"`
 }
 
-// Validate validates this nas application components items0 flexcache origin
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline flexcache inline origin
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComponent(formats); err != nil {
@@ -896,7 +938,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) Validate(formats strfmt.
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) validateComponent(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) validateComponent(formats strfmt.Registry) error {
 
 	if err := validate.Required("flexcache"+"."+"origin"+"."+"component", "body", m.Component); err != nil {
 		return err
@@ -914,7 +956,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) validateComponent(format
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) validateSvm(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) validateSvm(formats strfmt.Registry) error {
 
 	if err := validate.Required("flexcache"+"."+"origin"+"."+"svm", "body", m.Svm); err != nil {
 		return err
@@ -932,8 +974,8 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) validateSvm(formats strf
 	return nil
 }
 
-// ContextValidate validate this nas application components items0 flexcache origin based on the context it is used
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nas inline application components inline array item inline flexcache inline origin based on the context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateComponent(ctx, formats); err != nil {
@@ -950,7 +992,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) contextValidateComponent(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) contextValidateComponent(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Component != nil {
 		if err := m.Component.ContextValidate(ctx, formats); err != nil {
@@ -964,7 +1006,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) contextValidateComponent
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -979,7 +1021,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) contextValidateSvm(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -987,8 +1029,8 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0FlexcacheOrigin) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0FlexcacheOrigin
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOrigin
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -996,18 +1038,18 @@ func (m *NasApplicationComponentsItems0FlexcacheOrigin) UnmarshalBinary(b []byte
 	return nil
 }
 
-// NasApplicationComponentsItems0FlexcacheOriginComponent nas application components items0 flexcache origin component
+// NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent nas inline application components inline array item inline flexcache inline origin inline component
 //
-// swagger:model NasApplicationComponentsItems0FlexcacheOriginComponent
-type NasApplicationComponentsItems0FlexcacheOriginComponent struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_flexcache_inline_origin_inline_component
+type NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent struct {
 
 	// Name of the source component.
 	// Required: true
 	Name *string `json:"name"`
 }
 
-// Validate validates this nas application components items0 flexcache origin component
-func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline flexcache inline origin inline component
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1020,7 +1062,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) Validate(format
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) validateName(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("flexcache"+"."+"origin"+"."+"component"+"."+"name", "body", m.Name); err != nil {
 		return err
@@ -1029,13 +1071,13 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) validateName(fo
 	return nil
 }
 
-// ContextValidate validates this nas application components items0 flexcache origin component based on context it is used
-func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline application components inline array item inline flexcache inline origin inline component based on context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1043,8 +1085,8 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) MarshalBinary()
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0FlexcacheOriginComponent
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineComponent
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1052,18 +1094,18 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginComponent) UnmarshalBinary
 	return nil
 }
 
-// NasApplicationComponentsItems0FlexcacheOriginSvm nas application components items0 flexcache origin svm
+// NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm nas inline application components inline array item inline flexcache inline origin inline svm
 //
-// swagger:model NasApplicationComponentsItems0FlexcacheOriginSvm
-type NasApplicationComponentsItems0FlexcacheOriginSvm struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_flexcache_inline_origin_inline_svm
+type NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm struct {
 
 	// Name of the source SVM.
 	// Required: true
 	Name *string `json:"name"`
 }
 
-// Validate validates this nas application components items0 flexcache origin svm
-func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline flexcache inline origin inline svm
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1076,7 +1118,7 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) Validate(formats strf
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) validateName(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("flexcache"+"."+"origin"+"."+"svm"+"."+"name", "body", m.Name); err != nil {
 		return err
@@ -1085,13 +1127,13 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) validateName(formats 
 	return nil
 }
 
-// ContextValidate validates this nas application components items0 flexcache origin svm based on context it is used
-func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline application components inline array item inline flexcache inline origin inline svm based on context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1099,8 +1141,8 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) MarshalBinary() ([]by
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0FlexcacheOriginSvm
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineFlexcacheInlineOriginInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1108,17 +1150,17 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) UnmarshalBinary(b []b
 	return nil
 }
 
-// NasApplicationComponentsItems0Qos nas application components items0 qos
+// NasInlineApplicationComponentsInlineArrayItemInlineQos nas inline application components inline array item inline qos
 //
-// swagger:model NasApplicationComponentsItems0Qos
-type NasApplicationComponentsItems0Qos struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_qos
+type NasInlineApplicationComponentsInlineArrayItemInlineQos struct {
 
 	// policy
-	Policy *NasApplicationComponentsItems0QosPolicy `json:"policy,omitempty"`
+	Policy *NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy `json:"policy,omitempty"`
 }
 
-// Validate validates this nas application components items0 qos
-func (m *NasApplicationComponentsItems0Qos) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline qos
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQos) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePolicy(formats); err != nil {
@@ -1131,7 +1173,7 @@ func (m *NasApplicationComponentsItems0Qos) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0Qos) validatePolicy(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQos) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
@@ -1148,8 +1190,8 @@ func (m *NasApplicationComponentsItems0Qos) validatePolicy(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this nas application components items0 qos based on the context it is used
-func (m *NasApplicationComponentsItems0Qos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nas inline application components inline array item inline qos based on the context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
@@ -1162,7 +1204,7 @@ func (m *NasApplicationComponentsItems0Qos) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0Qos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
 		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
@@ -1177,7 +1219,7 @@ func (m *NasApplicationComponentsItems0Qos) contextValidatePolicy(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0Qos) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQos) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1185,8 +1227,8 @@ func (m *NasApplicationComponentsItems0Qos) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0Qos) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0Qos
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQos) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineQos
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1194,30 +1236,30 @@ func (m *NasApplicationComponentsItems0Qos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NasApplicationComponentsItems0QosPolicy nas application components items0 qos policy
+// NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy nas inline application components inline array item inline qos inline policy
 //
-// swagger:model NasApplicationComponentsItems0QosPolicy
-type NasApplicationComponentsItems0QosPolicy struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_qos_inline_policy
+type NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy struct {
 
 	// The name of an existing QoS policy.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nas application components items0 qos policy
-func (m *NasApplicationComponentsItems0QosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline qos inline policy
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this nas application components items0 qos policy based on context it is used
-func (m *NasApplicationComponentsItems0QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline application components inline array item inline qos inline policy based on context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1225,8 +1267,8 @@ func (m *NasApplicationComponentsItems0QosPolicy) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0QosPolicy
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1234,18 +1276,265 @@ func (m *NasApplicationComponentsItems0QosPolicy) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// NasApplicationComponentsItems0StorageService nas application components items0 storage service
+// NasInlineApplicationComponentsInlineArrayItemInlineSnaplock nas inline application components inline array item inline snaplock
 //
-// swagger:model NasApplicationComponentsItems0StorageService
-type NasApplicationComponentsItems0StorageService struct {
+// swagger:model nas_inline_application_components_inline_array_item_inline_snaplock
+type NasInlineApplicationComponentsInlineArrayItemInlineSnaplock struct {
+
+	// Specifies if the volume append mode is enabled or disabled. When it is enabled, all the files created with write permissions on the volume are, by default, WORM appendable files. The user can append the data to a WORM appendable file but cannot modify the existing contents of the file nor delete the file until it expires.
+	// Enum: [false true]
+	AppendModeEnabled *bool `json:"append_mode_enabled,omitempty"`
+
+	// Specifies the autocommit period for SnapLock volume. All files which are not modified for a period greater than the autocommit period of the volume are committed to the WORM state. The autocommit period value represents a duration and must be specified in the ISO-8601 duration format. The autocommit period can be in years, months, days, hours, and minutes. A period specified for years, months, and days is represented in the ISO-8601 format as &quot;P&lt;num&gt;Y&quot;, &quot;P&lt;num&gt;M&quot;, &quot;P&lt;num&gt;D&quot; respectively, for example &quot;P10Y&quot; represents a duration of 10 years. A duration in hours and minutes is represented by &quot;PT&lt;num&gt;H&quot; and &quot;PT&lt;num&gt;M&quot; respectively. The period string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example &quot;P1Y10M&quot; is not supported. Apart from the duration specified in the ISO-8601 format, the autocommit field also accepts the string &quot;none&quot;.
+	AutocommitPeriod *string `json:"autocommit_period,omitempty"`
+
+	// retention
+	Retention *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention `json:"retention,omitempty"`
+
+	// The SnapLock type of the smart container.
+	// Enum: [compliance enterprise non_snaplock]
+	SnaplockType *string `json:"snaplock_type,omitempty"`
+}
+
+// Validate validates this nas inline application components inline array item inline snaplock
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAppendModeEnabled(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRetention(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnaplockType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeAppendModeEnabledPropEnum []interface{}
+
+func init() {
+	var res []bool
+	if err := json.Unmarshal([]byte(`[false,true]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeAppendModeEnabledPropEnum = append(nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeAppendModeEnabledPropEnum, v)
+	}
+}
+
+// prop value enum
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) validateAppendModeEnabledEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeAppendModeEnabledPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) validateAppendModeEnabled(formats strfmt.Registry) error {
+	if swag.IsZero(m.AppendModeEnabled) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAppendModeEnabledEnum("snaplock"+"."+"append_mode_enabled", "body", *m.AppendModeEnabled); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) validateRetention(formats strfmt.Registry) error {
+	if swag.IsZero(m.Retention) { // not required
+		return nil
+	}
+
+	if m.Retention != nil {
+		if err := m.Retention.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock" + "." + "retention")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeSnaplockTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["compliance","enterprise","non_snaplock"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeSnaplockTypePropEnum = append(nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeSnaplockTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nas_inline_application_components_inline_array_item_inline_snaplock
+	// NasInlineApplicationComponentsInlineArrayItemInlineSnaplock
+	// snaplock_type
+	// SnaplockType
+	// compliance
+	// END DEBUGGING
+	// NasInlineApplicationComponentsInlineArrayItemInlineSnaplockSnaplockTypeCompliance captures enum value "compliance"
+	NasInlineApplicationComponentsInlineArrayItemInlineSnaplockSnaplockTypeCompliance string = "compliance"
+
+	// BEGIN DEBUGGING
+	// nas_inline_application_components_inline_array_item_inline_snaplock
+	// NasInlineApplicationComponentsInlineArrayItemInlineSnaplock
+	// snaplock_type
+	// SnaplockType
+	// enterprise
+	// END DEBUGGING
+	// NasInlineApplicationComponentsInlineArrayItemInlineSnaplockSnaplockTypeEnterprise captures enum value "enterprise"
+	NasInlineApplicationComponentsInlineArrayItemInlineSnaplockSnaplockTypeEnterprise string = "enterprise"
+
+	// BEGIN DEBUGGING
+	// nas_inline_application_components_inline_array_item_inline_snaplock
+	// NasInlineApplicationComponentsInlineArrayItemInlineSnaplock
+	// snaplock_type
+	// SnaplockType
+	// non_snaplock
+	// END DEBUGGING
+	// NasInlineApplicationComponentsInlineArrayItemInlineSnaplockSnaplockTypeNonSnaplock captures enum value "non_snaplock"
+	NasInlineApplicationComponentsInlineArrayItemInlineSnaplockSnaplockTypeNonSnaplock string = "non_snaplock"
+)
+
+// prop value enum
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) validateSnaplockTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nasInlineApplicationComponentsInlineArrayItemInlineSnaplockTypeSnaplockTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) validateSnaplockType(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnaplockType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSnaplockTypeEnum("snaplock"+"."+"snaplock_type", "body", *m.SnaplockType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nas inline application components inline array item inline snaplock based on the context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateRetention(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) contextValidateRetention(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Retention != nil {
+		if err := m.Retention.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock" + "." + "retention")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplock) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineSnaplock
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention nas inline application components inline array item inline snaplock inline retention
+//
+// swagger:model nas_inline_application_components_inline_array_item_inline_snaplock_inline_retention
+type NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention struct {
+
+	// Specifies the default retention period that is applied to files while committing them to the WORM state without an associated retention period. The retention value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A duration specified for years, months, and days is represented in the ISO-8601 format as quot;Plt;num&gt;Y&quot;, &quot;P&lt;num&gt;M&quot;, &quot;P&lt;num&gt;D&quot; respectively, for example &quot;P10Y&quot; represents a duration of 10 years. A duration in hours and minutes is represented by &quot;PT&lt;num&gt;H&quot; and &quot;PT&lt;num&gt;M&quot; respectively. The retention string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example &quot;P1Y10M&quot; is not supported. Apart from the duration specified in the ISO-8601 format, the duration field also accepts the string &quot;infinite&quot; to set an infinite retention period and the string &quot;unspecified&quot; to set an unspecified retention period.
+	Default *string `json:"default,omitempty"`
+
+	// Specifies the maximum allowed retention period for files committed to the WORM state on the volume. The retention value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A duration specified for years, months, and days is represented in the ISO-8601 format as &quot;P&lt;num&gt;Y&quot;, &quot;P&lt;num&gt;M&quot;, &quot;P&lt;num&gt;D&quot; respectively, for example &quot;P10Y&quot; represents a duration of 10 years. A duration in hours and minutes is represented by &quot;PT&lt;num&gt;H&quot; and &quot;PT&lt;num&gt;M&quot; respectively. The retention string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example &quot;P1Y10M&quot; is not supported. Apart from the duration specified in the ISO-8601 format, the duration field also accepts the string &quot;infinite&quot; to set an infinite retention period.
+	Maximum *string `json:"maximum,omitempty"`
+
+	// Specifies the minimum allowed retention period for files committed to the WORM state on the volume. The retention value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A duration specified for years, month,s and days is represented in the ISO-8601 format as &quot;P&lt;num&gt;Y&quot;, &quot;P&lt;num&gt;M&quot;, &quot;P&lt;num&gt;D&quot; respectively, for example &quot;P10Y&quot; represents a duration of 10 years. A duration in hours and minutes is represented by &quot;PT&lt;num&gt;H&quot; and &quot;PT&lt;num&gt;M&quot; respectively. The retention string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example &quot;P1Y10M&quot; is not supported. Apart from the duration specified in the ISO-8601 format, the duration field also accepts the string &quot;infinite&quot; to set an infinite retention period.
+	Minimum *string `json:"minimum,omitempty"`
+}
+
+// Validate validates this nas inline application components inline array item inline snaplock inline retention
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nas inline application components inline array item inline snaplock inline retention based on context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineSnaplockInlineRetention
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NasInlineApplicationComponentsInlineArrayItemInlineStorageService nas inline application components inline array item inline storage service
+//
+// swagger:model nas_inline_application_components_inline_array_item_inline_storage_service
+type NasInlineApplicationComponentsInlineArrayItemInlineStorageService struct {
 
 	// The storage service of the application component.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this nas application components items0 storage service
-func (m *NasApplicationComponentsItems0StorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline application components inline array item inline storage service
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1258,7 +1547,7 @@ func (m *NasApplicationComponentsItems0StorageService) Validate(formats strfmt.R
 	return nil
 }
 
-var nasApplicationComponentsItems0StorageServiceTypeNamePropEnum []interface{}
+var nasInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1266,52 +1555,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nasApplicationComponentsItems0StorageServiceTypeNamePropEnum = append(nasApplicationComponentsItems0StorageServiceTypeNamePropEnum, v)
+		nasInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum = append(nasInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NasApplicationComponentsItems0StorageService
-	// NasApplicationComponentsItems0StorageService
+	// nas_inline_application_components_inline_array_item_inline_storage_service
+	// NasInlineApplicationComponentsInlineArrayItemInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// NasApplicationComponentsItems0StorageServiceNameExtreme captures enum value "extreme"
-	NasApplicationComponentsItems0StorageServiceNameExtreme string = "extreme"
+	// NasInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameExtreme captures enum value "extreme"
+	NasInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// NasApplicationComponentsItems0StorageService
-	// NasApplicationComponentsItems0StorageService
+	// nas_inline_application_components_inline_array_item_inline_storage_service
+	// NasInlineApplicationComponentsInlineArrayItemInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// NasApplicationComponentsItems0StorageServiceNamePerformance captures enum value "performance"
-	NasApplicationComponentsItems0StorageServiceNamePerformance string = "performance"
+	// NasInlineApplicationComponentsInlineArrayItemInlineStorageServiceNamePerformance captures enum value "performance"
+	NasInlineApplicationComponentsInlineArrayItemInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// NasApplicationComponentsItems0StorageService
-	// NasApplicationComponentsItems0StorageService
+	// nas_inline_application_components_inline_array_item_inline_storage_service
+	// NasInlineApplicationComponentsInlineArrayItemInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// NasApplicationComponentsItems0StorageServiceNameValue captures enum value "value"
-	NasApplicationComponentsItems0StorageServiceNameValue string = "value"
+	// NasInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameValue captures enum value "value"
+	NasInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *NasApplicationComponentsItems0StorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nasApplicationComponentsItems0StorageServiceTypeNamePropEnum, true); err != nil {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nasInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NasApplicationComponentsItems0StorageService) validateName(formats strfmt.Registry) error {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1324,13 +1613,13 @@ func (m *NasApplicationComponentsItems0StorageService) validateName(formats strf
 	return nil
 }
 
-// ContextValidate validates this nas application components items0 storage service based on context it is used
-func (m *NasApplicationComponentsItems0StorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline application components inline array item inline storage service based on context it is used
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0StorageService) MarshalBinary() ([]byte, error) {
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1338,8 +1627,8 @@ func (m *NasApplicationComponentsItems0StorageService) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte) error {
-	var res NasApplicationComponentsItems0StorageService
+func (m *NasInlineApplicationComponentsInlineArrayItemInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res NasInlineApplicationComponentsInlineArrayItemInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1347,30 +1636,30 @@ func (m *NasApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// NasExcludeAggregatesItems0 nas exclude aggregates items0
+// NasInlineExcludeAggregatesInlineArrayItem nas inline exclude aggregates inline array item
 //
-// swagger:model NasExcludeAggregatesItems0
-type NasExcludeAggregatesItems0 struct {
+// swagger:model nas_inline_exclude_aggregates_inline_array_item
+type NasInlineExcludeAggregatesInlineArrayItem struct {
 
-	// The name of the aggregate to exclude. Usage: &lt;aggr0_jrippy_vsim1&gt;
-	Name string `json:"name,omitempty"`
+	// The name of the aggregate to exclude. Usage: &lt;aggregate name&gt;
+	Name *string `json:"name,omitempty"`
 
 	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nas exclude aggregates items0
-func (m *NasExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline exclude aggregates inline array item
+func (m *NasInlineExcludeAggregatesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this nas exclude aggregates items0 based on context it is used
-func (m *NasExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline exclude aggregates inline array item based on context it is used
+func (m *NasInlineExcludeAggregatesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+func (m *NasInlineExcludeAggregatesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1378,8 +1667,8 @@ func (m *NasExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
-	var res NasExcludeAggregatesItems0
+func (m *NasInlineExcludeAggregatesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NasInlineExcludeAggregatesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1387,25 +1676,25 @@ func (m *NasExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NasProtectionType nas protection type
+// NasInlineProtectionType nas inline protection type
 //
-// swagger:model NasProtectionType
-type NasProtectionType struct {
+// swagger:model nas_inline_protection_type
+type NasInlineProtectionType struct {
 
 	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
-	LocalPolicy string `json:"local_policy,omitempty"`
+	LocalPolicy *string `json:"local_policy,omitempty"`
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this nas protection type
-func (m *NasProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this nas inline protection type
+func (m *NasInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -1422,7 +1711,7 @@ func (m *NasProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nasProtectionTypeTypeLocalRpoPropEnum []interface{}
+var nasInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1430,55 +1719,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nasProtectionTypeTypeLocalRpoPropEnum = append(nasProtectionTypeTypeLocalRpoPropEnum, v)
+		nasInlineProtectionTypeTypeLocalRpoPropEnum = append(nasInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NasProtectionType
-	// NasProtectionType
+	// nas_inline_protection_type
+	// NasInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// NasProtectionTypeLocalRpoHourly captures enum value "hourly"
-	NasProtectionTypeLocalRpoHourly string = "hourly"
+	// NasInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	NasInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// NasProtectionType
-	// NasProtectionType
+	// nas_inline_protection_type
+	// NasInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// NasProtectionTypeLocalRpoNone captures enum value "none"
-	NasProtectionTypeLocalRpoNone string = "none"
+	// NasInlineProtectionTypeLocalRpoNone captures enum value "none"
+	NasInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *NasProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nasProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *NasInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nasInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NasProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *NasInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var nasProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var nasInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1486,61 +1775,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nasProtectionTypeTypeRemoteRpoPropEnum = append(nasProtectionTypeTypeRemoteRpoPropEnum, v)
+		nasInlineProtectionTypeTypeRemoteRpoPropEnum = append(nasInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NasProtectionType
-	// NasProtectionType
+	// nas_inline_protection_type
+	// NasInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// NasProtectionTypeRemoteRpoNone captures enum value "none"
-	NasProtectionTypeRemoteRpoNone string = "none"
+	// NasInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	NasInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// NasProtectionType
-	// NasProtectionType
+	// nas_inline_protection_type
+	// NasInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// NasProtectionTypeRemoteRpoZero captures enum value "zero"
-	NasProtectionTypeRemoteRpoZero string = "zero"
+	// NasInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	NasInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *NasProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nasProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *NasInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nasInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NasProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *NasInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this nas protection type based on context it is used
-func (m *NasProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this nas inline protection type based on context it is used
+func (m *NasInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NasProtectionType) MarshalBinary() ([]byte, error) {
+func (m *NasInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1548,8 +1837,8 @@ func (m *NasProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NasProtectionType) UnmarshalBinary(b []byte) error {
-	var res NasProtectionType
+func (m *NasInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res NasInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

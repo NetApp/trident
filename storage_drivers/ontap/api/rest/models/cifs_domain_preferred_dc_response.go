@@ -20,13 +20,14 @@ import (
 type CifsDomainPreferredDcResponse struct {
 
 	// links
-	Links *CifsDomainPreferredDcResponseLinks `json:"_links,omitempty"`
+	Links *CifsDomainPreferredDcResponseInlineLinks `json:"_links,omitempty"`
+
+	// cifs domain preferred dc response inline records
+	CifsDomainPreferredDcResponseInlineRecords []*CifsDomainPreferredDc `json:"records,omitempty"`
 
 	// Number of CIFS preferred domain controller records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*CifsDomainPreferredDc `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cifs domain preferred dc response
@@ -37,7 +38,7 @@ func (m *CifsDomainPreferredDcResponse) Validate(formats strfmt.Registry) error 
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCifsDomainPreferredDcResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CifsDomainPreferredDcResponse) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *CifsDomainPreferredDcResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CifsDomainPreferredDcResponse) validateCifsDomainPreferredDcResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsDomainPreferredDcResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CifsDomainPreferredDcResponseInlineRecords); i++ {
+		if swag.IsZero(m.CifsDomainPreferredDcResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CifsDomainPreferredDcResponseInlineRecords[i] != nil {
+			if err := m.CifsDomainPreferredDcResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CifsDomainPreferredDcResponse) ContextValidate(ctx context.Context, for
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCifsDomainPreferredDcResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CifsDomainPreferredDcResponse) contextValidateLinks(ctx context.Context
 	return nil
 }
 
-func (m *CifsDomainPreferredDcResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainPreferredDcResponse) contextValidateCifsDomainPreferredDcResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CifsDomainPreferredDcResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsDomainPreferredDcResponseInlineRecords[i] != nil {
+			if err := m.CifsDomainPreferredDcResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CifsDomainPreferredDcResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainPreferredDcResponseLinks cifs domain preferred dc response links
+// CifsDomainPreferredDcResponseInlineLinks cifs domain preferred dc response inline links
 //
-// swagger:model CifsDomainPreferredDcResponseLinks
-type CifsDomainPreferredDcResponseLinks struct {
+// swagger:model cifs_domain_preferred_dc_response_inline__links
+type CifsDomainPreferredDcResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CifsDomainPreferredDcResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain preferred dc response links
-func (m *CifsDomainPreferredDcResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain preferred dc response inline links
+func (m *CifsDomainPreferredDcResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CifsDomainPreferredDcResponseLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *CifsDomainPreferredDcResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CifsDomainPreferredDcResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CifsDomainPreferredDcResponseLinks) validateNext(formats strfmt.Registr
 	return nil
 }
 
-func (m *CifsDomainPreferredDcResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainPreferredDcResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CifsDomainPreferredDcResponseLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this cifs domain preferred dc response links based on the context it is used
-func (m *CifsDomainPreferredDcResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain preferred dc response inline links based on the context it is used
+func (m *CifsDomainPreferredDcResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CifsDomainPreferredDcResponseLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *CifsDomainPreferredDcResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainPreferredDcResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CifsDomainPreferredDcResponseLinks) contextValidateNext(ctx context.Con
 	return nil
 }
 
-func (m *CifsDomainPreferredDcResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainPreferredDcResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CifsDomainPreferredDcResponseLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainPreferredDcResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainPreferredDcResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CifsDomainPreferredDcResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainPreferredDcResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainPreferredDcResponseLinks
+func (m *CifsDomainPreferredDcResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainPreferredDcResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

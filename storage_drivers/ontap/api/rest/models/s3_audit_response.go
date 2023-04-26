@@ -20,13 +20,14 @@ import (
 type S3AuditResponse struct {
 
 	// links
-	Links *S3AuditResponseLinks `json:"_links,omitempty"`
+	Links *S3AuditResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*S3Audit `json:"records,omitempty"`
+	// s3 audit response inline records
+	S3AuditResponseInlineRecords []*S3Audit `json:"records,omitempty"`
 }
 
 // Validate validates this s3 audit response
@@ -37,7 +38,7 @@ func (m *S3AuditResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateS3AuditResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *S3AuditResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3AuditResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *S3AuditResponse) validateS3AuditResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3AuditResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.S3AuditResponseInlineRecords); i++ {
+		if swag.IsZero(m.S3AuditResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.S3AuditResponseInlineRecords[i] != nil {
+			if err := m.S3AuditResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *S3AuditResponse) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateS3AuditResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *S3AuditResponse) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *S3AuditResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3AuditResponse) contextValidateS3AuditResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.S3AuditResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3AuditResponseInlineRecords[i] != nil {
+			if err := m.S3AuditResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *S3AuditResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3AuditResponseLinks s3 audit response links
+// S3AuditResponseInlineLinks s3 audit response inline links
 //
-// swagger:model S3AuditResponseLinks
-type S3AuditResponseLinks struct {
+// swagger:model s3_audit_response_inline__links
+type S3AuditResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type S3AuditResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 audit response links
-func (m *S3AuditResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 audit response inline links
+func (m *S3AuditResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *S3AuditResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3AuditResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *S3AuditResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *S3AuditResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3AuditResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3AuditResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *S3AuditResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 audit response links based on the context it is used
-func (m *S3AuditResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 audit response inline links based on the context it is used
+func (m *S3AuditResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *S3AuditResponseLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *S3AuditResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3AuditResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *S3AuditResponseLinks) contextValidateNext(ctx context.Context, formats 
 	return nil
 }
 
-func (m *S3AuditResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3AuditResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *S3AuditResponseLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *S3AuditResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *S3AuditResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *S3AuditResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3AuditResponseLinks) UnmarshalBinary(b []byte) error {
-	var res S3AuditResponseLinks
+func (m *S3AuditResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3AuditResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

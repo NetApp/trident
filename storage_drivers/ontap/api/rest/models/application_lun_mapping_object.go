@@ -22,35 +22,35 @@ type ApplicationLunMappingObject struct {
 
 	// All possible Fibre Channel Protocol (FCP) access endpoints for the LUN.
 	// Read Only: true
-	Fcp []*ApplicationSanAccessFcpEndpoint `json:"fcp,omitempty"`
-
-	// igroup
-	Igroup *ApplicationLunMappingObjectIgroup `json:"igroup,omitempty"`
+	ApplicationLunMappingObjectInlineFcp []*ApplicationSanAccessFcpEndpoint `json:"fcp,omitempty"`
 
 	// All possible iSCSI access endpoints for the LUN.
 	// Read Only: true
-	Iscsi []*ApplicationSanAccessIscsiEndpoint `json:"iscsi,omitempty"`
+	ApplicationLunMappingObjectInlineIscsi []*ApplicationSanAccessIscsiEndpoint `json:"iscsi,omitempty"`
+
+	// igroup
+	Igroup *ApplicationLunMappingObjectInlineIgroup `json:"igroup,omitempty"`
 
 	// LUN ID
 	// Read Only: true
 	// Maximum: 4095
 	// Minimum: 0
-	LunID int64 `json:"lun_id,omitempty"`
+	LunID *int64 `json:"lun_id,omitempty"`
 }
 
 // Validate validates this application lun mapping object
 func (m *ApplicationLunMappingObject) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateFcp(formats); err != nil {
+	if err := m.validateApplicationLunMappingObjectInlineFcp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateApplicationLunMappingObjectInlineIscsi(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateIgroup(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateIscsi(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,20 +64,44 @@ func (m *ApplicationLunMappingObject) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationLunMappingObject) validateFcp(formats strfmt.Registry) error {
-	if swag.IsZero(m.Fcp) { // not required
+func (m *ApplicationLunMappingObject) validateApplicationLunMappingObjectInlineFcp(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationLunMappingObjectInlineFcp) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Fcp); i++ {
-		if swag.IsZero(m.Fcp[i]) { // not required
+	for i := 0; i < len(m.ApplicationLunMappingObjectInlineFcp); i++ {
+		if swag.IsZero(m.ApplicationLunMappingObjectInlineFcp[i]) { // not required
 			continue
 		}
 
-		if m.Fcp[i] != nil {
-			if err := m.Fcp[i].Validate(formats); err != nil {
+		if m.ApplicationLunMappingObjectInlineFcp[i] != nil {
+			if err := m.ApplicationLunMappingObjectInlineFcp[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("fcp" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationLunMappingObject) validateApplicationLunMappingObjectInlineIscsi(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationLunMappingObjectInlineIscsi) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationLunMappingObjectInlineIscsi); i++ {
+		if swag.IsZero(m.ApplicationLunMappingObjectInlineIscsi[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationLunMappingObjectInlineIscsi[i] != nil {
+			if err := m.ApplicationLunMappingObjectInlineIscsi[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("iscsi" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -105,40 +129,16 @@ func (m *ApplicationLunMappingObject) validateIgroup(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *ApplicationLunMappingObject) validateIscsi(formats strfmt.Registry) error {
-	if swag.IsZero(m.Iscsi) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Iscsi); i++ {
-		if swag.IsZero(m.Iscsi[i]) { // not required
-			continue
-		}
-
-		if m.Iscsi[i] != nil {
-			if err := m.Iscsi[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("iscsi" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationLunMappingObject) validateLunID(formats strfmt.Registry) error {
 	if swag.IsZero(m.LunID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("lun_id", "body", m.LunID, 0, false); err != nil {
+	if err := validate.MinimumInt("lun_id", "body", *m.LunID, 0, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("lun_id", "body", m.LunID, 4095, false); err != nil {
+	if err := validate.MaximumInt("lun_id", "body", *m.LunID, 4095, false); err != nil {
 		return err
 	}
 
@@ -149,15 +149,15 @@ func (m *ApplicationLunMappingObject) validateLunID(formats strfmt.Registry) err
 func (m *ApplicationLunMappingObject) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateFcp(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationLunMappingObjectInlineFcp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateApplicationLunMappingObjectInlineIscsi(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateIgroup(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateIscsi(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -171,18 +171,40 @@ func (m *ApplicationLunMappingObject) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *ApplicationLunMappingObject) contextValidateFcp(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationLunMappingObject) contextValidateApplicationLunMappingObjectInlineFcp(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fcp", "body", []*ApplicationSanAccessFcpEndpoint(m.Fcp)); err != nil {
+	if err := validate.ReadOnly(ctx, "fcp", "body", []*ApplicationSanAccessFcpEndpoint(m.ApplicationLunMappingObjectInlineFcp)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Fcp); i++ {
+	for i := 0; i < len(m.ApplicationLunMappingObjectInlineFcp); i++ {
 
-		if m.Fcp[i] != nil {
-			if err := m.Fcp[i].ContextValidate(ctx, formats); err != nil {
+		if m.ApplicationLunMappingObjectInlineFcp[i] != nil {
+			if err := m.ApplicationLunMappingObjectInlineFcp[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("fcp" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationLunMappingObject) contextValidateApplicationLunMappingObjectInlineIscsi(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "iscsi", "body", []*ApplicationSanAccessIscsiEndpoint(m.ApplicationLunMappingObjectInlineIscsi)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ApplicationLunMappingObjectInlineIscsi); i++ {
+
+		if m.ApplicationLunMappingObjectInlineIscsi[i] != nil {
+			if err := m.ApplicationLunMappingObjectInlineIscsi[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("iscsi" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -207,31 +229,9 @@ func (m *ApplicationLunMappingObject) contextValidateIgroup(ctx context.Context,
 	return nil
 }
 
-func (m *ApplicationLunMappingObject) contextValidateIscsi(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "iscsi", "body", []*ApplicationSanAccessIscsiEndpoint(m.Iscsi)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Iscsi); i++ {
-
-		if m.Iscsi[i] != nil {
-			if err := m.Iscsi[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("iscsi" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationLunMappingObject) contextValidateLunID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "lun_id", "body", int64(m.LunID)); err != nil {
+	if err := validate.ReadOnly(ctx, "lun_id", "body", m.LunID); err != nil {
 		return err
 	}
 
@@ -256,30 +256,30 @@ func (m *ApplicationLunMappingObject) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationLunMappingObjectIgroup application lun mapping object igroup
+// ApplicationLunMappingObjectInlineIgroup application lun mapping object inline igroup
 //
-// swagger:model ApplicationLunMappingObjectIgroup
-type ApplicationLunMappingObjectIgroup struct {
+// swagger:model application_lun_mapping_object_inline_igroup
+type ApplicationLunMappingObjectInlineIgroup struct {
 
 	// initiators
-	Initiators []string `json:"initiators,omitempty"`
+	Initiators []*string `json:"initiators,omitempty"`
 
 	// Igroup name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Igroup UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application lun mapping object igroup
-func (m *ApplicationLunMappingObjectIgroup) Validate(formats strfmt.Registry) error {
+// Validate validates this application lun mapping object inline igroup
+func (m *ApplicationLunMappingObjectInlineIgroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application lun mapping object igroup based on the context it is used
-func (m *ApplicationLunMappingObjectIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application lun mapping object inline igroup based on the context it is used
+func (m *ApplicationLunMappingObjectInlineIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateInitiators(ctx, formats); err != nil {
@@ -300,11 +300,11 @@ func (m *ApplicationLunMappingObjectIgroup) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *ApplicationLunMappingObjectIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationLunMappingObjectInlineIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Initiators); i++ {
 
-		if err := validate.ReadOnly(ctx, "igroup"+"."+"initiators"+"."+strconv.Itoa(i), "body", string(m.Initiators[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "igroup"+"."+"initiators"+"."+strconv.Itoa(i), "body", m.Initiators[i]); err != nil {
 			return err
 		}
 
@@ -313,18 +313,18 @@ func (m *ApplicationLunMappingObjectIgroup) contextValidateInitiators(ctx contex
 	return nil
 }
 
-func (m *ApplicationLunMappingObjectIgroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationLunMappingObjectInlineIgroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationLunMappingObjectIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationLunMappingObjectInlineIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -332,7 +332,7 @@ func (m *ApplicationLunMappingObjectIgroup) contextValidateUUID(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationLunMappingObjectIgroup) MarshalBinary() ([]byte, error) {
+func (m *ApplicationLunMappingObjectInlineIgroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -340,8 +340,8 @@ func (m *ApplicationLunMappingObjectIgroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationLunMappingObjectIgroup) UnmarshalBinary(b []byte) error {
-	var res ApplicationLunMappingObjectIgroup
+func (m *ApplicationLunMappingObjectInlineIgroup) UnmarshalBinary(b []byte) error {
+	var res ApplicationLunMappingObjectInlineIgroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,55 +66,55 @@ type ConfigurationBackupFileCollectionGetParams struct {
 
 	   Filter by auto
 	*/
-	AutoQueryParameter *bool
+	Auto *bool
 
 	/* BackupNodesName.
 
 	   Filter by backup_nodes.name
 	*/
-	BackupNodesNameQueryParameter *string
+	BackupNodesName *string
 
 	/* DownloadLink.
 
 	   Filter by download_link
 	*/
-	DownloadLinkQueryParameter *string
+	DownloadLink *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type ConfigurationBackupFileCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,31 +130,31 @@ type ConfigurationBackupFileCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Size.
 
 	   Filter by size
 	*/
-	SizeQueryParameter *int64
+	Size *int64
 
 	/* Time.
 
 	   Filter by time
 	*/
-	TimeQueryParameter *string
+	Time *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* Version.
 
 	   Filter by version
 	*/
-	VersionQueryParameter *string
+	Version *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *ConfigurationBackupFileCollectionGetParams) WithDefaults() *Configurati
 // All values with no default are reset to their zero value.
 func (o *ConfigurationBackupFileCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ConfigurationBackupFileCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *ConfigurationBackupFileCollectionGetParams) SetHTTPClient(client *http.
 	o.HTTPClient = client
 }
 
-// WithAutoQueryParameter adds the auto to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithAutoQueryParameter(auto *bool) *ConfigurationBackupFileCollectionGetParams {
-	o.SetAutoQueryParameter(auto)
+// WithAuto adds the auto to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithAuto(auto *bool) *ConfigurationBackupFileCollectionGetParams {
+	o.SetAuto(auto)
 	return o
 }
 
-// SetAutoQueryParameter adds the auto to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetAutoQueryParameter(auto *bool) {
-	o.AutoQueryParameter = auto
+// SetAuto adds the auto to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetAuto(auto *bool) {
+	o.Auto = auto
 }
 
-// WithBackupNodesNameQueryParameter adds the backupNodesName to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithBackupNodesNameQueryParameter(backupNodesName *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetBackupNodesNameQueryParameter(backupNodesName)
+// WithBackupNodesName adds the backupNodesName to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithBackupNodesName(backupNodesName *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetBackupNodesName(backupNodesName)
 	return o
 }
 
-// SetBackupNodesNameQueryParameter adds the backupNodesName to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetBackupNodesNameQueryParameter(backupNodesName *string) {
-	o.BackupNodesNameQueryParameter = backupNodesName
+// SetBackupNodesName adds the backupNodesName to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetBackupNodesName(backupNodesName *string) {
+	o.BackupNodesName = backupNodesName
 }
 
-// WithDownloadLinkQueryParameter adds the downloadLink to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithDownloadLinkQueryParameter(downloadLink *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetDownloadLinkQueryParameter(downloadLink)
+// WithDownloadLink adds the downloadLink to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithDownloadLink(downloadLink *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetDownloadLink(downloadLink)
 	return o
 }
 
-// SetDownloadLinkQueryParameter adds the downloadLink to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetDownloadLinkQueryParameter(downloadLink *string) {
-	o.DownloadLinkQueryParameter = downloadLink
+// SetDownloadLink adds the downloadLink to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetDownloadLink(downloadLink *string) {
+	o.DownloadLink = downloadLink
 }
 
-// WithFieldsQueryParameter adds the fields to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithFieldsQueryParameter(fields []string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithFields(fields []string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ConfigurationBackupFileCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithMaxRecords(maxRecords *int64) *ConfigurationBackupFileCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithNameQueryParameter(name *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithName(name *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithNodeName(nodeName *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithNodeUUID(nodeUUID *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithOrderBy(orderBy []string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ConfigurationBackupFileCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithReturnRecords(returnRecords *bool) *ConfigurationBackupFileCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ConfigurationBackupFileCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ConfigurationBackupFileCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSizeQueryParameter adds the size to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithSizeQueryParameter(size *int64) *ConfigurationBackupFileCollectionGetParams {
-	o.SetSizeQueryParameter(size)
+// WithSize adds the size to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithSize(size *int64) *ConfigurationBackupFileCollectionGetParams {
+	o.SetSize(size)
 	return o
 }
 
-// SetSizeQueryParameter adds the size to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetSizeQueryParameter(size *int64) {
-	o.SizeQueryParameter = size
+// SetSize adds the size to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetSize(size *int64) {
+	o.Size = size
 }
 
-// WithTimeQueryParameter adds the time to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithTimeQueryParameter(time *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetTimeQueryParameter(time)
+// WithTime adds the time to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithTime(time *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetTime(time)
 	return o
 }
 
-// SetTimeQueryParameter adds the time to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetTimeQueryParameter(time *string) {
-	o.TimeQueryParameter = time
+// SetTime adds the time to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetTime(time *string) {
+	o.Time = time
 }
 
-// WithTypeQueryParameter adds the typeVar to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithTypeQueryParameter(typeVar *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithType(typeVar *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithVersionQueryParameter adds the version to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) WithVersionQueryParameter(version *string) *ConfigurationBackupFileCollectionGetParams {
-	o.SetVersionQueryParameter(version)
+// WithVersion adds the version to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) WithVersion(version *string) *ConfigurationBackupFileCollectionGetParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionQueryParameter adds the version to the configuration backup file collection get params
-func (o *ConfigurationBackupFileCollectionGetParams) SetVersionQueryParameter(version *string) {
-	o.VersionQueryParameter = version
+// SetVersion adds the version to the configuration backup file collection get params
+func (o *ConfigurationBackupFileCollectionGetParams) SetVersion(version *string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 	}
 	var res []error
 
-	if o.AutoQueryParameter != nil {
+	if o.Auto != nil {
 
 		// query param auto
 		var qrAuto bool
 
-		if o.AutoQueryParameter != nil {
-			qrAuto = *o.AutoQueryParameter
+		if o.Auto != nil {
+			qrAuto = *o.Auto
 		}
 		qAuto := swag.FormatBool(qrAuto)
 		if qAuto != "" {
@@ -413,13 +413,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.BackupNodesNameQueryParameter != nil {
+	if o.BackupNodesName != nil {
 
 		// query param backup_nodes.name
 		var qrBackupNodesName string
 
-		if o.BackupNodesNameQueryParameter != nil {
-			qrBackupNodesName = *o.BackupNodesNameQueryParameter
+		if o.BackupNodesName != nil {
+			qrBackupNodesName = *o.BackupNodesName
 		}
 		qBackupNodesName := qrBackupNodesName
 		if qBackupNodesName != "" {
@@ -430,13 +430,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.DownloadLinkQueryParameter != nil {
+	if o.DownloadLink != nil {
 
 		// query param download_link
 		var qrDownloadLink string
 
-		if o.DownloadLinkQueryParameter != nil {
-			qrDownloadLink = *o.DownloadLinkQueryParameter
+		if o.DownloadLink != nil {
+			qrDownloadLink = *o.DownloadLink
 		}
 		qDownloadLink := qrDownloadLink
 		if qDownloadLink != "" {
@@ -447,7 +447,7 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,13 +475,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -492,13 +492,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -509,13 +509,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -526,7 +526,7 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -537,13 +537,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.SizeQueryParameter != nil {
+	if o.Size != nil {
 
 		// query param size
 		var qrSize int64
 
-		if o.SizeQueryParameter != nil {
-			qrSize = *o.SizeQueryParameter
+		if o.Size != nil {
+			qrSize = *o.Size
 		}
 		qSize := swag.FormatInt64(qrSize)
 		if qSize != "" {
@@ -588,13 +588,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.TimeQueryParameter != nil {
+	if o.Time != nil {
 
 		// query param time
 		var qrTime string
 
-		if o.TimeQueryParameter != nil {
-			qrTime = *o.TimeQueryParameter
+		if o.Time != nil {
+			qrTime = *o.Time
 		}
 		qTime := qrTime
 		if qTime != "" {
@@ -605,13 +605,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -622,13 +622,13 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.VersionQueryParameter != nil {
+	if o.Version != nil {
 
 		// query param version
 		var qrVersion string
 
-		if o.VersionQueryParameter != nil {
-			qrVersion = *o.VersionQueryParameter
+		if o.Version != nil {
+			qrVersion = *o.Version
 		}
 		qVersion := qrVersion
 		if qVersion != "" {
@@ -647,7 +647,7 @@ func (o *ConfigurationBackupFileCollectionGetParams) WriteToRequest(r runtime.Cl
 
 // bindParamConfigurationBackupFileCollectionGet binds the parameter fields
 func (o *ConfigurationBackupFileCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -664,7 +664,7 @@ func (o *ConfigurationBackupFileCollectionGetParams) bindParamFields(formats str
 
 // bindParamConfigurationBackupFileCollectionGet binds the parameter order_by
 func (o *ConfigurationBackupFileCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -20,13 +20,14 @@ import (
 type NdmpSessionResponse struct {
 
 	// links
-	Links *NdmpSessionResponseLinks `json:"_links,omitempty"`
+	Links *NdmpSessionResponseInlineLinks `json:"_links,omitempty"`
+
+	// ndmp session response inline records
+	NdmpSessionResponseInlineRecords []*NdmpSession `json:"records,omitempty"`
 
 	// Number of Records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NdmpSession `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ndmp session response
@@ -37,7 +38,7 @@ func (m *NdmpSessionResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNdmpSessionResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *NdmpSessionResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSessionResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NdmpSessionResponse) validateNdmpSessionResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NdmpSessionResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NdmpSessionResponseInlineRecords); i++ {
+		if swag.IsZero(m.NdmpSessionResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NdmpSessionResponseInlineRecords[i] != nil {
+			if err := m.NdmpSessionResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *NdmpSessionResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNdmpSessionResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *NdmpSessionResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NdmpSessionResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSessionResponse) contextValidateNdmpSessionResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NdmpSessionResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NdmpSessionResponseInlineRecords[i] != nil {
+			if err := m.NdmpSessionResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *NdmpSessionResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpSessionResponseLinks ndmp session response links
+// NdmpSessionResponseInlineLinks ndmp session response inline links
 //
-// swagger:model NdmpSessionResponseLinks
-type NdmpSessionResponseLinks struct {
+// swagger:model ndmp_session_response_inline__links
+type NdmpSessionResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type NdmpSessionResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp session response links
-func (m *NdmpSessionResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp session response inline links
+func (m *NdmpSessionResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *NdmpSessionResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSessionResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NdmpSessionResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *NdmpSessionResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpSessionResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpSessionResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *NdmpSessionResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp session response links based on the context it is used
-func (m *NdmpSessionResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp session response inline links based on the context it is used
+func (m *NdmpSessionResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *NdmpSessionResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NdmpSessionResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSessionResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *NdmpSessionResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *NdmpSessionResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpSessionResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *NdmpSessionResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpSessionResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpSessionResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *NdmpSessionResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpSessionResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpSessionResponseLinks
+func (m *NdmpSessionResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpSessionResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

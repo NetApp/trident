@@ -18,7 +18,7 @@ import (
 type BackupNode struct {
 
 	// name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this backup node

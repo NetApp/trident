@@ -30,7 +30,7 @@ type ExportClients struct {
 	// * As a domain name preceded by the . character; for instance, .example.com
 	//
 	// Example: 0.0.0.0/0
-	Match string `json:"match,omitempty"`
+	Match *string `json:"match,omitempty"`
 }
 
 // Validate validates this export clients

@@ -18,6 +18,7 @@ var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get one or more resources from Trident",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		initCmdLogging()
 		err := discoverOperatingMode(cmd)
 		return err
 	},

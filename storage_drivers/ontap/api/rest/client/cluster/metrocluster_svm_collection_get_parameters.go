@@ -66,55 +66,55 @@ type MetroclusterSvmCollectionGetParams struct {
 
 	   Filter by cluster.name
 	*/
-	ClusterNameQueryParameter *string
+	ClusterName *string
 
 	/* ClusterUUID.
 
 	   Filter by cluster.uuid
 	*/
-	ClusterUUIDQueryParameter *string
+	ClusterUUID *string
 
 	/* ConfigurationState.
 
 	   Filter by configuration_state
 	*/
-	ConfigurationStateQueryParameter *string
+	ConfigurationState *string
 
 	/* FailedReason.
 
 	   Filter by failed_reason
 	*/
-	FailedReasonQueryParameter *string
+	FailedReason *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PartnerSvmName.
 
 	   Filter by partner_svm.name
 	*/
-	PartnerSVMNameQueryParameter *string
+	PartnerSvmName *string
 
 	/* PartnerSvmUUID.
 
 	   Filter by partner_svm.uuid
 	*/
-	PartnerSVMUUIDQueryParameter *string
+	PartnerSvmUUID *string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type MetroclusterSvmCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,19 +130,19 @@ type MetroclusterSvmCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -162,14 +162,14 @@ func (o *MetroclusterSvmCollectionGetParams) WithDefaults() *MetroclusterSvmColl
 // All values with no default are reset to their zero value.
 func (o *MetroclusterSvmCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MetroclusterSvmCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,147 +211,147 @@ func (o *MetroclusterSvmCollectionGetParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithClusterNameQueryParameter adds the clusterName to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithClusterNameQueryParameter(clusterName *string) *MetroclusterSvmCollectionGetParams {
-	o.SetClusterNameQueryParameter(clusterName)
+// WithClusterName adds the clusterName to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithClusterName(clusterName *string) *MetroclusterSvmCollectionGetParams {
+	o.SetClusterName(clusterName)
 	return o
 }
 
-// SetClusterNameQueryParameter adds the clusterName to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetClusterNameQueryParameter(clusterName *string) {
-	o.ClusterNameQueryParameter = clusterName
+// SetClusterName adds the clusterName to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetClusterName(clusterName *string) {
+	o.ClusterName = clusterName
 }
 
-// WithClusterUUIDQueryParameter adds the clusterUUID to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithClusterUUIDQueryParameter(clusterUUID *string) *MetroclusterSvmCollectionGetParams {
-	o.SetClusterUUIDQueryParameter(clusterUUID)
+// WithClusterUUID adds the clusterUUID to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithClusterUUID(clusterUUID *string) *MetroclusterSvmCollectionGetParams {
+	o.SetClusterUUID(clusterUUID)
 	return o
 }
 
-// SetClusterUUIDQueryParameter adds the clusterUuid to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetClusterUUIDQueryParameter(clusterUUID *string) {
-	o.ClusterUUIDQueryParameter = clusterUUID
+// SetClusterUUID adds the clusterUuid to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetClusterUUID(clusterUUID *string) {
+	o.ClusterUUID = clusterUUID
 }
 
-// WithConfigurationStateQueryParameter adds the configurationState to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithConfigurationStateQueryParameter(configurationState *string) *MetroclusterSvmCollectionGetParams {
-	o.SetConfigurationStateQueryParameter(configurationState)
+// WithConfigurationState adds the configurationState to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithConfigurationState(configurationState *string) *MetroclusterSvmCollectionGetParams {
+	o.SetConfigurationState(configurationState)
 	return o
 }
 
-// SetConfigurationStateQueryParameter adds the configurationState to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetConfigurationStateQueryParameter(configurationState *string) {
-	o.ConfigurationStateQueryParameter = configurationState
+// SetConfigurationState adds the configurationState to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetConfigurationState(configurationState *string) {
+	o.ConfigurationState = configurationState
 }
 
-// WithFailedReasonQueryParameter adds the failedReason to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithFailedReasonQueryParameter(failedReason *string) *MetroclusterSvmCollectionGetParams {
-	o.SetFailedReasonQueryParameter(failedReason)
+// WithFailedReason adds the failedReason to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithFailedReason(failedReason *string) *MetroclusterSvmCollectionGetParams {
+	o.SetFailedReason(failedReason)
 	return o
 }
 
-// SetFailedReasonQueryParameter adds the failedReason to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetFailedReasonQueryParameter(failedReason *string) {
-	o.FailedReasonQueryParameter = failedReason
+// SetFailedReason adds the failedReason to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetFailedReason(failedReason *string) {
+	o.FailedReason = failedReason
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterSvmCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithFields(fields []string) *MetroclusterSvmCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MetroclusterSvmCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithMaxRecords(maxRecords *int64) *MetroclusterSvmCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MetroclusterSvmCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithOrderBy(orderBy []string) *MetroclusterSvmCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPartnerSVMNameQueryParameter adds the partnerSvmName to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithPartnerSVMNameQueryParameter(partnerSvmName *string) *MetroclusterSvmCollectionGetParams {
-	o.SetPartnerSVMNameQueryParameter(partnerSvmName)
+// WithPartnerSvmName adds the partnerSvmName to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithPartnerSvmName(partnerSvmName *string) *MetroclusterSvmCollectionGetParams {
+	o.SetPartnerSvmName(partnerSvmName)
 	return o
 }
 
-// SetPartnerSVMNameQueryParameter adds the partnerSvmName to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetPartnerSVMNameQueryParameter(partnerSvmName *string) {
-	o.PartnerSVMNameQueryParameter = partnerSvmName
+// SetPartnerSvmName adds the partnerSvmName to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetPartnerSvmName(partnerSvmName *string) {
+	o.PartnerSvmName = partnerSvmName
 }
 
-// WithPartnerSVMUUIDQueryParameter adds the partnerSvmUUID to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithPartnerSVMUUIDQueryParameter(partnerSvmUUID *string) *MetroclusterSvmCollectionGetParams {
-	o.SetPartnerSVMUUIDQueryParameter(partnerSvmUUID)
+// WithPartnerSvmUUID adds the partnerSvmUUID to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithPartnerSvmUUID(partnerSvmUUID *string) *MetroclusterSvmCollectionGetParams {
+	o.SetPartnerSvmUUID(partnerSvmUUID)
 	return o
 }
 
-// SetPartnerSVMUUIDQueryParameter adds the partnerSvmUuid to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetPartnerSVMUUIDQueryParameter(partnerSvmUUID *string) {
-	o.PartnerSVMUUIDQueryParameter = partnerSvmUUID
+// SetPartnerSvmUUID adds the partnerSvmUuid to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetPartnerSvmUUID(partnerSvmUUID *string) {
+	o.PartnerSvmUUID = partnerSvmUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MetroclusterSvmCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithReturnRecords(returnRecords *bool) *MetroclusterSvmCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterSvmCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterSvmCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *MetroclusterSvmCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithSvmName(svmName *string) *MetroclusterSvmCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *MetroclusterSvmCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) WithSvmUUID(svmUUID *string) *MetroclusterSvmCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the metrocluster svm collection get params
-func (o *MetroclusterSvmCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the metrocluster svm collection get params
+func (o *MetroclusterSvmCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -362,13 +362,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.ClusterNameQueryParameter != nil {
+	if o.ClusterName != nil {
 
 		// query param cluster.name
 		var qrClusterName string
 
-		if o.ClusterNameQueryParameter != nil {
-			qrClusterName = *o.ClusterNameQueryParameter
+		if o.ClusterName != nil {
+			qrClusterName = *o.ClusterName
 		}
 		qClusterName := qrClusterName
 		if qClusterName != "" {
@@ -379,13 +379,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ClusterUUIDQueryParameter != nil {
+	if o.ClusterUUID != nil {
 
 		// query param cluster.uuid
 		var qrClusterUUID string
 
-		if o.ClusterUUIDQueryParameter != nil {
-			qrClusterUUID = *o.ClusterUUIDQueryParameter
+		if o.ClusterUUID != nil {
+			qrClusterUUID = *o.ClusterUUID
 		}
 		qClusterUUID := qrClusterUUID
 		if qClusterUUID != "" {
@@ -396,13 +396,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ConfigurationStateQueryParameter != nil {
+	if o.ConfigurationState != nil {
 
 		// query param configuration_state
 		var qrConfigurationState string
 
-		if o.ConfigurationStateQueryParameter != nil {
-			qrConfigurationState = *o.ConfigurationStateQueryParameter
+		if o.ConfigurationState != nil {
+			qrConfigurationState = *o.ConfigurationState
 		}
 		qConfigurationState := qrConfigurationState
 		if qConfigurationState != "" {
@@ -413,13 +413,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FailedReasonQueryParameter != nil {
+	if o.FailedReason != nil {
 
 		// query param failed_reason
 		var qrFailedReason string
 
-		if o.FailedReasonQueryParameter != nil {
-			qrFailedReason = *o.FailedReasonQueryParameter
+		if o.FailedReason != nil {
+			qrFailedReason = *o.FailedReason
 		}
 		qFailedReason := qrFailedReason
 		if qFailedReason != "" {
@@ -430,7 +430,7 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -441,13 +441,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -458,7 +458,7 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -469,13 +469,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.PartnerSVMNameQueryParameter != nil {
+	if o.PartnerSvmName != nil {
 
 		// query param partner_svm.name
 		var qrPartnerSvmName string
 
-		if o.PartnerSVMNameQueryParameter != nil {
-			qrPartnerSvmName = *o.PartnerSVMNameQueryParameter
+		if o.PartnerSvmName != nil {
+			qrPartnerSvmName = *o.PartnerSvmName
 		}
 		qPartnerSvmName := qrPartnerSvmName
 		if qPartnerSvmName != "" {
@@ -486,13 +486,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.PartnerSVMUUIDQueryParameter != nil {
+	if o.PartnerSvmUUID != nil {
 
 		// query param partner_svm.uuid
 		var qrPartnerSvmUUID string
 
-		if o.PartnerSVMUUIDQueryParameter != nil {
-			qrPartnerSvmUUID = *o.PartnerSVMUUIDQueryParameter
+		if o.PartnerSvmUUID != nil {
+			qrPartnerSvmUUID = *o.PartnerSvmUUID
 		}
 		qPartnerSvmUUID := qrPartnerSvmUUID
 		if qPartnerSvmUUID != "" {
@@ -503,13 +503,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -520,13 +520,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -537,13 +537,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -554,13 +554,13 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -579,7 +579,7 @@ func (o *MetroclusterSvmCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 
 // bindParamMetroclusterSvmCollectionGet binds the parameter fields
 func (o *MetroclusterSvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +596,7 @@ func (o *MetroclusterSvmCollectionGetParams) bindParamFields(formats strfmt.Regi
 
 // bindParamMetroclusterSvmCollectionGet binds the parameter order_by
 func (o *MetroclusterSvmCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

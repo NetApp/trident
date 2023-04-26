@@ -52,6 +52,10 @@ NetworkIPInterfacesCreateCreated describes a response with status code 201, with
 Created
 */
 type NetworkIPInterfacesCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this network Ip interfaces create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *NetworkIPInterfacesCreateCreated) String() string {
 }
 
 func (o *NetworkIPInterfacesCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }
@@ -167,6 +178,7 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 | 53281087 | Cannot configure SAN LIF on SVM. |
+| 53281106 | Failed checking the cluster capabilities. |
 */
 type NetworkIPInterfacesCreateDefault struct {
 	_statusCode int

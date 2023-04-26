@@ -88,7 +88,7 @@ func snapshotDelete(snapshotIDs []string) error {
 	for _, snapshotID := range snapshotIDs {
 		url := BaseURL() + "/snapshot/" + snapshotID
 
-		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil, Debug)
+		response, responseBody, err := api.InvokeRESTAPI("DELETE", url, nil)
 		if err != nil {
 			return err
 		} else if response.StatusCode != http.StatusOK {

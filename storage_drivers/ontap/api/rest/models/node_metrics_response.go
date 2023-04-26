@@ -22,13 +22,14 @@ import (
 type NodeMetricsResponse struct {
 
 	// links
-	Links *NodeMetricsResponseLinks `json:"_links,omitempty"`
+	Links *NodeMetricsResponseInlineLinks `json:"_links,omitempty"`
+
+	// node metrics response inline records
+	NodeMetricsResponseInlineRecords []*NodeMetricsResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NodeMetricsResponseRecordsItems0 `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this node metrics response
@@ -39,7 +40,7 @@ func (m *NodeMetricsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNodeMetricsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *NodeMetricsResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetricsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NodeMetricsResponse) validateNodeMetricsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NodeMetricsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NodeMetricsResponseInlineRecords); i++ {
+		if swag.IsZero(m.NodeMetricsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NodeMetricsResponseInlineRecords[i] != nil {
+			if err := m.NodeMetricsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *NodeMetricsResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNodeMetricsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *NodeMetricsResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NodeMetricsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeMetricsResponse) contextValidateNodeMetricsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NodeMetricsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NodeMetricsResponseInlineRecords[i] != nil {
+			if err := m.NodeMetricsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *NodeMetricsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetricsResponseLinks node metrics response links
+// NodeMetricsResponseInlineLinks node metrics response inline links
 //
-// swagger:model NodeMetricsResponseLinks
-type NodeMetricsResponseLinks struct {
+// swagger:model node_metrics_response_inline__links
+type NodeMetricsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type NodeMetricsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node metrics response links
-func (m *NodeMetricsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this node metrics response inline links
+func (m *NodeMetricsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *NodeMetricsResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetricsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *NodeMetricsResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetricsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *NodeMetricsResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node metrics response links based on the context it is used
-func (m *NodeMetricsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node metrics response inline links based on the context it is used
+func (m *NodeMetricsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *NodeMetricsResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NodeMetricsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *NodeMetricsResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *NodeMetricsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *NodeMetricsResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetricsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NodeMetricsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *NodeMetricsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetricsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NodeMetricsResponseLinks
+func (m *NodeMetricsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeMetricsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,28 +287,28 @@ func (m *NodeMetricsResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetricsResponseRecordsItems0 CPU performance for the nodes.
+// NodeMetricsResponseInlineRecordsInlineArrayItem CPU performance for the nodes.
 //
-// swagger:model NodeMetricsResponseRecordsItems0
-type NodeMetricsResponseRecordsItems0 struct {
+// swagger:model node_metrics_response_inline_records_inline_array_item
+type NodeMetricsResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *NodeMetricsResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT5M PT30M PT2H P1D]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Average CPU Utilization for the node
 	// Example: 13
-	ProcessorUtilization int64 `json:"processor_utilization,omitempty"`
+	ProcessorUtilization *int64 `json:"processor_utilization,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -316,11 +317,11 @@ type NodeMetricsResponseRecordsItems0 struct {
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this node metrics response records items0
-func (m *NodeMetricsResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this node metrics response inline records inline array item
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -345,7 +346,7 @@ func (m *NodeMetricsResponseRecordsItems0) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -362,7 +363,7 @@ func (m *NodeMetricsResponseRecordsItems0) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-var nodeMetricsResponseRecordsItems0TypeDurationPropEnum []interface{}
+var nodeMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -370,85 +371,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeMetricsResponseRecordsItems0TypeDurationPropEnum = append(nodeMetricsResponseRecordsItems0TypeDurationPropEnum, v)
+		nodeMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(nodeMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	NodeMetricsResponseRecordsItems0DurationPT15S string = "PT15S"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	NodeMetricsResponseRecordsItems0DurationPT5M string = "PT5M"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	NodeMetricsResponseRecordsItems0DurationPT30M string = "PT30M"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	NodeMetricsResponseRecordsItems0DurationPT2H string = "PT2H"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	NodeMetricsResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0DurationP1D captures enum value "P1D"
-	NodeMetricsResponseRecordsItems0DurationP1D string = "P1D"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	NodeMetricsResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 )
 
 // prop value enum
-func (m *NodeMetricsResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeMetricsResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeMetricsResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var nodeMetricsResponseRecordsItems0TypeStatusPropEnum []interface{}
+var nodeMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -456,135 +457,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeMetricsResponseRecordsItems0TypeStatusPropEnum = append(nodeMetricsResponseRecordsItems0TypeStatusPropEnum, v)
+		nodeMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(nodeMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusOk captures enum value "ok"
-	NodeMetricsResponseRecordsItems0StatusOk string = "ok"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusError captures enum value "error"
-	NodeMetricsResponseRecordsItems0StatusError string = "error"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	NodeMetricsResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	NodeMetricsResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	NodeMetricsResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	NodeMetricsResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	NodeMetricsResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	NodeMetricsResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NodeMetricsResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NodeMetricsResponseRecordsItems0
-	// NodeMetricsResponseRecordsItems0
+	// node_metrics_response_inline_records_inline_array_item
+	// NodeMetricsResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NodeMetricsResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NodeMetricsResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// NodeMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NodeMetricsResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *NodeMetricsResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeMetricsResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeMetricsResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -596,8 +597,8 @@ func (m *NodeMetricsResponseRecordsItems0) validateTimestamp(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this node metrics response records items0 based on the context it is used
-func (m *NodeMetricsResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node metrics response inline records inline array item based on the context it is used
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -610,7 +611,7 @@ func (m *NodeMetricsResponseRecordsItems0) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -625,7 +626,7 @@ func (m *NodeMetricsResponseRecordsItems0) contextValidateLinks(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetricsResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -633,8 +634,8 @@ func (m *NodeMetricsResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetricsResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res NodeMetricsResponseRecordsItems0
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NodeMetricsResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -642,17 +643,17 @@ func (m *NodeMetricsResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetricsResponseRecordsItems0Links node metrics response records items0 links
+// NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks node metrics response inline records inline array item inline links
 //
-// swagger:model NodeMetricsResponseRecordsItems0Links
-type NodeMetricsResponseRecordsItems0Links struct {
+// swagger:model node_metrics_response_inline_records_inline_array_item_inline__links
+type NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node metrics response records items0 links
-func (m *NodeMetricsResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this node metrics response inline records inline array item inline links
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -665,7 +666,7 @@ func (m *NodeMetricsResponseRecordsItems0Links) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -682,8 +683,8 @@ func (m *NodeMetricsResponseRecordsItems0Links) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this node metrics response records items0 links based on the context it is used
-func (m *NodeMetricsResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node metrics response inline records inline array item inline links based on the context it is used
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -696,7 +697,7 @@ func (m *NodeMetricsResponseRecordsItems0Links) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *NodeMetricsResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -711,7 +712,7 @@ func (m *NodeMetricsResponseRecordsItems0Links) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetricsResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -719,8 +720,8 @@ func (m *NodeMetricsResponseRecordsItems0Links) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetricsResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res NodeMetricsResponseRecordsItems0Links
+func (m *NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeMetricsResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

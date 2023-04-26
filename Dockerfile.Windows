@@ -4,23 +4,14 @@ ARG	ARCH
 FROM --platform=windows/${ARCH} mcr.microsoft.com/windows/servercore:${WINDOWS_VERSION} as add_on
 FROM --platform=windows/${ARCH} mcr.microsoft.com/windows/nanoserver:${WINDOWS_VERSION}
 
-ARG PORT=8000
-ENV PORT $PORT
-EXPOSE $PORT
 ARG BIN=trident_orchestrator.exe
-ENV BIN $BIN
 ARG CLI_BIN=tridentctl.exe
-ENV CLI_BIN $CLI_BIN
-ARG K8S=""
-ENV K8S $K8S
-ENV TRIDENT_IP localhost
-ENV TRIDENT_SERVER 127.0.0.1:$PORT
 
-COPY $BIN C:/
-COPY $CLI_BIN C:/
+COPY ${BIN} /trident_orchestrator.exe
+COPY ${CLI_BIN} /tridentctl.exe
 # This is required for unixsockets to work
 COPY --from=add_on /Windows/System32/netapi32.dll /Windows/System32/netapi32.dll
 
 USER ContainerAdministrator
 ENTRYPOINT ["trident_orchestrator.exe"]
-CMD ["-port", "$PORT", "-crd_persistence", "-k8s_api_server", "$K8S"]
+CMD ["-port", "${PORT}", "-crd_persistence"]

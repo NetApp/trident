@@ -19,11 +19,11 @@ import (
 type ChassisReference struct {
 
 	// links
-	Links *ChassisReferenceLinks `json:"_links,omitempty"`
+	Links *ChassisReferenceInlineLinks `json:"_links,omitempty"`
 
 	// id
 	// Example: 21352005981
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 }
 
 // Validate validates this chassis reference
@@ -103,17 +103,17 @@ func (m *ChassisReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisReferenceLinks chassis reference links
+// ChassisReferenceInlineLinks chassis reference inline links
 //
-// swagger:model ChassisReferenceLinks
-type ChassisReferenceLinks struct {
+// swagger:model chassis_reference_inline__links
+type ChassisReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this chassis reference links
-func (m *ChassisReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis reference inline links
+func (m *ChassisReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *ChassisReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ChassisReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *ChassisReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis reference links based on the context it is used
-func (m *ChassisReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis reference inline links based on the context it is used
+func (m *ChassisReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *ChassisReferenceLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ChassisReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *ChassisReferenceLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *ChassisReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *ChassisReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res ChassisReferenceLinks
+func (m *ChassisReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ChassisReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

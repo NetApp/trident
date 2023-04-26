@@ -18,16 +18,16 @@ import (
 // swagger:model cifs_domain_trust
 type CifsDomainTrust struct {
 
-	// Home Domain Name
-	//
-	HomeDomain string `json:"home_domain,omitempty"`
-
-	// node
-	Node *CifsDomainTrustNode `json:"node,omitempty"`
-
 	// Trusted Domain Name
 	//
-	TrustedDomains []string `json:"trusted_domains,omitempty"`
+	CifsDomainTrustInlineTrustedDomains []*string `json:"trusted_domains,omitempty"`
+
+	// Home Domain Name
+	//
+	HomeDomain *string `json:"home_domain,omitempty"`
+
+	// node
+	Node *CifsDomainTrustInlineNode `json:"node,omitempty"`
 }
 
 // Validate validates this cifs domain trust
@@ -107,25 +107,25 @@ func (m *CifsDomainTrust) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainTrustNode cifs domain trust node
+// CifsDomainTrustInlineNode cifs domain trust inline node
 //
-// swagger:model CifsDomainTrustNode
-type CifsDomainTrustNode struct {
+// swagger:model cifs_domain_trust_inline_node
+type CifsDomainTrustInlineNode struct {
 
 	// links
-	Links *CifsDomainTrustNodeLinks `json:"_links,omitempty"`
+	Links *CifsDomainTrustInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs domain trust node
-func (m *CifsDomainTrustNode) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain trust inline node
+func (m *CifsDomainTrustInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -138,7 +138,7 @@ func (m *CifsDomainTrustNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainTrustNode) validateLinks(formats strfmt.Registry) error {
+func (m *CifsDomainTrustInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -155,8 +155,8 @@ func (m *CifsDomainTrustNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs domain trust node based on the context it is used
-func (m *CifsDomainTrustNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain trust inline node based on the context it is used
+func (m *CifsDomainTrustInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -169,7 +169,7 @@ func (m *CifsDomainTrustNode) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *CifsDomainTrustNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainTrustInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -184,7 +184,7 @@ func (m *CifsDomainTrustNode) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainTrustNode) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainTrustInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -192,8 +192,8 @@ func (m *CifsDomainTrustNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainTrustNode) UnmarshalBinary(b []byte) error {
-	var res CifsDomainTrustNode
+func (m *CifsDomainTrustInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsDomainTrustInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -201,17 +201,17 @@ func (m *CifsDomainTrustNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainTrustNodeLinks cifs domain trust node links
+// CifsDomainTrustInlineNodeInlineLinks cifs domain trust inline node inline links
 //
-// swagger:model CifsDomainTrustNodeLinks
-type CifsDomainTrustNodeLinks struct {
+// swagger:model cifs_domain_trust_inline_node_inline__links
+type CifsDomainTrustInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain trust node links
-func (m *CifsDomainTrustNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain trust inline node inline links
+func (m *CifsDomainTrustInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -224,7 +224,7 @@ func (m *CifsDomainTrustNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainTrustNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainTrustInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -241,8 +241,8 @@ func (m *CifsDomainTrustNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs domain trust node links based on the context it is used
-func (m *CifsDomainTrustNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain trust inline node inline links based on the context it is used
+func (m *CifsDomainTrustInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -255,7 +255,7 @@ func (m *CifsDomainTrustNodeLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CifsDomainTrustNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainTrustInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -270,7 +270,7 @@ func (m *CifsDomainTrustNodeLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainTrustNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainTrustInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -278,8 +278,8 @@ func (m *CifsDomainTrustNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainTrustNodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainTrustNodeLinks
+func (m *CifsDomainTrustInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainTrustInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

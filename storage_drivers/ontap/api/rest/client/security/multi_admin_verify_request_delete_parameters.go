@@ -62,7 +62,7 @@ MultiAdminVerifyRequestDeleteParams contains all the parameters to send to the A
 type MultiAdminVerifyRequestDeleteParams struct {
 
 	// Index.
-	IndexPathParameter string
+	Index string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -117,15 +117,15 @@ func (o *MultiAdminVerifyRequestDeleteParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the multi admin verify request delete params
-func (o *MultiAdminVerifyRequestDeleteParams) WithIndexPathParameter(index string) *MultiAdminVerifyRequestDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the multi admin verify request delete params
+func (o *MultiAdminVerifyRequestDeleteParams) WithIndex(index string) *MultiAdminVerifyRequestDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the multi admin verify request delete params
-func (o *MultiAdminVerifyRequestDeleteParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the multi admin verify request delete params
+func (o *MultiAdminVerifyRequestDeleteParams) SetIndex(index string) {
+	o.Index = index
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -137,7 +137,7 @@ func (o *MultiAdminVerifyRequestDeleteParams) WriteToRequest(r runtime.ClientReq
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 

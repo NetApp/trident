@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime/debug"
@@ -14,14 +15,13 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	"github.com/netapp/trident/utils"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/utils"
 )
 
 func (d OntapAPIZAPI) SVMName() string {
@@ -36,7 +36,7 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 	}
 
 	if !d.SupportsFeature(ctx, MinimumONTAPIVersion) {
-		return errors.New("ONTAP 9.3 or later is required")
+		return errors.New("ONTAP 9.5 or later is required")
 	}
 
 	Logc(ctx).WithField("Ontapi", ontapVersion).Debug("ONTAP API version.")
@@ -45,15 +45,15 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 }
 
 func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "VolumeCreate",
-			"Type":   "OntapAPIZAPI",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> VolumeCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeCreate")
+	fields := LogFields{
+		"Method": "VolumeCreate",
+		"Type":   "OntapAPIZAPI",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
 	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
 		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
@@ -99,20 +99,19 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool
 }
 
 func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "VolumeInfo",
-			"Type":   "OntapAPIZAPI",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> VolumeInfo")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeInfo")
+	fields := LogFields{
+		"Method": "VolumeInfo",
+		"Type":   "OntapAPIZAPI",
+		"name":   name,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeInfo")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeInfo")
 
 	// Get Flexvol by name
 	volumeGetResponse, err := d.api.VolumeGet(name)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volumeGetResponse": volumeGetResponse,
 		"name":              name,
 		"err":               err,
@@ -132,19 +131,21 @@ func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, err
 }
 
 func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType) (*Volume, error) {
-	var responseAccessType string
-	var responseAggregates []string
-	var responseComment string
-	var responseExportPolicy string
-	var responseJunctionPath string
-	var responseName string
-	var responseSize string
-	var responseSnapdirAccessEnabled bool
-	var responseSnapshotPolicy string
-	var responseSnapshotReserveInt int
-	var responseSnapshotSpaceUsed int
-	var responseSpaceReserve string
-	var responseUnixPermissions string
+	var (
+		responseAccessType           string
+		responseAggregates           []string
+		responseComment              string
+		responseExportPolicy         string
+		responseJunctionPath         string
+		responseName                 string
+		responseSize                 string
+		responseSnapdirAccessEnabled bool
+		responseSnapshotPolicy       string
+		responseSnapshotReserveInt   int
+		responseSnapshotSpaceUsed    int
+		responseSpaceReserve         string
+		responseUnixPermissions      string
+	)
 
 	if volumeGetResponse.VolumeIdAttributesPtr != nil {
 		volumeIdAttributes := volumeGetResponse.VolumeIdAttributes()
@@ -252,7 +253,8 @@ func (d OntapAPIZAPI) NodeListSerialNumbers(ctx context.Context) ([]string, erro
 }
 
 type OntapAPIZAPI struct {
-	api ZapiClientInterface
+	api        ZapiClientInterface
+	driverName string
 }
 
 func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
@@ -270,7 +272,9 @@ func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint6
 	return lunMaxSize, nil
 }
 
-func (d OntapAPIZAPI) LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error {
+func (d OntapAPIZAPI) LunCloneCreate(
+	ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup,
+) error {
 	cloneResponse, err := d.api.LunCloneCreate(flexvol, source, lunName, qosPolicyGroup)
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
@@ -279,7 +283,7 @@ func (d OntapAPIZAPI) LunCloneCreate(ctx context.Context, flexvol, source, lunNa
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
 			return fmt.Errorf("snapshot does not exist in volume %s", source)
 		} else if zerr.IsFailedToLoadJobError() {
-			fields := log.Fields{
+			fields := LogFields{
 				"zerr": zerr,
 			}
 			Logc(ctx).WithFields(fields).Warn(
@@ -294,12 +298,6 @@ func (d OntapAPIZAPI) LunCloneCreate(ctx context.Context, flexvol, source, lunNa
 		}
 	}
 	return nil
-}
-
-func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
-	// ParseLunComment shouldn't be called as it isn't needed for ZAPI
-	Logc(ctx).Info("Not implemented")
-	return nil, nil
 }
 
 func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error) {
@@ -327,15 +325,14 @@ func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "LunCreate",
-			"Type":   "OntapAPIZAPI",
-			"spec":   lun,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCreate")
+	fields := LogFields{
+		"Method": "LunCreate",
+		"Type":   "OntapAPIZAPI",
+		"spec":   lun,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -376,7 +373,7 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
 	offlineResponse, err := d.api.LunOffline(lunPath)
 	if err != nil {
-		fields := log.Fields{"LUN": lunPath, "offlineResponse": offlineResponse}
+		fields := LogFields{"LUN": lunPath, "offlineResponse": offlineResponse}
 		Logc(ctx).WithFields(fields).Errorf("Error LUN offline failed: %v", err)
 		return err
 	}
@@ -384,19 +381,33 @@ func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
 	return err
 }
 
-func (d OntapAPIZAPI) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
-	// TODO: refactor, this is specifically for getting the fstype
-	var fstype string
-	parse := false
+func (d OntapAPIZAPI) LunGetFSType(ctx context.Context, lunPath string) (string, error) {
+	// Get the fstype from LUN Attribute
 	LUNAttributeFSType := "com.netapp.ndvp.fstype"
-	attrResponse, err := d.api.LunGetAttribute(lunPath, LUNAttributeFSType)
-	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
-		return "", parse, err
-	} else {
-		fstype = attrResponse.Result.Value()
-		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	fstype, err := d.api.LunGetAttribute(ctx, lunPath, LUNAttributeFSType)
+	if err != nil {
+		// If not found, extract the fstype from LUN Comment
+		comment, err := d.api.LunGetComment(ctx, lunPath)
+		if err != nil {
+			return "", err
+		}
+
+		// Parse the comment to get fstype value
+		var lunComment map[string]map[string]string
+		err = json.Unmarshal([]byte(comment), &lunComment)
+		if err != nil {
+			return "", err
+		}
+		lunAttrs := lunComment["lunAttributes"]
+		if err == nil && lunAttrs != nil {
+			fstype = lunAttrs["fstype"]
+		} else {
+			return "", fmt.Errorf("lunAttributes field not found in LUN comment")
+		}
 	}
-	return fstype, parse, nil
+
+	Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	return fstype, nil
 }
 
 func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
@@ -434,15 +445,16 @@ func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "LunGetByName",
-			"Type":    "OntapAPIZAPI",
-			"LunPath": name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
+	fields := LogFields{
+		"Method":  "LunGetByName",
+		"Type":    "OntapAPIZAPI",
+		"LunPath": name,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
+
 	lunResponse, err := d.api.LunGet(name)
 	if err != nil || lunResponse == nil {
 		return nil, fmt.Errorf("could not get LUN by name %v, error: %v", name, err)
@@ -526,8 +538,8 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		SerialNumber:   responseSerial,
 		State:          responseState,
 		VolumeName:     responseVolumeName,
-		SpaceReserved:  ToBoolPointer(responseSpaceReserved),
-		SpaceAllocated: ToBoolPointer(responseSpaceAllocated),
+		SpaceReserved:  utils.Ptr(responseSpaceReserved),
+		SpaceAllocated: utils.Ptr(responseSpaceAllocated),
 	}
 	return lunInfo, nil
 }
@@ -640,11 +652,25 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 }
 
 func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
+	fields := LogFields{
+		"LUN":    lunPath,
+		"igroup": initiatorGroupName,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> LunUnmap.")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunUnmap.")
+
 	apiResponse, err := d.api.LunUnmap(initiatorGroupName, lunPath)
 	err = azgo.GetError(ctx, apiResponse, err)
+	if zerr := azgo.NewZapiError(apiResponse); zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_LUNMAP {
+		// IGroup is not mapped to LUN, return success.
+		Logc(ctx).WithFields(fields).Debug("Igroup is not mapped to LUN; returning success.")
+		return nil
+	}
 	if err != nil {
 		msg := "error unmapping LUN"
-		Logc(ctx).WithError(err).Error(msg)
+		Logc(ctx).WithFields(fields).WithError(err).Error(msg)
 		return fmt.Errorf(msg)
 	}
 	return nil
@@ -722,10 +748,10 @@ func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, init
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
-	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+	} else if zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) already exists.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"igroup": initiatorGroupName,
 			"error":  err.Error(),
 		}).Error("Initiator group (igroup) could not be created.")
@@ -741,10 +767,10 @@ func (d OntapAPIZAPI) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
-	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
+	} else if zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) currently in use.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"igroup": initiatorGroupName,
 			"error":  err.Error(),
 		}).Error("Initiator group (igroup) could not be deleted.")
@@ -758,7 +784,7 @@ func (d OntapAPIZAPI) EnsureIgroupAdded(ctx context.Context, initiatorGroupName,
 	err = azgo.GetError(ctx, response, err)
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"IQN":    initiator,
 			"igroup": initiatorGroupName,
 		}).Debug("Host IQN already in igroup.")
@@ -773,7 +799,7 @@ func (d OntapAPIZAPI) IgroupRemove(ctx context.Context, initiatorGroupName, init
 	err = azgo.GetError(ctx, response, err)
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"IQN":    initiator,
 			"igroup": initiatorGroupName,
 		}).Debug("Host IQN not in igroup.")
@@ -859,9 +885,10 @@ func NewOntapAPIZAPIFromZapiClientInterface(zapiClient ZapiClientInterface) (Ont
 }
 
 // NewZAPIClient is a factory method for creating a new instance
-func NewZAPIClient(config ClientConfig, SVM string) *Client {
+func NewZAPIClient(config ClientConfig, SVM, driverName string) *Client {
 	d := &Client{
-		config: config,
+		driverName: driverName,
+		config:     config,
 		zr: &azgo.ZapiRunner{
 			ManagementLIF:        config.ManagementLIF,
 			SVM:                  SVM,
@@ -890,7 +917,7 @@ func NewZAPIClientFromOntapConfig(
 		ContextBasedZapiRecords: numRecords,
 		TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 		DebugTraceFlags:         ontapConfig.DebugTraceFlags,
-	}, ontapConfig.SVM)
+	}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 
 	if ontapConfig.SVM != "" {
 
@@ -921,11 +948,11 @@ func NewZAPIClientFromOntapConfig(
 			ContextBasedZapiRecords: numRecords,
 			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
-		}, ontapConfig.SVM)
+		}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 		client.SetSVMUUID(svmUUID)
 		client.SetSVMMCC(mcc)
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"SVM":  ontapConfig.SVM,
 			"UUID": client.SVMUUID(),
 			"MCC":  client.SVMMCC(),
@@ -964,11 +991,11 @@ func NewZAPIClientFromOntapConfig(
 			ContextBasedZapiRecords: numRecords,
 			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
-		}, ontapConfig.SVM)
+		}, ontapConfig.SVM, ontapConfig.StorageDriverName)
 		client.SetSVMUUID(svmUUID)
 		client.SetSVMMCC(mcc)
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"SVM":  ontapConfig.SVM,
 			"UUID": client.SVMUUID(),
 			"MCC":  client.SVMMCC(),
@@ -1009,7 +1036,7 @@ func (d OntapAPIZAPI) EmsAutosupportLog(
 	)
 
 	if err = azgo.GetError(ctx, emsResponse, err); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"driver": driverName,
 			"error":  err,
 		}).Error("Error logging EMS message.")
@@ -1027,15 +1054,15 @@ func (d OntapAPIZAPI) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "FlexgroupCreate",
-			"Type":   "OntapAPIZAPI",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupCreate")
+	fields := LogFields{
+		"Method": "FlexgroupCreate",
+		"Type":   "OntapAPIZAPI",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
 	sizeBytes, err := strconv.ParseUint(volume.Size, 10, 64)
 	if err != nil {
@@ -1083,20 +1110,20 @@ func (d OntapAPIZAPI) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Contex
 }
 
 func (d OntapAPIZAPI) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "FlexgroupInfo",
-			"Type":   "OntapAPIZAPI",
-			"name":   volumeName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupInfo")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupInfo")
+	fields := LogFields{
+		"Method": "FlexgroupInfo",
+		"Type":   "OntapAPIZAPI",
+		"name":   volumeName,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupInfo")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupInfo")
 
 	// Get Flexvol by name
 	flexGroupGetResponse, err := d.api.FlexGroupGet(volumeName)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"flexGroupGetResponse": flexGroupGetResponse,
 		"name":                 volumeName,
 		"err":                  err,
@@ -1361,7 +1388,7 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 				continue
 			}
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"aggrName":                            aggrName,
 				"size":                                aggrSpace.AggregateSize(),
 				"volumeFootprints":                    aggrSpace.VolumeFootprints(),
@@ -1395,8 +1422,10 @@ func (d OntapAPIZAPI) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, 
 func (d OntapAPIZAPI) VolumeMount(ctx context.Context, name, junctionPath string) error {
 	mountResponse, err := d.api.VolumeMount(name, junctionPath)
 	if err = azgo.GetError(ctx, mountResponse, err); err != nil {
-		if err.(azgo.ZapiError).Code() == azgo.EAPIERROR {
-			return ApiError(fmt.Sprintf("%v", err))
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
 		}
 		return fmt.Errorf("error mounting volume to junction: %v", err)
 	}
@@ -1528,12 +1557,19 @@ func (d OntapAPIZAPI) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 	return volumes, nil
 }
 
-func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule string) error {
-	ruleResponse, err := d.api.ExportRuleCreate(policyName, desiredPolicyRule,
-		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule, nasProtocol string) error {
+	var ruleResponse *azgo.ExportRuleCreateResponse
+	var err error
+	if nasProtocol == sa.SMB {
+		ruleResponse, err = d.api.ExportRuleCreate(policyName, desiredPolicyRule,
+			[]string{"cifs"}, []string{"any"}, []string{"any"}, []string{"any"})
+	} else {
+		ruleResponse, err = d.api.ExportRuleCreate(policyName, desiredPolicyRule,
+			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+	}
 	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error creating export rule: %v", err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"ClientMatch":  desiredPolicyRule,
 		}).Error(err)
@@ -1550,7 +1586,7 @@ func (d OntapAPIZAPI) ExportRuleDestroy(ctx context.Context, policyName string, 
 	ruleResponse, err := d.api.ExportRuleDestroy(policyName, ruleIndex)
 	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"RuleIndex":    ruleIndex,
 		}).Error(err)
@@ -1873,7 +1909,7 @@ func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
 				return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, sourceName)
 			} else if zerr.IsFailedToLoadJobError() {
-				fields := log.Fields{
+				fields := LogFields{
 					"zerr": zerr,
 				}
 				Logc(ctx).WithFields(fields).Warn(
@@ -1971,7 +2007,7 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(
 	childVolumes, err := d.api.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName":     snapshotName,
 			"parentVolumeName": sourceVolume,
 			"error":            err,
@@ -1988,26 +2024,26 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error {
-	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName)
-	if err != nil && snapDeleteResponse != nil {
-		if snapDeleteResponse.Result.ResultErrnoAttr == azgo.EOBJECTNOTFOUND {
-			return NotFoundError(fmt.Sprintf("Error deleting snapmirror info for volume %v: %v", localFlexvolName, err))
-		} else {
-			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localFlexvolName, err)
+func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(
+	ctx context.Context, localInternalVolumeName, localSVMName string,
+) error {
+	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName)
+	if snapDeleteResponse != nil {
+		if snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
+			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
 		}
 	}
 
 	// Ensure no leftover snapmirror metadata
-	err = d.api.SnapmirrorRelease(localFlexvolName, localSVMName)
+	err = d.api.SnapmirrorRelease(localInternalVolumeName, localSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localFlexvolName, err)
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName, err)
 	}
 
 	return nil
 }
 
-func (d OntapAPIZAPI) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
+func (d OntapAPIZAPI) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
 	if err != nil {
@@ -2034,10 +2070,10 @@ func (d OntapAPIZAPI) SVMUUID() string {
 }
 
 func (d OntapAPIZAPI) SnapmirrorCreate(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,
 ) error {
-	snapCreate, err := d.api.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+	snapCreate, err := d.api.SnapmirrorCreate(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule)
 	if err = azgo.GetError(ctx, snapCreate, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); !ok || zerr.Code() != azgo.EDUPLICATEENTRY {
@@ -2049,14 +2085,15 @@ func (d OntapAPIZAPI) SnapmirrorCreate(
 }
 
 func (d OntapAPIZAPI) SnapmirrorGet(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	snapmirrorResponse, err := d.api.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapmirrorResponse, err := d.api.SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
 	if err = azgo.GetError(ctx, snapmirrorResponse, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
-				return nil, NotFoundError(fmt.Sprintf("Error on snapmirror get"))
+				return nil, NotFoundError("Error on snapmirror get")
 			}
 			if !zerr.IsPassed() {
 				Logc(ctx).WithError(err).Error("Error on snapmirror get")
@@ -2117,10 +2154,10 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 }
 
 func (d OntapAPIZAPI) SnapmirrorInitialize(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	_, err := d.api.SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	_, err := d.api.SnapmirrorInitialize(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		if zerr, ok := err.(azgo.ZapiError); ok {
 			if !zerr.IsPassed() {
@@ -2138,10 +2175,11 @@ func (d OntapAPIZAPI) SnapmirrorInitialize(
 }
 
 func (d OntapAPIZAPI) SnapmirrorDelete(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapDelete, deleteErr := d.api.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapDelete, deleteErr := d.api.SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
 	if deleteErr = azgo.GetError(ctx, snapDelete, deleteErr); deleteErr != nil {
 		Logc(ctx).WithError(deleteErr).Warn("Error on snapmirror delete")
 	}
@@ -2149,16 +2187,16 @@ func (d OntapAPIZAPI) SnapmirrorDelete(
 }
 
 func (d OntapAPIZAPI) SnapmirrorResync(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapResync, err := d.api.SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapResync, err := d.api.SnapmirrorResync(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapResync, err); err != nil {
 		if zerr, ok := err.(azgo.ZapiError); !ok || zerr.Code() != azgo.ETRANSFERINPROGRESS {
 			Logc(ctx).WithError(err).Error("Error on snapmirror resync")
 			// If we fail on the resync, we need to cleanup the snapmirror
 			// it will be recreated in a future TMR reconcile loop through this function
-			if delError := d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
+			if delError := d.SnapmirrorDelete(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
 				remoteSVMName); delError != nil {
 				Logc(ctx).WithError(delError).Error("Error on snapmirror delete following a resync failure")
 			}
@@ -2204,20 +2242,28 @@ func (d OntapAPIZAPI) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy
 		}
 	}
 
-	snapmirrorPolicy.Rules = rules
+	snapmirrorPolicy.CopyAllSnapshots = false
+	for rule := range rules {
+		if rule == SnapmirrorPolicyRuleAll {
+			snapmirrorPolicy.CopyAllSnapshots = true
+			break
+		}
+	}
 
 	return snapmirrorPolicy, nil
 }
 
 func (d OntapAPIZAPI) SnapmirrorQuiesce(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapQuiesce, err := d.api.SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapQuiesce, err := d.api.SnapmirrorQuiesce(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapQuiesce, err); err != nil {
 		Logc(ctx).WithError(err).Error("Error on snapmirror quiesce")
-		if err.(azgo.ZapiError).Code() == azgo.EAPIERROR {
-			err = NotReadyError(fmt.Sprintf("Snapmirror quiesce failed: %v", err.Error()))
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				err = NotReadyError(fmt.Sprintf("Snapmirror quiesce failed: %v", err.Error()))
+			}
 		}
 		return err
 	}
@@ -2225,10 +2271,10 @@ func (d OntapAPIZAPI) SnapmirrorQuiesce(
 }
 
 func (d OntapAPIZAPI) SnapmirrorAbort(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	snapAbort, err := d.api.SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapAbort, err := d.api.SnapmirrorAbort(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err = azgo.GetError(ctx, snapAbort, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)
 		if !ok || zerr.Code() != azgo.ENOTRANSFERINPROGRESS {
@@ -2240,14 +2286,14 @@ func (d OntapAPIZAPI) SnapmirrorAbort(
 }
 
 func (d OntapAPIZAPI) SnapmirrorBreak(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, snapshotName string,
 ) error {
-	snapBreak, err := d.api.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+	snapBreak, err := d.api.SnapmirrorBreak(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		snapshotName)
 	if err = azgo.GetError(ctx, snapBreak, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)
-		if zerr.Code() == azgo.EAPIERROR {
+		if ok && zerr.Code() == azgo.EAPIERROR {
 			return NotReadyError(fmt.Sprintf("Snapmirror break failed: %v", err.Error()))
 		}
 		if !ok || zerr.Code() != azgo.EDEST_ISNOT_DP_VOLUME {
@@ -2258,16 +2304,52 @@ func (d OntapAPIZAPI) SnapmirrorBreak(
 	return nil
 }
 
-func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) error {
+func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
 	exists, err := d.api.JobScheduleExists(ctx, replicationSchedule)
 	if err != nil {
-		return fmt.Errorf("failed to list job schedules: %v", err)
+		return false, fmt.Errorf("failed to list job schedules: %v", err)
 	} else if !exists {
-		return fmt.Errorf("specified replicationSchedule %v does not exist", replicationSchedule)
+		return false, fmt.Errorf("specified replicationSchedule %v does not exist", replicationSchedule)
 	}
-	return nil
+	return true, nil
 }
 
 func (d OntapAPIZAPI) GetSVMPeers(ctx context.Context) ([]string, error) {
 	return d.api.GetPeeredVservers(ctx)
+}
+
+func (d OntapAPIZAPI) SMBShareCreate(ctx context.Context, shareName, path string) error {
+	shareCreateResponse, err := d.api.SMBShareCreate(shareName, path)
+	if err = azgo.GetError(ctx, shareCreateResponse, err); err != nil {
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
+		return fmt.Errorf("error while creating SMB share %v: %v", shareName, err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIZAPI) SMBShareExists(ctx context.Context, shareName string) (bool, error) {
+	response, err := d.api.SMBShareExists(shareName)
+	if err != nil {
+		return false, fmt.Errorf("error while checking SMB share %v : %v", shareName, err)
+	}
+
+	return response, nil
+}
+
+func (d OntapAPIZAPI) SMBShareDestroy(ctx context.Context, shareName string) error {
+	shareDestroyResponse, err := d.api.SMBShareDestroy(shareName)
+	if err = azgo.GetError(ctx, shareDestroyResponse, err); err != nil {
+		if zerr, ok := err.(azgo.ZapiError); ok {
+			if zerr.Code() == azgo.EAPIERROR {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
+		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
+	}
+	return nil
 }

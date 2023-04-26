@@ -66,13 +66,13 @@ type MetroclusterDiagnosticsCreateParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Schedule.
 
 	   Shows the minutes of every hour when a job runs. Setting this parameter schedules the periodic job to be run to perform MetroCluster diagnostic.
 	*/
-	ScheduleQueryParameter *int64
+	Schedule *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *MetroclusterDiagnosticsCreateParams) WithDefaults() *MetroclusterDiagno
 // All values with no default are reset to their zero value.
 func (o *MetroclusterDiagnosticsCreateParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := MetroclusterDiagnosticsCreateParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -138,26 +138,26 @@ func (o *MetroclusterDiagnosticsCreateParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster diagnostics create params
-func (o *MetroclusterDiagnosticsCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterDiagnosticsCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the metrocluster diagnostics create params
+func (o *MetroclusterDiagnosticsCreateParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterDiagnosticsCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster diagnostics create params
-func (o *MetroclusterDiagnosticsCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the metrocluster diagnostics create params
+func (o *MetroclusterDiagnosticsCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScheduleQueryParameter adds the schedule to the metrocluster diagnostics create params
-func (o *MetroclusterDiagnosticsCreateParams) WithScheduleQueryParameter(schedule *int64) *MetroclusterDiagnosticsCreateParams {
-	o.SetScheduleQueryParameter(schedule)
+// WithSchedule adds the schedule to the metrocluster diagnostics create params
+func (o *MetroclusterDiagnosticsCreateParams) WithSchedule(schedule *int64) *MetroclusterDiagnosticsCreateParams {
+	o.SetSchedule(schedule)
 	return o
 }
 
-// SetScheduleQueryParameter adds the schedule to the metrocluster diagnostics create params
-func (o *MetroclusterDiagnosticsCreateParams) SetScheduleQueryParameter(schedule *int64) {
-	o.ScheduleQueryParameter = schedule
+// SetSchedule adds the schedule to the metrocluster diagnostics create params
+func (o *MetroclusterDiagnosticsCreateParams) SetSchedule(schedule *int64) {
+	o.Schedule = schedule
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,13 +168,13 @@ func (o *MetroclusterDiagnosticsCreateParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -185,13 +185,13 @@ func (o *MetroclusterDiagnosticsCreateParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScheduleQueryParameter != nil {
+	if o.Schedule != nil {
 
 		// query param schedule
 		var qrSchedule int64
 
-		if o.ScheduleQueryParameter != nil {
-			qrSchedule = *o.ScheduleQueryParameter
+		if o.Schedule != nil {
+			qrSchedule = *o.Schedule
 		}
 		qSchedule := swag.FormatInt64(qrSchedule)
 		if qSchedule != "" {

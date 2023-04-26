@@ -22,17 +22,7 @@ import (
 type Portset struct {
 
 	// links
-	Links *PortsetLinks `json:"_links,omitempty"`
-
-	// An array initiator groups to which the portset is bound.
-	//
-	// Read Only: true
-	Igroups []*PortsetIgroupsItems0 `json:"igroups,omitempty"`
-
-	// An array of network interfaces that are members of the portset. These are the only network interfaces through which the initiators of a bound igroup can access mapped LUNs.<br/>
-	// Zero or more network interfaces can be supplied when the portset is created. After creation, network interfaces can be added or removed from the portset using the `/protocols/san/portsets/{portset.uuid}/interfaces` endpoint. See [`POST /protocols/san/portsets/{portset.uuid}/interfaces`](#/SAN/portset_interface_create) and [`DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}`](#/SAN/portset_interface_delete) for more details.
-	//
-	Interfaces []*PortsetInterfacesItems0 `json:"interfaces,omitempty"`
+	Links *PortsetInlineLinks `json:"_links,omitempty"`
 
 	// The name of the portset. Required in POST.<br/>
 	// The name of a portset cannot be changed after creation.
@@ -40,7 +30,17 @@ type Portset struct {
 	// Example: portset1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// An array initiator groups to which the portset is bound.
+	//
+	// Read Only: true
+	PortsetInlineIgroups []*PortsetInlineIgroupsInlineArrayItem `json:"igroups,omitempty"`
+
+	// An array of network interfaces that are members of the portset. These are the only network interfaces through which the initiators of a bound igroup can access mapped LUNs.<br/>
+	// Zero or more network interfaces can be supplied when the portset is created. After creation, network interfaces can be added or removed from the portset using the `/protocols/san/portsets/{portset.uuid}/interfaces` endpoint. See [`POST /protocols/san/portsets/{portset.uuid}/interfaces`](#/SAN/portset_interface_create) and [`DELETE /protocols/san/portsets/{portset.uuid}/interfaces/{uuid}`](#/SAN/portset_interface_delete) for more details.
+	//
+	PortsetInlineInterfaces []*PortsetInlineInterfacesInlineArrayItem `json:"interfaces,omitempty"`
 
 	// The protocols supported by the portset. This restricts the type of network interfaces that can be added to the portset. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of a portset cannot be changed after creation.
@@ -49,13 +49,13 @@ type Portset struct {
 	Protocol *string `json:"protocol,omitempty"`
 
 	// svm
-	Svm *PortsetSvm `json:"svm,omitempty"`
+	Svm *PortsetInlineSvm `json:"svm,omitempty"`
 
 	// The unique identifier for a portset.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this portset
@@ -66,15 +66,15 @@ func (m *Portset) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateIgroups(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateInterfaces(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortsetInlineIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortsetInlineInterfaces(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -109,18 +109,34 @@ func (m *Portset) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Portset) validateIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroups) { // not required
+func (m *Portset) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
-		if swag.IsZero(m.Igroups[i]) { // not required
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Portset) validatePortsetInlineIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.PortsetInlineIgroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PortsetInlineIgroups); i++ {
+		if swag.IsZero(m.PortsetInlineIgroups[i]) { // not required
 			continue
 		}
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].Validate(formats); err != nil {
+		if m.PortsetInlineIgroups[i] != nil {
+			if err := m.PortsetInlineIgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -133,18 +149,18 @@ func (m *Portset) validateIgroups(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Portset) validateInterfaces(formats strfmt.Registry) error {
-	if swag.IsZero(m.Interfaces) { // not required
+func (m *Portset) validatePortsetInlineInterfaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.PortsetInlineInterfaces) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Interfaces); i++ {
-		if swag.IsZero(m.Interfaces[i]) { // not required
+	for i := 0; i < len(m.PortsetInlineInterfaces); i++ {
+		if swag.IsZero(m.PortsetInlineInterfaces[i]) { // not required
 			continue
 		}
 
-		if m.Interfaces[i] != nil {
-			if err := m.Interfaces[i].Validate(formats); err != nil {
+		if m.PortsetInlineInterfaces[i] != nil {
+			if err := m.PortsetInlineInterfaces[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
 				}
@@ -152,22 +168,6 @@ func (m *Portset) validateInterfaces(formats strfmt.Registry) error {
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *Portset) validateName(formats strfmt.Registry) error {
-	if swag.IsZero(m.Name) { // not required
-		return nil
-	}
-
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
-		return err
 	}
 
 	return nil
@@ -264,11 +264,11 @@ func (m *Portset) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+	if err := m.contextValidatePortsetInlineIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateInterfaces(ctx, formats); err != nil {
+	if err := m.contextValidatePortsetInlineInterfaces(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -300,16 +300,16 @@ func (m *Portset) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *Portset) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *Portset) contextValidatePortsetInlineIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroups", "body", []*PortsetIgroupsItems0(m.Igroups)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroups", "body", []*PortsetInlineIgroupsInlineArrayItem(m.PortsetInlineIgroups)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
+	for i := 0; i < len(m.PortsetInlineIgroups); i++ {
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+		if m.PortsetInlineIgroups[i] != nil {
+			if err := m.PortsetInlineIgroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -322,12 +322,12 @@ func (m *Portset) contextValidateIgroups(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *Portset) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
+func (m *Portset) contextValidatePortsetInlineInterfaces(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Interfaces); i++ {
+	for i := 0; i < len(m.PortsetInlineInterfaces); i++ {
 
-		if m.Interfaces[i] != nil {
-			if err := m.Interfaces[i].ContextValidate(ctx, formats); err != nil {
+		if m.PortsetInlineInterfaces[i] != nil {
+			if err := m.PortsetInlineInterfaces[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
 				}
@@ -356,7 +356,7 @@ func (m *Portset) contextValidateSvm(ctx context.Context, formats strfmt.Registr
 
 func (m *Portset) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -381,29 +381,29 @@ func (m *Portset) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetIgroupsItems0 portset igroups items0
+// PortsetInlineIgroupsInlineArrayItem portset inline igroups inline array item
 //
-// swagger:model PortsetIgroupsItems0
-type PortsetIgroupsItems0 struct {
+// swagger:model portset_inline_igroups_inline_array_item
+type PortsetInlineIgroupsInlineArrayItem struct {
 
 	// links
-	Links *PortsetIgroupsItems0Links `json:"_links,omitempty"`
+	Links *PortsetInlineIgroupsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this portset igroups items0
-func (m *PortsetIgroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline igroups inline array item
+func (m *PortsetInlineIgroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -420,7 +420,7 @@ func (m *PortsetIgroupsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetIgroupsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PortsetInlineIgroupsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -437,24 +437,24 @@ func (m *PortsetIgroupsItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetIgroupsItems0) validateName(formats strfmt.Registry) error {
+func (m *PortsetInlineIgroupsInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this portset igroups items0 based on the context it is used
-func (m *PortsetIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline igroups inline array item based on the context it is used
+func (m *PortsetInlineIgroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -467,7 +467,7 @@ func (m *PortsetIgroupsItems0) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *PortsetIgroupsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineIgroupsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -482,7 +482,7 @@ func (m *PortsetIgroupsItems0) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetIgroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineIgroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -490,8 +490,8 @@ func (m *PortsetIgroupsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetIgroupsItems0) UnmarshalBinary(b []byte) error {
-	var res PortsetIgroupsItems0
+func (m *PortsetInlineIgroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineIgroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -499,17 +499,17 @@ func (m *PortsetIgroupsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetIgroupsItems0Links portset igroups items0 links
+// PortsetInlineIgroupsInlineArrayItemInlineLinks portset inline igroups inline array item inline links
 //
-// swagger:model PortsetIgroupsItems0Links
-type PortsetIgroupsItems0Links struct {
+// swagger:model portset_inline_igroups_inline_array_item_inline__links
+type PortsetInlineIgroupsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset igroups items0 links
-func (m *PortsetIgroupsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline igroups inline array item inline links
+func (m *PortsetInlineIgroupsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -522,7 +522,7 @@ func (m *PortsetIgroupsItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetIgroupsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInlineIgroupsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -539,8 +539,8 @@ func (m *PortsetIgroupsItems0Links) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this portset igroups items0 links based on the context it is used
-func (m *PortsetIgroupsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline igroups inline array item inline links based on the context it is used
+func (m *PortsetInlineIgroupsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -553,7 +553,7 @@ func (m *PortsetIgroupsItems0Links) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *PortsetIgroupsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineIgroupsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -568,7 +568,7 @@ func (m *PortsetIgroupsItems0Links) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetIgroupsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineIgroupsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -576,8 +576,8 @@ func (m *PortsetIgroupsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetIgroupsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PortsetIgroupsItems0Links
+func (m *PortsetInlineIgroupsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineIgroupsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -585,29 +585,29 @@ func (m *PortsetIgroupsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0 A container for either a Fibre Channel network interface or an IP network interface. On POST `fc` and `ip` are mutually exclusive.
+// PortsetInlineInterfacesInlineArrayItem A container for either a Fibre Channel network interface or an IP network interface. On POST `fc` and `ip` are mutually exclusive.
 //
-// swagger:model PortsetInterfacesItems0
-type PortsetInterfacesItems0 struct {
+// swagger:model portset_inline_interfaces_inline_array_item
+type PortsetInlineInterfacesInlineArrayItem struct {
 
 	// links
-	Links *PortsetInterfacesItems0Links `json:"_links,omitempty"`
+	Links *PortsetInlineInterfacesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// fc
-	Fc *PortsetInterfacesItems0Fc `json:"fc,omitempty"`
+	Fc *PortsetInlineInterfacesInlineArrayItemInlineFc `json:"fc,omitempty"`
 
 	// ip
-	IP *PortsetInterfacesItems0IP `json:"ip,omitempty"`
+	IP *PortsetInlineInterfacesInlineArrayItemInlineIP `json:"ip,omitempty"`
 
 	// The unique identifier of the network interface.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this portset interfaces items0
-func (m *PortsetInterfacesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item
+func (m *PortsetInlineInterfacesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -628,7 +628,7 @@ func (m *PortsetInterfacesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -645,7 +645,7 @@ func (m *PortsetInterfacesItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) validateFc(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) validateFc(formats strfmt.Registry) error {
 	if swag.IsZero(m.Fc) { // not required
 		return nil
 	}
@@ -662,7 +662,7 @@ func (m *PortsetInterfacesItems0) validateFc(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) validateIP(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -679,8 +679,8 @@ func (m *PortsetInterfacesItems0) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 based on the context it is used
-func (m *PortsetInterfacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -705,7 +705,7 @@ func (m *PortsetInterfacesItems0) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -719,7 +719,7 @@ func (m *PortsetInterfacesItems0) contextValidateLinks(ctx context.Context, form
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) contextValidateFc(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) contextValidateFc(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Fc != nil {
 		if err := m.Fc.ContextValidate(ctx, formats); err != nil {
@@ -733,7 +733,7 @@ func (m *PortsetInterfacesItems0) contextValidateFc(ctx context.Context, formats
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -747,9 +747,9 @@ func (m *PortsetInterfacesItems0) contextValidateIP(ctx context.Context, formats
 	return nil
 }
 
-func (m *PortsetInterfacesItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -757,7 +757,7 @@ func (m *PortsetInterfacesItems0) contextValidateUUID(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -765,8 +765,8 @@ func (m *PortsetInterfacesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0
+func (m *PortsetInlineInterfacesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -774,33 +774,33 @@ func (m *PortsetInterfacesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0Fc An FC interface.
+// PortsetInlineInterfacesInlineArrayItemInlineFc An FC interface.
 //
-// swagger:model PortsetInterfacesItems0Fc
-type PortsetInterfacesItems0Fc struct {
+// swagger:model portset_inline_interfaces_inline_array_item_inline_fc
+type PortsetInlineInterfacesInlineArrayItemInlineFc struct {
 
 	// links
-	Links *PortsetInterfacesItems0FcLinks `json:"_links,omitempty"`
+	Links *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks `json:"_links,omitempty"`
 
 	// The name of the FC interface.
 	//
 	// Example: fc_lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the FC interface.
 	//
 	// Example: 3a09ab42-4da1-32cf-9d35-3385a6101a0b
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// The WWPN of the FC interface.
 	//
 	// Example: 20:00:00:50:56:b4:13:a8
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
-// Validate validates this portset interfaces items0 fc
-func (m *PortsetInterfacesItems0Fc) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item inline fc
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -813,7 +813,7 @@ func (m *PortsetInterfacesItems0Fc) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0Fc) validateLinks(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -830,8 +830,8 @@ func (m *PortsetInterfacesItems0Fc) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 fc based on the context it is used
-func (m *PortsetInterfacesItems0Fc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item inline fc based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -848,7 +848,7 @@ func (m *PortsetInterfacesItems0Fc) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *PortsetInterfacesItems0Fc) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -862,9 +862,9 @@ func (m *PortsetInterfacesItems0Fc) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *PortsetInterfacesItems0Fc) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fc"+"."+"wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "fc"+"."+"wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -872,7 +872,7 @@ func (m *PortsetInterfacesItems0Fc) contextValidateWwpn(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0Fc) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -880,8 +880,8 @@ func (m *PortsetInterfacesItems0Fc) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0Fc) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0Fc
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFc) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItemInlineFc
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -889,17 +889,17 @@ func (m *PortsetInterfacesItems0Fc) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0FcLinks portset interfaces items0 fc links
+// PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks portset inline interfaces inline array item inline fc inline links
 //
-// swagger:model PortsetInterfacesItems0FcLinks
-type PortsetInterfacesItems0FcLinks struct {
+// swagger:model portset_inline_interfaces_inline_array_item_inline_fc_inline__links
+type PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset interfaces items0 fc links
-func (m *PortsetInterfacesItems0FcLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item inline fc inline links
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -912,7 +912,7 @@ func (m *PortsetInterfacesItems0FcLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *PortsetInterfacesItems0FcLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -929,8 +929,8 @@ func (m *PortsetInterfacesItems0FcLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 fc links based on the context it is used
-func (m *PortsetInterfacesItems0FcLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item inline fc inline links based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -943,7 +943,7 @@ func (m *PortsetInterfacesItems0FcLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *PortsetInterfacesItems0FcLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -958,7 +958,7 @@ func (m *PortsetInterfacesItems0FcLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0FcLinks) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -966,8 +966,8 @@ func (m *PortsetInterfacesItems0FcLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0FcLinks) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0FcLinks
+func (m *PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItemInlineFcInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -975,30 +975,30 @@ func (m *PortsetInterfacesItems0FcLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0IP portset interfaces items0 IP
+// PortsetInlineInterfacesInlineArrayItemInlineIP portset inline interfaces inline array item inline ip
 //
-// swagger:model PortsetInterfacesItems0IP
-type PortsetInterfacesItems0IP struct {
+// swagger:model portset_inline_interfaces_inline_array_item_inline_ip
+type PortsetInlineInterfacesInlineArrayItemInlineIP struct {
 
 	// links
-	Links *PortsetInterfacesItems0IPLinks `json:"_links,omitempty"`
+	Links *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *PortsetInterfacesItems0IPIP `json:"ip,omitempty"`
+	IP *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this portset interfaces items0 IP
-func (m *PortsetInterfacesItems0IP) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item inline ip
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1015,7 +1015,7 @@ func (m *PortsetInterfacesItems0IP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IP) validateLinks(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1032,7 +1032,7 @@ func (m *PortsetInterfacesItems0IP) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IP) validateIP(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -1049,8 +1049,8 @@ func (m *PortsetInterfacesItems0IP) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 IP based on the context it is used
-func (m *PortsetInterfacesItems0IP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item inline ip based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1067,7 +1067,7 @@ func (m *PortsetInterfacesItems0IP) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IP) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1081,7 +1081,7 @@ func (m *PortsetInterfacesItems0IP) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IP) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -1096,7 +1096,7 @@ func (m *PortsetInterfacesItems0IP) contextValidateIP(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0IP) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1104,8 +1104,8 @@ func (m *PortsetInterfacesItems0IP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0IP) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0IP
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIP) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItemInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1113,17 +1113,17 @@ func (m *PortsetInterfacesItems0IP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0IPIP IP information
+// PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP IP information
 //
-// swagger:model PortsetInterfacesItems0IPIP
-type PortsetInterfacesItems0IPIP struct {
+// swagger:model portset_inline_interfaces_inline_array_item_inline_ip_inline_ip
+type PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this portset interfaces items0 IP IP
-func (m *PortsetInterfacesItems0IPIP) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item inline ip inline ip
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -1136,23 +1136,25 @@ func (m *PortsetInterfacesItems0IPIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IPIP) validateAddress(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 IP IP based on the context it is used
-func (m *PortsetInterfacesItems0IPIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item inline ip inline ip based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -1165,20 +1167,22 @@ func (m *PortsetInterfacesItems0IPIP) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IPIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0IPIP) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1186,8 +1190,8 @@ func (m *PortsetInterfacesItems0IPIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0IPIP) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0IPIP
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItemInlineIPInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1195,17 +1199,17 @@ func (m *PortsetInterfacesItems0IPIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0IPLinks portset interfaces items0 IP links
+// PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks portset inline interfaces inline array item inline ip inline links
 //
-// swagger:model PortsetInterfacesItems0IPLinks
-type PortsetInterfacesItems0IPLinks struct {
+// swagger:model portset_inline_interfaces_inline_array_item_inline_ip_inline__links
+type PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset interfaces items0 IP links
-func (m *PortsetInterfacesItems0IPLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item inline ip inline links
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1218,7 +1222,7 @@ func (m *PortsetInterfacesItems0IPLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IPLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1235,8 +1239,8 @@ func (m *PortsetInterfacesItems0IPLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 IP links based on the context it is used
-func (m *PortsetInterfacesItems0IPLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item inline ip inline links based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1249,7 +1253,7 @@ func (m *PortsetInterfacesItems0IPLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *PortsetInterfacesItems0IPLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1264,7 +1268,7 @@ func (m *PortsetInterfacesItems0IPLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0IPLinks) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1272,8 +1276,8 @@ func (m *PortsetInterfacesItems0IPLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0IPLinks) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0IPLinks
+func (m *PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItemInlineIPInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1281,17 +1285,17 @@ func (m *PortsetInterfacesItems0IPLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfacesItems0Links portset interfaces items0 links
+// PortsetInlineInterfacesInlineArrayItemInlineLinks portset inline interfaces inline array item inline links
 //
-// swagger:model PortsetInterfacesItems0Links
-type PortsetInterfacesItems0Links struct {
+// swagger:model portset_inline_interfaces_inline_array_item_inline__links
+type PortsetInlineInterfacesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset interfaces items0 links
-func (m *PortsetInterfacesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline interfaces inline array item inline links
+func (m *PortsetInlineInterfacesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1304,7 +1308,7 @@ func (m *PortsetInterfacesItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetInterfacesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1321,8 +1325,8 @@ func (m *PortsetInterfacesItems0Links) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this portset interfaces items0 links based on the context it is used
-func (m *PortsetInterfacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline interfaces inline array item inline links based on the context it is used
+func (m *PortsetInlineInterfacesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1335,7 +1339,7 @@ func (m *PortsetInterfacesItems0Links) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *PortsetInterfacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1350,7 +1354,7 @@ func (m *PortsetInterfacesItems0Links) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfacesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineInterfacesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1358,8 +1362,8 @@ func (m *PortsetInterfacesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfacesItems0Links) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfacesItems0Links
+func (m *PortsetInlineInterfacesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineInterfacesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1367,17 +1371,17 @@ func (m *PortsetInterfacesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetLinks portset links
+// PortsetInlineLinks portset inline links
 //
-// swagger:model PortsetLinks
-type PortsetLinks struct {
+// swagger:model portset_inline__links
+type PortsetInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset links
-func (m *PortsetLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline links
+func (m *PortsetInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1390,7 +1394,7 @@ func (m *PortsetLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1407,8 +1411,8 @@ func (m *PortsetLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this portset links based on the context it is used
-func (m *PortsetLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline links based on the context it is used
+func (m *PortsetInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1421,7 +1425,7 @@ func (m *PortsetLinks) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *PortsetLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1436,7 +1440,7 @@ func (m *PortsetLinks) contextValidateSelf(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetLinks) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1444,8 +1448,8 @@ func (m *PortsetLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetLinks) UnmarshalBinary(b []byte) error {
-	var res PortsetLinks
+func (m *PortsetInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1453,27 +1457,27 @@ func (m *PortsetLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetSvm portset svm
+// PortsetInlineSvm portset inline svm
 //
-// swagger:model PortsetSvm
-type PortsetSvm struct {
+// swagger:model portset_inline_svm
+type PortsetInlineSvm struct {
 
 	// links
-	Links *PortsetSvmLinks `json:"_links,omitempty"`
+	Links *PortsetInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this portset svm
-func (m *PortsetSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline svm
+func (m *PortsetInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1486,7 +1490,7 @@ func (m *PortsetSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetSvm) validateLinks(formats strfmt.Registry) error {
+func (m *PortsetInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1503,8 +1507,8 @@ func (m *PortsetSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this portset svm based on the context it is used
-func (m *PortsetSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline svm based on the context it is used
+func (m *PortsetInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1517,7 +1521,7 @@ func (m *PortsetSvm) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *PortsetSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1532,7 +1536,7 @@ func (m *PortsetSvm) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetSvm) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1540,8 +1544,8 @@ func (m *PortsetSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetSvm) UnmarshalBinary(b []byte) error {
-	var res PortsetSvm
+func (m *PortsetInlineSvm) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1549,17 +1553,17 @@ func (m *PortsetSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetSvmLinks portset svm links
+// PortsetInlineSvmInlineLinks portset inline svm inline links
 //
-// swagger:model PortsetSvmLinks
-type PortsetSvmLinks struct {
+// swagger:model portset_inline_svm_inline__links
+type PortsetInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset svm links
-func (m *PortsetSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this portset inline svm inline links
+func (m *PortsetInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1572,7 +1576,7 @@ func (m *PortsetSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PortsetSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1589,8 +1593,8 @@ func (m *PortsetSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this portset svm links based on the context it is used
-func (m *PortsetSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset inline svm inline links based on the context it is used
+func (m *PortsetInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1603,7 +1607,7 @@ func (m *PortsetSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *PortsetSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1618,7 +1622,7 @@ func (m *PortsetSvmLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *PortsetInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1626,8 +1630,8 @@ func (m *PortsetSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetSvmLinks) UnmarshalBinary(b []byte) error {
-	var res PortsetSvmLinks
+func (m *PortsetInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

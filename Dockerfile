@@ -1,24 +1,18 @@
-FROM gcr.io/distroless/static:f072ab8fd7e21912a30720928cce8ad562e82718
+ARG ARCH=amd64
+
+FROM --platform=linux/${ARCH} gcr.io/distroless/static@sha256:a01d47d4036cae5a67a9619e3d06fa14a6811a2247b4da72b4233ece4efebd57
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident.netapp.io" \
       description="Trident Storage Orchestrator"
 
-ARG PORT=8000
-ENV PORT $PORT
-EXPOSE $PORT
 ARG BIN=trident_orchestrator
-ENV BIN $BIN
 ARG CLI_BIN=tridentctl
-ENV CLI_BIN $CLI_BIN
-ARG K8S=""
-ENV K8S $K8S
-ENV TRIDENT_IP localhost
-ENV TRIDENT_SERVER 127.0.0.1:$PORT
+ARG CHWRAP_BIN=chwrap.tar
 
-COPY $BIN /
-COPY $CLI_BIN /bin/
-ADD chwrap.tar /
+COPY ${BIN} /trident_orchestrator
+COPY ${CLI_BIN} /bin/tridentctl
+ADD ${CHWRAP_BIN} /
 
-ENTRYPOINT ["/bin/$CLI_BIN"]
+ENTRYPOINT ["/bin/tridentctl"]
 CMD ["version"]

@@ -66,49 +66,49 @@ type NisCollectionGetParams struct {
 
 	   Filter by binding_details.server
 	*/
-	BindingDetailsServerQueryParameter *string
+	BindingDetailsServer *string
 
 	/* BindingDetailsStatusCode.
 
 	   Filter by binding_details.status.code
 	*/
-	BindingDetailsStatusCodeQueryParameter *string
+	BindingDetailsStatusCode *string
 
 	/* BindingDetailsStatusMessage.
 
 	   Filter by binding_details.status.message
 	*/
-	BindingDetailsStatusMessageQueryParameter *string
+	BindingDetailsStatusMessage *string
 
 	/* BoundServers.
 
 	   Filter by bound_servers
 	*/
-	BoundServersQueryParameter *string
+	BoundServers *string
 
 	/* Domain.
 
 	   Filter by domain
 	*/
-	DomainQueryParameter *string
+	Domain *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type NisCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,25 +124,25 @@ type NisCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Servers.
 
 	   Filter by servers
 	*/
-	ServersQueryParameter *string
+	Servers *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -162,14 +162,14 @@ func (o *NisCollectionGetParams) WithDefaults() *NisCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *NisCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NisCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,147 +211,147 @@ func (o *NisCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithBindingDetailsServerQueryParameter adds the bindingDetailsServer to the nis collection get params
-func (o *NisCollectionGetParams) WithBindingDetailsServerQueryParameter(bindingDetailsServer *string) *NisCollectionGetParams {
-	o.SetBindingDetailsServerQueryParameter(bindingDetailsServer)
+// WithBindingDetailsServer adds the bindingDetailsServer to the nis collection get params
+func (o *NisCollectionGetParams) WithBindingDetailsServer(bindingDetailsServer *string) *NisCollectionGetParams {
+	o.SetBindingDetailsServer(bindingDetailsServer)
 	return o
 }
 
-// SetBindingDetailsServerQueryParameter adds the bindingDetailsServer to the nis collection get params
-func (o *NisCollectionGetParams) SetBindingDetailsServerQueryParameter(bindingDetailsServer *string) {
-	o.BindingDetailsServerQueryParameter = bindingDetailsServer
+// SetBindingDetailsServer adds the bindingDetailsServer to the nis collection get params
+func (o *NisCollectionGetParams) SetBindingDetailsServer(bindingDetailsServer *string) {
+	o.BindingDetailsServer = bindingDetailsServer
 }
 
-// WithBindingDetailsStatusCodeQueryParameter adds the bindingDetailsStatusCode to the nis collection get params
-func (o *NisCollectionGetParams) WithBindingDetailsStatusCodeQueryParameter(bindingDetailsStatusCode *string) *NisCollectionGetParams {
-	o.SetBindingDetailsStatusCodeQueryParameter(bindingDetailsStatusCode)
+// WithBindingDetailsStatusCode adds the bindingDetailsStatusCode to the nis collection get params
+func (o *NisCollectionGetParams) WithBindingDetailsStatusCode(bindingDetailsStatusCode *string) *NisCollectionGetParams {
+	o.SetBindingDetailsStatusCode(bindingDetailsStatusCode)
 	return o
 }
 
-// SetBindingDetailsStatusCodeQueryParameter adds the bindingDetailsStatusCode to the nis collection get params
-func (o *NisCollectionGetParams) SetBindingDetailsStatusCodeQueryParameter(bindingDetailsStatusCode *string) {
-	o.BindingDetailsStatusCodeQueryParameter = bindingDetailsStatusCode
+// SetBindingDetailsStatusCode adds the bindingDetailsStatusCode to the nis collection get params
+func (o *NisCollectionGetParams) SetBindingDetailsStatusCode(bindingDetailsStatusCode *string) {
+	o.BindingDetailsStatusCode = bindingDetailsStatusCode
 }
 
-// WithBindingDetailsStatusMessageQueryParameter adds the bindingDetailsStatusMessage to the nis collection get params
-func (o *NisCollectionGetParams) WithBindingDetailsStatusMessageQueryParameter(bindingDetailsStatusMessage *string) *NisCollectionGetParams {
-	o.SetBindingDetailsStatusMessageQueryParameter(bindingDetailsStatusMessage)
+// WithBindingDetailsStatusMessage adds the bindingDetailsStatusMessage to the nis collection get params
+func (o *NisCollectionGetParams) WithBindingDetailsStatusMessage(bindingDetailsStatusMessage *string) *NisCollectionGetParams {
+	o.SetBindingDetailsStatusMessage(bindingDetailsStatusMessage)
 	return o
 }
 
-// SetBindingDetailsStatusMessageQueryParameter adds the bindingDetailsStatusMessage to the nis collection get params
-func (o *NisCollectionGetParams) SetBindingDetailsStatusMessageQueryParameter(bindingDetailsStatusMessage *string) {
-	o.BindingDetailsStatusMessageQueryParameter = bindingDetailsStatusMessage
+// SetBindingDetailsStatusMessage adds the bindingDetailsStatusMessage to the nis collection get params
+func (o *NisCollectionGetParams) SetBindingDetailsStatusMessage(bindingDetailsStatusMessage *string) {
+	o.BindingDetailsStatusMessage = bindingDetailsStatusMessage
 }
 
-// WithBoundServersQueryParameter adds the boundServers to the nis collection get params
-func (o *NisCollectionGetParams) WithBoundServersQueryParameter(boundServers *string) *NisCollectionGetParams {
-	o.SetBoundServersQueryParameter(boundServers)
+// WithBoundServers adds the boundServers to the nis collection get params
+func (o *NisCollectionGetParams) WithBoundServers(boundServers *string) *NisCollectionGetParams {
+	o.SetBoundServers(boundServers)
 	return o
 }
 
-// SetBoundServersQueryParameter adds the boundServers to the nis collection get params
-func (o *NisCollectionGetParams) SetBoundServersQueryParameter(boundServers *string) {
-	o.BoundServersQueryParameter = boundServers
+// SetBoundServers adds the boundServers to the nis collection get params
+func (o *NisCollectionGetParams) SetBoundServers(boundServers *string) {
+	o.BoundServers = boundServers
 }
 
-// WithDomainQueryParameter adds the domain to the nis collection get params
-func (o *NisCollectionGetParams) WithDomainQueryParameter(domain *string) *NisCollectionGetParams {
-	o.SetDomainQueryParameter(domain)
+// WithDomain adds the domain to the nis collection get params
+func (o *NisCollectionGetParams) WithDomain(domain *string) *NisCollectionGetParams {
+	o.SetDomain(domain)
 	return o
 }
 
-// SetDomainQueryParameter adds the domain to the nis collection get params
-func (o *NisCollectionGetParams) SetDomainQueryParameter(domain *string) {
-	o.DomainQueryParameter = domain
+// SetDomain adds the domain to the nis collection get params
+func (o *NisCollectionGetParams) SetDomain(domain *string) {
+	o.Domain = domain
 }
 
-// WithFieldsQueryParameter adds the fields to the nis collection get params
-func (o *NisCollectionGetParams) WithFieldsQueryParameter(fields []string) *NisCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nis collection get params
+func (o *NisCollectionGetParams) WithFields(fields []string) *NisCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nis collection get params
-func (o *NisCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nis collection get params
+func (o *NisCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nis collection get params
-func (o *NisCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NisCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nis collection get params
+func (o *NisCollectionGetParams) WithMaxRecords(maxRecords *int64) *NisCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nis collection get params
-func (o *NisCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nis collection get params
+func (o *NisCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nis collection get params
-func (o *NisCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NisCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nis collection get params
+func (o *NisCollectionGetParams) WithOrderBy(orderBy []string) *NisCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nis collection get params
-func (o *NisCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nis collection get params
+func (o *NisCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nis collection get params
-func (o *NisCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NisCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nis collection get params
+func (o *NisCollectionGetParams) WithReturnRecords(returnRecords *bool) *NisCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nis collection get params
-func (o *NisCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nis collection get params
+func (o *NisCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nis collection get params
-func (o *NisCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NisCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nis collection get params
+func (o *NisCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NisCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nis collection get params
-func (o *NisCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nis collection get params
+func (o *NisCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServersQueryParameter adds the servers to the nis collection get params
-func (o *NisCollectionGetParams) WithServersQueryParameter(servers *string) *NisCollectionGetParams {
-	o.SetServersQueryParameter(servers)
+// WithServers adds the servers to the nis collection get params
+func (o *NisCollectionGetParams) WithServers(servers *string) *NisCollectionGetParams {
+	o.SetServers(servers)
 	return o
 }
 
-// SetServersQueryParameter adds the servers to the nis collection get params
-func (o *NisCollectionGetParams) SetServersQueryParameter(servers *string) {
-	o.ServersQueryParameter = servers
+// SetServers adds the servers to the nis collection get params
+func (o *NisCollectionGetParams) SetServers(servers *string) {
+	o.Servers = servers
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nis collection get params
-func (o *NisCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NisCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the nis collection get params
+func (o *NisCollectionGetParams) WithSvmName(svmName *string) *NisCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nis collection get params
-func (o *NisCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the nis collection get params
+func (o *NisCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nis collection get params
-func (o *NisCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NisCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nis collection get params
+func (o *NisCollectionGetParams) WithSvmUUID(svmUUID *string) *NisCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nis collection get params
-func (o *NisCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nis collection get params
+func (o *NisCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -362,13 +362,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.BindingDetailsServerQueryParameter != nil {
+	if o.BindingDetailsServer != nil {
 
 		// query param binding_details.server
 		var qrBindingDetailsServer string
 
-		if o.BindingDetailsServerQueryParameter != nil {
-			qrBindingDetailsServer = *o.BindingDetailsServerQueryParameter
+		if o.BindingDetailsServer != nil {
+			qrBindingDetailsServer = *o.BindingDetailsServer
 		}
 		qBindingDetailsServer := qrBindingDetailsServer
 		if qBindingDetailsServer != "" {
@@ -379,13 +379,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.BindingDetailsStatusCodeQueryParameter != nil {
+	if o.BindingDetailsStatusCode != nil {
 
 		// query param binding_details.status.code
 		var qrBindingDetailsStatusCode string
 
-		if o.BindingDetailsStatusCodeQueryParameter != nil {
-			qrBindingDetailsStatusCode = *o.BindingDetailsStatusCodeQueryParameter
+		if o.BindingDetailsStatusCode != nil {
+			qrBindingDetailsStatusCode = *o.BindingDetailsStatusCode
 		}
 		qBindingDetailsStatusCode := qrBindingDetailsStatusCode
 		if qBindingDetailsStatusCode != "" {
@@ -396,13 +396,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.BindingDetailsStatusMessageQueryParameter != nil {
+	if o.BindingDetailsStatusMessage != nil {
 
 		// query param binding_details.status.message
 		var qrBindingDetailsStatusMessage string
 
-		if o.BindingDetailsStatusMessageQueryParameter != nil {
-			qrBindingDetailsStatusMessage = *o.BindingDetailsStatusMessageQueryParameter
+		if o.BindingDetailsStatusMessage != nil {
+			qrBindingDetailsStatusMessage = *o.BindingDetailsStatusMessage
 		}
 		qBindingDetailsStatusMessage := qrBindingDetailsStatusMessage
 		if qBindingDetailsStatusMessage != "" {
@@ -413,13 +413,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.BoundServersQueryParameter != nil {
+	if o.BoundServers != nil {
 
 		// query param bound_servers
 		var qrBoundServers string
 
-		if o.BoundServersQueryParameter != nil {
-			qrBoundServers = *o.BoundServersQueryParameter
+		if o.BoundServers != nil {
+			qrBoundServers = *o.BoundServers
 		}
 		qBoundServers := qrBoundServers
 		if qBoundServers != "" {
@@ -430,13 +430,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DomainQueryParameter != nil {
+	if o.Domain != nil {
 
 		// query param domain
 		var qrDomain string
 
-		if o.DomainQueryParameter != nil {
-			qrDomain = *o.DomainQueryParameter
+		if o.Domain != nil {
+			qrDomain = *o.Domain
 		}
 		qDomain := qrDomain
 		if qDomain != "" {
@@ -447,7 +447,7 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,7 +475,7 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -486,13 +486,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -503,13 +503,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -520,13 +520,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ServersQueryParameter != nil {
+	if o.Servers != nil {
 
 		// query param servers
 		var qrServers string
 
-		if o.ServersQueryParameter != nil {
-			qrServers = *o.ServersQueryParameter
+		if o.Servers != nil {
+			qrServers = *o.Servers
 		}
 		qServers := qrServers
 		if qServers != "" {
@@ -537,13 +537,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -554,13 +554,13 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -579,7 +579,7 @@ func (o *NisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamNisCollectionGet binds the parameter fields
 func (o *NisCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +596,7 @@ func (o *NisCollectionGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamNisCollectionGet binds the parameter order_by
 func (o *NisCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

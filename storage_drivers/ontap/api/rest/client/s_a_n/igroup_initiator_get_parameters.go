@@ -66,21 +66,21 @@ type IgroupInitiatorGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupUUID.
 
 	   The unique identifier of the initiator group.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* Name.
 
 	   Initiator name
 
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *IgroupInitiatorGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) WithFieldsQueryParameter(fields []string) *IgroupInitiatorGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) WithFields(fields []string) *IgroupInitiatorGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) WithIgroupUUIDPathParameter(igroupUUID string) *IgroupInitiatorGetParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) WithIgroupUUID(igroupUUID string) *IgroupInitiatorGetParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithNamePathParameter adds the name to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) WithNamePathParameter(name string) *IgroupInitiatorGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) WithName(name string) *IgroupInitiatorGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *IgroupInitiatorGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *IgroupInitiatorGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *IgroupInitiatorGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamIgroupInitiatorGet binds the parameter fields
 func (o *IgroupInitiatorGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

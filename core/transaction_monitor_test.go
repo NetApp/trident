@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -26,7 +26,7 @@ const (
 
 func init() {
 	testing.Init()
-	log.SetLevel(log.DebugLevel)
+	_ = InitLogLevel("debug")
 }
 
 func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
@@ -43,7 +43,7 @@ func TestStartStop(t *testing.T) {
 	storeClient := persistentstore.NewInMemoryClient()
 	o := NewTridentOrchestrator(storeClient)
 	if err := o.Bootstrap(true); err != nil {
-		log.Fatal("Failure occurred during bootstrapping: ", err)
+		Log().Fatal("Failure occurred during bootstrapping: ", err)
 	}
 
 	waitForTransactionMontitorToStart(o)
@@ -214,7 +214,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	}
 
 	cloneVolumeConfig.CloneSourceVolume = volName
-	log.Debugf("CloneSourceVolume %s", cloneVolumeConfig.CloneSourceVolume)
+	Log().Debugf("CloneSourceVolume %s", cloneVolumeConfig.CloneSourceVolume)
 
 	_, err = o.CloneVolume(ctx(), cloneVolumeConfig)
 	if err != nil {

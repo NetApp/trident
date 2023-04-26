@@ -66,55 +66,55 @@ type FirmwareHistoryCollectionGetParams struct {
 
 	   Filter by end_time
 	*/
-	EndTimeQueryParameter *string
+	EndTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FwFileName.
 
 	   Filter by fw_file_name
 	*/
-	FwFileNameQueryParameter *string
+	FwFileName *string
 
 	/* FwUpdateState.
 
 	   Filter by fw_update_state
 	*/
-	FwUpdateStateQueryParameter *string
+	FwUpdateState *string
 
 	/* JobUUID.
 
 	   Filter by job.uuid
 	*/
-	JobUUIDQueryParameter *string
+	JobUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type FirmwareHistoryCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,43 +130,43 @@ type FirmwareHistoryCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StartTime.
 
 	   Filter by start_time
 	*/
-	StartTimeQueryParameter *string
+	StartTime *string
 
 	/* UpdateStatusWorkerErrorCode.
 
 	   Filter by update_status.worker.error.code
 	*/
-	UpdateStatusWorkerErrorCodeQueryParameter *int64
+	UpdateStatusWorkerErrorCode *int64
 
 	/* UpdateStatusWorkerErrorMessage.
 
 	   Filter by update_status.worker.error.message
 	*/
-	UpdateStatusWorkerErrorMessageQueryParameter *string
+	UpdateStatusWorkerErrorMessage *string
 
 	/* UpdateStatusWorkerNodeName.
 
 	   Filter by update_status.worker.node.name
 	*/
-	UpdateStatusWorkerNodeNameQueryParameter *string
+	UpdateStatusWorkerNodeName *string
 
 	/* UpdateStatusWorkerNodeUUID.
 
 	   Filter by update_status.worker.node.uuid
 	*/
-	UpdateStatusWorkerNodeUUIDQueryParameter *string
+	UpdateStatusWorkerNodeUUID *string
 
 	/* UpdateStatusWorkerState.
 
 	   Filter by update_status.worker.state
 	*/
-	UpdateStatusWorkerStateQueryParameter *string
+	UpdateStatusWorkerState *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -186,14 +186,14 @@ func (o *FirmwareHistoryCollectionGetParams) WithDefaults() *FirmwareHistoryColl
 // All values with no default are reset to their zero value.
 func (o *FirmwareHistoryCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FirmwareHistoryCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -235,191 +235,191 @@ func (o *FirmwareHistoryCollectionGetParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithEndTimeQueryParameter adds the endTime to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithEndTimeQueryParameter(endTime *string) *FirmwareHistoryCollectionGetParams {
-	o.SetEndTimeQueryParameter(endTime)
+// WithEndTime adds the endTime to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithEndTime(endTime *string) *FirmwareHistoryCollectionGetParams {
+	o.SetEndTime(endTime)
 	return o
 }
 
-// SetEndTimeQueryParameter adds the endTime to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetEndTimeQueryParameter(endTime *string) {
-	o.EndTimeQueryParameter = endTime
+// SetEndTime adds the endTime to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetEndTime(endTime *string) {
+	o.EndTime = endTime
 }
 
-// WithFieldsQueryParameter adds the fields to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithFieldsQueryParameter(fields []string) *FirmwareHistoryCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithFields(fields []string) *FirmwareHistoryCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFwFileNameQueryParameter adds the fwFileName to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithFwFileNameQueryParameter(fwFileName *string) *FirmwareHistoryCollectionGetParams {
-	o.SetFwFileNameQueryParameter(fwFileName)
+// WithFwFileName adds the fwFileName to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithFwFileName(fwFileName *string) *FirmwareHistoryCollectionGetParams {
+	o.SetFwFileName(fwFileName)
 	return o
 }
 
-// SetFwFileNameQueryParameter adds the fwFileName to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetFwFileNameQueryParameter(fwFileName *string) {
-	o.FwFileNameQueryParameter = fwFileName
+// SetFwFileName adds the fwFileName to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetFwFileName(fwFileName *string) {
+	o.FwFileName = fwFileName
 }
 
-// WithFwUpdateStateQueryParameter adds the fwUpdateState to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithFwUpdateStateQueryParameter(fwUpdateState *string) *FirmwareHistoryCollectionGetParams {
-	o.SetFwUpdateStateQueryParameter(fwUpdateState)
+// WithFwUpdateState adds the fwUpdateState to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithFwUpdateState(fwUpdateState *string) *FirmwareHistoryCollectionGetParams {
+	o.SetFwUpdateState(fwUpdateState)
 	return o
 }
 
-// SetFwUpdateStateQueryParameter adds the fwUpdateState to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetFwUpdateStateQueryParameter(fwUpdateState *string) {
-	o.FwUpdateStateQueryParameter = fwUpdateState
+// SetFwUpdateState adds the fwUpdateState to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetFwUpdateState(fwUpdateState *string) {
+	o.FwUpdateState = fwUpdateState
 }
 
-// WithJobUUIDQueryParameter adds the jobUUID to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithJobUUIDQueryParameter(jobUUID *string) *FirmwareHistoryCollectionGetParams {
-	o.SetJobUUIDQueryParameter(jobUUID)
+// WithJobUUID adds the jobUUID to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithJobUUID(jobUUID *string) *FirmwareHistoryCollectionGetParams {
+	o.SetJobUUID(jobUUID)
 	return o
 }
 
-// SetJobUUIDQueryParameter adds the jobUuid to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetJobUUIDQueryParameter(jobUUID *string) {
-	o.JobUUIDQueryParameter = jobUUID
+// SetJobUUID adds the jobUuid to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetJobUUID(jobUUID *string) {
+	o.JobUUID = jobUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FirmwareHistoryCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithMaxRecords(maxRecords *int64) *FirmwareHistoryCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *FirmwareHistoryCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithNodeName(nodeName *string) *FirmwareHistoryCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *FirmwareHistoryCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithNodeUUID(nodeUUID *string) *FirmwareHistoryCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FirmwareHistoryCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithOrderBy(orderBy []string) *FirmwareHistoryCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FirmwareHistoryCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithReturnRecords(returnRecords *bool) *FirmwareHistoryCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FirmwareHistoryCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FirmwareHistoryCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStartTimeQueryParameter adds the startTime to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithStartTimeQueryParameter(startTime *string) *FirmwareHistoryCollectionGetParams {
-	o.SetStartTimeQueryParameter(startTime)
+// WithStartTime adds the startTime to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithStartTime(startTime *string) *FirmwareHistoryCollectionGetParams {
+	o.SetStartTime(startTime)
 	return o
 }
 
-// SetStartTimeQueryParameter adds the startTime to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetStartTimeQueryParameter(startTime *string) {
-	o.StartTimeQueryParameter = startTime
+// SetStartTime adds the startTime to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetStartTime(startTime *string) {
+	o.StartTime = startTime
 }
 
-// WithUpdateStatusWorkerErrorCodeQueryParameter adds the updateStatusWorkerErrorCode to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerErrorCodeQueryParameter(updateStatusWorkerErrorCode *int64) *FirmwareHistoryCollectionGetParams {
-	o.SetUpdateStatusWorkerErrorCodeQueryParameter(updateStatusWorkerErrorCode)
+// WithUpdateStatusWorkerErrorCode adds the updateStatusWorkerErrorCode to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerErrorCode(updateStatusWorkerErrorCode *int64) *FirmwareHistoryCollectionGetParams {
+	o.SetUpdateStatusWorkerErrorCode(updateStatusWorkerErrorCode)
 	return o
 }
 
-// SetUpdateStatusWorkerErrorCodeQueryParameter adds the updateStatusWorkerErrorCode to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerErrorCodeQueryParameter(updateStatusWorkerErrorCode *int64) {
-	o.UpdateStatusWorkerErrorCodeQueryParameter = updateStatusWorkerErrorCode
+// SetUpdateStatusWorkerErrorCode adds the updateStatusWorkerErrorCode to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerErrorCode(updateStatusWorkerErrorCode *int64) {
+	o.UpdateStatusWorkerErrorCode = updateStatusWorkerErrorCode
 }
 
-// WithUpdateStatusWorkerErrorMessageQueryParameter adds the updateStatusWorkerErrorMessage to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerErrorMessageQueryParameter(updateStatusWorkerErrorMessage *string) *FirmwareHistoryCollectionGetParams {
-	o.SetUpdateStatusWorkerErrorMessageQueryParameter(updateStatusWorkerErrorMessage)
+// WithUpdateStatusWorkerErrorMessage adds the updateStatusWorkerErrorMessage to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerErrorMessage(updateStatusWorkerErrorMessage *string) *FirmwareHistoryCollectionGetParams {
+	o.SetUpdateStatusWorkerErrorMessage(updateStatusWorkerErrorMessage)
 	return o
 }
 
-// SetUpdateStatusWorkerErrorMessageQueryParameter adds the updateStatusWorkerErrorMessage to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerErrorMessageQueryParameter(updateStatusWorkerErrorMessage *string) {
-	o.UpdateStatusWorkerErrorMessageQueryParameter = updateStatusWorkerErrorMessage
+// SetUpdateStatusWorkerErrorMessage adds the updateStatusWorkerErrorMessage to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerErrorMessage(updateStatusWorkerErrorMessage *string) {
+	o.UpdateStatusWorkerErrorMessage = updateStatusWorkerErrorMessage
 }
 
-// WithUpdateStatusWorkerNodeNameQueryParameter adds the updateStatusWorkerNodeName to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerNodeNameQueryParameter(updateStatusWorkerNodeName *string) *FirmwareHistoryCollectionGetParams {
-	o.SetUpdateStatusWorkerNodeNameQueryParameter(updateStatusWorkerNodeName)
+// WithUpdateStatusWorkerNodeName adds the updateStatusWorkerNodeName to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerNodeName(updateStatusWorkerNodeName *string) *FirmwareHistoryCollectionGetParams {
+	o.SetUpdateStatusWorkerNodeName(updateStatusWorkerNodeName)
 	return o
 }
 
-// SetUpdateStatusWorkerNodeNameQueryParameter adds the updateStatusWorkerNodeName to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerNodeNameQueryParameter(updateStatusWorkerNodeName *string) {
-	o.UpdateStatusWorkerNodeNameQueryParameter = updateStatusWorkerNodeName
+// SetUpdateStatusWorkerNodeName adds the updateStatusWorkerNodeName to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerNodeName(updateStatusWorkerNodeName *string) {
+	o.UpdateStatusWorkerNodeName = updateStatusWorkerNodeName
 }
 
-// WithUpdateStatusWorkerNodeUUIDQueryParameter adds the updateStatusWorkerNodeUUID to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerNodeUUIDQueryParameter(updateStatusWorkerNodeUUID *string) *FirmwareHistoryCollectionGetParams {
-	o.SetUpdateStatusWorkerNodeUUIDQueryParameter(updateStatusWorkerNodeUUID)
+// WithUpdateStatusWorkerNodeUUID adds the updateStatusWorkerNodeUUID to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerNodeUUID(updateStatusWorkerNodeUUID *string) *FirmwareHistoryCollectionGetParams {
+	o.SetUpdateStatusWorkerNodeUUID(updateStatusWorkerNodeUUID)
 	return o
 }
 
-// SetUpdateStatusWorkerNodeUUIDQueryParameter adds the updateStatusWorkerNodeUuid to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerNodeUUIDQueryParameter(updateStatusWorkerNodeUUID *string) {
-	o.UpdateStatusWorkerNodeUUIDQueryParameter = updateStatusWorkerNodeUUID
+// SetUpdateStatusWorkerNodeUUID adds the updateStatusWorkerNodeUuid to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerNodeUUID(updateStatusWorkerNodeUUID *string) {
+	o.UpdateStatusWorkerNodeUUID = updateStatusWorkerNodeUUID
 }
 
-// WithUpdateStatusWorkerStateQueryParameter adds the updateStatusWorkerState to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerStateQueryParameter(updateStatusWorkerState *string) *FirmwareHistoryCollectionGetParams {
-	o.SetUpdateStatusWorkerStateQueryParameter(updateStatusWorkerState)
+// WithUpdateStatusWorkerState adds the updateStatusWorkerState to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) WithUpdateStatusWorkerState(updateStatusWorkerState *string) *FirmwareHistoryCollectionGetParams {
+	o.SetUpdateStatusWorkerState(updateStatusWorkerState)
 	return o
 }
 
-// SetUpdateStatusWorkerStateQueryParameter adds the updateStatusWorkerState to the firmware history collection get params
-func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerStateQueryParameter(updateStatusWorkerState *string) {
-	o.UpdateStatusWorkerStateQueryParameter = updateStatusWorkerState
+// SetUpdateStatusWorkerState adds the updateStatusWorkerState to the firmware history collection get params
+func (o *FirmwareHistoryCollectionGetParams) SetUpdateStatusWorkerState(updateStatusWorkerState *string) {
+	o.UpdateStatusWorkerState = updateStatusWorkerState
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -430,13 +430,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.EndTimeQueryParameter != nil {
+	if o.EndTime != nil {
 
 		// query param end_time
 		var qrEndTime string
 
-		if o.EndTimeQueryParameter != nil {
-			qrEndTime = *o.EndTimeQueryParameter
+		if o.EndTime != nil {
+			qrEndTime = *o.EndTime
 		}
 		qEndTime := qrEndTime
 		if qEndTime != "" {
@@ -447,7 +447,7 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FwFileNameQueryParameter != nil {
+	if o.FwFileName != nil {
 
 		// query param fw_file_name
 		var qrFwFileName string
 
-		if o.FwFileNameQueryParameter != nil {
-			qrFwFileName = *o.FwFileNameQueryParameter
+		if o.FwFileName != nil {
+			qrFwFileName = *o.FwFileName
 		}
 		qFwFileName := qrFwFileName
 		if qFwFileName != "" {
@@ -475,13 +475,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.FwUpdateStateQueryParameter != nil {
+	if o.FwUpdateState != nil {
 
 		// query param fw_update_state
 		var qrFwUpdateState string
 
-		if o.FwUpdateStateQueryParameter != nil {
-			qrFwUpdateState = *o.FwUpdateStateQueryParameter
+		if o.FwUpdateState != nil {
+			qrFwUpdateState = *o.FwUpdateState
 		}
 		qFwUpdateState := qrFwUpdateState
 		if qFwUpdateState != "" {
@@ -492,13 +492,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.JobUUIDQueryParameter != nil {
+	if o.JobUUID != nil {
 
 		// query param job.uuid
 		var qrJobUUID string
 
-		if o.JobUUIDQueryParameter != nil {
-			qrJobUUID = *o.JobUUIDQueryParameter
+		if o.JobUUID != nil {
+			qrJobUUID = *o.JobUUID
 		}
 		qJobUUID := qrJobUUID
 		if qJobUUID != "" {
@@ -509,13 +509,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -526,13 +526,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -543,13 +543,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -560,7 +560,7 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -571,13 +571,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -588,13 +588,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -605,13 +605,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.StartTimeQueryParameter != nil {
+	if o.StartTime != nil {
 
 		// query param start_time
 		var qrStartTime string
 
-		if o.StartTimeQueryParameter != nil {
-			qrStartTime = *o.StartTimeQueryParameter
+		if o.StartTime != nil {
+			qrStartTime = *o.StartTime
 		}
 		qStartTime := qrStartTime
 		if qStartTime != "" {
@@ -622,13 +622,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.UpdateStatusWorkerErrorCodeQueryParameter != nil {
+	if o.UpdateStatusWorkerErrorCode != nil {
 
 		// query param update_status.worker.error.code
 		var qrUpdateStatusWorkerErrorCode int64
 
-		if o.UpdateStatusWorkerErrorCodeQueryParameter != nil {
-			qrUpdateStatusWorkerErrorCode = *o.UpdateStatusWorkerErrorCodeQueryParameter
+		if o.UpdateStatusWorkerErrorCode != nil {
+			qrUpdateStatusWorkerErrorCode = *o.UpdateStatusWorkerErrorCode
 		}
 		qUpdateStatusWorkerErrorCode := swag.FormatInt64(qrUpdateStatusWorkerErrorCode)
 		if qUpdateStatusWorkerErrorCode != "" {
@@ -639,13 +639,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.UpdateStatusWorkerErrorMessageQueryParameter != nil {
+	if o.UpdateStatusWorkerErrorMessage != nil {
 
 		// query param update_status.worker.error.message
 		var qrUpdateStatusWorkerErrorMessage string
 
-		if o.UpdateStatusWorkerErrorMessageQueryParameter != nil {
-			qrUpdateStatusWorkerErrorMessage = *o.UpdateStatusWorkerErrorMessageQueryParameter
+		if o.UpdateStatusWorkerErrorMessage != nil {
+			qrUpdateStatusWorkerErrorMessage = *o.UpdateStatusWorkerErrorMessage
 		}
 		qUpdateStatusWorkerErrorMessage := qrUpdateStatusWorkerErrorMessage
 		if qUpdateStatusWorkerErrorMessage != "" {
@@ -656,13 +656,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.UpdateStatusWorkerNodeNameQueryParameter != nil {
+	if o.UpdateStatusWorkerNodeName != nil {
 
 		// query param update_status.worker.node.name
 		var qrUpdateStatusWorkerNodeName string
 
-		if o.UpdateStatusWorkerNodeNameQueryParameter != nil {
-			qrUpdateStatusWorkerNodeName = *o.UpdateStatusWorkerNodeNameQueryParameter
+		if o.UpdateStatusWorkerNodeName != nil {
+			qrUpdateStatusWorkerNodeName = *o.UpdateStatusWorkerNodeName
 		}
 		qUpdateStatusWorkerNodeName := qrUpdateStatusWorkerNodeName
 		if qUpdateStatusWorkerNodeName != "" {
@@ -673,13 +673,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.UpdateStatusWorkerNodeUUIDQueryParameter != nil {
+	if o.UpdateStatusWorkerNodeUUID != nil {
 
 		// query param update_status.worker.node.uuid
 		var qrUpdateStatusWorkerNodeUUID string
 
-		if o.UpdateStatusWorkerNodeUUIDQueryParameter != nil {
-			qrUpdateStatusWorkerNodeUUID = *o.UpdateStatusWorkerNodeUUIDQueryParameter
+		if o.UpdateStatusWorkerNodeUUID != nil {
+			qrUpdateStatusWorkerNodeUUID = *o.UpdateStatusWorkerNodeUUID
 		}
 		qUpdateStatusWorkerNodeUUID := qrUpdateStatusWorkerNodeUUID
 		if qUpdateStatusWorkerNodeUUID != "" {
@@ -690,13 +690,13 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.UpdateStatusWorkerStateQueryParameter != nil {
+	if o.UpdateStatusWorkerState != nil {
 
 		// query param update_status.worker.state
 		var qrUpdateStatusWorkerState string
 
-		if o.UpdateStatusWorkerStateQueryParameter != nil {
-			qrUpdateStatusWorkerState = *o.UpdateStatusWorkerStateQueryParameter
+		if o.UpdateStatusWorkerState != nil {
+			qrUpdateStatusWorkerState = *o.UpdateStatusWorkerState
 		}
 		qUpdateStatusWorkerState := qrUpdateStatusWorkerState
 		if qUpdateStatusWorkerState != "" {
@@ -715,7 +715,7 @@ func (o *FirmwareHistoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 
 // bindParamFirmwareHistoryCollectionGet binds the parameter fields
 func (o *FirmwareHistoryCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -732,7 +732,7 @@ func (o *FirmwareHistoryCollectionGetParams) bindParamFields(formats strfmt.Regi
 
 // bindParamFirmwareHistoryCollectionGet binds the parameter order_by
 func (o *FirmwareHistoryCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

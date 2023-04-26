@@ -20,13 +20,14 @@ import (
 type SnaplockLitigationFileResponse struct {
 
 	// links
-	Links *SnaplockLitigationFileResponseLinks `json:"_links,omitempty"`
+	Links *SnaplockLitigationFileResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
 	// List of Files under the specified litigation.
-	Records []*SnaplockLitigationFileResponseRecordsItems0 `json:"records,omitempty"`
+	SnaplockLitigationFileResponseInlineRecords []*SnaplockLitigationFileResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this snaplock litigation file response
@@ -37,7 +38,7 @@ func (m *SnaplockLitigationFileResponse) Validate(formats strfmt.Registry) error
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSnaplockLitigationFileResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SnaplockLitigationFileResponse) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SnaplockLitigationFileResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SnaplockLitigationFileResponse) validateSnaplockLitigationFileResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnaplockLitigationFileResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SnaplockLitigationFileResponseInlineRecords); i++ {
+		if swag.IsZero(m.SnaplockLitigationFileResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SnaplockLitigationFileResponseInlineRecords[i] != nil {
+			if err := m.SnaplockLitigationFileResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SnaplockLitigationFileResponse) ContextValidate(ctx context.Context, fo
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSnaplockLitigationFileResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SnaplockLitigationFileResponse) contextValidateLinks(ctx context.Contex
 	return nil
 }
 
-func (m *SnaplockLitigationFileResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationFileResponse) contextValidateSnaplockLitigationFileResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SnaplockLitigationFileResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SnaplockLitigationFileResponseInlineRecords[i] != nil {
+			if err := m.SnaplockLitigationFileResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SnaplockLitigationFileResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationFileResponseLinks snaplock litigation file response links
+// SnaplockLitigationFileResponseInlineLinks snaplock litigation file response inline links
 //
-// swagger:model SnaplockLitigationFileResponseLinks
-type SnaplockLitigationFileResponseLinks struct {
+// swagger:model snaplock_litigation_file_response_inline__links
+type SnaplockLitigationFileResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SnaplockLitigationFileResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock litigation file response links
-func (m *SnaplockLitigationFileResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation file response inline links
+func (m *SnaplockLitigationFileResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SnaplockLitigationFileResponseLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SnaplockLitigationFileResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SnaplockLitigationFileResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SnaplockLitigationFileResponseLinks) validateNext(formats strfmt.Regist
 	return nil
 }
 
-func (m *SnaplockLitigationFileResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLitigationFileResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SnaplockLitigationFileResponseLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this snaplock litigation file response links based on the context it is used
-func (m *SnaplockLitigationFileResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock litigation file response inline links based on the context it is used
+func (m *SnaplockLitigationFileResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SnaplockLitigationFileResponseLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *SnaplockLitigationFileResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationFileResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SnaplockLitigationFileResponseLinks) contextValidateNext(ctx context.Co
 	return nil
 }
 
-func (m *SnaplockLitigationFileResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLitigationFileResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SnaplockLitigationFileResponseLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationFileResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationFileResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SnaplockLitigationFileResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationFileResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationFileResponseLinks
+func (m *SnaplockLitigationFileResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationFileResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -284,30 +285,30 @@ func (m *SnaplockLitigationFileResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLitigationFileResponseRecordsItems0 snaplock litigation file response records items0
+// SnaplockLitigationFileResponseInlineRecordsInlineArrayItem snaplock litigation file response inline records inline array item
 //
-// swagger:model SnaplockLitigationFileResponseRecordsItems0
-type SnaplockLitigationFileResponseRecordsItems0 struct {
+// swagger:model snaplock_litigation_file_response_inline_records_inline_array_item
+type SnaplockLitigationFileResponseInlineRecordsInlineArrayItem struct {
 
 	// Name of the file including the path from the root.
-	File []string `json:"file,omitempty"`
+	File []*string `json:"file"`
 
 	// Sequence index of files path list.
-	SequenceIndex int64 `json:"sequence_index,omitempty"`
+	SequenceIndex *int64 `json:"sequence_index,omitempty"`
 }
 
-// Validate validates this snaplock litigation file response records items0
-func (m *SnaplockLitigationFileResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock litigation file response inline records inline array item
+func (m *SnaplockLitigationFileResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this snaplock litigation file response records items0 based on context it is used
-func (m *SnaplockLitigationFileResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this snaplock litigation file response inline records inline array item based on context it is used
+func (m *SnaplockLitigationFileResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLitigationFileResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLitigationFileResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -315,8 +316,8 @@ func (m *SnaplockLitigationFileResponseRecordsItems0) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLitigationFileResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res SnaplockLitigationFileResponseRecordsItems0
+func (m *SnaplockLitigationFileResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SnaplockLitigationFileResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

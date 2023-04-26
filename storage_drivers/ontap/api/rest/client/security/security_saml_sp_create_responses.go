@@ -52,6 +52,11 @@ SecuritySamlSpCreateAccepted describes a response with status code 202, with def
 Accepted
 */
 type SecuritySamlSpCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -93,6 +98,13 @@ func (o *SecuritySamlSpCreateAccepted) GetPayload() *models.JobLinkResponse {
 }
 
 func (o *SecuritySamlSpCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

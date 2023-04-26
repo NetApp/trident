@@ -7,23 +7,23 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/kr/secureheader"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/frontend/csi"
 )
 
 // NewRouter is used to set up HTTP and HTTPS endpoints for the controller
 func NewRouter(https bool) *mux.Router {
-	return newRouter(controllerRoutes, https, log.DebugLevel)
+	return newRouter(controllerRoutes, https)
 }
 
 // NewNodeRouter is used to set up HTTPS liveness and readiness endpoints for the node
 func NewNodeRouter(plugin *csi.Plugin) *mux.Router {
-	return newRouter(nodeRoutes(plugin), true, log.TraceLevel)
+	return newRouter(nodeRoutes(plugin), true)
 }
 
-func newRouter(routes Routes, https bool, logLevel log.Level) *mux.Router {
+func newRouter(routes Routes, https bool) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+
 	for _, route := range routes {
 		handler := http.Handler(route.HandlerFunc)
 
@@ -38,7 +38,7 @@ func newRouter(routes Routes, https bool, logLevel log.Level) *mux.Router {
 		}
 
 		// Apply logging middleware
-		handler = Logger(handler, route.Name, logLevel)
+		handler = Logger(handler, route.Name)
 
 		router.
 			Methods(route.Method).

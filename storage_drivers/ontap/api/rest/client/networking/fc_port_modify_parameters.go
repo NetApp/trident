@@ -75,7 +75,7 @@ type FcPortModifyParams struct {
 	   The unique identifier for the FC port.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *FcPortModifyParams) SetInfo(info *models.FcPort) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the fc port modify params
-func (o *FcPortModifyParams) WithUUIDPathParameter(uuid string) *FcPortModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the fc port modify params
+func (o *FcPortModifyParams) WithUUID(uuid string) *FcPortModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the fc port modify params
-func (o *FcPortModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the fc port modify params
+func (o *FcPortModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *FcPortModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

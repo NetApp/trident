@@ -20,14 +20,14 @@ import (
 type ScheduleResponse struct {
 
 	// links
-	Links *ScheduleResponseLinks `json:"_links,omitempty"`
+	Links *ScheduleResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Schedule `json:"records,omitempty"`
+	// schedule response inline records
+	ScheduleResponseInlineRecords []*Schedule `json:"records,omitempty"`
 }
 
 // Validate validates this schedule response
@@ -38,7 +38,7 @@ func (m *ScheduleResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateScheduleResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *ScheduleResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ScheduleResponse) validateScheduleResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ScheduleResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ScheduleResponseInlineRecords); i++ {
+		if swag.IsZero(m.ScheduleResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ScheduleResponseInlineRecords[i] != nil {
+			if err := m.ScheduleResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *ScheduleResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateScheduleResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *ScheduleResponse) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ScheduleResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleResponse) contextValidateScheduleResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ScheduleResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ScheduleResponseInlineRecords[i] != nil {
+			if err := m.ScheduleResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *ScheduleResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleResponseLinks schedule response links
+// ScheduleResponseInlineLinks schedule response inline links
 //
-// swagger:model ScheduleResponseLinks
-type ScheduleResponseLinks struct {
+// swagger:model schedule_response_inline__links
+type ScheduleResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type ScheduleResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this schedule response links
-func (m *ScheduleResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule response inline links
+func (m *ScheduleResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *ScheduleResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ScheduleResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *ScheduleResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ScheduleResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *ScheduleResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this schedule response links based on the context it is used
-func (m *ScheduleResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this schedule response inline links based on the context it is used
+func (m *ScheduleResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *ScheduleResponseLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ScheduleResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *ScheduleResponseLinks) contextValidateNext(ctx context.Context, formats
 	return nil
 }
 
-func (m *ScheduleResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *ScheduleResponseLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ScheduleResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *ScheduleResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ScheduleResponseLinks
+func (m *ScheduleResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ScheduleResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

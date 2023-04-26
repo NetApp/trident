@@ -66,21 +66,21 @@ type LunAttributeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LunUUID.
 
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	/* Name.
 
 	   The name of the attribute.
 
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *LunAttributeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the lun attribute get params
-func (o *LunAttributeGetParams) WithFieldsQueryParameter(fields []string) *LunAttributeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the lun attribute get params
+func (o *LunAttributeGetParams) WithFields(fields []string) *LunAttributeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the lun attribute get params
-func (o *LunAttributeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the lun attribute get params
+func (o *LunAttributeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun attribute get params
-func (o *LunAttributeGetParams) WithLunUUIDPathParameter(lunUUID string) *LunAttributeGetParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun attribute get params
+func (o *LunAttributeGetParams) WithLunUUID(lunUUID string) *LunAttributeGetParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun attribute get params
-func (o *LunAttributeGetParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun attribute get params
+func (o *LunAttributeGetParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
-// WithNamePathParameter adds the name to the lun attribute get params
-func (o *LunAttributeGetParams) WithNamePathParameter(name string) *LunAttributeGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the lun attribute get params
+func (o *LunAttributeGetParams) WithName(name string) *LunAttributeGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the lun attribute get params
-func (o *LunAttributeGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the lun attribute get params
+func (o *LunAttributeGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *LunAttributeGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *LunAttributeGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *LunAttributeGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamLunAttributeGet binds the parameter fields
 func (o *LunAttributeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

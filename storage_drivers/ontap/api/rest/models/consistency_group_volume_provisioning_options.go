@@ -21,14 +21,14 @@ import (
 type ConsistencyGroupVolumeProvisioningOptions struct {
 
 	// Operation to perform
-	// Enum: [create add]
-	Action string `json:"action,omitempty"`
+	// Enum: [create add remove]
+	Action *string `json:"action,omitempty"`
 
 	// Number of elements to perform the operation on.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// storage service
-	StorageService *ConsistencyGroupVolumeProvisioningOptionsStorageService `json:"storage_service,omitempty"`
+	StorageService *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`
 }
 
 // Validate validates this consistency group volume provisioning options
@@ -53,7 +53,7 @@ var consistencyGroupVolumeProvisioningOptionsTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["create","add"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["create","add","remove"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -82,6 +82,16 @@ const (
 	// END DEBUGGING
 	// ConsistencyGroupVolumeProvisioningOptionsActionAdd captures enum value "add"
 	ConsistencyGroupVolumeProvisioningOptionsActionAdd string = "add"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_provisioning_options
+	// ConsistencyGroupVolumeProvisioningOptions
+	// action
+	// Action
+	// remove
+	// END DEBUGGING
+	// ConsistencyGroupVolumeProvisioningOptionsActionRemove captures enum value "remove"
+	ConsistencyGroupVolumeProvisioningOptionsActionRemove string = "remove"
 )
 
 // prop value enum
@@ -98,7 +108,7 @@ func (m *ConsistencyGroupVolumeProvisioningOptions) validateAction(formats strfm
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 
@@ -168,19 +178,19 @@ func (m *ConsistencyGroupVolumeProvisioningOptions) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// ConsistencyGroupVolumeProvisioningOptionsStorageService Determines the placement of any storage object created during this operation.
+// ConsistencyGroupVolumeProvisioningOptionsInlineStorageService Determines the placement of any storage object created during this operation.
 //
-// swagger:model ConsistencyGroupVolumeProvisioningOptionsStorageService
-type ConsistencyGroupVolumeProvisioningOptionsStorageService struct {
+// swagger:model consistency_group_volume_provisioning_options_inline_storage_service
+type ConsistencyGroupVolumeProvisioningOptionsInlineStorageService struct {
 
 	// Storage service name. If not specified, the default value is the most performant for the platform.
 	//
 	// Enum: [extreme performance value]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this consistency group volume provisioning options storage service
-func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume provisioning options inline storage service
+func (m *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -193,7 +203,7 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) Validate(forma
 	return nil
 }
 
-var consistencyGroupVolumeProvisioningOptionsStorageServiceTypeNamePropEnum []interface{}
+var consistencyGroupVolumeProvisioningOptionsInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -201,71 +211,71 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupVolumeProvisioningOptionsStorageServiceTypeNamePropEnum = append(consistencyGroupVolumeProvisioningOptionsStorageServiceTypeNamePropEnum, v)
+		consistencyGroupVolumeProvisioningOptionsInlineStorageServiceTypeNamePropEnum = append(consistencyGroupVolumeProvisioningOptionsInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsStorageService
-	// ConsistencyGroupVolumeProvisioningOptionsStorageService
+	// consistency_group_volume_provisioning_options_inline_storage_service
+	// ConsistencyGroupVolumeProvisioningOptionsInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsStorageServiceNameExtreme captures enum value "extreme"
-	ConsistencyGroupVolumeProvisioningOptionsStorageServiceNameExtreme string = "extreme"
+	// ConsistencyGroupVolumeProvisioningOptionsInlineStorageServiceNameExtreme captures enum value "extreme"
+	ConsistencyGroupVolumeProvisioningOptionsInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsStorageService
-	// ConsistencyGroupVolumeProvisioningOptionsStorageService
+	// consistency_group_volume_provisioning_options_inline_storage_service
+	// ConsistencyGroupVolumeProvisioningOptionsInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsStorageServiceNamePerformance captures enum value "performance"
-	ConsistencyGroupVolumeProvisioningOptionsStorageServiceNamePerformance string = "performance"
+	// ConsistencyGroupVolumeProvisioningOptionsInlineStorageServiceNamePerformance captures enum value "performance"
+	ConsistencyGroupVolumeProvisioningOptionsInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsStorageService
-	// ConsistencyGroupVolumeProvisioningOptionsStorageService
+	// consistency_group_volume_provisioning_options_inline_storage_service
+	// ConsistencyGroupVolumeProvisioningOptionsInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsStorageServiceNameValue captures enum value "value"
-	ConsistencyGroupVolumeProvisioningOptionsStorageServiceNameValue string = "value"
+	// ConsistencyGroupVolumeProvisioningOptionsInlineStorageServiceNameValue captures enum value "value"
+	ConsistencyGroupVolumeProvisioningOptionsInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeProvisioningOptionsStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeProvisioningOptionsInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) validateName(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("storage_service"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("storage_service"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this consistency group volume provisioning options storage service based on context it is used
-func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this consistency group volume provisioning options inline storage service based on context it is used
+func (m *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -273,8 +283,8 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) MarshalBinary(
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeProvisioningOptionsStorageService) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeProvisioningOptionsStorageService
+func (m *ConsistencyGroupVolumeProvisioningOptionsInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeProvisioningOptionsInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

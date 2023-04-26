@@ -406,16 +406,24 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	luks := "true"
 	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
 	d.API = mockAPI
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
-		"tieringPolicy":  "none",
-		"LUKSEncryption": luks,
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    luks,
 	})
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -427,7 +435,20 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	volAttrs := map[string]sa.Request{}
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.Nil(t, err, "Error is not nil")
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "fake-export-policy", volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
+	assert.Equal(t, "true", volConfig.LUKSEncryption)
+	assert.Equal(t, "xfs", volConfig.FileSystem)
 }
 
 func TestGetChapInfo(t *testing.T) {
@@ -687,7 +708,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetComment(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
@@ -732,7 +753,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetComment(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
@@ -771,7 +792,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetComment(ctx, "/vol/lunName/lun0")
+	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)

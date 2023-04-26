@@ -66,10 +66,10 @@ type MetroclusterDrGroupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// ID.
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *MetroclusterDrGroupGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster dr group get params
-func (o *MetroclusterDrGroupGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterDrGroupGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster dr group get params
+func (o *MetroclusterDrGroupGetParams) WithFields(fields []string) *MetroclusterDrGroupGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster dr group get params
-func (o *MetroclusterDrGroupGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster dr group get params
+func (o *MetroclusterDrGroupGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the metrocluster dr group get params
-func (o *MetroclusterDrGroupGetParams) WithIDPathParameter(id string) *MetroclusterDrGroupGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the metrocluster dr group get params
+func (o *MetroclusterDrGroupGetParams) WithID(id string) *MetroclusterDrGroupGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the metrocluster dr group get params
-func (o *MetroclusterDrGroupGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the metrocluster dr group get params
+func (o *MetroclusterDrGroupGetParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *MetroclusterDrGroupGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *MetroclusterDrGroupGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *MetroclusterDrGroupGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamMetroclusterDrGroupGet binds the parameter fields
 func (o *MetroclusterDrGroupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

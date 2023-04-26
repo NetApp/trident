@@ -9,10 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // GetFilesystemStats returns the size of the filesystem for the given path.
@@ -52,8 +51,10 @@ func GetFilesystemStats(
 	}
 
 	buf := result.Output
-	size := int64(buf.Blocks) * buf.Bsize
-	Logc(ctx).WithFields(log.Fields{
+	//goland:noinspection GoRedundantConversion
+	size := int64(buf.Blocks) * int64(buf.Bsize)
+
+	Logc(ctx).WithFields(LogFields{
 		"path":   path,
 		"size":   size,
 		"bsize":  buf.Bsize,
@@ -62,7 +63,8 @@ func GetFilesystemStats(
 		"free":   buf.Bfree,
 	}).Debug("Filesystem size information")
 
-	available = int64(buf.Bavail) * buf.Bsize
+	//goland:noinspection GoRedundantConversion
+	available = int64(buf.Bavail) * int64(buf.Bsize)
 	capacity = size
 	usage = capacity - available
 	inodes = int64(buf.Files)
@@ -99,4 +101,23 @@ func GetUnmountPath(ctx context.Context, trackingInfo *VolumeTrackingInfo) (stri
 	defer Logc(ctx).Debug("<<<< filesystem_linux.GetUnmountPath")
 
 	return "", UnsupportedError("GetUnmountPath is not supported for linux")
+}
+
+// generateAnonymousMemFile uses linux syscall memfd_create to create an anonymous, temporary, in-memory file
+// with the specified name and contents
+func generateAnonymousMemFile(tempFileName, content string) (int, error) {
+	fd, err := unix.MemfdCreate(tempFileName, 0)
+	if err != nil {
+		return -1, fmt.Errorf("failed to create anonymous file; %v", err)
+	}
+	_, err = unix.Write(fd, []byte(content))
+	if err != nil {
+		return fd, fmt.Errorf("failed to write anonymous file; %v", err)
+	}
+	// Rewind back to the beginning
+	_, err = unix.Seek(fd, 0, 0)
+	if err != nil {
+		return fd, fmt.Errorf("failed to rewind anonymous file; %v", err)
+	}
+	return fd, nil
 }

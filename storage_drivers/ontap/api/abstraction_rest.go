@@ -15,11 +15,13 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
+	sa "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // RestError encapsulates the status, reason, and errno values from a REST invocation, and it provides helper methods for detecting
@@ -42,15 +44,40 @@ type RestError struct {
 }
 
 func NewRestErrorFromPayload(payload *models.Job) RestError {
-	return RestError{
-		uuid:        payload.UUID.String(),
-		description: payload.Description,
-		state:       payload.State,
-		message:     payload.Message,
-		code:        fmt.Sprint(payload.Code),
-		start_time:  payload.StartTime.String(),
-		end_time:    payload.EndTime.String(),
+	restError := RestError{}
+	if payload == nil {
+		return restError
 	}
+
+	if payload.UUID != nil {
+		restError.uuid = payload.UUID.String()
+	}
+
+	if payload.Description != nil {
+		restError.description = *payload.Description
+	}
+
+	if payload.State != nil {
+		restError.state = *payload.State
+	}
+
+	if payload.Message != nil {
+		restError.message = *payload.Message
+	}
+
+	if payload.Code != nil {
+		restError.code = fmt.Sprint(*payload.Code)
+	}
+
+	if payload.StartTime != nil {
+		restError.start_time = payload.StartTime.String()
+	}
+
+	if payload.EndTime != nil {
+		restError.end_time = payload.EndTime.String()
+	}
+
+	return restError
 }
 
 func (e RestError) IsSuccess() bool {
@@ -85,12 +112,14 @@ func (e RestError) Code() string {
 }
 
 type OntapAPIREST struct {
-	api RestClientInterface
+	api        RestClientInterface
+	driverName string
 }
 
-func NewOntapAPIREST(restClient *RestClient) (OntapAPIREST, error) {
+func NewOntapAPIREST(restClient *RestClient, driverName string) (OntapAPIREST, error) {
 	result := OntapAPIREST{
-		api: restClient,
+		api:        restClient,
+		driverName: driverName,
 	}
 
 	return result, nil
@@ -99,7 +128,8 @@ func NewOntapAPIREST(restClient *RestClient) (OntapAPIREST, error) {
 // NewOntapAPIRESTFromRestClientInterface added for testing
 func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (OntapAPIREST, error) {
 	result := OntapAPIREST{
-		api: restClient,
+		api:        restClient,
+		driverName: "",
 	}
 
 	return result, nil
@@ -117,7 +147,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	}
 	Logc(ctx).WithField("ontapVersion", ontapVersion).Debug("ONTAP version.")
 
-	ontapSemVer, err := utils.ParseSemantic(ontapVersion)
+	ontapSemVer, err := versionutils.ParseSemantic(ontapVersion)
 	if err != nil {
 		return err
 	}
@@ -128,19 +158,19 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 }
 
 func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "VolumeCreate",
-			"Type":   "OntapAPIREST",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> VolumeCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeCreate")
+	fields := LogFields{
+		"Method": "VolumeCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeCreate")
 
 	creationErr := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
-		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
 	if creationErr != nil {
 		return fmt.Errorf("error creating volume: %v", creationErr)
 	}
@@ -190,17 +220,26 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 	var responseSpaceReserve string
 	var responseUnixPermissions string
 
+	if volumeGetResponse == nil {
+		return nil, fmt.Errorf("volumeGetResponse was nil")
+	}
+	if volumeGetResponse.Name == nil {
+		return nil, fmt.Errorf("volumeGetResponse name was nil")
+	}
+
 	if volumeGetResponse.Type != nil {
 		responseAccessType = *volumeGetResponse.Type
 	}
 
-	if volumeGetResponse.Aggregates != nil && len(volumeGetResponse.Aggregates) > 0 {
-		responseAggregates = []string{
-			volumeGetResponse.Aggregates[0].Name,
+	if len(volumeGetResponse.VolumeInlineAggregates) > 0 {
+		if volumeGetResponse.VolumeInlineAggregates[0].Name != nil {
+			responseAggregates = []string{
+				*volumeGetResponse.VolumeInlineAggregates[0].Name,
+			}
 		}
 	} else {
 		return nil, VolumeIdAttributesReadError(fmt.Sprintf("error reading aggregates for volume %s",
-			volumeGetResponse.Name))
+			*volumeGetResponse.Name))
 	}
 
 	if volumeGetResponse.Comment != nil {
@@ -213,20 +252,26 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		}
 
 		if volumeGetResponse.Nas.ExportPolicy != nil {
-			responseExportPolicy = volumeGetResponse.Nas.ExportPolicy.Name
+			if volumeGetResponse.Nas.ExportPolicy.Name != nil {
+				responseExportPolicy = *volumeGetResponse.Nas.ExportPolicy.Name
+			}
 		}
 
-		responseUnixPermissions = strconv.FormatInt(volumeGetResponse.Nas.UnixPermissions, 8)
+		if volumeGetResponse.Nas.UnixPermissions != nil {
+			responseUnixPermissions = strconv.FormatInt(*volumeGetResponse.Nas.UnixPermissions, 8)
+		}
 	}
 
-	responseSize = strconv.FormatInt(volumeGetResponse.Size, 10)
-
-	if volumeGetResponse.Guarantee != nil {
-		responseSpaceReserve = volumeGetResponse.Guarantee.Type
+	if volumeGetResponse.Size != nil {
+		responseSize = strconv.FormatInt(*volumeGetResponse.Size, 10)
 	}
 
-	if volumeGetResponse.SnapshotPolicy != nil {
-		responseSnapshotPolicy = volumeGetResponse.SnapshotPolicy.Name
+	if volumeGetResponse.Guarantee != nil && volumeGetResponse.Guarantee.Type != nil {
+		responseSpaceReserve = *volumeGetResponse.Guarantee.Type
+	}
+
+	if volumeGetResponse.SnapshotPolicy != nil && volumeGetResponse.SnapshotPolicy.Name != nil {
+		responseSnapshotPolicy = *volumeGetResponse.SnapshotPolicy.Name
 	}
 
 	if volumeGetResponse.Space != nil {
@@ -234,27 +279,41 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 			if volumeGetResponse.Space.Snapshot.ReservePercent != nil {
 				responseSnapshotReserveInt = int(*volumeGetResponse.Space.Snapshot.ReservePercent)
 			}
-			responseSnapshotSpaceUsed = int(volumeGetResponse.Space.Snapshot.Used)
+			if volumeGetResponse.Space.Snapshot.Used != nil {
+				responseSnapshotSpaceUsed = int(*volumeGetResponse.Space.Snapshot.Used)
+			}
 		}
 	}
 
+	snapshotDir := false
+	if volumeGetResponse.SnapshotDirectoryAccessEnabled != nil {
+		snapshotDir = *volumeGetResponse.SnapshotDirectoryAccessEnabled
+	}
+
 	volumeInfo := &Volume{
-		AccessType:   responseAccessType,
-		Aggregates:   responseAggregates,
-		Comment:      responseComment,
-		ExportPolicy: responseExportPolicy,
-		JunctionPath: responseJunctionPath,
-		Name:         volumeGetResponse.Name,
-		Size:         responseSize,
-		// SnapshotDir:     false, // TODO fix this, figure it out for real
+		AccessType:        responseAccessType,
+		Aggregates:        responseAggregates,
+		Comment:           responseComment,
+		ExportPolicy:      responseExportPolicy,
+		JunctionPath:      responseJunctionPath,
+		Size:              responseSize,
+		SnapshotDir:       snapshotDir,
 		SnapshotPolicy:    responseSnapshotPolicy,
 		SnapshotReserve:   responseSnapshotReserveInt,
 		SnapshotSpaceUsed: responseSnapshotSpaceUsed,
 		SpaceReserve:      responseSpaceReserve,
 		UnixPermissions:   responseUnixPermissions,
-		UUID:              volumeGetResponse.UUID,
 		DPVolume:          responseAccessType == "dp",
 	}
+
+	if volumeGetResponse.Name != nil {
+		volumeInfo.Name = *volumeGetResponse.Name
+	}
+
+	if volumeGetResponse.UUID != nil {
+		volumeInfo.UUID = *volumeGetResponse.UUID
+	}
+
 	return volumeInfo, nil
 }
 
@@ -275,24 +334,26 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 	}
 
 	var lunMap LunMap
-	if lunGetResponse.LunMaps != nil {
-		for _, record := range lunGetResponse.LunMaps {
-			lunMap.IgroupName = record.Igroup.Name
-			lunMap.LunID = int(record.LogicalUnitNumber)
-			responseLunMaps = append(responseLunMaps, lunMap)
+	for _, record := range lunGetResponse.LunInlineLunMaps {
+		if record.Igroup != nil && record.Igroup.Name != nil {
+			lunMap.IgroupName = *record.Igroup.Name
 		}
+		if record.LogicalUnitNumber != nil {
+			lunMap.LunID = int(*record.LogicalUnitNumber)
+		}
+		responseLunMaps = append(responseLunMaps, lunMap)
 	}
 
-	if lunGetResponse.Space != nil {
-		responseSize = strconv.FormatInt(lunGetResponse.Space.Size, 10)
+	if lunGetResponse.Space != nil && lunGetResponse.Space.Size != nil {
+		responseSize = strconv.FormatInt(*lunGetResponse.Space.Size, 10)
 	}
 
 	if lunGetResponse.Comment != nil {
 		responseComment = *lunGetResponse.Comment
 	}
 
-	if lunGetResponse.QosPolicy != nil {
-		responseQos = lunGetResponse.QosPolicy.Name
+	if lunGetResponse.QosPolicy != nil && lunGetResponse.QosPolicy.Name != nil {
+		responseQos = *lunGetResponse.QosPolicy.Name
 	}
 
 	if lunGetResponse.Status.Mapped != nil {
@@ -300,8 +361,8 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 	}
 
 	if lunGetResponse.Location != nil {
-		if lunGetResponse.Location.Volume != nil {
-			responseVolName = lunGetResponse.Location.Volume.Name
+		if lunGetResponse.Location.Volume != nil && lunGetResponse.Location.Volume.Name != nil {
+			responseVolName = *lunGetResponse.Location.Volume.Name
 		}
 	}
 
@@ -309,18 +370,43 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		responseCreateTime = lunGetResponse.CreateTime.String()
 	}
 
+	enabled := false
+	if lunGetResponse.Enabled != nil {
+		enabled = *lunGetResponse.Enabled
+	}
+
+	name := ""
+	if lunGetResponse.Name != nil {
+		name = *lunGetResponse.Name
+	}
+
+	uuid := ""
+	if lunGetResponse.UUID != nil {
+		uuid = *lunGetResponse.UUID
+	}
+
+	serialNumber := ""
+	if lunGetResponse.SerialNumber != nil {
+		serialNumber = *lunGetResponse.SerialNumber
+	}
+
+	state := ""
+	if lunGetResponse.Status != nil && lunGetResponse.Status.State != nil {
+		state = *lunGetResponse.Status.State
+	}
+
 	lunInfo := &Lun{
 		Comment:      responseComment,
 		CreateTime:   responseCreateTime,
-		Enabled:      lunGetResponse.Enabled,
+		Enabled:      enabled,
 		LunMaps:      responseLunMaps,
-		Name:         lunGetResponse.Name,
+		Name:         name,
 		Qos:          QosPolicyGroup{Name: responseQos},
 		Size:         responseSize,
 		Mapped:       responseMapped,
-		UUID:         lunGetResponse.UUID,
-		SerialNumber: lunGetResponse.SerialNumber,
-		State:        lunGetResponse.Status.State,
+		UUID:         uuid,
+		SerialNumber: serialNumber,
+		State:        state,
 		VolumeName:   responseVolName,
 	}
 	return lunInfo, nil
@@ -369,15 +455,15 @@ func (d OntapAPIREST) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "FlexgroupCreate",
-			"Type":   "OntapAPIREST",
-			"spec":   volume,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupCreate")
+	fields := LogFields{
+		"Method": "FlexgroupCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   volume,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> FlexgroupCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< FlexgroupCreate")
 
 	volumeSize, _ := strconv.ParseUint(volume.Size, 10, 64)
 
@@ -475,13 +561,18 @@ func (d OntapAPIREST) FlexgroupSnapshotList(ctx context.Context, sourceVolume st
 	if snapListResponse == nil {
 		return nil, fmt.Errorf("error enumerating snapshots")
 	}
-	snapshots := Snapshots{}
+	if snapListResponse.Payload == nil {
+		return nil, fmt.Errorf("error enumerating snapshots")
+	}
 
-	for _, snap := range snapListResponse.Payload.Records {
-		snapshots = append(snapshots, Snapshot{
-			CreateTime: snap.CreateTime.String(), // TODO do we need to format this?
-			Name:       snap.Name,
-		})
+	snapshots := Snapshots{}
+	for _, snap := range snapListResponse.Payload.SnapshotResponseInlineRecords {
+		if snap.CreateTime != nil && snap.Name != nil {
+			snapshots = append(snapshots, Snapshot{
+				CreateTime: snap.CreateTime.String(),
+				Name:       *snap.Name,
+			})
+		}
 	}
 
 	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
@@ -536,21 +627,21 @@ func (d OntapAPIREST) FlexgroupListByPrefix(ctx context.Context, prefix string) 
 		prefix += "*"
 	}
 
-	volumesResponse, err := d.api.FlexGroupGetAll(ctx, prefix)
+	flexgroupsResponse, err := d.api.FlexGroupGetAll(ctx, prefix)
 	if err != nil {
 		return nil, err
 	}
+	if flexgroupsResponse == nil || flexgroupsResponse.Payload == nil {
+		return nil, fmt.Errorf("flexgroupsResponse was nil")
+	}
 
 	volumes := Volumes{}
-
-	if volumesResponse.Payload.Records != nil {
-		for _, volume := range volumesResponse.Payload.Records {
-			volumeInfo, err := VolumeInfoFromRestAttrsHelper(volume)
-			if err != nil {
-				return nil, err
-			}
-			volumes = append(volumes, volumeInfo)
+	for _, volume := range flexgroupsResponse.Payload.VolumeResponseInlineRecords {
+		volumeInfo, err := VolumeInfoFromRestAttrsHelper(volume)
+		if err != nil {
+			return nil, err
 		}
+		volumes = append(volumes, volumeInfo)
 	}
 
 	return volumes, nil
@@ -602,14 +693,19 @@ func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList m
 	}()
 
 	result, err := d.api.AggregateList(ctx, "*")
-	if result == nil || result.Payload.NumRecords == 0 || result.Payload.Records == nil {
+	if result == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 || result.Payload.AggregateResponseInlineRecords == nil {
 		return nil, fmt.Errorf("could not retrieve aggregate information")
 	}
 
 	aggrList = make(map[string]string)
 
-	for _, aggr := range result.Payload.Records {
-		aggrList[aggr.Name] = aggr.BlockStorage.Primary.DiskType // TODO validate this is right
+	for _, aggr := range result.Payload.AggregateResponseInlineRecords {
+		if aggr.Name == nil {
+			continue
+		}
+		if aggr.BlockStorage != nil && aggr.BlockStorage.Primary != nil && aggr.BlockStorage.Primary.DiskType != nil {
+			aggrList[*aggr.Name] = *aggr.BlockStorage.Primary.DiskType
+		}
 	}
 
 	return aggrList, nil
@@ -635,11 +731,20 @@ func (d OntapAPIREST) TieringPolicyValue(ctx context.Context) string {
 	return d.api.TieringPolicyValue(ctx)
 }
 
-func hasRestAggrSpaceInformation(ctx context.Context, aggrSpace *models.AggregateSpace) bool {
+func hasRestAggrSpaceInformation(ctx context.Context, aggrSpace *models.AggregateInlineSpace) bool {
 	if aggrSpace == nil {
 		return false
 	}
 	if aggrSpace.BlockStorage == nil {
+		return false
+	}
+	if aggrSpace.BlockStorage.Size == nil {
+		return false
+	}
+	if aggrSpace.BlockStorage.Used == nil {
+		return false
+	}
+	if aggrSpace.Footprint == nil {
 		return false
 	}
 	return true
@@ -660,14 +765,19 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 
 	var svmAggregateSpaceList []SVMAggregateSpace
 
-	for _, aggr := range response.Payload.Records {
+	for _, aggr := range response.Payload.AggregateResponseInlineRecords {
 
 		if aggr == nil {
 			Logc(ctx).Debugf("Skipping empty record")
 			continue
 		}
 
-		aggrName := aggr.Name
+		if aggr.Name == nil {
+			Logc(ctx).Debugf("Skipping empty record")
+			continue
+		}
+
+		aggrName := *aggr.Name
 		if aggregate != aggrName {
 			Logc(ctx).Debugf("Skipping " + aggrName)
 			continue
@@ -679,15 +789,18 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 			continue
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"aggrName": aggrName,
 			"size":     aggrSpace.BlockStorage.Size,
 		}).Info("Dumping aggregate space")
 
+		// nil checked in hasRestAggrSpaceInformation()
+		blockStorage := *aggrSpace.BlockStorage
+		footprint := *aggrSpace.Footprint
 		svmAggregateSpace := SVMAggregateSpace{
-			size:      aggrSpace.BlockStorage.Size,
-			used:      aggrSpace.BlockStorage.Used,
-			footprint: aggrSpace.Footprint,
+			size:      *blockStorage.Size,
+			used:      *blockStorage.Used,
+			footprint: footprint,
 		}
 
 		svmAggregateSpaceList = append(svmAggregateSpaceList, svmAggregateSpace)
@@ -708,6 +821,12 @@ func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, 
 func (d OntapAPIREST) VolumeMount(ctx context.Context, name, junctionPath string) error {
 	// Mount the volume at the specified junction
 	if err := d.api.VolumeMount(ctx, name, junctionPath); err != nil {
+		if restErr, ok := err.(RestError); ok {
+			// Error code for expected error when mounting to DP volume that isn't initialized
+			if restErr.code == DP_VOLUME_NOT_INITIALIZED {
+				return ApiError(fmt.Sprintf("%v", err))
+			}
+		}
 		return fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
 	}
 
@@ -795,8 +914,9 @@ func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 
 	volumes := Volumes{}
 
-	if volumesResponse.Payload.Records != nil {
-		for _, volume := range volumesResponse.Payload.Records {
+	if volumesResponse.Payload != nil {
+		payload := *volumesResponse.Payload
+		for _, volume := range payload.VolumeResponseInlineRecords {
 			volumeInfo, err := VolumeInfoFromRestAttrsHelper(volume)
 			if err != nil {
 				return nil, err
@@ -813,26 +933,36 @@ func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 	return d.api.VolumeListByAttrs(ctx, volumeAttrs)
 }
 
-func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "ExportRuleCreate",
-			"Type":               "OntapAPIREST",
-			"policyName":         policyName,
-			"desiredPolicyRules": desiredPolicyRules,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ExportRuleCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ExportRuleCreate")
+func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules, nasProtocol string) error {
+	var ruleResponse *n_a_s.ExportRuleCreateCreated
+	var err error
+	var protocol []string
+
+	fields := LogFields{
+		"Method":             "ExportRuleCreate",
+		"Type":               "OntapAPIREST",
+		"policyName":         policyName,
+		"desiredPolicyRules": desiredPolicyRules,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ExportRuleCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ExportRuleCreate")
 
 	// unlike the ZAPI version of this function, we must create them 1 at a time here in REST
 	for _, desiredPolicyRule := range strings.Split(desiredPolicyRules, ",") {
-		Logc(ctx).Debugf("processing desiredPolicyRule: '%v'", desiredPolicyRule)
-		ruleResponse, err := d.api.ExportRuleCreate(ctx, policyName, desiredPolicyRule,
-			[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+		if nasProtocol == sa.SMB {
+			protocol = []string{"cifs"}
+		} else {
+			protocol = []string{"nfs"}
+		}
+
+		Logc(ctx).Debugf("processing desiredPolicyRule for %v protocol: '%v'", nasProtocol, desiredPolicyRule)
+		ruleResponse, err = d.api.ExportRuleCreate(ctx, policyName, desiredPolicyRule, protocol, []string{"any"},
+			[]string{"any"}, []string{"any"})
 		if err != nil {
 			err = fmt.Errorf("error creating export rule: %v", err)
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"ExportPolicy": policyName,
 				"ClientMatch":  desiredPolicyRule,
 			}).Error(err)
@@ -850,7 +980,7 @@ func (d OntapAPIREST) ExportRuleDestroy(ctx context.Context, policyName string, 
 	ruleDestroyResponse, err := d.api.ExportRuleDestroy(ctx, policyName, ruleIndex)
 	if err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"ExportPolicy": policyName,
 			"RuleIndex":    ruleIndex,
 		}).Error(err)
@@ -893,11 +1023,17 @@ func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (ma
 	}
 
 	rules := make(map[string]int)
-	if ruleListResponse != nil && ruleListResponse.Payload.NumRecords > 0 {
-		exportRuleList := ruleListResponse.Payload.Records
+	if ruleListResponse != nil &&
+		ruleListResponse.Payload != nil &&
+		ruleListResponse.Payload.NumRecords != nil &&
+		*ruleListResponse.Payload.NumRecords > 0 {
+
+		exportRuleList := ruleListResponse.Payload.ExportRuleResponseInlineRecords
 		for _, rule := range exportRuleList {
-			for _, client := range rule.Clients {
-				rules[client.Match] = int(rule.Index)
+			for _, client := range rule.ExportRuleInlineClients {
+				if client.Match != nil && rule.Index != nil {
+					rules[*client.Match] = int(*rule.Index)
+				}
 			}
 		}
 	}
@@ -944,7 +1080,7 @@ func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 		return nil, fmt.Errorf(msg)
 	}
 	qtrees := Qtrees{}
-	for _, qtree := range qtreeList.GetPayload().Records {
+	for _, qtree := range qtreeList.GetPayload().QtreeResponseInlineRecords {
 		newQtree := d.convertQtree(qtree)
 		qtrees = append(qtrees, newQtree)
 	}
@@ -953,19 +1089,25 @@ func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 }
 
 func (d OntapAPIREST) convertQtree(qtree *models.Qtree) *Qtree {
-	newQtree := &Qtree{
-		Name:            qtree.Name,
-		SecurityStyle:   string(qtree.SecurityStyle),
-		UnixPermissions: strconv.FormatInt(qtree.UnixPermissions, 10),
+	newQtree := &Qtree{}
+
+	if qtree.Name != nil {
+		newQtree.Name = *qtree.Name
 	}
-	if qtree.ExportPolicy != nil {
-		newQtree.ExportPolicy = qtree.ExportPolicy.Name
+	if qtree.SecurityStyle != nil {
+		newQtree.SecurityStyle = string(*qtree.SecurityStyle)
 	}
-	if qtree.Volume != nil {
-		newQtree.Volume = qtree.Volume.Name
+	if qtree.UnixPermissions != nil {
+		newQtree.UnixPermissions = strconv.FormatInt(*qtree.UnixPermissions, 10)
 	}
-	if qtree.Svm != nil {
-		newQtree.Vserver = qtree.Svm.Name
+	if qtree.ExportPolicy != nil && qtree.ExportPolicy.Name != nil {
+		newQtree.ExportPolicy = *qtree.ExportPolicy.Name
+	}
+	if qtree.Volume != nil && qtree.Volume.Name != nil {
+		newQtree.Volume = *qtree.Volume.Name
+	}
+	if qtree.Svm != nil && qtree.Svm.Name != nil {
+		newQtree.Vserver = *qtree.Svm.Name
 	}
 	return newQtree
 }
@@ -986,8 +1128,10 @@ func (d OntapAPIREST) QuotaEntryList(ctx context.Context, volumeName string) (Qu
 		return nil, err
 	}
 	entries := QuotaEntries{}
-	for _, entry := range response.Payload.Records {
-		entries = append(entries, d.convertQuota(entry))
+	if response != nil && response.Payload != nil {
+		for _, entry := range response.Payload.QuotaRuleResponseInlineRecords {
+			entries = append(entries, d.convertQuota(entry))
+		}
 	}
 	return entries, nil
 }
@@ -1024,7 +1168,15 @@ func (d OntapAPIREST) QuotaStatus(ctx context.Context, volumeName string) (strin
 		return "", fmt.Errorf("error getting quota status for Flexvol %s: %v", volumeName, err)
 	}
 
-	return volume.Quota.State, nil
+	if volume.Quota == nil {
+		return "", fmt.Errorf("error getting quota status for Flexvol %s: %v", volumeName, err)
+	}
+
+	if volume.Quota.State == nil {
+		return "", fmt.Errorf("error getting quota status for Flexvol %s: %v", volumeName, err)
+	}
+
+	return *volume.Quota.State, nil
 }
 
 func (d OntapAPIREST) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
@@ -1052,15 +1204,19 @@ func (d OntapAPIREST) QuotaGetEntry(ctx context.Context, volumeName, qtreeName, 
 
 func (d OntapAPIREST) convertQuota(quota *models.QuotaRule) *QuotaEntry {
 	diskLimit := int64(-1)
-	if quota.Space != nil {
-		diskLimit = quota.Space.HardLimit
+	if quota.Space != nil && quota.Space.HardLimit != nil {
+		diskLimit = *quota.Space.HardLimit
 	}
 	quotaEntry := &QuotaEntry{
 		DiskLimitBytes: diskLimit,
-		Target:         fmt.Sprintf("/vol/%s", quota.Volume.Name),
 	}
-	if quota.Qtree != nil && quota.Qtree.Name != "" {
-		quotaEntry.Target += fmt.Sprintf("/%s", quota.Qtree.Name)
+	if quota != nil && quota.Volume != nil && quota.Volume.Name != nil && *quota.Volume.Name != "" {
+		quotaEntry.Target = fmt.Sprintf("/vol/%s", *quota.Volume.Name)
+
+		if quota.Qtree != nil && quota.Qtree.Name != nil && *quota.Qtree.Name != "" {
+			// append
+			quotaEntry.Target += fmt.Sprintf("/%s", *quota.Qtree.Name)
+		}
 	}
 	return quotaEntry
 }
@@ -1138,11 +1294,16 @@ func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 	}
 	snapshots := Snapshots{}
 
-	for _, snap := range snapListResponse.Payload.Records {
-		snapshots = append(snapshots, Snapshot{
-			CreateTime: snap.CreateTime.String(), // TODO do we need to format this?
-			Name:       snap.Name,
-		})
+	if snapListResponse.Payload != nil {
+		for _, snap := range snapListResponse.Payload.SnapshotResponseInlineRecords {
+			if snap.CreateTime == nil || snap.Name == nil {
+				continue
+			}
+			snapshots = append(snapshots, Snapshot{
+				CreateTime: snap.CreateTime.String(),
+				Name:       *snap.Name,
+			})
+		}
 	}
 
 	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
@@ -1194,7 +1355,10 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 	if snapshot == nil {
 		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
 	}
-	snapshotUUID := snapshot.UUID
+	if snapshot.UUID == nil {
+		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
+	}
+	snapshotUUID := *snapshot.UUID
 
 	// DELETE the snapshot
 	snapshotDeleteResult, err := d.api.SnapshotDelete(ctx, sourceVolumeUUID, snapshotUUID)
@@ -1257,7 +1421,7 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 ) (VolumeNameList, error) {
 	childVolumes, err := d.api.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName":     snapshotName,
 			"parentVolumeName": sourceVolume,
 			"error":            err,
@@ -1274,97 +1438,265 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 	return childVolumes, nil
 }
 
-func (d OntapAPIREST) SnapmirrorDeleteViaDestination(_, _ string) error {
-	// TODO implement
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// BEGIN: Snapmirror operations
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (d OntapAPIREST) SnapmirrorDeleteViaDestination(
+	ctx context.Context, localInternalVolumeName, localSVMName string,
+) error {
+	err := d.api.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName)
+	if err != nil {
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
+		}
+	}
+
+	// Ensure no leftover snapmirror metadata
+	err = d.api.SnapmirrorRelease(ctx, localInternalVolumeName, localSVMName)
+	if err != nil {
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName, err)
+		}
+	}
+
 	return nil
 }
 
-func (d OntapAPIREST) SnapmirrorRelease(_, _ string) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+func (d OntapAPIREST) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error {
+	// Ensure no leftover snapmirror metadata
+	err := d.api.SnapmirrorRelease(ctx, sourceFlexvolName, sourceSVMName)
+	if err != nil {
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+	}
+
+	return nil
 }
 
-func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {
-	// TODO implement
-	return false, fmt.Errorf("not implemented")
+func (d OntapAPIREST) IsSVMDRCapable(ctx context.Context) (bool, error) {
+	return d.api.IsVserverDRCapable(ctx)
 }
 
 func (d OntapAPIREST) SnapmirrorCreate(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	return d.api.SnapmirrorCreate(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
+		replicationPolicy, replicationSchedule)
 }
 
 func (d OntapAPIREST) SnapmirrorGet(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
+	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
+	if err != nil {
+		return nil, err
+	}
+	if snapmirrorResponse == nil {
+		return nil, fmt.Errorf("unexpected error on snapmirror get")
+	}
 
-func (d OntapAPIREST) SnapmirrorDelete(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string,
-) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	snapmirror := &Snapmirror{}
+
+	if snapmirrorResponse.State != nil {
+		snapmirror.State = SnapmirrorState(*snapmirrorResponse.State)
+	}
+
+	if snapmirrorResponse.LastTransferType != nil {
+		snapmirror.LastTransferType = *snapmirrorResponse.LastTransferType
+	}
+
+	if snapmirrorResponse.Transfer != nil && snapmirrorResponse.Transfer.State != nil {
+		snapmirror.RelationshipStatus = SnapmirrorStatus(*snapmirrorResponse.Transfer.State)
+	}
+
+	if snapmirrorResponse.Healthy != nil {
+		snapmirror.IsHealthy = *snapmirrorResponse.Healthy
+		if !snapmirror.IsHealthy {
+			unhealthyReason := snapmirrorResponse.SnapmirrorRelationshipInlineUnhealthyReason
+			if len(unhealthyReason) > 0 {
+				snapmirror.UnhealthyReason = *unhealthyReason[0].Message
+			}
+		}
+	}
+
+	if snapmirrorResponse.Policy != nil && snapmirrorResponse.Policy.Name != nil {
+		snapmirror.ReplicationPolicy = *snapmirrorResponse.Policy.Name
+	}
+
+	if snapmirrorResponse.TransferSchedule != nil && snapmirrorResponse.TransferSchedule.Name != nil {
+		snapmirror.ReplicationSchedule = *snapmirrorResponse.TransferSchedule.Name
+	}
+
+	return snapmirror, nil
 }
 
 func (d OntapAPIREST) SnapmirrorInitialize(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	err := d.api.SnapmirrorInitialize(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
+			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code == SNAPMIRROR_TRANSFER_IN_PROGRESS {
+				Logc(ctx).Debug("snapmirror transfer already in progress")
+				return nil
+			}
+		}
+		Logc(ctx).WithError(err).Error("Error on snapmirror initialize")
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIREST) SnapmirrorDelete(
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
+	return d.api.SnapmirrorDelete(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIREST) SnapmirrorResync(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	err := d.api.SnapmirrorResync(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Error on snapmirror resync")
+		// If we fail on the resync, we need to cleanup the snapmirror
+		// it will be recreated in a future TMR reconcile loop through this function
+		if delError := d.SnapmirrorDelete(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
+			remoteSVMName); delError != nil {
+			Logc(ctx).WithError(delError).Error("Error on snapmirror delete following a resync failure")
+		}
+		return err
+	}
+	return nil
 }
 
 func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
+	snapmirrorPolicyResponse, err := d.api.SnapmirrorPolicyGet(ctx, replicationPolicy)
+	if err != nil {
+		return nil, err
+	}
+
+	if snapmirrorPolicyResponse == nil || snapmirrorPolicyResponse.Payload == nil {
+		return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+	}
+
+	if len(snapmirrorPolicyResponse.Payload.SnapmirrorPolicyResponseInlineRecords) != 1 {
+		return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+	}
+
+	response := snapmirrorPolicyResponse.Payload.SnapmirrorPolicyResponseInlineRecords[0]
+	if response == nil || response.Type == nil {
+		return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+	}
+
+	var syncType SnapmirrorPolicyType
+	if SnapmirrorPolicyType(*response.Type).IsSnapmirrorPolicyTypeSync() {
+		if response.SyncType == nil {
+			return nil, fmt.Errorf("unexpected error on snapmirror policy get")
+		}
+		syncType = SnapmirrorPolicyType(*response.SyncType)
+	} else {
+		syncType = SnapmirrorPolicyType(*response.Type)
+	}
+
+	copyAllSnapshots := false
+	if response.CopyAllSourceSnapshots != nil {
+		copyAllSnapshots = *response.CopyAllSourceSnapshots
+	}
+
+	snapmirrorPolicy := &SnapmirrorPolicy{
+		Type:             syncType,
+		CopyAllSnapshots: copyAllSnapshots,
+	}
+
+	return snapmirrorPolicy, nil
+}
+
+func (d OntapAPIREST) isTransferInProgressError(
+	ctx context.Context, err error,
+) bool {
+	if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
+		if restErr.Error != nil && restErr.Error.Code != nil {
+			switch *restErr.Error.Code {
+			case SNAPMIRROR_TRANSFER_IN_PROGRESS, SNAPMIRROR_TRANSFER_IN_PROGRESS_BROKEN_OFF:
+				return true
+			default:
+				return false
+			}
+		}
+	}
+	return false
 }
 
 func (d OntapAPIREST) SnapmirrorQuiesce(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	err := d.api.SnapmirrorQuiesce(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		if d.isTransferInProgressError(ctx, err) {
+			msg := "snapmirror transfer already in progress"
+			Logc(ctx).Debug(msg)
+			return NotReadyError(fmt.Sprintf("Snapmirror quiesce failed: %s", msg))
+		}
+		Logc(ctx).WithError(err).Error("Error on snapmirror quiesce")
+		return err
+	}
+	return nil
 }
 
 func (d OntapAPIREST) SnapmirrorAbort(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+	err := d.api.SnapmirrorAbort(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		if d.isTransferInProgressError(ctx, err) {
+			msg := "snapmirror transfer already in progress"
+			Logc(ctx).Debug(msg)
+			return NotReadyError(fmt.Sprintf("Snapmirror abort failed: %s", msg))
+		}
+		Logc(ctx).WithError(err).Error("Error on snapmirror abort")
+		return err
+	}
+	return nil
 }
 
 func (d OntapAPIREST) SnapmirrorBreak(
-	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, snapshotName string,
 ) error {
-	return fmt.Errorf("not implemented for REST")
+	// TODO: potential error if volume is not DP
+	err := d.api.SnapmirrorBreak(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
+		snapshotName)
+	if err != nil {
+		if d.isTransferInProgressError(ctx, err) {
+			msg := "snapmirror transfer already in progress"
+			Logc(ctx).Debug(msg)
+			return NotReadyError(fmt.Sprintf("Snapmirror break failed: %s", msg))
+		}
+		Logc(ctx).WithError(err).Error("Error on snapmirror break")
+		return err
+	}
+	return nil
 }
 
-func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule string) error {
-	// TODO implement
-	return fmt.Errorf("not implemented for REST")
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// END: Snapmirror operations
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
+	return d.api.JobScheduleExists(ctx, replicationSchedule)
 }
 
 func (d OntapAPIREST) GetSVMPeers(ctx context.Context) ([]string, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
+	return d.api.GetPeeredVservers(ctx)
 }
 
 func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error) {
@@ -1375,8 +1707,9 @@ func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error)
 
 	luns := Luns{}
 
-	if lunsResponse.Payload.Records != nil {
-		for _, lun := range lunsResponse.Payload.Records {
+	if lunsResponse.Payload != nil {
+		payload := *lunsResponse.Payload
+		for _, lun := range payload.LunResponseInlineRecords {
 			lunInfo, err := lunInfoFromRestAttrsHelper(lun)
 			if err != nil {
 				return nil, err
@@ -1389,15 +1722,14 @@ func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "LunCreate",
-			"Type":   "OntapAPIREST",
-			"spec":   lun,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCreate")
+	fields := LogFields{
+		"Method": "LunCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   lun,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCreate")
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -1411,22 +1743,24 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 }
 
 func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "LunDestroy",
-			"Type":   "OntapAPIREST",
-			"Name":   lunPath,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunDestroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunDestroy")
+	fields := LogFields{
+		"Method": "LunDestroy",
+		"Type":   "OntapAPIREST",
+		"Name":   lunPath,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunDestroy")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunDestroy")
 
 	lun, err := d.api.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return fmt.Errorf("error getting LUN: %v", lunPath)
 	}
+	if lun.UUID == nil {
+		return fmt.Errorf("error getting LUN: %v", lunPath)
+	}
 
-	err = d.api.LunDelete(ctx, lun.UUID)
+	err = d.api.LunDelete(ctx, *lun.UUID)
 	if err != nil {
 		return fmt.Errorf("error deleting LUN: %v", lunPath)
 	}
@@ -1471,25 +1805,37 @@ func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 	return nil
 }
 
-// TODO: Change this for LUN Attributes when available
-func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
-	// parse := true
-	// comment, err := d.api.LunGetComment(ctx, lunPath)
-	// return comment, parse, err
-	// TODO: refactor, this is specifically for getting the fstype
-	var fstype string
-	parse := false
+func (d OntapAPIREST) LunGetFSType(ctx context.Context, lunPath string) (string, error) {
+	// Get the fstype from LUN Attribute
 	LUNAttributeFSType := "com.netapp.ndvp.fstype"
 	fstype, err := d.api.LunGetAttribute(ctx, lunPath, LUNAttributeFSType)
 	if err != nil {
-		return "", parse, err
-	} else {
-		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+		// If not found, extract the fstype from LUN Comment
+		comment, err := d.api.LunGetComment(ctx, lunPath)
+		if err != nil {
+			return "", err
+		}
+
+		// Parse the comment to get fstype value
+		var lunComment map[string]map[string]string
+		err = json.Unmarshal([]byte(comment), &lunComment)
+		if err != nil {
+			return "", err
+		}
+		lunAttrs := lunComment["lunAttributes"]
+		if lunAttrs != nil {
+			fstype = lunAttrs["fstype"]
+		} else {
+			return "", fmt.Errorf("lunAttributes field not found in LUN comment")
+		}
 	}
-	return fstype, parse, nil
+
+	Logc(ctx).WithFields(LogFields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	return fstype, nil
 }
 
-func (d OntapAPIREST) LunCloneCreate(ctx context.Context, flexvol, source, lunPath string,
+func (d OntapAPIREST) LunCloneCreate(
+	ctx context.Context, flexvol, source, lunPath string,
 	qosPolicyGroup QosPolicyGroup,
 ) error {
 	fullSourceLunPath := source
@@ -1502,19 +1848,19 @@ func (d OntapAPIREST) LunCloneCreate(ctx context.Context, flexvol, source, lunPa
 		fullCloneLunPath = fmt.Sprintf("/vol/%s/%s", flexvol, lunPath)
 	}
 
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":            "LunCloneCreate",
-			"Type":              "OntapAPIREST",
-			"flexvol":           flexvol,
-			"source":            source,
-			"lunPath":           lunPath,
-			"fullSourceLunPath": fullSourceLunPath,
-			"fullCloneLunPath":  fullCloneLunPath,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunCloneCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCloneCreate")
+	fields := LogFields{
+		"Method":            "LunCloneCreate",
+		"Type":              "OntapAPIREST",
+		"flexvol":           flexvol,
+		"source":            source,
+		"lunPath":           lunPath,
+		"fullSourceLunPath": fullSourceLunPath,
+		"fullCloneLunPath":  fullCloneLunPath,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCloneCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCloneCreate")
 
 	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath)
 	if err != nil {
@@ -1570,7 +1916,7 @@ func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context, luks 
 	commentsJSON := commentsJsonBytes.String()
 
 	if commentLimit != 0 && len(commentsJSON) > commentLimit {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"commentsJSON":       commentsJSON,
 			"commentsJSONLength": len(commentsJSON),
 			"maxCommentLength":   commentLimit,
@@ -1582,31 +1928,20 @@ func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context, luks 
 	return commentsJSON, nil
 }
 
-func (d OntapAPIREST) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
-	var lunComment map[string]map[string]string
-	err := json.Unmarshal([]byte(commentJSON), &lunComment)
-	if err != nil {
-		return nil, err
-	}
-	lunAttrs := lunComment["lunAttributes"]
-
-	return lunAttrs, nil
-}
-
 func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {
 	return d.api.LunSetQosPolicyGroup(ctx, lunPath, qosPolicyGroup.Name)
 }
 
 func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "LunGetByName",
-			"Type":    "OntapAPIREST",
-			"LunPath": name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
+	fields := LogFields{
+		"Method":  "LunGetByName",
+		"Type":    "OntapAPIREST",
+		"LunPath": name,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
 
 	lunResponse, err := d.api.LunGetByName(ctx, name)
 	if err != nil {
@@ -1620,16 +1955,16 @@ func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, erro
 }
 
 func (d OntapAPIREST) LunRename(ctx context.Context, lunPath, newLunPath string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "LunRename",
-			"Type":       "OntapAPIREST",
-			"OldLunName": lunPath,
-			"NewLunName": newLunPath,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunRename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunRename")
+	fields := LogFields{
+		"Method":     "LunRename",
+		"Type":       "OntapAPIREST",
+		"OldLunName": lunPath,
+		"NewLunName": newLunPath,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunRename")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunRename")
+
 	return d.api.LunRename(ctx, lunPath, newLunPath)
 }
 
@@ -1641,8 +1976,10 @@ func (d OntapAPIREST) LunMapInfo(ctx context.Context, initiatorGroupName, lunPat
 	}
 
 	if info.Payload != nil {
-		for _, lunMapResponse := range info.Payload.Records {
-			if lunMapResponse.Igroup.Name == initiatorGroupName {
+		for _, lunMapResponse := range info.Payload.LunMapResponseInlineRecords {
+			if lunMapResponse.Igroup != nil &&
+				lunMapResponse.Igroup.Name != nil &&
+				*lunMapResponse.Igroup.Name == initiatorGroupName {
 				if lunMapResponse.LogicalUnitNumber != nil {
 					lunID = int(*lunMapResponse.LogicalUnitNumber)
 				}
@@ -1662,26 +1999,29 @@ func (d OntapAPIREST) isLunMapped(
 	if err != nil {
 		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
 	}
-	if lunMapResponse == nil || lunMapResponse.Payload == nil || lunMapResponse.Payload.Records == nil {
+	if lunMapResponse == nil || lunMapResponse.Payload == nil {
 		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s", lunPath)
 	}
 
-	for _, record := range lunMapResponse.Payload.Records {
-		if record.Igroup != nil {
-			if record.Igroup.Name != initiatorGroupName && !importNotManaged {
-				Logc(ctx).Debugf("deleting existing LUN mapping")
-				err = d.api.LunUnmap(ctx, record.Igroup.Name, lunPath)
-				if err != nil {
-					return alreadyMapped, lunID, fmt.Errorf("problem deleting map for LUN %s", lunPath)
-				}
+	Logc(ctx).WithFields(
+		LogFields{
+			"lun":    lunPath,
+			"igroup": initiatorGroupName,
+		},
+	).Debug("Checking if LUN is mapped to igroup.")
+
+	for _, record := range lunMapResponse.Payload.LunMapResponseInlineRecords {
+		if record.Igroup != nil && record.Igroup.Name != nil {
+			if *record.Igroup.Name != initiatorGroupName {
+				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, record.Igroup.Name)
 			}
-			if record.Igroup.Name == initiatorGroupName || importNotManaged {
+			if *record.Igroup.Name == initiatorGroupName || importNotManaged {
 				if record.LogicalUnitNumber != nil {
 					lunID = int(*record.LogicalUnitNumber)
 					alreadyMapped = true
 
 					Logc(ctx).WithFields(
-						log.Fields{
+						LogFields{
 							"lun":    lunPath,
 							"igroup": initiatorGroupName,
 							"id":     lunID,
@@ -1693,12 +2033,12 @@ func (d OntapAPIREST) isLunMapped(
 					if err != nil {
 						return alreadyMapped, lunID, err
 					}
-					if lun != nil && len(lun.LunMaps) > 0 {
-						lunID = int(lun.LunMaps[0].LogicalUnitNumber)
+					if lun != nil && len(lun.LunInlineLunMaps) > 0 && lun.LunInlineLunMaps[0].LogicalUnitNumber != nil {
+						lunID = int(*lun.LunInlineLunMaps[0].LogicalUnitNumber)
 						alreadyMapped = true
 
 						Logc(ctx).WithFields(
-							log.Fields{
+							LogFields{
 								"lun":    lunPath,
 								"igroup": initiatorGroupName,
 								"id":     lunID,
@@ -1727,16 +2067,19 @@ func (d OntapAPIREST) EnsureLunMapped(
 		if err != nil {
 			return -1, fmt.Errorf("err not nil, problem mapping LUN %s: %s", lunPath, err.Error())
 		}
-		if lunMapResponse == nil || lunMapResponse.Payload == nil || lunMapResponse.Payload.Records == nil {
+		if lunMapResponse == nil {
 			return -1, fmt.Errorf("response nil, problem mapping LUN %s: %v", lunPath, err)
 		}
-		if lunMapResponse.Payload.NumRecords == 1 {
-			if lunMapResponse.Payload.Records[0].LogicalUnitNumber != nil {
-				lunID = int(*lunMapResponse.Payload.Records[0].LogicalUnitNumber)
+		if lunMapResponse.Payload == nil || lunMapResponse.Payload.NumRecords == nil {
+			return -1, fmt.Errorf("response payload nil, problem mapping LUN %s: %v", lunPath, err)
+		}
+		if len(lunMapResponse.Payload.LunMapResponseInlineRecords) > 0 {
+			if lunMapResponse.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber != nil {
+				lunID = int(*lunMapResponse.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber)
 			}
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"lun":    lunPath,
 			"igroup": initiatorGroupName,
 			"id":     lunID,
@@ -1747,6 +2090,15 @@ func (d OntapAPIREST) EnsureLunMapped(
 }
 
 func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
+	fields := LogFields{
+		"LUN":    lunPath,
+		"igroup": initiatorGroupName,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> LunUnmap.")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunUnmap.")
+
 	err := d.api.LunUnmap(ctx, initiatorGroupName, lunPath)
 	if err != nil {
 		msg := "error unmapping LUN"
@@ -1768,9 +2120,9 @@ func (d OntapAPIREST) LunListIgroupsMapped(ctx context.Context, lunPath string) 
 		return names, fmt.Errorf("LUN map response is empty")
 	}
 
-	for _, records := range results.Payload.Records {
-		if records.Igroup != nil {
-			names = append(names, records.Igroup.Name)
+	for _, records := range results.Payload.LunMapResponseInlineRecords {
+		if records.Igroup != nil && records.Igroup.Name != nil {
+			names = append(names, *records.Igroup.Name)
 		}
 	}
 	return names, err
@@ -1788,9 +2140,9 @@ func (d OntapAPIREST) IgroupListLUNsMapped(ctx context.Context, initiatorGroupNa
 		return names, fmt.Errorf("LUN map response is empty")
 	}
 
-	for _, records := range results.Payload.Records {
-		if records.Lun != nil {
-			names = append(names, records.Lun.Name)
+	for _, records := range results.Payload.LunMapResponseInlineRecords {
+		if records.Lun != nil && records.Lun.Name != nil {
+			names = append(names, *records.Lun.Name)
 		}
 	}
 	return names, err
@@ -1810,16 +2162,16 @@ func (d OntapAPIREST) LunSize(ctx context.Context, flexvolName string) (int, err
 }
 
 func (d OntapAPIREST) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "LunSetSize",
-			"Type":    "OntapAPIREST",
-			"Name":    lunPath,
-			"NewSize": newSize,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> LunSetSize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< LunSetSize")
+	fields := LogFields{
+		"Method":  "LunSetSize",
+		"Type":    "OntapAPIREST",
+		"Name":    lunPath,
+		"NewSize": newSize,
 	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunSetSize")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunSetSize")
+
 	return d.api.LunSetSize(ctx, lunPath, newSize)
 }
 
@@ -1830,37 +2182,54 @@ func (d OntapAPIREST) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiIn
 		return authInfo, err
 	}
 
-	if response.Payload.Records == nil {
+	if response == nil || response.Payload == nil {
 		return authInfo, fmt.Errorf("iSCSI initiator response is nil")
 	}
 
-	if response.Payload.NumRecords == 0 {
+	if response.Payload.IscsiCredentialsResponseInlineRecords == nil {
+		return authInfo, fmt.Errorf("iSCSI initiator response is nil")
+	}
+
+	if response.Payload.NumRecords != nil && *response.Payload.NumRecords == 0 {
 		return authInfo, fmt.Errorf("iSCSI initiator response has no records")
 	}
 
-	if response.Payload.NumRecords > 1 {
+	if response.Payload.NumRecords != nil && *response.Payload.NumRecords > 1 {
 		return authInfo, fmt.Errorf("iSCSI initiator response has too many records")
 	}
 
-	record := response.Payload.Records[0]
-	if record.Svm != nil {
-		authInfo.SVMName = record.Svm.Name
+	record := response.Payload.IscsiCredentialsResponseInlineRecords[0]
+	if record.Svm != nil && record.Svm.Name != nil {
+		authInfo.SVMName = *record.Svm.Name
 	}
 
 	if record.Chap != nil {
 		if record.Chap.Inbound != nil {
-			authInfo.ChapUser = record.Chap.Inbound.User
-			authInfo.ChapPassphrase = record.Chap.Inbound.Password
+			if record.Chap.Inbound.User != nil {
+				authInfo.ChapUser = *record.Chap.Inbound.User
+			}
+			if record.Chap.Inbound.Password != nil {
+				authInfo.ChapPassphrase = *record.Chap.Inbound.Password
+			}
 		}
 
 		if record.Chap.Outbound != nil {
-			authInfo.ChapOutboundUser = record.Chap.Outbound.User
-			authInfo.ChapOutboundPassphrase = record.Chap.Outbound.Password
+			if record.Chap.Outbound.User != nil {
+				authInfo.ChapOutboundUser = *record.Chap.Outbound.User
+			}
+			if record.Chap.Outbound.Password != nil {
+				authInfo.ChapOutboundPassphrase = *record.Chap.Outbound.Password
+			}
 		}
 	}
 
-	authInfo.Initiator = record.Initiator
-	authInfo.AuthType = record.AuthenticationType
+	if record.Initiator != nil {
+		authInfo.Initiator = *record.Initiator
+	}
+
+	if record.AuthenticationType != nil {
+		authInfo.AuthType = *record.AuthenticationType
+	}
 
 	return authInfo, nil
 }
@@ -1873,23 +2242,24 @@ func (d OntapAPIREST) IscsiInitiatorSetDefaultAuth(
 
 func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
 	var iSCSINodeNames []string
-	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx, svm)
+	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get SVM iSCSI node name: %v", err)
 	}
-	if interfaceResponse.Payload == nil {
+	if interfaceResponse == nil || interfaceResponse.Payload == nil {
 		return nil, nil
 	}
 	// Get the IQN and ensure it is enabled
-	for _, record := range interfaceResponse.Payload.Records {
-		if *record.Enabled {
-			iSCSINodeNames = append(iSCSINodeNames, record.Target.Name)
+	for _, record := range interfaceResponse.Payload.IscsiServiceResponseInlineRecords {
+		if record.Enabled != nil && *record.Enabled {
+			if record.Target != nil && record.Target.Name != nil {
+				iSCSINodeNames = append(iSCSINodeNames, *record.Target.Name)
+			}
 		}
 	}
 
 	if len(iSCSINodeNames) == 0 {
-		return nil, fmt.Errorf(
-			"SVM %s has no active iSCSI interfaces", interfaceResponse.Payload.Records[0].Svm.Name)
+		return nil, fmt.Errorf("SVM %s has no active iSCSI interfaces", svm)
 	}
 
 	return iSCSINodeNames, nil
@@ -1909,21 +2279,25 @@ func (d OntapAPIREST) IscsiNodeGetNameRequest(ctx context.Context) (string, erro
 	if result.Payload.Target == nil {
 		return "", fmt.Errorf("could not get iSCSI node name target")
 	}
-	return result.Payload.Target.Name, nil
+	if result.Payload.Target.Name == nil {
+		return "", fmt.Errorf("could not get iSCSI node name target")
+	}
+	return *result.Payload.Target.Name, nil
 }
 
 func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "IgroupCreate",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-			"InitiatorGroupType": initiatorGroupType,
-			"OsType":             osType,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> IgroupCreate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupCreate")
+	fields := LogFields{
+		"Method":             "IgroupCreate",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
+		"InitiatorGroupType": initiatorGroupType,
+		"OsType":             osType,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupCreate")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupCreate")
+
 	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {
 		return err
@@ -1943,15 +2317,16 @@ func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, init
 }
 
 func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "IgroupDestroy",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> IgroupDestroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupDestroy")
+	fields := LogFields{
+		"Method":             "IgroupDestroy",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupDestroy")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupDestroy")
+
 	err := d.api.IgroupDestroy(ctx, initiatorGroupName)
 	if err != nil {
 		if !IsNotFoundError(err) {
@@ -1966,16 +2341,17 @@ func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 func (d OntapAPIREST) EnsureIgroupAdded(
 	ctx context.Context, initiatorGroupName, initiator string,
 ) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "EnsureIgroupAdded",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-			"IQN":                initiator,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> EnsureIgroupAdded")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< EnsureIgroupAdded")
+	fields := LogFields{
+		"Method":             "EnsureIgroupAdded",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
+		"IQN":                initiator,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> EnsureIgroupAdded")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< EnsureIgroupAdded")
+
 	alreadyAdded, err := d.isIgroupAdded(ctx, initiator, initiatorGroupName)
 	if err != nil {
 		return err
@@ -1996,8 +2372,8 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 		return alreadyAdded, err
 	}
 	if igroup != nil {
-		for _, i := range igroup.Initiators {
-			if i.Name == initiator {
+		for _, i := range igroup.IgroupInlineInitiators {
+			if i.Name != nil && *i.Name == initiator {
 				Logc(ctx).Debugf("Initiator %v already in Igroup %v", initiator, initiatorGroupName)
 				alreadyAdded = true
 				break
@@ -2008,16 +2384,17 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 }
 
 func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
-	if d.api.ClientConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "IgroupRemove",
-			"Type":               "OntapAPIREST",
-			"InitiatorGroupName": initiatorGroupName,
-			"IQN":                initiator,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> IgroupRemove")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupRemove")
+	fields := LogFields{
+		"Method":             "IgroupRemove",
+		"Type":               "OntapAPIREST",
+		"InitiatorGroupName": initiatorGroupName,
+		"IQN":                initiator,
 	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupRemove")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupRemove")
+
 	return d.api.IgroupRemove(ctx, initiatorGroupName, initiator)
 }
 
@@ -2031,9 +2408,11 @@ func (d OntapAPIREST) IgroupGetByName(ctx context.Context, initiatorGroupName st
 	}
 	mappedIQNs := make(map[string]bool)
 	if iGroupResponse != nil {
-		initiators := iGroupResponse.Initiators
+		initiators := iGroupResponse.IgroupInlineInitiators
 		for _, initiator := range initiators {
-			mappedIQNs[initiator.Name] = true
+			if initiator.Name != nil {
+				mappedIQNs[*initiator.Name] = true
+			}
 		}
 	}
 	return mappedIQNs, nil
@@ -2057,15 +2436,19 @@ func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeName
 		return nil, nil
 	}
 
-	if netInterfaces.Payload.Records != nil {
-		for _, netInterface := range netInterfaces.Payload.Records {
+	if netInterfaces.Payload != nil {
+		for _, netInterface := range netInterfaces.Payload.IPInterfaceResponseInlineRecords {
 			if netInterface.Location != nil && netInterface.Location.Node != nil && netInterface.IP != nil {
 				nodeName := netInterface.Location.Node.Name
-				ipAddress := string(netInterface.IP.Address)
 
-				if nodeName != "" && ipAddress != "" {
+				ipAddress := ""
+				if netInterface.IP.Address != nil {
+					ipAddress = string(*netInterface.IP.Address)
+				}
+
+				if nodeName != nil && *nodeName != "" && ipAddress != "" {
 					if utils.SliceContainsString(ips, ipAddress) &&
-						utils.SliceContainsString(reportingNodeNames, nodeName) {
+						utils.SliceContainsString(reportingNodeNames, *nodeName) {
 						reportedDataLIFs = append(reportedDataLIFs, ipAddress)
 					}
 				}
@@ -2078,4 +2461,26 @@ func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeName
 
 func (d OntapAPIREST) GetSVMUUID() string {
 	return d.api.SVMUUID()
+}
+
+func (d OntapAPIREST) SMBShareCreate(ctx context.Context, shareName, path string) error {
+	if err := d.api.SMBShareCreate(ctx, shareName, path); err != nil {
+		return fmt.Errorf("error while creating SMB share %v : %v", shareName, err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) SMBShareExists(ctx context.Context, shareName string) (bool, error) {
+	share, err := d.api.SMBShareExists(ctx, shareName)
+	if err != nil {
+		return false, fmt.Errorf("error while checking SMB share %v : %v", shareName, err)
+	}
+	return share, nil
+}
+
+func (d OntapAPIREST) SMBShareDestroy(ctx context.Context, shareName string) error {
+	if err := d.api.SMBShareDestroy(ctx, shareName); err != nil {
+		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
+	}
+	return nil
 }

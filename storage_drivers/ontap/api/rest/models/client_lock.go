@@ -25,7 +25,7 @@ type ClientLock struct {
 
 	// IP address of the client holding the lock.
 	// Example: 0.0.0.0
-	ClientAddress string `json:"client_address,omitempty"`
+	ClientAddress *string `json:"client_address,omitempty"`
 
 	// Indicate if volume is contituent or not.
 	// Read Only: true
@@ -34,29 +34,29 @@ type ClientLock struct {
 	// Type of delegation.
 	// Read Only: true
 	// Enum: [read write]
-	Delegation string `json:"delegation,omitempty"`
+	Delegation *string `json:"delegation,omitempty"`
 
 	// interface
-	Interface *ClientLockInterface `json:"interface,omitempty"`
+	Interface *ClientLockInlineInterface `json:"interface,omitempty"`
 
 	// node
-	Node *ClientLockNode `json:"node,omitempty"`
+	Node *ClientLockInlineNode `json:"node,omitempty"`
 
 	// The oplock level determines which operations the client may cache locally.
 	// Read Only: true
 	// Enum: [exclusive level2 batch null read_batch]
-	OplockLevel string `json:"oplock_level,omitempty"`
+	OplockLevel *string `json:"oplock_level,omitempty"`
 
 	// Owner ID.
 	// Read Only: true
-	OwnerID string `json:"owner_id,omitempty"`
+	OwnerID *string `json:"owner_id,omitempty"`
 
 	// Object path
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Type of lock protocol.
 	// Enum: [cifs fcache nfsv4 http nlm nfsv4.1 crposix]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// share lock
 	ShareLock *ShareLock `json:"share_lock,omitempty"`
@@ -67,22 +67,22 @@ type ClientLock struct {
 	// State of lock.
 	// Read Only: true
 	// Enum: [granted revoking adjusted denied subsumed gone unused waiting timeout]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *ClientLockSvm `json:"svm,omitempty"`
+	Svm *ClientLockInlineSvm `json:"svm,omitempty"`
 
 	// Type of lock.
 	// Read Only: true
 	// Enum: [byte_range share_level op_lock delegation]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Lock UUID
 	// Example: ceeac1b4-8646-4c76-a054-1c96e87594aa
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// volume
-	Volume *ClientLockVolume `json:"volume,omitempty"`
+	Volume *ClientLockInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this client lock
@@ -209,7 +209,7 @@ func (m *ClientLock) validateDelegation(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDelegationEnum("delegation", "body", m.Delegation); err != nil {
+	if err := m.validateDelegationEnum("delegation", "body", *m.Delegation); err != nil {
 		return err
 	}
 
@@ -329,7 +329,7 @@ func (m *ClientLock) validateOplockLevel(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOplockLevelEnum("oplock_level", "body", m.OplockLevel); err != nil {
+	if err := m.validateOplockLevelEnum("oplock_level", "body", *m.OplockLevel); err != nil {
 		return err
 	}
 
@@ -435,7 +435,7 @@ func (m *ClientLock) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -595,7 +595,7 @@ func (m *ClientLock) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -688,7 +688,7 @@ func (m *ClientLock) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -799,7 +799,7 @@ func (m *ClientLock) contextValidateConstituent(ctx context.Context, formats str
 
 func (m *ClientLock) contextValidateDelegation(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "delegation", "body", string(m.Delegation)); err != nil {
+	if err := validate.ReadOnly(ctx, "delegation", "body", m.Delegation); err != nil {
 		return err
 	}
 
@@ -836,7 +836,7 @@ func (m *ClientLock) contextValidateNode(ctx context.Context, formats strfmt.Reg
 
 func (m *ClientLock) contextValidateOplockLevel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "oplock_level", "body", string(m.OplockLevel)); err != nil {
+	if err := validate.ReadOnly(ctx, "oplock_level", "body", m.OplockLevel); err != nil {
 		return err
 	}
 
@@ -845,7 +845,7 @@ func (m *ClientLock) contextValidateOplockLevel(ctx context.Context, formats str
 
 func (m *ClientLock) contextValidateOwnerID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "owner_id", "body", string(m.OwnerID)); err != nil {
+	if err := validate.ReadOnly(ctx, "owner_id", "body", m.OwnerID); err != nil {
 		return err
 	}
 
@@ -882,7 +882,7 @@ func (m *ClientLock) contextValidateSmb(ctx context.Context, formats strfmt.Regi
 
 func (m *ClientLock) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -905,7 +905,7 @@ func (m *ClientLock) contextValidateSvm(ctx context.Context, formats strfmt.Regi
 
 func (m *ClientLock) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -944,30 +944,30 @@ func (m *ClientLock) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockInterface client lock interface
+// ClientLockInlineInterface client lock inline interface
 //
-// swagger:model ClientLockInterface
-type ClientLockInterface struct {
+// swagger:model client_lock_inline_interface
+type ClientLockInlineInterface struct {
 
 	// links
-	Links *ClientLockInterfaceLinks `json:"_links,omitempty"`
+	Links *ClientLockInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *ClientLockInterfaceIP `json:"ip,omitempty"`
+	IP *ClientLockInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this client lock interface
-func (m *ClientLockInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline interface
+func (m *ClientLockInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -984,7 +984,7 @@ func (m *ClientLockInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockInterface) validateLinks(formats strfmt.Registry) error {
+func (m *ClientLockInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1001,7 +1001,7 @@ func (m *ClientLockInterface) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockInterface) validateIP(formats strfmt.Registry) error {
+func (m *ClientLockInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -1018,8 +1018,8 @@ func (m *ClientLockInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock interface based on the context it is used
-func (m *ClientLockInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline interface based on the context it is used
+func (m *ClientLockInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1036,7 +1036,7 @@ func (m *ClientLockInterface) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ClientLockInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1050,7 +1050,7 @@ func (m *ClientLockInterface) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ClientLockInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -1065,7 +1065,7 @@ func (m *ClientLockInterface) contextValidateIP(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockInterface) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1073,8 +1073,8 @@ func (m *ClientLockInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockInterface) UnmarshalBinary(b []byte) error {
-	var res ClientLockInterface
+func (m *ClientLockInlineInterface) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1082,17 +1082,17 @@ func (m *ClientLockInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockInterfaceIP IP information
+// ClientLockInlineInterfaceInlineIP IP information
 //
-// swagger:model ClientLockInterfaceIP
-type ClientLockInterfaceIP struct {
+// swagger:model client_lock_inline_interface_inline_ip
+type ClientLockInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this client lock interface IP
-func (m *ClientLockInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline interface inline ip
+func (m *ClientLockInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -1105,23 +1105,25 @@ func (m *ClientLockInterfaceIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *ClientLockInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this client lock interface IP based on the context it is used
-func (m *ClientLockInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline interface inline ip based on the context it is used
+func (m *ClientLockInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -1134,20 +1136,22 @@ func (m *ClientLockInterfaceIP) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ClientLockInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1155,8 +1159,8 @@ func (m *ClientLockInterfaceIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res ClientLockInterfaceIP
+func (m *ClientLockInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1164,17 +1168,17 @@ func (m *ClientLockInterfaceIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockInterfaceLinks client lock interface links
+// ClientLockInlineInterfaceInlineLinks client lock inline interface inline links
 //
-// swagger:model ClientLockInterfaceLinks
-type ClientLockInterfaceLinks struct {
+// swagger:model client_lock_inline_interface_inline__links
+type ClientLockInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this client lock interface links
-func (m *ClientLockInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline interface inline links
+func (m *ClientLockInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1187,7 +1191,7 @@ func (m *ClientLockInterfaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClientLockInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1204,8 +1208,8 @@ func (m *ClientLockInterfaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock interface links based on the context it is used
-func (m *ClientLockInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline interface inline links based on the context it is used
+func (m *ClientLockInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1218,7 +1222,7 @@ func (m *ClientLockInterfaceLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ClientLockInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1233,7 +1237,7 @@ func (m *ClientLockInterfaceLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1241,8 +1245,8 @@ func (m *ClientLockInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res ClientLockInterfaceLinks
+func (m *ClientLockInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1250,25 +1254,25 @@ func (m *ClientLockInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockNode client lock node
+// ClientLockInlineNode client lock inline node
 //
-// swagger:model ClientLockNode
-type ClientLockNode struct {
+// swagger:model client_lock_inline_node
+type ClientLockInlineNode struct {
 
 	// links
-	Links *ClientLockNodeLinks `json:"_links,omitempty"`
+	Links *ClientLockInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this client lock node
-func (m *ClientLockNode) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline node
+func (m *ClientLockInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1281,7 +1285,7 @@ func (m *ClientLockNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockNode) validateLinks(formats strfmt.Registry) error {
+func (m *ClientLockInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1298,8 +1302,8 @@ func (m *ClientLockNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock node based on the context it is used
-func (m *ClientLockNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline node based on the context it is used
+func (m *ClientLockInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1312,7 +1316,7 @@ func (m *ClientLockNode) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *ClientLockNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1327,7 +1331,7 @@ func (m *ClientLockNode) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockNode) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1335,8 +1339,8 @@ func (m *ClientLockNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockNode) UnmarshalBinary(b []byte) error {
-	var res ClientLockNode
+func (m *ClientLockInlineNode) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1344,17 +1348,17 @@ func (m *ClientLockNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockNodeLinks client lock node links
+// ClientLockInlineNodeInlineLinks client lock inline node inline links
 //
-// swagger:model ClientLockNodeLinks
-type ClientLockNodeLinks struct {
+// swagger:model client_lock_inline_node_inline__links
+type ClientLockInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this client lock node links
-func (m *ClientLockNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline node inline links
+func (m *ClientLockInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1367,7 +1371,7 @@ func (m *ClientLockNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClientLockInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1384,8 +1388,8 @@ func (m *ClientLockNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock node links based on the context it is used
-func (m *ClientLockNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline node inline links based on the context it is used
+func (m *ClientLockInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1398,7 +1402,7 @@ func (m *ClientLockNodeLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ClientLockNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1413,7 +1417,7 @@ func (m *ClientLockNodeLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1421,8 +1425,8 @@ func (m *ClientLockNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockNodeLinks) UnmarshalBinary(b []byte) error {
-	var res ClientLockNodeLinks
+func (m *ClientLockInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1430,27 +1434,27 @@ func (m *ClientLockNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockSvm client lock svm
+// ClientLockInlineSvm client lock inline svm
 //
-// swagger:model ClientLockSvm
-type ClientLockSvm struct {
+// swagger:model client_lock_inline_svm
+type ClientLockInlineSvm struct {
 
 	// links
-	Links *ClientLockSvmLinks `json:"_links,omitempty"`
+	Links *ClientLockInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this client lock svm
-func (m *ClientLockSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline svm
+func (m *ClientLockInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1463,7 +1467,7 @@ func (m *ClientLockSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockSvm) validateLinks(formats strfmt.Registry) error {
+func (m *ClientLockInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1480,8 +1484,8 @@ func (m *ClientLockSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock svm based on the context it is used
-func (m *ClientLockSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline svm based on the context it is used
+func (m *ClientLockInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1494,7 +1498,7 @@ func (m *ClientLockSvm) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *ClientLockSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1509,7 +1513,7 @@ func (m *ClientLockSvm) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockSvm) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1517,8 +1521,8 @@ func (m *ClientLockSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockSvm) UnmarshalBinary(b []byte) error {
-	var res ClientLockSvm
+func (m *ClientLockInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1526,17 +1530,17 @@ func (m *ClientLockSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockSvmLinks client lock svm links
+// ClientLockInlineSvmInlineLinks client lock inline svm inline links
 //
-// swagger:model ClientLockSvmLinks
-type ClientLockSvmLinks struct {
+// swagger:model client_lock_inline_svm_inline__links
+type ClientLockInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this client lock svm links
-func (m *ClientLockSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline svm inline links
+func (m *ClientLockInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1549,7 +1553,7 @@ func (m *ClientLockSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClientLockInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1566,8 +1570,8 @@ func (m *ClientLockSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock svm links based on the context it is used
-func (m *ClientLockSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline svm inline links based on the context it is used
+func (m *ClientLockInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1580,7 +1584,7 @@ func (m *ClientLockSvmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *ClientLockSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1595,7 +1599,7 @@ func (m *ClientLockSvmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1603,8 +1607,8 @@ func (m *ClientLockSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockSvmLinks) UnmarshalBinary(b []byte) error {
-	var res ClientLockSvmLinks
+func (m *ClientLockInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1612,25 +1616,25 @@ func (m *ClientLockSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockVolume client lock volume
+// ClientLockInlineVolume client lock inline volume
 //
-// swagger:model ClientLockVolume
-type ClientLockVolume struct {
+// swagger:model client_lock_inline_volume
+type ClientLockInlineVolume struct {
 
 	// links
-	Links *ClientLockVolumeLinks `json:"_links,omitempty"`
+	Links *ClientLockInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this client lock volume
-func (m *ClientLockVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline volume
+func (m *ClientLockInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1643,7 +1647,7 @@ func (m *ClientLockVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockVolume) validateLinks(formats strfmt.Registry) error {
+func (m *ClientLockInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1660,8 +1664,8 @@ func (m *ClientLockVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock volume based on the context it is used
-func (m *ClientLockVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline volume based on the context it is used
+func (m *ClientLockInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1674,7 +1678,7 @@ func (m *ClientLockVolume) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ClientLockVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1689,7 +1693,7 @@ func (m *ClientLockVolume) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockVolume) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1697,8 +1701,8 @@ func (m *ClientLockVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockVolume) UnmarshalBinary(b []byte) error {
-	var res ClientLockVolume
+func (m *ClientLockInlineVolume) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1706,17 +1710,17 @@ func (m *ClientLockVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClientLockVolumeLinks client lock volume links
+// ClientLockInlineVolumeInlineLinks client lock inline volume inline links
 //
-// swagger:model ClientLockVolumeLinks
-type ClientLockVolumeLinks struct {
+// swagger:model client_lock_inline_volume_inline__links
+type ClientLockInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this client lock volume links
-func (m *ClientLockVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this client lock inline volume inline links
+func (m *ClientLockInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1729,7 +1733,7 @@ func (m *ClientLockVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClientLockInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1746,8 +1750,8 @@ func (m *ClientLockVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this client lock volume links based on the context it is used
-func (m *ClientLockVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this client lock inline volume inline links based on the context it is used
+func (m *ClientLockInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1760,7 +1764,7 @@ func (m *ClientLockVolumeLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ClientLockVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1775,7 +1779,7 @@ func (m *ClientLockVolumeLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ClientLockVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *ClientLockInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1783,8 +1787,8 @@ func (m *ClientLockVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClientLockVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res ClientLockVolumeLinks
+func (m *ClientLockInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClientLockInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

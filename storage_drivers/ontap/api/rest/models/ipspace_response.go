@@ -20,14 +20,14 @@ import (
 type IpspaceResponse struct {
 
 	// links
-	Links *IpspaceResponseLinks `json:"_links,omitempty"`
+	Links *IpspaceResponseInlineLinks `json:"_links,omitempty"`
 
-	// num records
+	// ipspace response inline records
+	IpspaceResponseInlineRecords []*Ipspace `json:"records,omitempty"`
+
+	// Number of records
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Ipspace `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ipspace response
@@ -38,7 +38,7 @@ func (m *IpspaceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateIpspaceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *IpspaceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpspaceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *IpspaceResponse) validateIpspaceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.IpspaceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.IpspaceResponseInlineRecords); i++ {
+		if swag.IsZero(m.IpspaceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.IpspaceResponseInlineRecords[i] != nil {
+			if err := m.IpspaceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *IpspaceResponse) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateIpspaceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *IpspaceResponse) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IpspaceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpspaceResponse) contextValidateIpspaceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.IpspaceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.IpspaceResponseInlineRecords[i] != nil {
+			if err := m.IpspaceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *IpspaceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpspaceResponseLinks ipspace response links
+// IpspaceResponseInlineLinks ipspace response inline links
 //
-// swagger:model IpspaceResponseLinks
-type IpspaceResponseLinks struct {
+// swagger:model ipspace_response_inline__links
+type IpspaceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type IpspaceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipspace response links
-func (m *IpspaceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipspace response inline links
+func (m *IpspaceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *IpspaceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpspaceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *IpspaceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *IpspaceResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpspaceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpspaceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *IpspaceResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipspace response links based on the context it is used
-func (m *IpspaceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipspace response inline links based on the context it is used
+func (m *IpspaceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *IpspaceResponseLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IpspaceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpspaceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *IpspaceResponseLinks) contextValidateNext(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IpspaceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpspaceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *IpspaceResponseLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *IpspaceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *IpspaceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *IpspaceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpspaceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res IpspaceResponseLinks
+func (m *IpspaceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpspaceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

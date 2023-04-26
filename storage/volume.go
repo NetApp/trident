@@ -54,7 +54,7 @@ type VolumeConfig struct {
 	RequisiteTopologies       []map[string]string    `json:"requisiteTopologies,omitempty"`
 	PreferredTopologies       []map[string]string    `json:"preferredTopologies,omitempty"`
 	AllowedTopologies         []map[string]string    `json:"allowedTopologies,omitempty"`
-	MirrorHandle              string                 `json:"mirrorHandle,omitempty"`
+	LUKSPassphraseNames       []string               `json:"luksPassphraseNames,omitempty"`
 	// IsMirrorDestination is whether the volume is currently the destination in a mirror relationship
 	IsMirrorDestination bool `json:"mirrorDestination,omitempty"`
 	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination
@@ -86,6 +86,8 @@ func (c *VolumeConfig) Validate() error {
 }
 
 func (c *VolumeConfig) ConstructClone() *VolumeConfig {
+	// If private fields are added to the VolumeConfig or any embedded structure
+	// this should be updated to use a deep copy facility that may account for it.
 	clone, err := copystructure.Copy(*c)
 	if err != nil {
 		return &VolumeConfig{}
@@ -236,6 +238,12 @@ func (r *UpgradeVolumeRequest) Validate() error {
 		return fmt.Errorf("the only supported type for volume upgrade is 'csi'")
 	}
 	return nil
+}
+
+type PatchRequestStringSlice struct {
+	Op    string   `json:"op"`
+	Path  string   `json:"path"`
+	Value []string `json:"value"`
 }
 
 type ByVolumeExternalName []*VolumeExternal

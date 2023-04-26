@@ -66,7 +66,7 @@ type SecurityAuditGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *SecurityAuditGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the security audit get params
-func (o *SecurityAuditGetParams) WithFieldsQueryParameter(fields []string) *SecurityAuditGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security audit get params
+func (o *SecurityAuditGetParams) WithFields(fields []string) *SecurityAuditGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security audit get params
-func (o *SecurityAuditGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security audit get params
+func (o *SecurityAuditGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SecurityAuditGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *SecurityAuditGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamSecurityAuditGet binds the parameter fields
 func (o *SecurityAuditGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

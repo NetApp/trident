@@ -20,14 +20,14 @@ import (
 type FcPortResponse struct {
 
 	// links
-	Links *FcPortResponseLinks `json:"_links,omitempty"`
+	Links *FcPortResponseInlineLinks `json:"_links,omitempty"`
+
+	// fc port response inline records
+	FcPortResponseInlineRecords []*FcPort `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*FcPort `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fc port response
@@ -38,7 +38,7 @@ func (m *FcPortResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFcPortResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *FcPortResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FcPortResponse) validateFcPortResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcPortResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FcPortResponseInlineRecords); i++ {
+		if swag.IsZero(m.FcPortResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FcPortResponseInlineRecords[i] != nil {
+			if err := m.FcPortResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *FcPortResponse) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFcPortResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *FcPortResponse) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcPortResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortResponse) contextValidateFcPortResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FcPortResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FcPortResponseInlineRecords[i] != nil {
+			if err := m.FcPortResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *FcPortResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortResponseLinks fc port response links
+// FcPortResponseInlineLinks fc port response inline links
 //
-// swagger:model FcPortResponseLinks
-type FcPortResponseLinks struct {
+// swagger:model fc_port_response_inline__links
+type FcPortResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type FcPortResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc port response links
-func (m *FcPortResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port response inline links
+func (m *FcPortResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *FcPortResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FcPortResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *FcPortResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcPortResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *FcPortResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port response links based on the context it is used
-func (m *FcPortResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port response inline links based on the context it is used
+func (m *FcPortResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *FcPortResponseLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcPortResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *FcPortResponseLinks) contextValidateNext(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcPortResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *FcPortResponseLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FcPortResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *FcPortResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FcPortResponseLinks
+func (m *FcPortResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcPortResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

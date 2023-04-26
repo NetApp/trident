@@ -66,13 +66,13 @@ type NodeMetricsCollectionGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -87,25 +87,25 @@ type NodeMetricsCollectionGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ProcessorUtilization.
 
 	   Filter by processor_utilization
 	*/
-	ProcessorUtilizationQueryParameter *int64
+	ProcessorUtilization *int64
 
 	/* ReturnRecords.
 
@@ -113,7 +113,7 @@ type NodeMetricsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -121,25 +121,25 @@ type NodeMetricsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* UUID.
 
 	   Unique identifier of the node.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -159,17 +159,17 @@ func (o *NodeMetricsCollectionGetParams) WithDefaults() *NodeMetricsCollectionGe
 // All values with no default are reset to their zero value.
 func (o *NodeMetricsCollectionGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NodeMetricsCollectionGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,125 +211,125 @@ func (o *NodeMetricsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithDurationQueryParameter(duration *string) *NodeMetricsCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithDuration(duration *string) *NodeMetricsCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithFieldsQueryParameter(fields []string) *NodeMetricsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithFields(fields []string) *NodeMetricsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithIntervalQueryParameter(interval *string) *NodeMetricsCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithInterval(interval *string) *NodeMetricsCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NodeMetricsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithMaxRecords(maxRecords *int64) *NodeMetricsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NodeMetricsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithOrderBy(orderBy []string) *NodeMetricsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProcessorUtilizationQueryParameter adds the processorUtilization to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithProcessorUtilizationQueryParameter(processorUtilization *int64) *NodeMetricsCollectionGetParams {
-	o.SetProcessorUtilizationQueryParameter(processorUtilization)
+// WithProcessorUtilization adds the processorUtilization to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithProcessorUtilization(processorUtilization *int64) *NodeMetricsCollectionGetParams {
+	o.SetProcessorUtilization(processorUtilization)
 	return o
 }
 
-// SetProcessorUtilizationQueryParameter adds the processorUtilization to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetProcessorUtilizationQueryParameter(processorUtilization *int64) {
-	o.ProcessorUtilizationQueryParameter = processorUtilization
+// SetProcessorUtilization adds the processorUtilization to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetProcessorUtilization(processorUtilization *int64) {
+	o.ProcessorUtilization = processorUtilization
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NodeMetricsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithReturnRecords(returnRecords *bool) *NodeMetricsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodeMetricsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NodeMetricsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithStatusQueryParameter(status *string) *NodeMetricsCollectionGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithStatus(status *string) *NodeMetricsCollectionGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithTimestampQueryParameter adds the timestamp to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *NodeMetricsCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithTimestamp(timestamp *string) *NodeMetricsCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithUUIDPathParameter adds the uuid to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) WithUUIDPathParameter(uuid string) *NodeMetricsCollectionGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) WithUUID(uuid string) *NodeMetricsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the node metrics collection get params
-func (o *NodeMetricsCollectionGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the node metrics collection get params
+func (o *NodeMetricsCollectionGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -340,13 +340,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -357,7 +357,7 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -368,13 +368,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -385,13 +385,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -402,7 +402,7 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -413,13 +413,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProcessorUtilizationQueryParameter != nil {
+	if o.ProcessorUtilization != nil {
 
 		// query param processor_utilization
 		var qrProcessorUtilization int64
 
-		if o.ProcessorUtilizationQueryParameter != nil {
-			qrProcessorUtilization = *o.ProcessorUtilizationQueryParameter
+		if o.ProcessorUtilization != nil {
+			qrProcessorUtilization = *o.ProcessorUtilization
 		}
 		qProcessorUtilization := swag.FormatInt64(qrProcessorUtilization)
 		if qProcessorUtilization != "" {
@@ -430,13 +430,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -447,13 +447,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -464,13 +464,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -481,13 +481,13 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -499,7 +499,7 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -511,7 +511,7 @@ func (o *NodeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamNodeMetricsCollectionGet binds the parameter fields
 func (o *NodeMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *NodeMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamNodeMetricsCollectionGet binds the parameter order_by
 func (o *NodeMetricsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

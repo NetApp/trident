@@ -52,6 +52,10 @@ PublickeyCreateCreated describes a response with status code 201, with default h
 Created
 */
 type PublickeyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this publickey create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *PublickeyCreateCreated) String() string {
 }
 
 func (o *PublickeyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

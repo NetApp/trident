@@ -66,43 +66,43 @@ type SvmSSHServerCollectionGetParams struct {
 
 	   Filter by ciphers
 	*/
-	CiphersQueryParameter *string
+	Ciphers *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* KeyExchangeAlgorithms.
 
 	   Filter by key_exchange_algorithms
 	*/
-	KeyExchangeAlgorithmsQueryParameter *string
+	KeyExchangeAlgorithms *string
 
 	/* MacAlgorithms.
 
 	   Filter by mac_algorithms
 	*/
-	MacAlgorithmsQueryParameter *string
+	MacAlgorithms *string
 
 	/* MaxAuthenticationRetryCount.
 
 	   Filter by max_authentication_retry_count
 	*/
-	MaxAuthenticationRetryCountQueryParameter *int64
+	MaxAuthenticationRetryCount *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type SvmSSHServerCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,19 +118,19 @@ type SvmSSHServerCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *SvmSSHServerCollectionGetParams) WithDefaults() *SvmSSHServerCollection
 // All values with no default are reset to their zero value.
 func (o *SvmSSHServerCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmSSHServerCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *SvmSSHServerCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCiphersQueryParameter adds the ciphers to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithCiphersQueryParameter(ciphers *string) *SvmSSHServerCollectionGetParams {
-	o.SetCiphersQueryParameter(ciphers)
+// WithCiphers adds the ciphers to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithCiphers(ciphers *string) *SvmSSHServerCollectionGetParams {
+	o.SetCiphers(ciphers)
 	return o
 }
 
-// SetCiphersQueryParameter adds the ciphers to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetCiphersQueryParameter(ciphers *string) {
-	o.CiphersQueryParameter = ciphers
+// SetCiphers adds the ciphers to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetCiphers(ciphers *string) {
+	o.Ciphers = ciphers
 }
 
-// WithFieldsQueryParameter adds the fields to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmSSHServerCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithFields(fields []string) *SvmSSHServerCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithKeyExchangeAlgorithmsQueryParameter adds the keyExchangeAlgorithms to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithKeyExchangeAlgorithmsQueryParameter(keyExchangeAlgorithms *string) *SvmSSHServerCollectionGetParams {
-	o.SetKeyExchangeAlgorithmsQueryParameter(keyExchangeAlgorithms)
+// WithKeyExchangeAlgorithms adds the keyExchangeAlgorithms to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithKeyExchangeAlgorithms(keyExchangeAlgorithms *string) *SvmSSHServerCollectionGetParams {
+	o.SetKeyExchangeAlgorithms(keyExchangeAlgorithms)
 	return o
 }
 
-// SetKeyExchangeAlgorithmsQueryParameter adds the keyExchangeAlgorithms to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetKeyExchangeAlgorithmsQueryParameter(keyExchangeAlgorithms *string) {
-	o.KeyExchangeAlgorithmsQueryParameter = keyExchangeAlgorithms
+// SetKeyExchangeAlgorithms adds the keyExchangeAlgorithms to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetKeyExchangeAlgorithms(keyExchangeAlgorithms *string) {
+	o.KeyExchangeAlgorithms = keyExchangeAlgorithms
 }
 
-// WithMacAlgorithmsQueryParameter adds the macAlgorithms to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithMacAlgorithmsQueryParameter(macAlgorithms *string) *SvmSSHServerCollectionGetParams {
-	o.SetMacAlgorithmsQueryParameter(macAlgorithms)
+// WithMacAlgorithms adds the macAlgorithms to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithMacAlgorithms(macAlgorithms *string) *SvmSSHServerCollectionGetParams {
+	o.SetMacAlgorithms(macAlgorithms)
 	return o
 }
 
-// SetMacAlgorithmsQueryParameter adds the macAlgorithms to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetMacAlgorithmsQueryParameter(macAlgorithms *string) {
-	o.MacAlgorithmsQueryParameter = macAlgorithms
+// SetMacAlgorithms adds the macAlgorithms to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetMacAlgorithms(macAlgorithms *string) {
+	o.MacAlgorithms = macAlgorithms
 }
 
-// WithMaxAuthenticationRetryCountQueryParameter adds the maxAuthenticationRetryCount to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithMaxAuthenticationRetryCountQueryParameter(maxAuthenticationRetryCount *int64) *SvmSSHServerCollectionGetParams {
-	o.SetMaxAuthenticationRetryCountQueryParameter(maxAuthenticationRetryCount)
+// WithMaxAuthenticationRetryCount adds the maxAuthenticationRetryCount to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithMaxAuthenticationRetryCount(maxAuthenticationRetryCount *int64) *SvmSSHServerCollectionGetParams {
+	o.SetMaxAuthenticationRetryCount(maxAuthenticationRetryCount)
 	return o
 }
 
-// SetMaxAuthenticationRetryCountQueryParameter adds the maxAuthenticationRetryCount to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetMaxAuthenticationRetryCountQueryParameter(maxAuthenticationRetryCount *int64) {
-	o.MaxAuthenticationRetryCountQueryParameter = maxAuthenticationRetryCount
+// SetMaxAuthenticationRetryCount adds the maxAuthenticationRetryCount to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetMaxAuthenticationRetryCount(maxAuthenticationRetryCount *int64) {
+	o.MaxAuthenticationRetryCount = maxAuthenticationRetryCount
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmSSHServerCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmSSHServerCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmSSHServerCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithOrderBy(orderBy []string) *SvmSSHServerCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmSSHServerCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmSSHServerCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmSSHServerCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmSSHServerCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SvmSSHServerCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithSvmName(svmName *string) *SvmSSHServerCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SvmSSHServerCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) WithSvmUUID(svmUUID *string) *SvmSSHServerCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the svm ssh server collection get params
-func (o *SvmSSHServerCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm ssh server collection get params
+func (o *SvmSSHServerCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,13 +328,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.CiphersQueryParameter != nil {
+	if o.Ciphers != nil {
 
 		// query param ciphers
 		var qrCiphers string
 
-		if o.CiphersQueryParameter != nil {
-			qrCiphers = *o.CiphersQueryParameter
+		if o.Ciphers != nil {
+			qrCiphers = *o.Ciphers
 		}
 		qCiphers := qrCiphers
 		if qCiphers != "" {
@@ -345,7 +345,7 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +356,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.KeyExchangeAlgorithmsQueryParameter != nil {
+	if o.KeyExchangeAlgorithms != nil {
 
 		// query param key_exchange_algorithms
 		var qrKeyExchangeAlgorithms string
 
-		if o.KeyExchangeAlgorithmsQueryParameter != nil {
-			qrKeyExchangeAlgorithms = *o.KeyExchangeAlgorithmsQueryParameter
+		if o.KeyExchangeAlgorithms != nil {
+			qrKeyExchangeAlgorithms = *o.KeyExchangeAlgorithms
 		}
 		qKeyExchangeAlgorithms := qrKeyExchangeAlgorithms
 		if qKeyExchangeAlgorithms != "" {
@@ -373,13 +373,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MacAlgorithmsQueryParameter != nil {
+	if o.MacAlgorithms != nil {
 
 		// query param mac_algorithms
 		var qrMacAlgorithms string
 
-		if o.MacAlgorithmsQueryParameter != nil {
-			qrMacAlgorithms = *o.MacAlgorithmsQueryParameter
+		if o.MacAlgorithms != nil {
+			qrMacAlgorithms = *o.MacAlgorithms
 		}
 		qMacAlgorithms := qrMacAlgorithms
 		if qMacAlgorithms != "" {
@@ -390,13 +390,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxAuthenticationRetryCountQueryParameter != nil {
+	if o.MaxAuthenticationRetryCount != nil {
 
 		// query param max_authentication_retry_count
 		var qrMaxAuthenticationRetryCount int64
 
-		if o.MaxAuthenticationRetryCountQueryParameter != nil {
-			qrMaxAuthenticationRetryCount = *o.MaxAuthenticationRetryCountQueryParameter
+		if o.MaxAuthenticationRetryCount != nil {
+			qrMaxAuthenticationRetryCount = *o.MaxAuthenticationRetryCount
 		}
 		qMaxAuthenticationRetryCount := swag.FormatInt64(qrMaxAuthenticationRetryCount)
 		if qMaxAuthenticationRetryCount != "" {
@@ -407,13 +407,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -424,7 +424,7 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -435,13 +435,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -452,13 +452,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -469,13 +469,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -486,13 +486,13 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -511,7 +511,7 @@ func (o *SvmSSHServerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamSvmSSHServerCollectionGet binds the parameter fields
 func (o *SvmSSHServerCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *SvmSSHServerCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamSvmSSHServerCollectionGet binds the parameter order_by
 func (o *SvmSSHServerCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

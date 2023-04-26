@@ -17,11 +17,11 @@ import (
 // swagger:model snaplock_litigation_file
 type SnaplockLitigationFile struct {
 
-	// Name of the file including the path from the root.
-	File []string `json:"file,omitempty"`
-
 	// Sequence index of files path list.
-	SequenceIndex int64 `json:"sequence_index,omitempty"`
+	SequenceIndex *int64 `json:"sequence_index,omitempty"`
+
+	// Name of the file including the path from the root.
+	SnaplockLitigationFileInlineFile []*string `json:"file,omitempty"`
 }
 
 // Validate validates this snaplock litigation file

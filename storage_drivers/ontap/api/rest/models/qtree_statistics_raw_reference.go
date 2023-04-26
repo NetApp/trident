@@ -21,16 +21,16 @@ import (
 type QtreeStatisticsRawReference struct {
 
 	// iops raw
-	IopsRaw *QtreeStatisticsRawReferenceIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *QtreeStatisticsRawReferenceInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled with the next closest collection and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes does not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *QtreeStatisticsRawReferenceThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *QtreeStatisticsRawReferenceInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -211,7 +211,7 @@ func (m *QtreeStatisticsRawReference) validateStatus(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -289,7 +289,7 @@ func (m *QtreeStatisticsRawReference) contextValidateIopsRaw(ctx context.Context
 
 func (m *QtreeStatisticsRawReference) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -337,34 +337,34 @@ func (m *QtreeStatisticsRawReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QtreeStatisticsRawReferenceIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// QtreeStatisticsRawReferenceInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model QtreeStatisticsRawReferenceIopsRaw
-type QtreeStatisticsRawReferenceIopsRaw struct {
+// swagger:model qtree_statistics_raw_reference_inline_iops_raw
+type QtreeStatisticsRawReferenceInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this qtree statistics raw reference iops raw
-func (m *QtreeStatisticsRawReferenceIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this qtree statistics raw reference inline iops raw
+func (m *QtreeStatisticsRawReferenceInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qtree statistics raw reference iops raw based on the context it is used
-func (m *QtreeStatisticsRawReferenceIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qtree statistics raw reference inline iops raw based on the context it is used
+func (m *QtreeStatisticsRawReferenceInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -374,7 +374,7 @@ func (m *QtreeStatisticsRawReferenceIopsRaw) ContextValidate(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *QtreeStatisticsRawReferenceIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *QtreeStatisticsRawReferenceInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -382,8 +382,8 @@ func (m *QtreeStatisticsRawReferenceIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QtreeStatisticsRawReferenceIopsRaw) UnmarshalBinary(b []byte) error {
-	var res QtreeStatisticsRawReferenceIopsRaw
+func (m *QtreeStatisticsRawReferenceInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res QtreeStatisticsRawReferenceInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -391,34 +391,34 @@ func (m *QtreeStatisticsRawReferenceIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QtreeStatisticsRawReferenceThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// QtreeStatisticsRawReferenceInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model QtreeStatisticsRawReferenceThroughputRaw
-type QtreeStatisticsRawReferenceThroughputRaw struct {
+// swagger:model qtree_statistics_raw_reference_inline_throughput_raw
+type QtreeStatisticsRawReferenceInlineThroughputRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this qtree statistics raw reference throughput raw
-func (m *QtreeStatisticsRawReferenceThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this qtree statistics raw reference inline throughput raw
+func (m *QtreeStatisticsRawReferenceInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qtree statistics raw reference throughput raw based on the context it is used
-func (m *QtreeStatisticsRawReferenceThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qtree statistics raw reference inline throughput raw based on the context it is used
+func (m *QtreeStatisticsRawReferenceInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -428,7 +428,7 @@ func (m *QtreeStatisticsRawReferenceThroughputRaw) ContextValidate(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *QtreeStatisticsRawReferenceThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *QtreeStatisticsRawReferenceInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -436,8 +436,8 @@ func (m *QtreeStatisticsRawReferenceThroughputRaw) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *QtreeStatisticsRawReferenceThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res QtreeStatisticsRawReferenceThroughputRaw
+func (m *QtreeStatisticsRawReferenceInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res QtreeStatisticsRawReferenceInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

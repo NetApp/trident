@@ -5,16 +5,16 @@ package plain
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	. "github.com/netapp/trident/logging"
 	mockOrchestrator "github.com/netapp/trident/mocks/mock_core"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils"
@@ -24,7 +24,7 @@ var volumePublishManagerError = fmt.Errorf("volume tracking error")
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

@@ -73,25 +73,25 @@ type CifsShareACLModifyParams struct {
 
 	   Share name
 	*/
-	SharePathParameter string
+	Share string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Type.
 
 	   User or group type
 	*/
-	TypePathParameter string
+	Type string
 
 	/* UserOrGroup.
 
 	   User or group name
 	*/
-	UserOrGroupPathParameter string
+	UserOrGroup string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -157,48 +157,48 @@ func (o *CifsShareACLModifyParams) SetInfo(info *models.CifsShareACL) {
 	o.Info = info
 }
 
-// WithSharePathParameter adds the share to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) WithSharePathParameter(share string) *CifsShareACLModifyParams {
-	o.SetSharePathParameter(share)
+// WithShare adds the share to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) WithShare(share string) *CifsShareACLModifyParams {
+	o.SetShare(share)
 	return o
 }
 
-// SetSharePathParameter adds the share to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) SetSharePathParameter(share string) {
-	o.SharePathParameter = share
+// SetShare adds the share to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) SetShare(share string) {
+	o.Share = share
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) WithSvmUUID(svmUUID string) *CifsShareACLModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypePathParameter adds the typeVar to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) WithTypePathParameter(typeVar string) *CifsShareACLModifyParams {
-	o.SetTypePathParameter(typeVar)
+// WithType adds the typeVar to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) WithType(typeVar string) *CifsShareACLModifyParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypePathParameter adds the type to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) SetTypePathParameter(typeVar string) {
-	o.TypePathParameter = typeVar
+// SetType adds the type to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) SetType(typeVar string) {
+	o.Type = typeVar
 }
 
-// WithUserOrGroupPathParameter adds the userOrGroup to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) WithUserOrGroupPathParameter(userOrGroup string) *CifsShareACLModifyParams {
-	o.SetUserOrGroupPathParameter(userOrGroup)
+// WithUserOrGroup adds the userOrGroup to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) WithUserOrGroup(userOrGroup string) *CifsShareACLModifyParams {
+	o.SetUserOrGroup(userOrGroup)
 	return o
 }
 
-// SetUserOrGroupPathParameter adds the userOrGroup to the cifs share acl modify params
-func (o *CifsShareACLModifyParams) SetUserOrGroupPathParameter(userOrGroup string) {
-	o.UserOrGroupPathParameter = userOrGroup
+// SetUserOrGroup adds the userOrGroup to the cifs share acl modify params
+func (o *CifsShareACLModifyParams) SetUserOrGroup(userOrGroup string) {
+	o.UserOrGroup = userOrGroup
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -215,22 +215,22 @@ func (o *CifsShareACLModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param share
-	if err := r.SetPathParam("share", o.SharePathParameter); err != nil {
+	if err := r.SetPathParam("share", o.Share); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param type
-	if err := r.SetPathParam("type", o.TypePathParameter); err != nil {
+	if err := r.SetPathParam("type", o.Type); err != nil {
 		return err
 	}
 
 	// path param user_or_group
-	if err := r.SetPathParam("user_or_group", o.UserOrGroupPathParameter); err != nil {
+	if err := r.SetPathParam("user_or_group", o.UserOrGroup); err != nil {
 		return err
 	}
 

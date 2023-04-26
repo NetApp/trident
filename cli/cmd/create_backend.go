@@ -86,7 +86,7 @@ func backendCreate(postData []byte) error {
 	// Send the file to Trident
 	url := BaseURL() + "/backend"
 
-	response, responseBody, err := api.InvokeRESTAPI("POST", url, postData, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("POST", url, postData)
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusCreated {

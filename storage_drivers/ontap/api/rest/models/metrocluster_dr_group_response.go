@@ -20,13 +20,14 @@ import (
 type MetroclusterDrGroupResponse struct {
 
 	// links
-	Links *MetroclusterDrGroupResponseLinks `json:"_links,omitempty"`
+	Links *MetroclusterDrGroupResponseInlineLinks `json:"_links,omitempty"`
+
+	// metrocluster dr group response inline records
+	MetroclusterDrGroupResponseInlineRecords []*MetroclusterDrGroup `json:"records,omitempty"`
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*MetroclusterDrGroup `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this metrocluster dr group response
@@ -37,7 +38,7 @@ func (m *MetroclusterDrGroupResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateMetroclusterDrGroupResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *MetroclusterDrGroupResponse) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDrGroupResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *MetroclusterDrGroupResponse) validateMetroclusterDrGroupResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterDrGroupResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.MetroclusterDrGroupResponseInlineRecords); i++ {
+		if swag.IsZero(m.MetroclusterDrGroupResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.MetroclusterDrGroupResponseInlineRecords[i] != nil {
+			if err := m.MetroclusterDrGroupResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *MetroclusterDrGroupResponse) ContextValidate(ctx context.Context, forma
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterDrGroupResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *MetroclusterDrGroupResponse) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDrGroupResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupResponse) contextValidateMetroclusterDrGroupResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.MetroclusterDrGroupResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.MetroclusterDrGroupResponseInlineRecords[i] != nil {
+			if err := m.MetroclusterDrGroupResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *MetroclusterDrGroupResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDrGroupResponseLinks metrocluster dr group response links
+// MetroclusterDrGroupResponseInlineLinks metrocluster dr group response inline links
 //
-// swagger:model MetroclusterDrGroupResponseLinks
-type MetroclusterDrGroupResponseLinks struct {
+// swagger:model metrocluster_dr_group_response_inline__links
+type MetroclusterDrGroupResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type MetroclusterDrGroupResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster dr group response links
-func (m *MetroclusterDrGroupResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster dr group response inline links
+func (m *MetroclusterDrGroupResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *MetroclusterDrGroupResponseLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDrGroupResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *MetroclusterDrGroupResponseLinks) validateNext(formats strfmt.Registry)
 	return nil
 }
 
-func (m *MetroclusterDrGroupResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *MetroclusterDrGroupResponseLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this metrocluster dr group response links based on the context it is used
-func (m *MetroclusterDrGroupResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster dr group response inline links based on the context it is used
+func (m *MetroclusterDrGroupResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *MetroclusterDrGroupResponseLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDrGroupResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *MetroclusterDrGroupResponseLinks) contextValidateNext(ctx context.Conte
 	return nil
 }
 
-func (m *MetroclusterDrGroupResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDrGroupResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *MetroclusterDrGroupResponseLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDrGroupResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDrGroupResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *MetroclusterDrGroupResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDrGroupResponseLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDrGroupResponseLinks
+func (m *MetroclusterDrGroupResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDrGroupResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -12,7 +12,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/netapp/trident/storage_drivers/gcp/api"
-	utils "github.com/netapp/trident/utils"
+	version "github.com/netapp/trident/utils/version"
 )
 
 // MockGCPClient is a mock of GCPClient interface.
@@ -53,20 +53,6 @@ func (mr *MockGCPClientMockRecorder) ChangeVolumeUnixPermissions(arg0, arg1, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeVolumeUnixPermissions", reflect.TypeOf((*MockGCPClient)(nil).ChangeVolumeUnixPermissions), arg0, arg1, arg2)
 }
 
-// CreateBackup mocks base method.
-func (m *MockGCPClient) CreateBackup(arg0 context.Context, arg1 *api.BackupCreateRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBackup", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateBackup indicates an expected call of CreateBackup.
-func (mr *MockGCPClientMockRecorder) CreateBackup(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBackup", reflect.TypeOf((*MockGCPClient)(nil).CreateBackup), arg0, arg1)
-}
-
 // CreateSnapshot mocks base method.
 func (m *MockGCPClient) CreateSnapshot(arg0 context.Context, arg1 *api.SnapshotCreateRequest) error {
 	m.ctrl.T.Helper()
@@ -93,20 +79,6 @@ func (m *MockGCPClient) CreateVolume(arg0 context.Context, arg1 *api.VolumeCreat
 func (mr *MockGCPClientMockRecorder) CreateVolume(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVolume", reflect.TypeOf((*MockGCPClient)(nil).CreateVolume), arg0, arg1)
-}
-
-// DeleteBackup mocks base method.
-func (m *MockGCPClient) DeleteBackup(arg0 context.Context, arg1 *api.Volume, arg2 *api.Backup) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBackup", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteBackup indicates an expected call of DeleteBackup.
-func (mr *MockGCPClientMockRecorder) DeleteBackup(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackup", reflect.TypeOf((*MockGCPClient)(nil).DeleteBackup), arg0, arg1, arg2)
 }
 
 // DeleteSnapshot mocks base method.
@@ -137,49 +109,19 @@ func (mr *MockGCPClientMockRecorder) DeleteVolume(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockGCPClient)(nil).DeleteVolume), arg0, arg1)
 }
 
-// GetBackupByID mocks base method.
-func (m *MockGCPClient) GetBackupByID(arg0 context.Context, arg1 string) (*api.Backup, error) {
+// GetPools mocks base method.
+func (m *MockGCPClient) GetPools(arg0 context.Context) (*[]*api.Pool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackupByID", arg0, arg1)
-	ret0, _ := ret[0].(*api.Backup)
+	ret := m.ctrl.Call(m, "GetPools", arg0)
+	ret0, _ := ret[0].(*[]*api.Pool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetBackupByID indicates an expected call of GetBackupByID.
-func (mr *MockGCPClientMockRecorder) GetBackupByID(arg0, arg1 interface{}) *gomock.Call {
+// GetPools indicates an expected call of GetPools.
+func (mr *MockGCPClientMockRecorder) GetPools(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackupByID", reflect.TypeOf((*MockGCPClient)(nil).GetBackupByID), arg0, arg1)
-}
-
-// GetBackupForVolume mocks base method.
-func (m *MockGCPClient) GetBackupForVolume(arg0 context.Context, arg1 *api.Volume, arg2 string) (*api.Backup, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackupForVolume", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*api.Backup)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBackupForVolume indicates an expected call of GetBackupForVolume.
-func (mr *MockGCPClientMockRecorder) GetBackupForVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackupForVolume", reflect.TypeOf((*MockGCPClient)(nil).GetBackupForVolume), arg0, arg1, arg2)
-}
-
-// GetBackupsForVolume mocks base method.
-func (m *MockGCPClient) GetBackupsForVolume(arg0 context.Context, arg1 *api.Volume) (*[]api.Backup, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackupsForVolume", arg0, arg1)
-	ret0, _ := ret[0].(*[]api.Backup)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBackupsForVolume indicates an expected call of GetBackupsForVolume.
-func (mr *MockGCPClientMockRecorder) GetBackupsForVolume(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackupsForVolume", reflect.TypeOf((*MockGCPClient)(nil).GetBackupsForVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPools", reflect.TypeOf((*MockGCPClient)(nil).GetPools), arg0)
 }
 
 // GetServiceLevels mocks base method.
@@ -243,11 +185,11 @@ func (mr *MockGCPClientMockRecorder) GetSnapshotsForVolume(arg0, arg1 interface{
 }
 
 // GetVersion mocks base method.
-func (m *MockGCPClient) GetVersion(arg0 context.Context) (*utils.Version, *utils.Version, error) {
+func (m *MockGCPClient) GetVersion(arg0 context.Context) (*version.Version, *version.Version, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVersion", arg0)
-	ret0, _ := ret[0].(*utils.Version)
-	ret1, _ := ret[1].(*utils.Version)
+	ret0, _ := ret[0].(*version.Version)
+	ret1, _ := ret[1].(*version.Version)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
@@ -422,20 +364,6 @@ func (m *MockGCPClient) VolumeExistsByCreationToken(arg0 context.Context, arg1 s
 func (mr *MockGCPClientMockRecorder) VolumeExistsByCreationToken(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByCreationToken", reflect.TypeOf((*MockGCPClient)(nil).VolumeExistsByCreationToken), arg0, arg1)
-}
-
-// WaitForBackupStates mocks base method.
-func (m *MockGCPClient) WaitForBackupStates(arg0 context.Context, arg1 *api.Backup, arg2, arg3 []string, arg4 time.Duration) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForBackupStates", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// WaitForBackupStates indicates an expected call of WaitForBackupStates.
-func (mr *MockGCPClientMockRecorder) WaitForBackupStates(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForBackupStates", reflect.TypeOf((*MockGCPClient)(nil).WaitForBackupStates), arg0, arg1, arg2, arg3, arg4)
 }
 
 // WaitForSnapshotState mocks base method.

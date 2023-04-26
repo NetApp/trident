@@ -66,13 +66,13 @@ type SnapmirrorPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SnapmirrorPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snapmirror policy get params
-func (o *SnapmirrorPolicyGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorPolicyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapmirror policy get params
+func (o *SnapmirrorPolicyGetParams) WithFields(fields []string) *SnapmirrorPolicyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapmirror policy get params
-func (o *SnapmirrorPolicyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapmirror policy get params
+func (o *SnapmirrorPolicyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the snapmirror policy get params
-func (o *SnapmirrorPolicyGetParams) WithUUIDPathParameter(uuid string) *SnapmirrorPolicyGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapmirror policy get params
+func (o *SnapmirrorPolicyGetParams) WithUUID(uuid string) *SnapmirrorPolicyGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapmirror policy get params
-func (o *SnapmirrorPolicyGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapmirror policy get params
+func (o *SnapmirrorPolicyGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SnapmirrorPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SnapmirrorPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SnapmirrorPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamSnapmirrorPolicyGet binds the parameter fields
 func (o *SnapmirrorPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

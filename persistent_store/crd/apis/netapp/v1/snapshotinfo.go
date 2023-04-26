@@ -21,6 +21,10 @@ func (in *TridentSnapshotInfo) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentSnapshotInfo) GetKind() string {
+	return "TridentSnapshotInfo"
+}
+
 func (in *TridentSnapshotInfo) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

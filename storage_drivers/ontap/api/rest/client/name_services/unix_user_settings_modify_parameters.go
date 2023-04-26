@@ -73,7 +73,7 @@ type UnixUserSettingsModifyParams struct {
 
 	   SVM UUID.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *UnixUserSettingsModifyParams) SetInfo(info *models.UnixUserSettings) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the unix user settings modify params
-func (o *UnixUserSettingsModifyParams) WithSVMUUIDPathParameter(svmUUID string) *UnixUserSettingsModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix user settings modify params
+func (o *UnixUserSettingsModifyParams) WithSvmUUID(svmUUID string) *UnixUserSettingsModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the unix user settings modify params
-func (o *UnixUserSettingsModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix user settings modify params
+func (o *UnixUserSettingsModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *UnixUserSettingsModifyParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

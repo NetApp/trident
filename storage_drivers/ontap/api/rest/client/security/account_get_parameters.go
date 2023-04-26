@@ -66,19 +66,19 @@ type AccountGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   User account name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Account owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *AccountGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the account get params
-func (o *AccountGetParams) WithFieldsQueryParameter(fields []string) *AccountGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the account get params
+func (o *AccountGetParams) WithFields(fields []string) *AccountGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the account get params
-func (o *AccountGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the account get params
+func (o *AccountGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the account get params
-func (o *AccountGetParams) WithNamePathParameter(name string) *AccountGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the account get params
+func (o *AccountGetParams) WithName(name string) *AccountGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the account get params
-func (o *AccountGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the account get params
+func (o *AccountGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the account get params
-func (o *AccountGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *AccountGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the account get params
+func (o *AccountGetParams) WithOwnerUUID(ownerUUID string) *AccountGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the account get params
-func (o *AccountGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the account get params
+func (o *AccountGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *AccountGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *AccountGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *AccountGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamAccountGet binds the parameter fields
 func (o *AccountGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

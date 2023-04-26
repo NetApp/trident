@@ -21,22 +21,22 @@ import (
 type NodeMetrics struct {
 
 	// links
-	Links *NodeMetricsLinks `json:"_links,omitempty"`
+	Links *NodeMetricsInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT5M PT30M PT2H P1D]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Average CPU Utilization for the node
 	// Example: 13
-	ProcessorUtilization int64 `json:"processor_utilization,omitempty"`
+	ProcessorUtilization *int64 `json:"processor_utilization,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -45,7 +45,7 @@ type NodeMetrics struct {
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this node metrics
@@ -170,7 +170,7 @@ func (m *NodeMetrics) validateDuration(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -306,7 +306,7 @@ func (m *NodeMetrics) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -371,17 +371,17 @@ func (m *NodeMetrics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetricsLinks node metrics links
+// NodeMetricsInlineLinks node metrics inline links
 //
-// swagger:model NodeMetricsLinks
-type NodeMetricsLinks struct {
+// swagger:model node_metrics_inline__links
+type NodeMetricsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node metrics links
-func (m *NodeMetricsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this node metrics inline links
+func (m *NodeMetricsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -394,7 +394,7 @@ func (m *NodeMetricsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetricsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NodeMetricsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -411,8 +411,8 @@ func (m *NodeMetricsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node metrics links based on the context it is used
-func (m *NodeMetricsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node metrics inline links based on the context it is used
+func (m *NodeMetricsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -425,7 +425,7 @@ func (m *NodeMetricsLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NodeMetricsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeMetricsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -440,7 +440,7 @@ func (m *NodeMetricsLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetricsLinks) MarshalBinary() ([]byte, error) {
+func (m *NodeMetricsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -448,8 +448,8 @@ func (m *NodeMetricsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetricsLinks) UnmarshalBinary(b []byte) error {
-	var res NodeMetricsLinks
+func (m *NodeMetricsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeMetricsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

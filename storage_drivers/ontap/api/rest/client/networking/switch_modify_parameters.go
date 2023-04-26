@@ -74,13 +74,13 @@ type SwitchModifyParams struct {
 
 	   Switch Name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *SwitchModifyParams) WithDefaults() *SwitchModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SwitchModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SwitchModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *SwitchModifyParams) SetInfo(info *models.Switch) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the switch modify params
-func (o *SwitchModifyParams) WithNamePathParameter(name string) *SwitchModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the switch modify params
+func (o *SwitchModifyParams) WithName(name string) *SwitchModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the switch modify params
-func (o *SwitchModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the switch modify params
+func (o *SwitchModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the switch modify params
-func (o *SwitchModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SwitchModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the switch modify params
+func (o *SwitchModifyParams) WithReturnTimeout(returnTimeout *int64) *SwitchModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the switch modify params
-func (o *SwitchModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the switch modify params
+func (o *SwitchModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -193,17 +193,17 @@ func (o *SwitchModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

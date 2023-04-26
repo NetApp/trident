@@ -22,7 +22,7 @@ type NdmpData struct {
 
 	// Indicates the NDMP data bytes processed.
 	// Example: 5000
-	BytesProcessed int64 `json:"bytes_processed,omitempty"`
+	BytesProcessed *int64 `json:"bytes_processed,omitempty"`
 
 	// Indicates the NDMP connection attributes.
 	Connection *NdmpConnect `json:"connection,omitempty"`
@@ -30,15 +30,15 @@ type NdmpData struct {
 	// Indicates the NDMP data server operation.
 	// Example: backup
 	// Enum: [backup restore none]
-	Operation string `json:"operation,omitempty"`
+	Operation *string `json:"operation,omitempty"`
 
 	// Indicates the reason for the NDMP data server halt.
 	// Example: aborted
-	Reason NdmpReason `json:"reason,omitempty"`
+	Reason *NdmpReason `json:"reason,omitempty"`
 
 	// Indicates the state of the NDMP data server.
 	// Example: halted
-	State NdmpState `json:"state,omitempty"`
+	State *NdmpState `json:"state,omitempty"`
 }
 
 // Validate validates this ndmp data
@@ -143,7 +143,7 @@ func (m *NdmpData) validateOperation(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOperationEnum("operation", "body", m.Operation); err != nil {
+	if err := m.validateOperationEnum("operation", "body", *m.Operation); err != nil {
 		return err
 	}
 
@@ -155,11 +155,13 @@ func (m *NdmpData) validateReason(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Reason.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("reason")
+	if m.Reason != nil {
+		if err := m.Reason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reason")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -170,11 +172,13 @@ func (m *NdmpData) validateState(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.State.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("state")
+	if m.State != nil {
+		if err := m.State.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("state")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -218,11 +222,13 @@ func (m *NdmpData) contextValidateConnection(ctx context.Context, formats strfmt
 
 func (m *NdmpData) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Reason.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("reason")
+	if m.Reason != nil {
+		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reason")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -230,11 +236,13 @@ func (m *NdmpData) contextValidateReason(ctx context.Context, formats strfmt.Reg
 
 func (m *NdmpData) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.State.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("state")
+	if m.State != nil {
+		if err := m.State.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("state")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

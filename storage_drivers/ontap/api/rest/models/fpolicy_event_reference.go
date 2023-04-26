@@ -19,10 +19,10 @@ import (
 type FpolicyEventReference struct {
 
 	// links
-	Links *FpolicyEventReferenceLinks `json:"_links,omitempty"`
+	Links *FpolicyEventReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this fpolicy event reference
@@ -102,17 +102,17 @@ func (m *FpolicyEventReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEventReferenceLinks fpolicy event reference links
+// FpolicyEventReferenceInlineLinks fpolicy event reference inline links
 //
-// swagger:model FpolicyEventReferenceLinks
-type FpolicyEventReferenceLinks struct {
+// swagger:model fpolicy_event_reference_inline__links
+type FpolicyEventReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy event reference links
-func (m *FpolicyEventReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy event reference inline links
+func (m *FpolicyEventReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -125,7 +125,7 @@ func (m *FpolicyEventReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyEventReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyEventReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -142,8 +142,8 @@ func (m *FpolicyEventReferenceLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this fpolicy event reference links based on the context it is used
-func (m *FpolicyEventReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy event reference inline links based on the context it is used
+func (m *FpolicyEventReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -156,7 +156,7 @@ func (m *FpolicyEventReferenceLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *FpolicyEventReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEventReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -171,7 +171,7 @@ func (m *FpolicyEventReferenceLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEventReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEventReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -179,8 +179,8 @@ func (m *FpolicyEventReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEventReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyEventReferenceLinks
+func (m *FpolicyEventReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyEventReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

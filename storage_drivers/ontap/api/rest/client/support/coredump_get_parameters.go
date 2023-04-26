@@ -66,19 +66,19 @@ type CoredumpGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Core name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CoredumpGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the coredump get params
-func (o *CoredumpGetParams) WithFieldsQueryParameter(fields []string) *CoredumpGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the coredump get params
+func (o *CoredumpGetParams) WithFields(fields []string) *CoredumpGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the coredump get params
-func (o *CoredumpGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the coredump get params
+func (o *CoredumpGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the coredump get params
-func (o *CoredumpGetParams) WithNamePathParameter(name string) *CoredumpGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the coredump get params
+func (o *CoredumpGetParams) WithName(name string) *CoredumpGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the coredump get params
-func (o *CoredumpGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the coredump get params
+func (o *CoredumpGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the coredump get params
-func (o *CoredumpGetParams) WithNodeUUIDPathParameter(nodeUUID string) *CoredumpGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the coredump get params
+func (o *CoredumpGetParams) WithNodeUUID(nodeUUID string) *CoredumpGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the coredump get params
-func (o *CoredumpGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the coredump get params
+func (o *CoredumpGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *CoredumpGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *CoredumpGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *CoredumpGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamCoredumpGet binds the parameter fields
 func (o *CoredumpGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

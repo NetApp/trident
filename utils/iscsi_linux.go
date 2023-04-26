@@ -7,7 +7,7 @@ package utils
 import (
 	"context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // ISCSIActiveOnHost will return if the iscsi daemon is active on the given host

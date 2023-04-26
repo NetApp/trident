@@ -73,13 +73,13 @@ type StoragePortModifyParams struct {
 
 	   Port name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *StoragePortModifyParams) SetInfo(info *models.StoragePort) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the storage port modify params
-func (o *StoragePortModifyParams) WithNamePathParameter(name string) *StoragePortModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the storage port modify params
+func (o *StoragePortModifyParams) WithName(name string) *StoragePortModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the storage port modify params
-func (o *StoragePortModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the storage port modify params
+func (o *StoragePortModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the storage port modify params
-func (o *StoragePortModifyParams) WithNodeUUIDPathParameter(nodeUUID string) *StoragePortModifyParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the storage port modify params
+func (o *StoragePortModifyParams) WithNodeUUID(nodeUUID string) *StoragePortModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the storage port modify params
-func (o *StoragePortModifyParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the storage port modify params
+func (o *StoragePortModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *StoragePortModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

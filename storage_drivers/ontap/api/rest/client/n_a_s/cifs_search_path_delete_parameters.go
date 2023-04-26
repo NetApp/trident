@@ -66,13 +66,13 @@ type CifsSearchPathDeleteParams struct {
 
 	   Home directory search path index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *CifsSearchPathDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the cifs search path delete params
-func (o *CifsSearchPathDeleteParams) WithIndexPathParameter(index int64) *CifsSearchPathDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the cifs search path delete params
+func (o *CifsSearchPathDeleteParams) WithIndex(index int64) *CifsSearchPathDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the cifs search path delete params
-func (o *CifsSearchPathDeleteParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the cifs search path delete params
+func (o *CifsSearchPathDeleteParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs search path delete params
-func (o *CifsSearchPathDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSearchPathDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs search path delete params
+func (o *CifsSearchPathDeleteParams) WithSvmUUID(svmUUID string) *CifsSearchPathDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs search path delete params
-func (o *CifsSearchPathDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs search path delete params
+func (o *CifsSearchPathDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,12 +158,12 @@ func (o *CifsSearchPathDeleteParams) WriteToRequest(r runtime.ClientRequest, reg
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

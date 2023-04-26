@@ -163,6 +163,8 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13304083    | The specified property is not supported because all nodes in the cluster are not capable of supporting the property. |
 | 13304086    | Reversing the direction of a SnapMirror relationship associated with a policy containing the property create_snapshot_on_source set to false is not supported. |
 | 6619715     | Modification of relationship is in progress. Retry the command after a few minutes. |
+| 6619699     | Schedule not found. |
+| 13304108    | Schedule not found in the Administrative SVM or the SVM for the relationship. |
 */
 type SnapmirrorRelationshipModifyDefault struct {
 	_statusCode int

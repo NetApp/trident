@@ -75,13 +75,13 @@ type ConsistencyGroupCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -101,14 +101,14 @@ func (o *ConsistencyGroupCreateParams) WithDefaults() *ConsistencyGroupCreatePar
 // All values with no default are reset to their zero value.
 func (o *ConsistencyGroupCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ConsistencyGroupCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -161,26 +161,26 @@ func (o *ConsistencyGroupCreateParams) SetInfo(info *models.ConsistencyGroup) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the consistency group create params
-func (o *ConsistencyGroupCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ConsistencyGroupCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the consistency group create params
+func (o *ConsistencyGroupCreateParams) WithReturnRecords(returnRecords *bool) *ConsistencyGroupCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the consistency group create params
-func (o *ConsistencyGroupCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the consistency group create params
+func (o *ConsistencyGroupCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the consistency group create params
-func (o *ConsistencyGroupCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ConsistencyGroupCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the consistency group create params
+func (o *ConsistencyGroupCreateParams) WithReturnTimeout(returnTimeout *int64) *ConsistencyGroupCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the consistency group create params
-func (o *ConsistencyGroupCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the consistency group create params
+func (o *ConsistencyGroupCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -196,13 +196,13 @@ func (o *ConsistencyGroupCreateParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -213,13 +213,13 @@ func (o *ConsistencyGroupCreateParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

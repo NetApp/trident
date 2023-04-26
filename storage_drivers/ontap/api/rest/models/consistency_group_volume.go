@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -27,34 +28,37 @@ type ConsistencyGroupVolume struct {
 
 	// Language encoding setting for volume. If no language is specified, the volume inherits its SVM language encoding setting.
 	// Enum: [ar ar.utf_8 c c.utf_8 cs cs.utf_8 da da.utf_8 de de.utf_8 en en.utf_8 en_us en_us.utf_8 es es.utf_8 fi fi.utf_8 fr fr.utf_8 he he.utf_8 hr hr.utf_8 hu hu.utf_8 it it.utf_8 ja ja.utf_8 ja_jp.932 ja_jp.932.utf_8 ja_jp.pck ja_jp.pck.utf_8 ja_jp.pck_v2 ja_jp.pck_v2.utf_8 ja_v1 ja_v1.utf_8 ko ko.utf_8 nl nl.utf_8 no no.utf_8 pl pl.utf_8 pt pt.utf_8 ro ro.utf_8 ru ru.utf_8 sk sk.utf_8 sl sl.utf_8 sv sv.utf_8 tr tr.utf_8 utf8mb4 zh zh.gbk zh.gbk.utf_8 zh.utf_8 zh_tw zh_tw.big5 zh_tw.big5.utf_8 zh_tw.utf_8]
-	Language string `json:"language,omitempty"`
+	Language *string `json:"language,omitempty"`
 
 	// Volume name. The name of volume must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 197 or fewer characters in length for FlexGroups, and 203 or fewer characters in length for all other types of volumes. Volume names must be unique within an SVM. Required on POST.
 	// Example: vol_cs_dept
 	// Max Length: 203
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// nas
+	Nas *ConsistencyGroupVolumeInlineNas `json:"nas,omitempty"`
 
 	// provisioning options
-	ProvisioningOptions *ConsistencyGroupVolumeProvisioningOptionsType `json:"provisioning_options,omitempty"`
+	ProvisioningOptions *ConsistencyGroupVolumeInlineProvisioningOptions `json:"provisioning_options,omitempty"`
 
 	// qos
-	Qos *ConsistencyGroupVolumeQos `json:"qos,omitempty"`
+	Qos *ConsistencyGroupVolumeInlineQos `json:"qos,omitempty"`
 
 	// The Snapshot copy policy for this volume.
 	//
 	SnapshotPolicy *SnapshotPolicyReference `json:"snapshot_policy,omitempty"`
 
 	// space
-	Space *ConsistencyGroupVolumeSpaceType `json:"space,omitempty"`
+	Space *ConsistencyGroupVolumeInlineSpace `json:"space,omitempty"`
 
 	// tiering
-	Tiering *ConsistencyGroupVolumeTiering `json:"tiering,omitempty"`
+	Tiering *ConsistencyGroupVolumeInlineTiering `json:"tiering,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group volume
@@ -70,6 +74,10 @@ func (m *ConsistencyGroupVolume) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNas(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -834,7 +842,7 @@ func (m *ConsistencyGroupVolume) validateLanguage(formats strfmt.Registry) error
 	}
 
 	// value enum
-	if err := m.validateLanguageEnum("language", "body", m.Language); err != nil {
+	if err := m.validateLanguageEnum("language", "body", *m.Language); err != nil {
 		return err
 	}
 
@@ -846,12 +854,29 @@ func (m *ConsistencyGroupVolume) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 203); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 203); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolume) validateNas(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nas) { // not required
+		return nil
+	}
+
+	if m.Nas != nil {
+		if err := m.Nas.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -946,6 +971,10 @@ func (m *ConsistencyGroupVolume) validateTiering(formats strfmt.Registry) error 
 func (m *ConsistencyGroupVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateNas(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateProvisioningOptions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -973,6 +1002,20 @@ func (m *ConsistencyGroupVolume) ContextValidate(ctx context.Context, formats st
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolume) contextValidateNas(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nas != nil {
+		if err := m.Nas.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1048,7 +1091,7 @@ func (m *ConsistencyGroupVolume) contextValidateTiering(ctx context.Context, for
 
 func (m *ConsistencyGroupVolume) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1073,24 +1116,642 @@ func (m *ConsistencyGroupVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupVolumeProvisioningOptionsType Options that are applied to the operation.
+// ConsistencyGroupVolumeInlineNas The CIFS share policy and/or export policies for this volume.
 //
-// swagger:model ConsistencyGroupVolumeProvisioningOptionsType
-type ConsistencyGroupVolumeProvisioningOptionsType struct {
+// swagger:model consistency_group_volume_inline_nas
+type ConsistencyGroupVolumeInlineNas struct {
 
-	// Operation to perform
-	// Enum: [create add]
-	Action string `json:"action,omitempty"`
+	// cifs
+	Cifs *ConsistencyGroupVolumeInlineNasInlineCifs `json:"cifs,omitempty"`
 
-	// Number of elements to perform the operation on.
-	Count int64 `json:"count,omitempty"`
+	// export policy
+	ExportPolicy *ConsistencyGroupVolumeInlineNasInlineExportPolicy `json:"export_policy,omitempty"`
 
-	// storage service
-	StorageService *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType `json:"storage_service,omitempty"`
+	// The UNIX group ID of the volume. Valid in POST or PATCH.
+	Gid *int64 `json:"gid,omitempty"`
+
+	// junction parent
+	JunctionParent *ConsistencyGroupVolumeInlineNasInlineJunctionParent `json:"junction_parent,omitempty"`
+
+	// The fully-qualified path in the owning SVM's namespace at which the volume is mounted. The path is case insensitive and must be unique within an SVM's namespace. Path must begin with '/' and must not end with '/'. Only one volume can be mounted at any given junction path. An empty path in POST creates an unmounted volume. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline or restricted state removes its junction path. This attribute is reported in GET only when the volume is mounted.
+	// Example: /user/my_volume
+	Path *string `json:"path,omitempty"`
+
+	// Security style associated with the volume. Valid in POST or PATCH.<br>mixed &dash; Mixed-style security<br>ntfs &dash; NTFS/WIndows-style security<br>unified &dash; Unified-style security, unified UNIX, NFS and CIFS permissions<br>unix &dash; UNIX-style security.
+	// Enum: [mixed ntfs unified unix]
+	SecurityStyle *string `json:"security_style,omitempty"`
+
+	// The UNIX user ID of the volume. Valid in POST or PATCH.
+	UID *int64 `json:"uid,omitempty"`
+
+	// UNIX permissions to be viewed as an octal number, consisting of 4 digits derived by adding up bits 4 (read), 2 (write), and 1 (execute). First digit selects the set user ID (4), set group ID (2), and sticky (1) attributes. Second digit selects permission for the owner of the file. Third selects permissions for other users in the same group while the fourth selects permissions for other users not in the group. Valid in POST or PATCH. For security style "mixed" or "unix", the default setting is 0755 in octal (493 in decimal) and for security style "ntfs", the default setting is 0000. In cases where only owner, group, and other permissions are given (as in 755, representing the second, third and fourth digit), the first digit is assumed to be zero.
+	// Example: 755
+	UnixPermissions *int64 `json:"unix_permissions,omitempty"`
 }
 
-// Validate validates this consistency group volume provisioning options type
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume inline nas
+func (m *ConsistencyGroupVolumeInlineNas) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCifs(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExportPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateJunctionParent(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurityStyle(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) validateCifs(formats strfmt.Registry) error {
+	if swag.IsZero(m.Cifs) { // not required
+		return nil
+	}
+
+	if m.Cifs != nil {
+		if err := m.Cifs.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "cifs")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) validateExportPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportPolicy) { // not required
+		return nil
+	}
+
+	if m.ExportPolicy != nil {
+		if err := m.ExportPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "export_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) validateJunctionParent(formats strfmt.Registry) error {
+	if swag.IsZero(m.JunctionParent) { // not required
+		return nil
+	}
+
+	if m.JunctionParent != nil {
+		if err := m.JunctionParent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var consistencyGroupVolumeInlineNasTypeSecurityStylePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["mixed","ntfs","unified","unix"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		consistencyGroupVolumeInlineNasTypeSecurityStylePropEnum = append(consistencyGroupVolumeInlineNasTypeSecurityStylePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_inline_nas
+	// ConsistencyGroupVolumeInlineNas
+	// security_style
+	// SecurityStyle
+	// mixed
+	// END DEBUGGING
+	// ConsistencyGroupVolumeInlineNasSecurityStyleMixed captures enum value "mixed"
+	ConsistencyGroupVolumeInlineNasSecurityStyleMixed string = "mixed"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_inline_nas
+	// ConsistencyGroupVolumeInlineNas
+	// security_style
+	// SecurityStyle
+	// ntfs
+	// END DEBUGGING
+	// ConsistencyGroupVolumeInlineNasSecurityStyleNtfs captures enum value "ntfs"
+	ConsistencyGroupVolumeInlineNasSecurityStyleNtfs string = "ntfs"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_inline_nas
+	// ConsistencyGroupVolumeInlineNas
+	// security_style
+	// SecurityStyle
+	// unified
+	// END DEBUGGING
+	// ConsistencyGroupVolumeInlineNasSecurityStyleUnified captures enum value "unified"
+	ConsistencyGroupVolumeInlineNasSecurityStyleUnified string = "unified"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_inline_nas
+	// ConsistencyGroupVolumeInlineNas
+	// security_style
+	// SecurityStyle
+	// unix
+	// END DEBUGGING
+	// ConsistencyGroupVolumeInlineNasSecurityStyleUnix captures enum value "unix"
+	ConsistencyGroupVolumeInlineNasSecurityStyleUnix string = "unix"
+)
+
+// prop value enum
+func (m *ConsistencyGroupVolumeInlineNas) validateSecurityStyleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeInlineNasTypeSecurityStylePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) validateSecurityStyle(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurityStyle) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSecurityStyleEnum("nas"+"."+"security_style", "body", *m.SecurityStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group volume inline nas based on the context it is used
+func (m *ConsistencyGroupVolumeInlineNas) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCifs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExportPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateJunctionParent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) contextValidateCifs(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Cifs != nil {
+		if err := m.Cifs.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "cifs")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) contextValidateExportPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExportPolicy != nil {
+		if err := m.ExportPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "export_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNas) contextValidateJunctionParent(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.JunctionParent != nil {
+		if err := m.JunctionParent.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNas) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNas) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineNas
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupVolumeInlineNasInlineCifs consistency group volume inline nas inline cifs
+//
+// swagger:model consistency_group_volume_inline_nas_inline_cifs
+type ConsistencyGroupVolumeInlineNasInlineCifs struct {
+
+	// shares
+	Shares []*ConsistencyGroupCifsShare `json:"shares,omitempty"`
+}
+
+// Validate validates this consistency group volume inline nas inline cifs
+func (m *ConsistencyGroupVolumeInlineNasInlineCifs) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateShares(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineCifs) validateShares(formats strfmt.Registry) error {
+	if swag.IsZero(m.Shares) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Shares); i++ {
+		if swag.IsZero(m.Shares[i]) { // not required
+			continue
+		}
+
+		if m.Shares[i] != nil {
+			if err := m.Shares[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nas" + "." + "cifs" + "." + "shares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group volume inline nas inline cifs based on the context it is used
+func (m *ConsistencyGroupVolumeInlineNasInlineCifs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateShares(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineCifs) contextValidateShares(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Shares); i++ {
+
+		if m.Shares[i] != nil {
+			if err := m.Shares[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nas" + "." + "cifs" + "." + "shares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNasInlineCifs) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNasInlineCifs) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineNasInlineCifs
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupVolumeInlineNasInlineExportPolicy The policy associated with volumes to export them for protocol access.
+//
+// swagger:model consistency_group_volume_inline_nas_inline_export_policy
+type ConsistencyGroupVolumeInlineNasInlineExportPolicy struct {
+
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
+	// Name of the export policy.
+	Name *string `json:"name,omitempty"`
+
+	// The set of rules that govern the export policy.
+	Rules []*ExportRules `json:"rules,omitempty"`
+
+	// Identifier for the export policy.
+	// Read Only: true
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this consistency group volume inline nas inline export policy
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRules(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "export_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) validateRules(formats strfmt.Registry) error {
+	if swag.IsZero(m.Rules) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Rules); i++ {
+		if swag.IsZero(m.Rules[i]) { // not required
+			continue
+		}
+
+		if m.Rules[i] != nil {
+			if err := m.Rules[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nas" + "." + "export_policy" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group volume inline nas inline export policy based on the context it is used
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRules(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "export_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Rules); i++ {
+
+		if m.Rules[i] != nil {
+			if err := m.Rules[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nas" + "." + "export_policy" + "." + "rules" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nas"+"."+"export_policy"+"."+"uuid", "body", m.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNasInlineExportPolicy) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineNasInlineExportPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupVolumeInlineNasInlineJunctionParent consistency group volume inline nas inline junction parent
+//
+// swagger:model consistency_group_volume_inline_nas_inline_junction_parent
+type ConsistencyGroupVolumeInlineNasInlineJunctionParent struct {
+
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
+	// The name of the parent volume that contains the junction inode of this volume. The junction parent volume must belong to the same SVM that owns this volume.
+	// Example: vs1_root
+	Name *string `json:"name,omitempty"`
+
+	// Unique identifier for the parent volume.
+	// Example: 75c9cfb0-3eb4-11eb-9fb4-005056bb088a
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this consistency group volume inline nas inline junction parent
+func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this consistency group volume inline nas inline junction parent based on the context it is used
+func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeInlineNasInlineJunctionParent) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineNasInlineJunctionParent
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupVolumeInlineProvisioningOptions Options that are applied to the operation.
+//
+// swagger:model consistency_group_volume_inline_provisioning_options
+type ConsistencyGroupVolumeInlineProvisioningOptions struct {
+
+	// Operation to perform
+	// Enum: [create add remove]
+	Action *string `json:"action,omitempty"`
+
+	// Number of elements to perform the operation on.
+	Count *int64 `json:"count,omitempty"`
+
+	// storage service
+	StorageService *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`
+}
+
+// Validate validates this consistency group volume inline provisioning options
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAction(formats); err != nil {
@@ -1107,63 +1768,73 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) Validate(formats strfmt.
 	return nil
 }
 
-var consistencyGroupVolumeProvisioningOptionsTypeTypeActionPropEnum []interface{}
+var consistencyGroupVolumeInlineProvisioningOptionsTypeActionPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["create","add"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["create","add","remove"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupVolumeProvisioningOptionsTypeTypeActionPropEnum = append(consistencyGroupVolumeProvisioningOptionsTypeTypeActionPropEnum, v)
+		consistencyGroupVolumeInlineProvisioningOptionsTypeActionPropEnum = append(consistencyGroupVolumeInlineProvisioningOptionsTypeActionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsType
-	// ConsistencyGroupVolumeProvisioningOptionsType
+	// consistency_group_volume_inline_provisioning_options
+	// ConsistencyGroupVolumeInlineProvisioningOptions
 	// action
 	// Action
 	// create
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeActionCreate captures enum value "create"
-	ConsistencyGroupVolumeProvisioningOptionsTypeActionCreate string = "create"
+	// ConsistencyGroupVolumeInlineProvisioningOptionsActionCreate captures enum value "create"
+	ConsistencyGroupVolumeInlineProvisioningOptionsActionCreate string = "create"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsType
-	// ConsistencyGroupVolumeProvisioningOptionsType
+	// consistency_group_volume_inline_provisioning_options
+	// ConsistencyGroupVolumeInlineProvisioningOptions
 	// action
 	// Action
 	// add
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeActionAdd captures enum value "add"
-	ConsistencyGroupVolumeProvisioningOptionsTypeActionAdd string = "add"
+	// ConsistencyGroupVolumeInlineProvisioningOptionsActionAdd captures enum value "add"
+	ConsistencyGroupVolumeInlineProvisioningOptionsActionAdd string = "add"
+
+	// BEGIN DEBUGGING
+	// consistency_group_volume_inline_provisioning_options
+	// ConsistencyGroupVolumeInlineProvisioningOptions
+	// action
+	// Action
+	// remove
+	// END DEBUGGING
+	// ConsistencyGroupVolumeInlineProvisioningOptionsActionRemove captures enum value "remove"
+	ConsistencyGroupVolumeInlineProvisioningOptionsActionRemove string = "remove"
 )
 
 // prop value enum
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) validateActionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeProvisioningOptionsTypeTypeActionPropEnum, true); err != nil {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) validateActionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeInlineProvisioningOptionsTypeActionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) validateAction(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) validateAction(formats strfmt.Registry) error {
 	if swag.IsZero(m.Action) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateActionEnum("provisioning_options"+"."+"action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("provisioning_options"+"."+"action", "body", *m.Action); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) validateStorageService(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -1180,8 +1851,8 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) validateStorageService(f
 	return nil
 }
 
-// ContextValidate validate this consistency group volume provisioning options type based on the context it is used
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group volume inline provisioning options based on the context it is used
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -1194,7 +1865,7 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) ContextValidate(ctx cont
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -1209,7 +1880,7 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) contextValidateStorageSe
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1217,8 +1888,8 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) MarshalBinary() ([]byte,
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeProvisioningOptionsType) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeProvisioningOptionsType
+func (m *ConsistencyGroupVolumeInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineProvisioningOptions
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1226,19 +1897,19 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsType) UnmarshalBinary(b []byte
 	return nil
 }
 
-// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType Determines the placement of any storage object created during this operation.
+// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService Determines the placement of any storage object created during this operation.
 //
-// swagger:model ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
-type ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType struct {
+// swagger:model consistency_group_volume_inline_provisioning_options_inline_storage_service
+type ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService struct {
 
 	// Storage service name. If not specified, the default value is the most performant for the platform.
 	//
 	// Enum: [extreme performance value]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this consistency group volume provisioning options type storage service type
-func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume inline provisioning options inline storage service
+func (m *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1251,7 +1922,7 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) Valida
 	return nil
 }
 
-var consistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeTypeNamePropEnum []interface{}
+var consistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1259,71 +1930,71 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeTypeNamePropEnum = append(consistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeTypeNamePropEnum, v)
+		consistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum = append(consistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
+	// consistency_group_volume_inline_provisioning_options_inline_storage_service
+	// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeNameExtreme captures enum value "extreme"
-	ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeNameExtreme string = "extreme"
+	// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceNameExtreme captures enum value "extreme"
+	ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
+	// consistency_group_volume_inline_provisioning_options_inline_storage_service
+	// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeNamePerformance captures enum value "performance"
-	ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeNamePerformance string = "performance"
+	// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceNamePerformance captures enum value "performance"
+	ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
+	// consistency_group_volume_inline_provisioning_options_inline_storage_service
+	// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeNameValue captures enum value "value"
-	ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeNameValue string = "value"
+	// ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceNameValue captures enum value "value"
+	ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeProvisioningOptionsTypeStorageServiceTypeTypeNamePropEnum, true); err != nil {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeInlineProvisioningOptionsInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) validateName(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("provisioning_options"+"."+"storage_service"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("provisioning_options"+"."+"storage_service"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this consistency group volume provisioning options type storage service type based on context it is used
-func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this consistency group volume inline provisioning options inline storage service based on context it is used
+func (m *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1331,8 +2002,8 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) Marsha
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType
+func (m *ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineProvisioningOptionsInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1340,17 +2011,17 @@ func (m *ConsistencyGroupVolumeProvisioningOptionsTypeStorageServiceType) Unmars
 	return nil
 }
 
-// ConsistencyGroupVolumeQos The QoS policy for this volume.
+// ConsistencyGroupVolumeInlineQos The QoS policy for this volume.
 //
-// swagger:model ConsistencyGroupVolumeQos
-type ConsistencyGroupVolumeQos struct {
+// swagger:model consistency_group_volume_inline_qos
+type ConsistencyGroupVolumeInlineQos struct {
 
 	// policy
-	Policy *ConsistencyGroupVolumeQosPolicy `json:"policy,omitempty"`
+	Policy *ConsistencyGroupVolumeInlineQosInlinePolicy `json:"policy,omitempty"`
 }
 
-// Validate validates this consistency group volume qos
-func (m *ConsistencyGroupVolumeQos) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume inline qos
+func (m *ConsistencyGroupVolumeInlineQos) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePolicy(formats); err != nil {
@@ -1363,7 +2034,7 @@ func (m *ConsistencyGroupVolumeQos) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeQos) validatePolicy(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineQos) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
@@ -1380,8 +2051,8 @@ func (m *ConsistencyGroupVolumeQos) validatePolicy(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this consistency group volume qos based on the context it is used
-func (m *ConsistencyGroupVolumeQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group volume inline qos based on the context it is used
+func (m *ConsistencyGroupVolumeInlineQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
@@ -1394,7 +2065,7 @@ func (m *ConsistencyGroupVolumeQos) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
 		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
@@ -1409,7 +2080,7 @@ func (m *ConsistencyGroupVolumeQos) contextValidatePolicy(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeQos) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeInlineQos) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1417,8 +2088,8 @@ func (m *ConsistencyGroupVolumeQos) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeQos) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeQos
+func (m *ConsistencyGroupVolumeInlineQos) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineQos
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1426,41 +2097,41 @@ func (m *ConsistencyGroupVolumeQos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupVolumeQosPolicy The QoS policy
+// ConsistencyGroupVolumeInlineQosInlinePolicy The QoS policy
 //
-// swagger:model ConsistencyGroupVolumeQosPolicy
-type ConsistencyGroupVolumeQosPolicy struct {
+// swagger:model consistency_group_volume_inline_qos_inline_policy
+type ConsistencyGroupVolumeInlineQosInlinePolicy struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
-	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
-	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this consistency group volume qos policy
-func (m *ConsistencyGroupVolumeQosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume inline qos inline policy
+func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1473,7 +2144,7 @@ func (m *ConsistencyGroupVolumeQosPolicy) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeQosPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1490,8 +2161,8 @@ func (m *ConsistencyGroupVolumeQosPolicy) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this consistency group volume qos policy based on the context it is used
-func (m *ConsistencyGroupVolumeQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group volume inline qos inline policy based on the context it is used
+func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1504,7 +2175,7 @@ func (m *ConsistencyGroupVolumeQosPolicy) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1519,7 +2190,7 @@ func (m *ConsistencyGroupVolumeQosPolicy) contextValidateLinks(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeQosPolicy) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1527,8 +2198,8 @@ func (m *ConsistencyGroupVolumeQosPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeQosPolicy) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeQosPolicy
+func (m *ConsistencyGroupVolumeInlineQosInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineQosInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1536,33 +2207,33 @@ func (m *ConsistencyGroupVolumeQosPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupVolumeSpaceType consistency group volume space type
+// ConsistencyGroupVolumeInlineSpace consistency group volume inline space
 //
-// swagger:model ConsistencyGroupVolumeSpaceType
-type ConsistencyGroupVolumeSpaceType struct {
+// swagger:model consistency_group_volume_inline_space
+type ConsistencyGroupVolumeInlineSpace struct {
 
 	// The available space, in bytes.
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// Total provisioned size, in bytes.
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The virtual space used (includes volume reserves) before storage efficiency, in bytes.
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this consistency group volume space type
-func (m *ConsistencyGroupVolumeSpaceType) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume inline space
+func (m *ConsistencyGroupVolumeInlineSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this consistency group volume space type based on context it is used
-func (m *ConsistencyGroupVolumeSpaceType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this consistency group volume inline space based on context it is used
+func (m *ConsistencyGroupVolumeInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeSpaceType) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeInlineSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1570,8 +2241,8 @@ func (m *ConsistencyGroupVolumeSpaceType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeSpaceType) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeSpaceType
+func (m *ConsistencyGroupVolumeInlineSpace) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1579,28 +2250,38 @@ func (m *ConsistencyGroupVolumeSpaceType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupVolumeTiering The tiering placement and policy definitions for this volume.
+// ConsistencyGroupVolumeInlineTiering The tiering placement and policy definitions for this volume.
 //
-// swagger:model ConsistencyGroupVolumeTiering
-type ConsistencyGroupVolumeTiering struct {
+// swagger:model consistency_group_volume_inline_tiering
+type ConsistencyGroupVolumeInlineTiering struct {
 
 	// Storage tiering placement rules for the object.
 	// Enum: [allowed best_effort disallowed required]
-	Control string `json:"control,omitempty"`
+	Control *string `json:"control,omitempty"`
+
+	// Object stores to use. Used for placement.
+	//
+	// Max Items: 2
+	// Min Items: 0
+	ObjectStores []*ConsistencyGroupVolumeTieringObjectStoresItems0 `json:"object_stores,omitempty"`
 
 	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold.
 	// <br>FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br/>all &dash; Allows tiering of both Snapshot copies and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br/>auto &dash; Allows tiering of both snapshot and active file system user data to the cloud store<br/>none &dash; Volume blocks are not be tiered to the cloud store.<br/>snapshot_only &dash; Allows tiering of only the volume Snapshot copies not associated with the active file system.
 	// <br>The default tiering policy is "snapshot-only" for a FlexVol volume and "none" for a FlexGroup volume. The default minimum cooling period for the "snapshot-only" tiering policy is 2 days and for the "auto" tiering policy it is 31 days.
 	//
 	// Enum: [all auto backup none snapshot_only]
-	Policy string `json:"policy,omitempty"`
+	Policy *string `json:"policy,omitempty"`
 }
 
-// Validate validates this consistency group volume tiering
-func (m *ConsistencyGroupVolumeTiering) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group volume inline tiering
+func (m *ConsistencyGroupVolumeInlineTiering) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateControl(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateObjectStores(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1614,7 +2295,7 @@ func (m *ConsistencyGroupVolumeTiering) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-var consistencyGroupVolumeTieringTypeControlPropEnum []interface{}
+var consistencyGroupVolumeInlineTieringTypeControlPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1622,75 +2303,109 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupVolumeTieringTypeControlPropEnum = append(consistencyGroupVolumeTieringTypeControlPropEnum, v)
+		consistencyGroupVolumeInlineTieringTypeControlPropEnum = append(consistencyGroupVolumeInlineTieringTypeControlPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// control
 	// Control
 	// allowed
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringControlAllowed captures enum value "allowed"
-	ConsistencyGroupVolumeTieringControlAllowed string = "allowed"
+	// ConsistencyGroupVolumeInlineTieringControlAllowed captures enum value "allowed"
+	ConsistencyGroupVolumeInlineTieringControlAllowed string = "allowed"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// control
 	// Control
 	// best_effort
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringControlBestEffort captures enum value "best_effort"
-	ConsistencyGroupVolumeTieringControlBestEffort string = "best_effort"
+	// ConsistencyGroupVolumeInlineTieringControlBestEffort captures enum value "best_effort"
+	ConsistencyGroupVolumeInlineTieringControlBestEffort string = "best_effort"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// control
 	// Control
 	// disallowed
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringControlDisallowed captures enum value "disallowed"
-	ConsistencyGroupVolumeTieringControlDisallowed string = "disallowed"
+	// ConsistencyGroupVolumeInlineTieringControlDisallowed captures enum value "disallowed"
+	ConsistencyGroupVolumeInlineTieringControlDisallowed string = "disallowed"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// control
 	// Control
 	// required
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringControlRequired captures enum value "required"
-	ConsistencyGroupVolumeTieringControlRequired string = "required"
+	// ConsistencyGroupVolumeInlineTieringControlRequired captures enum value "required"
+	ConsistencyGroupVolumeInlineTieringControlRequired string = "required"
 )
 
 // prop value enum
-func (m *ConsistencyGroupVolumeTiering) validateControlEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeTieringTypeControlPropEnum, true); err != nil {
+func (m *ConsistencyGroupVolumeInlineTiering) validateControlEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeInlineTieringTypeControlPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeTiering) validateControl(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineTiering) validateControl(formats strfmt.Registry) error {
 	if swag.IsZero(m.Control) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateControlEnum("tiering"+"."+"control", "body", m.Control); err != nil {
+	if err := m.validateControlEnum("tiering"+"."+"control", "body", *m.Control); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var consistencyGroupVolumeTieringTypePolicyPropEnum []interface{}
+func (m *ConsistencyGroupVolumeInlineTiering) validateObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.ObjectStores) { // not required
+		return nil
+	}
+
+	iObjectStoresSize := int64(len(m.ObjectStores))
+
+	if err := validate.MinItems("tiering"+"."+"object_stores", "body", iObjectStoresSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("tiering"+"."+"object_stores", "body", iObjectStoresSize, 2); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ObjectStores); i++ {
+		if swag.IsZero(m.ObjectStores[i]) { // not required
+			continue
+		}
+
+		if m.ObjectStores[i] != nil {
+			if err := m.ObjectStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("tiering" + "." + "object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var consistencyGroupVolumeInlineTieringTypePolicyPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1698,91 +2413,118 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupVolumeTieringTypePolicyPropEnum = append(consistencyGroupVolumeTieringTypePolicyPropEnum, v)
+		consistencyGroupVolumeInlineTieringTypePolicyPropEnum = append(consistencyGroupVolumeInlineTieringTypePolicyPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// policy
 	// Policy
 	// all
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringPolicyAll captures enum value "all"
-	ConsistencyGroupVolumeTieringPolicyAll string = "all"
+	// ConsistencyGroupVolumeInlineTieringPolicyAll captures enum value "all"
+	ConsistencyGroupVolumeInlineTieringPolicyAll string = "all"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// policy
 	// Policy
 	// auto
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringPolicyAuto captures enum value "auto"
-	ConsistencyGroupVolumeTieringPolicyAuto string = "auto"
+	// ConsistencyGroupVolumeInlineTieringPolicyAuto captures enum value "auto"
+	ConsistencyGroupVolumeInlineTieringPolicyAuto string = "auto"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// policy
 	// Policy
 	// backup
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringPolicyBackup captures enum value "backup"
-	ConsistencyGroupVolumeTieringPolicyBackup string = "backup"
+	// ConsistencyGroupVolumeInlineTieringPolicyBackup captures enum value "backup"
+	ConsistencyGroupVolumeInlineTieringPolicyBackup string = "backup"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// policy
 	// Policy
 	// none
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringPolicyNone captures enum value "none"
-	ConsistencyGroupVolumeTieringPolicyNone string = "none"
+	// ConsistencyGroupVolumeInlineTieringPolicyNone captures enum value "none"
+	ConsistencyGroupVolumeInlineTieringPolicyNone string = "none"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupVolumeTiering
-	// ConsistencyGroupVolumeTiering
+	// consistency_group_volume_inline_tiering
+	// ConsistencyGroupVolumeInlineTiering
 	// policy
 	// Policy
 	// snapshot_only
 	// END DEBUGGING
-	// ConsistencyGroupVolumeTieringPolicySnapshotOnly captures enum value "snapshot_only"
-	ConsistencyGroupVolumeTieringPolicySnapshotOnly string = "snapshot_only"
+	// ConsistencyGroupVolumeInlineTieringPolicySnapshotOnly captures enum value "snapshot_only"
+	ConsistencyGroupVolumeInlineTieringPolicySnapshotOnly string = "snapshot_only"
 )
 
 // prop value enum
-func (m *ConsistencyGroupVolumeTiering) validatePolicyEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeTieringTypePolicyPropEnum, true); err != nil {
+func (m *ConsistencyGroupVolumeInlineTiering) validatePolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupVolumeInlineTieringTypePolicyPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupVolumeTiering) validatePolicy(formats strfmt.Registry) error {
+func (m *ConsistencyGroupVolumeInlineTiering) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validatePolicyEnum("tiering"+"."+"policy", "body", m.Policy); err != nil {
+	if err := m.validatePolicyEnum("tiering"+"."+"policy", "body", *m.Policy); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this consistency group volume tiering based on context it is used
-func (m *ConsistencyGroupVolumeTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group volume inline tiering based on the context it is used
+func (m *ConsistencyGroupVolumeInlineTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateObjectStores(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupVolumeInlineTiering) contextValidateObjectStores(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ObjectStores); i++ {
+
+		if m.ObjectStores[i] != nil {
+			if err := m.ObjectStores[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("tiering" + "." + "object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeTiering) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupVolumeInlineTiering) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1790,8 +2532,45 @@ func (m *ConsistencyGroupVolumeTiering) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupVolumeTiering) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupVolumeTiering
+func (m *ConsistencyGroupVolumeInlineTiering) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeInlineTiering
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupVolumeTieringObjectStoresItems0 consistency group volume tiering object stores items0
+//
+// swagger:model ConsistencyGroupVolumeTieringObjectStoresItems0
+type ConsistencyGroupVolumeTieringObjectStoresItems0 struct {
+
+	// The name of the object store to use. Used for placement.
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this consistency group volume tiering object stores items0
+func (m *ConsistencyGroupVolumeTieringObjectStoresItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this consistency group volume tiering object stores items0 based on context it is used
+func (m *ConsistencyGroupVolumeTieringObjectStoresItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeTieringObjectStoresItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupVolumeTieringObjectStoresItems0) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupVolumeTieringObjectStoresItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

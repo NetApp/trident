@@ -69,14 +69,14 @@ type NvmeNamespaceDeleteParams struct {
 	**This parameter should be used with caution.**
 
 	*/
-	AllowDeleteWhileMappedQueryParameter *bool
+	AllowDeleteWhileMapped *bool
 
 	/* UUID.
 
 	   The unique identifier of the NVMe namespace to delete.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -96,11 +96,11 @@ func (o *NvmeNamespaceDeleteParams) WithDefaults() *NvmeNamespaceDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *NvmeNamespaceDeleteParams) SetDefaults() {
 	var (
-		allowDeleteWhileMappedQueryParameterDefault = bool(false)
+		allowDeleteWhileMappedDefault = bool(false)
 	)
 
 	val := NvmeNamespaceDeleteParams{
-		AllowDeleteWhileMappedQueryParameter: &allowDeleteWhileMappedQueryParameterDefault,
+		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
 	}
 
 	val.timeout = o.timeout
@@ -142,26 +142,26 @@ func (o *NvmeNamespaceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the nvme namespace delete params
-func (o *NvmeNamespaceDeleteParams) WithAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) *NvmeNamespaceDeleteParams {
-	o.SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped)
+// WithAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the nvme namespace delete params
+func (o *NvmeNamespaceDeleteParams) WithAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) *NvmeNamespaceDeleteParams {
+	o.SetAllowDeleteWhileMapped(allowDeleteWhileMapped)
 	return o
 }
 
-// SetAllowDeleteWhileMappedQueryParameter adds the allowDeleteWhileMapped to the nvme namespace delete params
-func (o *NvmeNamespaceDeleteParams) SetAllowDeleteWhileMappedQueryParameter(allowDeleteWhileMapped *bool) {
-	o.AllowDeleteWhileMappedQueryParameter = allowDeleteWhileMapped
+// SetAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the nvme namespace delete params
+func (o *NvmeNamespaceDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) {
+	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
-// WithUUIDPathParameter adds the uuid to the nvme namespace delete params
-func (o *NvmeNamespaceDeleteParams) WithUUIDPathParameter(uuid string) *NvmeNamespaceDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the nvme namespace delete params
+func (o *NvmeNamespaceDeleteParams) WithUUID(uuid string) *NvmeNamespaceDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the nvme namespace delete params
-func (o *NvmeNamespaceDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the nvme namespace delete params
+func (o *NvmeNamespaceDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -172,13 +172,13 @@ func (o *NvmeNamespaceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.AllowDeleteWhileMappedQueryParameter != nil {
+	if o.AllowDeleteWhileMapped != nil {
 
 		// query param allow_delete_while_mapped
 		var qrAllowDeleteWhileMapped bool
 
-		if o.AllowDeleteWhileMappedQueryParameter != nil {
-			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMappedQueryParameter
+		if o.AllowDeleteWhileMapped != nil {
+			qrAllowDeleteWhileMapped = *o.AllowDeleteWhileMapped
 		}
 		qAllowDeleteWhileMapped := swag.FormatBool(qrAllowDeleteWhileMapped)
 		if qAllowDeleteWhileMapped != "" {
@@ -190,7 +190,7 @@ func (o *NvmeNamespaceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

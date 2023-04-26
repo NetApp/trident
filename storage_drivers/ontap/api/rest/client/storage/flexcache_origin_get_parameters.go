@@ -66,13 +66,13 @@ type FlexcacheOriginGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Unique identifier of origin of FlexCache.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *FlexcacheOriginGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the flexcache origin get params
-func (o *FlexcacheOriginGetParams) WithFieldsQueryParameter(fields []string) *FlexcacheOriginGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the flexcache origin get params
+func (o *FlexcacheOriginGetParams) WithFields(fields []string) *FlexcacheOriginGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the flexcache origin get params
-func (o *FlexcacheOriginGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the flexcache origin get params
+func (o *FlexcacheOriginGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the flexcache origin get params
-func (o *FlexcacheOriginGetParams) WithUUIDPathParameter(uuid string) *FlexcacheOriginGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the flexcache origin get params
+func (o *FlexcacheOriginGetParams) WithUUID(uuid string) *FlexcacheOriginGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the flexcache origin get params
-func (o *FlexcacheOriginGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the flexcache origin get params
+func (o *FlexcacheOriginGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *FlexcacheOriginGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *FlexcacheOriginGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *FlexcacheOriginGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamFlexcacheOriginGet binds the parameter fields
 func (o *FlexcacheOriginGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

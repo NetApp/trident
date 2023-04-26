@@ -21,64 +21,64 @@ import (
 type SecurityCertificate struct {
 
 	// links
-	Links *SecurityCertificateLinks `json:"_links,omitempty"`
+	Links *SecurityCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Provides the key identifier of the issuing CA certificate that signed the SSL certificate.
 	// Example: 26:1F:C5:53:5B:D7:9E:E2:37:74:F4:F4:06:09:03:3D:EB:41:75:D7
 	// Read Only: true
-	AuthorityKeyIdentifier string `json:"authority_key_identifier,omitempty"`
+	AuthorityKeyIdentifier *string `json:"authority_key_identifier,omitempty"`
 
 	// Certificate authority
 	// Read Only: true
 	// Max Length: 256
 	// Min Length: 1
-	Ca string `json:"ca,omitempty"`
+	Ca *string `json:"ca,omitempty"`
 
 	// FQDN or custom common name. Provide on POST when creating a self-signed certificate.
 	// Example: test.domain.com
-	CommonName string `json:"common_name,omitempty"`
+	CommonName *string `json:"common_name,omitempty"`
 
 	// Certificate expiration time. Can be provided on POST if creating self-signed certificate. The expiration time range is between 1 day to 10 years.
-	ExpiryTime string `json:"expiry_time,omitempty"`
+	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Hashing function. Can be provided on POST when creating a self-signed certificate. Hash functions md5 and sha1 are not allowed on POST.
 	// Enum: [sha1 sha256 md5 sha224 sha384 sha512]
 	HashFunction *string `json:"hash_function,omitempty"`
-
-	// Chain of intermediate Certificates in PEM format. Only valid in POST when installing a certificate.
-	IntermediateCertificates []string `json:"intermediate_certificates,omitempty"`
 
 	// Key size of requested Certificate in bits. One of 512, 1024, 1536, 2048, 3072. Can be provided on POST if creating self-signed certificate. Key size of 512 is not allowed on POST.
 	KeySize *int64 `json:"key_size,omitempty"`
 
 	// Certificate name. If not provided in POST, a unique name specific to the SVM is automatically generated.
 	// Example: cert1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Private key Certificate in PEM format. Only valid for create when installing a CA-signed certificate. This is not audited.
 	// Example: -----BEGIN PRIVATE KEY----- MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAu1/a8f3G47cZ6pel Hd3aONMNkGJ8vSCH5QjicuDm92VtVwkAACEjIoZSLYlJvPD+odL+lFzVQSmkneW7 VCGqYQIDAQABAkAcfNpg6GCQxoneLOghvlUrRotNZGvqpUOEAvHK3X7AJhz5SU4V an36qvsAt5ghFMVM2iGvGaXbj0dAd+Jg64pxAiEA32Eh9mPtFSmZhTIUMeGcPmPk qIYCEuP8a/ZLmI9s4TsCIQDWvLQuvjSVfwPhi0TFAb5wqAET8X5LBFqtGX5QlUep EwIgFnqM02Gc4wtLoqa2d4qPkYu13+uUW9hLd4XSd6i/OS8CIQDT3elU+Rt+qIwW u0cFrVvNYSV3HNzDfS9N/IoxTagfewIgPvXADe5c2EWbhCUkhN+ZCf38AKewK9TW lQcDy4L+f14= -----END PRIVATE KEY-----
-	PrivateKey string `json:"private_key,omitempty"`
+	PrivateKey *string `json:"private_key,omitempty"`
 
 	// Public key Certificate in PEM format. If this is not provided in POST, a self-signed certificate is created.
 	// Example: -----BEGIN CERTIFICATE----- MIIBuzCCAWWgAwIBAgIIFTZBrqZwUUMwDQYJKoZIhvcNAQELBQAwHDENMAsGA1UE AxMEVEVTVDELMAkGA1UEBhMCVVMwHhcNMTgwNjA4MTgwOTAxWhcNMTkwNjA4MTgw OTAxWjAcMQ0wCwYDVQQDEwRURVNUMQswCQYDVQQGEwJVUzBcMA0GCSqGSIb3DQEB AQUAA0sAMEgCQQDaPvbqUJJFJ6NNTyK3Yb+ytSjJ9aa3yUmYTD9uMiP+6ycjxHWB e8u9z6yCHsW03ync+dnhE5c5z8wuDAY0fv15AgMBAAGjgYowgYcwDAYDVR0TBAUw AwEB/zALBgNVHQ8EBAMCAQYwHQYDVR0OBBYEFMJ7Ev/o/3+YNzYh5XNlqqjnw4zm MEsGA1UdIwREMEKAFMJ7Ev/o/3+YNzYh5XNlqqjnw4zmoSCkHjAcMQ0wCwYDVQQD EwRURVNUMQswCQYDVQQGEwJVU4IIFTZBrqZwUUMwDQYJKoZIhvcNAQELBQADQQAv DovYeyGNnknjGI+TVNX6nDbyzf7zUPqnri0KuvObEeybrbPW45sgsnT5dyeE/32U 9Yr6lklnkBtVBDTmLnrC -----END CERTIFICATE-----
-	PublicCertificate string `json:"public_certificate,omitempty"`
+	PublicCertificate *string `json:"public_certificate,omitempty"`
 
 	// scope
-	Scope NetworkScopeReadonly `json:"scope,omitempty"`
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
+
+	// Chain of intermediate Certificates in PEM format. Only valid in POST when installing a certificate.
+	SecurityCertificateInlineIntermediateCertificates []*string `json:"intermediate_certificates,omitempty"`
 
 	// Serial number of certificate.
 	// Read Only: true
 	// Max Length: 40
 	// Min Length: 1
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Provides the key identifier used to identify the public key in the SSL certificate.
 	// Example: 26:1F:C5:53:5B:D7:9E:E2:37:74:F4:F4:06:09:03:3D:EB:41:75:D8
 	// Read Only: true
-	SubjectKeyIdentifier string `json:"subject_key_identifier,omitempty"`
+	SubjectKeyIdentifier *string `json:"subject_key_identifier,omitempty"`
 
 	// svm
-	Svm *SecurityCertificateSvm `json:"svm,omitempty"`
+	Svm *SecurityCertificateInlineSvm `json:"svm,omitempty"`
 
 	// Type of Certificate. The following types are supported:
 	// * client - a certificate and its private key used by an SSL client in ONTAP.
@@ -88,11 +88,11 @@ type SecurityCertificate struct {
 	// * root_ca - a self-signed certificate used by ONTAP to sign other certificates by acting as a Certificate Authority.
 	//
 	// Enum: [client server client_ca server_ca root_ca]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Unique ID that identifies a certificate.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this security certificate
@@ -155,11 +155,11 @@ func (m *SecurityCertificate) validateCa(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("ca", "body", m.Ca, 1); err != nil {
+	if err := validate.MinLength("ca", "body", *m.Ca, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("ca", "body", m.Ca, 256); err != nil {
+	if err := validate.MaxLength("ca", "body", *m.Ca, 256); err != nil {
 		return err
 	}
 
@@ -267,11 +267,13 @@ func (m *SecurityCertificate) validateScope(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -282,11 +284,11 @@ func (m *SecurityCertificate) validateSerialNumber(formats strfmt.Registry) erro
 		return nil
 	}
 
-	if err := validate.MinLength("serial_number", "body", m.SerialNumber, 1); err != nil {
+	if err := validate.MinLength("serial_number", "body", *m.SerialNumber, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("serial_number", "body", m.SerialNumber, 40); err != nil {
+	if err := validate.MaxLength("serial_number", "body", *m.SerialNumber, 40); err != nil {
 		return err
 	}
 
@@ -389,7 +391,7 @@ func (m *SecurityCertificate) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -454,7 +456,7 @@ func (m *SecurityCertificate) contextValidateLinks(ctx context.Context, formats 
 
 func (m *SecurityCertificate) contextValidateAuthorityKeyIdentifier(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "authority_key_identifier", "body", string(m.AuthorityKeyIdentifier)); err != nil {
+	if err := validate.ReadOnly(ctx, "authority_key_identifier", "body", m.AuthorityKeyIdentifier); err != nil {
 		return err
 	}
 
@@ -463,7 +465,7 @@ func (m *SecurityCertificate) contextValidateAuthorityKeyIdentifier(ctx context.
 
 func (m *SecurityCertificate) contextValidateCa(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "ca", "body", string(m.Ca)); err != nil {
+	if err := validate.ReadOnly(ctx, "ca", "body", m.Ca); err != nil {
 		return err
 	}
 
@@ -472,11 +474,13 @@ func (m *SecurityCertificate) contextValidateCa(ctx context.Context, formats str
 
 func (m *SecurityCertificate) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -484,7 +488,7 @@ func (m *SecurityCertificate) contextValidateScope(ctx context.Context, formats 
 
 func (m *SecurityCertificate) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -493,7 +497,7 @@ func (m *SecurityCertificate) contextValidateSerialNumber(ctx context.Context, f
 
 func (m *SecurityCertificate) contextValidateSubjectKeyIdentifier(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subject_key_identifier", "body", string(m.SubjectKeyIdentifier)); err != nil {
+	if err := validate.ReadOnly(ctx, "subject_key_identifier", "body", m.SubjectKeyIdentifier); err != nil {
 		return err
 	}
 
@@ -516,7 +520,7 @@ func (m *SecurityCertificate) contextValidateSvm(ctx context.Context, formats st
 
 func (m *SecurityCertificate) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -541,17 +545,17 @@ func (m *SecurityCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityCertificateLinks security certificate links
+// SecurityCertificateInlineLinks security certificate inline links
 //
-// swagger:model SecurityCertificateLinks
-type SecurityCertificateLinks struct {
+// swagger:model security_certificate_inline__links
+type SecurityCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security certificate links
-func (m *SecurityCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security certificate inline links
+func (m *SecurityCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -564,7 +568,7 @@ func (m *SecurityCertificateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -581,8 +585,8 @@ func (m *SecurityCertificateLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security certificate links based on the context it is used
-func (m *SecurityCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security certificate inline links based on the context it is used
+func (m *SecurityCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -595,7 +599,7 @@ func (m *SecurityCertificateLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SecurityCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -610,7 +614,7 @@ func (m *SecurityCertificateLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -618,8 +622,8 @@ func (m *SecurityCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityCertificateLinks
+func (m *SecurityCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -627,27 +631,27 @@ func (m *SecurityCertificateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityCertificateSvm security certificate svm
+// SecurityCertificateInlineSvm security certificate inline svm
 //
-// swagger:model SecurityCertificateSvm
-type SecurityCertificateSvm struct {
+// swagger:model security_certificate_inline_svm
+type SecurityCertificateInlineSvm struct {
 
 	// links
-	Links *SecurityCertificateSvmLinks `json:"_links,omitempty"`
+	Links *SecurityCertificateInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security certificate svm
-func (m *SecurityCertificateSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this security certificate inline svm
+func (m *SecurityCertificateInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -660,7 +664,7 @@ func (m *SecurityCertificateSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityCertificateSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityCertificateInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -677,8 +681,8 @@ func (m *SecurityCertificateSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security certificate svm based on the context it is used
-func (m *SecurityCertificateSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security certificate inline svm based on the context it is used
+func (m *SecurityCertificateInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -691,7 +695,7 @@ func (m *SecurityCertificateSvm) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SecurityCertificateSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityCertificateInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -706,7 +710,7 @@ func (m *SecurityCertificateSvm) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityCertificateSvm) MarshalBinary() ([]byte, error) {
+func (m *SecurityCertificateInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -714,8 +718,8 @@ func (m *SecurityCertificateSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityCertificateSvm) UnmarshalBinary(b []byte) error {
-	var res SecurityCertificateSvm
+func (m *SecurityCertificateInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -723,17 +727,17 @@ func (m *SecurityCertificateSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityCertificateSvmLinks security certificate svm links
+// SecurityCertificateInlineSvmInlineLinks security certificate inline svm inline links
 //
-// swagger:model SecurityCertificateSvmLinks
-type SecurityCertificateSvmLinks struct {
+// swagger:model security_certificate_inline_svm_inline__links
+type SecurityCertificateInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security certificate svm links
-func (m *SecurityCertificateSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security certificate inline svm inline links
+func (m *SecurityCertificateInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -746,7 +750,7 @@ func (m *SecurityCertificateSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityCertificateSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityCertificateInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -763,8 +767,8 @@ func (m *SecurityCertificateSvmLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this security certificate svm links based on the context it is used
-func (m *SecurityCertificateSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security certificate inline svm inline links based on the context it is used
+func (m *SecurityCertificateInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -777,7 +781,7 @@ func (m *SecurityCertificateSvmLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *SecurityCertificateSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityCertificateInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -792,7 +796,7 @@ func (m *SecurityCertificateSvmLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityCertificateSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityCertificateInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -800,8 +804,8 @@ func (m *SecurityCertificateSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityCertificateSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityCertificateSvmLinks
+func (m *SecurityCertificateInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityCertificateInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

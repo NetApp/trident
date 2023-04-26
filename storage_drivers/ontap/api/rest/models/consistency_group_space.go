@@ -20,17 +20,17 @@ type ConsistencyGroupSpace struct {
 	// The amount of space available in the consistency group, in bytes.<br/>
 	//
 	// Example: 5737418
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// The total provisioned size of the consistency group, in bytes.<br/>
 	//
 	// Example: 1073741824
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The amount of space consumed in the consistency group, in bytes.<br/>
 	//
 	// Example: 5737418
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 // Validate validates this consistency group space

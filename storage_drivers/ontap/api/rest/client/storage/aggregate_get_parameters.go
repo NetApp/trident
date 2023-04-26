@@ -66,19 +66,31 @@ type AggregateGetParams struct {
 
 	   If set to expand, a query is run on the system for the recommended optimal expansion layout of the aggregate.
 	*/
-	AutoProvisionPolicyQueryParameter *string
+	AutoProvisionPolicy *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* FlashPoolEligible.
+
+	   If set to 'true' along with show_spares, the spares object is restricted to return spare groups that are compatible with flash pool creation or addition for the specified aggregate. The default setting is 'false'.
+	*/
+	FlashPoolEligible *bool
+
+	/* ShowSpares.
+
+	   If set to 'true', the spares object is returned instead of records to show the spare groups in the cluster that are compatible with the aggregate. The default setting is 'false'.
+	*/
+	ShowSpares *bool
 
 	/* UUID.
 
 	   Aggregate UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +145,59 @@ func (o *AggregateGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAutoProvisionPolicyQueryParameter adds the autoProvisionPolicy to the aggregate get params
-func (o *AggregateGetParams) WithAutoProvisionPolicyQueryParameter(autoProvisionPolicy *string) *AggregateGetParams {
-	o.SetAutoProvisionPolicyQueryParameter(autoProvisionPolicy)
+// WithAutoProvisionPolicy adds the autoProvisionPolicy to the aggregate get params
+func (o *AggregateGetParams) WithAutoProvisionPolicy(autoProvisionPolicy *string) *AggregateGetParams {
+	o.SetAutoProvisionPolicy(autoProvisionPolicy)
 	return o
 }
 
-// SetAutoProvisionPolicyQueryParameter adds the autoProvisionPolicy to the aggregate get params
-func (o *AggregateGetParams) SetAutoProvisionPolicyQueryParameter(autoProvisionPolicy *string) {
-	o.AutoProvisionPolicyQueryParameter = autoProvisionPolicy
+// SetAutoProvisionPolicy adds the autoProvisionPolicy to the aggregate get params
+func (o *AggregateGetParams) SetAutoProvisionPolicy(autoProvisionPolicy *string) {
+	o.AutoProvisionPolicy = autoProvisionPolicy
 }
 
-// WithFieldsQueryParameter adds the fields to the aggregate get params
-func (o *AggregateGetParams) WithFieldsQueryParameter(fields []string) *AggregateGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the aggregate get params
+func (o *AggregateGetParams) WithFields(fields []string) *AggregateGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the aggregate get params
-func (o *AggregateGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the aggregate get params
+func (o *AggregateGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the aggregate get params
-func (o *AggregateGetParams) WithUUIDPathParameter(uuid string) *AggregateGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithFlashPoolEligible adds the flashPoolEligible to the aggregate get params
+func (o *AggregateGetParams) WithFlashPoolEligible(flashPoolEligible *bool) *AggregateGetParams {
+	o.SetFlashPoolEligible(flashPoolEligible)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the aggregate get params
-func (o *AggregateGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetFlashPoolEligible adds the flashPoolEligible to the aggregate get params
+func (o *AggregateGetParams) SetFlashPoolEligible(flashPoolEligible *bool) {
+	o.FlashPoolEligible = flashPoolEligible
+}
+
+// WithShowSpares adds the showSpares to the aggregate get params
+func (o *AggregateGetParams) WithShowSpares(showSpares *bool) *AggregateGetParams {
+	o.SetShowSpares(showSpares)
+	return o
+}
+
+// SetShowSpares adds the showSpares to the aggregate get params
+func (o *AggregateGetParams) SetShowSpares(showSpares *bool) {
+	o.ShowSpares = showSpares
+}
+
+// WithUUID adds the uuid to the aggregate get params
+func (o *AggregateGetParams) WithUUID(uuid string) *AggregateGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the aggregate get params
+func (o *AggregateGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,13 +208,13 @@ func (o *AggregateGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.AutoProvisionPolicyQueryParameter != nil {
+	if o.AutoProvisionPolicy != nil {
 
 		// query param auto_provision_policy
 		var qrAutoProvisionPolicy string
 
-		if o.AutoProvisionPolicyQueryParameter != nil {
-			qrAutoProvisionPolicy = *o.AutoProvisionPolicyQueryParameter
+		if o.AutoProvisionPolicy != nil {
+			qrAutoProvisionPolicy = *o.AutoProvisionPolicy
 		}
 		qAutoProvisionPolicy := qrAutoProvisionPolicy
 		if qAutoProvisionPolicy != "" {
@@ -191,7 +225,7 @@ func (o *AggregateGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -202,8 +236,42 @@ func (o *AggregateGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
+	if o.FlashPoolEligible != nil {
+
+		// query param flash_pool_eligible
+		var qrFlashPoolEligible bool
+
+		if o.FlashPoolEligible != nil {
+			qrFlashPoolEligible = *o.FlashPoolEligible
+		}
+		qFlashPoolEligible := swag.FormatBool(qrFlashPoolEligible)
+		if qFlashPoolEligible != "" {
+
+			if err := r.SetQueryParam("flash_pool_eligible", qFlashPoolEligible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ShowSpares != nil {
+
+		// query param show_spares
+		var qrShowSpares bool
+
+		if o.ShowSpares != nil {
+			qrShowSpares = *o.ShowSpares
+		}
+		qShowSpares := swag.FormatBool(qrShowSpares)
+		if qShowSpares != "" {
+
+			if err := r.SetQueryParam("show_spares", qShowSpares); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -215,7 +283,7 @@ func (o *AggregateGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamAggregateGet binds the parameter fields
 func (o *AggregateGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

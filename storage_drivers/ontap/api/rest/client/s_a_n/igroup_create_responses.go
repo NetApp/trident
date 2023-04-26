@@ -52,6 +52,11 @@ IgroupCreateCreated describes a response with status code 201, with default head
 Created
 */
 type IgroupCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.IgroupResponse
 }
 
@@ -93,6 +98,13 @@ func (o *IgroupCreateCreated) GetPayload() *models.IgroupResponse {
 }
 
 func (o *IgroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.IgroupResponse)
 

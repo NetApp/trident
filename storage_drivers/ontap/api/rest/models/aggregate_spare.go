@@ -21,57 +21,61 @@ import (
 // swagger:model aggregate_spare
 type AggregateSpare struct {
 
+	// Available RAID protections and their restrictions.
+	AggregateSpareInlineLayoutRequirements []*LayoutRequirement `json:"layout_requirements,omitempty"`
+
 	// The checksum type that has been assigned to the spares.
 	// Read Only: true
 	// Enum: [block advanced_zoned]
-	ChecksumStyle string `json:"checksum_style,omitempty"`
+	ChecksumStyle *string `json:"checksum_style,omitempty"`
 
 	// Disk class of spares.
 	// Example: solid_state
 	// Read Only: true
 	// Enum: [unknown capacity performance archive solid_state array virtual data_center capacity_flash]
-	DiskClass string `json:"disk_class,omitempty"`
+	DiskClass *string `json:"disk_class,omitempty"`
 
 	// Type of disk.
 	// Read Only: true
 	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
-	DiskType string `json:"disk_type,omitempty"`
+	DiskType *string `json:"disk_type,omitempty"`
 
 	// Indicates whether a disk is partitioned (true) or whole (false)
 	// Example: true
 	// Read Only: true
 	IsPartition *bool `json:"is_partition,omitempty"`
 
-	// Available RAID protections and their restrictions.
-	LayoutRequirements []*LayoutRequirement `json:"layout_requirements,omitempty"`
-
 	// node
-	Node *AggregateSpareNode `json:"node,omitempty"`
+	Node *AggregateSpareInlineNode `json:"node,omitempty"`
 
 	// Usable size of each spare, in bytes.
 	// Example: 10156769280
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// SyncMirror spare pool.
 	// Read Only: true
 	// Enum: [pool0 pool1]
-	SyncmirrorPool string `json:"syncmirror_pool,omitempty"`
+	SyncmirrorPool *string `json:"syncmirror_pool,omitempty"`
 
 	// Total number of spares in the bucket. The total spare count for each class of spares also includes reserved spare capacity recommended by ONTAP best practices.
 	// Example: 10
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Total number of usable spares in the bucket. The usable count for each class of spares does not include reserved spare capacity recommended by ONTAP best practices.
 	// Example: 9
 	// Read Only: true
-	Usable int64 `json:"usable,omitempty"`
+	Usable *int64 `json:"usable,omitempty"`
 }
 
 // Validate validates this aggregate spare
 func (m *AggregateSpare) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAggregateSpareInlineLayoutRequirements(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateChecksumStyle(formats); err != nil {
 		res = append(res, err)
@@ -82,10 +86,6 @@ func (m *AggregateSpare) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDiskType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateLayoutRequirements(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,6 +100,30 @@ func (m *AggregateSpare) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AggregateSpare) validateAggregateSpareInlineLayoutRequirements(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateSpareInlineLayoutRequirements) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AggregateSpareInlineLayoutRequirements); i++ {
+		if swag.IsZero(m.AggregateSpareInlineLayoutRequirements[i]) { // not required
+			continue
+		}
+
+		if m.AggregateSpareInlineLayoutRequirements[i] != nil {
+			if err := m.AggregateSpareInlineLayoutRequirements[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("layout_requirements" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -152,7 +176,7 @@ func (m *AggregateSpare) validateChecksumStyle(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateChecksumStyleEnum("checksum_style", "body", m.ChecksumStyle); err != nil {
+	if err := m.validateChecksumStyleEnum("checksum_style", "body", *m.ChecksumStyle); err != nil {
 		return err
 	}
 
@@ -278,7 +302,7 @@ func (m *AggregateSpare) validateDiskClass(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDiskClassEnum("disk_class", "body", m.DiskClass); err != nil {
+	if err := m.validateDiskClassEnum("disk_class", "body", *m.DiskClass); err != nil {
 		return err
 	}
 
@@ -424,32 +448,8 @@ func (m *AggregateSpare) validateDiskType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDiskTypeEnum("disk_type", "body", m.DiskType); err != nil {
+	if err := m.validateDiskTypeEnum("disk_type", "body", *m.DiskType); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateSpare) validateLayoutRequirements(formats strfmt.Registry) error {
-	if swag.IsZero(m.LayoutRequirements) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.LayoutRequirements); i++ {
-		if swag.IsZero(m.LayoutRequirements[i]) { // not required
-			continue
-		}
-
-		if m.LayoutRequirements[i] != nil {
-			if err := m.LayoutRequirements[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("layout_requirements" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -521,7 +521,7 @@ func (m *AggregateSpare) validateSyncmirrorPool(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSyncmirrorPoolEnum("syncmirror_pool", "body", m.SyncmirrorPool); err != nil {
+	if err := m.validateSyncmirrorPoolEnum("syncmirror_pool", "body", *m.SyncmirrorPool); err != nil {
 		return err
 	}
 
@@ -531,6 +531,10 @@ func (m *AggregateSpare) validateSyncmirrorPool(formats strfmt.Registry) error {
 // ContextValidate validate this aggregate spare based on the context it is used
 func (m *AggregateSpare) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateAggregateSpareInlineLayoutRequirements(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateChecksumStyle(ctx, formats); err != nil {
 		res = append(res, err)
@@ -545,10 +549,6 @@ func (m *AggregateSpare) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidateIsPartition(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateLayoutRequirements(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -578,9 +578,27 @@ func (m *AggregateSpare) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
+func (m *AggregateSpare) contextValidateAggregateSpareInlineLayoutRequirements(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AggregateSpareInlineLayoutRequirements); i++ {
+
+		if m.AggregateSpareInlineLayoutRequirements[i] != nil {
+			if err := m.AggregateSpareInlineLayoutRequirements[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("layout_requirements" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *AggregateSpare) contextValidateChecksumStyle(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "checksum_style", "body", string(m.ChecksumStyle)); err != nil {
+	if err := validate.ReadOnly(ctx, "checksum_style", "body", m.ChecksumStyle); err != nil {
 		return err
 	}
 
@@ -589,7 +607,7 @@ func (m *AggregateSpare) contextValidateChecksumStyle(ctx context.Context, forma
 
 func (m *AggregateSpare) contextValidateDiskClass(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "disk_class", "body", string(m.DiskClass)); err != nil {
+	if err := validate.ReadOnly(ctx, "disk_class", "body", m.DiskClass); err != nil {
 		return err
 	}
 
@@ -598,7 +616,7 @@ func (m *AggregateSpare) contextValidateDiskClass(ctx context.Context, formats s
 
 func (m *AggregateSpare) contextValidateDiskType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "disk_type", "body", string(m.DiskType)); err != nil {
+	if err := validate.ReadOnly(ctx, "disk_type", "body", m.DiskType); err != nil {
 		return err
 	}
 
@@ -609,24 +627,6 @@ func (m *AggregateSpare) contextValidateIsPartition(ctx context.Context, formats
 
 	if err := validate.ReadOnly(ctx, "is_partition", "body", m.IsPartition); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateSpare) contextValidateLayoutRequirements(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.LayoutRequirements); i++ {
-
-		if m.LayoutRequirements[i] != nil {
-			if err := m.LayoutRequirements[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("layout_requirements" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -648,7 +648,7 @@ func (m *AggregateSpare) contextValidateNode(ctx context.Context, formats strfmt
 
 func (m *AggregateSpare) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -657,7 +657,7 @@ func (m *AggregateSpare) contextValidateSize(ctx context.Context, formats strfmt
 
 func (m *AggregateSpare) contextValidateSyncmirrorPool(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "syncmirror_pool", "body", string(m.SyncmirrorPool)); err != nil {
+	if err := validate.ReadOnly(ctx, "syncmirror_pool", "body", m.SyncmirrorPool); err != nil {
 		return err
 	}
 
@@ -666,7 +666,7 @@ func (m *AggregateSpare) contextValidateSyncmirrorPool(ctx context.Context, form
 
 func (m *AggregateSpare) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "total", "body", m.Total); err != nil {
 		return err
 	}
 
@@ -675,7 +675,7 @@ func (m *AggregateSpare) contextValidateTotal(ctx context.Context, formats strfm
 
 func (m *AggregateSpare) contextValidateUsable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "usable", "body", int64(m.Usable)); err != nil {
+	if err := validate.ReadOnly(ctx, "usable", "body", m.Usable); err != nil {
 		return err
 	}
 
@@ -700,25 +700,25 @@ func (m *AggregateSpare) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpareNode Node where the spares are assigned.
+// AggregateSpareInlineNode Node where the spares are assigned.
 //
-// swagger:model AggregateSpareNode
-type AggregateSpareNode struct {
+// swagger:model aggregate_spare_inline_node
+type AggregateSpareInlineNode struct {
 
 	// links
-	Links *AggregateSpareNodeLinks `json:"_links,omitempty"`
+	Links *AggregateSpareInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this aggregate spare node
-func (m *AggregateSpareNode) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate spare inline node
+func (m *AggregateSpareInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -731,7 +731,7 @@ func (m *AggregateSpareNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateSpareNode) validateLinks(formats strfmt.Registry) error {
+func (m *AggregateSpareInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -748,8 +748,8 @@ func (m *AggregateSpareNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate spare node based on the context it is used
-func (m *AggregateSpareNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate spare inline node based on the context it is used
+func (m *AggregateSpareInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -762,7 +762,7 @@ func (m *AggregateSpareNode) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *AggregateSpareNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateSpareInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -777,7 +777,7 @@ func (m *AggregateSpareNode) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpareNode) MarshalBinary() ([]byte, error) {
+func (m *AggregateSpareInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -785,8 +785,8 @@ func (m *AggregateSpareNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpareNode) UnmarshalBinary(b []byte) error {
-	var res AggregateSpareNode
+func (m *AggregateSpareInlineNode) UnmarshalBinary(b []byte) error {
+	var res AggregateSpareInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -794,17 +794,17 @@ func (m *AggregateSpareNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpareNodeLinks aggregate spare node links
+// AggregateSpareInlineNodeInlineLinks aggregate spare inline node inline links
 //
-// swagger:model AggregateSpareNodeLinks
-type AggregateSpareNodeLinks struct {
+// swagger:model aggregate_spare_inline_node_inline__links
+type AggregateSpareInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate spare node links
-func (m *AggregateSpareNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate spare inline node inline links
+func (m *AggregateSpareInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -817,7 +817,7 @@ func (m *AggregateSpareNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateSpareNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateSpareInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -834,8 +834,8 @@ func (m *AggregateSpareNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate spare node links based on the context it is used
-func (m *AggregateSpareNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate spare inline node inline links based on the context it is used
+func (m *AggregateSpareInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -848,7 +848,7 @@ func (m *AggregateSpareNodeLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *AggregateSpareNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateSpareInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -863,7 +863,7 @@ func (m *AggregateSpareNodeLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateSpareNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateSpareInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -871,8 +871,8 @@ func (m *AggregateSpareNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateSpareNodeLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateSpareNodeLinks
+func (m *AggregateSpareInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateSpareInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

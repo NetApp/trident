@@ -68,7 +68,7 @@ type ExportRuleModifyParams struct {
 
 	   Export Rule Index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type ExportRuleModifyParams struct {
 
 	   New Export Rule Index
 	*/
-	NewIndexQueryParameter *int64
+	NewIndex *int64
 
 	/* PolicyID.
 
 	   Export Policy ID
 	*/
-	PolicyIDPathParameter int64
+	PolicyID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *ExportRuleModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the export rule modify params
-func (o *ExportRuleModifyParams) WithIndexPathParameter(index int64) *ExportRuleModifyParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the export rule modify params
+func (o *ExportRuleModifyParams) WithIndex(index int64) *ExportRuleModifyParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the export rule modify params
-func (o *ExportRuleModifyParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the export rule modify params
+func (o *ExportRuleModifyParams) SetIndex(index int64) {
+	o.Index = index
 }
 
 // WithInfo adds the info to the export rule modify params
@@ -163,26 +163,26 @@ func (o *ExportRuleModifyParams) SetInfo(info *models.ExportRule) {
 	o.Info = info
 }
 
-// WithNewIndexQueryParameter adds the newIndex to the export rule modify params
-func (o *ExportRuleModifyParams) WithNewIndexQueryParameter(newIndex *int64) *ExportRuleModifyParams {
-	o.SetNewIndexQueryParameter(newIndex)
+// WithNewIndex adds the newIndex to the export rule modify params
+func (o *ExportRuleModifyParams) WithNewIndex(newIndex *int64) *ExportRuleModifyParams {
+	o.SetNewIndex(newIndex)
 	return o
 }
 
-// SetNewIndexQueryParameter adds the newIndex to the export rule modify params
-func (o *ExportRuleModifyParams) SetNewIndexQueryParameter(newIndex *int64) {
-	o.NewIndexQueryParameter = newIndex
+// SetNewIndex adds the newIndex to the export rule modify params
+func (o *ExportRuleModifyParams) SetNewIndex(newIndex *int64) {
+	o.NewIndex = newIndex
 }
 
-// WithPolicyIDPathParameter adds the policyID to the export rule modify params
-func (o *ExportRuleModifyParams) WithPolicyIDPathParameter(policyID int64) *ExportRuleModifyParams {
-	o.SetPolicyIDPathParameter(policyID)
+// WithPolicyID adds the policyID to the export rule modify params
+func (o *ExportRuleModifyParams) WithPolicyID(policyID int64) *ExportRuleModifyParams {
+	o.SetPolicyID(policyID)
 	return o
 }
 
-// SetPolicyIDPathParameter adds the policyId to the export rule modify params
-func (o *ExportRuleModifyParams) SetPolicyIDPathParameter(policyID int64) {
-	o.PolicyIDPathParameter = policyID
+// SetPolicyID adds the policyId to the export rule modify params
+func (o *ExportRuleModifyParams) SetPolicyID(policyID int64) {
+	o.PolicyID = policyID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -194,7 +194,7 @@ func (o *ExportRuleModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -203,13 +203,13 @@ func (o *ExportRuleModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NewIndexQueryParameter != nil {
+	if o.NewIndex != nil {
 
 		// query param new_index
 		var qrNewIndex int64
 
-		if o.NewIndexQueryParameter != nil {
-			qrNewIndex = *o.NewIndexQueryParameter
+		if o.NewIndex != nil {
+			qrNewIndex = *o.NewIndex
 		}
 		qNewIndex := swag.FormatInt64(qrNewIndex)
 		if qNewIndex != "" {
@@ -221,7 +221,7 @@ func (o *ExportRuleModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param policy.id
-	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyIDPathParameter)); err != nil {
+	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyID)); err != nil {
 		return err
 	}
 

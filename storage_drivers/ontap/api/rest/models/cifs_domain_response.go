@@ -20,13 +20,14 @@ import (
 type CifsDomainResponse struct {
 
 	// links
-	Links *CifsDomainResponseLinks `json:"_links,omitempty"`
+	Links *CifsDomainResponseInlineLinks `json:"_links,omitempty"`
+
+	// cifs domain response inline records
+	CifsDomainResponseInlineRecords []*CifsDomain `json:"records,omitempty"`
 
 	// Number of CIFS domain records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*CifsDomain `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cifs domain response
@@ -37,7 +38,7 @@ func (m *CifsDomainResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCifsDomainResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CifsDomainResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CifsDomainResponse) validateCifsDomainResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsDomainResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CifsDomainResponseInlineRecords); i++ {
+		if swag.IsZero(m.CifsDomainResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CifsDomainResponseInlineRecords[i] != nil {
+			if err := m.CifsDomainResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CifsDomainResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCifsDomainResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CifsDomainResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CifsDomainResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainResponse) contextValidateCifsDomainResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CifsDomainResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsDomainResponseInlineRecords[i] != nil {
+			if err := m.CifsDomainResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CifsDomainResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainResponseLinks cifs domain response links
+// CifsDomainResponseInlineLinks cifs domain response inline links
 //
-// swagger:model CifsDomainResponseLinks
-type CifsDomainResponseLinks struct {
+// swagger:model cifs_domain_response_inline__links
+type CifsDomainResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CifsDomainResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain response links
-func (m *CifsDomainResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain response inline links
+func (m *CifsDomainResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CifsDomainResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CifsDomainResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CifsDomainResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CifsDomainResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs domain response links based on the context it is used
-func (m *CifsDomainResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain response inline links based on the context it is used
+func (m *CifsDomainResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CifsDomainResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CifsDomainResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CifsDomainResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *CifsDomainResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CifsDomainResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CifsDomainResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainResponseLinks
+func (m *CifsDomainResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

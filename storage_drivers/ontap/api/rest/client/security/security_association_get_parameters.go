@@ -66,13 +66,13 @@ type SecurityAssociationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   UUID of IPsec or IKE security association.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SecurityAssociationGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the security association get params
-func (o *SecurityAssociationGetParams) WithFieldsQueryParameter(fields []string) *SecurityAssociationGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security association get params
+func (o *SecurityAssociationGetParams) WithFields(fields []string) *SecurityAssociationGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security association get params
-func (o *SecurityAssociationGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security association get params
+func (o *SecurityAssociationGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the security association get params
-func (o *SecurityAssociationGetParams) WithUUIDPathParameter(uuid string) *SecurityAssociationGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security association get params
+func (o *SecurityAssociationGetParams) WithUUID(uuid string) *SecurityAssociationGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security association get params
-func (o *SecurityAssociationGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security association get params
+func (o *SecurityAssociationGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SecurityAssociationGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SecurityAssociationGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SecurityAssociationGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamSecurityAssociationGet binds the parameter fields
 func (o *SecurityAssociationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

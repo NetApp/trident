@@ -67,16 +67,16 @@ type NodeDeleteParams struct {
 	   Set the force flag to "true" to forcibly remove a node that is down and cannot be brought online to remove its shared resources.
 
 	*/
-	ForceQueryParameter *bool
+	Force *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	// UUID.
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -96,14 +96,14 @@ func (o *NodeDeleteParams) WithDefaults() *NodeDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *NodeDeleteParams) SetDefaults() {
 	var (
-		forceQueryParameterDefault = bool(false)
+		forceDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := NodeDeleteParams{
-		ForceQueryParameter:         &forceQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Force:         &forceDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -145,37 +145,37 @@ func (o *NodeDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithForceQueryParameter adds the force to the node delete params
-func (o *NodeDeleteParams) WithForceQueryParameter(force *bool) *NodeDeleteParams {
-	o.SetForceQueryParameter(force)
+// WithForce adds the force to the node delete params
+func (o *NodeDeleteParams) WithForce(force *bool) *NodeDeleteParams {
+	o.SetForce(force)
 	return o
 }
 
-// SetForceQueryParameter adds the force to the node delete params
-func (o *NodeDeleteParams) SetForceQueryParameter(force *bool) {
-	o.ForceQueryParameter = force
+// SetForce adds the force to the node delete params
+func (o *NodeDeleteParams) SetForce(force *bool) {
+	o.Force = force
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the node delete params
-func (o *NodeDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodeDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the node delete params
+func (o *NodeDeleteParams) WithReturnTimeout(returnTimeout *int64) *NodeDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the node delete params
-func (o *NodeDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the node delete params
+func (o *NodeDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the node delete params
-func (o *NodeDeleteParams) WithUUIDPathParameter(uuid string) *NodeDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the node delete params
+func (o *NodeDeleteParams) WithUUID(uuid string) *NodeDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the node delete params
-func (o *NodeDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the node delete params
+func (o *NodeDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,13 +186,13 @@ func (o *NodeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.ForceQueryParameter != nil {
+	if o.Force != nil {
 
 		// query param force
 		var qrForce bool
 
-		if o.ForceQueryParameter != nil {
-			qrForce = *o.ForceQueryParameter
+		if o.Force != nil {
+			qrForce = *o.Force
 		}
 		qForce := swag.FormatBool(qrForce)
 		if qForce != "" {
@@ -203,13 +203,13 @@ func (o *NodeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -221,7 +221,7 @@ func (o *NodeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

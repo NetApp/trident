@@ -65,7 +65,7 @@ type SwitchDeleteParams struct {
 
 	   Switch Name.
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SwitchDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the switch delete params
-func (o *SwitchDeleteParams) WithNamePathParameter(name string) *SwitchDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the switch delete params
+func (o *SwitchDeleteParams) WithName(name string) *SwitchDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the switch delete params
-func (o *SwitchDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the switch delete params
+func (o *SwitchDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SwitchDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 

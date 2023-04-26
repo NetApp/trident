@@ -12,6 +12,7 @@ var importCmd = &cobra.Command{
 	Use:   "import",
 	Short: "Import an existing resource to Trident",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		initCmdLogging()
 		err := discoverOperatingMode(cmd)
 		return err
 	},

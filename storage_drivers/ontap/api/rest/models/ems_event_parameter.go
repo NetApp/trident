@@ -22,12 +22,12 @@ type EmsEventParameter struct {
 	// Name of parameter
 	// Example: numOps
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Value of parameter
 	// Example: 123
 	// Read Only: true
-	Value string `json:"value,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 // Validate validates this ems event parameter
@@ -55,7 +55,7 @@ func (m *EmsEventParameter) ContextValidate(ctx context.Context, formats strfmt.
 
 func (m *EmsEventParameter) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (m *EmsEventParameter) contextValidateName(ctx context.Context, formats str
 
 func (m *EmsEventParameter) contextValidateValue(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "value", "body", string(m.Value)); err != nil {
+	if err := validate.ReadOnly(ctx, "value", "body", m.Value); err != nil {
 		return err
 	}
 

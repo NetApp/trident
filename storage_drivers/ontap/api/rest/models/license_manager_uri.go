@@ -19,7 +19,7 @@ type LicenseManagerURI struct {
 
 	// License manager host name, IPv4 or IPv6 address.
 	// Example: 10.1.1.1
-	Host string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 }
 
 // Validate validates this license manager uri

@@ -21,50 +21,50 @@ import (
 type QosWorkload struct {
 
 	// links
-	Links *QosWorkloadLinks `json:"_links,omitempty"`
+	Links *QosWorkloadInlineLinks `json:"_links,omitempty"`
 
 	// Name of the file.
 	// Read Only: true
-	File string `json:"file,omitempty"`
+	File *string `json:"file,omitempty"`
 
 	// Name of the LUN. The name of the LUN will be displayed as "(unknown)" if the name cannot be retrieved.
 	// Read Only: true
-	Lun string `json:"lun,omitempty"`
+	Lun *string `json:"lun,omitempty"`
 
 	// Name of the QoS workload.
 	// Example: volume1-wid123
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// policy
-	Policy *QosWorkloadPolicy `json:"policy,omitempty"`
+	Policy *QosWorkloadInlinePolicy `json:"policy,omitempty"`
 
 	// Name of the Qtree.
 	// Read Only: true
-	Qtree string `json:"qtree,omitempty"`
+	Qtree *string `json:"qtree,omitempty"`
 
 	// svm
-	Svm *QosWorkloadSvm `json:"svm,omitempty"`
+	Svm *QosWorkloadInlineSvm `json:"svm,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// Name of the volume. The name of the volume will be displayed as "(unknown)" if the name cannot be retrieved.
 	// Example: volume1
 	// Read Only: true
-	Volume string `json:"volume,omitempty"`
+	Volume *string `json:"volume,omitempty"`
 
 	// Workload ID of the QoS workload.
 	// Example: 123
 	// Read Only: true
-	Wid int64 `json:"wid,omitempty"`
+	Wid *int64 `json:"wid,omitempty"`
 
 	// Class of the QoS workload.
 	// Example: autovolume
 	// Read Only: true
 	// Enum: [undefined preset user_defined system_defined autovolume load_control]
-	WorkloadClass string `json:"workload_class,omitempty"`
+	WorkloadClass *string `json:"workload_class,omitempty"`
 }
 
 // Validate validates this qos workload
@@ -233,7 +233,7 @@ func (m *QosWorkload) validateWorkloadClass(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateWorkloadClassEnum("workload_class", "body", m.WorkloadClass); err != nil {
+	if err := m.validateWorkloadClassEnum("workload_class", "body", *m.WorkloadClass); err != nil {
 		return err
 	}
 
@@ -306,7 +306,7 @@ func (m *QosWorkload) contextValidateLinks(ctx context.Context, formats strfmt.R
 
 func (m *QosWorkload) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "file", "body", string(m.File)); err != nil {
+	if err := validate.ReadOnly(ctx, "file", "body", m.File); err != nil {
 		return err
 	}
 
@@ -315,7 +315,7 @@ func (m *QosWorkload) contextValidateFile(ctx context.Context, formats strfmt.Re
 
 func (m *QosWorkload) contextValidateLun(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "lun", "body", string(m.Lun)); err != nil {
+	if err := validate.ReadOnly(ctx, "lun", "body", m.Lun); err != nil {
 		return err
 	}
 
@@ -338,7 +338,7 @@ func (m *QosWorkload) contextValidatePolicy(ctx context.Context, formats strfmt.
 
 func (m *QosWorkload) contextValidateQtree(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "qtree", "body", string(m.Qtree)); err != nil {
+	if err := validate.ReadOnly(ctx, "qtree", "body", m.Qtree); err != nil {
 		return err
 	}
 
@@ -361,7 +361,7 @@ func (m *QosWorkload) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *QosWorkload) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -370,7 +370,7 @@ func (m *QosWorkload) contextValidateUUID(ctx context.Context, formats strfmt.Re
 
 func (m *QosWorkload) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "volume", "body", string(m.Volume)); err != nil {
+	if err := validate.ReadOnly(ctx, "volume", "body", m.Volume); err != nil {
 		return err
 	}
 
@@ -379,7 +379,7 @@ func (m *QosWorkload) contextValidateVolume(ctx context.Context, formats strfmt.
 
 func (m *QosWorkload) contextValidateWid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wid", "body", int64(m.Wid)); err != nil {
+	if err := validate.ReadOnly(ctx, "wid", "body", m.Wid); err != nil {
 		return err
 	}
 
@@ -388,7 +388,7 @@ func (m *QosWorkload) contextValidateWid(ctx context.Context, formats strfmt.Reg
 
 func (m *QosWorkload) contextValidateWorkloadClass(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "workload_class", "body", string(m.WorkloadClass)); err != nil {
+	if err := validate.ReadOnly(ctx, "workload_class", "body", m.WorkloadClass); err != nil {
 		return err
 	}
 
@@ -413,17 +413,17 @@ func (m *QosWorkload) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadLinks qos workload links
+// QosWorkloadInlineLinks qos workload inline links
 //
-// swagger:model QosWorkloadLinks
-type QosWorkloadLinks struct {
+// swagger:model qos_workload_inline__links
+type QosWorkloadInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos workload links
-func (m *QosWorkloadLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos workload inline links
+func (m *QosWorkloadInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -436,7 +436,7 @@ func (m *QosWorkloadLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosWorkloadInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -453,8 +453,8 @@ func (m *QosWorkloadLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos workload links based on the context it is used
-func (m *QosWorkloadLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos workload inline links based on the context it is used
+func (m *QosWorkloadInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -467,7 +467,7 @@ func (m *QosWorkloadLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *QosWorkloadLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -482,7 +482,7 @@ func (m *QosWorkloadLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *QosWorkloadLinks) MarshalBinary() ([]byte, error) {
+func (m *QosWorkloadInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -490,8 +490,8 @@ func (m *QosWorkloadLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosWorkloadLinks) UnmarshalBinary(b []byte) error {
-	var res QosWorkloadLinks
+func (m *QosWorkloadInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosWorkloadInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -499,25 +499,25 @@ func (m *QosWorkloadLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadPolicy QoS policy group reference.
+// QosWorkloadInlinePolicy QoS policy group reference.
 //
-// swagger:model QosWorkloadPolicy
-type QosWorkloadPolicy struct {
+// swagger:model qos_workload_inline_policy
+type QosWorkloadInlinePolicy struct {
 
 	// links
-	Links *QosWorkloadPolicyLinks `json:"_links,omitempty"`
+	Links *QosWorkloadInlinePolicyInlineLinks `json:"_links,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this qos workload policy
-func (m *QosWorkloadPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this qos workload inline policy
+func (m *QosWorkloadInlinePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -530,7 +530,7 @@ func (m *QosWorkloadPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *QosWorkloadInlinePolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -547,8 +547,8 @@ func (m *QosWorkloadPolicy) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos workload policy based on the context it is used
-func (m *QosWorkloadPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos workload inline policy based on the context it is used
+func (m *QosWorkloadInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -561,7 +561,7 @@ func (m *QosWorkloadPolicy) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *QosWorkloadPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadInlinePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -576,7 +576,7 @@ func (m *QosWorkloadPolicy) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *QosWorkloadPolicy) MarshalBinary() ([]byte, error) {
+func (m *QosWorkloadInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -584,8 +584,8 @@ func (m *QosWorkloadPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosWorkloadPolicy) UnmarshalBinary(b []byte) error {
-	var res QosWorkloadPolicy
+func (m *QosWorkloadInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res QosWorkloadInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -593,17 +593,17 @@ func (m *QosWorkloadPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadPolicyLinks qos workload policy links
+// QosWorkloadInlinePolicyInlineLinks qos workload inline policy inline links
 //
-// swagger:model QosWorkloadPolicyLinks
-type QosWorkloadPolicyLinks struct {
+// swagger:model qos_workload_inline_policy_inline__links
+type QosWorkloadInlinePolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos workload policy links
-func (m *QosWorkloadPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos workload inline policy inline links
+func (m *QosWorkloadInlinePolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -616,7 +616,7 @@ func (m *QosWorkloadPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosWorkloadInlinePolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -633,8 +633,8 @@ func (m *QosWorkloadPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos workload policy links based on the context it is used
-func (m *QosWorkloadPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos workload inline policy inline links based on the context it is used
+func (m *QosWorkloadInlinePolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -647,7 +647,7 @@ func (m *QosWorkloadPolicyLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QosWorkloadPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadInlinePolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -662,7 +662,7 @@ func (m *QosWorkloadPolicyLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *QosWorkloadPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *QosWorkloadInlinePolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -670,8 +670,8 @@ func (m *QosWorkloadPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosWorkloadPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res QosWorkloadPolicyLinks
+func (m *QosWorkloadInlinePolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosWorkloadInlinePolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -679,27 +679,27 @@ func (m *QosWorkloadPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadSvm qos workload svm
+// QosWorkloadInlineSvm qos workload inline svm
 //
-// swagger:model QosWorkloadSvm
-type QosWorkloadSvm struct {
+// swagger:model qos_workload_inline_svm
+type QosWorkloadInlineSvm struct {
 
 	// links
-	Links *QosWorkloadSvmLinks `json:"_links,omitempty"`
+	Links *QosWorkloadInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this qos workload svm
-func (m *QosWorkloadSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this qos workload inline svm
+func (m *QosWorkloadInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -712,7 +712,7 @@ func (m *QosWorkloadSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadSvm) validateLinks(formats strfmt.Registry) error {
+func (m *QosWorkloadInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -729,8 +729,8 @@ func (m *QosWorkloadSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos workload svm based on the context it is used
-func (m *QosWorkloadSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos workload inline svm based on the context it is used
+func (m *QosWorkloadInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -743,7 +743,7 @@ func (m *QosWorkloadSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *QosWorkloadSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -758,7 +758,7 @@ func (m *QosWorkloadSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *QosWorkloadSvm) MarshalBinary() ([]byte, error) {
+func (m *QosWorkloadInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -766,8 +766,8 @@ func (m *QosWorkloadSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosWorkloadSvm) UnmarshalBinary(b []byte) error {
-	var res QosWorkloadSvm
+func (m *QosWorkloadInlineSvm) UnmarshalBinary(b []byte) error {
+	var res QosWorkloadInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -775,17 +775,17 @@ func (m *QosWorkloadSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadSvmLinks qos workload svm links
+// QosWorkloadInlineSvmInlineLinks qos workload inline svm inline links
 //
-// swagger:model QosWorkloadSvmLinks
-type QosWorkloadSvmLinks struct {
+// swagger:model qos_workload_inline_svm_inline__links
+type QosWorkloadInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos workload svm links
-func (m *QosWorkloadSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos workload inline svm inline links
+func (m *QosWorkloadInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -798,7 +798,7 @@ func (m *QosWorkloadSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosWorkloadInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -815,8 +815,8 @@ func (m *QosWorkloadSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos workload svm links based on the context it is used
-func (m *QosWorkloadSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos workload inline svm inline links based on the context it is used
+func (m *QosWorkloadInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -829,7 +829,7 @@ func (m *QosWorkloadSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *QosWorkloadSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -844,7 +844,7 @@ func (m *QosWorkloadSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *QosWorkloadSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *QosWorkloadInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -852,8 +852,8 @@ func (m *QosWorkloadSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosWorkloadSvmLinks) UnmarshalBinary(b []byte) error {
-	var res QosWorkloadSvmLinks
+func (m *QosWorkloadInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosWorkloadInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

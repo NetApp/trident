@@ -20,13 +20,14 @@ import (
 type UnixUserResponse struct {
 
 	// links
-	Links *UnixUserResponseLinks `json:"_links,omitempty"`
+	Links *UnixUserResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of UNIX user records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*UnixUser `json:"records,omitempty"`
+	// unix user response inline records
+	UnixUserResponseInlineRecords []*UnixUser `json:"records,omitempty"`
 }
 
 // Validate validates this unix user response
@@ -37,7 +38,7 @@ func (m *UnixUserResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateUnixUserResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *UnixUserResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *UnixUserResponse) validateUnixUserResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.UnixUserResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.UnixUserResponseInlineRecords); i++ {
+		if swag.IsZero(m.UnixUserResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.UnixUserResponseInlineRecords[i] != nil {
+			if err := m.UnixUserResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *UnixUserResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateUnixUserResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *UnixUserResponse) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *UnixUserResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserResponse) contextValidateUnixUserResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.UnixUserResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.UnixUserResponseInlineRecords[i] != nil {
+			if err := m.UnixUserResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *UnixUserResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixUserResponseLinks unix user response links
+// UnixUserResponseInlineLinks unix user response inline links
 //
-// swagger:model UnixUserResponseLinks
-type UnixUserResponseLinks struct {
+// swagger:model unix_user_response_inline__links
+type UnixUserResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type UnixUserResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix user response links
-func (m *UnixUserResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix user response inline links
+func (m *UnixUserResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *UnixUserResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *UnixUserResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *UnixUserResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixUserResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixUserResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *UnixUserResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix user response links based on the context it is used
-func (m *UnixUserResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix user response inline links based on the context it is used
+func (m *UnixUserResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *UnixUserResponseLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *UnixUserResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *UnixUserResponseLinks) contextValidateNext(ctx context.Context, formats
 	return nil
 }
 
-func (m *UnixUserResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixUserResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *UnixUserResponseLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *UnixUserResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixUserResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *UnixUserResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixUserResponseLinks) UnmarshalBinary(b []byte) error {
-	var res UnixUserResponseLinks
+func (m *UnixUserResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixUserResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

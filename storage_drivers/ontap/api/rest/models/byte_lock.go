@@ -26,7 +26,7 @@ type ByteLock struct {
 	// Length of the bytelock starting from the offset.
 	// Example: 10
 	// Read Only: true
-	Length int64 `json:"length,omitempty"`
+	Length *int64 `json:"length,omitempty"`
 
 	// Indicates whether or not the bytelock is mandatory.
 	// Read Only: true
@@ -35,7 +35,7 @@ type ByteLock struct {
 	// Starting offset for a bytelock.
 	// Example: 100
 	// Read Only: true
-	Offset int64 `json:"offset,omitempty"`
+	Offset *int64 `json:"offset,omitempty"`
 
 	// Indicates whether it is a soft bytelock.
 	// Read Only: true
@@ -96,7 +96,7 @@ func (m *ByteLock) contextValidateExclusive(ctx context.Context, formats strfmt.
 
 func (m *ByteLock) contextValidateLength(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "length", "body", int64(m.Length)); err != nil {
+	if err := validate.ReadOnly(ctx, "length", "body", m.Length); err != nil {
 		return err
 	}
 
@@ -114,7 +114,7 @@ func (m *ByteLock) contextValidateMandatory(ctx context.Context, formats strfmt.
 
 func (m *ByteLock) contextValidateOffset(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "offset", "body", int64(m.Offset)); err != nil {
+	if err := validate.ReadOnly(ctx, "offset", "body", m.Offset); err != nil {
 		return err
 	}
 

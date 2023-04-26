@@ -25,7 +25,7 @@ type LicenseManagerReference struct {
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-112233445566
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this license manager reference

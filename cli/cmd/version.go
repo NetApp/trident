@@ -15,7 +15,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 var clientOnly bool
@@ -30,6 +30,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version of Trident",
 	Long:  "Print the version of the Trident storage orchestrator for Kubernetes",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		initCmdLogging()
 		if !clientOnly {
 			err = discoverOperatingMode(cmd)
 		}
@@ -54,7 +55,7 @@ var versionCmd = &cobra.Command{
 				return err
 			}
 
-			parsedServerVersion, err := utils.ParseDate(serverVersion.Version)
+			parsedServerVersion, err := versionutils.ParseDate(serverVersion.Version)
 			if err != nil {
 				return err
 			}
@@ -76,7 +77,7 @@ var versionCmd = &cobra.Command{
 func getVersionFromRest() (rest.GetVersionResponse, error) {
 	url := BaseURL() + "/version"
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return rest.GetVersionResponse{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -139,7 +140,7 @@ func getClientVersion() *api.ClientVersionResponse {
 }
 
 // addClientVersion accepts the server version and fills in the client version
-func addClientVersion(serverVersion *utils.Version) *api.VersionResponse {
+func addClientVersion(serverVersion *versionutils.Version) *api.VersionResponse {
 	versions := api.VersionResponse{}
 
 	versions.Server.Version = serverVersion.String()

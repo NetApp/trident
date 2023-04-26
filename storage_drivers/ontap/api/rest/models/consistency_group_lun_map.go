@@ -23,11 +23,11 @@ import (
 type ConsistencyGroupLunMap struct {
 
 	// igroup
-	Igroup *ConsistencyGroupLunMapIgroup `json:"igroup,omitempty"`
+	Igroup *ConsistencyGroupLunMapInlineIgroup `json:"igroup,omitempty"`
 
 	// The logical unit number assigned to the LUN when mapped to the specified initiator group. The number is used to identify the LUN to initiators in the initiator group when communicating through the Fibre Channel Protocol or iSCSI. Optional in POST; if no value is provided, ONTAP assigns the lowest available value.
 	//
-	LogicalUnitNumber int64 `json:"logical_unit_number,omitempty"`
+	LogicalUnitNumber *int64 `json:"logical_unit_number,omitempty"`
 }
 
 // Validate validates this consistency group lun map
@@ -107,10 +107,10 @@ func (m *ConsistencyGroupLunMap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupLunMapIgroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
+// ConsistencyGroupLunMapInlineIgroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
 //
-// swagger:model ConsistencyGroupLunMapIgroup
-type ConsistencyGroupLunMapIgroup struct {
+// swagger:model consistency_group_lun_map_inline_igroup
+type ConsistencyGroupLunMapInlineIgroup struct {
 
 	// A comment available for use by the administrator. Valid in POST and PATCH.
 	//
@@ -131,12 +131,12 @@ type ConsistencyGroupLunMapIgroup struct {
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system. Required in POST; optional in PATCH.
 	//
 	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of an initiator group cannot be changed after creation of the group.
@@ -148,11 +148,11 @@ type ConsistencyGroupLunMapIgroup struct {
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this consistency group lun map igroup
-func (m *ConsistencyGroupLunMapIgroup) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group lun map inline igroup
+func (m *ConsistencyGroupLunMapInlineIgroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComment(formats); err != nil {
@@ -185,7 +185,7 @@ func (m *ConsistencyGroupLunMapIgroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) validateComment(formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateComment(formats strfmt.Registry) error {
 	if swag.IsZero(m.Comment) { // not required
 		return nil
 	}
@@ -201,7 +201,7 @@ func (m *ConsistencyGroupLunMapIgroup) validateComment(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) validateIgroups(formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateIgroups(formats strfmt.Registry) error {
 	if swag.IsZero(m.Igroups) { // not required
 		return nil
 	}
@@ -225,7 +225,7 @@ func (m *ConsistencyGroupLunMapIgroup) validateIgroups(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) validateInitiators(formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateInitiators(formats strfmt.Registry) error {
 	if swag.IsZero(m.Initiators) { // not required
 		return nil
 	}
@@ -249,23 +249,23 @@ func (m *ConsistencyGroupLunMapIgroup) validateInitiators(formats strfmt.Registr
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) validateName(formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("igroup"+"."+"name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("igroup"+"."+"name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("igroup"+"."+"name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("igroup"+"."+"name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var consistencyGroupLunMapIgroupTypeOsTypePropEnum []interface{}
+var consistencyGroupLunMapInlineIgroupTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -273,135 +273,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupLunMapIgroupTypeOsTypePropEnum = append(consistencyGroupLunMapIgroupTypeOsTypePropEnum, v)
+		consistencyGroupLunMapInlineIgroupTypeOsTypePropEnum = append(consistencyGroupLunMapInlineIgroupTypeOsTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// aix
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeAix captures enum value "aix"
-	ConsistencyGroupLunMapIgroupOsTypeAix string = "aix"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeAix captures enum value "aix"
+	ConsistencyGroupLunMapInlineIgroupOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// hpux
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeHpux captures enum value "hpux"
-	ConsistencyGroupLunMapIgroupOsTypeHpux string = "hpux"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeHpux captures enum value "hpux"
+	ConsistencyGroupLunMapInlineIgroupOsTypeHpux string = "hpux"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// hyper_v
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeHyperv captures enum value "hyper_v"
-	ConsistencyGroupLunMapIgroupOsTypeHyperv string = "hyper_v"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeHyperv captures enum value "hyper_v"
+	ConsistencyGroupLunMapInlineIgroupOsTypeHyperv string = "hyper_v"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// linux
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeLinux captures enum value "linux"
-	ConsistencyGroupLunMapIgroupOsTypeLinux string = "linux"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeLinux captures enum value "linux"
+	ConsistencyGroupLunMapInlineIgroupOsTypeLinux string = "linux"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// netware
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeNetware captures enum value "netware"
-	ConsistencyGroupLunMapIgroupOsTypeNetware string = "netware"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeNetware captures enum value "netware"
+	ConsistencyGroupLunMapInlineIgroupOsTypeNetware string = "netware"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// openvms
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeOpenvms captures enum value "openvms"
-	ConsistencyGroupLunMapIgroupOsTypeOpenvms string = "openvms"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeOpenvms captures enum value "openvms"
+	ConsistencyGroupLunMapInlineIgroupOsTypeOpenvms string = "openvms"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// solaris
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeSolaris captures enum value "solaris"
-	ConsistencyGroupLunMapIgroupOsTypeSolaris string = "solaris"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeSolaris captures enum value "solaris"
+	ConsistencyGroupLunMapInlineIgroupOsTypeSolaris string = "solaris"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// vmware
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeVmware captures enum value "vmware"
-	ConsistencyGroupLunMapIgroupOsTypeVmware string = "vmware"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeVmware captures enum value "vmware"
+	ConsistencyGroupLunMapInlineIgroupOsTypeVmware string = "vmware"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// windows
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeWindows captures enum value "windows"
-	ConsistencyGroupLunMapIgroupOsTypeWindows string = "windows"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeWindows captures enum value "windows"
+	ConsistencyGroupLunMapInlineIgroupOsTypeWindows string = "windows"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// os_type
 	// OsType
 	// xen
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupOsTypeXen captures enum value "xen"
-	ConsistencyGroupLunMapIgroupOsTypeXen string = "xen"
+	// ConsistencyGroupLunMapInlineIgroupOsTypeXen captures enum value "xen"
+	ConsistencyGroupLunMapInlineIgroupOsTypeXen string = "xen"
 )
 
 // prop value enum
-func (m *ConsistencyGroupLunMapIgroup) validateOsTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupLunMapIgroupTypeOsTypePropEnum, true); err != nil {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupLunMapInlineIgroupTypeOsTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) validateOsType(formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateOsType(formats strfmt.Registry) error {
 	if swag.IsZero(m.OsType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("igroup"+"."+"os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("igroup"+"."+"os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var consistencyGroupLunMapIgroupTypeProtocolPropEnum []interface{}
+var consistencyGroupLunMapInlineIgroupTypeProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -409,52 +409,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		consistencyGroupLunMapIgroupTypeProtocolPropEnum = append(consistencyGroupLunMapIgroupTypeProtocolPropEnum, v)
+		consistencyGroupLunMapInlineIgroupTypeProtocolPropEnum = append(consistencyGroupLunMapInlineIgroupTypeProtocolPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// protocol
 	// Protocol
 	// fcp
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupProtocolFcp captures enum value "fcp"
-	ConsistencyGroupLunMapIgroupProtocolFcp string = "fcp"
+	// ConsistencyGroupLunMapInlineIgroupProtocolFcp captures enum value "fcp"
+	ConsistencyGroupLunMapInlineIgroupProtocolFcp string = "fcp"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// protocol
 	// Protocol
 	// iscsi
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupProtocolIscsi captures enum value "iscsi"
-	ConsistencyGroupLunMapIgroupProtocolIscsi string = "iscsi"
+	// ConsistencyGroupLunMapInlineIgroupProtocolIscsi captures enum value "iscsi"
+	ConsistencyGroupLunMapInlineIgroupProtocolIscsi string = "iscsi"
 
 	// BEGIN DEBUGGING
-	// ConsistencyGroupLunMapIgroup
-	// ConsistencyGroupLunMapIgroup
+	// consistency_group_lun_map_inline_igroup
+	// ConsistencyGroupLunMapInlineIgroup
 	// protocol
 	// Protocol
 	// mixed
 	// END DEBUGGING
-	// ConsistencyGroupLunMapIgroupProtocolMixed captures enum value "mixed"
-	ConsistencyGroupLunMapIgroupProtocolMixed string = "mixed"
+	// ConsistencyGroupLunMapInlineIgroupProtocolMixed captures enum value "mixed"
+	ConsistencyGroupLunMapInlineIgroupProtocolMixed string = "mixed"
 )
 
 // prop value enum
-func (m *ConsistencyGroupLunMapIgroup) validateProtocolEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, consistencyGroupLunMapIgroupTypeProtocolPropEnum, true); err != nil {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, consistencyGroupLunMapInlineIgroupTypeProtocolPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) validateProtocol(formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) validateProtocol(formats strfmt.Registry) error {
 	if swag.IsZero(m.Protocol) { // not required
 		return nil
 	}
@@ -467,8 +467,8 @@ func (m *ConsistencyGroupLunMapIgroup) validateProtocol(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this consistency group lun map igroup based on the context it is used
-func (m *ConsistencyGroupLunMapIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group lun map inline igroup based on the context it is used
+func (m *ConsistencyGroupLunMapInlineIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIgroups(ctx, formats); err != nil {
@@ -489,7 +489,7 @@ func (m *ConsistencyGroupLunMapIgroup) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Igroups); i++ {
 
@@ -507,7 +507,7 @@ func (m *ConsistencyGroupLunMapIgroup) contextValidateIgroups(ctx context.Contex
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Initiators); i++ {
 
@@ -525,9 +525,9 @@ func (m *ConsistencyGroupLunMapIgroup) contextValidateInitiators(ctx context.Con
 	return nil
 }
 
-func (m *ConsistencyGroupLunMapIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupLunMapInlineIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -535,7 +535,7 @@ func (m *ConsistencyGroupLunMapIgroup) contextValidateUUID(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupLunMapIgroup) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupLunMapInlineIgroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -543,8 +543,8 @@ func (m *ConsistencyGroupLunMapIgroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupLunMapIgroup) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupLunMapIgroup
+func (m *ConsistencyGroupLunMapInlineIgroup) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupLunMapInlineIgroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -565,12 +565,12 @@ type ConsistencyGroupLunMapIgroupIgroupsItems0 struct {
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group lun map igroup igroups items0
@@ -613,11 +613,11 @@ func (m *ConsistencyGroupLunMapIgroupIgroupsItems0) validateName(formats strfmt.
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
@@ -685,7 +685,7 @@ type ConsistencyGroupLunMapIgroupInitiatorsItems0 struct {
 	// Name of initiator that is a member of the initiator group.
 	//
 	// Example: iqn.1998-01.com.corp.iscsi:name1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this consistency group lun map igroup initiators items0

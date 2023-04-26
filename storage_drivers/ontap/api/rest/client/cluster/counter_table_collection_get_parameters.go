@@ -66,61 +66,61 @@ type CounterTableCollectionGetParams struct {
 
 	   Filter by counter_schemas.denominator.name
 	*/
-	CounterSchemasDenominatorNameQueryParameter *string
+	CounterSchemasDenominatorName *string
 
 	/* CounterSchemasDescription.
 
 	   Filter by counter_schemas.description
 	*/
-	CounterSchemasDescriptionQueryParameter *string
+	CounterSchemasDescription *string
 
 	/* CounterSchemasName.
 
 	   Filter by counter_schemas.name
 	*/
-	CounterSchemasNameQueryParameter *string
+	CounterSchemasName *string
 
 	/* CounterSchemasType.
 
 	   Filter by counter_schemas.type
 	*/
-	CounterSchemasTypeQueryParameter *string
+	CounterSchemasType *string
 
 	/* CounterSchemasUnit.
 
 	   Filter by counter_schemas.unit
 	*/
-	CounterSchemasUnitQueryParameter *string
+	CounterSchemasUnit *string
 
 	/* Description.
 
 	   Filter by description
 	*/
-	DescriptionQueryParameter *string
+	Description *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -128,7 +128,7 @@ type CounterTableCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,7 +136,7 @@ type CounterTableCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *CounterTableCollectionGetParams) WithDefaults() *CounterTableCollection
 // All values with no default are reset to their zero value.
 func (o *CounterTableCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CounterTableCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *CounterTableCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCounterSchemasDenominatorNameQueryParameter adds the counterSchemasDenominatorName to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithCounterSchemasDenominatorNameQueryParameter(counterSchemasDenominatorName *string) *CounterTableCollectionGetParams {
-	o.SetCounterSchemasDenominatorNameQueryParameter(counterSchemasDenominatorName)
+// WithCounterSchemasDenominatorName adds the counterSchemasDenominatorName to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithCounterSchemasDenominatorName(counterSchemasDenominatorName *string) *CounterTableCollectionGetParams {
+	o.SetCounterSchemasDenominatorName(counterSchemasDenominatorName)
 	return o
 }
 
-// SetCounterSchemasDenominatorNameQueryParameter adds the counterSchemasDenominatorName to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetCounterSchemasDenominatorNameQueryParameter(counterSchemasDenominatorName *string) {
-	o.CounterSchemasDenominatorNameQueryParameter = counterSchemasDenominatorName
+// SetCounterSchemasDenominatorName adds the counterSchemasDenominatorName to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetCounterSchemasDenominatorName(counterSchemasDenominatorName *string) {
+	o.CounterSchemasDenominatorName = counterSchemasDenominatorName
 }
 
-// WithCounterSchemasDescriptionQueryParameter adds the counterSchemasDescription to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithCounterSchemasDescriptionQueryParameter(counterSchemasDescription *string) *CounterTableCollectionGetParams {
-	o.SetCounterSchemasDescriptionQueryParameter(counterSchemasDescription)
+// WithCounterSchemasDescription adds the counterSchemasDescription to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithCounterSchemasDescription(counterSchemasDescription *string) *CounterTableCollectionGetParams {
+	o.SetCounterSchemasDescription(counterSchemasDescription)
 	return o
 }
 
-// SetCounterSchemasDescriptionQueryParameter adds the counterSchemasDescription to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetCounterSchemasDescriptionQueryParameter(counterSchemasDescription *string) {
-	o.CounterSchemasDescriptionQueryParameter = counterSchemasDescription
+// SetCounterSchemasDescription adds the counterSchemasDescription to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetCounterSchemasDescription(counterSchemasDescription *string) {
+	o.CounterSchemasDescription = counterSchemasDescription
 }
 
-// WithCounterSchemasNameQueryParameter adds the counterSchemasName to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithCounterSchemasNameQueryParameter(counterSchemasName *string) *CounterTableCollectionGetParams {
-	o.SetCounterSchemasNameQueryParameter(counterSchemasName)
+// WithCounterSchemasName adds the counterSchemasName to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithCounterSchemasName(counterSchemasName *string) *CounterTableCollectionGetParams {
+	o.SetCounterSchemasName(counterSchemasName)
 	return o
 }
 
-// SetCounterSchemasNameQueryParameter adds the counterSchemasName to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetCounterSchemasNameQueryParameter(counterSchemasName *string) {
-	o.CounterSchemasNameQueryParameter = counterSchemasName
+// SetCounterSchemasName adds the counterSchemasName to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetCounterSchemasName(counterSchemasName *string) {
+	o.CounterSchemasName = counterSchemasName
 }
 
-// WithCounterSchemasTypeQueryParameter adds the counterSchemasType to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithCounterSchemasTypeQueryParameter(counterSchemasType *string) *CounterTableCollectionGetParams {
-	o.SetCounterSchemasTypeQueryParameter(counterSchemasType)
+// WithCounterSchemasType adds the counterSchemasType to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithCounterSchemasType(counterSchemasType *string) *CounterTableCollectionGetParams {
+	o.SetCounterSchemasType(counterSchemasType)
 	return o
 }
 
-// SetCounterSchemasTypeQueryParameter adds the counterSchemasType to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetCounterSchemasTypeQueryParameter(counterSchemasType *string) {
-	o.CounterSchemasTypeQueryParameter = counterSchemasType
+// SetCounterSchemasType adds the counterSchemasType to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetCounterSchemasType(counterSchemasType *string) {
+	o.CounterSchemasType = counterSchemasType
 }
 
-// WithCounterSchemasUnitQueryParameter adds the counterSchemasUnit to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithCounterSchemasUnitQueryParameter(counterSchemasUnit *string) *CounterTableCollectionGetParams {
-	o.SetCounterSchemasUnitQueryParameter(counterSchemasUnit)
+// WithCounterSchemasUnit adds the counterSchemasUnit to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithCounterSchemasUnit(counterSchemasUnit *string) *CounterTableCollectionGetParams {
+	o.SetCounterSchemasUnit(counterSchemasUnit)
 	return o
 }
 
-// SetCounterSchemasUnitQueryParameter adds the counterSchemasUnit to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetCounterSchemasUnitQueryParameter(counterSchemasUnit *string) {
-	o.CounterSchemasUnitQueryParameter = counterSchemasUnit
+// SetCounterSchemasUnit adds the counterSchemasUnit to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetCounterSchemasUnit(counterSchemasUnit *string) {
+	o.CounterSchemasUnit = counterSchemasUnit
 }
 
-// WithDescriptionQueryParameter adds the description to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithDescriptionQueryParameter(description *string) *CounterTableCollectionGetParams {
-	o.SetDescriptionQueryParameter(description)
+// WithDescription adds the description to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithDescription(description *string) *CounterTableCollectionGetParams {
+	o.SetDescription(description)
 	return o
 }
 
-// SetDescriptionQueryParameter adds the description to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetDescriptionQueryParameter(description *string) {
-	o.DescriptionQueryParameter = description
+// SetDescription adds the description to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetDescription(description *string) {
+	o.Description = description
 }
 
-// WithFieldsQueryParameter adds the fields to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithFieldsQueryParameter(fields []string) *CounterTableCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithFields(fields []string) *CounterTableCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CounterTableCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithMaxRecords(maxRecords *int64) *CounterTableCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithNameQueryParameter(name *string) *CounterTableCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithName(name *string) *CounterTableCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CounterTableCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithOrderBy(orderBy []string) *CounterTableCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CounterTableCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithReturnRecords(returnRecords *bool) *CounterTableCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the counter table collection get params
-func (o *CounterTableCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CounterTableCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the counter table collection get params
+func (o *CounterTableCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CounterTableCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the counter table collection get params
-func (o *CounterTableCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the counter table collection get params
+func (o *CounterTableCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.CounterSchemasDenominatorNameQueryParameter != nil {
+	if o.CounterSchemasDenominatorName != nil {
 
 		// query param counter_schemas.denominator.name
 		var qrCounterSchemasDenominatorName string
 
-		if o.CounterSchemasDenominatorNameQueryParameter != nil {
-			qrCounterSchemasDenominatorName = *o.CounterSchemasDenominatorNameQueryParameter
+		if o.CounterSchemasDenominatorName != nil {
+			qrCounterSchemasDenominatorName = *o.CounterSchemasDenominatorName
 		}
 		qCounterSchemasDenominatorName := qrCounterSchemasDenominatorName
 		if qCounterSchemasDenominatorName != "" {
@@ -362,13 +362,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.CounterSchemasDescriptionQueryParameter != nil {
+	if o.CounterSchemasDescription != nil {
 
 		// query param counter_schemas.description
 		var qrCounterSchemasDescription string
 
-		if o.CounterSchemasDescriptionQueryParameter != nil {
-			qrCounterSchemasDescription = *o.CounterSchemasDescriptionQueryParameter
+		if o.CounterSchemasDescription != nil {
+			qrCounterSchemasDescription = *o.CounterSchemasDescription
 		}
 		qCounterSchemasDescription := qrCounterSchemasDescription
 		if qCounterSchemasDescription != "" {
@@ -379,13 +379,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.CounterSchemasNameQueryParameter != nil {
+	if o.CounterSchemasName != nil {
 
 		// query param counter_schemas.name
 		var qrCounterSchemasName string
 
-		if o.CounterSchemasNameQueryParameter != nil {
-			qrCounterSchemasName = *o.CounterSchemasNameQueryParameter
+		if o.CounterSchemasName != nil {
+			qrCounterSchemasName = *o.CounterSchemasName
 		}
 		qCounterSchemasName := qrCounterSchemasName
 		if qCounterSchemasName != "" {
@@ -396,13 +396,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.CounterSchemasTypeQueryParameter != nil {
+	if o.CounterSchemasType != nil {
 
 		// query param counter_schemas.type
 		var qrCounterSchemasType string
 
-		if o.CounterSchemasTypeQueryParameter != nil {
-			qrCounterSchemasType = *o.CounterSchemasTypeQueryParameter
+		if o.CounterSchemasType != nil {
+			qrCounterSchemasType = *o.CounterSchemasType
 		}
 		qCounterSchemasType := qrCounterSchemasType
 		if qCounterSchemasType != "" {
@@ -413,13 +413,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.CounterSchemasUnitQueryParameter != nil {
+	if o.CounterSchemasUnit != nil {
 
 		// query param counter_schemas.unit
 		var qrCounterSchemasUnit string
 
-		if o.CounterSchemasUnitQueryParameter != nil {
-			qrCounterSchemasUnit = *o.CounterSchemasUnitQueryParameter
+		if o.CounterSchemasUnit != nil {
+			qrCounterSchemasUnit = *o.CounterSchemasUnit
 		}
 		qCounterSchemasUnit := qrCounterSchemasUnit
 		if qCounterSchemasUnit != "" {
@@ -430,13 +430,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.DescriptionQueryParameter != nil {
+	if o.Description != nil {
 
 		// query param description
 		var qrDescription string
 
-		if o.DescriptionQueryParameter != nil {
-			qrDescription = *o.DescriptionQueryParameter
+		if o.Description != nil {
+			qrDescription = *o.Description
 		}
 		qDescription := qrDescription
 		if qDescription != "" {
@@ -447,7 +447,7 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,13 +475,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -492,7 +492,7 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -503,13 +503,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -520,13 +520,13 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -545,7 +545,7 @@ func (o *CounterTableCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamCounterTableCollectionGet binds the parameter fields
 func (o *CounterTableCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *CounterTableCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamCounterTableCollectionGet binds the parameter order_by
 func (o *CounterTableCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

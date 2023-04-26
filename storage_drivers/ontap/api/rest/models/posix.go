@@ -19,11 +19,11 @@ type Posix struct {
 
 	// RFC 2307 posixAccount object class.
 	// Example: User
-	Account string `json:"account,omitempty"`
+	Account *string `json:"account,omitempty"`
 
 	// RFC 2307 posixGroup object class.
 	// Example: Group
-	Group string `json:"group,omitempty"`
+	Group *string `json:"group,omitempty"`
 }
 
 // Validate validates this posix

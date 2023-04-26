@@ -20,14 +20,14 @@ import (
 type FcZoneResponse struct {
 
 	// links
-	Links *FcZoneResponseLinks `json:"_links,omitempty"`
+	Links *FcZoneResponseInlineLinks `json:"_links,omitempty"`
+
+	// fc zone response inline records
+	FcZoneResponseInlineRecords []*FcZone `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*FcZone `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fc zone response
@@ -38,7 +38,7 @@ func (m *FcZoneResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFcZoneResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *FcZoneResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FcZoneResponse) validateFcZoneResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcZoneResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FcZoneResponseInlineRecords); i++ {
+		if swag.IsZero(m.FcZoneResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FcZoneResponseInlineRecords[i] != nil {
+			if err := m.FcZoneResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *FcZoneResponse) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFcZoneResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *FcZoneResponse) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcZoneResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneResponse) contextValidateFcZoneResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FcZoneResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FcZoneResponseInlineRecords[i] != nil {
+			if err := m.FcZoneResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *FcZoneResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcZoneResponseLinks fc zone response links
+// FcZoneResponseInlineLinks fc zone response inline links
 //
-// swagger:model FcZoneResponseLinks
-type FcZoneResponseLinks struct {
+// swagger:model fc_zone_response_inline__links
+type FcZoneResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type FcZoneResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc zone response links
-func (m *FcZoneResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc zone response inline links
+func (m *FcZoneResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *FcZoneResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FcZoneResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *FcZoneResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcZoneResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcZoneResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *FcZoneResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc zone response links based on the context it is used
-func (m *FcZoneResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc zone response inline links based on the context it is used
+func (m *FcZoneResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *FcZoneResponseLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcZoneResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *FcZoneResponseLinks) contextValidateNext(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcZoneResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcZoneResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *FcZoneResponseLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FcZoneResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FcZoneResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *FcZoneResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcZoneResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FcZoneResponseLinks
+func (m *FcZoneResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcZoneResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

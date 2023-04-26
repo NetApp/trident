@@ -74,7 +74,7 @@ type SnaplockRetentionOperationCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *SnaplockRetentionOperationCreateParams) WithDefaults() *SnaplockRetenti
 // All values with no default are reset to their zero value.
 func (o *SnaplockRetentionOperationCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SnaplockRetentionOperationCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *SnaplockRetentionOperationCreateParams) SetInfo(info *models.EbrOperati
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock retention operation create params
-func (o *SnaplockRetentionOperationCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockRetentionOperationCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock retention operation create params
+func (o *SnaplockRetentionOperationCreateParams) WithReturnRecords(returnRecords *bool) *SnaplockRetentionOperationCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock retention operation create params
-func (o *SnaplockRetentionOperationCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock retention operation create params
+func (o *SnaplockRetentionOperationCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *SnaplockRetentionOperationCreateParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

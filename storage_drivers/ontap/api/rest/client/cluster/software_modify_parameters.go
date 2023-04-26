@@ -70,7 +70,7 @@ type SoftwareModifyParams struct {
 	Note that not all upgrades support these actions. An upgrade can only be resumed if it is in the paused state. When a request to cancel an upgrade is successful, the upgrade state changes to either `success` or `failure`.
 
 	*/
-	ActionQueryParameter *string
+	Action *string
 
 	/* EstimateOnly.
 
@@ -78,14 +78,14 @@ type SoftwareModifyParams struct {
 	No update is performed when this option is used. The default is false.
 
 	*/
-	EstimateOnlyQueryParameter *bool
+	EstimateOnly *bool
 
 	/* ForceRolling.
 
 	   Forces a rolling upgrade on the cluster. This option is not applicable for a single-node cluster and for a two-node MetroCluster. The default is false.
 
 	*/
-	ForceRollingQueryParameter *bool
+	ForceRolling *bool
 
 	// Info.
 	Info *models.SoftwareReference
@@ -95,45 +95,45 @@ type SoftwareModifyParams struct {
 	   A comma separated list of node names to be updated. The nodes must be a part of a HA Pair. The default is all nodes.
 
 	*/
-	NodesToUpdateQueryParameter *string
+	NodesToUpdate *string
 
 	/* PauseAfter.
 
 	   The pause after specified tasks option. When ANDU is paused user interaction is required to resume the update. The default is none.
 
 	*/
-	PauseAfterQueryParameter *string
+	PauseAfter *string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ShowValidationDetails.
 
 	   If the value is set to true, then all validation details will be shown in the output.
 
 	*/
-	ShowValidationDetailsQueryParameter *bool
+	ShowValidationDetails *bool
 
 	/* SkipWarnings.
 
 	   Ignore warnings and proceed with the install.
 	*/
-	SkIPWarningsQueryParameter *bool
+	SkipWarnings *bool
 
 	/* StabilizeMinutes.
 
 	   Sets a custom value between 1 to 60 minutes for the upgrade, allowing each node a specified amount of time to stabilize after a reboot.
 	*/
-	StabilizeMinutesQueryParameter *int64
+	StabilizeMinutes *int64
 
 	/* ValidateOnly.
 
 	   Validate the operation and its parameters, without actually performing the operation.
 	*/
-	ValidateOnlyQueryParameter *bool
+	ValidateOnly *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -153,11 +153,11 @@ func (o *SoftwareModifyParams) WithDefaults() *SoftwareModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SoftwareModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SoftwareModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,37 +199,37 @@ func (o *SoftwareModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the software modify params
-func (o *SoftwareModifyParams) WithActionQueryParameter(action *string) *SoftwareModifyParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the software modify params
+func (o *SoftwareModifyParams) WithAction(action *string) *SoftwareModifyParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the software modify params
-func (o *SoftwareModifyParams) SetActionQueryParameter(action *string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the software modify params
+func (o *SoftwareModifyParams) SetAction(action *string) {
+	o.Action = action
 }
 
-// WithEstimateOnlyQueryParameter adds the estimateOnly to the software modify params
-func (o *SoftwareModifyParams) WithEstimateOnlyQueryParameter(estimateOnly *bool) *SoftwareModifyParams {
-	o.SetEstimateOnlyQueryParameter(estimateOnly)
+// WithEstimateOnly adds the estimateOnly to the software modify params
+func (o *SoftwareModifyParams) WithEstimateOnly(estimateOnly *bool) *SoftwareModifyParams {
+	o.SetEstimateOnly(estimateOnly)
 	return o
 }
 
-// SetEstimateOnlyQueryParameter adds the estimateOnly to the software modify params
-func (o *SoftwareModifyParams) SetEstimateOnlyQueryParameter(estimateOnly *bool) {
-	o.EstimateOnlyQueryParameter = estimateOnly
+// SetEstimateOnly adds the estimateOnly to the software modify params
+func (o *SoftwareModifyParams) SetEstimateOnly(estimateOnly *bool) {
+	o.EstimateOnly = estimateOnly
 }
 
-// WithForceRollingQueryParameter adds the forceRolling to the software modify params
-func (o *SoftwareModifyParams) WithForceRollingQueryParameter(forceRolling *bool) *SoftwareModifyParams {
-	o.SetForceRollingQueryParameter(forceRolling)
+// WithForceRolling adds the forceRolling to the software modify params
+func (o *SoftwareModifyParams) WithForceRolling(forceRolling *bool) *SoftwareModifyParams {
+	o.SetForceRolling(forceRolling)
 	return o
 }
 
-// SetForceRollingQueryParameter adds the forceRolling to the software modify params
-func (o *SoftwareModifyParams) SetForceRollingQueryParameter(forceRolling *bool) {
-	o.ForceRollingQueryParameter = forceRolling
+// SetForceRolling adds the forceRolling to the software modify params
+func (o *SoftwareModifyParams) SetForceRolling(forceRolling *bool) {
+	o.ForceRolling = forceRolling
 }
 
 // WithInfo adds the info to the software modify params
@@ -243,81 +243,81 @@ func (o *SoftwareModifyParams) SetInfo(info *models.SoftwareReference) {
 	o.Info = info
 }
 
-// WithNodesToUpdateQueryParameter adds the nodesToUpdate to the software modify params
-func (o *SoftwareModifyParams) WithNodesToUpdateQueryParameter(nodesToUpdate *string) *SoftwareModifyParams {
-	o.SetNodesToUpdateQueryParameter(nodesToUpdate)
+// WithNodesToUpdate adds the nodesToUpdate to the software modify params
+func (o *SoftwareModifyParams) WithNodesToUpdate(nodesToUpdate *string) *SoftwareModifyParams {
+	o.SetNodesToUpdate(nodesToUpdate)
 	return o
 }
 
-// SetNodesToUpdateQueryParameter adds the nodesToUpdate to the software modify params
-func (o *SoftwareModifyParams) SetNodesToUpdateQueryParameter(nodesToUpdate *string) {
-	o.NodesToUpdateQueryParameter = nodesToUpdate
+// SetNodesToUpdate adds the nodesToUpdate to the software modify params
+func (o *SoftwareModifyParams) SetNodesToUpdate(nodesToUpdate *string) {
+	o.NodesToUpdate = nodesToUpdate
 }
 
-// WithPauseAfterQueryParameter adds the pauseAfter to the software modify params
-func (o *SoftwareModifyParams) WithPauseAfterQueryParameter(pauseAfter *string) *SoftwareModifyParams {
-	o.SetPauseAfterQueryParameter(pauseAfter)
+// WithPauseAfter adds the pauseAfter to the software modify params
+func (o *SoftwareModifyParams) WithPauseAfter(pauseAfter *string) *SoftwareModifyParams {
+	o.SetPauseAfter(pauseAfter)
 	return o
 }
 
-// SetPauseAfterQueryParameter adds the pauseAfter to the software modify params
-func (o *SoftwareModifyParams) SetPauseAfterQueryParameter(pauseAfter *string) {
-	o.PauseAfterQueryParameter = pauseAfter
+// SetPauseAfter adds the pauseAfter to the software modify params
+func (o *SoftwareModifyParams) SetPauseAfter(pauseAfter *string) {
+	o.PauseAfter = pauseAfter
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the software modify params
-func (o *SoftwareModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwareModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the software modify params
+func (o *SoftwareModifyParams) WithReturnTimeout(returnTimeout *int64) *SoftwareModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the software modify params
-func (o *SoftwareModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the software modify params
+func (o *SoftwareModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithShowValidationDetailsQueryParameter adds the showValidationDetails to the software modify params
-func (o *SoftwareModifyParams) WithShowValidationDetailsQueryParameter(showValidationDetails *bool) *SoftwareModifyParams {
-	o.SetShowValidationDetailsQueryParameter(showValidationDetails)
+// WithShowValidationDetails adds the showValidationDetails to the software modify params
+func (o *SoftwareModifyParams) WithShowValidationDetails(showValidationDetails *bool) *SoftwareModifyParams {
+	o.SetShowValidationDetails(showValidationDetails)
 	return o
 }
 
-// SetShowValidationDetailsQueryParameter adds the showValidationDetails to the software modify params
-func (o *SoftwareModifyParams) SetShowValidationDetailsQueryParameter(showValidationDetails *bool) {
-	o.ShowValidationDetailsQueryParameter = showValidationDetails
+// SetShowValidationDetails adds the showValidationDetails to the software modify params
+func (o *SoftwareModifyParams) SetShowValidationDetails(showValidationDetails *bool) {
+	o.ShowValidationDetails = showValidationDetails
 }
 
-// WithSkIPWarningsQueryParameter adds the skipWarnings to the software modify params
-func (o *SoftwareModifyParams) WithSkIPWarningsQueryParameter(skipWarnings *bool) *SoftwareModifyParams {
-	o.SetSkIPWarningsQueryParameter(skipWarnings)
+// WithSkipWarnings adds the skipWarnings to the software modify params
+func (o *SoftwareModifyParams) WithSkipWarnings(skipWarnings *bool) *SoftwareModifyParams {
+	o.SetSkipWarnings(skipWarnings)
 	return o
 }
 
-// SetSkIPWarningsQueryParameter adds the skipWarnings to the software modify params
-func (o *SoftwareModifyParams) SetSkIPWarningsQueryParameter(skipWarnings *bool) {
-	o.SkIPWarningsQueryParameter = skipWarnings
+// SetSkipWarnings adds the skipWarnings to the software modify params
+func (o *SoftwareModifyParams) SetSkipWarnings(skipWarnings *bool) {
+	o.SkipWarnings = skipWarnings
 }
 
-// WithStabilizeMinutesQueryParameter adds the stabilizeMinutes to the software modify params
-func (o *SoftwareModifyParams) WithStabilizeMinutesQueryParameter(stabilizeMinutes *int64) *SoftwareModifyParams {
-	o.SetStabilizeMinutesQueryParameter(stabilizeMinutes)
+// WithStabilizeMinutes adds the stabilizeMinutes to the software modify params
+func (o *SoftwareModifyParams) WithStabilizeMinutes(stabilizeMinutes *int64) *SoftwareModifyParams {
+	o.SetStabilizeMinutes(stabilizeMinutes)
 	return o
 }
 
-// SetStabilizeMinutesQueryParameter adds the stabilizeMinutes to the software modify params
-func (o *SoftwareModifyParams) SetStabilizeMinutesQueryParameter(stabilizeMinutes *int64) {
-	o.StabilizeMinutesQueryParameter = stabilizeMinutes
+// SetStabilizeMinutes adds the stabilizeMinutes to the software modify params
+func (o *SoftwareModifyParams) SetStabilizeMinutes(stabilizeMinutes *int64) {
+	o.StabilizeMinutes = stabilizeMinutes
 }
 
-// WithValidateOnlyQueryParameter adds the validateOnly to the software modify params
-func (o *SoftwareModifyParams) WithValidateOnlyQueryParameter(validateOnly *bool) *SoftwareModifyParams {
-	o.SetValidateOnlyQueryParameter(validateOnly)
+// WithValidateOnly adds the validateOnly to the software modify params
+func (o *SoftwareModifyParams) WithValidateOnly(validateOnly *bool) *SoftwareModifyParams {
+	o.SetValidateOnly(validateOnly)
 	return o
 }
 
-// SetValidateOnlyQueryParameter adds the validateOnly to the software modify params
-func (o *SoftwareModifyParams) SetValidateOnlyQueryParameter(validateOnly *bool) {
-	o.ValidateOnlyQueryParameter = validateOnly
+// SetValidateOnly adds the validateOnly to the software modify params
+func (o *SoftwareModifyParams) SetValidateOnly(validateOnly *bool) {
+	o.ValidateOnly = validateOnly
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,13 +328,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.ActionQueryParameter != nil {
+	if o.Action != nil {
 
 		// query param action
 		var qrAction string
 
-		if o.ActionQueryParameter != nil {
-			qrAction = *o.ActionQueryParameter
+		if o.Action != nil {
+			qrAction = *o.Action
 		}
 		qAction := qrAction
 		if qAction != "" {
@@ -345,13 +345,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.EstimateOnlyQueryParameter != nil {
+	if o.EstimateOnly != nil {
 
 		// query param estimate_only
 		var qrEstimateOnly bool
 
-		if o.EstimateOnlyQueryParameter != nil {
-			qrEstimateOnly = *o.EstimateOnlyQueryParameter
+		if o.EstimateOnly != nil {
+			qrEstimateOnly = *o.EstimateOnly
 		}
 		qEstimateOnly := swag.FormatBool(qrEstimateOnly)
 		if qEstimateOnly != "" {
@@ -362,13 +362,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ForceRollingQueryParameter != nil {
+	if o.ForceRolling != nil {
 
 		// query param force_rolling
 		var qrForceRolling bool
 
-		if o.ForceRollingQueryParameter != nil {
-			qrForceRolling = *o.ForceRollingQueryParameter
+		if o.ForceRolling != nil {
+			qrForceRolling = *o.ForceRolling
 		}
 		qForceRolling := swag.FormatBool(qrForceRolling)
 		if qForceRolling != "" {
@@ -384,13 +384,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.NodesToUpdateQueryParameter != nil {
+	if o.NodesToUpdate != nil {
 
 		// query param nodes_to_update
 		var qrNodesToUpdate string
 
-		if o.NodesToUpdateQueryParameter != nil {
-			qrNodesToUpdate = *o.NodesToUpdateQueryParameter
+		if o.NodesToUpdate != nil {
+			qrNodesToUpdate = *o.NodesToUpdate
 		}
 		qNodesToUpdate := qrNodesToUpdate
 		if qNodesToUpdate != "" {
@@ -401,13 +401,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.PauseAfterQueryParameter != nil {
+	if o.PauseAfter != nil {
 
 		// query param pause_after
 		var qrPauseAfter string
 
-		if o.PauseAfterQueryParameter != nil {
-			qrPauseAfter = *o.PauseAfterQueryParameter
+		if o.PauseAfter != nil {
+			qrPauseAfter = *o.PauseAfter
 		}
 		qPauseAfter := qrPauseAfter
 		if qPauseAfter != "" {
@@ -418,13 +418,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -435,13 +435,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ShowValidationDetailsQueryParameter != nil {
+	if o.ShowValidationDetails != nil {
 
 		// query param show_validation_details
 		var qrShowValidationDetails bool
 
-		if o.ShowValidationDetailsQueryParameter != nil {
-			qrShowValidationDetails = *o.ShowValidationDetailsQueryParameter
+		if o.ShowValidationDetails != nil {
+			qrShowValidationDetails = *o.ShowValidationDetails
 		}
 		qShowValidationDetails := swag.FormatBool(qrShowValidationDetails)
 		if qShowValidationDetails != "" {
@@ -452,13 +452,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.SkIPWarningsQueryParameter != nil {
+	if o.SkipWarnings != nil {
 
 		// query param skip_warnings
 		var qrSkipWarnings bool
 
-		if o.SkIPWarningsQueryParameter != nil {
-			qrSkipWarnings = *o.SkIPWarningsQueryParameter
+		if o.SkipWarnings != nil {
+			qrSkipWarnings = *o.SkipWarnings
 		}
 		qSkipWarnings := swag.FormatBool(qrSkipWarnings)
 		if qSkipWarnings != "" {
@@ -469,13 +469,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.StabilizeMinutesQueryParameter != nil {
+	if o.StabilizeMinutes != nil {
 
 		// query param stabilize_minutes
 		var qrStabilizeMinutes int64
 
-		if o.StabilizeMinutesQueryParameter != nil {
-			qrStabilizeMinutes = *o.StabilizeMinutesQueryParameter
+		if o.StabilizeMinutes != nil {
+			qrStabilizeMinutes = *o.StabilizeMinutes
 		}
 		qStabilizeMinutes := swag.FormatInt64(qrStabilizeMinutes)
 		if qStabilizeMinutes != "" {
@@ -486,13 +486,13 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ValidateOnlyQueryParameter != nil {
+	if o.ValidateOnly != nil {
 
 		// query param validate_only
 		var qrValidateOnly bool
 
-		if o.ValidateOnlyQueryParameter != nil {
-			qrValidateOnly = *o.ValidateOnlyQueryParameter
+		if o.ValidateOnly != nil {
+			qrValidateOnly = *o.ValidateOnly
 		}
 		qValidateOnly := swag.FormatBool(qrValidateOnly)
 		if qValidateOnly != "" {

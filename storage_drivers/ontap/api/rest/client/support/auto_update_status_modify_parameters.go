@@ -65,7 +65,7 @@ type AutoUpdateStatusModifyParams struct {
 
 	   Action to be performed on the update
 	*/
-	ActionQueryParameter string
+	Action string
 
 	/* ScheduleTime.
 
@@ -73,13 +73,13 @@ type AutoUpdateStatusModifyParams struct {
 
 	   Format: date-time
 	*/
-	ScheduleTimeQueryParameter *strfmt.DateTime
+	ScheduleTime *strfmt.DateTime
 
 	/* UUID.
 
 	   Update identifier
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -134,37 +134,37 @@ func (o *AutoUpdateStatusModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the auto update status modify params
-func (o *AutoUpdateStatusModifyParams) WithActionQueryParameter(action string) *AutoUpdateStatusModifyParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the auto update status modify params
+func (o *AutoUpdateStatusModifyParams) WithAction(action string) *AutoUpdateStatusModifyParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the auto update status modify params
-func (o *AutoUpdateStatusModifyParams) SetActionQueryParameter(action string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the auto update status modify params
+func (o *AutoUpdateStatusModifyParams) SetAction(action string) {
+	o.Action = action
 }
 
-// WithScheduleTimeQueryParameter adds the scheduleTime to the auto update status modify params
-func (o *AutoUpdateStatusModifyParams) WithScheduleTimeQueryParameter(scheduleTime *strfmt.DateTime) *AutoUpdateStatusModifyParams {
-	o.SetScheduleTimeQueryParameter(scheduleTime)
+// WithScheduleTime adds the scheduleTime to the auto update status modify params
+func (o *AutoUpdateStatusModifyParams) WithScheduleTime(scheduleTime *strfmt.DateTime) *AutoUpdateStatusModifyParams {
+	o.SetScheduleTime(scheduleTime)
 	return o
 }
 
-// SetScheduleTimeQueryParameter adds the scheduleTime to the auto update status modify params
-func (o *AutoUpdateStatusModifyParams) SetScheduleTimeQueryParameter(scheduleTime *strfmt.DateTime) {
-	o.ScheduleTimeQueryParameter = scheduleTime
+// SetScheduleTime adds the scheduleTime to the auto update status modify params
+func (o *AutoUpdateStatusModifyParams) SetScheduleTime(scheduleTime *strfmt.DateTime) {
+	o.ScheduleTime = scheduleTime
 }
 
-// WithUUIDPathParameter adds the uuid to the auto update status modify params
-func (o *AutoUpdateStatusModifyParams) WithUUIDPathParameter(uuid string) *AutoUpdateStatusModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the auto update status modify params
+func (o *AutoUpdateStatusModifyParams) WithUUID(uuid string) *AutoUpdateStatusModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the auto update status modify params
-func (o *AutoUpdateStatusModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the auto update status modify params
+func (o *AutoUpdateStatusModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *AutoUpdateStatusModifyParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// query param action
-	qrAction := o.ActionQueryParameter
+	qrAction := o.Action
 	qAction := qrAction
 	if qAction != "" {
 
@@ -185,13 +185,13 @@ func (o *AutoUpdateStatusModifyParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ScheduleTimeQueryParameter != nil {
+	if o.ScheduleTime != nil {
 
 		// query param schedule_time
 		var qrScheduleTime strfmt.DateTime
 
-		if o.ScheduleTimeQueryParameter != nil {
-			qrScheduleTime = *o.ScheduleTimeQueryParameter
+		if o.ScheduleTime != nil {
+			qrScheduleTime = *o.ScheduleTime
 		}
 		qScheduleTime := qrScheduleTime.String()
 		if qScheduleTime != "" {
@@ -203,7 +203,7 @@ func (o *AutoUpdateStatusModifyParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

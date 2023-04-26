@@ -21,26 +21,26 @@ type VscanOnDemand struct {
 
 	// The path from the Vserver root where the task report is created.
 	// Example: /vol0/report_dir
-	LogPath string `json:"log_path,omitempty"`
+	LogPath *string `json:"log_path,omitempty"`
 
 	// On-Demand task name
 	// Example: task-1
 	// Max Length: 256
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// schedule
+	Schedule *VscanOnDemandInlineSchedule `json:"schedule,omitempty"`
+
+	// scope
+	Scope *VscanOnDemandInlineScope `json:"scope,omitempty"`
+
+	// svm
+	Svm *VscanOnDemandInlineSvm `json:"svm,omitempty"`
 
 	// List of paths that need to be scanned.
 	// Example: ["/vol1/","/vol2/cifs/"]
-	ScanPaths []string `json:"scan_paths,omitempty"`
-
-	// schedule
-	Schedule *VscanOnDemandSchedule `json:"schedule,omitempty"`
-
-	// scope
-	Scope *VscanOnDemandScope `json:"scope,omitempty"`
-
-	// svm
-	Svm *VscanOnDemandSvm `json:"svm,omitempty"`
+	VscanOnDemandInlineScanPaths []*string `json:"scan_paths,omitempty"`
 }
 
 // Validate validates this vscan on demand
@@ -74,11 +74,11 @@ func (m *VscanOnDemand) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
 		return err
 	}
 
@@ -218,25 +218,25 @@ func (m *VscanOnDemand) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandSchedule Schedule of the task.
+// VscanOnDemandInlineSchedule Schedule of the task.
 //
-// swagger:model VscanOnDemandSchedule
-type VscanOnDemandSchedule struct {
+// swagger:model vscan_on_demand_inline_schedule
+type VscanOnDemandInlineSchedule struct {
 
 	// links
-	Links *VscanOnDemandScheduleLinks `json:"_links,omitempty"`
+	Links *VscanOnDemandInlineScheduleInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan on demand schedule
-func (m *VscanOnDemandSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand inline schedule
+func (m *VscanOnDemandInlineSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -249,7 +249,7 @@ func (m *VscanOnDemandSchedule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandSchedule) validateLinks(formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineSchedule) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -266,8 +266,8 @@ func (m *VscanOnDemandSchedule) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan on demand schedule based on the context it is used
-func (m *VscanOnDemandSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand inline schedule based on the context it is used
+func (m *VscanOnDemandInlineSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -280,7 +280,7 @@ func (m *VscanOnDemandSchedule) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *VscanOnDemandSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -295,7 +295,7 @@ func (m *VscanOnDemandSchedule) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandSchedule) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandInlineSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -303,8 +303,8 @@ func (m *VscanOnDemandSchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandSchedule) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandSchedule
+func (m *VscanOnDemandInlineSchedule) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandInlineSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -312,17 +312,17 @@ func (m *VscanOnDemandSchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandScheduleLinks vscan on demand schedule links
+// VscanOnDemandInlineScheduleInlineLinks vscan on demand inline schedule inline links
 //
-// swagger:model VscanOnDemandScheduleLinks
-type VscanOnDemandScheduleLinks struct {
+// swagger:model vscan_on_demand_inline_schedule_inline__links
+type VscanOnDemandInlineScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan on demand schedule links
-func (m *VscanOnDemandScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand inline schedule inline links
+func (m *VscanOnDemandInlineScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -335,7 +335,7 @@ func (m *VscanOnDemandScheduleLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -352,8 +352,8 @@ func (m *VscanOnDemandScheduleLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this vscan on demand schedule links based on the context it is used
-func (m *VscanOnDemandScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand inline schedule inline links based on the context it is used
+func (m *VscanOnDemandInlineScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -366,7 +366,7 @@ func (m *VscanOnDemandScheduleLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanOnDemandScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -381,7 +381,7 @@ func (m *VscanOnDemandScheduleLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandInlineScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -389,8 +389,8 @@ func (m *VscanOnDemandScheduleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandScheduleLinks
+func (m *VscanOnDemandInlineScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandInlineScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -398,37 +398,37 @@ func (m *VscanOnDemandScheduleLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandScope vscan on demand scope
+// VscanOnDemandInlineScope vscan on demand inline scope
 //
-// swagger:model VscanOnDemandScope
-type VscanOnDemandScope struct {
+// swagger:model vscan_on_demand_inline_scope
+type VscanOnDemandInlineScope struct {
 
 	// List of file extensions for which scanning is not performed.
 	// Example: ["mp3","mp4"]
-	ExcludeExtensions []string `json:"exclude_extensions,omitempty"`
+	ExcludeExtensions []*string `json:"exclude_extensions,omitempty"`
 
 	// List of file paths for which scanning must not be performed.
 	// Example: ["/vol1/cold-files/","/vol1/cifs/names"]
-	ExcludePaths []string `json:"exclude_paths,omitempty"`
+	ExcludePaths []*string `json:"exclude_paths,omitempty"`
 
 	// List of file extensions to be scanned.
 	// Example: ["vmdk","mp*"]
 	// Max Items: 16
 	// Min Items: 1
-	IncludeExtensions []string `json:"include_extensions,omitempty"`
+	IncludeExtensions []*string `json:"include_extensions,omitempty"`
 
 	// Maximum file size, in bytes, allowed for scanning.
 	// Example: 10737418240
 	// Maximum: 1.099511627776e+12
 	// Minimum: 1024
-	MaxFileSize int64 `json:"max_file_size,omitempty"`
+	MaxFileSize *int64 `json:"max_file_size,omitempty"`
 
 	// Specifies whether or not files without any extension can be scanned.
 	ScanWithoutExtension *bool `json:"scan_without_extension,omitempty"`
 }
 
-// Validate validates this vscan on demand scope
-func (m *VscanOnDemandScope) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand inline scope
+func (m *VscanOnDemandInlineScope) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIncludeExtensions(formats); err != nil {
@@ -445,7 +445,7 @@ func (m *VscanOnDemandScope) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandScope) validateIncludeExtensions(formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineScope) validateIncludeExtensions(formats strfmt.Registry) error {
 	if swag.IsZero(m.IncludeExtensions) { // not required
 		return nil
 	}
@@ -463,29 +463,29 @@ func (m *VscanOnDemandScope) validateIncludeExtensions(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *VscanOnDemandScope) validateMaxFileSize(formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineScope) validateMaxFileSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.MaxFileSize) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("scope"+"."+"max_file_size", "body", m.MaxFileSize, 1024, false); err != nil {
+	if err := validate.MinimumInt("scope"+"."+"max_file_size", "body", *m.MaxFileSize, 1024, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("scope"+"."+"max_file_size", "body", m.MaxFileSize, 1.099511627776e+12, false); err != nil {
+	if err := validate.MaximumInt("scope"+"."+"max_file_size", "body", *m.MaxFileSize, 1.099511627776e+12, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this vscan on demand scope based on context it is used
-func (m *VscanOnDemandScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vscan on demand inline scope based on context it is used
+func (m *VscanOnDemandInlineScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandScope) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandInlineScope) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -493,8 +493,8 @@ func (m *VscanOnDemandScope) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandScope) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandScope
+func (m *VscanOnDemandInlineScope) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandInlineScope
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -502,27 +502,27 @@ func (m *VscanOnDemandScope) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandSvm vscan on demand svm
+// VscanOnDemandInlineSvm vscan on demand inline svm
 //
-// swagger:model VscanOnDemandSvm
-type VscanOnDemandSvm struct {
+// swagger:model vscan_on_demand_inline_svm
+type VscanOnDemandInlineSvm struct {
 
 	// links
-	Links *VscanOnDemandSvmLinks `json:"_links,omitempty"`
+	Links *VscanOnDemandInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan on demand svm
-func (m *VscanOnDemandSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand inline svm
+func (m *VscanOnDemandInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -535,7 +535,7 @@ func (m *VscanOnDemandSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandSvm) validateLinks(formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -552,8 +552,8 @@ func (m *VscanOnDemandSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan on demand svm based on the context it is used
-func (m *VscanOnDemandSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand inline svm based on the context it is used
+func (m *VscanOnDemandInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -566,7 +566,7 @@ func (m *VscanOnDemandSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *VscanOnDemandSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -581,7 +581,7 @@ func (m *VscanOnDemandSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandSvm) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -589,8 +589,8 @@ func (m *VscanOnDemandSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandSvm) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandSvm
+func (m *VscanOnDemandInlineSvm) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -598,17 +598,17 @@ func (m *VscanOnDemandSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandSvmLinks vscan on demand svm links
+// VscanOnDemandInlineSvmInlineLinks vscan on demand inline svm inline links
 //
-// swagger:model VscanOnDemandSvmLinks
-type VscanOnDemandSvmLinks struct {
+// swagger:model vscan_on_demand_inline_svm_inline__links
+type VscanOnDemandInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan on demand svm links
-func (m *VscanOnDemandSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand inline svm inline links
+func (m *VscanOnDemandInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -621,7 +621,7 @@ func (m *VscanOnDemandSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -638,8 +638,8 @@ func (m *VscanOnDemandSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan on demand svm links based on the context it is used
-func (m *VscanOnDemandSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand inline svm inline links based on the context it is used
+func (m *VscanOnDemandInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -652,7 +652,7 @@ func (m *VscanOnDemandSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *VscanOnDemandSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -667,7 +667,7 @@ func (m *VscanOnDemandSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -675,8 +675,8 @@ func (m *VscanOnDemandSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandSvmLinks) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandSvmLinks
+func (m *VscanOnDemandInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

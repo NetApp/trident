@@ -22,22 +22,22 @@ type Version struct {
 	// The full cluster version string.
 	// Example: NetApp Release 9.4.0: Sun Nov 05 18:20:57 UTC 2017
 	// Read Only: true
-	Full string `json:"full,omitempty"`
+	Full *string `json:"full,omitempty"`
 
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation,omitempty"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major int64 `json:"major,omitempty"`
+	Major *int64 `json:"major,omitempty"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor,omitempty"`
 }
 
 // Validate validates this version
@@ -73,7 +73,7 @@ func (m *Version) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 
 func (m *Version) contextValidateFull(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "full", "body", string(m.Full)); err != nil {
+	if err := validate.ReadOnly(ctx, "full", "body", m.Full); err != nil {
 		return err
 	}
 
@@ -82,7 +82,7 @@ func (m *Version) contextValidateFull(ctx context.Context, formats strfmt.Regist
 
 func (m *Version) contextValidateGeneration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "generation", "body", int64(m.Generation)); err != nil {
+	if err := validate.ReadOnly(ctx, "generation", "body", m.Generation); err != nil {
 		return err
 	}
 
@@ -91,7 +91,7 @@ func (m *Version) contextValidateGeneration(ctx context.Context, formats strfmt.
 
 func (m *Version) contextValidateMajor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "major", "body", int64(m.Major)); err != nil {
+	if err := validate.ReadOnly(ctx, "major", "body", m.Major); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (m *Version) contextValidateMajor(ctx context.Context, formats strfmt.Regis
 
 func (m *Version) contextValidateMinor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "minor", "body", int64(m.Minor)); err != nil {
+	if err := validate.ReadOnly(ctx, "minor", "body", m.Minor); err != nil {
 		return err
 	}
 

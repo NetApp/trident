@@ -21,42 +21,21 @@ import (
 // swagger:model shelf
 type Shelf struct {
 
-	// Alternate Control Paths to ACP processors/functions in shelf modules and expanders
-	Acps []*ShelfAcpsItems0 `json:"acps,omitempty"`
-
-	// bays
-	Bays []*ShelfBaysItems0 `json:"bays,omitempty"`
-
 	// connection type
 	// Example: sas
 	// Read Only: true
 	// Enum: [unknown fc sas nvme]
-	ConnectionType string `json:"connection_type,omitempty"`
-
-	// current sensors
-	CurrentSensors []*ShelfCurrentSensorsItems0 `json:"current_sensors,omitempty"`
+	ConnectionType *string `json:"connection_type,omitempty"`
 
 	// disk count
 	// Example: 12
 	// Read Only: true
-	DiskCount int64 `json:"disk_count,omitempty"`
-
-	// drawers
-	Drawers []*ShelfDrawersItems0 `json:"drawers,omitempty"`
-
-	// errors
-	Errors []*ShelfErrorsItems0 `json:"errors,omitempty"`
-
-	// fans
-	Fans []*ShelfFansItems0 `json:"fans,omitempty"`
-
-	// frus
-	Frus []*ShelfFrusItems0 `json:"frus,omitempty"`
+	DiskCount *int64 `json:"disk_count,omitempty"`
 
 	// id
 	// Example: 1
 	// Read Only: true
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// internal
 	// Read Only: true
@@ -69,92 +48,85 @@ type Shelf struct {
 	// location led
 	// Example: off
 	// Enum: [off on unsupported]
-	LocationLed string `json:"location_led,omitempty"`
+	LocationLed *string `json:"location_led,omitempty"`
 
 	// manufacturer
-	Manufacturer *ShelfManufacturer `json:"manufacturer,omitempty"`
+	Manufacturer *ShelfInlineManufacturer `json:"manufacturer,omitempty"`
 
 	// model
 	// Example: DS2246
 	// Read Only: true
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// module type
 	// Example: iom6
 	// Read Only: true
 	// Enum: [unknown iom6 iom6e iom12 iom12b iom12e iom12f iom12g nsm100 nsm8e psm3e]
-	ModuleType string `json:"module_type,omitempty"`
+	ModuleType *string `json:"module_type,omitempty"`
 
 	// name
 	// Example: 1.1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
-
-	// paths
-	Paths []*ShelfPathsItems0 `json:"paths,omitempty"`
-
-	// ports
-	Ports []*ShelfPortsItems0 `json:"ports,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// serial number
 	// Example: SHFMS1514000895
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
+
+	// Alternate Control Paths to ACP processors/functions in shelf modules and expanders
+	ShelfInlineAcps []*ShelfInlineAcpsInlineArrayItem `json:"acps,omitempty"`
+
+	// shelf inline bays
+	ShelfInlineBays []*ShelfInlineBaysInlineArrayItem `json:"bays,omitempty"`
+
+	// shelf inline current sensors
+	ShelfInlineCurrentSensors []*ShelfInlineCurrentSensorsInlineArrayItem `json:"current_sensors,omitempty"`
+
+	// shelf inline drawers
+	ShelfInlineDrawers []*ShelfInlineDrawersInlineArrayItem `json:"drawers,omitempty"`
+
+	// shelf inline errors
+	ShelfInlineErrors []*ShelfInlineErrorsInlineArrayItem `json:"errors,omitempty"`
+
+	// shelf inline fans
+	ShelfInlineFans []*ShelfInlineFansInlineArrayItem `json:"fans,omitempty"`
+
+	// shelf inline frus
+	ShelfInlineFrus []*ShelfInlineFrusInlineArrayItem `json:"frus,omitempty"`
+
+	// shelf inline paths
+	ShelfInlinePaths []*ShelfInlinePathsInlineArrayItem `json:"paths,omitempty"`
+
+	// shelf inline ports
+	ShelfInlinePorts []*ShelfInlinePortsInlineArrayItem `json:"ports,omitempty"`
+
+	// shelf inline temperature sensors
+	ShelfInlineTemperatureSensors []*ShelfInlineTemperatureSensorsInlineArrayItem `json:"temperature_sensors,omitempty"`
+
+	// shelf inline voltage sensors
+	ShelfInlineVoltageSensors []*ShelfInlineVoltageSensorsInlineArrayItem `json:"voltage_sensors,omitempty"`
 
 	// state
 	// Example: ok
 	// Read Only: true
 	// Enum: [unknown ok error]
-	State string `json:"state,omitempty"`
-
-	// temperature sensors
-	TemperatureSensors []*ShelfTemperatureSensorsItems0 `json:"temperature_sensors,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// uid
 	// Example: 7777841915827391056
 	// Read Only: true
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 
 	// vendor
-	Vendor *ShelfVendor `json:"vendor,omitempty"`
-
-	// voltage sensors
-	VoltageSensors []*ShelfVoltageSensorsItems0 `json:"voltage_sensors,omitempty"`
+	Vendor *ShelfInlineVendor `json:"vendor,omitempty"`
 }
 
 // Validate validates this shelf
 func (m *Shelf) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAcps(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateBays(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateConnectionType(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateCurrentSensors(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateDrawers(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateErrors(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateFans(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateFrus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -170,11 +142,47 @@ func (m *Shelf) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePaths(formats); err != nil {
+	if err := m.validateShelfInlineAcps(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePorts(formats); err != nil {
+	if err := m.validateShelfInlineBays(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineCurrentSensors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineDrawers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineErrors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineFans(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineFrus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlinePaths(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlinePorts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineTemperatureSensors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateShelfInlineVoltageSensors(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -182,69 +190,13 @@ func (m *Shelf) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateTemperatureSensors(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateVendor(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVoltageSensors(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Shelf) validateAcps(formats strfmt.Registry) error {
-	if swag.IsZero(m.Acps) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Acps); i++ {
-		if swag.IsZero(m.Acps[i]) { // not required
-			continue
-		}
-
-		if m.Acps[i] != nil {
-			if err := m.Acps[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("acps" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateBays(formats strfmt.Registry) error {
-	if swag.IsZero(m.Bays) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Bays); i++ {
-		if swag.IsZero(m.Bays[i]) { // not required
-			continue
-		}
-
-		if m.Bays[i] != nil {
-			if err := m.Bays[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("bays" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -317,128 +269,8 @@ func (m *Shelf) validateConnectionType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateConnectionTypeEnum("connection_type", "body", m.ConnectionType); err != nil {
+	if err := m.validateConnectionTypeEnum("connection_type", "body", *m.ConnectionType); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateCurrentSensors(formats strfmt.Registry) error {
-	if swag.IsZero(m.CurrentSensors) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.CurrentSensors); i++ {
-		if swag.IsZero(m.CurrentSensors[i]) { // not required
-			continue
-		}
-
-		if m.CurrentSensors[i] != nil {
-			if err := m.CurrentSensors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("current_sensors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateDrawers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Drawers) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Drawers); i++ {
-		if swag.IsZero(m.Drawers[i]) { // not required
-			continue
-		}
-
-		if m.Drawers[i] != nil {
-			if err := m.Drawers[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("drawers" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateErrors(formats strfmt.Registry) error {
-	if swag.IsZero(m.Errors) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Errors); i++ {
-		if swag.IsZero(m.Errors[i]) { // not required
-			continue
-		}
-
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateFans(formats strfmt.Registry) error {
-	if swag.IsZero(m.Fans) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Fans); i++ {
-		if swag.IsZero(m.Fans[i]) { // not required
-			continue
-		}
-
-		if m.Fans[i] != nil {
-			if err := m.Fans[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateFrus(formats strfmt.Registry) error {
-	if swag.IsZero(m.Frus) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Frus); i++ {
-		if swag.IsZero(m.Frus[i]) { // not required
-			continue
-		}
-
-		if m.Frus[i] != nil {
-			if err := m.Frus[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("frus" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -503,7 +335,7 @@ func (m *Shelf) validateLocationLed(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateLocationLedEnum("location_led", "body", m.LocationLed); err != nil {
+	if err := m.validateLocationLedEnum("location_led", "body", *m.LocationLed); err != nil {
 		return err
 	}
 
@@ -666,25 +498,193 @@ func (m *Shelf) validateModuleType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateModuleTypeEnum("module_type", "body", m.ModuleType); err != nil {
+	if err := m.validateModuleTypeEnum("module_type", "body", *m.ModuleType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *Shelf) validatePaths(formats strfmt.Registry) error {
-	if swag.IsZero(m.Paths) { // not required
+func (m *Shelf) validateShelfInlineAcps(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineAcps) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Paths); i++ {
-		if swag.IsZero(m.Paths[i]) { // not required
+	for i := 0; i < len(m.ShelfInlineAcps); i++ {
+		if swag.IsZero(m.ShelfInlineAcps[i]) { // not required
 			continue
 		}
 
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].Validate(formats); err != nil {
+		if m.ShelfInlineAcps[i] != nil {
+			if err := m.ShelfInlineAcps[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("acps" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineBays(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineBays) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineBays); i++ {
+		if swag.IsZero(m.ShelfInlineBays[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineBays[i] != nil {
+			if err := m.ShelfInlineBays[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("bays" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineCurrentSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineCurrentSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineCurrentSensors); i++ {
+		if swag.IsZero(m.ShelfInlineCurrentSensors[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineCurrentSensors[i] != nil {
+			if err := m.ShelfInlineCurrentSensors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("current_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineDrawers(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineDrawers) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineDrawers); i++ {
+		if swag.IsZero(m.ShelfInlineDrawers[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineDrawers[i] != nil {
+			if err := m.ShelfInlineDrawers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("drawers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineErrors(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineErrors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineErrors); i++ {
+		if swag.IsZero(m.ShelfInlineErrors[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineErrors[i] != nil {
+			if err := m.ShelfInlineErrors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineFans(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineFans) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineFans); i++ {
+		if swag.IsZero(m.ShelfInlineFans[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineFans[i] != nil {
+			if err := m.ShelfInlineFans[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineFrus(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineFrus) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineFrus); i++ {
+		if swag.IsZero(m.ShelfInlineFrus[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineFrus[i] != nil {
+			if err := m.ShelfInlineFrus[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("frus" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlinePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlinePaths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlinePaths); i++ {
+		if swag.IsZero(m.ShelfInlinePaths[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlinePaths[i] != nil {
+			if err := m.ShelfInlinePaths[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
 				}
@@ -697,20 +697,68 @@ func (m *Shelf) validatePaths(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Shelf) validatePorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.Ports) { // not required
+func (m *Shelf) validateShelfInlinePorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlinePorts) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Ports); i++ {
-		if swag.IsZero(m.Ports[i]) { // not required
+	for i := 0; i < len(m.ShelfInlinePorts); i++ {
+		if swag.IsZero(m.ShelfInlinePorts[i]) { // not required
 			continue
 		}
 
-		if m.Ports[i] != nil {
-			if err := m.Ports[i].Validate(formats); err != nil {
+		if m.ShelfInlinePorts[i] != nil {
+			if err := m.ShelfInlinePorts[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineTemperatureSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineTemperatureSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineTemperatureSensors); i++ {
+		if swag.IsZero(m.ShelfInlineTemperatureSensors[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineTemperatureSensors[i] != nil {
+			if err := m.ShelfInlineTemperatureSensors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateShelfInlineVoltageSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShelfInlineVoltageSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ShelfInlineVoltageSensors); i++ {
+		if swag.IsZero(m.ShelfInlineVoltageSensors[i]) { // not required
+			continue
+		}
+
+		if m.ShelfInlineVoltageSensors[i] != nil {
+			if err := m.ShelfInlineVoltageSensors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("voltage_sensors" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -780,32 +828,8 @@ func (m *Shelf) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Shelf) validateTemperatureSensors(formats strfmt.Registry) error {
-	if swag.IsZero(m.TemperatureSensors) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.TemperatureSensors); i++ {
-		if swag.IsZero(m.TemperatureSensors[i]) { // not required
-			continue
-		}
-
-		if m.TemperatureSensors[i] != nil {
-			if err := m.TemperatureSensors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -828,67 +852,15 @@ func (m *Shelf) validateVendor(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Shelf) validateVoltageSensors(formats strfmt.Registry) error {
-	if swag.IsZero(m.VoltageSensors) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.VoltageSensors); i++ {
-		if swag.IsZero(m.VoltageSensors[i]) { // not required
-			continue
-		}
-
-		if m.VoltageSensors[i] != nil {
-			if err := m.VoltageSensors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("voltage_sensors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this shelf based on the context it is used
 func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.contextValidateAcps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateBays(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.contextValidateConnectionType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCurrentSensors(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateDiskCount(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateDrawers(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateErrors(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateFans(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateFrus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -920,23 +892,55 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePaths(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePorts(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateState(ctx, formats); err != nil {
+	if err := m.contextValidateShelfInlineAcps(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTemperatureSensors(ctx, formats); err != nil {
+	if err := m.contextValidateShelfInlineBays(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineCurrentSensors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineDrawers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineErrors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineFans(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineFrus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlinePaths(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlinePorts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineTemperatureSensors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShelfInlineVoltageSensors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -948,74 +952,16 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateVoltageSensors(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
 }
 
-func (m *Shelf) contextValidateAcps(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Acps); i++ {
-
-		if m.Acps[i] != nil {
-			if err := m.Acps[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("acps" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateBays(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Bays); i++ {
-
-		if m.Bays[i] != nil {
-			if err := m.Bays[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("bays" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *Shelf) contextValidateConnectionType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "connection_type", "body", string(m.ConnectionType)); err != nil {
+	if err := validate.ReadOnly(ctx, "connection_type", "body", m.ConnectionType); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateCurrentSensors(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.CurrentSensors); i++ {
-
-		if m.CurrentSensors[i] != nil {
-			if err := m.CurrentSensors[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("current_sensors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -1023,80 +969,8 @@ func (m *Shelf) contextValidateCurrentSensors(ctx context.Context, formats strfm
 
 func (m *Shelf) contextValidateDiskCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "disk_count", "body", int64(m.DiskCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "disk_count", "body", m.DiskCount); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateDrawers(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Drawers); i++ {
-
-		if m.Drawers[i] != nil {
-			if err := m.Drawers[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("drawers" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Errors); i++ {
-
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateFans(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Fans); i++ {
-
-		if m.Fans[i] != nil {
-			if err := m.Fans[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateFrus(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Frus); i++ {
-
-		if m.Frus[i] != nil {
-			if err := m.Frus[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("frus" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -1104,7 +978,7 @@ func (m *Shelf) contextValidateFrus(ctx context.Context, formats strfmt.Registry
 
 func (m *Shelf) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -1145,7 +1019,7 @@ func (m *Shelf) contextValidateManufacturer(ctx context.Context, formats strfmt.
 
 func (m *Shelf) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
+	if err := validate.ReadOnly(ctx, "model", "body", m.Model); err != nil {
 		return err
 	}
 
@@ -1154,7 +1028,7 @@ func (m *Shelf) contextValidateModel(ctx context.Context, formats strfmt.Registr
 
 func (m *Shelf) contextValidateModuleType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "module_type", "body", string(m.ModuleType)); err != nil {
+	if err := validate.ReadOnly(ctx, "module_type", "body", m.ModuleType); err != nil {
 		return err
 	}
 
@@ -1163,19 +1037,154 @@ func (m *Shelf) contextValidateModuleType(ctx context.Context, formats strfmt.Re
 
 func (m *Shelf) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *Shelf) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
+func (m *Shelf) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Paths); i++ {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
+		return err
+	}
 
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineAcps(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineAcps); i++ {
+
+		if m.ShelfInlineAcps[i] != nil {
+			if err := m.ShelfInlineAcps[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("acps" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineBays(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineBays); i++ {
+
+		if m.ShelfInlineBays[i] != nil {
+			if err := m.ShelfInlineBays[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("bays" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineCurrentSensors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineCurrentSensors); i++ {
+
+		if m.ShelfInlineCurrentSensors[i] != nil {
+			if err := m.ShelfInlineCurrentSensors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("current_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineDrawers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineDrawers); i++ {
+
+		if m.ShelfInlineDrawers[i] != nil {
+			if err := m.ShelfInlineDrawers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("drawers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineErrors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineErrors); i++ {
+
+		if m.ShelfInlineErrors[i] != nil {
+			if err := m.ShelfInlineErrors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineFans(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineFans); i++ {
+
+		if m.ShelfInlineFans[i] != nil {
+			if err := m.ShelfInlineFans[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlineFrus(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineFrus); i++ {
+
+		if m.ShelfInlineFrus[i] != nil {
+			if err := m.ShelfInlineFrus[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("frus" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateShelfInlinePaths(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlinePaths); i++ {
+
+		if m.ShelfInlinePaths[i] != nil {
+			if err := m.ShelfInlinePaths[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
 				}
@@ -1188,12 +1197,12 @@ func (m *Shelf) contextValidatePaths(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *Shelf) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *Shelf) contextValidateShelfInlinePorts(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Ports); i++ {
+	for i := 0; i < len(m.ShelfInlinePorts); i++ {
 
-		if m.Ports[i] != nil {
-			if err := m.Ports[i].ContextValidate(ctx, formats); err != nil {
+		if m.ShelfInlinePorts[i] != nil {
+			if err := m.ShelfInlinePorts[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
 				}
@@ -1206,30 +1215,12 @@ func (m *Shelf) contextValidatePorts(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *Shelf) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+func (m *Shelf) contextValidateShelfInlineTemperatureSensors(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
-		return err
-	}
+	for i := 0; i < len(m.ShelfInlineTemperatureSensors); i++ {
 
-	return nil
-}
-
-func (m *Shelf) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateTemperatureSensors(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.TemperatureSensors); i++ {
-
-		if m.TemperatureSensors[i] != nil {
-			if err := m.TemperatureSensors[i].ContextValidate(ctx, formats); err != nil {
+		if m.ShelfInlineTemperatureSensors[i] != nil {
+			if err := m.ShelfInlineTemperatureSensors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
 				}
@@ -1242,9 +1233,36 @@ func (m *Shelf) contextValidateTemperatureSensors(ctx context.Context, formats s
 	return nil
 }
 
+func (m *Shelf) contextValidateShelfInlineVoltageSensors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ShelfInlineVoltageSensors); i++ {
+
+		if m.ShelfInlineVoltageSensors[i] != nil {
+			if err := m.ShelfInlineVoltageSensors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("voltage_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Shelf) contextValidateUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uid", "body", string(m.UID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uid", "body", m.UID); err != nil {
 		return err
 	}
 
@@ -1260,24 +1278,6 @@ func (m *Shelf) contextValidateVendor(ctx context.Context, formats strfmt.Regist
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Shelf) contextValidateVoltageSensors(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.VoltageSensors); i++ {
-
-		if m.VoltageSensors[i] != nil {
-			if err := m.VoltageSensors[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("voltage_sensors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -1301,49 +1301,49 @@ func (m *Shelf) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfAcpsItems0 shelf acps items0
+// ShelfInlineAcpsInlineArrayItem shelf inline acps inline array item
 //
-// swagger:model ShelfAcpsItems0
-type ShelfAcpsItems0 struct {
+// swagger:model shelf_inline_acps_inline_array_item
+type ShelfInlineAcpsInlineArrayItem struct {
 
 	// address
 	// Example: 192.168.1.104
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// channel
 	// Example: out_of_band
 	// Enum: [unknown out_of_band in_band]
-	Channel string `json:"channel,omitempty"`
+	Channel *string `json:"channel,omitempty"`
 
 	// connection state
 	// Example: full_connectivity
 	// Enum: [no_connectivity partial_connectivity full_connectivity additional_connectivity unknown_connectivity not_available active disabled]
-	ConnectionState string `json:"connection_state,omitempty"`
+	ConnectionState *string `json:"connection_state,omitempty"`
 
 	// enabled
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// error
-	Error *ShelfAcpsItems0Error `json:"error,omitempty"`
+	Error *ShelfInlineAcpsInlineArrayItemInlineError `json:"error,omitempty"`
 
 	// netmask
 	// Example: 255.255.252.0
-	Netmask string `json:"netmask,omitempty"`
+	Netmask *string `json:"netmask,omitempty"`
 
 	// node
-	Node *ShelfAcpsItems0Node `json:"node,omitempty"`
+	Node *ShelfInlineAcpsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// port
 	// Example: e0P
-	Port string `json:"port,omitempty"`
+	Port *string `json:"port,omitempty"`
 
 	// subnet
 	// Example: 192.168.0.1
-	Subnet string `json:"subnet,omitempty"`
+	Subnet *string `json:"subnet,omitempty"`
 }
 
-// Validate validates this shelf acps items0
-func (m *ShelfAcpsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline acps inline array item
+func (m *ShelfInlineAcpsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateChannel(formats); err != nil {
@@ -1368,7 +1368,7 @@ func (m *ShelfAcpsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfAcpsItems0TypeChannelPropEnum []interface{}
+var shelfInlineAcpsInlineArrayItemTypeChannelPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1376,65 +1376,65 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfAcpsItems0TypeChannelPropEnum = append(shelfAcpsItems0TypeChannelPropEnum, v)
+		shelfInlineAcpsInlineArrayItemTypeChannelPropEnum = append(shelfInlineAcpsInlineArrayItemTypeChannelPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// channel
 	// Channel
 	// unknown
 	// END DEBUGGING
-	// ShelfAcpsItems0ChannelUnknown captures enum value "unknown"
-	ShelfAcpsItems0ChannelUnknown string = "unknown"
+	// ShelfInlineAcpsInlineArrayItemChannelUnknown captures enum value "unknown"
+	ShelfInlineAcpsInlineArrayItemChannelUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// channel
 	// Channel
 	// out_of_band
 	// END DEBUGGING
-	// ShelfAcpsItems0ChannelOutOfBand captures enum value "out_of_band"
-	ShelfAcpsItems0ChannelOutOfBand string = "out_of_band"
+	// ShelfInlineAcpsInlineArrayItemChannelOutOfBand captures enum value "out_of_band"
+	ShelfInlineAcpsInlineArrayItemChannelOutOfBand string = "out_of_band"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// channel
 	// Channel
 	// in_band
 	// END DEBUGGING
-	// ShelfAcpsItems0ChannelInBand captures enum value "in_band"
-	ShelfAcpsItems0ChannelInBand string = "in_band"
+	// ShelfInlineAcpsInlineArrayItemChannelInBand captures enum value "in_band"
+	ShelfInlineAcpsInlineArrayItemChannelInBand string = "in_band"
 )
 
 // prop value enum
-func (m *ShelfAcpsItems0) validateChannelEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfAcpsItems0TypeChannelPropEnum, true); err != nil {
+func (m *ShelfInlineAcpsInlineArrayItem) validateChannelEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineAcpsInlineArrayItemTypeChannelPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfAcpsItems0) validateChannel(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItem) validateChannel(formats strfmt.Registry) error {
 	if swag.IsZero(m.Channel) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateChannelEnum("channel", "body", m.Channel); err != nil {
+	if err := m.validateChannelEnum("channel", "body", *m.Channel); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var shelfAcpsItems0TypeConnectionStatePropEnum []interface{}
+var shelfInlineAcpsInlineArrayItemTypeConnectionStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1442,115 +1442,115 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfAcpsItems0TypeConnectionStatePropEnum = append(shelfAcpsItems0TypeConnectionStatePropEnum, v)
+		shelfInlineAcpsInlineArrayItemTypeConnectionStatePropEnum = append(shelfInlineAcpsInlineArrayItemTypeConnectionStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// no_connectivity
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateNoConnectivity captures enum value "no_connectivity"
-	ShelfAcpsItems0ConnectionStateNoConnectivity string = "no_connectivity"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateNoConnectivity captures enum value "no_connectivity"
+	ShelfInlineAcpsInlineArrayItemConnectionStateNoConnectivity string = "no_connectivity"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// partial_connectivity
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStatePartialConnectivity captures enum value "partial_connectivity"
-	ShelfAcpsItems0ConnectionStatePartialConnectivity string = "partial_connectivity"
+	// ShelfInlineAcpsInlineArrayItemConnectionStatePartialConnectivity captures enum value "partial_connectivity"
+	ShelfInlineAcpsInlineArrayItemConnectionStatePartialConnectivity string = "partial_connectivity"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// full_connectivity
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateFullConnectivity captures enum value "full_connectivity"
-	ShelfAcpsItems0ConnectionStateFullConnectivity string = "full_connectivity"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateFullConnectivity captures enum value "full_connectivity"
+	ShelfInlineAcpsInlineArrayItemConnectionStateFullConnectivity string = "full_connectivity"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// additional_connectivity
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateAdditionalConnectivity captures enum value "additional_connectivity"
-	ShelfAcpsItems0ConnectionStateAdditionalConnectivity string = "additional_connectivity"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateAdditionalConnectivity captures enum value "additional_connectivity"
+	ShelfInlineAcpsInlineArrayItemConnectionStateAdditionalConnectivity string = "additional_connectivity"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// unknown_connectivity
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateUnknownConnectivity captures enum value "unknown_connectivity"
-	ShelfAcpsItems0ConnectionStateUnknownConnectivity string = "unknown_connectivity"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateUnknownConnectivity captures enum value "unknown_connectivity"
+	ShelfInlineAcpsInlineArrayItemConnectionStateUnknownConnectivity string = "unknown_connectivity"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// not_available
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateNotAvailable captures enum value "not_available"
-	ShelfAcpsItems0ConnectionStateNotAvailable string = "not_available"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateNotAvailable captures enum value "not_available"
+	ShelfInlineAcpsInlineArrayItemConnectionStateNotAvailable string = "not_available"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// active
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateActive captures enum value "active"
-	ShelfAcpsItems0ConnectionStateActive string = "active"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateActive captures enum value "active"
+	ShelfInlineAcpsInlineArrayItemConnectionStateActive string = "active"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0
-	// ShelfAcpsItems0
+	// shelf_inline_acps_inline_array_item
+	// ShelfInlineAcpsInlineArrayItem
 	// connection_state
 	// ConnectionState
 	// disabled
 	// END DEBUGGING
-	// ShelfAcpsItems0ConnectionStateDisabled captures enum value "disabled"
-	ShelfAcpsItems0ConnectionStateDisabled string = "disabled"
+	// ShelfInlineAcpsInlineArrayItemConnectionStateDisabled captures enum value "disabled"
+	ShelfInlineAcpsInlineArrayItemConnectionStateDisabled string = "disabled"
 )
 
 // prop value enum
-func (m *ShelfAcpsItems0) validateConnectionStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfAcpsItems0TypeConnectionStatePropEnum, true); err != nil {
+func (m *ShelfInlineAcpsInlineArrayItem) validateConnectionStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineAcpsInlineArrayItemTypeConnectionStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfAcpsItems0) validateConnectionState(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItem) validateConnectionState(formats strfmt.Registry) error {
 	if swag.IsZero(m.ConnectionState) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConnectionStateEnum("connection_state", "body", m.ConnectionState); err != nil {
+	if err := m.validateConnectionStateEnum("connection_state", "body", *m.ConnectionState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ShelfAcpsItems0) validateError(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItem) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -1567,7 +1567,7 @@ func (m *ShelfAcpsItems0) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfAcpsItems0) validateNode(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1584,8 +1584,8 @@ func (m *ShelfAcpsItems0) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf acps items0 based on the context it is used
-func (m *ShelfAcpsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline acps inline array item based on the context it is used
+func (m *ShelfInlineAcpsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -1602,7 +1602,7 @@ func (m *ShelfAcpsItems0) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ShelfAcpsItems0) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItem) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -1616,7 +1616,7 @@ func (m *ShelfAcpsItems0) contextValidateError(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ShelfAcpsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1631,7 +1631,7 @@ func (m *ShelfAcpsItems0) contextValidateNode(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfAcpsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineAcpsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1639,8 +1639,8 @@ func (m *ShelfAcpsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfAcpsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfAcpsItems0
+func (m *ShelfInlineAcpsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineAcpsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1648,25 +1648,25 @@ func (m *ShelfAcpsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfAcpsItems0Error Error object is populated when connection_state becomes non-optimal
+// ShelfInlineAcpsInlineArrayItemInlineError Error object is populated when connection_state becomes non-optimal
 //
-// swagger:model ShelfAcpsItems0Error
-type ShelfAcpsItems0Error struct {
+// swagger:model shelf_inline_acps_inline_array_item_inline_error
+type ShelfInlineAcpsInlineArrayItemInlineError struct {
 
 	// reason
 	Reason *Error `json:"reason,omitempty"`
 
 	// severity
 	// Enum: [unknown notice warning error critical]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 
 	// type
 	// Enum: [not_applicable connection_issue connection_activity module_error shelf_error]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this shelf acps items0 error
-func (m *ShelfAcpsItems0Error) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline acps inline array item inline error
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReason(formats); err != nil {
@@ -1687,7 +1687,7 @@ func (m *ShelfAcpsItems0Error) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfAcpsItems0Error) validateReason(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
@@ -1704,7 +1704,7 @@ func (m *ShelfAcpsItems0Error) validateReason(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfAcpsItems0ErrorTypeSeverityPropEnum []interface{}
+var shelfInlineAcpsInlineArrayItemInlineErrorTypeSeverityPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1712,85 +1712,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfAcpsItems0ErrorTypeSeverityPropEnum = append(shelfAcpsItems0ErrorTypeSeverityPropEnum, v)
+		shelfInlineAcpsInlineArrayItemInlineErrorTypeSeverityPropEnum = append(shelfInlineAcpsInlineArrayItemInlineErrorTypeSeverityPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// severity
 	// Severity
 	// unknown
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorSeverityUnknown captures enum value "unknown"
-	ShelfAcpsItems0ErrorSeverityUnknown string = "unknown"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorSeverityUnknown captures enum value "unknown"
+	ShelfInlineAcpsInlineArrayItemInlineErrorSeverityUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// severity
 	// Severity
 	// notice
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorSeverityNotice captures enum value "notice"
-	ShelfAcpsItems0ErrorSeverityNotice string = "notice"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorSeverityNotice captures enum value "notice"
+	ShelfInlineAcpsInlineArrayItemInlineErrorSeverityNotice string = "notice"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// severity
 	// Severity
 	// warning
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorSeverityWarning captures enum value "warning"
-	ShelfAcpsItems0ErrorSeverityWarning string = "warning"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorSeverityWarning captures enum value "warning"
+	ShelfInlineAcpsInlineArrayItemInlineErrorSeverityWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// severity
 	// Severity
 	// error
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorSeverityError captures enum value "error"
-	ShelfAcpsItems0ErrorSeverityError string = "error"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorSeverityError captures enum value "error"
+	ShelfInlineAcpsInlineArrayItemInlineErrorSeverityError string = "error"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// severity
 	// Severity
 	// critical
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorSeverityCritical captures enum value "critical"
-	ShelfAcpsItems0ErrorSeverityCritical string = "critical"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorSeverityCritical captures enum value "critical"
+	ShelfInlineAcpsInlineArrayItemInlineErrorSeverityCritical string = "critical"
 )
 
 // prop value enum
-func (m *ShelfAcpsItems0Error) validateSeverityEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfAcpsItems0ErrorTypeSeverityPropEnum, true); err != nil {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) validateSeverityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineAcpsInlineArrayItemInlineErrorTypeSeverityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfAcpsItems0Error) validateSeverity(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) validateSeverity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Severity) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("error"+"."+"severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("error"+"."+"severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var shelfAcpsItems0ErrorTypeTypePropEnum []interface{}
+var shelfInlineAcpsInlineArrayItemInlineErrorTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1798,86 +1798,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfAcpsItems0ErrorTypeTypePropEnum = append(shelfAcpsItems0ErrorTypeTypePropEnum, v)
+		shelfInlineAcpsInlineArrayItemInlineErrorTypeTypePropEnum = append(shelfInlineAcpsInlineArrayItemInlineErrorTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// type
 	// Type
 	// not_applicable
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorTypeNotApplicable captures enum value "not_applicable"
-	ShelfAcpsItems0ErrorTypeNotApplicable string = "not_applicable"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorTypeNotApplicable captures enum value "not_applicable"
+	ShelfInlineAcpsInlineArrayItemInlineErrorTypeNotApplicable string = "not_applicable"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// type
 	// Type
 	// connection_issue
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorTypeConnectionIssue captures enum value "connection_issue"
-	ShelfAcpsItems0ErrorTypeConnectionIssue string = "connection_issue"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorTypeConnectionIssue captures enum value "connection_issue"
+	ShelfInlineAcpsInlineArrayItemInlineErrorTypeConnectionIssue string = "connection_issue"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// type
 	// Type
 	// connection_activity
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorTypeConnectionActivity captures enum value "connection_activity"
-	ShelfAcpsItems0ErrorTypeConnectionActivity string = "connection_activity"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorTypeConnectionActivity captures enum value "connection_activity"
+	ShelfInlineAcpsInlineArrayItemInlineErrorTypeConnectionActivity string = "connection_activity"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// type
 	// Type
 	// module_error
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorTypeModuleError captures enum value "module_error"
-	ShelfAcpsItems0ErrorTypeModuleError string = "module_error"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorTypeModuleError captures enum value "module_error"
+	ShelfInlineAcpsInlineArrayItemInlineErrorTypeModuleError string = "module_error"
 
 	// BEGIN DEBUGGING
-	// ShelfAcpsItems0Error
-	// ShelfAcpsItems0Error
+	// shelf_inline_acps_inline_array_item_inline_error
+	// ShelfInlineAcpsInlineArrayItemInlineError
 	// type
 	// Type
 	// shelf_error
 	// END DEBUGGING
-	// ShelfAcpsItems0ErrorTypeShelfError captures enum value "shelf_error"
-	ShelfAcpsItems0ErrorTypeShelfError string = "shelf_error"
+	// ShelfInlineAcpsInlineArrayItemInlineErrorTypeShelfError captures enum value "shelf_error"
+	ShelfInlineAcpsInlineArrayItemInlineErrorTypeShelfError string = "shelf_error"
 )
 
 // prop value enum
-func (m *ShelfAcpsItems0Error) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfAcpsItems0ErrorTypeTypePropEnum, true); err != nil {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineAcpsInlineArrayItemInlineErrorTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfAcpsItems0Error) validateType(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("error"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("error"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this shelf acps items0 error based on the context it is used
-func (m *ShelfAcpsItems0Error) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline acps inline array item inline error based on the context it is used
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateReason(ctx, formats); err != nil {
@@ -1890,7 +1890,7 @@ func (m *ShelfAcpsItems0Error) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ShelfAcpsItems0Error) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Reason != nil {
 		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
@@ -1905,7 +1905,7 @@ func (m *ShelfAcpsItems0Error) contextValidateReason(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfAcpsItems0Error) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1913,8 +1913,8 @@ func (m *ShelfAcpsItems0Error) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfAcpsItems0Error) UnmarshalBinary(b []byte) error {
-	var res ShelfAcpsItems0Error
+func (m *ShelfInlineAcpsInlineArrayItemInlineError) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineAcpsInlineArrayItemInlineError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1922,25 +1922,25 @@ func (m *ShelfAcpsItems0Error) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfAcpsItems0Node shelf acps items0 node
+// ShelfInlineAcpsInlineArrayItemInlineNode shelf inline acps inline array item inline node
 //
-// swagger:model ShelfAcpsItems0Node
-type ShelfAcpsItems0Node struct {
+// swagger:model shelf_inline_acps_inline_array_item_inline_node
+type ShelfInlineAcpsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *ShelfAcpsItems0NodeLinks `json:"_links,omitempty"`
+	Links *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this shelf acps items0 node
-func (m *ShelfAcpsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline acps inline array item inline node
+func (m *ShelfInlineAcpsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1953,7 +1953,7 @@ func (m *ShelfAcpsItems0Node) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfAcpsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1970,8 +1970,8 @@ func (m *ShelfAcpsItems0Node) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf acps items0 node based on the context it is used
-func (m *ShelfAcpsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline acps inline array item inline node based on the context it is used
+func (m *ShelfInlineAcpsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1984,7 +1984,7 @@ func (m *ShelfAcpsItems0Node) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ShelfAcpsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1999,7 +1999,7 @@ func (m *ShelfAcpsItems0Node) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfAcpsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineAcpsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2007,8 +2007,8 @@ func (m *ShelfAcpsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfAcpsItems0Node) UnmarshalBinary(b []byte) error {
-	var res ShelfAcpsItems0Node
+func (m *ShelfInlineAcpsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineAcpsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2016,17 +2016,17 @@ func (m *ShelfAcpsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfAcpsItems0NodeLinks shelf acps items0 node links
+// ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks shelf inline acps inline array item inline node inline links
 //
-// swagger:model ShelfAcpsItems0NodeLinks
-type ShelfAcpsItems0NodeLinks struct {
+// swagger:model shelf_inline_acps_inline_array_item_inline_node_inline__links
+type ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shelf acps items0 node links
-func (m *ShelfAcpsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline acps inline array item inline node inline links
+func (m *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2039,7 +2039,7 @@ func (m *ShelfAcpsItems0NodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfAcpsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2056,8 +2056,8 @@ func (m *ShelfAcpsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf acps items0 node links based on the context it is used
-func (m *ShelfAcpsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline acps inline array item inline node inline links based on the context it is used
+func (m *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2070,7 +2070,7 @@ func (m *ShelfAcpsItems0NodeLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ShelfAcpsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2085,7 +2085,7 @@ func (m *ShelfAcpsItems0NodeLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfAcpsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2093,8 +2093,8 @@ func (m *ShelfAcpsItems0NodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfAcpsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res ShelfAcpsItems0NodeLinks
+func (m *ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineAcpsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2102,34 +2102,34 @@ func (m *ShelfAcpsItems0NodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfBaysItems0 shelf bays items0
+// ShelfInlineBaysInlineArrayItem shelf inline bays inline array item
 //
-// swagger:model ShelfBaysItems0
-type ShelfBaysItems0 struct {
+// swagger:model shelf_inline_bays_inline_array_item
+type ShelfInlineBaysInlineArrayItem struct {
 
 	// drawer
-	Drawer *ShelfBaysItems0Drawer `json:"drawer,omitempty"`
+	Drawer *ShelfInlineBaysInlineArrayItemInlineDrawer `json:"drawer,omitempty"`
 
 	// has disk
-	HasDisk bool `json:"has_disk,omitempty"`
+	HasDisk *bool `json:"has_disk,omitempty"`
 
 	// id
 	// Example: 0
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// state
 	// Example: ok
 	// Enum: [unknown ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// type
 	// Example: single_disk
 	// Enum: [unknown single_disk multi_lun]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this shelf bays items0
-func (m *ShelfBaysItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline bays inline array item
+func (m *ShelfInlineBaysInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDrawer(formats); err != nil {
@@ -2150,7 +2150,7 @@ func (m *ShelfBaysItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfBaysItems0) validateDrawer(formats strfmt.Registry) error {
+func (m *ShelfInlineBaysInlineArrayItem) validateDrawer(formats strfmt.Registry) error {
 	if swag.IsZero(m.Drawer) { // not required
 		return nil
 	}
@@ -2167,7 +2167,7 @@ func (m *ShelfBaysItems0) validateDrawer(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfBaysItems0TypeStatePropEnum []interface{}
+var shelfInlineBaysInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2175,65 +2175,65 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfBaysItems0TypeStatePropEnum = append(shelfBaysItems0TypeStatePropEnum, v)
+		shelfInlineBaysInlineArrayItemTypeStatePropEnum = append(shelfInlineBaysInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfBaysItems0
-	// ShelfBaysItems0
+	// shelf_inline_bays_inline_array_item
+	// ShelfInlineBaysInlineArrayItem
 	// state
 	// State
 	// unknown
 	// END DEBUGGING
-	// ShelfBaysItems0StateUnknown captures enum value "unknown"
-	ShelfBaysItems0StateUnknown string = "unknown"
+	// ShelfInlineBaysInlineArrayItemStateUnknown captures enum value "unknown"
+	ShelfInlineBaysInlineArrayItemStateUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// ShelfBaysItems0
-	// ShelfBaysItems0
+	// shelf_inline_bays_inline_array_item
+	// ShelfInlineBaysInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfBaysItems0StateOk captures enum value "ok"
-	ShelfBaysItems0StateOk string = "ok"
+	// ShelfInlineBaysInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineBaysInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfBaysItems0
-	// ShelfBaysItems0
+	// shelf_inline_bays_inline_array_item
+	// ShelfInlineBaysInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfBaysItems0StateError captures enum value "error"
-	ShelfBaysItems0StateError string = "error"
+	// ShelfInlineBaysInlineArrayItemStateError captures enum value "error"
+	ShelfInlineBaysInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfBaysItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfBaysItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineBaysInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineBaysInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfBaysItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineBaysInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var shelfBaysItems0TypeTypePropEnum []interface{}
+var shelfInlineBaysInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2241,66 +2241,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfBaysItems0TypeTypePropEnum = append(shelfBaysItems0TypeTypePropEnum, v)
+		shelfInlineBaysInlineArrayItemTypeTypePropEnum = append(shelfInlineBaysInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfBaysItems0
-	// ShelfBaysItems0
+	// shelf_inline_bays_inline_array_item
+	// ShelfInlineBaysInlineArrayItem
 	// type
 	// Type
 	// unknown
 	// END DEBUGGING
-	// ShelfBaysItems0TypeUnknown captures enum value "unknown"
-	ShelfBaysItems0TypeUnknown string = "unknown"
+	// ShelfInlineBaysInlineArrayItemTypeUnknown captures enum value "unknown"
+	ShelfInlineBaysInlineArrayItemTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// ShelfBaysItems0
-	// ShelfBaysItems0
+	// shelf_inline_bays_inline_array_item
+	// ShelfInlineBaysInlineArrayItem
 	// type
 	// Type
 	// single_disk
 	// END DEBUGGING
-	// ShelfBaysItems0TypeSingleDisk captures enum value "single_disk"
-	ShelfBaysItems0TypeSingleDisk string = "single_disk"
+	// ShelfInlineBaysInlineArrayItemTypeSingleDisk captures enum value "single_disk"
+	ShelfInlineBaysInlineArrayItemTypeSingleDisk string = "single_disk"
 
 	// BEGIN DEBUGGING
-	// ShelfBaysItems0
-	// ShelfBaysItems0
+	// shelf_inline_bays_inline_array_item
+	// ShelfInlineBaysInlineArrayItem
 	// type
 	// Type
 	// multi_lun
 	// END DEBUGGING
-	// ShelfBaysItems0TypeMultiLun captures enum value "multi_lun"
-	ShelfBaysItems0TypeMultiLun string = "multi_lun"
+	// ShelfInlineBaysInlineArrayItemTypeMultiLun captures enum value "multi_lun"
+	ShelfInlineBaysInlineArrayItemTypeMultiLun string = "multi_lun"
 )
 
 // prop value enum
-func (m *ShelfBaysItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfBaysItems0TypeTypePropEnum, true); err != nil {
+func (m *ShelfInlineBaysInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineBaysInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfBaysItems0) validateType(formats strfmt.Registry) error {
+func (m *ShelfInlineBaysInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this shelf bays items0 based on the context it is used
-func (m *ShelfBaysItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline bays inline array item based on the context it is used
+func (m *ShelfInlineBaysInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDrawer(ctx, formats); err != nil {
@@ -2313,7 +2313,7 @@ func (m *ShelfBaysItems0) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ShelfBaysItems0) contextValidateDrawer(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineBaysInlineArrayItem) contextValidateDrawer(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Drawer != nil {
 		if err := m.Drawer.ContextValidate(ctx, formats); err != nil {
@@ -2328,7 +2328,7 @@ func (m *ShelfBaysItems0) contextValidateDrawer(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfBaysItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineBaysInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2336,8 +2336,8 @@ func (m *ShelfBaysItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfBaysItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfBaysItems0
+func (m *ShelfInlineBaysInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineBaysInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2345,32 +2345,32 @@ func (m *ShelfBaysItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfBaysItems0Drawer shelf bays items0 drawer
+// ShelfInlineBaysInlineArrayItemInlineDrawer shelf inline bays inline array item inline drawer
 //
-// swagger:model ShelfBaysItems0Drawer
-type ShelfBaysItems0Drawer struct {
+// swagger:model shelf_inline_bays_inline_array_item_inline_drawer
+type ShelfInlineBaysInlineArrayItemInlineDrawer struct {
 
 	// The drawer containing this bay
 	// Example: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// The drawer slot for this bay
 	// Example: 0
-	Slot int64 `json:"slot,omitempty"`
+	Slot *int64 `json:"slot,omitempty"`
 }
 
-// Validate validates this shelf bays items0 drawer
-func (m *ShelfBaysItems0Drawer) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline bays inline array item inline drawer
+func (m *ShelfInlineBaysInlineArrayItemInlineDrawer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf bays items0 drawer based on context it is used
-func (m *ShelfBaysItems0Drawer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline bays inline array item inline drawer based on context it is used
+func (m *ShelfInlineBaysInlineArrayItemInlineDrawer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfBaysItems0Drawer) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineBaysInlineArrayItemInlineDrawer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2378,8 +2378,8 @@ func (m *ShelfBaysItems0Drawer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfBaysItems0Drawer) UnmarshalBinary(b []byte) error {
-	var res ShelfBaysItems0Drawer
+func (m *ShelfInlineBaysInlineArrayItemInlineDrawer) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineBaysInlineArrayItemInlineDrawer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2387,31 +2387,31 @@ func (m *ShelfBaysItems0Drawer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfCurrentSensorsItems0 shelf current sensors items0
+// ShelfInlineCurrentSensorsInlineArrayItem shelf inline current sensors inline array item
 //
-// swagger:model ShelfCurrentSensorsItems0
-type ShelfCurrentSensorsItems0 struct {
+// swagger:model shelf_inline_current_sensors_inline_array_item
+type ShelfInlineCurrentSensorsInlineArrayItem struct {
 
 	// Current, in milliamps
 	// Example: 14410
-	Current int64 `json:"current,omitempty"`
+	Current *int64 `json:"current,omitempty"`
 
 	// id
 	// Example: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// location
 	// Example: rear of the shelf on the lower left power supply
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// state
 	// Example: ok
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this shelf current sensors items0
-func (m *ShelfCurrentSensorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline current sensors inline array item
+func (m *ShelfInlineCurrentSensorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -2424,7 +2424,7 @@ func (m *ShelfCurrentSensorsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfCurrentSensorsItems0TypeStatePropEnum []interface{}
+var shelfInlineCurrentSensorsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2432,61 +2432,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfCurrentSensorsItems0TypeStatePropEnum = append(shelfCurrentSensorsItems0TypeStatePropEnum, v)
+		shelfInlineCurrentSensorsInlineArrayItemTypeStatePropEnum = append(shelfInlineCurrentSensorsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfCurrentSensorsItems0
-	// ShelfCurrentSensorsItems0
+	// shelf_inline_current_sensors_inline_array_item
+	// ShelfInlineCurrentSensorsInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfCurrentSensorsItems0StateOk captures enum value "ok"
-	ShelfCurrentSensorsItems0StateOk string = "ok"
+	// ShelfInlineCurrentSensorsInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineCurrentSensorsInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfCurrentSensorsItems0
-	// ShelfCurrentSensorsItems0
+	// shelf_inline_current_sensors_inline_array_item
+	// ShelfInlineCurrentSensorsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfCurrentSensorsItems0StateError captures enum value "error"
-	ShelfCurrentSensorsItems0StateError string = "error"
+	// ShelfInlineCurrentSensorsInlineArrayItemStateError captures enum value "error"
+	ShelfInlineCurrentSensorsInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfCurrentSensorsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfCurrentSensorsItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineCurrentSensorsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineCurrentSensorsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfCurrentSensorsItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineCurrentSensorsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this shelf current sensors items0 based on context it is used
-func (m *ShelfCurrentSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline current sensors inline array item based on context it is used
+func (m *ShelfInlineCurrentSensorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfCurrentSensorsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineCurrentSensorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2494,8 +2494,8 @@ func (m *ShelfCurrentSensorsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfCurrentSensorsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfCurrentSensorsItems0
+func (m *ShelfInlineCurrentSensorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineCurrentSensorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2503,40 +2503,40 @@ func (m *ShelfCurrentSensorsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfDrawersItems0 shelf drawers items0
+// ShelfInlineDrawersInlineArrayItem shelf inline drawers inline array item
 //
-// swagger:model ShelfDrawersItems0
-type ShelfDrawersItems0 struct {
+// swagger:model shelf_inline_drawers_inline_array_item
+type ShelfInlineDrawersInlineArrayItem struct {
 
 	// closed
-	Closed bool `json:"closed,omitempty"`
+	Closed *bool `json:"closed,omitempty"`
 
 	// disk count
 	// Example: 12
-	DiskCount int64 `json:"disk_count,omitempty"`
+	DiskCount *int64 `json:"disk_count,omitempty"`
 
 	// error
-	Error string `json:"error,omitempty"`
+	Error *string `json:"error,omitempty"`
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// part number
 	// Example: 111-03071
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// serial number
 	// Example: 21604008263
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// state
 	// Example: ok
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this shelf drawers items0
-func (m *ShelfDrawersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline drawers inline array item
+func (m *ShelfInlineDrawersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -2549,7 +2549,7 @@ func (m *ShelfDrawersItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfDrawersItems0TypeStatePropEnum []interface{}
+var shelfInlineDrawersInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2557,61 +2557,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfDrawersItems0TypeStatePropEnum = append(shelfDrawersItems0TypeStatePropEnum, v)
+		shelfInlineDrawersInlineArrayItemTypeStatePropEnum = append(shelfInlineDrawersInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfDrawersItems0
-	// ShelfDrawersItems0
+	// shelf_inline_drawers_inline_array_item
+	// ShelfInlineDrawersInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfDrawersItems0StateOk captures enum value "ok"
-	ShelfDrawersItems0StateOk string = "ok"
+	// ShelfInlineDrawersInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineDrawersInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfDrawersItems0
-	// ShelfDrawersItems0
+	// shelf_inline_drawers_inline_array_item
+	// ShelfInlineDrawersInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfDrawersItems0StateError captures enum value "error"
-	ShelfDrawersItems0StateError string = "error"
+	// ShelfInlineDrawersInlineArrayItemStateError captures enum value "error"
+	ShelfInlineDrawersInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfDrawersItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfDrawersItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineDrawersInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineDrawersInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfDrawersItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineDrawersInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this shelf drawers items0 based on context it is used
-func (m *ShelfDrawersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline drawers inline array item based on context it is used
+func (m *ShelfInlineDrawersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfDrawersItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineDrawersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2619,8 +2619,8 @@ func (m *ShelfDrawersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfDrawersItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfDrawersItems0
+func (m *ShelfInlineDrawersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineDrawersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2628,17 +2628,17 @@ func (m *ShelfDrawersItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfErrorsItems0 shelf errors items0
+// ShelfInlineErrorsInlineArrayItem shelf inline errors inline array item
 //
-// swagger:model ShelfErrorsItems0
-type ShelfErrorsItems0 struct {
+// swagger:model shelf_inline_errors_inline_array_item
+type ShelfInlineErrorsInlineArrayItem struct {
 
 	// reason
 	Reason *Error `json:"reason,omitempty"`
 }
 
-// Validate validates this shelf errors items0
-func (m *ShelfErrorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline errors inline array item
+func (m *ShelfInlineErrorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReason(formats); err != nil {
@@ -2651,7 +2651,7 @@ func (m *ShelfErrorsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfErrorsItems0) validateReason(formats strfmt.Registry) error {
+func (m *ShelfInlineErrorsInlineArrayItem) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
@@ -2668,8 +2668,8 @@ func (m *ShelfErrorsItems0) validateReason(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf errors items0 based on the context it is used
-func (m *ShelfErrorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline errors inline array item based on the context it is used
+func (m *ShelfInlineErrorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateReason(ctx, formats); err != nil {
@@ -2682,7 +2682,7 @@ func (m *ShelfErrorsItems0) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *ShelfErrorsItems0) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineErrorsInlineArrayItem) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Reason != nil {
 		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
@@ -2697,7 +2697,7 @@ func (m *ShelfErrorsItems0) contextValidateReason(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfErrorsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineErrorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2705,8 +2705,8 @@ func (m *ShelfErrorsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfErrorsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfErrorsItems0
+func (m *ShelfInlineErrorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineErrorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2714,31 +2714,31 @@ func (m *ShelfErrorsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfFansItems0 shelf fans items0
+// ShelfInlineFansInlineArrayItem shelf inline fans inline array item
 //
-// swagger:model ShelfFansItems0
-type ShelfFansItems0 struct {
+// swagger:model shelf_inline_fans_inline_array_item
+type ShelfInlineFansInlineArrayItem struct {
 
 	// id
 	// Example: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// location
 	// Example: rear of the shelf on the lower left power supply
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// rpm
 	// Example: 3020
-	Rpm int64 `json:"rpm,omitempty"`
+	Rpm *int64 `json:"rpm,omitempty"`
 
 	// state
 	// Example: ok
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this shelf fans items0
-func (m *ShelfFansItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline fans inline array item
+func (m *ShelfInlineFansInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -2751,7 +2751,7 @@ func (m *ShelfFansItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfFansItems0TypeStatePropEnum []interface{}
+var shelfInlineFansInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2759,61 +2759,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfFansItems0TypeStatePropEnum = append(shelfFansItems0TypeStatePropEnum, v)
+		shelfInlineFansInlineArrayItemTypeStatePropEnum = append(shelfInlineFansInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfFansItems0
-	// ShelfFansItems0
+	// shelf_inline_fans_inline_array_item
+	// ShelfInlineFansInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfFansItems0StateOk captures enum value "ok"
-	ShelfFansItems0StateOk string = "ok"
+	// ShelfInlineFansInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineFansInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfFansItems0
-	// ShelfFansItems0
+	// shelf_inline_fans_inline_array_item
+	// ShelfInlineFansInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfFansItems0StateError captures enum value "error"
-	ShelfFansItems0StateError string = "error"
+	// ShelfInlineFansInlineArrayItemStateError captures enum value "error"
+	ShelfInlineFansInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfFansItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfFansItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineFansInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineFansInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfFansItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineFansInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this shelf fans items0 based on context it is used
-func (m *ShelfFansItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline fans inline array item based on context it is used
+func (m *ShelfInlineFansInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfFansItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineFansInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2821,8 +2821,8 @@ func (m *ShelfFansItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfFansItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfFansItems0
+func (m *ShelfInlineFansInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineFansInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2830,46 +2830,46 @@ func (m *ShelfFansItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfFrusItems0 shelf frus items0
+// ShelfInlineFrusInlineArrayItem shelf inline frus inline array item
 //
-// swagger:model ShelfFrusItems0
-type ShelfFrusItems0 struct {
+// swagger:model shelf_inline_frus_inline_array_item
+type ShelfInlineFrusInlineArrayItem struct {
 
 	// firmware version
 	// Example: 191
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// id
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// installed
 	// Example: true
-	Installed bool `json:"installed,omitempty"`
+	Installed *bool `json:"installed,omitempty"`
 
 	// part number
 	// Example: 111-00690+A2
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// psu
-	Psu *ShelfFrusItems0Psu `json:"psu,omitempty"`
+	Psu *ShelfInlineFrusInlineArrayItemInlinePsu `json:"psu,omitempty"`
 
 	// serial number
 	// Example: 8000166294
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// state
 	// Example: error
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// type
 	// Example: module
 	// Enum: [module psu]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this shelf frus items0
-func (m *ShelfFrusItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline frus inline array item
+func (m *ShelfInlineFrusInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePsu(formats); err != nil {
@@ -2890,7 +2890,7 @@ func (m *ShelfFrusItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfFrusItems0) validatePsu(formats strfmt.Registry) error {
+func (m *ShelfInlineFrusInlineArrayItem) validatePsu(formats strfmt.Registry) error {
 	if swag.IsZero(m.Psu) { // not required
 		return nil
 	}
@@ -2907,7 +2907,7 @@ func (m *ShelfFrusItems0) validatePsu(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfFrusItems0TypeStatePropEnum []interface{}
+var shelfInlineFrusInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2915,55 +2915,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfFrusItems0TypeStatePropEnum = append(shelfFrusItems0TypeStatePropEnum, v)
+		shelfInlineFrusInlineArrayItemTypeStatePropEnum = append(shelfInlineFrusInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfFrusItems0
-	// ShelfFrusItems0
+	// shelf_inline_frus_inline_array_item
+	// ShelfInlineFrusInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfFrusItems0StateOk captures enum value "ok"
-	ShelfFrusItems0StateOk string = "ok"
+	// ShelfInlineFrusInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineFrusInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfFrusItems0
-	// ShelfFrusItems0
+	// shelf_inline_frus_inline_array_item
+	// ShelfInlineFrusInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfFrusItems0StateError captures enum value "error"
-	ShelfFrusItems0StateError string = "error"
+	// ShelfInlineFrusInlineArrayItemStateError captures enum value "error"
+	ShelfInlineFrusInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfFrusItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfFrusItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineFrusInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineFrusInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfFrusItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineFrusInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var shelfFrusItems0TypeTypePropEnum []interface{}
+var shelfInlineFrusInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2971,56 +2971,56 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfFrusItems0TypeTypePropEnum = append(shelfFrusItems0TypeTypePropEnum, v)
+		shelfInlineFrusInlineArrayItemTypeTypePropEnum = append(shelfInlineFrusInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfFrusItems0
-	// ShelfFrusItems0
+	// shelf_inline_frus_inline_array_item
+	// ShelfInlineFrusInlineArrayItem
 	// type
 	// Type
 	// module
 	// END DEBUGGING
-	// ShelfFrusItems0TypeModule captures enum value "module"
-	ShelfFrusItems0TypeModule string = "module"
+	// ShelfInlineFrusInlineArrayItemTypeModule captures enum value "module"
+	ShelfInlineFrusInlineArrayItemTypeModule string = "module"
 
 	// BEGIN DEBUGGING
-	// ShelfFrusItems0
-	// ShelfFrusItems0
+	// shelf_inline_frus_inline_array_item
+	// ShelfInlineFrusInlineArrayItem
 	// type
 	// Type
 	// psu
 	// END DEBUGGING
-	// ShelfFrusItems0TypePsu captures enum value "psu"
-	ShelfFrusItems0TypePsu string = "psu"
+	// ShelfInlineFrusInlineArrayItemTypePsu captures enum value "psu"
+	ShelfInlineFrusInlineArrayItemTypePsu string = "psu"
 )
 
 // prop value enum
-func (m *ShelfFrusItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfFrusItems0TypeTypePropEnum, true); err != nil {
+func (m *ShelfInlineFrusInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineFrusInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfFrusItems0) validateType(formats strfmt.Registry) error {
+func (m *ShelfInlineFrusInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this shelf frus items0 based on the context it is used
-func (m *ShelfFrusItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline frus inline array item based on the context it is used
+func (m *ShelfInlineFrusInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePsu(ctx, formats); err != nil {
@@ -3033,7 +3033,7 @@ func (m *ShelfFrusItems0) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ShelfFrusItems0) contextValidatePsu(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineFrusInlineArrayItem) contextValidatePsu(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Psu != nil {
 		if err := m.Psu.ContextValidate(ctx, formats); err != nil {
@@ -3048,7 +3048,7 @@ func (m *ShelfFrusItems0) contextValidatePsu(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfFrusItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineFrusInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3056,8 +3056,8 @@ func (m *ShelfFrusItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfFrusItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfFrusItems0
+func (m *ShelfInlineFrusInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineFrusInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3065,40 +3065,40 @@ func (m *ShelfFrusItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfFrusItems0Psu shelf frus items0 psu
+// ShelfInlineFrusInlineArrayItemInlinePsu shelf inline frus inline array item inline psu
 //
-// swagger:model ShelfFrusItems0Psu
-type ShelfFrusItems0Psu struct {
+// swagger:model shelf_inline_frus_inline_array_item_inline_psu
+type ShelfInlineFrusInlineArrayItemInlinePsu struct {
 
 	// The ratio of the peak voltage to the root-mean-square voltage
 	// Example: 92
-	CrestFactor int64 `json:"crest_factor,omitempty"`
+	CrestFactor *int64 `json:"crest_factor,omitempty"`
 
 	// model
 	// Example: 00
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// Power drawn, in watts
 	// Example: 210
-	PowerDrawn int64 `json:"power_drawn,omitempty"`
+	PowerDrawn *int64 `json:"power_drawn,omitempty"`
 
 	// Power rating, in watts
 	// Example: 1600
-	PowerRating int64 `json:"power_rating,omitempty"`
+	PowerRating *int64 `json:"power_rating,omitempty"`
 }
 
-// Validate validates this shelf frus items0 psu
-func (m *ShelfFrusItems0Psu) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline frus inline array item inline psu
+func (m *ShelfInlineFrusInlineArrayItemInlinePsu) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf frus items0 psu based on context it is used
-func (m *ShelfFrusItems0Psu) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline frus inline array item inline psu based on context it is used
+func (m *ShelfInlineFrusInlineArrayItemInlinePsu) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfFrusItems0Psu) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineFrusInlineArrayItemInlinePsu) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3106,8 +3106,8 @@ func (m *ShelfFrusItems0Psu) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfFrusItems0Psu) UnmarshalBinary(b []byte) error {
-	var res ShelfFrusItems0Psu
+func (m *ShelfInlineFrusInlineArrayItemInlinePsu) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineFrusInlineArrayItemInlinePsu
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3115,28 +3115,28 @@ func (m *ShelfFrusItems0Psu) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfManufacturer shelf manufacturer
+// ShelfInlineManufacturer shelf inline manufacturer
 //
-// swagger:model ShelfManufacturer
-type ShelfManufacturer struct {
+// swagger:model shelf_inline_manufacturer
+type ShelfInlineManufacturer struct {
 
 	// name
 	// Example: NETAPP
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this shelf manufacturer
-func (m *ShelfManufacturer) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline manufacturer
+func (m *ShelfInlineManufacturer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf manufacturer based on context it is used
-func (m *ShelfManufacturer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline manufacturer based on context it is used
+func (m *ShelfInlineManufacturer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfManufacturer) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineManufacturer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3144,8 +3144,8 @@ func (m *ShelfManufacturer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfManufacturer) UnmarshalBinary(b []byte) error {
-	var res ShelfManufacturer
+func (m *ShelfInlineManufacturer) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineManufacturer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3153,24 +3153,24 @@ func (m *ShelfManufacturer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPathsItems0 Storage port
+// ShelfInlinePathsInlineArrayItem Storage port
 //
-// swagger:model ShelfPathsItems0
-type ShelfPathsItems0 struct {
+// swagger:model shelf_inline_paths_inline_array_item
+type ShelfInlinePathsInlineArrayItem struct {
 
 	// links
-	Links *ShelfPathsItems0Links `json:"_links,omitempty"`
+	Links *ShelfInlinePathsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: 2a
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *ShelfPathsItems0Node `json:"node,omitempty"`
+	Node *ShelfInlinePathsInlineArrayItemInlineNode `json:"node,omitempty"`
 }
 
-// Validate validates this shelf paths items0
-func (m *ShelfPathsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline paths inline array item
+func (m *ShelfInlinePathsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3187,7 +3187,7 @@ func (m *ShelfPathsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfPathsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3204,7 +3204,7 @@ func (m *ShelfPathsItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfPathsItems0) validateNode(formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -3221,8 +3221,8 @@ func (m *ShelfPathsItems0) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf paths items0 based on the context it is used
-func (m *ShelfPathsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline paths inline array item based on the context it is used
+func (m *ShelfInlinePathsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3239,7 +3239,7 @@ func (m *ShelfPathsItems0) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ShelfPathsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3253,7 +3253,7 @@ func (m *ShelfPathsItems0) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ShelfPathsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -3268,7 +3268,7 @@ func (m *ShelfPathsItems0) contextValidateNode(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPathsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePathsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3276,8 +3276,8 @@ func (m *ShelfPathsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPathsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfPathsItems0
+func (m *ShelfInlinePathsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePathsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3285,17 +3285,17 @@ func (m *ShelfPathsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPathsItems0Links shelf paths items0 links
+// ShelfInlinePathsInlineArrayItemInlineLinks shelf inline paths inline array item inline links
 //
-// swagger:model ShelfPathsItems0Links
-type ShelfPathsItems0Links struct {
+// swagger:model shelf_inline_paths_inline_array_item_inline__links
+type ShelfInlinePathsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shelf paths items0 links
-func (m *ShelfPathsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline paths inline array item inline links
+func (m *ShelfInlinePathsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3308,7 +3308,7 @@ func (m *ShelfPathsItems0Links) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfPathsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3325,8 +3325,8 @@ func (m *ShelfPathsItems0Links) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf paths items0 links based on the context it is used
-func (m *ShelfPathsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline paths inline array item inline links based on the context it is used
+func (m *ShelfInlinePathsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3339,7 +3339,7 @@ func (m *ShelfPathsItems0Links) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ShelfPathsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3354,7 +3354,7 @@ func (m *ShelfPathsItems0Links) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPathsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePathsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3362,8 +3362,8 @@ func (m *ShelfPathsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPathsItems0Links) UnmarshalBinary(b []byte) error {
-	var res ShelfPathsItems0Links
+func (m *ShelfInlinePathsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePathsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3371,25 +3371,25 @@ func (m *ShelfPathsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPathsItems0Node shelf paths items0 node
+// ShelfInlinePathsInlineArrayItemInlineNode shelf inline paths inline array item inline node
 //
-// swagger:model ShelfPathsItems0Node
-type ShelfPathsItems0Node struct {
+// swagger:model shelf_inline_paths_inline_array_item_inline_node
+type ShelfInlinePathsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *ShelfPathsItems0NodeLinks `json:"_links,omitempty"`
+	Links *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this shelf paths items0 node
-func (m *ShelfPathsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline paths inline array item inline node
+func (m *ShelfInlinePathsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3402,7 +3402,7 @@ func (m *ShelfPathsItems0Node) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfPathsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3419,8 +3419,8 @@ func (m *ShelfPathsItems0Node) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf paths items0 node based on the context it is used
-func (m *ShelfPathsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline paths inline array item inline node based on the context it is used
+func (m *ShelfInlinePathsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3433,7 +3433,7 @@ func (m *ShelfPathsItems0Node) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ShelfPathsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3448,7 +3448,7 @@ func (m *ShelfPathsItems0Node) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPathsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePathsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3456,8 +3456,8 @@ func (m *ShelfPathsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPathsItems0Node) UnmarshalBinary(b []byte) error {
-	var res ShelfPathsItems0Node
+func (m *ShelfInlinePathsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePathsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3465,17 +3465,17 @@ func (m *ShelfPathsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPathsItems0NodeLinks shelf paths items0 node links
+// ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks shelf inline paths inline array item inline node inline links
 //
-// swagger:model ShelfPathsItems0NodeLinks
-type ShelfPathsItems0NodeLinks struct {
+// swagger:model shelf_inline_paths_inline_array_item_inline_node_inline__links
+type ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shelf paths items0 node links
-func (m *ShelfPathsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline paths inline array item inline node inline links
+func (m *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3488,7 +3488,7 @@ func (m *ShelfPathsItems0NodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfPathsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3505,8 +3505,8 @@ func (m *ShelfPathsItems0NodeLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this shelf paths items0 node links based on the context it is used
-func (m *ShelfPathsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline paths inline array item inline node inline links based on the context it is used
+func (m *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3519,7 +3519,7 @@ func (m *ShelfPathsItems0NodeLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ShelfPathsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3534,7 +3534,7 @@ func (m *ShelfPathsItems0NodeLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPathsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3542,8 +3542,8 @@ func (m *ShelfPathsItems0NodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPathsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res ShelfPathsItems0NodeLinks
+func (m *ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePathsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3551,49 +3551,49 @@ func (m *ShelfPathsItems0NodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPortsItems0 shelf ports items0
+// ShelfInlinePortsInlineArrayItem shelf inline ports inline array item
 //
-// swagger:model ShelfPortsItems0
-type ShelfPortsItems0 struct {
+// swagger:model shelf_inline_ports_inline_array_item
+type ShelfInlinePortsInlineArrayItem struct {
 
 	// cable
-	Cable *ShelfPortsItems0Cable `json:"cable,omitempty"`
+	Cable *ShelfInlinePortsInlineArrayItemInlineCable `json:"cable,omitempty"`
 
 	// designator
 	// Example: square
 	// Enum: [circle square 1 2 3 4]
-	Designator string `json:"designator,omitempty"`
+	Designator *string `json:"designator,omitempty"`
 
 	// id
 	// Example: 0
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// internal
-	Internal bool `json:"internal,omitempty"`
+	Internal *bool `json:"internal,omitempty"`
 
 	// mac address
-	MacAddress string `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 
 	// module id
 	// Example: a
 	// Enum: [a b]
-	ModuleID string `json:"module_id,omitempty"`
+	ModuleID *string `json:"module_id,omitempty"`
 
 	// remote
-	Remote *ShelfPortsItems0Remote `json:"remote,omitempty"`
+	Remote *ShelfInlinePortsInlineArrayItemInlineRemote `json:"remote,omitempty"`
 
 	// state
 	// Example: connected
 	// Enum: [connected disconnected error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// wwn
 	// Example: 500A0980000B6C3F
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this shelf ports items0
-func (m *ShelfPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline ports inline array item
+func (m *ShelfInlinePortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCable(formats); err != nil {
@@ -3622,7 +3622,7 @@ func (m *ShelfPortsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfPortsItems0) validateCable(formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) validateCable(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cable) { // not required
 		return nil
 	}
@@ -3639,7 +3639,7 @@ func (m *ShelfPortsItems0) validateCable(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfPortsItems0TypeDesignatorPropEnum []interface{}
+var shelfInlinePortsInlineArrayItemTypeDesignatorPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3647,95 +3647,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfPortsItems0TypeDesignatorPropEnum = append(shelfPortsItems0TypeDesignatorPropEnum, v)
+		shelfInlinePortsInlineArrayItemTypeDesignatorPropEnum = append(shelfInlinePortsInlineArrayItemTypeDesignatorPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// designator
 	// Designator
 	// circle
 	// END DEBUGGING
-	// ShelfPortsItems0DesignatorCircle captures enum value "circle"
-	ShelfPortsItems0DesignatorCircle string = "circle"
+	// ShelfInlinePortsInlineArrayItemDesignatorCircle captures enum value "circle"
+	ShelfInlinePortsInlineArrayItemDesignatorCircle string = "circle"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// designator
 	// Designator
 	// square
 	// END DEBUGGING
-	// ShelfPortsItems0DesignatorSquare captures enum value "square"
-	ShelfPortsItems0DesignatorSquare string = "square"
+	// ShelfInlinePortsInlineArrayItemDesignatorSquare captures enum value "square"
+	ShelfInlinePortsInlineArrayItemDesignatorSquare string = "square"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// designator
 	// Designator
 	// 1
 	// END DEBUGGING
-	// ShelfPortsItems0DesignatorNr1 captures enum value "1"
-	ShelfPortsItems0DesignatorNr1 string = "1"
+	// ShelfInlinePortsInlineArrayItemDesignatorNr1 captures enum value "1"
+	ShelfInlinePortsInlineArrayItemDesignatorNr1 string = "1"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// designator
 	// Designator
 	// 2
 	// END DEBUGGING
-	// ShelfPortsItems0DesignatorNr2 captures enum value "2"
-	ShelfPortsItems0DesignatorNr2 string = "2"
+	// ShelfInlinePortsInlineArrayItemDesignatorNr2 captures enum value "2"
+	ShelfInlinePortsInlineArrayItemDesignatorNr2 string = "2"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// designator
 	// Designator
 	// 3
 	// END DEBUGGING
-	// ShelfPortsItems0DesignatorNr3 captures enum value "3"
-	ShelfPortsItems0DesignatorNr3 string = "3"
+	// ShelfInlinePortsInlineArrayItemDesignatorNr3 captures enum value "3"
+	ShelfInlinePortsInlineArrayItemDesignatorNr3 string = "3"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// designator
 	// Designator
 	// 4
 	// END DEBUGGING
-	// ShelfPortsItems0DesignatorNr4 captures enum value "4"
-	ShelfPortsItems0DesignatorNr4 string = "4"
+	// ShelfInlinePortsInlineArrayItemDesignatorNr4 captures enum value "4"
+	ShelfInlinePortsInlineArrayItemDesignatorNr4 string = "4"
 )
 
 // prop value enum
-func (m *ShelfPortsItems0) validateDesignatorEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfPortsItems0TypeDesignatorPropEnum, true); err != nil {
+func (m *ShelfInlinePortsInlineArrayItem) validateDesignatorEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlinePortsInlineArrayItemTypeDesignatorPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfPortsItems0) validateDesignator(formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) validateDesignator(formats strfmt.Registry) error {
 	if swag.IsZero(m.Designator) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDesignatorEnum("designator", "body", m.Designator); err != nil {
+	if err := m.validateDesignatorEnum("designator", "body", *m.Designator); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var shelfPortsItems0TypeModuleIDPropEnum []interface{}
+var shelfInlinePortsInlineArrayItemTypeModuleIDPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3743,55 +3743,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfPortsItems0TypeModuleIDPropEnum = append(shelfPortsItems0TypeModuleIDPropEnum, v)
+		shelfInlinePortsInlineArrayItemTypeModuleIDPropEnum = append(shelfInlinePortsInlineArrayItemTypeModuleIDPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// module_id
 	// ModuleID
 	// a
 	// END DEBUGGING
-	// ShelfPortsItems0ModuleIDA captures enum value "a"
-	ShelfPortsItems0ModuleIDA string = "a"
+	// ShelfInlinePortsInlineArrayItemModuleIDA captures enum value "a"
+	ShelfInlinePortsInlineArrayItemModuleIDA string = "a"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// module_id
 	// ModuleID
 	// b
 	// END DEBUGGING
-	// ShelfPortsItems0ModuleIDB captures enum value "b"
-	ShelfPortsItems0ModuleIDB string = "b"
+	// ShelfInlinePortsInlineArrayItemModuleIDB captures enum value "b"
+	ShelfInlinePortsInlineArrayItemModuleIDB string = "b"
 )
 
 // prop value enum
-func (m *ShelfPortsItems0) validateModuleIDEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfPortsItems0TypeModuleIDPropEnum, true); err != nil {
+func (m *ShelfInlinePortsInlineArrayItem) validateModuleIDEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlinePortsInlineArrayItemTypeModuleIDPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfPortsItems0) validateModuleID(formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) validateModuleID(formats strfmt.Registry) error {
 	if swag.IsZero(m.ModuleID) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateModuleIDEnum("module_id", "body", m.ModuleID); err != nil {
+	if err := m.validateModuleIDEnum("module_id", "body", *m.ModuleID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ShelfPortsItems0) validateRemote(formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) validateRemote(formats strfmt.Registry) error {
 	if swag.IsZero(m.Remote) { // not required
 		return nil
 	}
@@ -3808,7 +3808,7 @@ func (m *ShelfPortsItems0) validateRemote(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfPortsItems0TypeStatePropEnum []interface{}
+var shelfInlinePortsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3816,66 +3816,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfPortsItems0TypeStatePropEnum = append(shelfPortsItems0TypeStatePropEnum, v)
+		shelfInlinePortsInlineArrayItemTypeStatePropEnum = append(shelfInlinePortsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// state
 	// State
 	// connected
 	// END DEBUGGING
-	// ShelfPortsItems0StateConnected captures enum value "connected"
-	ShelfPortsItems0StateConnected string = "connected"
+	// ShelfInlinePortsInlineArrayItemStateConnected captures enum value "connected"
+	ShelfInlinePortsInlineArrayItemStateConnected string = "connected"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// state
 	// State
 	// disconnected
 	// END DEBUGGING
-	// ShelfPortsItems0StateDisconnected captures enum value "disconnected"
-	ShelfPortsItems0StateDisconnected string = "disconnected"
+	// ShelfInlinePortsInlineArrayItemStateDisconnected captures enum value "disconnected"
+	ShelfInlinePortsInlineArrayItemStateDisconnected string = "disconnected"
 
 	// BEGIN DEBUGGING
-	// ShelfPortsItems0
-	// ShelfPortsItems0
+	// shelf_inline_ports_inline_array_item
+	// ShelfInlinePortsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfPortsItems0StateError captures enum value "error"
-	ShelfPortsItems0StateError string = "error"
+	// ShelfInlinePortsInlineArrayItemStateError captures enum value "error"
+	ShelfInlinePortsInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfPortsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfPortsItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlinePortsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlinePortsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfPortsItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this shelf ports items0 based on the context it is used
-func (m *ShelfPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline ports inline array item based on the context it is used
+func (m *ShelfInlinePortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCable(ctx, formats); err != nil {
@@ -3892,7 +3892,7 @@ func (m *ShelfPortsItems0) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ShelfPortsItems0) contextValidateCable(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) contextValidateCable(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cable != nil {
 		if err := m.Cable.ContextValidate(ctx, formats); err != nil {
@@ -3906,7 +3906,7 @@ func (m *ShelfPortsItems0) contextValidateCable(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ShelfPortsItems0) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlinePortsInlineArrayItem) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Remote != nil {
 		if err := m.Remote.ContextValidate(ctx, formats); err != nil {
@@ -3921,7 +3921,7 @@ func (m *ShelfPortsItems0) contextValidateRemote(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3929,8 +3929,8 @@ func (m *ShelfPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPortsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfPortsItems0
+func (m *ShelfInlinePortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3938,40 +3938,40 @@ func (m *ShelfPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPortsItems0Cable shelf ports items0 cable
+// ShelfInlinePortsInlineArrayItemInlineCable shelf inline ports inline array item inline cable
 //
-// swagger:model ShelfPortsItems0Cable
-type ShelfPortsItems0Cable struct {
+// swagger:model shelf_inline_ports_inline_array_item_inline_cable
+type ShelfInlinePortsInlineArrayItemInlineCable struct {
 
 	// identifier
 	// Example: 500a0980000b6c3f-50000d1703544b80
-	Identifier string `json:"identifier,omitempty"`
+	Identifier *string `json:"identifier,omitempty"`
 
 	// length
 	// Example: 2m
-	Length string `json:"length,omitempty"`
+	Length *string `json:"length,omitempty"`
 
 	// part number
 	// Example: 112-00431+A0
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// serial number
 	// Example: 616930439
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this shelf ports items0 cable
-func (m *ShelfPortsItems0Cable) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline ports inline array item inline cable
+func (m *ShelfInlinePortsInlineArrayItemInlineCable) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf ports items0 cable based on context it is used
-func (m *ShelfPortsItems0Cable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline ports inline array item inline cable based on context it is used
+func (m *ShelfInlinePortsInlineArrayItemInlineCable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPortsItems0Cable) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePortsInlineArrayItemInlineCable) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3979,8 +3979,8 @@ func (m *ShelfPortsItems0Cable) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPortsItems0Cable) UnmarshalBinary(b []byte) error {
-	var res ShelfPortsItems0Cable
+func (m *ShelfInlinePortsInlineArrayItemInlineCable) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePortsInlineArrayItemInlineCable
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3988,44 +3988,44 @@ func (m *ShelfPortsItems0Cable) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfPortsItems0Remote shelf ports items0 remote
+// ShelfInlinePortsInlineArrayItemInlineRemote shelf inline ports inline array item inline remote
 //
-// swagger:model ShelfPortsItems0Remote
-type ShelfPortsItems0Remote struct {
+// swagger:model shelf_inline_ports_inline_array_item_inline_remote
+type ShelfInlinePortsInlineArrayItemInlineRemote struct {
 
 	// chassis
-	Chassis string `json:"chassis,omitempty"`
+	Chassis *string `json:"chassis,omitempty"`
 
 	// device
-	Device string `json:"device,omitempty"`
+	Device *string `json:"device,omitempty"`
 
 	// mac address
-	MacAddress string `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 
 	// phy
 	// Example: 12
-	Phy string `json:"phy,omitempty"`
+	Phy *string `json:"phy,omitempty"`
 
 	// port
-	Port string `json:"port,omitempty"`
+	Port *string `json:"port,omitempty"`
 
 	// wwn
 	// Example: 50000D1703544B80
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this shelf ports items0 remote
-func (m *ShelfPortsItems0Remote) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline ports inline array item inline remote
+func (m *ShelfInlinePortsInlineArrayItemInlineRemote) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf ports items0 remote based on context it is used
-func (m *ShelfPortsItems0Remote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline ports inline array item inline remote based on context it is used
+func (m *ShelfInlinePortsInlineArrayItemInlineRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfPortsItems0Remote) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlinePortsInlineArrayItemInlineRemote) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4033,8 +4033,8 @@ func (m *ShelfPortsItems0Remote) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfPortsItems0Remote) UnmarshalBinary(b []byte) error {
-	var res ShelfPortsItems0Remote
+func (m *ShelfInlinePortsInlineArrayItemInlineRemote) UnmarshalBinary(b []byte) error {
+	var res ShelfInlinePortsInlineArrayItemInlineRemote
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4042,38 +4042,38 @@ func (m *ShelfPortsItems0Remote) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfTemperatureSensorsItems0 shelf temperature sensors items0
+// ShelfInlineTemperatureSensorsInlineArrayItem shelf inline temperature sensors inline array item
 //
-// swagger:model ShelfTemperatureSensorsItems0
-type ShelfTemperatureSensorsItems0 struct {
+// swagger:model shelf_inline_temperature_sensors_inline_array_item
+type ShelfInlineTemperatureSensorsInlineArrayItem struct {
 
 	// Sensor that measures the ambient temperature
 	// Example: false
-	Ambient bool `json:"ambient,omitempty"`
+	Ambient *bool `json:"ambient,omitempty"`
 
 	// id
 	// Example: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// location
 	// Example: temp sensor on midplane left
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// state
 	// Example: ok
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Temperature, in degrees Celsius
 	// Example: 32
-	Temperature int64 `json:"temperature,omitempty"`
+	Temperature *int64 `json:"temperature,omitempty"`
 
 	// threshold
-	Threshold *ShelfTemperatureSensorsItems0Threshold `json:"threshold,omitempty"`
+	Threshold *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold `json:"threshold,omitempty"`
 }
 
-// Validate validates this shelf temperature sensors items0
-func (m *ShelfTemperatureSensorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline temperature sensors inline array item
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -4090,7 +4090,7 @@ func (m *ShelfTemperatureSensorsItems0) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-var shelfTemperatureSensorsItems0TypeStatePropEnum []interface{}
+var shelfInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -4098,55 +4098,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfTemperatureSensorsItems0TypeStatePropEnum = append(shelfTemperatureSensorsItems0TypeStatePropEnum, v)
+		shelfInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum = append(shelfInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfTemperatureSensorsItems0
-	// ShelfTemperatureSensorsItems0
+	// shelf_inline_temperature_sensors_inline_array_item
+	// ShelfInlineTemperatureSensorsInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfTemperatureSensorsItems0StateOk captures enum value "ok"
-	ShelfTemperatureSensorsItems0StateOk string = "ok"
+	// ShelfInlineTemperatureSensorsInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineTemperatureSensorsInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfTemperatureSensorsItems0
-	// ShelfTemperatureSensorsItems0
+	// shelf_inline_temperature_sensors_inline_array_item
+	// ShelfInlineTemperatureSensorsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfTemperatureSensorsItems0StateError captures enum value "error"
-	ShelfTemperatureSensorsItems0StateError string = "error"
+	// ShelfInlineTemperatureSensorsInlineArrayItemStateError captures enum value "error"
+	ShelfInlineTemperatureSensorsInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfTemperatureSensorsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfTemperatureSensorsItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0) validateThreshold(formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) validateThreshold(formats strfmt.Registry) error {
 	if swag.IsZero(m.Threshold) { // not required
 		return nil
 	}
@@ -4163,8 +4163,8 @@ func (m *ShelfTemperatureSensorsItems0) validateThreshold(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this shelf temperature sensors items0 based on the context it is used
-func (m *ShelfTemperatureSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline temperature sensors inline array item based on the context it is used
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateThreshold(ctx, formats); err != nil {
@@ -4177,7 +4177,7 @@ func (m *ShelfTemperatureSensorsItems0) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0) contextValidateThreshold(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) contextValidateThreshold(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Threshold != nil {
 		if err := m.Threshold.ContextValidate(ctx, formats); err != nil {
@@ -4192,7 +4192,7 @@ func (m *ShelfTemperatureSensorsItems0) contextValidateThreshold(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4200,8 +4200,8 @@ func (m *ShelfTemperatureSensorsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfTemperatureSensorsItems0
+func (m *ShelfInlineTemperatureSensorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineTemperatureSensorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4209,20 +4209,20 @@ func (m *ShelfTemperatureSensorsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfTemperatureSensorsItems0Threshold shelf temperature sensors items0 threshold
+// ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold shelf inline temperature sensors inline array item inline threshold
 //
-// swagger:model ShelfTemperatureSensorsItems0Threshold
-type ShelfTemperatureSensorsItems0Threshold struct {
+// swagger:model shelf_inline_temperature_sensors_inline_array_item_inline_threshold
+type ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold struct {
 
 	// high
-	High *ShelfTemperatureSensorsItems0ThresholdHigh `json:"high,omitempty"`
+	High *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh `json:"high,omitempty"`
 
 	// low
-	Low *ShelfTemperatureSensorsItems0ThresholdLow `json:"low,omitempty"`
+	Low *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow `json:"low,omitempty"`
 }
 
-// Validate validates this shelf temperature sensors items0 threshold
-func (m *ShelfTemperatureSensorsItems0Threshold) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline temperature sensors inline array item inline threshold
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateHigh(formats); err != nil {
@@ -4239,7 +4239,7 @@ func (m *ShelfTemperatureSensorsItems0Threshold) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0Threshold) validateHigh(formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) validateHigh(formats strfmt.Registry) error {
 	if swag.IsZero(m.High) { // not required
 		return nil
 	}
@@ -4256,7 +4256,7 @@ func (m *ShelfTemperatureSensorsItems0Threshold) validateHigh(formats strfmt.Reg
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0Threshold) validateLow(formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) validateLow(formats strfmt.Registry) error {
 	if swag.IsZero(m.Low) { // not required
 		return nil
 	}
@@ -4273,8 +4273,8 @@ func (m *ShelfTemperatureSensorsItems0Threshold) validateLow(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this shelf temperature sensors items0 threshold based on the context it is used
-func (m *ShelfTemperatureSensorsItems0Threshold) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf inline temperature sensors inline array item inline threshold based on the context it is used
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateHigh(ctx, formats); err != nil {
@@ -4291,7 +4291,7 @@ func (m *ShelfTemperatureSensorsItems0Threshold) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0Threshold) contextValidateHigh(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) contextValidateHigh(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.High != nil {
 		if err := m.High.ContextValidate(ctx, formats); err != nil {
@@ -4305,7 +4305,7 @@ func (m *ShelfTemperatureSensorsItems0Threshold) contextValidateHigh(ctx context
 	return nil
 }
 
-func (m *ShelfTemperatureSensorsItems0Threshold) contextValidateLow(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) contextValidateLow(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Low != nil {
 		if err := m.Low.ContextValidate(ctx, formats); err != nil {
@@ -4320,7 +4320,7 @@ func (m *ShelfTemperatureSensorsItems0Threshold) contextValidateLow(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0Threshold) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4328,8 +4328,8 @@ func (m *ShelfTemperatureSensorsItems0Threshold) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0Threshold) UnmarshalBinary(b []byte) error {
-	var res ShelfTemperatureSensorsItems0Threshold
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineTemperatureSensorsInlineArrayItemInlineThreshold
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4337,32 +4337,32 @@ func (m *ShelfTemperatureSensorsItems0Threshold) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// ShelfTemperatureSensorsItems0ThresholdHigh shelf temperature sensors items0 threshold high
+// ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh shelf inline temperature sensors inline array item inline threshold inline high
 //
-// swagger:model ShelfTemperatureSensorsItems0ThresholdHigh
-type ShelfTemperatureSensorsItems0ThresholdHigh struct {
+// swagger:model shelf_inline_temperature_sensors_inline_array_item_inline_threshold_inline_high
+type ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh struct {
 
 	// High critical threshold, in degrees Celsius
 	// Example: 60
-	Critical int64 `json:"critical,omitempty"`
+	Critical *int64 `json:"critical,omitempty"`
 
 	// High warning threshold, in degrees Celsius
 	// Example: 55
-	Warning int64 `json:"warning,omitempty"`
+	Warning *int64 `json:"warning,omitempty"`
 }
 
-// Validate validates this shelf temperature sensors items0 threshold high
-func (m *ShelfTemperatureSensorsItems0ThresholdHigh) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline temperature sensors inline array item inline threshold inline high
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf temperature sensors items0 threshold high based on context it is used
-func (m *ShelfTemperatureSensorsItems0ThresholdHigh) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline temperature sensors inline array item inline threshold inline high based on context it is used
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0ThresholdHigh) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4370,8 +4370,8 @@ func (m *ShelfTemperatureSensorsItems0ThresholdHigh) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0ThresholdHigh) UnmarshalBinary(b []byte) error {
-	var res ShelfTemperatureSensorsItems0ThresholdHigh
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineHigh
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4379,32 +4379,32 @@ func (m *ShelfTemperatureSensorsItems0ThresholdHigh) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// ShelfTemperatureSensorsItems0ThresholdLow shelf temperature sensors items0 threshold low
+// ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow shelf inline temperature sensors inline array item inline threshold inline low
 //
-// swagger:model ShelfTemperatureSensorsItems0ThresholdLow
-type ShelfTemperatureSensorsItems0ThresholdLow struct {
+// swagger:model shelf_inline_temperature_sensors_inline_array_item_inline_threshold_inline_low
+type ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow struct {
 
 	// Low critical threshold, in degrees Celsius
 	// Example: 0
-	Critical int64 `json:"critical,omitempty"`
+	Critical *int64 `json:"critical,omitempty"`
 
 	// Low warning threshold, in degrees Celsius
 	// Example: 5
-	Warning int64 `json:"warning,omitempty"`
+	Warning *int64 `json:"warning,omitempty"`
 }
 
-// Validate validates this shelf temperature sensors items0 threshold low
-func (m *ShelfTemperatureSensorsItems0ThresholdLow) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline temperature sensors inline array item inline threshold inline low
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf temperature sensors items0 threshold low based on context it is used
-func (m *ShelfTemperatureSensorsItems0ThresholdLow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline temperature sensors inline array item inline threshold inline low based on context it is used
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0ThresholdLow) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4412,8 +4412,8 @@ func (m *ShelfTemperatureSensorsItems0ThresholdLow) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfTemperatureSensorsItems0ThresholdLow) UnmarshalBinary(b []byte) error {
-	var res ShelfTemperatureSensorsItems0ThresholdLow
+func (m *ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineTemperatureSensorsInlineArrayItemInlineThresholdInlineLow
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4421,44 +4421,44 @@ func (m *ShelfTemperatureSensorsItems0ThresholdLow) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// ShelfVendor shelf vendor
+// ShelfInlineVendor shelf inline vendor
 //
-// swagger:model ShelfVendor
-type ShelfVendor struct {
+// swagger:model shelf_inline_vendor
+type ShelfInlineVendor struct {
 
 	// Support for this field will be removed in a future release. Please use vendor.name for this field.
 	// Example: XYZ
-	Manufacturer string `json:"manufacturer,omitempty"`
+	Manufacturer *string `json:"manufacturer,omitempty"`
 
 	// name
 	// Example: XYZ
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Part number
 	// Example: A92831142733
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// Product name
 	// Example: LS2246
-	Product string `json:"product,omitempty"`
+	Product *string `json:"product,omitempty"`
 
 	// Serial number
 	// Example: 891234572210221
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this shelf vendor
-func (m *ShelfVendor) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline vendor
+func (m *ShelfInlineVendor) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf vendor based on context it is used
-func (m *ShelfVendor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline vendor based on context it is used
+func (m *ShelfInlineVendor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfVendor) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineVendor) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4466,8 +4466,8 @@ func (m *ShelfVendor) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfVendor) UnmarshalBinary(b []byte) error {
-	var res ShelfVendor
+func (m *ShelfInlineVendor) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineVendor
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4475,31 +4475,31 @@ func (m *ShelfVendor) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfVoltageSensorsItems0 shelf voltage sensors items0
+// ShelfInlineVoltageSensorsInlineArrayItem shelf inline voltage sensors inline array item
 //
-// swagger:model ShelfVoltageSensorsItems0
-type ShelfVoltageSensorsItems0 struct {
+// swagger:model shelf_inline_voltage_sensors_inline_array_item
+type ShelfInlineVoltageSensorsInlineArrayItem struct {
 
 	// id
 	// Example: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// location
 	// Example: rear of the shelf on the lower left power supply
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// state
 	// Example: ok
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Voltage, in volts
 	// Example: 12.18
-	Voltage float64 `json:"voltage,omitempty"`
+	Voltage *float64 `json:"voltage,omitempty"`
 }
 
-// Validate validates this shelf voltage sensors items0
-func (m *ShelfVoltageSensorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf inline voltage sensors inline array item
+func (m *ShelfInlineVoltageSensorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -4512,7 +4512,7 @@ func (m *ShelfVoltageSensorsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var shelfVoltageSensorsItems0TypeStatePropEnum []interface{}
+var shelfInlineVoltageSensorsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -4520,61 +4520,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		shelfVoltageSensorsItems0TypeStatePropEnum = append(shelfVoltageSensorsItems0TypeStatePropEnum, v)
+		shelfInlineVoltageSensorsInlineArrayItemTypeStatePropEnum = append(shelfInlineVoltageSensorsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ShelfVoltageSensorsItems0
-	// ShelfVoltageSensorsItems0
+	// shelf_inline_voltage_sensors_inline_array_item
+	// ShelfInlineVoltageSensorsInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// ShelfVoltageSensorsItems0StateOk captures enum value "ok"
-	ShelfVoltageSensorsItems0StateOk string = "ok"
+	// ShelfInlineVoltageSensorsInlineArrayItemStateOk captures enum value "ok"
+	ShelfInlineVoltageSensorsInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// ShelfVoltageSensorsItems0
-	// ShelfVoltageSensorsItems0
+	// shelf_inline_voltage_sensors_inline_array_item
+	// ShelfInlineVoltageSensorsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// ShelfVoltageSensorsItems0StateError captures enum value "error"
-	ShelfVoltageSensorsItems0StateError string = "error"
+	// ShelfInlineVoltageSensorsInlineArrayItemStateError captures enum value "error"
+	ShelfInlineVoltageSensorsInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *ShelfVoltageSensorsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, shelfVoltageSensorsItems0TypeStatePropEnum, true); err != nil {
+func (m *ShelfInlineVoltageSensorsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfInlineVoltageSensorsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ShelfVoltageSensorsItems0) validateState(formats strfmt.Registry) error {
+func (m *ShelfInlineVoltageSensorsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this shelf voltage sensors items0 based on context it is used
-func (m *ShelfVoltageSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this shelf inline voltage sensors inline array item based on context it is used
+func (m *ShelfInlineVoltageSensorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfVoltageSensorsItems0) MarshalBinary() ([]byte, error) {
+func (m *ShelfInlineVoltageSensorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4582,8 +4582,8 @@ func (m *ShelfVoltageSensorsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfVoltageSensorsItems0) UnmarshalBinary(b []byte) error {
-	var res ShelfVoltageSensorsItems0
+func (m *ShelfInlineVoltageSensorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ShelfInlineVoltageSensorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

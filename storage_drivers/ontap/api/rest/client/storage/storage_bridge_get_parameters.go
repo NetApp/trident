@@ -66,10 +66,10 @@ type StorageBridgeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Wwn.
-	WwnPathParameter string
+	Wwn string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *StorageBridgeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the storage bridge get params
-func (o *StorageBridgeGetParams) WithFieldsQueryParameter(fields []string) *StorageBridgeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the storage bridge get params
+func (o *StorageBridgeGetParams) WithFields(fields []string) *StorageBridgeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the storage bridge get params
-func (o *StorageBridgeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the storage bridge get params
+func (o *StorageBridgeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithWwnPathParameter adds the wwn to the storage bridge get params
-func (o *StorageBridgeGetParams) WithWwnPathParameter(wwn string) *StorageBridgeGetParams {
-	o.SetWwnPathParameter(wwn)
+// WithWwn adds the wwn to the storage bridge get params
+func (o *StorageBridgeGetParams) WithWwn(wwn string) *StorageBridgeGetParams {
+	o.SetWwn(wwn)
 	return o
 }
 
-// SetWwnPathParameter adds the wwn to the storage bridge get params
-func (o *StorageBridgeGetParams) SetWwnPathParameter(wwn string) {
-	o.WwnPathParameter = wwn
+// SetWwn adds the wwn to the storage bridge get params
+func (o *StorageBridgeGetParams) SetWwn(wwn string) {
+	o.Wwn = wwn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *StorageBridgeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *StorageBridgeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param wwn
-	if err := r.SetPathParam("wwn", o.WwnPathParameter); err != nil {
+	if err := r.SetPathParam("wwn", o.Wwn); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *StorageBridgeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamStorageBridgeGet binds the parameter fields
 func (o *StorageBridgeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

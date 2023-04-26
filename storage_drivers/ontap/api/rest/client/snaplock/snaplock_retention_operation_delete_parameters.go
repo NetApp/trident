@@ -65,7 +65,7 @@ type SnaplockRetentionOperationDeleteParams struct {
 
 	   Unique identifier of an EBR operation
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SnaplockRetentionOperationDeleteParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the snaplock retention operation delete params
-func (o *SnaplockRetentionOperationDeleteParams) WithIDPathParameter(id string) *SnaplockRetentionOperationDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock retention operation delete params
+func (o *SnaplockRetentionOperationDeleteParams) WithID(id string) *SnaplockRetentionOperationDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock retention operation delete params
-func (o *SnaplockRetentionOperationDeleteParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock retention operation delete params
+func (o *SnaplockRetentionOperationDeleteParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SnaplockRetentionOperationDeleteParams) WriteToRequest(r runtime.Client
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

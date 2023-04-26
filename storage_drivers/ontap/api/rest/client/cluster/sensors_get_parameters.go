@@ -66,19 +66,19 @@ type SensorsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexPathParameter string
+	Index string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SensorsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the sensors get params
-func (o *SensorsGetParams) WithFieldsQueryParameter(fields []string) *SensorsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the sensors get params
+func (o *SensorsGetParams) WithFields(fields []string) *SensorsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the sensors get params
-func (o *SensorsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the sensors get params
+func (o *SensorsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the sensors get params
-func (o *SensorsGetParams) WithIndexPathParameter(index string) *SensorsGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the sensors get params
+func (o *SensorsGetParams) WithIndex(index string) *SensorsGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the sensors get params
-func (o *SensorsGetParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the sensors get params
+func (o *SensorsGetParams) SetIndex(index string) {
+	o.Index = index
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the sensors get params
-func (o *SensorsGetParams) WithNodeUUIDPathParameter(nodeUUID string) *SensorsGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the sensors get params
+func (o *SensorsGetParams) WithNodeUUID(nodeUUID string) *SensorsGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the sensors get params
-func (o *SensorsGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the sensors get params
+func (o *SensorsGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SensorsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *SensorsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SensorsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamSensorsGet binds the parameter fields
 func (o *SensorsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

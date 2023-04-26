@@ -117,6 +117,9 @@ const (
 
 	// IPServiceBackupNdmpControl captures enum value "backup_ndmp_control"
 	IPServiceBackupNdmpControl IPService = "backup_ndmp_control"
+
+	// IPServiceManagementLogForwarding captures enum value "management_log_forwarding"
+	IPServiceManagementLogForwarding IPService = "management_log_forwarding"
 )
 
 // for schema
@@ -124,7 +127,7 @@ var ipServiceEnum []interface{}
 
 func init() {
 	var res []IPService
-	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_http","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server","data_dns_server","data_fpolicy_client","management_ntp_client","management_dns_client","management_ad_client","management_ldap_client","management_nis_client","management_snmp_server","management_rsh_server","management_telnet_server","management_ntp_server","data_nvme_tcp","backup_ndmp_control"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_http","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server","data_dns_server","data_fpolicy_client","management_ntp_client","management_dns_client","management_ad_client","management_ldap_client","management_nis_client","management_snmp_server","management_rsh_server","management_telnet_server","management_ntp_server","data_nvme_tcp","backup_ndmp_control","management_log_forwarding"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

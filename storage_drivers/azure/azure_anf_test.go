@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -16,10 +16,10 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_azure"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
@@ -32,7 +32,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -73,7 +73,7 @@ func TestName(t *testing.T) {
 
 	result := driver.Name()
 
-	assert.Equal(t, drivers.AzureNASStorageDriverName, result, "driver name mismatch")
+	assert.Equal(t, tridentconfig.AzureNASStorageDriverName, result, "driver name mismatch")
 }
 
 func TestBackendName_SetInConfig(t *testing.T) {
@@ -1093,8 +1093,11 @@ func TestCreate_NFSVolume(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
-	assert.Equal(t, volConfig.Size, strconv.FormatInt(createRequest.QuotaInBytes, 10), "request size mismatch")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
 func TestCreate_DiscoveryFailed(t *testing.T) {
@@ -1752,8 +1755,11 @@ func TestCreate_SMBVolume(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
-	assert.Equal(t, volConfig.Size, strconv.FormatInt(createRequest.QuotaInBytes, 10), "request size mismatch")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "", volConfig.UnixPermissions)
 }
 
 func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
@@ -3261,7 +3267,7 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	assert.Nil(t, result, "not nil")
 }
 
-func getStructsForPublish_NFSVolume(
+func getStructsForPublishNFSVolume(
 	ctx context.Context, driver *NASStorageDriver,
 ) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
@@ -3313,7 +3319,7 @@ func getStructsForPublish_NFSVolume(
 	return volConfig, filesystem, publishInfo
 }
 
-func getStructsForPublish_SMBVolume(
+func getStructsForPublishSMBVolume(
 	ctx context.Context, driver *NASStorageDriver,
 ) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
@@ -3369,7 +3375,7 @@ func TestPublish_NFSVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.NASType = "nfs"
 
-	volConfig, filesystem, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
@@ -3389,7 +3395,7 @@ func TestPublish_SMBVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.NASType = "smb"
 
-	volConfig, filesystem, publishInfo := getStructsForPublish_SMBVolume(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublishSMBVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
@@ -3408,7 +3414,7 @@ func TestPublish_MountOptions(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.NASType = "nfs"
 
-	volConfig, filesystem, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	volConfig.InternalID = ""
 	volConfig.MountOptions = "nfsvers=4.1"
 
@@ -3429,7 +3435,7 @@ func TestPublish_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, _, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
@@ -3446,7 +3452,7 @@ func TestPublish_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, _, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errFailed).Times(1)
@@ -3464,7 +3470,7 @@ func TestPublish_NoMountTargets(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem, publishInfo := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, filesystem, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
 	filesystem.MountTargets = nil
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -4186,8 +4192,6 @@ func TestResize(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().ResizeVolume(ctx, filesystem, int64(newSize)).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Resize(ctx, volConfig, newSize)
 
@@ -4317,26 +4321,6 @@ func TestResize_VolumeResizeFailed(t *testing.T) {
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
-func TestResize_VolumeWaitFailed(t *testing.T) {
-	mockAPI, driver := newMockANFDriver(t)
-	driver.initializeTelemetry(ctx, BackendUUID)
-
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
-	newSize := uint64(VolumeSizeI64 * 2)
-
-	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
-	mockAPI.EXPECT().ResizeVolume(ctx, filesystem, int64(newSize)).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateError, errFailed).Times(1)
-
-	result := driver.Resize(ctx, volConfig, newSize)
-
-	assert.NotNil(t, result, "expected error")
-	assert.Equal(t, VolumeSizeStr, volConfig.Size, "size mismatch")
-	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
-}
-
 func TestGetStorageBackendSpecs(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 
@@ -4421,7 +4405,7 @@ func TestCreateFollowup_NFSVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.NASType = "nfs"
 
-	volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
@@ -4439,7 +4423,7 @@ func TestCreateFollowup_SMBVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.NASType = "smb"
 
-	volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
@@ -4456,7 +4440,7 @@ func TestCreateFollowup_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, _ := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, _, _ := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
@@ -4472,7 +4456,7 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _, _ := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, _, _ := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, utils.NotFoundError("not found")).Times(1)
@@ -4495,7 +4479,7 @@ func TestCreateFollowup_VolumeNotAvailable(t *testing.T) {
 		mockAPI, driver := newMockANFDriver(t)
 		driver.initializeTelemetry(ctx, BackendUUID)
 
-		volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
+		volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
 		filesystem.ProvisioningState = state
 
 		mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -4514,7 +4498,7 @@ func TestCreateFollowup_NoMountTargets(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem, _ := getStructsForPublish_NFSVolume(ctx, driver)
+	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
 	filesystem.MountTargets = nil
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)

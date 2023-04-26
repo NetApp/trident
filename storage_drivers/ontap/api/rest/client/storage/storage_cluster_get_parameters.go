@@ -66,7 +66,7 @@ type StorageClusterGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *StorageClusterGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the storage cluster get params
-func (o *StorageClusterGetParams) WithFieldsQueryParameter(fields []string) *StorageClusterGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the storage cluster get params
+func (o *StorageClusterGetParams) WithFields(fields []string) *StorageClusterGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the storage cluster get params
-func (o *StorageClusterGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the storage cluster get params
+func (o *StorageClusterGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamStorageClusterGet binds the parameter fields
 func (o *StorageClusterGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

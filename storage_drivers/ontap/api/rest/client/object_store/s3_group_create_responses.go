@@ -52,6 +52,11 @@ S3GroupCreateCreated describes a response with status code 201, with default hea
 Created
 */
 type S3GroupCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.S3GroupResponse
 }
 
@@ -93,6 +98,13 @@ func (o *S3GroupCreateCreated) GetPayload() *models.S3GroupResponse {
 }
 
 func (o *S3GroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.S3GroupResponse)
 

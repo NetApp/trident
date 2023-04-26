@@ -65,7 +65,7 @@ type IPServicePolicyDeleteParams struct {
 
 	   UUID of the service policy
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *IPServicePolicyDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the ip service policy delete params
-func (o *IPServicePolicyDeleteParams) WithUUIDPathParameter(uuid string) *IPServicePolicyDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ip service policy delete params
+func (o *IPServicePolicyDeleteParams) WithUUID(uuid string) *IPServicePolicyDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ip service policy delete params
-func (o *IPServicePolicyDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ip service policy delete params
+func (o *IPServicePolicyDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *IPServicePolicyDeleteParams) WriteToRequest(r runtime.ClientRequest, re
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

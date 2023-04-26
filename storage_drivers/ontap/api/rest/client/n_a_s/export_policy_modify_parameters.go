@@ -68,7 +68,7 @@ type ExportPolicyModifyParams struct {
 
 	   Export Policy ID
 	*/
-	IDPathParameter int64
+	ID int64
 
 	/* Info.
 
@@ -129,15 +129,15 @@ func (o *ExportPolicyModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the export policy modify params
-func (o *ExportPolicyModifyParams) WithIDPathParameter(id int64) *ExportPolicyModifyParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the export policy modify params
+func (o *ExportPolicyModifyParams) WithID(id int64) *ExportPolicyModifyParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the export policy modify params
-func (o *ExportPolicyModifyParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the export policy modify params
+func (o *ExportPolicyModifyParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WithInfo adds the info to the export policy modify params
@@ -160,7 +160,7 @@ func (o *ExportPolicyModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 	if o.Info != nil {

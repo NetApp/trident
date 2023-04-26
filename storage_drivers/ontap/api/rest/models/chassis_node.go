@@ -22,26 +22,26 @@ import (
 type ChassisNode struct {
 
 	// links
-	Links *ChassisNodeLinks `json:"_links,omitempty"`
+	Links *ChassisNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// pcis
-	Pcis *ChassisNodePcis `json:"pcis,omitempty"`
+	Pcis *ChassisNodeInlinePcis `json:"pcis,omitempty"`
 
 	// The position of the node in the chassis, when viewed from the rear of the system.
 	// Example: top
 	// Enum: [top bottom left right unknown]
-	Position string `json:"position,omitempty"`
+	Position *string `json:"position,omitempty"`
 
 	// usbs
-	Usbs *ChassisNodeUsbs `json:"usbs,omitempty"`
+	Usbs *ChassisNodeInlineUsbs `json:"usbs,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this chassis node
@@ -183,7 +183,7 @@ func (m *ChassisNode) validatePosition(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePositionEnum("position", "body", m.Position); err != nil {
+	if err := m.validatePositionEnum("position", "body", *m.Position); err != nil {
 		return err
 	}
 
@@ -289,17 +289,17 @@ func (m *ChassisNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodeLinks chassis node links
+// ChassisNodeInlineLinks chassis node inline links
 //
-// swagger:model ChassisNodeLinks
-type ChassisNodeLinks struct {
+// swagger:model chassis_node_inline__links
+type ChassisNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this chassis node links
-func (m *ChassisNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis node inline links
+func (m *ChassisNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -312,7 +312,7 @@ func (m *ChassisNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ChassisNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -329,8 +329,8 @@ func (m *ChassisNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis node links based on the context it is used
-func (m *ChassisNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis node inline links based on the context it is used
+func (m *ChassisNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -343,7 +343,7 @@ func (m *ChassisNodeLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ChassisNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -358,7 +358,7 @@ func (m *ChassisNodeLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *ChassisNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -366,8 +366,8 @@ func (m *ChassisNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodeLinks) UnmarshalBinary(b []byte) error {
-	var res ChassisNodeLinks
+func (m *ChassisNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ChassisNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -375,17 +375,17 @@ func (m *ChassisNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodePcis chassis node pcis
+// ChassisNodeInlinePcis chassis node inline pcis
 //
-// swagger:model ChassisNodePcis
-type ChassisNodePcis struct {
+// swagger:model chassis_node_inline_pcis
+type ChassisNodeInlinePcis struct {
 
 	// cards
 	Cards []*ChassisNodePcisCardsItems0 `json:"cards,omitempty"`
 }
 
-// Validate validates this chassis node pcis
-func (m *ChassisNodePcis) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis node inline pcis
+func (m *ChassisNodeInlinePcis) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCards(formats); err != nil {
@@ -398,7 +398,7 @@ func (m *ChassisNodePcis) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodePcis) validateCards(formats strfmt.Registry) error {
+func (m *ChassisNodeInlinePcis) validateCards(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cards) { // not required
 		return nil
 	}
@@ -422,8 +422,8 @@ func (m *ChassisNodePcis) validateCards(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis node pcis based on the context it is used
-func (m *ChassisNodePcis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis node inline pcis based on the context it is used
+func (m *ChassisNodeInlinePcis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCards(ctx, formats); err != nil {
@@ -436,7 +436,7 @@ func (m *ChassisNodePcis) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ChassisNodePcis) contextValidateCards(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisNodeInlinePcis) contextValidateCards(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Cards); i++ {
 
@@ -455,7 +455,7 @@ func (m *ChassisNodePcis) contextValidateCards(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodePcis) MarshalBinary() ([]byte, error) {
+func (m *ChassisNodeInlinePcis) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -463,8 +463,8 @@ func (m *ChassisNodePcis) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodePcis) UnmarshalBinary(b []byte) error {
-	var res ChassisNodePcis
+func (m *ChassisNodeInlinePcis) UnmarshalBinary(b []byte) error {
+	var res ChassisNodeInlinePcis
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -479,15 +479,15 @@ type ChassisNodePcisCardsItems0 struct {
 
 	// The description of the PCI card.
 	// Example: Intel Lewisburg series chipset SATA Controller
-	Device string `json:"device,omitempty"`
+	Device *string `json:"device,omitempty"`
 
 	// The info string from the device driver of the PCI card.
 	// Example: Additional Info: 0 (0xaaf00000)   SHM2S86Q120GLM22NP FW1146 114473MB 512B/sect (SPG190108GW)
-	Info string `json:"info,omitempty"`
+	Info *string `json:"info,omitempty"`
 
 	// The slot where the PCI card is placed. This can sometimes take the form of "6-1" to indicate slot and subslot.
 	// Example: 0
-	Slot string `json:"slot,omitempty"`
+	Slot *string `json:"slot,omitempty"`
 }
 
 // Validate validates this chassis node pcis cards items0
@@ -518,23 +518,23 @@ func (m *ChassisNodePcisCardsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodeUsbs The status of the USB ports on the controller.
+// ChassisNodeInlineUsbs The status of the USB ports on the controller.
 //
-// swagger:model ChassisNodeUsbs
-type ChassisNodeUsbs struct {
+// swagger:model chassis_node_inline_usbs
+type ChassisNodeInlineUsbs struct {
 
 	// Indicates whether or not the USB ports are enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// ports
 	Ports []*ChassisNodeUsbsPortsItems0 `json:"ports,omitempty"`
 
 	// Indicates whether or not USB ports are supported on the current platform.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
-// Validate validates this chassis node usbs
-func (m *ChassisNodeUsbs) Validate(formats strfmt.Registry) error {
+// Validate validates this chassis node inline usbs
+func (m *ChassisNodeInlineUsbs) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePorts(formats); err != nil {
@@ -547,7 +547,7 @@ func (m *ChassisNodeUsbs) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ChassisNodeUsbs) validatePorts(formats strfmt.Registry) error {
+func (m *ChassisNodeInlineUsbs) validatePorts(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ports) { // not required
 		return nil
 	}
@@ -571,8 +571,8 @@ func (m *ChassisNodeUsbs) validatePorts(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this chassis node usbs based on the context it is used
-func (m *ChassisNodeUsbs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this chassis node inline usbs based on the context it is used
+func (m *ChassisNodeInlineUsbs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePorts(ctx, formats); err != nil {
@@ -585,7 +585,7 @@ func (m *ChassisNodeUsbs) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ChassisNodeUsbs) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *ChassisNodeInlineUsbs) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Ports); i++ {
 
@@ -604,7 +604,7 @@ func (m *ChassisNodeUsbs) contextValidatePorts(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ChassisNodeUsbs) MarshalBinary() ([]byte, error) {
+func (m *ChassisNodeInlineUsbs) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -612,8 +612,8 @@ func (m *ChassisNodeUsbs) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ChassisNodeUsbs) UnmarshalBinary(b []byte) error {
-	var res ChassisNodeUsbs
+func (m *ChassisNodeInlineUsbs) UnmarshalBinary(b []byte) error {
+	var res ChassisNodeInlineUsbs
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -627,7 +627,7 @@ func (m *ChassisNodeUsbs) UnmarshalBinary(b []byte) error {
 type ChassisNodeUsbsPortsItems0 struct {
 
 	// Indicates whether or not the USB port has a device connected to it.
-	Connected bool `json:"connected,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
 }
 
 // Validate validates this chassis node usbs ports items0

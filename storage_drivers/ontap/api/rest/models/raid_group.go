@@ -29,33 +29,33 @@ type RaidGroup struct {
 	// Read Only: true
 	Degraded *bool `json:"degraded,omitempty"`
 
-	// disks
-	// Read Only: true
-	Disks []*RaidGroupDisk `json:"disks,omitempty"`
-
 	// RAID group name
 	// Example: rg0
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// raid group inline disks
+	// Read Only: true
+	RaidGroupInlineDisks []*RaidGroupDisk `json:"disks,omitempty"`
 
 	// RAID type of the raid group.
 	// Example: raid_dp
 	// Read Only: true
 	// Enum: [raid_dp raid_tec raid0 raid4 raid_ep]
-	RaidType string `json:"raid_type,omitempty"`
+	RaidType *string `json:"raid_type,omitempty"`
 
 	// recomputing parity
-	RecomputingParity *RaidGroupRecomputingParity `json:"recomputing_parity,omitempty"`
+	RecomputingParity *RaidGroupInlineRecomputingParity `json:"recomputing_parity,omitempty"`
 
 	// reconstruct
-	Reconstruct *RaidGroupReconstruct `json:"reconstruct,omitempty"`
+	Reconstruct *RaidGroupInlineReconstruct `json:"reconstruct,omitempty"`
 }
 
 // Validate validates this raid group
 func (m *RaidGroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDisks(formats); err != nil {
+	if err := m.validateRaidGroupInlineDisks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -77,18 +77,18 @@ func (m *RaidGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RaidGroup) validateDisks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Disks) { // not required
+func (m *RaidGroup) validateRaidGroupInlineDisks(formats strfmt.Registry) error {
+	if swag.IsZero(m.RaidGroupInlineDisks) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Disks); i++ {
-		if swag.IsZero(m.Disks[i]) { // not required
+	for i := 0; i < len(m.RaidGroupInlineDisks); i++ {
+		if swag.IsZero(m.RaidGroupInlineDisks[i]) { // not required
 			continue
 		}
 
-		if m.Disks[i] != nil {
-			if err := m.Disks[i].Validate(formats); err != nil {
+		if m.RaidGroupInlineDisks[i] != nil {
+			if err := m.RaidGroupInlineDisks[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("disks" + "." + strconv.Itoa(i))
 				}
@@ -180,7 +180,7 @@ func (m *RaidGroup) validateRaidType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateRaidTypeEnum("raid_type", "body", m.RaidType); err != nil {
+	if err := m.validateRaidTypeEnum("raid_type", "body", *m.RaidType); err != nil {
 		return err
 	}
 
@@ -233,11 +233,11 @@ func (m *RaidGroup) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateDisks(ctx, formats); err != nil {
+	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateName(ctx, formats); err != nil {
+	if err := m.contextValidateRaidGroupInlineDisks(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -277,16 +277,25 @@ func (m *RaidGroup) contextValidateDegraded(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *RaidGroup) contextValidateDisks(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "disks", "body", []*RaidGroupDisk(m.Disks)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Disks); i++ {
+	return nil
+}
 
-		if m.Disks[i] != nil {
-			if err := m.Disks[i].ContextValidate(ctx, formats); err != nil {
+func (m *RaidGroup) contextValidateRaidGroupInlineDisks(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "disks", "body", []*RaidGroupDisk(m.RaidGroupInlineDisks)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.RaidGroupInlineDisks); i++ {
+
+		if m.RaidGroupInlineDisks[i] != nil {
+			if err := m.RaidGroupInlineDisks[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("disks" + "." + strconv.Itoa(i))
 				}
@@ -299,18 +308,9 @@ func (m *RaidGroup) contextValidateDisks(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *RaidGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *RaidGroup) contextValidateRaidType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "raid_type", "body", string(m.RaidType)); err != nil {
+	if err := validate.ReadOnly(ctx, "raid_type", "body", m.RaidType); err != nil {
 		return err
 	}
 
@@ -363,10 +363,10 @@ func (m *RaidGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RaidGroupRecomputingParity raid group recomputing parity
+// RaidGroupInlineRecomputingParity raid group inline recomputing parity
 //
-// swagger:model RaidGroupRecomputingParity
-type RaidGroupRecomputingParity struct {
+// swagger:model raid_group_inline_recomputing_parity
+type RaidGroupInlineRecomputingParity struct {
 
 	// RAID group is recomputing parity
 	// Read Only: true
@@ -375,16 +375,16 @@ type RaidGroupRecomputingParity struct {
 	// Recomputing parity percentage
 	// Example: 10
 	// Read Only: true
-	Percent int64 `json:"percent,omitempty"`
+	Percent *int64 `json:"percent,omitempty"`
 }
 
-// Validate validates this raid group recomputing parity
-func (m *RaidGroupRecomputingParity) Validate(formats strfmt.Registry) error {
+// Validate validates this raid group inline recomputing parity
+func (m *RaidGroupInlineRecomputingParity) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this raid group recomputing parity based on the context it is used
-func (m *RaidGroupRecomputingParity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this raid group inline recomputing parity based on the context it is used
+func (m *RaidGroupInlineRecomputingParity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateActive(ctx, formats); err != nil {
@@ -401,7 +401,7 @@ func (m *RaidGroupRecomputingParity) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *RaidGroupRecomputingParity) contextValidateActive(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroupInlineRecomputingParity) contextValidateActive(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "recomputing_parity"+"."+"active", "body", m.Active); err != nil {
 		return err
@@ -410,9 +410,9 @@ func (m *RaidGroupRecomputingParity) contextValidateActive(ctx context.Context, 
 	return nil
 }
 
-func (m *RaidGroupRecomputingParity) contextValidatePercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroupInlineRecomputingParity) contextValidatePercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "recomputing_parity"+"."+"percent", "body", int64(m.Percent)); err != nil {
+	if err := validate.ReadOnly(ctx, "recomputing_parity"+"."+"percent", "body", m.Percent); err != nil {
 		return err
 	}
 
@@ -420,7 +420,7 @@ func (m *RaidGroupRecomputingParity) contextValidatePercent(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *RaidGroupRecomputingParity) MarshalBinary() ([]byte, error) {
+func (m *RaidGroupInlineRecomputingParity) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -428,8 +428,8 @@ func (m *RaidGroupRecomputingParity) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RaidGroupRecomputingParity) UnmarshalBinary(b []byte) error {
-	var res RaidGroupRecomputingParity
+func (m *RaidGroupInlineRecomputingParity) UnmarshalBinary(b []byte) error {
+	var res RaidGroupInlineRecomputingParity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -437,10 +437,10 @@ func (m *RaidGroupRecomputingParity) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RaidGroupReconstruct raid group reconstruct
+// RaidGroupInlineReconstruct raid group inline reconstruct
 //
-// swagger:model RaidGroupReconstruct
-type RaidGroupReconstruct struct {
+// swagger:model raid_group_inline_reconstruct
+type RaidGroupInlineReconstruct struct {
 
 	// One or more disks in this RAID group are being reconstructed.
 	// Read Only: true
@@ -449,16 +449,16 @@ type RaidGroupReconstruct struct {
 	// Reconstruct percentage
 	// Example: 10
 	// Read Only: true
-	Percent int64 `json:"percent,omitempty"`
+	Percent *int64 `json:"percent,omitempty"`
 }
 
-// Validate validates this raid group reconstruct
-func (m *RaidGroupReconstruct) Validate(formats strfmt.Registry) error {
+// Validate validates this raid group inline reconstruct
+func (m *RaidGroupInlineReconstruct) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this raid group reconstruct based on the context it is used
-func (m *RaidGroupReconstruct) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this raid group inline reconstruct based on the context it is used
+func (m *RaidGroupInlineReconstruct) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateActive(ctx, formats); err != nil {
@@ -475,7 +475,7 @@ func (m *RaidGroupReconstruct) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *RaidGroupReconstruct) contextValidateActive(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroupInlineReconstruct) contextValidateActive(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "reconstruct"+"."+"active", "body", m.Active); err != nil {
 		return err
@@ -484,9 +484,9 @@ func (m *RaidGroupReconstruct) contextValidateActive(ctx context.Context, format
 	return nil
 }
 
-func (m *RaidGroupReconstruct) contextValidatePercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroupInlineReconstruct) contextValidatePercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "reconstruct"+"."+"percent", "body", int64(m.Percent)); err != nil {
+	if err := validate.ReadOnly(ctx, "reconstruct"+"."+"percent", "body", m.Percent); err != nil {
 		return err
 	}
 
@@ -494,7 +494,7 @@ func (m *RaidGroupReconstruct) contextValidatePercent(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *RaidGroupReconstruct) MarshalBinary() ([]byte, error) {
+func (m *RaidGroupInlineReconstruct) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -502,8 +502,8 @@ func (m *RaidGroupReconstruct) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RaidGroupReconstruct) UnmarshalBinary(b []byte) error {
-	var res RaidGroupReconstruct
+func (m *RaidGroupInlineReconstruct) UnmarshalBinary(b []byte) error {
+	var res RaidGroupInlineReconstruct
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

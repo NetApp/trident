@@ -66,13 +66,13 @@ type SvmPeerDeleteParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   SVM peer relationship UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *SvmPeerDeleteParams) WithDefaults() *SvmPeerDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *SvmPeerDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SvmPeerDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -138,26 +138,26 @@ func (o *SvmPeerDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm peer delete params
-func (o *SvmPeerDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmPeerDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm peer delete params
+func (o *SvmPeerDeleteParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm peer delete params
-func (o *SvmPeerDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm peer delete params
+func (o *SvmPeerDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the svm peer delete params
-func (o *SvmPeerDeleteParams) WithUUIDPathParameter(uuid string) *SvmPeerDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the svm peer delete params
+func (o *SvmPeerDeleteParams) WithUUID(uuid string) *SvmPeerDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the svm peer delete params
-func (o *SvmPeerDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the svm peer delete params
+func (o *SvmPeerDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,13 +168,13 @@ func (o *SvmPeerDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -186,7 +186,7 @@ func (o *SvmPeerDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

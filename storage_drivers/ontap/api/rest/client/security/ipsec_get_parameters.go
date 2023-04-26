@@ -66,7 +66,7 @@ type IpsecGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *IpsecGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ipsec get params
-func (o *IpsecGetParams) WithFieldsQueryParameter(fields []string) *IpsecGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ipsec get params
+func (o *IpsecGetParams) WithFields(fields []string) *IpsecGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ipsec get params
-func (o *IpsecGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ipsec get params
+func (o *IpsecGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *IpsecGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *IpsecGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamIpsecGet binds the parameter fields
 func (o *IpsecGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

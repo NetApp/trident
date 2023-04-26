@@ -73,7 +73,7 @@ type NdmpSvmModifyParams struct {
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *NdmpSvmModifyParams) SetInfo(info *models.NdmpSvm) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the ndmp svm modify params
-func (o *NdmpSvmModifyParams) WithSVMUUIDPathParameter(svmUUID string) *NdmpSvmModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ndmp svm modify params
+func (o *NdmpSvmModifyParams) WithSvmUUID(svmUUID string) *NdmpSvmModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the ndmp svm modify params
-func (o *NdmpSvmModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ndmp svm modify params
+func (o *NdmpSvmModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *NdmpSvmModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

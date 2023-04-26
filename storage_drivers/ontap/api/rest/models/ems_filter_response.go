@@ -22,14 +22,14 @@ import (
 type EmsFilterResponse struct {
 
 	// links
-	Links *EmsFilterResponseLinks `json:"_links,omitempty"`
+	Links *EmsFilterResponseInlineLinks `json:"_links,omitempty"`
+
+	// ems filter response inline records
+	EmsFilterResponseInlineRecords []*EmsFilterResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// Number of records
-	// Example: 3
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*EmsFilterResponseRecordsItems0 `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ems filter response
@@ -40,7 +40,7 @@ func (m *EmsFilterResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateEmsFilterResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,18 +67,18 @@ func (m *EmsFilterResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsFilterResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *EmsFilterResponse) validateEmsFilterResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.EmsFilterResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.EmsFilterResponseInlineRecords); i++ {
+		if swag.IsZero(m.EmsFilterResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.EmsFilterResponseInlineRecords[i] != nil {
+			if err := m.EmsFilterResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -99,7 +99,7 @@ func (m *EmsFilterResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateEmsFilterResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,12 +123,12 @@ func (m *EmsFilterResponse) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *EmsFilterResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponse) contextValidateEmsFilterResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.EmsFilterResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.EmsFilterResponseInlineRecords[i] != nil {
+			if err := m.EmsFilterResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -159,10 +159,10 @@ func (m *EmsFilterResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsFilterResponseLinks ems filter response links
+// EmsFilterResponseInlineLinks ems filter response inline links
 //
-// swagger:model EmsFilterResponseLinks
-type EmsFilterResponseLinks struct {
+// swagger:model ems_filter_response_inline__links
+type EmsFilterResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -171,8 +171,8 @@ type EmsFilterResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems filter response links
-func (m *EmsFilterResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems filter response inline links
+func (m *EmsFilterResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -189,7 +189,7 @@ func (m *EmsFilterResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsFilterResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -206,7 +206,7 @@ func (m *EmsFilterResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsFilterResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -223,8 +223,8 @@ func (m *EmsFilterResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems filter response links based on the context it is used
-func (m *EmsFilterResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems filter response inline links based on the context it is used
+func (m *EmsFilterResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -241,7 +241,7 @@ func (m *EmsFilterResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *EmsFilterResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -255,7 +255,7 @@ func (m *EmsFilterResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *EmsFilterResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -270,7 +270,7 @@ func (m *EmsFilterResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *EmsFilterResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsFilterResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -278,8 +278,8 @@ func (m *EmsFilterResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsFilterResponseLinks) UnmarshalBinary(b []byte) error {
-	var res EmsFilterResponseLinks
+func (m *EmsFilterResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsFilterResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -287,20 +287,20 @@ func (m *EmsFilterResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsFilterResponseRecordsItems0 ems filter response records items0
+// EmsFilterResponseInlineRecordsInlineArrayItem ems filter response inline records inline array item
 //
-// swagger:model EmsFilterResponseRecordsItems0
-type EmsFilterResponseRecordsItems0 struct {
+// swagger:model ems_filter_response_inline_records_inline_array_item
+type EmsFilterResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *EmsFilterResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// Filter name
 	// Example: snmp-traphost
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Array of event filter rules on which to match.
-	Rules []*EmsFilterResponseRecordsItems0RulesItems0 `json:"rules,omitempty"`
+	Rules []*EmsFilterResponseRecordsItems0RulesItems0 `json:"rules"`
 
 	// Flag indicating system-defined filters.
 	// Example: true
@@ -308,8 +308,8 @@ type EmsFilterResponseRecordsItems0 struct {
 	SystemDefined *bool `json:"system_defined,omitempty"`
 }
 
-// Validate validates this ems filter response records items0
-func (m *EmsFilterResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this ems filter response inline records inline array item
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -326,7 +326,7 @@ func (m *EmsFilterResponseRecordsItems0) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -343,7 +343,7 @@ func (m *EmsFilterResponseRecordsItems0) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0) validateRules(formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) validateRules(formats strfmt.Registry) error {
 	if swag.IsZero(m.Rules) { // not required
 		return nil
 	}
@@ -367,8 +367,8 @@ func (m *EmsFilterResponseRecordsItems0) validateRules(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this ems filter response records items0 based on the context it is used
-func (m *EmsFilterResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems filter response inline records inline array item based on the context it is used
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -389,7 +389,7 @@ func (m *EmsFilterResponseRecordsItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -403,7 +403,7 @@ func (m *EmsFilterResponseRecordsItems0) contextValidateLinks(ctx context.Contex
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Rules); i++ {
 
@@ -421,7 +421,7 @@ func (m *EmsFilterResponseRecordsItems0) contextValidateRules(ctx context.Contex
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0) contextValidateSystemDefined(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) contextValidateSystemDefined(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "system_defined", "body", m.SystemDefined); err != nil {
 		return err
@@ -431,7 +431,7 @@ func (m *EmsFilterResponseRecordsItems0) contextValidateSystemDefined(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *EmsFilterResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -439,8 +439,8 @@ func (m *EmsFilterResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsFilterResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res EmsFilterResponseRecordsItems0
+func (m *EmsFilterResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res EmsFilterResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -448,17 +448,17 @@ func (m *EmsFilterResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsFilterResponseRecordsItems0Links ems filter response records items0 links
+// EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks ems filter response inline records inline array item inline links
 //
-// swagger:model EmsFilterResponseRecordsItems0Links
-type EmsFilterResponseRecordsItems0Links struct {
+// swagger:model ems_filter_response_inline_records_inline_array_item_inline__links
+type EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems filter response records items0 links
-func (m *EmsFilterResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this ems filter response inline records inline array item inline links
+func (m *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -471,7 +471,7 @@ func (m *EmsFilterResponseRecordsItems0Links) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -488,8 +488,8 @@ func (m *EmsFilterResponseRecordsItems0Links) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this ems filter response records items0 links based on the context it is used
-func (m *EmsFilterResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems filter response inline records inline array item inline links based on the context it is used
+func (m *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -502,7 +502,7 @@ func (m *EmsFilterResponseRecordsItems0Links) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *EmsFilterResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -517,7 +517,7 @@ func (m *EmsFilterResponseRecordsItems0Links) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *EmsFilterResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -525,8 +525,8 @@ func (m *EmsFilterResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsFilterResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res EmsFilterResponseRecordsItems0Links
+func (m *EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsFilterResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -544,7 +544,7 @@ type EmsFilterResponseRecordsItems0RulesItems0 struct {
 
 	// Rule index. Rules are evaluated in ascending order. If a rule's index order is not specified during creation, the rule is appended to the end of the list.
 	// Example: 1
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// message criteria
 	MessageCriteria *EmsFilterResponseRecordsItems0RulesItems0MessageCriteria `json:"message_criteria,omitempty"`
@@ -552,7 +552,7 @@ type EmsFilterResponseRecordsItems0RulesItems0 struct {
 	// Rule type
 	// Example: include
 	// Enum: [include exclude]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this ems filter response records items0 rules items0
@@ -660,7 +660,7 @@ func (m *EmsFilterResponseRecordsItems0RulesItems0) validateType(formats strfmt.
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -827,7 +827,7 @@ type EmsFilterResponseRecordsItems0RulesItems0MessageCriteria struct {
 
 	// Message name filter on which to match. Supports wildcards. Defaults to * if not specified.
 	// Example: callhome.*
-	NamePattern string `json:"name_pattern,omitempty"`
+	NamePattern *string `json:"name_pattern,omitempty"`
 
 	// A comma-separated list of severities or a wildcard.
 	// Example: error,informational

@@ -66,13 +66,13 @@ type ExportRuleDeleteParams struct {
 
 	   Export Rule Index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* PolicyID.
 
 	   Export Policy ID
 	*/
-	PolicyIDPathParameter int64
+	PolicyID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ExportRuleDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the export rule delete params
-func (o *ExportRuleDeleteParams) WithIndexPathParameter(index int64) *ExportRuleDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the export rule delete params
+func (o *ExportRuleDeleteParams) WithIndex(index int64) *ExportRuleDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the export rule delete params
-func (o *ExportRuleDeleteParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the export rule delete params
+func (o *ExportRuleDeleteParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithPolicyIDPathParameter adds the policyID to the export rule delete params
-func (o *ExportRuleDeleteParams) WithPolicyIDPathParameter(policyID int64) *ExportRuleDeleteParams {
-	o.SetPolicyIDPathParameter(policyID)
+// WithPolicyID adds the policyID to the export rule delete params
+func (o *ExportRuleDeleteParams) WithPolicyID(policyID int64) *ExportRuleDeleteParams {
+	o.SetPolicyID(policyID)
 	return o
 }
 
-// SetPolicyIDPathParameter adds the policyId to the export rule delete params
-func (o *ExportRuleDeleteParams) SetPolicyIDPathParameter(policyID int64) {
-	o.PolicyIDPathParameter = policyID
+// SetPolicyID adds the policyId to the export rule delete params
+func (o *ExportRuleDeleteParams) SetPolicyID(policyID int64) {
+	o.PolicyID = policyID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,12 +158,12 @@ func (o *ExportRuleDeleteParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param policy.id
-	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyIDPathParameter)); err != nil {
+	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyID)); err != nil {
 		return err
 	}
 

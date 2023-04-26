@@ -66,25 +66,25 @@ type ExportRuleClientsDeleteParams struct {
 
 	   Export Rule Index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* Match.
 
 	   Export Client Match
 	*/
-	MatchPathParameter string
+	Match string
 
 	/* PolicyID.
 
 	   Export Policy ID
 	*/
-	PolicyIDPathParameter int64
+	PolicyID int64
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,11 +104,11 @@ func (o *ExportRuleClientsDeleteParams) WithDefaults() *ExportRuleClientsDeleteP
 // All values with no default are reset to their zero value.
 func (o *ExportRuleClientsDeleteParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := ExportRuleClientsDeleteParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,48 +150,48 @@ func (o *ExportRuleClientsDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) WithIndexPathParameter(index int64) *ExportRuleClientsDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) WithIndex(index int64) *ExportRuleClientsDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithMatchPathParameter adds the match to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) WithMatchPathParameter(match string) *ExportRuleClientsDeleteParams {
-	o.SetMatchPathParameter(match)
+// WithMatch adds the match to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) WithMatch(match string) *ExportRuleClientsDeleteParams {
+	o.SetMatch(match)
 	return o
 }
 
-// SetMatchPathParameter adds the match to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) SetMatchPathParameter(match string) {
-	o.MatchPathParameter = match
+// SetMatch adds the match to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) SetMatch(match string) {
+	o.Match = match
 }
 
-// WithPolicyIDPathParameter adds the policyID to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) WithPolicyIDPathParameter(policyID int64) *ExportRuleClientsDeleteParams {
-	o.SetPolicyIDPathParameter(policyID)
+// WithPolicyID adds the policyID to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) WithPolicyID(policyID int64) *ExportRuleClientsDeleteParams {
+	o.SetPolicyID(policyID)
 	return o
 }
 
-// SetPolicyIDPathParameter adds the policyId to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) SetPolicyIDPathParameter(policyID int64) {
-	o.PolicyIDPathParameter = policyID
+// SetPolicyID adds the policyId to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) SetPolicyID(policyID int64) {
+	o.PolicyID = policyID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ExportRuleClientsDeleteParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) WithReturnRecords(returnRecords *bool) *ExportRuleClientsDeleteParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the export rule clients delete params
-func (o *ExportRuleClientsDeleteParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the export rule clients delete params
+func (o *ExportRuleClientsDeleteParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -203,27 +203,27 @@ func (o *ExportRuleClientsDeleteParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param match
-	if err := r.SetPathParam("match", o.MatchPathParameter); err != nil {
+	if err := r.SetPathParam("match", o.Match); err != nil {
 		return err
 	}
 
 	// path param policy.id
-	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyIDPathParameter)); err != nil {
+	if err := r.SetPathParam("policy.id", swag.FormatInt64(o.PolicyID)); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

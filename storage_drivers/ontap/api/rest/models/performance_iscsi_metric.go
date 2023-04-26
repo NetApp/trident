@@ -21,32 +21,32 @@ import (
 type PerformanceIscsiMetric struct {
 
 	// links
-	Links *PerformanceIscsiMetricLinks `json:"_links,omitempty"`
+	Links *PerformanceIscsiMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceIscsiMetricIops `json:"iops,omitempty"`
+	Iops *PerformanceIscsiMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceIscsiMetricLatency `json:"latency,omitempty"`
+	Latency *PerformanceIscsiMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// svm
-	Svm *PerformanceIscsiMetricSvm `json:"svm,omitempty"`
+	Svm *PerformanceIscsiMetricInlineSvm `json:"svm,omitempty"`
 
 	// throughput
-	Throughput *PerformanceIscsiMetricThroughput `json:"throughput,omitempty"`
+	Throughput *PerformanceIscsiMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -203,7 +203,7 @@ func (m *PerformanceIscsiMetric) validateDuration(formats strfmt.Registry) error
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -383,7 +383,7 @@ func (m *PerformanceIscsiMetric) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -494,7 +494,7 @@ func (m *PerformanceIscsiMetric) contextValidateLinks(ctx context.Context, forma
 
 func (m *PerformanceIscsiMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -531,7 +531,7 @@ func (m *PerformanceIscsiMetric) contextValidateLatency(ctx context.Context, for
 
 func (m *PerformanceIscsiMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -593,34 +593,34 @@ func (m *PerformanceIscsiMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceIscsiMetricIops The rate of I/O operations observed at the storage object.
+// PerformanceIscsiMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceIscsiMetricIops
-type PerformanceIscsiMetricIops struct {
+// swagger:model performance_iscsi_metric_inline_iops
+type PerformanceIscsiMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance iscsi metric iops
-func (m *PerformanceIscsiMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance iscsi metric inline iops
+func (m *PerformanceIscsiMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance iscsi metric iops based on the context it is used
-func (m *PerformanceIscsiMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance iscsi metric inline iops based on the context it is used
+func (m *PerformanceIscsiMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -630,7 +630,7 @@ func (m *PerformanceIscsiMetricIops) ContextValidate(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceIscsiMetricIops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceIscsiMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -638,8 +638,8 @@ func (m *PerformanceIscsiMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceIscsiMetricIops) UnmarshalBinary(b []byte) error {
-	var res PerformanceIscsiMetricIops
+func (m *PerformanceIscsiMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceIscsiMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -647,34 +647,34 @@ func (m *PerformanceIscsiMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceIscsiMetricLatency The round trip latency in microseconds observed at the storage object.
+// PerformanceIscsiMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceIscsiMetricLatency
-type PerformanceIscsiMetricLatency struct {
+// swagger:model performance_iscsi_metric_inline_latency
+type PerformanceIscsiMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance iscsi metric latency
-func (m *PerformanceIscsiMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance iscsi metric inline latency
+func (m *PerformanceIscsiMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance iscsi metric latency based on the context it is used
-func (m *PerformanceIscsiMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance iscsi metric inline latency based on the context it is used
+func (m *PerformanceIscsiMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -684,7 +684,7 @@ func (m *PerformanceIscsiMetricLatency) ContextValidate(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceIscsiMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceIscsiMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -692,8 +692,8 @@ func (m *PerformanceIscsiMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceIscsiMetricLatency) UnmarshalBinary(b []byte) error {
-	var res PerformanceIscsiMetricLatency
+func (m *PerformanceIscsiMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceIscsiMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -701,17 +701,17 @@ func (m *PerformanceIscsiMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceIscsiMetricLinks performance iscsi metric links
+// PerformanceIscsiMetricInlineLinks performance iscsi metric inline links
 //
-// swagger:model PerformanceIscsiMetricLinks
-type PerformanceIscsiMetricLinks struct {
+// swagger:model performance_iscsi_metric_inline__links
+type PerformanceIscsiMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance iscsi metric links
-func (m *PerformanceIscsiMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance iscsi metric inline links
+func (m *PerformanceIscsiMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -724,7 +724,7 @@ func (m *PerformanceIscsiMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PerformanceIscsiMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceIscsiMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -741,8 +741,8 @@ func (m *PerformanceIscsiMetricLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this performance iscsi metric links based on the context it is used
-func (m *PerformanceIscsiMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance iscsi metric inline links based on the context it is used
+func (m *PerformanceIscsiMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -755,7 +755,7 @@ func (m *PerformanceIscsiMetricLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *PerformanceIscsiMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceIscsiMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -770,7 +770,7 @@ func (m *PerformanceIscsiMetricLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceIscsiMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceIscsiMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -778,8 +778,8 @@ func (m *PerformanceIscsiMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceIscsiMetricLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceIscsiMetricLinks
+func (m *PerformanceIscsiMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceIscsiMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -787,29 +787,29 @@ func (m *PerformanceIscsiMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceIscsiMetricSvm performance iscsi metric svm
+// PerformanceIscsiMetricInlineSvm performance iscsi metric inline svm
 //
-// swagger:model PerformanceIscsiMetricSvm
-type PerformanceIscsiMetricSvm struct {
+// swagger:model performance_iscsi_metric_inline_svm
+type PerformanceIscsiMetricInlineSvm struct {
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this performance iscsi metric svm
-func (m *PerformanceIscsiMetricSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this performance iscsi metric inline svm
+func (m *PerformanceIscsiMetricInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this performance iscsi metric svm based on context it is used
-func (m *PerformanceIscsiMetricSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this performance iscsi metric inline svm based on context it is used
+func (m *PerformanceIscsiMetricInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceIscsiMetricSvm) MarshalBinary() ([]byte, error) {
+func (m *PerformanceIscsiMetricInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -817,8 +817,8 @@ func (m *PerformanceIscsiMetricSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceIscsiMetricSvm) UnmarshalBinary(b []byte) error {
-	var res PerformanceIscsiMetricSvm
+func (m *PerformanceIscsiMetricInlineSvm) UnmarshalBinary(b []byte) error {
+	var res PerformanceIscsiMetricInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -826,31 +826,31 @@ func (m *PerformanceIscsiMetricSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceIscsiMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceIscsiMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceIscsiMetricThroughput
-type PerformanceIscsiMetricThroughput struct {
+// swagger:model performance_iscsi_metric_inline_throughput
+type PerformanceIscsiMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance iscsi metric throughput
-func (m *PerformanceIscsiMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance iscsi metric inline throughput
+func (m *PerformanceIscsiMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance iscsi metric throughput based on the context it is used
-func (m *PerformanceIscsiMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance iscsi metric inline throughput based on the context it is used
+func (m *PerformanceIscsiMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -860,7 +860,7 @@ func (m *PerformanceIscsiMetricThroughput) ContextValidate(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceIscsiMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceIscsiMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -868,8 +868,8 @@ func (m *PerformanceIscsiMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceIscsiMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceIscsiMetricThroughput
+func (m *PerformanceIscsiMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceIscsiMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

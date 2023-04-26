@@ -22,60 +22,60 @@ import (
 type SoftwareReference struct {
 
 	// links
-	Links *SoftwareReferenceLinks `json:"_links,omitempty"`
+	Links *SoftwareReferenceInlineLinks `json:"_links,omitempty"`
 
 	// User triggered action to apply to the install operation
 	// Example: pause
 	// Enum: [pause cancel resume]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Elapsed time during the upgrade or validation operation
 	// Example: 2140
 	// Read Only: true
-	ElapsedDuration int64 `json:"elapsed_duration,omitempty"`
+	ElapsedDuration *int64 `json:"elapsed_duration,omitempty"`
 
 	// Overall estimated time for completion of the upgrade or validation operation.
 	// Example: 5220
 	// Read Only: true
-	EstimatedDuration int64 `json:"estimated_duration,omitempty"`
+	EstimatedDuration *int64 `json:"estimated_duration,omitempty"`
 
 	// metrocluster
-	Metrocluster *SoftwareReferenceMetrocluster `json:"metrocluster,omitempty"`
-
-	// List of nodes, active versions, and firmware update progressions.
-	// Read Only: true
-	Nodes []*SoftwareNodeReference `json:"nodes,omitempty"`
+	Metrocluster *SoftwareReferenceInlineMetrocluster `json:"metrocluster,omitempty"`
 
 	// Version being installed on the system.
 	// Example: ONTAP_X_1
 	// Read Only: true
-	PendingVersion string `json:"pending_version,omitempty"`
+	PendingVersion *string `json:"pending_version,omitempty"`
+
+	// List of nodes, active versions, and firmware update progressions.
+	// Read Only: true
+	SoftwareReferenceInlineNodes []*SoftwareNodeReference `json:"nodes,omitempty"`
 
 	// List of failed post-update checks' warnings, errors, and advice.
 	// Read Only: true
-	PostUpdateChecks []*SoftwareValidationReference `json:"post_update_checks,omitempty"`
+	SoftwareReferenceInlinePostUpdateChecks []*SoftwareValidationReference `json:"post_update_checks,omitempty"`
+
+	// Display status details.
+	// Read Only: true
+	SoftwareReferenceInlineStatusDetails []*SoftwareStatusDetailsReference `json:"status_details,omitempty"`
+
+	// Display update progress details.
+	// Read Only: true
+	SoftwareReferenceInlineUpdateDetails []*SoftwareUpdateDetailsReference `json:"update_details,omitempty"`
+
+	// List of validation warnings, errors, and advice.
+	// Read Only: true
+	SoftwareReferenceInlineValidationResults []*SoftwareValidationReference `json:"validation_results,omitempty"`
 
 	// Operational state of the upgrade
 	// Example: completed
 	// Read Only: true
 	// Enum: [in_progress waiting paused_by_user paused_on_error completed canceled failed pause_pending cancel_pending]
-	State string `json:"state,omitempty"`
-
-	// Display status details.
-	// Read Only: true
-	StatusDetails []*SoftwareStatusDetailsReference `json:"status_details,omitempty"`
-
-	// Display update progress details.
-	// Read Only: true
-	UpdateDetails []*SoftwareUpdateDetailsReference `json:"update_details,omitempty"`
-
-	// List of validation warnings, errors, and advice.
-	// Read Only: true
-	ValidationResults []*SoftwareValidationReference `json:"validation_results,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Version of ONTAP installed and currently active on the system. During PATCH, using the 'validate_only' parameter on the request executes pre-checks, but does not perform the full installation.
 	// Example: ONTAP_X
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this software reference
@@ -94,27 +94,27 @@ func (m *SoftwareReference) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNodes(formats); err != nil {
+	if err := m.validateSoftwareReferenceInlineNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePostUpdateChecks(formats); err != nil {
+	if err := m.validateSoftwareReferenceInlinePostUpdateChecks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareReferenceInlineStatusDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareReferenceInlineUpdateDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareReferenceInlineValidationResults(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateState(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateStatusDetails(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateUpdateDetails(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateValidationResults(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -200,7 +200,7 @@ func (m *SoftwareReference) validateAction(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 
@@ -224,18 +224,18 @@ func (m *SoftwareReference) validateMetrocluster(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SoftwareReference) validateNodes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Nodes) { // not required
+func (m *SoftwareReference) validateSoftwareReferenceInlineNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareReferenceInlineNodes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Nodes); i++ {
-		if swag.IsZero(m.Nodes[i]) { // not required
+	for i := 0; i < len(m.SoftwareReferenceInlineNodes); i++ {
+		if swag.IsZero(m.SoftwareReferenceInlineNodes[i]) { // not required
 			continue
 		}
 
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].Validate(formats); err != nil {
+		if m.SoftwareReferenceInlineNodes[i] != nil {
+			if err := m.SoftwareReferenceInlineNodes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
 				}
@@ -248,20 +248,92 @@ func (m *SoftwareReference) validateNodes(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SoftwareReference) validatePostUpdateChecks(formats strfmt.Registry) error {
-	if swag.IsZero(m.PostUpdateChecks) { // not required
+func (m *SoftwareReference) validateSoftwareReferenceInlinePostUpdateChecks(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareReferenceInlinePostUpdateChecks) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.PostUpdateChecks); i++ {
-		if swag.IsZero(m.PostUpdateChecks[i]) { // not required
+	for i := 0; i < len(m.SoftwareReferenceInlinePostUpdateChecks); i++ {
+		if swag.IsZero(m.SoftwareReferenceInlinePostUpdateChecks[i]) { // not required
 			continue
 		}
 
-		if m.PostUpdateChecks[i] != nil {
-			if err := m.PostUpdateChecks[i].Validate(formats); err != nil {
+		if m.SoftwareReferenceInlinePostUpdateChecks[i] != nil {
+			if err := m.SoftwareReferenceInlinePostUpdateChecks[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("post_update_checks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SoftwareReference) validateSoftwareReferenceInlineStatusDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareReferenceInlineStatusDetails) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SoftwareReferenceInlineStatusDetails); i++ {
+		if swag.IsZero(m.SoftwareReferenceInlineStatusDetails[i]) { // not required
+			continue
+		}
+
+		if m.SoftwareReferenceInlineStatusDetails[i] != nil {
+			if err := m.SoftwareReferenceInlineStatusDetails[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status_details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SoftwareReference) validateSoftwareReferenceInlineUpdateDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareReferenceInlineUpdateDetails) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SoftwareReferenceInlineUpdateDetails); i++ {
+		if swag.IsZero(m.SoftwareReferenceInlineUpdateDetails[i]) { // not required
+			continue
+		}
+
+		if m.SoftwareReferenceInlineUpdateDetails[i] != nil {
+			if err := m.SoftwareReferenceInlineUpdateDetails[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("update_details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *SoftwareReference) validateSoftwareReferenceInlineValidationResults(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareReferenceInlineValidationResults) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SoftwareReferenceInlineValidationResults); i++ {
+		if swag.IsZero(m.SoftwareReferenceInlineValidationResults[i]) { // not required
+			continue
+		}
+
+		if m.SoftwareReferenceInlineValidationResults[i] != nil {
+			if err := m.SoftwareReferenceInlineValidationResults[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("validation_results" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -391,80 +463,8 @@ func (m *SoftwareReference) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *SoftwareReference) validateStatusDetails(formats strfmt.Registry) error {
-	if swag.IsZero(m.StatusDetails) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.StatusDetails); i++ {
-		if swag.IsZero(m.StatusDetails[i]) { // not required
-			continue
-		}
-
-		if m.StatusDetails[i] != nil {
-			if err := m.StatusDetails[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("status_details" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *SoftwareReference) validateUpdateDetails(formats strfmt.Registry) error {
-	if swag.IsZero(m.UpdateDetails) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.UpdateDetails); i++ {
-		if swag.IsZero(m.UpdateDetails[i]) { // not required
-			continue
-		}
-
-		if m.UpdateDetails[i] != nil {
-			if err := m.UpdateDetails[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("update_details" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *SoftwareReference) validateValidationResults(formats strfmt.Registry) error {
-	if swag.IsZero(m.ValidationResults) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ValidationResults); i++ {
-		if swag.IsZero(m.ValidationResults[i]) { // not required
-			continue
-		}
-
-		if m.ValidationResults[i] != nil {
-			if err := m.ValidationResults[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("validation_results" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -490,31 +490,31 @@ func (m *SoftwareReference) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNodes(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidatePendingVersion(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePostUpdateChecks(ctx, formats); err != nil {
+	if err := m.contextValidateSoftwareReferenceInlineNodes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSoftwareReferenceInlinePostUpdateChecks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSoftwareReferenceInlineStatusDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSoftwareReferenceInlineUpdateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSoftwareReferenceInlineValidationResults(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateStatusDetails(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUpdateDetails(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateValidationResults(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -540,7 +540,7 @@ func (m *SoftwareReference) contextValidateLinks(ctx context.Context, formats st
 
 func (m *SoftwareReference) contextValidateElapsedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "elapsed_duration", "body", int64(m.ElapsedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "elapsed_duration", "body", m.ElapsedDuration); err != nil {
 		return err
 	}
 
@@ -549,7 +549,7 @@ func (m *SoftwareReference) contextValidateElapsedDuration(ctx context.Context, 
 
 func (m *SoftwareReference) contextValidateEstimatedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "estimated_duration", "body", int64(m.EstimatedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "estimated_duration", "body", m.EstimatedDuration); err != nil {
 		return err
 	}
 
@@ -570,16 +570,25 @@ func (m *SoftwareReference) contextValidateMetrocluster(ctx context.Context, for
 	return nil
 }
 
-func (m *SoftwareReference) contextValidateNodes(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReference) contextValidatePendingVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nodes", "body", []*SoftwareNodeReference(m.Nodes)); err != nil {
+	if err := validate.ReadOnly(ctx, "pending_version", "body", m.PendingVersion); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Nodes); i++ {
+	return nil
+}
 
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].ContextValidate(ctx, formats); err != nil {
+func (m *SoftwareReference) contextValidateSoftwareReferenceInlineNodes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nodes", "body", []*SoftwareNodeReference(m.SoftwareReferenceInlineNodes)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.SoftwareReferenceInlineNodes); i++ {
+
+		if m.SoftwareReferenceInlineNodes[i] != nil {
+			if err := m.SoftwareReferenceInlineNodes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
 				}
@@ -592,25 +601,16 @@ func (m *SoftwareReference) contextValidateNodes(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SoftwareReference) contextValidatePendingVersion(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReference) contextValidateSoftwareReferenceInlinePostUpdateChecks(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "pending_version", "body", string(m.PendingVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "post_update_checks", "body", []*SoftwareValidationReference(m.SoftwareReferenceInlinePostUpdateChecks)); err != nil {
 		return err
 	}
 
-	return nil
-}
+	for i := 0; i < len(m.SoftwareReferenceInlinePostUpdateChecks); i++ {
 
-func (m *SoftwareReference) contextValidatePostUpdateChecks(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "post_update_checks", "body", []*SoftwareValidationReference(m.PostUpdateChecks)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.PostUpdateChecks); i++ {
-
-		if m.PostUpdateChecks[i] != nil {
-			if err := m.PostUpdateChecks[i].ContextValidate(ctx, formats); err != nil {
+		if m.SoftwareReferenceInlinePostUpdateChecks[i] != nil {
+			if err := m.SoftwareReferenceInlinePostUpdateChecks[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("post_update_checks" + "." + strconv.Itoa(i))
 				}
@@ -623,25 +623,16 @@ func (m *SoftwareReference) contextValidatePostUpdateChecks(ctx context.Context,
 	return nil
 }
 
-func (m *SoftwareReference) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReference) contextValidateSoftwareReferenceInlineStatusDetails(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "status_details", "body", []*SoftwareStatusDetailsReference(m.SoftwareReferenceInlineStatusDetails)); err != nil {
 		return err
 	}
 
-	return nil
-}
+	for i := 0; i < len(m.SoftwareReferenceInlineStatusDetails); i++ {
 
-func (m *SoftwareReference) contextValidateStatusDetails(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "status_details", "body", []*SoftwareStatusDetailsReference(m.StatusDetails)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.StatusDetails); i++ {
-
-		if m.StatusDetails[i] != nil {
-			if err := m.StatusDetails[i].ContextValidate(ctx, formats); err != nil {
+		if m.SoftwareReferenceInlineStatusDetails[i] != nil {
+			if err := m.SoftwareReferenceInlineStatusDetails[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("status_details" + "." + strconv.Itoa(i))
 				}
@@ -654,16 +645,16 @@ func (m *SoftwareReference) contextValidateStatusDetails(ctx context.Context, fo
 	return nil
 }
 
-func (m *SoftwareReference) contextValidateUpdateDetails(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReference) contextValidateSoftwareReferenceInlineUpdateDetails(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "update_details", "body", []*SoftwareUpdateDetailsReference(m.UpdateDetails)); err != nil {
+	if err := validate.ReadOnly(ctx, "update_details", "body", []*SoftwareUpdateDetailsReference(m.SoftwareReferenceInlineUpdateDetails)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.UpdateDetails); i++ {
+	for i := 0; i < len(m.SoftwareReferenceInlineUpdateDetails); i++ {
 
-		if m.UpdateDetails[i] != nil {
-			if err := m.UpdateDetails[i].ContextValidate(ctx, formats); err != nil {
+		if m.SoftwareReferenceInlineUpdateDetails[i] != nil {
+			if err := m.SoftwareReferenceInlineUpdateDetails[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("update_details" + "." + strconv.Itoa(i))
 				}
@@ -676,16 +667,16 @@ func (m *SoftwareReference) contextValidateUpdateDetails(ctx context.Context, fo
 	return nil
 }
 
-func (m *SoftwareReference) contextValidateValidationResults(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReference) contextValidateSoftwareReferenceInlineValidationResults(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "validation_results", "body", []*SoftwareValidationReference(m.ValidationResults)); err != nil {
+	if err := validate.ReadOnly(ctx, "validation_results", "body", []*SoftwareValidationReference(m.SoftwareReferenceInlineValidationResults)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.ValidationResults); i++ {
+	for i := 0; i < len(m.SoftwareReferenceInlineValidationResults); i++ {
 
-		if m.ValidationResults[i] != nil {
-			if err := m.ValidationResults[i].ContextValidate(ctx, formats); err != nil {
+		if m.SoftwareReferenceInlineValidationResults[i] != nil {
+			if err := m.SoftwareReferenceInlineValidationResults[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("validation_results" + "." + strconv.Itoa(i))
 				}
@@ -693,6 +684,15 @@ func (m *SoftwareReference) contextValidateValidationResults(ctx context.Context
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *SoftwareReference) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
+		return err
 	}
 
 	return nil
@@ -716,17 +716,17 @@ func (m *SoftwareReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareReferenceLinks software reference links
+// SoftwareReferenceInlineLinks software reference inline links
 //
-// swagger:model SoftwareReferenceLinks
-type SoftwareReferenceLinks struct {
+// swagger:model software_reference_inline__links
+type SoftwareReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this software reference links
-func (m *SoftwareReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this software reference inline links
+func (m *SoftwareReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -739,7 +739,7 @@ func (m *SoftwareReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SoftwareReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -756,8 +756,8 @@ func (m *SoftwareReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software reference links based on the context it is used
-func (m *SoftwareReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software reference inline links based on the context it is used
+func (m *SoftwareReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -770,7 +770,7 @@ func (m *SoftwareReferenceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SoftwareReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -785,7 +785,7 @@ func (m *SoftwareReferenceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SoftwareReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -793,8 +793,8 @@ func (m *SoftwareReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SoftwareReferenceLinks
+func (m *SoftwareReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SoftwareReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -802,24 +802,24 @@ func (m *SoftwareReferenceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareReferenceMetrocluster software reference metrocluster
+// SoftwareReferenceInlineMetrocluster software reference inline metrocluster
 //
-// swagger:model SoftwareReferenceMetrocluster
-type SoftwareReferenceMetrocluster struct {
+// swagger:model software_reference_inline_metrocluster
+type SoftwareReferenceInlineMetrocluster struct {
 
 	// List of MetroCluster sites, statuses, and active ONTAP versions.
 	// Read Only: true
 	Clusters []*SoftwareMccReference `json:"clusters,omitempty"`
 
 	// progress details
-	ProgressDetails *SoftwareReferenceMetroclusterProgressDetails `json:"progress_details,omitempty"`
+	ProgressDetails *SoftwareReferenceInlineMetroclusterInlineProgressDetails `json:"progress_details,omitempty"`
 
 	// progress summary
-	ProgressSummary *SoftwareReferenceMetroclusterProgressSummary `json:"progress_summary,omitempty"`
+	ProgressSummary *SoftwareReferenceInlineMetroclusterInlineProgressSummary `json:"progress_summary,omitempty"`
 }
 
-// Validate validates this software reference metrocluster
-func (m *SoftwareReferenceMetrocluster) Validate(formats strfmt.Registry) error {
+// Validate validates this software reference inline metrocluster
+func (m *SoftwareReferenceInlineMetrocluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateClusters(formats); err != nil {
@@ -840,7 +840,7 @@ func (m *SoftwareReferenceMetrocluster) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SoftwareReferenceMetrocluster) validateClusters(formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineMetrocluster) validateClusters(formats strfmt.Registry) error {
 	if swag.IsZero(m.Clusters) { // not required
 		return nil
 	}
@@ -864,7 +864,7 @@ func (m *SoftwareReferenceMetrocluster) validateClusters(formats strfmt.Registry
 	return nil
 }
 
-func (m *SoftwareReferenceMetrocluster) validateProgressDetails(formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineMetrocluster) validateProgressDetails(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProgressDetails) { // not required
 		return nil
 	}
@@ -881,7 +881,7 @@ func (m *SoftwareReferenceMetrocluster) validateProgressDetails(formats strfmt.R
 	return nil
 }
 
-func (m *SoftwareReferenceMetrocluster) validateProgressSummary(formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineMetrocluster) validateProgressSummary(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProgressSummary) { // not required
 		return nil
 	}
@@ -898,8 +898,8 @@ func (m *SoftwareReferenceMetrocluster) validateProgressSummary(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this software reference metrocluster based on the context it is used
-func (m *SoftwareReferenceMetrocluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software reference inline metrocluster based on the context it is used
+func (m *SoftwareReferenceInlineMetrocluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateClusters(ctx, formats); err != nil {
@@ -920,7 +920,7 @@ func (m *SoftwareReferenceMetrocluster) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *SoftwareReferenceMetrocluster) contextValidateClusters(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineMetrocluster) contextValidateClusters(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"clusters", "body", []*SoftwareMccReference(m.Clusters)); err != nil {
 		return err
@@ -942,7 +942,7 @@ func (m *SoftwareReferenceMetrocluster) contextValidateClusters(ctx context.Cont
 	return nil
 }
 
-func (m *SoftwareReferenceMetrocluster) contextValidateProgressDetails(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineMetrocluster) contextValidateProgressDetails(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ProgressDetails != nil {
 		if err := m.ProgressDetails.ContextValidate(ctx, formats); err != nil {
@@ -956,7 +956,7 @@ func (m *SoftwareReferenceMetrocluster) contextValidateProgressDetails(ctx conte
 	return nil
 }
 
-func (m *SoftwareReferenceMetrocluster) contextValidateProgressSummary(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareReferenceInlineMetrocluster) contextValidateProgressSummary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ProgressSummary != nil {
 		if err := m.ProgressSummary.ContextValidate(ctx, formats); err != nil {
@@ -971,7 +971,7 @@ func (m *SoftwareReferenceMetrocluster) contextValidateProgressSummary(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareReferenceMetrocluster) MarshalBinary() ([]byte, error) {
+func (m *SoftwareReferenceInlineMetrocluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -979,8 +979,8 @@ func (m *SoftwareReferenceMetrocluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareReferenceMetrocluster) UnmarshalBinary(b []byte) error {
-	var res SoftwareReferenceMetrocluster
+func (m *SoftwareReferenceInlineMetrocluster) UnmarshalBinary(b []byte) error {
+	var res SoftwareReferenceInlineMetrocluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -988,23 +988,23 @@ func (m *SoftwareReferenceMetrocluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareReferenceMetroclusterProgressDetails software reference metrocluster progress details
+// SoftwareReferenceInlineMetroclusterInlineProgressDetails software reference inline metrocluster inline progress details
 //
-// swagger:model SoftwareReferenceMetroclusterProgressDetails
-type SoftwareReferenceMetroclusterProgressDetails struct {
+// swagger:model software_reference_inline_metrocluster_inline_progress_details
+type SoftwareReferenceInlineMetroclusterInlineProgressDetails struct {
 
 	// MetroCluster update progress details.
 	// Example: Switchover in progress
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this software reference metrocluster progress details
-func (m *SoftwareReferenceMetroclusterProgressDetails) Validate(formats strfmt.Registry) error {
+// Validate validates this software reference inline metrocluster inline progress details
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressDetails) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software reference metrocluster progress details based on the context it is used
-func (m *SoftwareReferenceMetroclusterProgressDetails) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software reference inline metrocluster inline progress details based on the context it is used
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressDetails) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1014,7 +1014,7 @@ func (m *SoftwareReferenceMetroclusterProgressDetails) ContextValidate(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareReferenceMetroclusterProgressDetails) MarshalBinary() ([]byte, error) {
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressDetails) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1022,8 +1022,8 @@ func (m *SoftwareReferenceMetroclusterProgressDetails) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareReferenceMetroclusterProgressDetails) UnmarshalBinary(b []byte) error {
-	var res SoftwareReferenceMetroclusterProgressDetails
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressDetails) UnmarshalBinary(b []byte) error {
+	var res SoftwareReferenceInlineMetroclusterInlineProgressDetails
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1031,23 +1031,23 @@ func (m *SoftwareReferenceMetroclusterProgressDetails) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// SoftwareReferenceMetroclusterProgressSummary software reference metrocluster progress summary
+// SoftwareReferenceInlineMetroclusterInlineProgressSummary software reference inline metrocluster inline progress summary
 //
-// swagger:model SoftwareReferenceMetroclusterProgressSummary
-type SoftwareReferenceMetroclusterProgressSummary struct {
+// swagger:model software_reference_inline_metrocluster_inline_progress_summary
+type SoftwareReferenceInlineMetroclusterInlineProgressSummary struct {
 
 	// MetroCluster update progress summary.
 	// Example: MetroCluster updated successfully.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this software reference metrocluster progress summary
-func (m *SoftwareReferenceMetroclusterProgressSummary) Validate(formats strfmt.Registry) error {
+// Validate validates this software reference inline metrocluster inline progress summary
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressSummary) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software reference metrocluster progress summary based on the context it is used
-func (m *SoftwareReferenceMetroclusterProgressSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software reference inline metrocluster inline progress summary based on the context it is used
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1057,7 +1057,7 @@ func (m *SoftwareReferenceMetroclusterProgressSummary) ContextValidate(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareReferenceMetroclusterProgressSummary) MarshalBinary() ([]byte, error) {
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressSummary) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1065,8 +1065,8 @@ func (m *SoftwareReferenceMetroclusterProgressSummary) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareReferenceMetroclusterProgressSummary) UnmarshalBinary(b []byte) error {
-	var res SoftwareReferenceMetroclusterProgressSummary
+func (m *SoftwareReferenceInlineMetroclusterInlineProgressSummary) UnmarshalBinary(b []byte) error {
+	var res SoftwareReferenceInlineMetroclusterInlineProgressSummary
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

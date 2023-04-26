@@ -11,12 +11,13 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 )
 
 func ParseEndpoint(ep string) (string, string, error) {
@@ -53,18 +54,26 @@ func NewNodeServiceCapability(cap csi.NodeServiceCapability_RPC_Type) *csi.NodeS
 	}
 }
 
+// logGRPC is a unary interceptor that logs GRPC requests.
 func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{},
 	error,
 ) {
-	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI)
-	Logc(ctx).Debugf("GRPC call: %s", info.FullMethod)
-	Logc(ctx).Debugf("GRPC request: %+v", req)
+	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI, WorkflowNone, LogLayerCSIFrontend)
+	Audit().Logf(ctx, AuditGRPCAccess, LogFields{}, "GRPC call: %s", info.FullMethod)
+	logFields := LogFields{
+		"Request": fmt.Sprintf("GRPC request: %+v", req),
+	}
+
+	Logc(ctx).WithFields(logFields).Debugf("GRPC call: %s", info.FullMethod)
+
+	// Handle the actual request.
 	resp, err := handler(ctx, req)
 	if err != nil {
 		Logc(ctx).Errorf("GRPC error: %v", err)
 	} else {
-		Logc(ctx).Debugf("GRPC response: %+v", resp)
+		Logc(ctx).Tracef("GRPC response: %+v", resp)
 	}
+
 	return resp, err
 }
 
@@ -73,22 +82,22 @@ func encryptCHAPPublishInfo(
 	ctx context.Context, publishInfo map[string]string, volumePublishInfo *utils.VolumePublishInfo, aesKey []byte,
 ) error {
 	var err error
-	if publishInfo["encryptedIscsiUsername"], err = utils.EncryptStringWithAES(
+	if publishInfo["encryptedIscsiUsername"], err = crypto.EncryptStringWithAES(
 		volumePublishInfo.IscsiUsername, aesKey); err != nil {
 		Logc(ctx).Errorf("Error encrypting iSCSI username; %v", err)
 		return errors.New("error encrypting iscsi username")
 	}
-	if publishInfo["encryptedIscsiInitiatorSecret"], err = utils.EncryptStringWithAES(
+	if publishInfo["encryptedIscsiInitiatorSecret"], err = crypto.EncryptStringWithAES(
 		volumePublishInfo.IscsiInitiatorSecret, aesKey); err != nil {
 		Logc(ctx).Errorf("Error encrypting initiator secret; %v", err)
 		return errors.New("error encrypting initiator secret")
 	}
-	if publishInfo["encryptedIscsiTargetUsername"], err = utils.EncryptStringWithAES(
+	if publishInfo["encryptedIscsiTargetUsername"], err = crypto.EncryptStringWithAES(
 		volumePublishInfo.IscsiTargetUsername, aesKey); err != nil {
 		Logc(ctx).Errorf("Error encrypting target username; %v", err)
 		return errors.New("error encrypting target username")
 	}
-	if publishInfo["encryptedIscsiTargetSecret"], err = utils.EncryptStringWithAES(
+	if publishInfo["encryptedIscsiTargetSecret"], err = crypto.EncryptStringWithAES(
 		volumePublishInfo.IscsiTargetSecret, aesKey); err != nil {
 		Logc(ctx).Errorf("Error encrypting target secret; %v", err)
 		return errors.New("error encrypting target secret")
@@ -104,7 +113,7 @@ func decryptCHAPPublishInfo(
 	var err error
 
 	if publishInfo.IscsiUsername == "" && publishContext["encryptedIscsiUsername"] != "" {
-		if publishInfo.IscsiUsername, err = utils.DecryptStringWithAES(publishContext["encryptedIscsiUsername"],
+		if publishInfo.IscsiUsername, err = crypto.DecryptStringWithAES(publishContext["encryptedIscsiUsername"],
 			aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting iscsi username; %v", err)
 			return errors.New("error decrypting iscsi username")
@@ -112,7 +121,7 @@ func decryptCHAPPublishInfo(
 	}
 
 	if publishInfo.IscsiInitiatorSecret == "" && publishContext["encryptedIscsiInitiatorSecret"] != "" {
-		if publishInfo.IscsiInitiatorSecret, err = utils.DecryptStringWithAES(
+		if publishInfo.IscsiInitiatorSecret, err = crypto.DecryptStringWithAES(
 			publishContext["encryptedIscsiInitiatorSecret"], aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting initiator secret; %v", err)
 			return errors.New("error decrypting initiator secret")
@@ -120,7 +129,7 @@ func decryptCHAPPublishInfo(
 	}
 
 	if publishInfo.IscsiTargetUsername == "" && publishContext["encryptedIscsiTargetUsername"] != "" {
-		if publishInfo.IscsiTargetUsername, err = utils.DecryptStringWithAES(
+		if publishInfo.IscsiTargetUsername, err = crypto.DecryptStringWithAES(
 			publishContext["encryptedIscsiTargetUsername"], aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting target username; %v", err)
 			return errors.New("error decrypting target username")
@@ -128,7 +137,7 @@ func decryptCHAPPublishInfo(
 	}
 
 	if publishInfo.IscsiTargetSecret == "" && publishContext["encryptedIscsiTargetSecret"] != "" {
-		if publishInfo.IscsiTargetSecret, err = utils.DecryptStringWithAES(publishContext["encryptedIscsiTargetSecret"],
+		if publishInfo.IscsiTargetSecret, err = crypto.DecryptStringWithAES(publishContext["encryptedIscsiTargetSecret"],
 			aesKey); err != nil {
 			Logc(ctx).Errorf("error decrypting target secret; %v", err)
 			return errors.New("error decrypting target secret")
@@ -178,7 +187,7 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 		return config.Block, nil
 	}
 
-	fields := log.Fields{
+	fields := LogFields{
 		"SMBPath":        smbPath,
 		"SubvolumeName":  subvolName,
 		"IscsiTargetIQN": iqn,
@@ -224,4 +233,91 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *ut
 	}
 
 	return false, nil
+}
+
+// ensureLUKSVolumePassphrase ensures the LUKS device has the most recent passphrase and notifies the Trident controller
+// of any possibly in use passphrases. If forceUpdate is true, the Trident controller will be notified of the current
+// passphrase name, regardless of a rotation.
+func ensureLUKSVolumePassphrase(ctx context.Context, restClient controllerAPI.TridentController, luksDevice utils.LUKSDeviceInterface, volumeId string, secrets map[string]string, forceUpdate bool) error {
+	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)
+	if luksPassphrase == "" {
+		return fmt.Errorf("LUKS passphrase cannot be empty")
+	}
+	if luksPassphraseName == "" {
+		return fmt.Errorf("LUKS passphrase name cannot be empty")
+	}
+
+	// Check if passphrase is already up-to-date
+	current, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
+	if err != nil {
+		return fmt.Errorf("could not verify passphrase %s; %v", luksPassphraseName, err)
+	}
+	if current {
+		Logc(ctx).WithFields(LogFields{
+			"volume": volumeId,
+		}).Debugf("Current LUKS passphrase name '%s'.", luksPassphraseName)
+		if forceUpdate {
+			luksPassphraseNames := []string{luksPassphraseName}
+			err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
+			if err != nil {
+				return fmt.Errorf("could not update current passphrase name for LUKS volume; %v", err)
+			}
+		}
+		return nil
+	}
+
+	// Check if previous passphrase is set, otherwise we can't rotate
+	var previous bool
+	if previousLUKSPassphrase != "" {
+		if previousLUKSPassphraseName == "" {
+			return fmt.Errorf("previous LUKS passphrase name cannot be empty if previous LUKS passphrase is also specified")
+		}
+		previous, err = luksDevice.CheckPassphrase(ctx, previousLUKSPassphrase)
+		if err != nil {
+			return fmt.Errorf("could not verify passphrase %s; %v", luksPassphraseName, err)
+		}
+	}
+	if !previous {
+		return fmt.Errorf("no working passphrase provided")
+	}
+	Logc(ctx).WithFields(LogFields{
+		"volume": volumeId,
+	}).Debugf("Current LUKS passphrase name '%s'.", previousLUKSPassphraseName)
+
+	// Send up current and previous passphrase names, if rotation fails
+	luksPassphraseNames := []string{luksPassphraseName, previousLUKSPassphraseName}
+	err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
+	if err != nil {
+		return fmt.Errorf("could not update passphrase names for LUKS volume, skipping passphrase rotation; %v", err)
+	}
+
+	// Rotate
+	Logc(ctx).WithFields(LogFields{
+		"volume":                       volumeId,
+		"current-luks-passphrase-name": previousLUKSPassphraseName,
+		"new-luks-passphrase-name":     luksPassphraseName,
+	}).Info("Rotating LUKS passphrase.")
+	err = luksDevice.RotatePassphrase(ctx, volumeId, previousLUKSPassphrase, luksPassphrase)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":                       volumeId,
+			"current-luks-passphrase-name": previousLUKSPassphraseName,
+			"new-luks-passphrase-name":     luksPassphraseName,
+		}).WithError(err).Errorf("Failed to rotate LUKS passphrase.")
+		return fmt.Errorf("failed to rotate LUKS passphrase")
+	}
+	Logc(ctx).Infof("Rotated LUKS passphrase")
+
+	isCurrent, err := luksDevice.CheckPassphrase(ctx, luksPassphrase)
+	if err != nil {
+		return fmt.Errorf("could not check current passphrase for LUKS volume; %v", err)
+	} else if isCurrent {
+		// Send only current passphrase up
+		luksPassphraseNames = []string{luksPassphraseName}
+		err = restClient.UpdateVolumeLUKSPassphraseNames(ctx, volumeId, luksPassphraseNames)
+		if err != nil {
+			return fmt.Errorf("could not update passphrase names for LUKS volume after rotation; %v", err)
+		}
+	}
+	return nil
 }

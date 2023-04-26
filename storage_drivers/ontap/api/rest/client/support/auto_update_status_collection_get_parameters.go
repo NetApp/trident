@@ -66,79 +66,79 @@ type AutoUpdateStatusCollectionGetParams struct {
 
 	   Filter by content_category
 	*/
-	ContentCategoryQueryParameter *string
+	ContentCategory *string
 
 	/* ContentType.
 
 	   Filter by content_type
 	*/
-	ContentTypeQueryParameter *string
+	ContentType *string
 
 	/* CreationTime.
 
 	   Filter by creation_time
 	*/
-	CreationTimeQueryParameter *string
+	CreationTime *string
 
 	/* Description.
 
 	   Filter by description
 	*/
-	DescriptionQueryParameter *string
+	Description *string
 
 	/* EndTime.
 
 	   Filter by end_time
 	*/
-	EndTimeQueryParameter *string
+	EndTime *string
 
 	/* ExpiryTime.
 
 	   Filter by expiry_time
 	*/
-	ExpiryTimeQueryParameter *string
+	ExpiryTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LastStateChangeTime.
 
 	   Filter by last_state_change_time
 	*/
-	LastStateChangeTimeQueryParameter *string
+	LastStateChangeTime *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PackageID.
 
 	   Filter by package_id
 	*/
-	PackageIDQueryParameter *string
+	PackageID *string
 
 	/* PercentComplete.
 
 	   Filter by percent_complete
 	*/
-	PercentCompleteQueryParameter *int64
+	PercentComplete *int64
 
 	/* RemainingTime.
 
 	   Filter by remaining_time
 	*/
-	RemainingTimeQueryParameter *string
+	RemainingTime *string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type AutoUpdateStatusCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,61 +154,61 @@ type AutoUpdateStatusCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScheduledTime.
 
 	   Filter by scheduled_time
 	*/
-	ScheduledTimeQueryParameter *string
+	ScheduledTime *string
 
 	/* StartTime.
 
 	   Filter by start_time
 	*/
-	StartTimeQueryParameter *string
+	StartTime *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatusArgumentsCode.
 
 	   Filter by status.arguments.code
 	*/
-	StatusArgumentsCodeQueryParameter *string
+	StatusArgumentsCode *string
 
 	/* StatusArgumentsMessage.
 
 	   Filter by status.arguments.message
 	*/
-	StatusArgumentsMessageQueryParameter *string
+	StatusArgumentsMessage *string
 
 	/* StatusCode.
 
 	   Filter by status.code
 	*/
-	StatusCodeQueryParameter *string
+	StatusCode *string
 
 	/* StatusMessage.
 
 	   Filter by status.message
 	*/
-	StatusMessageQueryParameter *string
+	StatusMessage *string
 
 	/* StatusTarget.
 
 	   Filter by status.target
 	*/
-	StatusTargetQueryParameter *string
+	StatusTarget *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -228,14 +228,14 @@ func (o *AutoUpdateStatusCollectionGetParams) WithDefaults() *AutoUpdateStatusCo
 // All values with no default are reset to their zero value.
 func (o *AutoUpdateStatusCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AutoUpdateStatusCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,268 +277,268 @@ func (o *AutoUpdateStatusCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithContentCategoryQueryParameter adds the contentCategory to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithContentCategoryQueryParameter(contentCategory *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetContentCategoryQueryParameter(contentCategory)
+// WithContentCategory adds the contentCategory to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithContentCategory(contentCategory *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetContentCategory(contentCategory)
 	return o
 }
 
-// SetContentCategoryQueryParameter adds the contentCategory to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetContentCategoryQueryParameter(contentCategory *string) {
-	o.ContentCategoryQueryParameter = contentCategory
+// SetContentCategory adds the contentCategory to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetContentCategory(contentCategory *string) {
+	o.ContentCategory = contentCategory
 }
 
-// WithContentTypeQueryParameter adds the contentType to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithContentTypeQueryParameter(contentType *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetContentTypeQueryParameter(contentType)
+// WithContentType adds the contentType to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithContentType(contentType *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetContentType(contentType)
 	return o
 }
 
-// SetContentTypeQueryParameter adds the contentType to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetContentTypeQueryParameter(contentType *string) {
-	o.ContentTypeQueryParameter = contentType
+// SetContentType adds the contentType to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetContentType(contentType *string) {
+	o.ContentType = contentType
 }
 
-// WithCreationTimeQueryParameter adds the creationTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithCreationTimeQueryParameter(creationTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetCreationTimeQueryParameter(creationTime)
+// WithCreationTime adds the creationTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithCreationTime(creationTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetCreationTime(creationTime)
 	return o
 }
 
-// SetCreationTimeQueryParameter adds the creationTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetCreationTimeQueryParameter(creationTime *string) {
-	o.CreationTimeQueryParameter = creationTime
+// SetCreationTime adds the creationTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetCreationTime(creationTime *string) {
+	o.CreationTime = creationTime
 }
 
-// WithDescriptionQueryParameter adds the description to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithDescriptionQueryParameter(description *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetDescriptionQueryParameter(description)
+// WithDescription adds the description to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithDescription(description *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetDescription(description)
 	return o
 }
 
-// SetDescriptionQueryParameter adds the description to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetDescriptionQueryParameter(description *string) {
-	o.DescriptionQueryParameter = description
+// SetDescription adds the description to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetDescription(description *string) {
+	o.Description = description
 }
 
-// WithEndTimeQueryParameter adds the endTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithEndTimeQueryParameter(endTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetEndTimeQueryParameter(endTime)
+// WithEndTime adds the endTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithEndTime(endTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetEndTime(endTime)
 	return o
 }
 
-// SetEndTimeQueryParameter adds the endTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetEndTimeQueryParameter(endTime *string) {
-	o.EndTimeQueryParameter = endTime
+// SetEndTime adds the endTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetEndTime(endTime *string) {
+	o.EndTime = endTime
 }
 
-// WithExpiryTimeQueryParameter adds the expiryTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithExpiryTimeQueryParameter(expiryTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetExpiryTimeQueryParameter(expiryTime)
+// WithExpiryTime adds the expiryTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithExpiryTime(expiryTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetExpiryTime(expiryTime)
 	return o
 }
 
-// SetExpiryTimeQueryParameter adds the expiryTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetExpiryTimeQueryParameter(expiryTime *string) {
-	o.ExpiryTimeQueryParameter = expiryTime
+// SetExpiryTime adds the expiryTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetExpiryTime(expiryTime *string) {
+	o.ExpiryTime = expiryTime
 }
 
-// WithFieldsQueryParameter adds the fields to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithFieldsQueryParameter(fields []string) *AutoUpdateStatusCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithFields(fields []string) *AutoUpdateStatusCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLastStateChangeTimeQueryParameter adds the lastStateChangeTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithLastStateChangeTimeQueryParameter(lastStateChangeTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetLastStateChangeTimeQueryParameter(lastStateChangeTime)
+// WithLastStateChangeTime adds the lastStateChangeTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithLastStateChangeTime(lastStateChangeTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetLastStateChangeTime(lastStateChangeTime)
 	return o
 }
 
-// SetLastStateChangeTimeQueryParameter adds the lastStateChangeTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetLastStateChangeTimeQueryParameter(lastStateChangeTime *string) {
-	o.LastStateChangeTimeQueryParameter = lastStateChangeTime
+// SetLastStateChangeTime adds the lastStateChangeTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetLastStateChangeTime(lastStateChangeTime *string) {
+	o.LastStateChangeTime = lastStateChangeTime
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AutoUpdateStatusCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithMaxRecords(maxRecords *int64) *AutoUpdateStatusCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AutoUpdateStatusCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithOrderBy(orderBy []string) *AutoUpdateStatusCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPackageIDQueryParameter adds the packageID to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithPackageIDQueryParameter(packageID *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetPackageIDQueryParameter(packageID)
+// WithPackageID adds the packageID to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithPackageID(packageID *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetPackageID(packageID)
 	return o
 }
 
-// SetPackageIDQueryParameter adds the packageId to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetPackageIDQueryParameter(packageID *string) {
-	o.PackageIDQueryParameter = packageID
+// SetPackageID adds the packageId to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetPackageID(packageID *string) {
+	o.PackageID = packageID
 }
 
-// WithPercentCompleteQueryParameter adds the percentComplete to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithPercentCompleteQueryParameter(percentComplete *int64) *AutoUpdateStatusCollectionGetParams {
-	o.SetPercentCompleteQueryParameter(percentComplete)
+// WithPercentComplete adds the percentComplete to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithPercentComplete(percentComplete *int64) *AutoUpdateStatusCollectionGetParams {
+	o.SetPercentComplete(percentComplete)
 	return o
 }
 
-// SetPercentCompleteQueryParameter adds the percentComplete to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetPercentCompleteQueryParameter(percentComplete *int64) {
-	o.PercentCompleteQueryParameter = percentComplete
+// SetPercentComplete adds the percentComplete to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetPercentComplete(percentComplete *int64) {
+	o.PercentComplete = percentComplete
 }
 
-// WithRemainingTimeQueryParameter adds the remainingTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithRemainingTimeQueryParameter(remainingTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetRemainingTimeQueryParameter(remainingTime)
+// WithRemainingTime adds the remainingTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithRemainingTime(remainingTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetRemainingTime(remainingTime)
 	return o
 }
 
-// SetRemainingTimeQueryParameter adds the remainingTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetRemainingTimeQueryParameter(remainingTime *string) {
-	o.RemainingTimeQueryParameter = remainingTime
+// SetRemainingTime adds the remainingTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetRemainingTime(remainingTime *string) {
+	o.RemainingTime = remainingTime
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AutoUpdateStatusCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithReturnRecords(returnRecords *bool) *AutoUpdateStatusCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AutoUpdateStatusCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AutoUpdateStatusCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScheduledTimeQueryParameter adds the scheduledTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithScheduledTimeQueryParameter(scheduledTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetScheduledTimeQueryParameter(scheduledTime)
+// WithScheduledTime adds the scheduledTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithScheduledTime(scheduledTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetScheduledTime(scheduledTime)
 	return o
 }
 
-// SetScheduledTimeQueryParameter adds the scheduledTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetScheduledTimeQueryParameter(scheduledTime *string) {
-	o.ScheduledTimeQueryParameter = scheduledTime
+// SetScheduledTime adds the scheduledTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetScheduledTime(scheduledTime *string) {
+	o.ScheduledTime = scheduledTime
 }
 
-// WithStartTimeQueryParameter adds the startTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStartTimeQueryParameter(startTime *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStartTimeQueryParameter(startTime)
+// WithStartTime adds the startTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithStartTime(startTime *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetStartTime(startTime)
 	return o
 }
 
-// SetStartTimeQueryParameter adds the startTime to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStartTimeQueryParameter(startTime *string) {
-	o.StartTimeQueryParameter = startTime
+// SetStartTime adds the startTime to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetStartTime(startTime *string) {
+	o.StartTime = startTime
 }
 
-// WithStateQueryParameter adds the state to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStateQueryParameter(state *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithState(state *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStatusArgumentsCodeQueryParameter adds the statusArgumentsCode to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStatusArgumentsCodeQueryParameter(statusArgumentsCode *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStatusArgumentsCodeQueryParameter(statusArgumentsCode)
+// WithStatusArgumentsCode adds the statusArgumentsCode to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithStatusArgumentsCode(statusArgumentsCode *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetStatusArgumentsCode(statusArgumentsCode)
 	return o
 }
 
-// SetStatusArgumentsCodeQueryParameter adds the statusArgumentsCode to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStatusArgumentsCodeQueryParameter(statusArgumentsCode *string) {
-	o.StatusArgumentsCodeQueryParameter = statusArgumentsCode
+// SetStatusArgumentsCode adds the statusArgumentsCode to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetStatusArgumentsCode(statusArgumentsCode *string) {
+	o.StatusArgumentsCode = statusArgumentsCode
 }
 
-// WithStatusArgumentsMessageQueryParameter adds the statusArgumentsMessage to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStatusArgumentsMessageQueryParameter(statusArgumentsMessage *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStatusArgumentsMessageQueryParameter(statusArgumentsMessage)
+// WithStatusArgumentsMessage adds the statusArgumentsMessage to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithStatusArgumentsMessage(statusArgumentsMessage *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetStatusArgumentsMessage(statusArgumentsMessage)
 	return o
 }
 
-// SetStatusArgumentsMessageQueryParameter adds the statusArgumentsMessage to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStatusArgumentsMessageQueryParameter(statusArgumentsMessage *string) {
-	o.StatusArgumentsMessageQueryParameter = statusArgumentsMessage
+// SetStatusArgumentsMessage adds the statusArgumentsMessage to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetStatusArgumentsMessage(statusArgumentsMessage *string) {
+	o.StatusArgumentsMessage = statusArgumentsMessage
 }
 
-// WithStatusCodeQueryParameter adds the statusCode to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStatusCodeQueryParameter(statusCode *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStatusCodeQueryParameter(statusCode)
+// WithStatusCode adds the statusCode to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithStatusCode(statusCode *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetStatusCode(statusCode)
 	return o
 }
 
-// SetStatusCodeQueryParameter adds the statusCode to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStatusCodeQueryParameter(statusCode *string) {
-	o.StatusCodeQueryParameter = statusCode
+// SetStatusCode adds the statusCode to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetStatusCode(statusCode *string) {
+	o.StatusCode = statusCode
 }
 
-// WithStatusMessageQueryParameter adds the statusMessage to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStatusMessageQueryParameter(statusMessage *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStatusMessageQueryParameter(statusMessage)
+// WithStatusMessage adds the statusMessage to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithStatusMessage(statusMessage *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetStatusMessage(statusMessage)
 	return o
 }
 
-// SetStatusMessageQueryParameter adds the statusMessage to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStatusMessageQueryParameter(statusMessage *string) {
-	o.StatusMessageQueryParameter = statusMessage
+// SetStatusMessage adds the statusMessage to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetStatusMessage(statusMessage *string) {
+	o.StatusMessage = statusMessage
 }
 
-// WithStatusTargetQueryParameter adds the statusTarget to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithStatusTargetQueryParameter(statusTarget *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetStatusTargetQueryParameter(statusTarget)
+// WithStatusTarget adds the statusTarget to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithStatusTarget(statusTarget *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetStatusTarget(statusTarget)
 	return o
 }
 
-// SetStatusTargetQueryParameter adds the statusTarget to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetStatusTargetQueryParameter(statusTarget *string) {
-	o.StatusTargetQueryParameter = statusTarget
+// SetStatusTarget adds the statusTarget to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetStatusTarget(statusTarget *string) {
+	o.StatusTarget = statusTarget
 }
 
-// WithUUIDQueryParameter adds the uuid to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) WithUUIDQueryParameter(uuid *string) *AutoUpdateStatusCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) WithUUID(uuid *string) *AutoUpdateStatusCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the auto update status collection get params
-func (o *AutoUpdateStatusCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the auto update status collection get params
+func (o *AutoUpdateStatusCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -549,13 +549,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.ContentCategoryQueryParameter != nil {
+	if o.ContentCategory != nil {
 
 		// query param content_category
 		var qrContentCategory string
 
-		if o.ContentCategoryQueryParameter != nil {
-			qrContentCategory = *o.ContentCategoryQueryParameter
+		if o.ContentCategory != nil {
+			qrContentCategory = *o.ContentCategory
 		}
 		qContentCategory := qrContentCategory
 		if qContentCategory != "" {
@@ -566,13 +566,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ContentTypeQueryParameter != nil {
+	if o.ContentType != nil {
 
 		// query param content_type
 		var qrContentType string
 
-		if o.ContentTypeQueryParameter != nil {
-			qrContentType = *o.ContentTypeQueryParameter
+		if o.ContentType != nil {
+			qrContentType = *o.ContentType
 		}
 		qContentType := qrContentType
 		if qContentType != "" {
@@ -583,13 +583,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.CreationTimeQueryParameter != nil {
+	if o.CreationTime != nil {
 
 		// query param creation_time
 		var qrCreationTime string
 
-		if o.CreationTimeQueryParameter != nil {
-			qrCreationTime = *o.CreationTimeQueryParameter
+		if o.CreationTime != nil {
+			qrCreationTime = *o.CreationTime
 		}
 		qCreationTime := qrCreationTime
 		if qCreationTime != "" {
@@ -600,13 +600,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DescriptionQueryParameter != nil {
+	if o.Description != nil {
 
 		// query param description
 		var qrDescription string
 
-		if o.DescriptionQueryParameter != nil {
-			qrDescription = *o.DescriptionQueryParameter
+		if o.Description != nil {
+			qrDescription = *o.Description
 		}
 		qDescription := qrDescription
 		if qDescription != "" {
@@ -617,13 +617,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.EndTimeQueryParameter != nil {
+	if o.EndTime != nil {
 
 		// query param end_time
 		var qrEndTime string
 
-		if o.EndTimeQueryParameter != nil {
-			qrEndTime = *o.EndTimeQueryParameter
+		if o.EndTime != nil {
+			qrEndTime = *o.EndTime
 		}
 		qEndTime := qrEndTime
 		if qEndTime != "" {
@@ -634,13 +634,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ExpiryTimeQueryParameter != nil {
+	if o.ExpiryTime != nil {
 
 		// query param expiry_time
 		var qrExpiryTime string
 
-		if o.ExpiryTimeQueryParameter != nil {
-			qrExpiryTime = *o.ExpiryTimeQueryParameter
+		if o.ExpiryTime != nil {
+			qrExpiryTime = *o.ExpiryTime
 		}
 		qExpiryTime := qrExpiryTime
 		if qExpiryTime != "" {
@@ -651,7 +651,7 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -662,13 +662,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LastStateChangeTimeQueryParameter != nil {
+	if o.LastStateChangeTime != nil {
 
 		// query param last_state_change_time
 		var qrLastStateChangeTime string
 
-		if o.LastStateChangeTimeQueryParameter != nil {
-			qrLastStateChangeTime = *o.LastStateChangeTimeQueryParameter
+		if o.LastStateChangeTime != nil {
+			qrLastStateChangeTime = *o.LastStateChangeTime
 		}
 		qLastStateChangeTime := qrLastStateChangeTime
 		if qLastStateChangeTime != "" {
@@ -679,13 +679,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -696,7 +696,7 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -707,13 +707,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.PackageIDQueryParameter != nil {
+	if o.PackageID != nil {
 
 		// query param package_id
 		var qrPackageID string
 
-		if o.PackageIDQueryParameter != nil {
-			qrPackageID = *o.PackageIDQueryParameter
+		if o.PackageID != nil {
+			qrPackageID = *o.PackageID
 		}
 		qPackageID := qrPackageID
 		if qPackageID != "" {
@@ -724,13 +724,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.PercentCompleteQueryParameter != nil {
+	if o.PercentComplete != nil {
 
 		// query param percent_complete
 		var qrPercentComplete int64
 
-		if o.PercentCompleteQueryParameter != nil {
-			qrPercentComplete = *o.PercentCompleteQueryParameter
+		if o.PercentComplete != nil {
+			qrPercentComplete = *o.PercentComplete
 		}
 		qPercentComplete := swag.FormatInt64(qrPercentComplete)
 		if qPercentComplete != "" {
@@ -741,13 +741,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.RemainingTimeQueryParameter != nil {
+	if o.RemainingTime != nil {
 
 		// query param remaining_time
 		var qrRemainingTime string
 
-		if o.RemainingTimeQueryParameter != nil {
-			qrRemainingTime = *o.RemainingTimeQueryParameter
+		if o.RemainingTime != nil {
+			qrRemainingTime = *o.RemainingTime
 		}
 		qRemainingTime := qrRemainingTime
 		if qRemainingTime != "" {
@@ -758,13 +758,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -775,13 +775,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -792,13 +792,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScheduledTimeQueryParameter != nil {
+	if o.ScheduledTime != nil {
 
 		// query param scheduled_time
 		var qrScheduledTime string
 
-		if o.ScheduledTimeQueryParameter != nil {
-			qrScheduledTime = *o.ScheduledTimeQueryParameter
+		if o.ScheduledTime != nil {
+			qrScheduledTime = *o.ScheduledTime
 		}
 		qScheduledTime := qrScheduledTime
 		if qScheduledTime != "" {
@@ -809,13 +809,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StartTimeQueryParameter != nil {
+	if o.StartTime != nil {
 
 		// query param start_time
 		var qrStartTime string
 
-		if o.StartTimeQueryParameter != nil {
-			qrStartTime = *o.StartTimeQueryParameter
+		if o.StartTime != nil {
+			qrStartTime = *o.StartTime
 		}
 		qStartTime := qrStartTime
 		if qStartTime != "" {
@@ -826,13 +826,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -843,13 +843,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StatusArgumentsCodeQueryParameter != nil {
+	if o.StatusArgumentsCode != nil {
 
 		// query param status.arguments.code
 		var qrStatusArgumentsCode string
 
-		if o.StatusArgumentsCodeQueryParameter != nil {
-			qrStatusArgumentsCode = *o.StatusArgumentsCodeQueryParameter
+		if o.StatusArgumentsCode != nil {
+			qrStatusArgumentsCode = *o.StatusArgumentsCode
 		}
 		qStatusArgumentsCode := qrStatusArgumentsCode
 		if qStatusArgumentsCode != "" {
@@ -860,13 +860,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StatusArgumentsMessageQueryParameter != nil {
+	if o.StatusArgumentsMessage != nil {
 
 		// query param status.arguments.message
 		var qrStatusArgumentsMessage string
 
-		if o.StatusArgumentsMessageQueryParameter != nil {
-			qrStatusArgumentsMessage = *o.StatusArgumentsMessageQueryParameter
+		if o.StatusArgumentsMessage != nil {
+			qrStatusArgumentsMessage = *o.StatusArgumentsMessage
 		}
 		qStatusArgumentsMessage := qrStatusArgumentsMessage
 		if qStatusArgumentsMessage != "" {
@@ -877,13 +877,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StatusCodeQueryParameter != nil {
+	if o.StatusCode != nil {
 
 		// query param status.code
 		var qrStatusCode string
 
-		if o.StatusCodeQueryParameter != nil {
-			qrStatusCode = *o.StatusCodeQueryParameter
+		if o.StatusCode != nil {
+			qrStatusCode = *o.StatusCode
 		}
 		qStatusCode := qrStatusCode
 		if qStatusCode != "" {
@@ -894,13 +894,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StatusMessageQueryParameter != nil {
+	if o.StatusMessage != nil {
 
 		// query param status.message
 		var qrStatusMessage string
 
-		if o.StatusMessageQueryParameter != nil {
-			qrStatusMessage = *o.StatusMessageQueryParameter
+		if o.StatusMessage != nil {
+			qrStatusMessage = *o.StatusMessage
 		}
 		qStatusMessage := qrStatusMessage
 		if qStatusMessage != "" {
@@ -911,13 +911,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StatusTargetQueryParameter != nil {
+	if o.StatusTarget != nil {
 
 		// query param status.target
 		var qrStatusTarget string
 
-		if o.StatusTargetQueryParameter != nil {
-			qrStatusTarget = *o.StatusTargetQueryParameter
+		if o.StatusTarget != nil {
+			qrStatusTarget = *o.StatusTarget
 		}
 		qStatusTarget := qrStatusTarget
 		if qStatusTarget != "" {
@@ -928,13 +928,13 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -953,7 +953,7 @@ func (o *AutoUpdateStatusCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamAutoUpdateStatusCollectionGet binds the parameter fields
 func (o *AutoUpdateStatusCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -970,7 +970,7 @@ func (o *AutoUpdateStatusCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamAutoUpdateStatusCollectionGet binds the parameter order_by
 func (o *AutoUpdateStatusCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

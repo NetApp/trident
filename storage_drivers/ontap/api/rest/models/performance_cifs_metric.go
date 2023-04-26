@@ -21,29 +21,29 @@ import (
 type PerformanceCifsMetric struct {
 
 	// links
-	Links *PerformanceCifsMetricLinks `json:"_links,omitempty"`
+	Links *PerformanceCifsMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceCifsMetricIops `json:"iops,omitempty"`
+	Iops *PerformanceCifsMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceCifsMetricLatency `json:"latency,omitempty"`
+	Latency *PerformanceCifsMetricInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceCifsMetricThroughput `json:"throughput,omitempty"`
+	Throughput *PerformanceCifsMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -196,7 +196,7 @@ func (m *PerformanceCifsMetric) validateDuration(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -376,7 +376,7 @@ func (m *PerformanceCifsMetric) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -466,7 +466,7 @@ func (m *PerformanceCifsMetric) contextValidateLinks(ctx context.Context, format
 
 func (m *PerformanceCifsMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -503,7 +503,7 @@ func (m *PerformanceCifsMetric) contextValidateLatency(ctx context.Context, form
 
 func (m *PerformanceCifsMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -551,34 +551,34 @@ func (m *PerformanceCifsMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceCifsMetricIops The rate of I/O operations observed at the storage object.
+// PerformanceCifsMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceCifsMetricIops
-type PerformanceCifsMetricIops struct {
+// swagger:model performance_cifs_metric_inline_iops
+type PerformanceCifsMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance cifs metric iops
-func (m *PerformanceCifsMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric inline iops
+func (m *PerformanceCifsMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric iops based on the context it is used
-func (m *PerformanceCifsMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric inline iops based on the context it is used
+func (m *PerformanceCifsMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -588,7 +588,7 @@ func (m *PerformanceCifsMetricIops) ContextValidate(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricIops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -596,8 +596,8 @@ func (m *PerformanceCifsMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricIops) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricIops
+func (m *PerformanceCifsMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -605,34 +605,34 @@ func (m *PerformanceCifsMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceCifsMetricLatency The round trip latency in microseconds observed at the storage object.
+// PerformanceCifsMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceCifsMetricLatency
-type PerformanceCifsMetricLatency struct {
+// swagger:model performance_cifs_metric_inline_latency
+type PerformanceCifsMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance cifs metric latency
-func (m *PerformanceCifsMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric inline latency
+func (m *PerformanceCifsMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric latency based on the context it is used
-func (m *PerformanceCifsMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric inline latency based on the context it is used
+func (m *PerformanceCifsMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -642,7 +642,7 @@ func (m *PerformanceCifsMetricLatency) ContextValidate(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -650,8 +650,8 @@ func (m *PerformanceCifsMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricLatency) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricLatency
+func (m *PerformanceCifsMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -659,17 +659,17 @@ func (m *PerformanceCifsMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceCifsMetricLinks performance cifs metric links
+// PerformanceCifsMetricInlineLinks performance cifs metric inline links
 //
-// swagger:model PerformanceCifsMetricLinks
-type PerformanceCifsMetricLinks struct {
+// swagger:model performance_cifs_metric_inline__links
+type PerformanceCifsMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance cifs metric links
-func (m *PerformanceCifsMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric inline links
+func (m *PerformanceCifsMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -682,7 +682,7 @@ func (m *PerformanceCifsMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PerformanceCifsMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -699,8 +699,8 @@ func (m *PerformanceCifsMetricLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric links based on the context it is used
-func (m *PerformanceCifsMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric inline links based on the context it is used
+func (m *PerformanceCifsMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -713,7 +713,7 @@ func (m *PerformanceCifsMetricLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *PerformanceCifsMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -728,7 +728,7 @@ func (m *PerformanceCifsMetricLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -736,8 +736,8 @@ func (m *PerformanceCifsMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricLinks
+func (m *PerformanceCifsMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -745,34 +745,34 @@ func (m *PerformanceCifsMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceCifsMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceCifsMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceCifsMetricThroughput
-type PerformanceCifsMetricThroughput struct {
+// swagger:model performance_cifs_metric_inline_throughput
+type PerformanceCifsMetricInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance cifs metric throughput
-func (m *PerformanceCifsMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric inline throughput
+func (m *PerformanceCifsMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric throughput based on the context it is used
-func (m *PerformanceCifsMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric inline throughput based on the context it is used
+func (m *PerformanceCifsMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -782,7 +782,7 @@ func (m *PerformanceCifsMetricThroughput) ContextValidate(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -790,8 +790,8 @@ func (m *PerformanceCifsMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricThroughput
+func (m *PerformanceCifsMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

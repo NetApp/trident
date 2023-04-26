@@ -20,22 +20,23 @@ import (
 type AggregateResponse struct {
 
 	// links
-	Links *AggregateResponseLinks `json:"_links,omitempty"`
+	Links *AggregateResponseInlineLinks `json:"_links,omitempty"`
+
+	// aggregate response inline records
+	AggregateResponseInlineRecords []*Aggregate `json:"records,omitempty"`
+
+	// aggregate response inline spares
+	AggregateResponseInlineSpares []*AggregateSpare `json:"spares,omitempty"`
+
+	// List of warnings and remediation advice for the aggregate recommendation.
+	AggregateResponseInlineWarnings []*AggregateWarning `json:"warnings,omitempty"`
 
 	// error
 	Error *Error `json:"error,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Aggregate `json:"records,omitempty"`
-
-	// spares
-	Spares []*AggregateSpare `json:"spares,omitempty"`
-
-	// List of warnings and remediation advice for the aggregate recommendation.
-	Warnings []*AggregateWarning `json:"warnings,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this aggregate response
@@ -46,19 +47,19 @@ func (m *AggregateResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAggregateResponseInlineRecords(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAggregateResponseInlineSpares(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAggregateResponseInlineWarnings(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateError(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRecords(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSpares(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateWarnings(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -85,6 +86,78 @@ func (m *AggregateResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *AggregateResponse) validateAggregateResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateResponseInlineRecords) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AggregateResponseInlineRecords); i++ {
+		if swag.IsZero(m.AggregateResponseInlineRecords[i]) { // not required
+			continue
+		}
+
+		if m.AggregateResponseInlineRecords[i] != nil {
+			if err := m.AggregateResponseInlineRecords[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("records" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AggregateResponse) validateAggregateResponseInlineSpares(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateResponseInlineSpares) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AggregateResponseInlineSpares); i++ {
+		if swag.IsZero(m.AggregateResponseInlineSpares[i]) { // not required
+			continue
+		}
+
+		if m.AggregateResponseInlineSpares[i] != nil {
+			if err := m.AggregateResponseInlineSpares[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("spares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AggregateResponse) validateAggregateResponseInlineWarnings(formats strfmt.Registry) error {
+	if swag.IsZero(m.AggregateResponseInlineWarnings) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AggregateResponseInlineWarnings); i++ {
+		if swag.IsZero(m.AggregateResponseInlineWarnings[i]) { // not required
+			continue
+		}
+
+		if m.AggregateResponseInlineWarnings[i] != nil {
+			if err := m.AggregateResponseInlineWarnings[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("warnings" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *AggregateResponse) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
@@ -102,78 +175,6 @@ func (m *AggregateResponse) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
-			continue
-		}
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *AggregateResponse) validateSpares(formats strfmt.Registry) error {
-	if swag.IsZero(m.Spares) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Spares); i++ {
-		if swag.IsZero(m.Spares[i]) { // not required
-			continue
-		}
-
-		if m.Spares[i] != nil {
-			if err := m.Spares[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("spares" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *AggregateResponse) validateWarnings(formats strfmt.Registry) error {
-	if swag.IsZero(m.Warnings) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Warnings); i++ {
-		if swag.IsZero(m.Warnings[i]) { // not required
-			continue
-		}
-
-		if m.Warnings[i] != nil {
-			if err := m.Warnings[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("warnings" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this aggregate response based on the context it is used
 func (m *AggregateResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -182,19 +183,19 @@ func (m *AggregateResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAggregateResponseInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAggregateResponseInlineSpares(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAggregateResponseInlineWarnings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateError(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSpares(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateWarnings(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -218,26 +219,12 @@ func (m *AggregateResponse) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AggregateResponse) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateResponse) contextValidateAggregateResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.Error != nil {
-		if err := m.Error.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("error")
-			}
-			return err
-		}
-	}
+	for i := 0; i < len(m.AggregateResponseInlineRecords); i++ {
 
-	return nil
-}
-
-func (m *AggregateResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Records); i++ {
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.AggregateResponseInlineRecords[i] != nil {
+			if err := m.AggregateResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -250,12 +237,12 @@ func (m *AggregateResponse) contextValidateRecords(ctx context.Context, formats 
 	return nil
 }
 
-func (m *AggregateResponse) contextValidateSpares(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateResponse) contextValidateAggregateResponseInlineSpares(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Spares); i++ {
+	for i := 0; i < len(m.AggregateResponseInlineSpares); i++ {
 
-		if m.Spares[i] != nil {
-			if err := m.Spares[i].ContextValidate(ctx, formats); err != nil {
+		if m.AggregateResponseInlineSpares[i] != nil {
+			if err := m.AggregateResponseInlineSpares[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("spares" + "." + strconv.Itoa(i))
 				}
@@ -268,12 +255,12 @@ func (m *AggregateResponse) contextValidateSpares(ctx context.Context, formats s
 	return nil
 }
 
-func (m *AggregateResponse) contextValidateWarnings(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateResponse) contextValidateAggregateResponseInlineWarnings(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Warnings); i++ {
+	for i := 0; i < len(m.AggregateResponseInlineWarnings); i++ {
 
-		if m.Warnings[i] != nil {
-			if err := m.Warnings[i].ContextValidate(ctx, formats); err != nil {
+		if m.AggregateResponseInlineWarnings[i] != nil {
+			if err := m.AggregateResponseInlineWarnings[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("warnings" + "." + strconv.Itoa(i))
 				}
@@ -281,6 +268,20 @@ func (m *AggregateResponse) contextValidateWarnings(ctx context.Context, formats
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *AggregateResponse) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Error != nil {
+		if err := m.Error.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -304,10 +305,10 @@ func (m *AggregateResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateResponseLinks aggregate response links
+// AggregateResponseInlineLinks aggregate response inline links
 //
-// swagger:model AggregateResponseLinks
-type AggregateResponseLinks struct {
+// swagger:model aggregate_response_inline__links
+type AggregateResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -316,8 +317,8 @@ type AggregateResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this aggregate response links
-func (m *AggregateResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate response inline links
+func (m *AggregateResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -334,7 +335,7 @@ func (m *AggregateResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *AggregateResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -351,7 +352,7 @@ func (m *AggregateResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AggregateResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AggregateResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -368,8 +369,8 @@ func (m *AggregateResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this aggregate response links based on the context it is used
-func (m *AggregateResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this aggregate response inline links based on the context it is used
+func (m *AggregateResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -386,7 +387,7 @@ func (m *AggregateResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *AggregateResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -400,7 +401,7 @@ func (m *AggregateResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *AggregateResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AggregateResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -415,7 +416,7 @@ func (m *AggregateResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *AggregateResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *AggregateResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -423,8 +424,8 @@ func (m *AggregateResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggregateResponseLinks) UnmarshalBinary(b []byte) error {
-	var res AggregateResponseLinks
+func (m *AggregateResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AggregateResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

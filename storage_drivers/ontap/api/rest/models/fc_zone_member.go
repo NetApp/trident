@@ -36,14 +36,14 @@ type FcZoneMember struct {
 	//
 	// Example: 10:00:12:34:56:78:9a:bc
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The type of Fibre Channel zone member. This value should be used to interpret the contents of the `name` property.
 	//
 	// Example: port_name
 	// Read Only: true
 	// Enum: [port_id port_name domain_id_port node_name fabric_port_name interface domain_interface ip_address symbolic_node_name device_alias]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this fc zone member
@@ -189,7 +189,7 @@ func (m *FcZoneMember) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -216,7 +216,7 @@ func (m *FcZoneMember) ContextValidate(ctx context.Context, formats strfmt.Regis
 
 func (m *FcZoneMember) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (m *FcZoneMember) contextValidateName(ctx context.Context, formats strfmt.R
 
 func (m *FcZoneMember) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 

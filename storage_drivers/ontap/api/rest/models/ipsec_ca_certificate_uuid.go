@@ -19,11 +19,11 @@ import (
 type IpsecCaCertificateUUID struct {
 
 	// links
-	Links *IpsecCaCertificateUUIDLinks `json:"_links,omitempty"`
+	Links *IpsecCaCertificateUUIDInlineLinks `json:"_links,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ipsec ca certificate uuid
@@ -103,17 +103,17 @@ func (m *IpsecCaCertificateUUID) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecCaCertificateUUIDLinks ipsec ca certificate UUID links
+// IpsecCaCertificateUUIDInlineLinks ipsec ca certificate uuid inline links
 //
-// swagger:model IpsecCaCertificateUUIDLinks
-type IpsecCaCertificateUUIDLinks struct {
+// swagger:model ipsec_ca_certificate_uuid_inline__links
+type IpsecCaCertificateUUIDInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipsec ca certificate UUID links
-func (m *IpsecCaCertificateUUIDLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec ca certificate uuid inline links
+func (m *IpsecCaCertificateUUIDInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *IpsecCaCertificateUUIDLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecCaCertificateUUIDLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpsecCaCertificateUUIDInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *IpsecCaCertificateUUIDLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this ipsec ca certificate UUID links based on the context it is used
-func (m *IpsecCaCertificateUUIDLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec ca certificate uuid inline links based on the context it is used
+func (m *IpsecCaCertificateUUIDInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *IpsecCaCertificateUUIDLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *IpsecCaCertificateUUIDLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecCaCertificateUUIDInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *IpsecCaCertificateUUIDLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecCaCertificateUUIDLinks) MarshalBinary() ([]byte, error) {
+func (m *IpsecCaCertificateUUIDInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *IpsecCaCertificateUUIDLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecCaCertificateUUIDLinks) UnmarshalBinary(b []byte) error {
-	var res IpsecCaCertificateUUIDLinks
+func (m *IpsecCaCertificateUUIDInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpsecCaCertificateUUIDInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

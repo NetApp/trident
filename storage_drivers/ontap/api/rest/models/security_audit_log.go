@@ -21,56 +21,56 @@ import (
 type SecurityAuditLog struct {
 
 	// links
-	Links *SecurityAuditLogLinks `json:"_links,omitempty"`
+	Links *SecurityAuditLogInlineLinks `json:"_links,omitempty"`
 
 	// This identifies the "application" by which the request was processed.
 	//
 	// Read Only: true
 	// Enum: [internal console rsh telnet ssh ontapi http system]
-	Application string `json:"application,omitempty"`
+	Application *string `json:"application,omitempty"`
 
 	// This is the command ID for this request.
 	// Each command received on a CLI session is assigned a command ID. This enables you to correlate a request and response.
 	//
 	// Read Only: true
-	CommandID string `json:"command_id,omitempty"`
+	CommandID *string `json:"command_id,omitempty"`
 
 	// Internal index for accessing records with same time/node. This is a 64 bit unsigned value.
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// The request.
 	// Read Only: true
-	Input string `json:"input,omitempty"`
+	Input *string `json:"input,omitempty"`
 
 	// This identifies the location of the remote user. This is an IP address or "console".
 	// Read Only: true
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// This is an optional field that might contain "error" or "additional information" about the status of a command.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// node
-	Node *SecurityAuditLogNode `json:"node,omitempty"`
+	Node *SecurityAuditLogInlineNode `json:"node,omitempty"`
 
 	// Set to "svm" when the request is on a data SVM; otherwise set to "cluster".
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// This is the session ID on which the request is received. Each SSH session is assigned a session ID.
 	// Each http/ontapi/snmp request is assigned a unique session ID.
 	//
 	// Read Only: true
-	SessionID string `json:"session_id,omitempty"`
+	SessionID *string `json:"session_id,omitempty"`
 
 	// State of of this request.
 	// Read Only: true
 	// Enum: [pending success error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *SecurityAuditLogSvm `json:"svm,omitempty"`
+	Svm *SecurityAuditLogInlineSvm `json:"svm,omitempty"`
 
 	// Log entry timestamp. Valid in URL
 	// Read Only: true
@@ -79,7 +79,7 @@ type SecurityAuditLog struct {
 
 	// Username of the remote user.
 	// Read Only: true
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this security audit log
@@ -246,7 +246,7 @@ func (m *SecurityAuditLog) validateApplication(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateApplicationEnum("application", "body", m.Application); err != nil {
+	if err := m.validateApplicationEnum("application", "body", *m.Application); err != nil {
 		return err
 	}
 
@@ -319,7 +319,7 @@ func (m *SecurityAuditLog) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -385,7 +385,7 @@ func (m *SecurityAuditLog) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -499,7 +499,7 @@ func (m *SecurityAuditLog) contextValidateLinks(ctx context.Context, formats str
 
 func (m *SecurityAuditLog) contextValidateApplication(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "application", "body", string(m.Application)); err != nil {
+	if err := validate.ReadOnly(ctx, "application", "body", m.Application); err != nil {
 		return err
 	}
 
@@ -508,7 +508,7 @@ func (m *SecurityAuditLog) contextValidateApplication(ctx context.Context, forma
 
 func (m *SecurityAuditLog) contextValidateCommandID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "command_id", "body", string(m.CommandID)); err != nil {
+	if err := validate.ReadOnly(ctx, "command_id", "body", m.CommandID); err != nil {
 		return err
 	}
 
@@ -517,7 +517,7 @@ func (m *SecurityAuditLog) contextValidateCommandID(ctx context.Context, formats
 
 func (m *SecurityAuditLog) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -526,7 +526,7 @@ func (m *SecurityAuditLog) contextValidateIndex(ctx context.Context, formats str
 
 func (m *SecurityAuditLog) contextValidateInput(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "input", "body", string(m.Input)); err != nil {
+	if err := validate.ReadOnly(ctx, "input", "body", m.Input); err != nil {
 		return err
 	}
 
@@ -535,7 +535,7 @@ func (m *SecurityAuditLog) contextValidateInput(ctx context.Context, formats str
 
 func (m *SecurityAuditLog) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "location", "body", string(m.Location)); err != nil {
+	if err := validate.ReadOnly(ctx, "location", "body", m.Location); err != nil {
 		return err
 	}
 
@@ -544,7 +544,7 @@ func (m *SecurityAuditLog) contextValidateLocation(ctx context.Context, formats 
 
 func (m *SecurityAuditLog) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -567,7 +567,7 @@ func (m *SecurityAuditLog) contextValidateNode(ctx context.Context, formats strf
 
 func (m *SecurityAuditLog) contextValidateSessionID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "session_id", "body", string(m.SessionID)); err != nil {
+	if err := validate.ReadOnly(ctx, "session_id", "body", m.SessionID); err != nil {
 		return err
 	}
 
@@ -576,7 +576,7 @@ func (m *SecurityAuditLog) contextValidateSessionID(ctx context.Context, formats
 
 func (m *SecurityAuditLog) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -608,7 +608,7 @@ func (m *SecurityAuditLog) contextValidateTimestamp(ctx context.Context, formats
 
 func (m *SecurityAuditLog) contextValidateUser(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "user", "body", string(m.User)); err != nil {
+	if err := validate.ReadOnly(ctx, "user", "body", m.User); err != nil {
 		return err
 	}
 
@@ -633,17 +633,17 @@ func (m *SecurityAuditLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAuditLogLinks security audit log links
+// SecurityAuditLogInlineLinks security audit log inline links
 //
-// swagger:model SecurityAuditLogLinks
-type SecurityAuditLogLinks struct {
+// swagger:model security_audit_log_inline__links
+type SecurityAuditLogInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security audit log links
-func (m *SecurityAuditLogLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security audit log inline links
+func (m *SecurityAuditLogInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -656,7 +656,7 @@ func (m *SecurityAuditLogLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityAuditLogLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAuditLogInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -673,8 +673,8 @@ func (m *SecurityAuditLogLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security audit log links based on the context it is used
-func (m *SecurityAuditLogLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security audit log inline links based on the context it is used
+func (m *SecurityAuditLogInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -687,7 +687,7 @@ func (m *SecurityAuditLogLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SecurityAuditLogLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditLogInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -702,7 +702,7 @@ func (m *SecurityAuditLogLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAuditLogLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAuditLogInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -710,8 +710,8 @@ func (m *SecurityAuditLogLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAuditLogLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAuditLogLinks
+func (m *SecurityAuditLogInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -719,25 +719,25 @@ func (m *SecurityAuditLogLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAuditLogNode Node where the audit message resides.
+// SecurityAuditLogInlineNode Node where the audit message resides.
 //
-// swagger:model SecurityAuditLogNode
-type SecurityAuditLogNode struct {
+// swagger:model security_audit_log_inline_node
+type SecurityAuditLogInlineNode struct {
 
 	// links
-	Links *SecurityAuditLogNodeLinks `json:"_links,omitempty"`
+	Links *SecurityAuditLogInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security audit log node
-func (m *SecurityAuditLogNode) Validate(formats strfmt.Registry) error {
+// Validate validates this security audit log inline node
+func (m *SecurityAuditLogInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -750,7 +750,7 @@ func (m *SecurityAuditLogNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityAuditLogNode) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityAuditLogInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -767,8 +767,8 @@ func (m *SecurityAuditLogNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security audit log node based on the context it is used
-func (m *SecurityAuditLogNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security audit log inline node based on the context it is used
+func (m *SecurityAuditLogInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -781,7 +781,7 @@ func (m *SecurityAuditLogNode) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *SecurityAuditLogNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditLogInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -796,7 +796,7 @@ func (m *SecurityAuditLogNode) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAuditLogNode) MarshalBinary() ([]byte, error) {
+func (m *SecurityAuditLogInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -804,8 +804,8 @@ func (m *SecurityAuditLogNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAuditLogNode) UnmarshalBinary(b []byte) error {
-	var res SecurityAuditLogNode
+func (m *SecurityAuditLogInlineNode) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -813,17 +813,17 @@ func (m *SecurityAuditLogNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAuditLogNodeLinks security audit log node links
+// SecurityAuditLogInlineNodeInlineLinks security audit log inline node inline links
 //
-// swagger:model SecurityAuditLogNodeLinks
-type SecurityAuditLogNodeLinks struct {
+// swagger:model security_audit_log_inline_node_inline__links
+type SecurityAuditLogInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security audit log node links
-func (m *SecurityAuditLogNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security audit log inline node inline links
+func (m *SecurityAuditLogInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -836,7 +836,7 @@ func (m *SecurityAuditLogNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityAuditLogNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAuditLogInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -853,8 +853,8 @@ func (m *SecurityAuditLogNodeLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this security audit log node links based on the context it is used
-func (m *SecurityAuditLogNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security audit log inline node inline links based on the context it is used
+func (m *SecurityAuditLogInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -867,7 +867,7 @@ func (m *SecurityAuditLogNodeLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *SecurityAuditLogNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditLogInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -882,7 +882,7 @@ func (m *SecurityAuditLogNodeLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAuditLogNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAuditLogInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -890,8 +890,8 @@ func (m *SecurityAuditLogNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAuditLogNodeLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAuditLogNodeLinks
+func (m *SecurityAuditLogInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -899,22 +899,22 @@ func (m *SecurityAuditLogNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAuditLogSvm This is the SVM through which the user connected.
+// SecurityAuditLogInlineSvm This is the SVM through which the user connected.
 //
-// swagger:model SecurityAuditLogSvm
-type SecurityAuditLogSvm struct {
+// swagger:model security_audit_log_inline_svm
+type SecurityAuditLogInlineSvm struct {
 
 	// name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this security audit log svm
-func (m *SecurityAuditLogSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this security audit log inline svm
+func (m *SecurityAuditLogInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security audit log svm based on the context it is used
-func (m *SecurityAuditLogSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security audit log inline svm based on the context it is used
+func (m *SecurityAuditLogInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -924,7 +924,7 @@ func (m *SecurityAuditLogSvm) ContextValidate(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAuditLogSvm) MarshalBinary() ([]byte, error) {
+func (m *SecurityAuditLogInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -932,8 +932,8 @@ func (m *SecurityAuditLogSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAuditLogSvm) UnmarshalBinary(b []byte) error {
-	var res SecurityAuditLogSvm
+func (m *SecurityAuditLogInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditLogInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

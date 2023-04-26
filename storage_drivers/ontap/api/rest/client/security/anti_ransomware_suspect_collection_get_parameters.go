@@ -66,55 +66,55 @@ type AntiRansomwareSuspectCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FileFormat.
 
 	   Filter by file.format
 	*/
-	FileFormatQueryParameter *string
+	FileFormat *string
 
 	/* FileName.
 
 	   Filter by file.name
 	*/
-	FileNameQueryParameter *string
+	FileName *string
 
 	/* FilePath.
 
 	   Filter by file.path
 	*/
-	FilePathQueryParameter *string
+	FilePath *string
 
 	/* FileReason.
 
 	   Filter by file.reason
 	*/
-	FileReasonQueryParameter *string
+	FileReason *string
 
 	/* FileSuspectTime.
 
 	   Filter by file.suspect_time
 	*/
-	FileSuspectTimeQueryParameter *string
+	FileSuspectTime *string
 
 	/* IsFalsePositive.
 
 	   Filter by is_false_positive
 	*/
-	IsFalsePositiveQueryParameter *bool
+	IsFalsePositive *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type AntiRansomwareSuspectCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,19 +130,19 @@ type AntiRansomwareSuspectCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -162,14 +162,14 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WithDefaults() *AntiRansomwar
 // All values with no default are reset to their zero value.
 func (o *AntiRansomwareSuspectCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AntiRansomwareSuspectCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,147 +211,147 @@ func (o *AntiRansomwareSuspectCollectionGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithFieldsQueryParameter(fields []string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFields(fields []string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFileFormatQueryParameter adds the fileFormat to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithFileFormatQueryParameter(fileFormat *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetFileFormatQueryParameter(fileFormat)
+// WithFileFormat adds the fileFormat to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFileFormat(fileFormat *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFileFormat(fileFormat)
 	return o
 }
 
-// SetFileFormatQueryParameter adds the fileFormat to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetFileFormatQueryParameter(fileFormat *string) {
-	o.FileFormatQueryParameter = fileFormat
+// SetFileFormat adds the fileFormat to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFileFormat(fileFormat *string) {
+	o.FileFormat = fileFormat
 }
 
-// WithFileNameQueryParameter adds the fileName to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithFileNameQueryParameter(fileName *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetFileNameQueryParameter(fileName)
+// WithFileName adds the fileName to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFileName(fileName *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFileName(fileName)
 	return o
 }
 
-// SetFileNameQueryParameter adds the fileName to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetFileNameQueryParameter(fileName *string) {
-	o.FileNameQueryParameter = fileName
+// SetFileName adds the fileName to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFileName(fileName *string) {
+	o.FileName = fileName
 }
 
-// WithFilePathQueryParameter adds the filePath to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithFilePathQueryParameter(filePath *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetFilePathQueryParameter(filePath)
+// WithFilePath adds the filePath to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFilePath(filePath *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFilePath(filePath)
 	return o
 }
 
-// SetFilePathQueryParameter adds the filePath to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetFilePathQueryParameter(filePath *string) {
-	o.FilePathQueryParameter = filePath
+// SetFilePath adds the filePath to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFilePath(filePath *string) {
+	o.FilePath = filePath
 }
 
-// WithFileReasonQueryParameter adds the fileReason to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithFileReasonQueryParameter(fileReason *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetFileReasonQueryParameter(fileReason)
+// WithFileReason adds the fileReason to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFileReason(fileReason *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFileReason(fileReason)
 	return o
 }
 
-// SetFileReasonQueryParameter adds the fileReason to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetFileReasonQueryParameter(fileReason *string) {
-	o.FileReasonQueryParameter = fileReason
+// SetFileReason adds the fileReason to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFileReason(fileReason *string) {
+	o.FileReason = fileReason
 }
 
-// WithFileSuspectTimeQueryParameter adds the fileSuspectTime to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithFileSuspectTimeQueryParameter(fileSuspectTime *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetFileSuspectTimeQueryParameter(fileSuspectTime)
+// WithFileSuspectTime adds the fileSuspectTime to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithFileSuspectTime(fileSuspectTime *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetFileSuspectTime(fileSuspectTime)
 	return o
 }
 
-// SetFileSuspectTimeQueryParameter adds the fileSuspectTime to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetFileSuspectTimeQueryParameter(fileSuspectTime *string) {
-	o.FileSuspectTimeQueryParameter = fileSuspectTime
+// SetFileSuspectTime adds the fileSuspectTime to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetFileSuspectTime(fileSuspectTime *string) {
+	o.FileSuspectTime = fileSuspectTime
 }
 
-// WithIsFalsePositiveQueryParameter adds the isFalsePositive to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithIsFalsePositiveQueryParameter(isFalsePositive *bool) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetIsFalsePositiveQueryParameter(isFalsePositive)
+// WithIsFalsePositive adds the isFalsePositive to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithIsFalsePositive(isFalsePositive *bool) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetIsFalsePositive(isFalsePositive)
 	return o
 }
 
-// SetIsFalsePositiveQueryParameter adds the isFalsePositive to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetIsFalsePositiveQueryParameter(isFalsePositive *bool) {
-	o.IsFalsePositiveQueryParameter = isFalsePositive
+// SetIsFalsePositive adds the isFalsePositive to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetIsFalsePositive(isFalsePositive *bool) {
+	o.IsFalsePositive = isFalsePositive
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithMaxRecords(maxRecords *int64) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithOrderBy(orderBy []string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithReturnRecords(returnRecords *bool) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithVolumeName(volumeName *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *AntiRansomwareSuspectCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) WithVolumeUUID(volumeUUID *string) *AntiRansomwareSuspectCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the anti ransomware suspect collection get params
-func (o *AntiRansomwareSuspectCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the anti ransomware suspect collection get params
+func (o *AntiRansomwareSuspectCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -362,7 +362,7 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FileFormatQueryParameter != nil {
+	if o.FileFormat != nil {
 
 		// query param file.format
 		var qrFileFormat string
 
-		if o.FileFormatQueryParameter != nil {
-			qrFileFormat = *o.FileFormatQueryParameter
+		if o.FileFormat != nil {
+			qrFileFormat = *o.FileFormat
 		}
 		qFileFormat := qrFileFormat
 		if qFileFormat != "" {
@@ -390,13 +390,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FileNameQueryParameter != nil {
+	if o.FileName != nil {
 
 		// query param file.name
 		var qrFileName string
 
-		if o.FileNameQueryParameter != nil {
-			qrFileName = *o.FileNameQueryParameter
+		if o.FileName != nil {
+			qrFileName = *o.FileName
 		}
 		qFileName := qrFileName
 		if qFileName != "" {
@@ -407,13 +407,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FilePathQueryParameter != nil {
+	if o.FilePath != nil {
 
 		// query param file.path
 		var qrFilePath string
 
-		if o.FilePathQueryParameter != nil {
-			qrFilePath = *o.FilePathQueryParameter
+		if o.FilePath != nil {
+			qrFilePath = *o.FilePath
 		}
 		qFilePath := qrFilePath
 		if qFilePath != "" {
@@ -424,13 +424,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FileReasonQueryParameter != nil {
+	if o.FileReason != nil {
 
 		// query param file.reason
 		var qrFileReason string
 
-		if o.FileReasonQueryParameter != nil {
-			qrFileReason = *o.FileReasonQueryParameter
+		if o.FileReason != nil {
+			qrFileReason = *o.FileReason
 		}
 		qFileReason := qrFileReason
 		if qFileReason != "" {
@@ -441,13 +441,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.FileSuspectTimeQueryParameter != nil {
+	if o.FileSuspectTime != nil {
 
 		// query param file.suspect_time
 		var qrFileSuspectTime string
 
-		if o.FileSuspectTimeQueryParameter != nil {
-			qrFileSuspectTime = *o.FileSuspectTimeQueryParameter
+		if o.FileSuspectTime != nil {
+			qrFileSuspectTime = *o.FileSuspectTime
 		}
 		qFileSuspectTime := qrFileSuspectTime
 		if qFileSuspectTime != "" {
@@ -458,13 +458,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IsFalsePositiveQueryParameter != nil {
+	if o.IsFalsePositive != nil {
 
 		// query param is_false_positive
 		var qrIsFalsePositive bool
 
-		if o.IsFalsePositiveQueryParameter != nil {
-			qrIsFalsePositive = *o.IsFalsePositiveQueryParameter
+		if o.IsFalsePositive != nil {
+			qrIsFalsePositive = *o.IsFalsePositive
 		}
 		qIsFalsePositive := swag.FormatBool(qrIsFalsePositive)
 		if qIsFalsePositive != "" {
@@ -475,13 +475,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,7 +492,7 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -503,13 +503,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -520,13 +520,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -537,13 +537,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -554,13 +554,13 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -579,7 +579,7 @@ func (o *AntiRansomwareSuspectCollectionGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamAntiRansomwareSuspectCollectionGet binds the parameter fields
 func (o *AntiRansomwareSuspectCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +596,7 @@ func (o *AntiRansomwareSuspectCollectionGetParams) bindParamFields(formats strfm
 
 // bindParamAntiRansomwareSuspectCollectionGet binds the parameter order_by
 func (o *AntiRansomwareSuspectCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

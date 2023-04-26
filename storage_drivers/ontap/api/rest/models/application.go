@@ -22,21 +22,18 @@ import (
 type Application struct {
 
 	// links
-	Links *ApplicationLinks `json:"_links,omitempty"`
+	Links *ApplicationInlineLinks `json:"_links,omitempty"`
 
 	// The time when the application was created.
 	// Read Only: true
-	CreationTimestamp string `json:"creation_timestamp,omitempty"`
+	CreationTimestamp *string `json:"creation_timestamp,omitempty"`
 
 	// Should application storage elements be deleted? An application is considered to use storage elements from a shared storage pool. Possible values are 'true' and 'false'. If the value is 'true', the application will be deleted in its entirety. If the value is 'false', the storage elements will be disassociated from the application and preserved. The application will then be deleted.
 	DeleteData *bool `json:"delete_data,omitempty"`
 
 	// The generation number of the application. This indicates which features are supported on the application. For example, generation 1 applications do not support Snapshot copies. Support for Snapshot copies was added at generation 2. Any future generation numbers and their feature set will be documented.
 	// Read Only: true
-	Generation int64 `json:"generation,omitempty"`
-
-	// maxdata on san
-	MaxdataOnSan *MaxdataOnSan `json:"maxdata_on_san,omitempty"`
+	Generation *int64 `json:"generation,omitempty"`
 
 	// mongo db on san
 	MongoDbOnSan *MongoDbOnSan `json:"mongo_db_on_san,omitempty"`
@@ -66,10 +63,10 @@ type Application struct {
 	// Protection granularity determines the scope of Snapshot copy operations for the application. Possible values are "application" and "component". If the value is "application", Snapshot copy operations are performed on the entire application. If the value is "component", Snapshot copy operations are performed separately on the application components.
 	// Read Only: true
 	// Enum: [application component]
-	ProtectionGranularity string `json:"protection_granularity,omitempty"`
+	ProtectionGranularity *string `json:"protection_granularity,omitempty"`
 
 	// rpo
-	Rpo *ApplicationRpo `json:"rpo,omitempty"`
+	Rpo *ApplicationInlineRpo `json:"rpo,omitempty"`
 
 	// s3 bucket
 	S3Bucket *ZappS3Bucket `json:"s3_bucket,omitempty"`
@@ -78,7 +75,7 @@ type Application struct {
 	San *San `json:"san,omitempty"`
 
 	// Identifies if this is a smart container or not.
-	SmartContainer bool `json:"smart_container,omitempty"`
+	SmartContainer *bool `json:"smart_container,omitempty"`
 
 	// sql on san
 	SQLOnSan *SQLOnSan `json:"sql_on_san,omitempty"`
@@ -89,20 +86,20 @@ type Application struct {
 	// The state of the application. For full functionality, applications must be in the online state. Other states indicate that the application is in a transient state and not all operations are supported.
 	// Read Only: true
 	// Enum: [creating deleting modifying online restoring]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *ApplicationStatistics `json:"statistics,omitempty"`
+	Statistics *ApplicationInlineStatistics `json:"statistics,omitempty"`
 
 	// svm
-	Svm *ApplicationSvm `json:"svm,omitempty"`
+	Svm *ApplicationInlineSvm `json:"svm,omitempty"`
 
 	// template
-	Template *ApplicationTemplateType `json:"template,omitempty"`
+	Template *ApplicationInlineTemplate `json:"template,omitempty"`
 
 	// Application UUID. This field is generated when the application is created.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// vdi on nas
 	VdiOnNas *VdiOnNas `json:"vdi_on_nas,omitempty"`
@@ -122,10 +119,6 @@ func (m *Application) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateMaxdataOnSan(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -232,23 +225,6 @@ func (m *Application) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *Application) validateMaxdataOnSan(formats strfmt.Registry) error {
-	if swag.IsZero(m.MaxdataOnSan) { // not required
-		return nil
-	}
-
-	if m.MaxdataOnSan != nil {
-		if err := m.MaxdataOnSan.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("maxdata_on_san")
 			}
 			return err
 		}
@@ -434,7 +410,7 @@ func (m *Application) validateProtectionGranularity(formats strfmt.Registry) err
 	}
 
 	// value enum
-	if err := m.validateProtectionGranularityEnum("protection_granularity", "body", m.ProtectionGranularity); err != nil {
+	if err := m.validateProtectionGranularityEnum("protection_granularity", "body", *m.ProtectionGranularity); err != nil {
 		return err
 	}
 
@@ -605,7 +581,7 @@ func (m *Application) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -747,10 +723,6 @@ func (m *Application) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMaxdataOnSan(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateMongoDbOnSan(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -861,7 +833,7 @@ func (m *Application) contextValidateLinks(ctx context.Context, formats strfmt.R
 
 func (m *Application) contextValidateCreationTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "creation_timestamp", "body", string(m.CreationTimestamp)); err != nil {
+	if err := validate.ReadOnly(ctx, "creation_timestamp", "body", m.CreationTimestamp); err != nil {
 		return err
 	}
 
@@ -870,22 +842,8 @@ func (m *Application) contextValidateCreationTimestamp(ctx context.Context, form
 
 func (m *Application) contextValidateGeneration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "generation", "body", int64(m.Generation)); err != nil {
+	if err := validate.ReadOnly(ctx, "generation", "body", m.Generation); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Application) contextValidateMaxdataOnSan(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.MaxdataOnSan != nil {
-		if err := m.MaxdataOnSan.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("maxdata_on_san")
-			}
-			return err
-		}
 	}
 
 	return nil
@@ -991,7 +949,7 @@ func (m *Application) contextValidateOracleRacOnSan(ctx context.Context, formats
 
 func (m *Application) contextValidateProtectionGranularity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "protection_granularity", "body", string(m.ProtectionGranularity)); err != nil {
+	if err := validate.ReadOnly(ctx, "protection_granularity", "body", m.ProtectionGranularity); err != nil {
 		return err
 	}
 
@@ -1070,7 +1028,7 @@ func (m *Application) contextValidateSQLOnSmb(ctx context.Context, formats strfm
 
 func (m *Application) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -1121,7 +1079,7 @@ func (m *Application) contextValidateTemplate(ctx context.Context, formats strfm
 
 func (m *Application) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1202,10 +1160,10 @@ func (m *Application) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationLinks application links
+// ApplicationInlineLinks application inline links
 //
-// swagger:model ApplicationLinks
-type ApplicationLinks struct {
+// swagger:model application_inline__links
+type ApplicationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
@@ -1214,8 +1172,8 @@ type ApplicationLinks struct {
 	Snapshots *Href `json:"snapshots,omitempty"`
 }
 
-// Validate validates this application links
-func (m *ApplicationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline links
+func (m *ApplicationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1232,7 +1190,7 @@ func (m *ApplicationLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1249,7 +1207,7 @@ func (m *ApplicationLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationLinks) validateSnapshots(formats strfmt.Registry) error {
+func (m *ApplicationInlineLinks) validateSnapshots(formats strfmt.Registry) error {
 	if swag.IsZero(m.Snapshots) { // not required
 		return nil
 	}
@@ -1266,8 +1224,8 @@ func (m *ApplicationLinks) validateSnapshots(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application links based on the context it is used
-func (m *ApplicationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline links based on the context it is used
+func (m *ApplicationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1284,7 +1242,7 @@ func (m *ApplicationLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ApplicationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1298,7 +1256,7 @@ func (m *ApplicationLinks) contextValidateSelf(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ApplicationLinks) contextValidateSnapshots(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineLinks) contextValidateSnapshots(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Snapshots != nil {
 		if err := m.Snapshots.ContextValidate(ctx, formats); err != nil {
@@ -1313,7 +1271,7 @@ func (m *ApplicationLinks) contextValidateSnapshots(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1321,8 +1279,8 @@ func (m *ApplicationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationLinks
+func (m *ApplicationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1330,10 +1288,10 @@ func (m *ApplicationLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationRpo application rpo
+// ApplicationInlineRpo application inline rpo
 //
-// swagger:model ApplicationRpo
-type ApplicationRpo struct {
+// swagger:model application_inline_rpo
+type ApplicationInlineRpo struct {
 
 	// components
 	// Read Only: true
@@ -1344,14 +1302,14 @@ type ApplicationRpo struct {
 	IsSupported *bool `json:"is_supported,omitempty"`
 
 	// local
-	Local *ApplicationRpoLocal `json:"local,omitempty"`
+	Local *ApplicationInlineRpoInlineLocal `json:"local,omitempty"`
 
 	// remote
-	Remote *ApplicationRpoRemote `json:"remote,omitempty"`
+	Remote *ApplicationInlineRpoInlineRemote `json:"remote,omitempty"`
 }
 
-// Validate validates this application rpo
-func (m *ApplicationRpo) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline rpo
+func (m *ApplicationInlineRpo) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComponents(formats); err != nil {
@@ -1372,7 +1330,7 @@ func (m *ApplicationRpo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationRpo) validateComponents(formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) validateComponents(formats strfmt.Registry) error {
 	if swag.IsZero(m.Components) { // not required
 		return nil
 	}
@@ -1396,7 +1354,7 @@ func (m *ApplicationRpo) validateComponents(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationRpo) validateLocal(formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) validateLocal(formats strfmt.Registry) error {
 	if swag.IsZero(m.Local) { // not required
 		return nil
 	}
@@ -1413,7 +1371,7 @@ func (m *ApplicationRpo) validateLocal(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationRpo) validateRemote(formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) validateRemote(formats strfmt.Registry) error {
 	if swag.IsZero(m.Remote) { // not required
 		return nil
 	}
@@ -1430,8 +1388,8 @@ func (m *ApplicationRpo) validateRemote(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application rpo based on the context it is used
-func (m *ApplicationRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline rpo based on the context it is used
+func (m *ApplicationInlineRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateComponents(ctx, formats); err != nil {
@@ -1456,7 +1414,7 @@ func (m *ApplicationRpo) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *ApplicationRpo) contextValidateComponents(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) contextValidateComponents(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "rpo"+"."+"components", "body", []*ApplicationRpoComponentsItems0(m.Components)); err != nil {
 		return err
@@ -1478,7 +1436,7 @@ func (m *ApplicationRpo) contextValidateComponents(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ApplicationRpo) contextValidateIsSupported(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) contextValidateIsSupported(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "rpo"+"."+"is_supported", "body", m.IsSupported); err != nil {
 		return err
@@ -1487,7 +1445,7 @@ func (m *ApplicationRpo) contextValidateIsSupported(ctx context.Context, formats
 	return nil
 }
 
-func (m *ApplicationRpo) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Local != nil {
 		if err := m.Local.ContextValidate(ctx, formats); err != nil {
@@ -1501,7 +1459,7 @@ func (m *ApplicationRpo) contextValidateLocal(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ApplicationRpo) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpo) contextValidateRemote(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Remote != nil {
 		if err := m.Remote.ContextValidate(ctx, formats); err != nil {
@@ -1516,7 +1474,7 @@ func (m *ApplicationRpo) contextValidateRemote(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationRpo) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineRpo) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1524,8 +1482,8 @@ func (m *ApplicationRpo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationRpo) UnmarshalBinary(b []byte) error {
-	var res ApplicationRpo
+func (m *ApplicationInlineRpo) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineRpo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1540,14 +1498,14 @@ type ApplicationRpoComponentsItems0 struct {
 
 	// Component Name.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// rpo
 	Rpo *ApplicationRpoComponentsItems0Rpo `json:"rpo,omitempty"`
 
 	// Component UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application rpo components items0
@@ -1605,7 +1563,7 @@ func (m *ApplicationRpoComponentsItems0) ContextValidate(ctx context.Context, fo
 
 func (m *ApplicationRpoComponentsItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1628,7 +1586,7 @@ func (m *ApplicationRpoComponentsItems0) contextValidateRpo(ctx context.Context,
 
 func (m *ApplicationRpoComponentsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1788,12 +1746,12 @@ type ApplicationRpoComponentsItems0RpoLocal struct {
 
 	// A detailed description of the local RPO. This will include details about the Snapshot copy schedule.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The local RPO of the component. This indicates how often component Snapshot copies are automatically created.
 	// Read Only: true
 	// Enum: [6_hourly 15_minutely hourly none]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this application rpo components items0 rpo local
@@ -1879,7 +1837,7 @@ func (m *ApplicationRpoComponentsItems0RpoLocal) validateName(formats strfmt.Reg
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
@@ -1906,7 +1864,7 @@ func (m *ApplicationRpoComponentsItems0RpoLocal) ContextValidate(ctx context.Con
 
 func (m *ApplicationRpoComponentsItems0RpoLocal) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"description", "body", m.Description); err != nil {
 		return err
 	}
 
@@ -1915,7 +1873,7 @@ func (m *ApplicationRpoComponentsItems0RpoLocal) contextValidateDescription(ctx 
 
 func (m *ApplicationRpoComponentsItems0RpoLocal) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1947,12 +1905,12 @@ type ApplicationRpoComponentsItems0RpoRemote struct {
 
 	// A detailed description of the remote RPO.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The remote RPO of the component. A remote RPO of zero indicates that the component is synchronously replicated to another cluster.
 	// Read Only: true
 	// Enum: [6_hourly 15_minutely hourly none zero]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this application rpo components items0 rpo remote
@@ -2048,7 +2006,7 @@ func (m *ApplicationRpoComponentsItems0RpoRemote) validateName(formats strfmt.Re
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
@@ -2075,7 +2033,7 @@ func (m *ApplicationRpoComponentsItems0RpoRemote) ContextValidate(ctx context.Co
 
 func (m *ApplicationRpoComponentsItems0RpoRemote) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"description", "body", m.Description); err != nil {
 		return err
 	}
 
@@ -2084,7 +2042,7 @@ func (m *ApplicationRpoComponentsItems0RpoRemote) contextValidateDescription(ctx
 
 func (m *ApplicationRpoComponentsItems0RpoRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -2109,23 +2067,23 @@ func (m *ApplicationRpoComponentsItems0RpoRemote) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// ApplicationRpoLocal application rpo local
+// ApplicationInlineRpoInlineLocal application inline rpo inline local
 //
-// swagger:model ApplicationRpoLocal
-type ApplicationRpoLocal struct {
+// swagger:model application_inline_rpo_inline_local
+type ApplicationInlineRpoInlineLocal struct {
 
 	// A detailed description of the local RPO. This will include details about the Snapshot copy schedule.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The local RPO of the application. This indicates how often application Snapshot copies are automatically created.
 	// Read Only: true
 	// Enum: [6_hourly 15_minutely hourly none]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application rpo local
-func (m *ApplicationRpoLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline rpo inline local
+func (m *ApplicationInlineRpoInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -2138,7 +2096,7 @@ func (m *ApplicationRpoLocal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var applicationRpoLocalTypeNamePropEnum []interface{}
+var applicationInlineRpoInlineLocalTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2146,76 +2104,76 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationRpoLocalTypeNamePropEnum = append(applicationRpoLocalTypeNamePropEnum, v)
+		applicationInlineRpoInlineLocalTypeNamePropEnum = append(applicationInlineRpoInlineLocalTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoLocal
-	// ApplicationRpoLocal
+	// application_inline_rpo_inline_local
+	// ApplicationInlineRpoInlineLocal
 	// name
 	// Name
 	// 6_hourly
 	// END DEBUGGING
-	// ApplicationRpoLocalNameNr6Hourly captures enum value "6_hourly"
-	ApplicationRpoLocalNameNr6Hourly string = "6_hourly"
+	// ApplicationInlineRpoInlineLocalNameNr6Hourly captures enum value "6_hourly"
+	ApplicationInlineRpoInlineLocalNameNr6Hourly string = "6_hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoLocal
-	// ApplicationRpoLocal
+	// application_inline_rpo_inline_local
+	// ApplicationInlineRpoInlineLocal
 	// name
 	// Name
 	// 15_minutely
 	// END DEBUGGING
-	// ApplicationRpoLocalNameNr15Minutely captures enum value "15_minutely"
-	ApplicationRpoLocalNameNr15Minutely string = "15_minutely"
+	// ApplicationInlineRpoInlineLocalNameNr15Minutely captures enum value "15_minutely"
+	ApplicationInlineRpoInlineLocalNameNr15Minutely string = "15_minutely"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoLocal
-	// ApplicationRpoLocal
+	// application_inline_rpo_inline_local
+	// ApplicationInlineRpoInlineLocal
 	// name
 	// Name
 	// hourly
 	// END DEBUGGING
-	// ApplicationRpoLocalNameHourly captures enum value "hourly"
-	ApplicationRpoLocalNameHourly string = "hourly"
+	// ApplicationInlineRpoInlineLocalNameHourly captures enum value "hourly"
+	ApplicationInlineRpoInlineLocalNameHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoLocal
-	// ApplicationRpoLocal
+	// application_inline_rpo_inline_local
+	// ApplicationInlineRpoInlineLocal
 	// name
 	// Name
 	// none
 	// END DEBUGGING
-	// ApplicationRpoLocalNameNone captures enum value "none"
-	ApplicationRpoLocalNameNone string = "none"
+	// ApplicationInlineRpoInlineLocalNameNone captures enum value "none"
+	ApplicationInlineRpoInlineLocalNameNone string = "none"
 )
 
 // prop value enum
-func (m *ApplicationRpoLocal) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationRpoLocalTypeNamePropEnum, true); err != nil {
+func (m *ApplicationInlineRpoInlineLocal) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationInlineRpoInlineLocalTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationRpoLocal) validateName(formats strfmt.Registry) error {
+func (m *ApplicationInlineRpoInlineLocal) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application rpo local based on the context it is used
-func (m *ApplicationRpoLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline rpo inline local based on the context it is used
+func (m *ApplicationInlineRpoInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDescription(ctx, formats); err != nil {
@@ -2232,18 +2190,18 @@ func (m *ApplicationRpoLocal) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ApplicationRpoLocal) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpoInlineLocal) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"description", "body", m.Description); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationRpoLocal) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpoInlineLocal) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -2251,7 +2209,7 @@ func (m *ApplicationRpoLocal) contextValidateName(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationRpoLocal) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineRpoInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2259,8 +2217,8 @@ func (m *ApplicationRpoLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationRpoLocal) UnmarshalBinary(b []byte) error {
-	var res ApplicationRpoLocal
+func (m *ApplicationInlineRpoInlineLocal) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineRpoInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2268,23 +2226,23 @@ func (m *ApplicationRpoLocal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationRpoRemote application rpo remote
+// ApplicationInlineRpoInlineRemote application inline rpo inline remote
 //
-// swagger:model ApplicationRpoRemote
-type ApplicationRpoRemote struct {
+// swagger:model application_inline_rpo_inline_remote
+type ApplicationInlineRpoInlineRemote struct {
 
 	// A detailed description of the remote RPO.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The remote RPO of the application. A remote RPO of zero indicates that the application is synchronously replicated to another cluster.
 	// Read Only: true
 	// Enum: [6_hourly 15_minutely hourly none zero]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application rpo remote
-func (m *ApplicationRpoRemote) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline rpo inline remote
+func (m *ApplicationInlineRpoInlineRemote) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -2297,7 +2255,7 @@ func (m *ApplicationRpoRemote) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var applicationRpoRemoteTypeNamePropEnum []interface{}
+var applicationInlineRpoInlineRemoteTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2305,86 +2263,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationRpoRemoteTypeNamePropEnum = append(applicationRpoRemoteTypeNamePropEnum, v)
+		applicationInlineRpoInlineRemoteTypeNamePropEnum = append(applicationInlineRpoInlineRemoteTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoRemote
-	// ApplicationRpoRemote
+	// application_inline_rpo_inline_remote
+	// ApplicationInlineRpoInlineRemote
 	// name
 	// Name
 	// 6_hourly
 	// END DEBUGGING
-	// ApplicationRpoRemoteNameNr6Hourly captures enum value "6_hourly"
-	ApplicationRpoRemoteNameNr6Hourly string = "6_hourly"
+	// ApplicationInlineRpoInlineRemoteNameNr6Hourly captures enum value "6_hourly"
+	ApplicationInlineRpoInlineRemoteNameNr6Hourly string = "6_hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoRemote
-	// ApplicationRpoRemote
+	// application_inline_rpo_inline_remote
+	// ApplicationInlineRpoInlineRemote
 	// name
 	// Name
 	// 15_minutely
 	// END DEBUGGING
-	// ApplicationRpoRemoteNameNr15Minutely captures enum value "15_minutely"
-	ApplicationRpoRemoteNameNr15Minutely string = "15_minutely"
+	// ApplicationInlineRpoInlineRemoteNameNr15Minutely captures enum value "15_minutely"
+	ApplicationInlineRpoInlineRemoteNameNr15Minutely string = "15_minutely"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoRemote
-	// ApplicationRpoRemote
+	// application_inline_rpo_inline_remote
+	// ApplicationInlineRpoInlineRemote
 	// name
 	// Name
 	// hourly
 	// END DEBUGGING
-	// ApplicationRpoRemoteNameHourly captures enum value "hourly"
-	ApplicationRpoRemoteNameHourly string = "hourly"
+	// ApplicationInlineRpoInlineRemoteNameHourly captures enum value "hourly"
+	ApplicationInlineRpoInlineRemoteNameHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoRemote
-	// ApplicationRpoRemote
+	// application_inline_rpo_inline_remote
+	// ApplicationInlineRpoInlineRemote
 	// name
 	// Name
 	// none
 	// END DEBUGGING
-	// ApplicationRpoRemoteNameNone captures enum value "none"
-	ApplicationRpoRemoteNameNone string = "none"
+	// ApplicationInlineRpoInlineRemoteNameNone captures enum value "none"
+	ApplicationInlineRpoInlineRemoteNameNone string = "none"
 
 	// BEGIN DEBUGGING
-	// ApplicationRpoRemote
-	// ApplicationRpoRemote
+	// application_inline_rpo_inline_remote
+	// ApplicationInlineRpoInlineRemote
 	// name
 	// Name
 	// zero
 	// END DEBUGGING
-	// ApplicationRpoRemoteNameZero captures enum value "zero"
-	ApplicationRpoRemoteNameZero string = "zero"
+	// ApplicationInlineRpoInlineRemoteNameZero captures enum value "zero"
+	ApplicationInlineRpoInlineRemoteNameZero string = "zero"
 )
 
 // prop value enum
-func (m *ApplicationRpoRemote) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationRpoRemoteTypeNamePropEnum, true); err != nil {
+func (m *ApplicationInlineRpoInlineRemote) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationInlineRpoInlineRemoteTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationRpoRemote) validateName(formats strfmt.Registry) error {
+func (m *ApplicationInlineRpoInlineRemote) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"remote"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application rpo remote based on the context it is used
-func (m *ApplicationRpoRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline rpo inline remote based on the context it is used
+func (m *ApplicationInlineRpoInlineRemote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDescription(ctx, formats); err != nil {
@@ -2401,18 +2359,18 @@ func (m *ApplicationRpoRemote) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ApplicationRpoRemote) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpoInlineRemote) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"description", "body", m.Description); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationRpoRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineRpoInlineRemote) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "rpo"+"."+"remote"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -2420,7 +2378,7 @@ func (m *ApplicationRpoRemote) contextValidateName(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationRpoRemote) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineRpoInlineRemote) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2428,8 +2386,8 @@ func (m *ApplicationRpoRemote) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationRpoRemote) UnmarshalBinary(b []byte) error {
-	var res ApplicationRpoRemote
+func (m *ApplicationInlineRpoInlineRemote) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineRpoInlineRemote
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2437,38 +2395,38 @@ func (m *ApplicationRpoRemote) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationStatistics application statistics
+// ApplicationInlineStatistics application inline statistics
 //
-// swagger:model ApplicationStatistics
-type ApplicationStatistics struct {
+// swagger:model application_inline_statistics
+type ApplicationInlineStatistics struct {
 
 	// components
 	// Read Only: true
 	Components []*ApplicationStatisticsComponentsItems0 `json:"components,omitempty"`
 
 	// iops
-	Iops *ApplicationStatisticsIops `json:"iops,omitempty"`
+	Iops *ApplicationInlineStatisticsInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *ApplicationStatisticsLatency `json:"latency,omitempty"`
+	Latency *ApplicationInlineStatisticsInlineLatency `json:"latency,omitempty"`
 
 	// An application is considered to use a shared storage pool if storage elements for multiple components reside on the same aggregate.
 	// Read Only: true
 	SharedStoragePool *bool `json:"shared_storage_pool,omitempty"`
 
 	// snapshot
-	Snapshot *ApplicationStatisticsSnapshot `json:"snapshot,omitempty"`
+	Snapshot *ApplicationInlineStatisticsInlineSnapshot `json:"snapshot,omitempty"`
 
 	// space
-	Space *ApplicationStatisticsSpace `json:"space,omitempty"`
+	Space *ApplicationInlineStatisticsInlineSpace `json:"space,omitempty"`
 
 	// If not all storage elements of the application are currently available, the returned statistics might only include data from those elements that were available.
 	// Read Only: true
 	StatisticsIncomplete *bool `json:"statistics_incomplete,omitempty"`
 }
 
-// Validate validates this application statistics
-func (m *ApplicationStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline statistics
+func (m *ApplicationInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComponents(formats); err != nil {
@@ -2497,7 +2455,7 @@ func (m *ApplicationStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationStatistics) validateComponents(formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) validateComponents(formats strfmt.Registry) error {
 	if swag.IsZero(m.Components) { // not required
 		return nil
 	}
@@ -2521,7 +2479,7 @@ func (m *ApplicationStatistics) validateComponents(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ApplicationStatistics) validateIops(formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -2538,7 +2496,7 @@ func (m *ApplicationStatistics) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationStatistics) validateLatency(formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -2555,7 +2513,7 @@ func (m *ApplicationStatistics) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationStatistics) validateSnapshot(formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) validateSnapshot(formats strfmt.Registry) error {
 	if swag.IsZero(m.Snapshot) { // not required
 		return nil
 	}
@@ -2572,7 +2530,7 @@ func (m *ApplicationStatistics) validateSnapshot(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ApplicationStatistics) validateSpace(formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) validateSpace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Space) { // not required
 		return nil
 	}
@@ -2589,8 +2547,8 @@ func (m *ApplicationStatistics) validateSpace(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application statistics based on the context it is used
-func (m *ApplicationStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline statistics based on the context it is used
+func (m *ApplicationInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateComponents(ctx, formats); err != nil {
@@ -2627,7 +2585,7 @@ func (m *ApplicationStatistics) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateComponents(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateComponents(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"components", "body", []*ApplicationStatisticsComponentsItems0(m.Components)); err != nil {
 		return err
@@ -2649,7 +2607,7 @@ func (m *ApplicationStatistics) contextValidateComponents(ctx context.Context, f
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -2663,7 +2621,7 @@ func (m *ApplicationStatistics) contextValidateIops(ctx context.Context, formats
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -2677,7 +2635,7 @@ func (m *ApplicationStatistics) contextValidateLatency(ctx context.Context, form
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateSharedStoragePool(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateSharedStoragePool(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"shared_storage_pool", "body", m.SharedStoragePool); err != nil {
 		return err
@@ -2686,7 +2644,7 @@ func (m *ApplicationStatistics) contextValidateSharedStoragePool(ctx context.Con
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Snapshot != nil {
 		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
@@ -2700,7 +2658,7 @@ func (m *ApplicationStatistics) contextValidateSnapshot(ctx context.Context, for
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Space != nil {
 		if err := m.Space.ContextValidate(ctx, formats); err != nil {
@@ -2714,7 +2672,7 @@ func (m *ApplicationStatistics) contextValidateSpace(ctx context.Context, format
 	return nil
 }
 
-func (m *ApplicationStatistics) contextValidateStatisticsIncomplete(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatistics) contextValidateStatisticsIncomplete(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"statistics_incomplete", "body", m.StatisticsIncomplete); err != nil {
 		return err
@@ -2724,7 +2682,7 @@ func (m *ApplicationStatistics) contextValidateStatisticsIncomplete(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationStatistics) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2732,8 +2690,8 @@ func (m *ApplicationStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationStatistics) UnmarshalBinary(b []byte) error {
-	var res ApplicationStatistics
+func (m *ApplicationInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2754,7 +2712,7 @@ type ApplicationStatisticsComponentsItems0 struct {
 
 	// Component Name.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// An application component is considered to use a shared storage pool if storage elements for for other components reside on the same aggregate as storage elements for this component.
 	// Read Only: true
@@ -2775,7 +2733,7 @@ type ApplicationStatisticsComponentsItems0 struct {
 
 	// Component UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application statistics components items0
@@ -2969,7 +2927,7 @@ func (m *ApplicationStatisticsComponentsItems0) contextValidateLatency(ctx conte
 
 func (m *ApplicationStatisticsComponentsItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -3038,7 +2996,7 @@ func (m *ApplicationStatisticsComponentsItems0) contextValidateStorageService(ct
 
 func (m *ApplicationStatisticsComponentsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -3070,11 +3028,11 @@ type ApplicationStatisticsComponentsItems0Iops struct {
 
 	// The number of IOPS per terabyte of logical space currently being used by the application component.
 	// Read Only: true
-	PerTb int64 `json:"per_tb,omitempty"`
+	PerTb *int64 `json:"per_tb,omitempty"`
 
 	// The total number of IOPS being used by the application component.
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 }
 
 // Validate validates this application statistics components items0 iops
@@ -3102,7 +3060,7 @@ func (m *ApplicationStatisticsComponentsItems0Iops) ContextValidate(ctx context.
 
 func (m *ApplicationStatisticsComponentsItems0Iops) contextValidatePerTb(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"per_tb", "body", int64(m.PerTb)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"per_tb", "body", m.PerTb); err != nil {
 		return err
 	}
 
@@ -3111,7 +3069,7 @@ func (m *ApplicationStatisticsComponentsItems0Iops) contextValidatePerTb(ctx con
 
 func (m *ApplicationStatisticsComponentsItems0Iops) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
@@ -3143,11 +3101,11 @@ type ApplicationStatisticsComponentsItems0Latency struct {
 
 	// The cumulative average response time in microseconds for this component.
 	// Read Only: true
-	Average int64 `json:"average,omitempty"`
+	Average *int64 `json:"average,omitempty"`
 
 	// The cumulative response time in microseconds for this component.
 	// Read Only: true
-	Raw int64 `json:"raw,omitempty"`
+	Raw *int64 `json:"raw,omitempty"`
 }
 
 // Validate validates this application statistics components items0 latency
@@ -3175,7 +3133,7 @@ func (m *ApplicationStatisticsComponentsItems0Latency) ContextValidate(ctx conte
 
 func (m *ApplicationStatisticsComponentsItems0Latency) contextValidateAverage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "latency"+"."+"average", "body", int64(m.Average)); err != nil {
+	if err := validate.ReadOnly(ctx, "latency"+"."+"average", "body", m.Average); err != nil {
 		return err
 	}
 
@@ -3184,7 +3142,7 @@ func (m *ApplicationStatisticsComponentsItems0Latency) contextValidateAverage(ct
 
 func (m *ApplicationStatisticsComponentsItems0Latency) contextValidateRaw(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "latency"+"."+"raw", "body", int64(m.Raw)); err != nil {
+	if err := validate.ReadOnly(ctx, "latency"+"."+"raw", "body", m.Raw); err != nil {
 		return err
 	}
 
@@ -3216,11 +3174,11 @@ type ApplicationStatisticsComponentsItems0Snapshot struct {
 
 	// The amount of space reserved by the system for Snapshot copies.
 	// Read Only: true
-	Reserve int64 `json:"reserve,omitempty"`
+	Reserve *int64 `json:"reserve,omitempty"`
 
 	// The amount of spacing currently in use by the system to store Snapshot copies.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 // Validate validates this application statistics components items0 snapshot
@@ -3248,7 +3206,7 @@ func (m *ApplicationStatisticsComponentsItems0Snapshot) ContextValidate(ctx cont
 
 func (m *ApplicationStatisticsComponentsItems0Snapshot) contextValidateReserve(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snapshot"+"."+"reserve", "body", int64(m.Reserve)); err != nil {
+	if err := validate.ReadOnly(ctx, "snapshot"+"."+"reserve", "body", m.Reserve); err != nil {
 		return err
 	}
 
@@ -3257,7 +3215,7 @@ func (m *ApplicationStatisticsComponentsItems0Snapshot) contextValidateReserve(c
 
 func (m *ApplicationStatisticsComponentsItems0Snapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snapshot"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "snapshot"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -3289,35 +3247,35 @@ type ApplicationStatisticsComponentsItems0Space struct {
 
 	// The available amount of space left in the application component. Note that this field has limited meaning for SAN applications. Space may be considered used from ONTAP's perspective while the host filesystem still considers it available.
 	// Read Only: true
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// The amount of space that would currently be used if no space saving features were enabled. For example, if compression were the only space saving feature enabled, this field would represent the uncompressed amount of space used.
 	// Read Only: true
-	LogicalUsed int64 `json:"logical_used,omitempty"`
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
 
 	// The originally requested amount of space that was provisioned for the application component.
 	// Read Only: true
-	Provisioned int64 `json:"provisioned,omitempty"`
+	Provisioned *int64 `json:"provisioned,omitempty"`
 
 	// The amount of space reserved for system features such as Snapshot copies that has not yet been used.
 	// Read Only: true
-	ReservedUnused int64 `json:"reserved_unused,omitempty"`
+	ReservedUnused *int64 `json:"reserved_unused,omitempty"`
 
 	// The amount of space saved by all enabled space saving features.
 	// Read Only: true
-	Savings int64 `json:"savings,omitempty"`
+	Savings *int64 `json:"savings,omitempty"`
 
 	// The amount of space that is currently being used by the application component. Note that this includes any space reserved by the system for features such as Snapshot copies.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 
 	// The amount of space that is currently being used, excluding any space that is reserved by the system for features such as Snapshot copies.
 	// Read Only: true
-	UsedExcludingReserves int64 `json:"used_excluding_reserves,omitempty"`
+	UsedExcludingReserves *int64 `json:"used_excluding_reserves,omitempty"`
 
 	// The percentage of the originally provisioned space that is currently being used by the application component.
 	// Read Only: true
-	UsedPercent int64 `json:"used_percent,omitempty"`
+	UsedPercent *int64 `json:"used_percent,omitempty"`
 }
 
 // Validate validates this application statistics components items0 space
@@ -3369,7 +3327,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) ContextValidate(ctx context
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"available", "body", int64(m.Available)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"available", "body", m.Available); err != nil {
 		return err
 	}
 
@@ -3378,7 +3336,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateAvailable(ct
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"logical_used", "body", int64(m.LogicalUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
 		return err
 	}
 
@@ -3387,7 +3345,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateLogicalUsed(
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateProvisioned(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"provisioned", "body", int64(m.Provisioned)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"provisioned", "body", m.Provisioned); err != nil {
 		return err
 	}
 
@@ -3396,7 +3354,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateProvisioned(
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateReservedUnused(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"reserved_unused", "body", int64(m.ReservedUnused)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"reserved_unused", "body", m.ReservedUnused); err != nil {
 		return err
 	}
 
@@ -3405,7 +3363,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateReservedUnus
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"savings", "body", int64(m.Savings)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"savings", "body", m.Savings); err != nil {
 		return err
 	}
 
@@ -3414,7 +3372,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateSavings(ctx 
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -3423,7 +3381,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateUsed(ctx con
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateUsedExcludingReserves(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used_excluding_reserves", "body", int64(m.UsedExcludingReserves)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used_excluding_reserves", "body", m.UsedExcludingReserves); err != nil {
 		return err
 	}
 
@@ -3432,7 +3390,7 @@ func (m *ApplicationStatisticsComponentsItems0Space) contextValidateUsedExcludin
 
 func (m *ApplicationStatisticsComponentsItems0Space) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "space"+"."+"used_percent", "body", int64(m.UsedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "space"+"."+"used_percent", "body", m.UsedPercent); err != nil {
 		return err
 	}
 
@@ -3464,11 +3422,11 @@ type ApplicationStatisticsComponentsItems0StorageService struct {
 
 	// The storage service name. AFF systems support the extreme storage service. All other systems only support value.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The storage service UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application statistics components items0 storage service
@@ -3496,7 +3454,7 @@ func (m *ApplicationStatisticsComponentsItems0StorageService) ContextValidate(ct
 
 func (m *ApplicationStatisticsComponentsItems0StorageService) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_service"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_service"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -3505,7 +3463,7 @@ func (m *ApplicationStatisticsComponentsItems0StorageService) contextValidateNam
 
 func (m *ApplicationStatisticsComponentsItems0StorageService) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_service"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_service"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -3530,27 +3488,27 @@ func (m *ApplicationStatisticsComponentsItems0StorageService) UnmarshalBinary(b 
 	return nil
 }
 
-// ApplicationStatisticsIops application statistics iops
+// ApplicationInlineStatisticsInlineIops application inline statistics inline iops
 //
-// swagger:model ApplicationStatisticsIops
-type ApplicationStatisticsIops struct {
+// swagger:model application_inline_statistics_inline_iops
+type ApplicationInlineStatisticsInlineIops struct {
 
 	// The number of IOPS per terabyte of logical space currently being used by the application.
 	// Read Only: true
-	PerTb int64 `json:"per_tb,omitempty"`
+	PerTb *int64 `json:"per_tb,omitempty"`
 
 	// The total number of IOPS being used by the application.
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 }
 
-// Validate validates this application statistics iops
-func (m *ApplicationStatisticsIops) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline statistics inline iops
+func (m *ApplicationInlineStatisticsInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application statistics iops based on the context it is used
-func (m *ApplicationStatisticsIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline statistics inline iops based on the context it is used
+func (m *ApplicationInlineStatisticsInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePerTb(ctx, formats); err != nil {
@@ -3567,18 +3525,18 @@ func (m *ApplicationStatisticsIops) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ApplicationStatisticsIops) contextValidatePerTb(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineIops) contextValidatePerTb(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"iops"+"."+"per_tb", "body", int64(m.PerTb)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"iops"+"."+"per_tb", "body", m.PerTb); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsIops) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineIops) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"iops"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"iops"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
@@ -3586,7 +3544,7 @@ func (m *ApplicationStatisticsIops) contextValidateTotal(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationStatisticsIops) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineStatisticsInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3594,8 +3552,8 @@ func (m *ApplicationStatisticsIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationStatisticsIops) UnmarshalBinary(b []byte) error {
-	var res ApplicationStatisticsIops
+func (m *ApplicationInlineStatisticsInlineIops) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineStatisticsInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3603,27 +3561,27 @@ func (m *ApplicationStatisticsIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationStatisticsLatency application statistics latency
+// ApplicationInlineStatisticsInlineLatency application inline statistics inline latency
 //
-// swagger:model ApplicationStatisticsLatency
-type ApplicationStatisticsLatency struct {
+// swagger:model application_inline_statistics_inline_latency
+type ApplicationInlineStatisticsInlineLatency struct {
 
 	// The cumulative average response time in microseconds for this application.
 	// Read Only: true
-	Average int64 `json:"average,omitempty"`
+	Average *int64 `json:"average,omitempty"`
 
 	// The cumulative response time in microseconds for this application.
 	// Read Only: true
-	Raw int64 `json:"raw,omitempty"`
+	Raw *int64 `json:"raw,omitempty"`
 }
 
-// Validate validates this application statistics latency
-func (m *ApplicationStatisticsLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline statistics inline latency
+func (m *ApplicationInlineStatisticsInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application statistics latency based on the context it is used
-func (m *ApplicationStatisticsLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline statistics inline latency based on the context it is used
+func (m *ApplicationInlineStatisticsInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAverage(ctx, formats); err != nil {
@@ -3640,18 +3598,18 @@ func (m *ApplicationStatisticsLatency) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *ApplicationStatisticsLatency) contextValidateAverage(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineLatency) contextValidateAverage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"latency"+"."+"average", "body", int64(m.Average)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"latency"+"."+"average", "body", m.Average); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsLatency) contextValidateRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineLatency) contextValidateRaw(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"latency"+"."+"raw", "body", int64(m.Raw)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"latency"+"."+"raw", "body", m.Raw); err != nil {
 		return err
 	}
 
@@ -3659,7 +3617,7 @@ func (m *ApplicationStatisticsLatency) contextValidateRaw(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationStatisticsLatency) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineStatisticsInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3667,8 +3625,8 @@ func (m *ApplicationStatisticsLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationStatisticsLatency) UnmarshalBinary(b []byte) error {
-	var res ApplicationStatisticsLatency
+func (m *ApplicationInlineStatisticsInlineLatency) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineStatisticsInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3676,27 +3634,27 @@ func (m *ApplicationStatisticsLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationStatisticsSnapshot application statistics snapshot
+// ApplicationInlineStatisticsInlineSnapshot application inline statistics inline snapshot
 //
-// swagger:model ApplicationStatisticsSnapshot
-type ApplicationStatisticsSnapshot struct {
+// swagger:model application_inline_statistics_inline_snapshot
+type ApplicationInlineStatisticsInlineSnapshot struct {
 
 	// The amount of space reserved by the system for Snapshot copies.
 	// Read Only: true
-	Reserve int64 `json:"reserve,omitempty"`
+	Reserve *int64 `json:"reserve,omitempty"`
 
 	// The amount of spacing currently in use by the system to store Snapshot copies.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this application statistics snapshot
-func (m *ApplicationStatisticsSnapshot) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline statistics inline snapshot
+func (m *ApplicationInlineStatisticsInlineSnapshot) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application statistics snapshot based on the context it is used
-func (m *ApplicationStatisticsSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline statistics inline snapshot based on the context it is used
+func (m *ApplicationInlineStatisticsInlineSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateReserve(ctx, formats); err != nil {
@@ -3713,18 +3671,18 @@ func (m *ApplicationStatisticsSnapshot) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *ApplicationStatisticsSnapshot) contextValidateReserve(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSnapshot) contextValidateReserve(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"snapshot"+"."+"reserve", "body", int64(m.Reserve)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"snapshot"+"."+"reserve", "body", m.Reserve); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSnapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSnapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"snapshot"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"snapshot"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -3732,7 +3690,7 @@ func (m *ApplicationStatisticsSnapshot) contextValidateUsed(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationStatisticsSnapshot) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineStatisticsInlineSnapshot) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3740,8 +3698,8 @@ func (m *ApplicationStatisticsSnapshot) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationStatisticsSnapshot) UnmarshalBinary(b []byte) error {
-	var res ApplicationStatisticsSnapshot
+func (m *ApplicationInlineStatisticsInlineSnapshot) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineStatisticsInlineSnapshot
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3749,51 +3707,51 @@ func (m *ApplicationStatisticsSnapshot) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationStatisticsSpace application statistics space
+// ApplicationInlineStatisticsInlineSpace application inline statistics inline space
 //
-// swagger:model ApplicationStatisticsSpace
-type ApplicationStatisticsSpace struct {
+// swagger:model application_inline_statistics_inline_space
+type ApplicationInlineStatisticsInlineSpace struct {
 
 	// The available amount of space left in the application. Note that this field has limited meaning for SAN applications. Space may be considered used from ONTAP's perspective while the host filesystem still considers it available.
 	// Read Only: true
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// The amount of space that would currently be used if no space saving features were enabled. For example, if compression were the only space saving feature enabled, this field would represent the uncompressed amount of space used.
 	// Read Only: true
-	LogicalUsed int64 `json:"logical_used,omitempty"`
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
 
 	// The originally requested amount of space that was provisioned for the application.
 	// Read Only: true
-	Provisioned int64 `json:"provisioned,omitempty"`
+	Provisioned *int64 `json:"provisioned,omitempty"`
 
 	// The amount of space reserved for system features such as Snapshot copies that has not yet been used.
 	// Read Only: true
-	ReservedUnused int64 `json:"reserved_unused,omitempty"`
+	ReservedUnused *int64 `json:"reserved_unused,omitempty"`
 
 	// The amount of space saved by all enabled space saving features.
 	// Read Only: true
-	Savings int64 `json:"savings,omitempty"`
+	Savings *int64 `json:"savings,omitempty"`
 
 	// The amount of space that is currently being used by the application. Note that this includes any space reserved by the system for features such as Snapshot copies.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 
 	// The amount of space that is currently being used, excluding any space that is reserved by the system for features such as Snapshot copies.
 	// Read Only: true
-	UsedExcludingReserves int64 `json:"used_excluding_reserves,omitempty"`
+	UsedExcludingReserves *int64 `json:"used_excluding_reserves,omitempty"`
 
 	// The percentage of the originally provisioned space that is currently being used by the application.
 	// Read Only: true
-	UsedPercent int64 `json:"used_percent,omitempty"`
+	UsedPercent *int64 `json:"used_percent,omitempty"`
 }
 
-// Validate validates this application statistics space
-func (m *ApplicationStatisticsSpace) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline statistics inline space
+func (m *ApplicationInlineStatisticsInlineSpace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application statistics space based on the context it is used
-func (m *ApplicationStatisticsSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline statistics inline space based on the context it is used
+func (m *ApplicationInlineStatisticsInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAvailable(ctx, formats); err != nil {
@@ -3834,72 +3792,72 @@ func (m *ApplicationStatisticsSpace) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"available", "body", int64(m.Available)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"available", "body", m.Available); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"logical_used", "body", int64(m.LogicalUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"logical_used", "body", m.LogicalUsed); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateProvisioned(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateProvisioned(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"provisioned", "body", int64(m.Provisioned)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"provisioned", "body", m.Provisioned); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateReservedUnused(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateReservedUnused(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"reserved_unused", "body", int64(m.ReservedUnused)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"reserved_unused", "body", m.ReservedUnused); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"savings", "body", int64(m.Savings)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"savings", "body", m.Savings); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateUsedExcludingReserves(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateUsedExcludingReserves(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"used_excluding_reserves", "body", int64(m.UsedExcludingReserves)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"used_excluding_reserves", "body", m.UsedExcludingReserves); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationStatisticsSpace) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineStatisticsInlineSpace) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"used_percent", "body", int64(m.UsedPercent)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"space"+"."+"used_percent", "body", m.UsedPercent); err != nil {
 		return err
 	}
 
@@ -3907,7 +3865,7 @@ func (m *ApplicationStatisticsSpace) contextValidateUsedPercent(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationStatisticsSpace) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineStatisticsInlineSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3915,8 +3873,8 @@ func (m *ApplicationStatisticsSpace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationStatisticsSpace) UnmarshalBinary(b []byte) error {
-	var res ApplicationStatisticsSpace
+func (m *ApplicationInlineStatisticsInlineSpace) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineStatisticsInlineSpace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3924,30 +3882,30 @@ func (m *ApplicationStatisticsSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationSvm application svm
+// ApplicationInlineSvm application inline svm
 //
-// swagger:model ApplicationSvm
-type ApplicationSvm struct {
+// swagger:model application_inline_svm
+type ApplicationInlineSvm struct {
 
 	// SVM Name. Either the SVM name or UUID must be provided to create an application.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// SVM UUID. Either the SVM name or UUID must be provided to create an application.
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application svm
-func (m *ApplicationSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline svm
+func (m *ApplicationInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this application svm based on context it is used
-func (m *ApplicationSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this application inline svm based on context it is used
+func (m *ApplicationInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSvm) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3955,8 +3913,8 @@ func (m *ApplicationSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSvm) UnmarshalBinary(b []byte) error {
-	var res ApplicationSvm
+func (m *ApplicationInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3964,29 +3922,29 @@ func (m *ApplicationSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationTemplateType application template type
+// ApplicationInlineTemplate application inline template
 //
-// swagger:model ApplicationTemplateType
-type ApplicationTemplateType struct {
+// swagger:model application_inline_template
+type ApplicationInlineTemplate struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// The name of the template that was used to provision this application.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The protocol access of the template that was used to provision this application.
 	// Read Only: true
 	// Enum: [nas nvme s3 san]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// The version of the template that was used to provision this application. The template version changes only if the layout of the application changes over time. For example, redo logs in Oracle RAC templates were updated and provisioned differently in DATA ONTAP 9.3.0 compared to prior releases, so the version number was increased. If layouts change in the future, the changes will be documented along with the corresponding version numbers.
 	// Read Only: true
-	Version int64 `json:"version,omitempty"`
+	Version *int64 `json:"version,omitempty"`
 }
 
-// Validate validates this application template type
-func (m *ApplicationTemplateType) Validate(formats strfmt.Registry) error {
+// Validate validates this application inline template
+func (m *ApplicationInlineTemplate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -4003,7 +3961,7 @@ func (m *ApplicationTemplateType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationTemplateType) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationInlineTemplate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -4020,7 +3978,7 @@ func (m *ApplicationTemplateType) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var applicationTemplateTypeTypeProtocolPropEnum []interface{}
+var applicationInlineTemplateTypeProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -4028,76 +3986,76 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationTemplateTypeTypeProtocolPropEnum = append(applicationTemplateTypeTypeProtocolPropEnum, v)
+		applicationInlineTemplateTypeProtocolPropEnum = append(applicationInlineTemplateTypeProtocolPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationTemplateType
-	// ApplicationTemplateType
+	// application_inline_template
+	// ApplicationInlineTemplate
 	// protocol
 	// Protocol
 	// nas
 	// END DEBUGGING
-	// ApplicationTemplateTypeProtocolNas captures enum value "nas"
-	ApplicationTemplateTypeProtocolNas string = "nas"
+	// ApplicationInlineTemplateProtocolNas captures enum value "nas"
+	ApplicationInlineTemplateProtocolNas string = "nas"
 
 	// BEGIN DEBUGGING
-	// ApplicationTemplateType
-	// ApplicationTemplateType
+	// application_inline_template
+	// ApplicationInlineTemplate
 	// protocol
 	// Protocol
 	// nvme
 	// END DEBUGGING
-	// ApplicationTemplateTypeProtocolNvme captures enum value "nvme"
-	ApplicationTemplateTypeProtocolNvme string = "nvme"
+	// ApplicationInlineTemplateProtocolNvme captures enum value "nvme"
+	ApplicationInlineTemplateProtocolNvme string = "nvme"
 
 	// BEGIN DEBUGGING
-	// ApplicationTemplateType
-	// ApplicationTemplateType
+	// application_inline_template
+	// ApplicationInlineTemplate
 	// protocol
 	// Protocol
 	// s3
 	// END DEBUGGING
-	// ApplicationTemplateTypeProtocolS3 captures enum value "s3"
-	ApplicationTemplateTypeProtocolS3 string = "s3"
+	// ApplicationInlineTemplateProtocolS3 captures enum value "s3"
+	ApplicationInlineTemplateProtocolS3 string = "s3"
 
 	// BEGIN DEBUGGING
-	// ApplicationTemplateType
-	// ApplicationTemplateType
+	// application_inline_template
+	// ApplicationInlineTemplate
 	// protocol
 	// Protocol
 	// san
 	// END DEBUGGING
-	// ApplicationTemplateTypeProtocolSan captures enum value "san"
-	ApplicationTemplateTypeProtocolSan string = "san"
+	// ApplicationInlineTemplateProtocolSan captures enum value "san"
+	ApplicationInlineTemplateProtocolSan string = "san"
 )
 
 // prop value enum
-func (m *ApplicationTemplateType) validateProtocolEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationTemplateTypeTypeProtocolPropEnum, true); err != nil {
+func (m *ApplicationInlineTemplate) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationInlineTemplateTypeProtocolPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationTemplateType) validateProtocol(formats strfmt.Registry) error {
+func (m *ApplicationInlineTemplate) validateProtocol(formats strfmt.Registry) error {
 	if swag.IsZero(m.Protocol) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("template"+"."+"protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("template"+"."+"protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application template type based on the context it is used
-func (m *ApplicationTemplateType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application inline template based on the context it is used
+func (m *ApplicationInlineTemplate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -4118,7 +4076,7 @@ func (m *ApplicationTemplateType) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ApplicationTemplateType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineTemplate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -4132,18 +4090,18 @@ func (m *ApplicationTemplateType) contextValidateLinks(ctx context.Context, form
 	return nil
 }
 
-func (m *ApplicationTemplateType) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineTemplate) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "template"+"."+"protocol", "body", string(m.Protocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "template"+"."+"protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationTemplateType) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationInlineTemplate) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "template"+"."+"version", "body", int64(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "template"+"."+"version", "body", m.Version); err != nil {
 		return err
 	}
 
@@ -4151,7 +4109,7 @@ func (m *ApplicationTemplateType) contextValidateVersion(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationTemplateType) MarshalBinary() ([]byte, error) {
+func (m *ApplicationInlineTemplate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4159,8 +4117,8 @@ func (m *ApplicationTemplateType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationTemplateType) UnmarshalBinary(b []byte) error {
-	var res ApplicationTemplateType
+func (m *ApplicationInlineTemplate) UnmarshalBinary(b []byte) error {
+	var res ApplicationInlineTemplate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

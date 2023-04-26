@@ -66,25 +66,25 @@ type IpsecCaCertificateCollectionGetParams struct {
 
 	   Filter by certificate.uuid
 	*/
-	CertificateUUIDQueryParameter *string
+	CertificateUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type IpsecCaCertificateCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,25 +100,25 @@ type IpsecCaCertificateCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,14 +138,14 @@ func (o *IpsecCaCertificateCollectionGetParams) WithDefaults() *IpsecCaCertifica
 // All values with no default are reset to their zero value.
 func (o *IpsecCaCertificateCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IpsecCaCertificateCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -187,103 +187,103 @@ func (o *IpsecCaCertificateCollectionGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithCertificateUUIDQueryParameter adds the certificateUUID to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithCertificateUUIDQueryParameter(certificateUUID *string) *IpsecCaCertificateCollectionGetParams {
-	o.SetCertificateUUIDQueryParameter(certificateUUID)
+// WithCertificateUUID adds the certificateUUID to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithCertificateUUID(certificateUUID *string) *IpsecCaCertificateCollectionGetParams {
+	o.SetCertificateUUID(certificateUUID)
 	return o
 }
 
-// SetCertificateUUIDQueryParameter adds the certificateUuid to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetCertificateUUIDQueryParameter(certificateUUID *string) {
-	o.CertificateUUIDQueryParameter = certificateUUID
+// SetCertificateUUID adds the certificateUuid to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetCertificateUUID(certificateUUID *string) {
+	o.CertificateUUID = certificateUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithFieldsQueryParameter(fields []string) *IpsecCaCertificateCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithFields(fields []string) *IpsecCaCertificateCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IpsecCaCertificateCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithMaxRecords(maxRecords *int64) *IpsecCaCertificateCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IpsecCaCertificateCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithOrderBy(orderBy []string) *IpsecCaCertificateCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IpsecCaCertificateCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithReturnRecords(returnRecords *bool) *IpsecCaCertificateCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IpsecCaCertificateCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IpsecCaCertificateCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithScopeQueryParameter(scope *string) *IpsecCaCertificateCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithScope(scope *string) *IpsecCaCertificateCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSVMNameQueryParameter adds the svmName to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *IpsecCaCertificateCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithSvmName(svmName *string) *IpsecCaCertificateCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *IpsecCaCertificateCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) WithSvmUUID(svmUUID *string) *IpsecCaCertificateCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the ipsec ca certificate collection get params
-func (o *IpsecCaCertificateCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ipsec ca certificate collection get params
+func (o *IpsecCaCertificateCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -294,13 +294,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.CertificateUUIDQueryParameter != nil {
+	if o.CertificateUUID != nil {
 
 		// query param certificate.uuid
 		var qrCertificateUUID string
 
-		if o.CertificateUUIDQueryParameter != nil {
-			qrCertificateUUID = *o.CertificateUUIDQueryParameter
+		if o.CertificateUUID != nil {
+			qrCertificateUUID = *o.CertificateUUID
 		}
 		qCertificateUUID := qrCertificateUUID
 		if qCertificateUUID != "" {
@@ -311,7 +311,7 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -322,13 +322,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -339,7 +339,7 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -350,13 +350,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -367,13 +367,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -384,13 +384,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -401,13 +401,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -418,13 +418,13 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -443,7 +443,7 @@ func (o *IpsecCaCertificateCollectionGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamIpsecCaCertificateCollectionGet binds the parameter fields
 func (o *IpsecCaCertificateCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -460,7 +460,7 @@ func (o *IpsecCaCertificateCollectionGetParams) bindParamFields(formats strfmt.R
 
 // bindParamIpsecCaCertificateCollectionGet binds the parameter order_by
 func (o *IpsecCaCertificateCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

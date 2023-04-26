@@ -66,19 +66,19 @@ type SecurityLogForwardingGetParams struct {
 
 	   IP address of remote syslog/splunk server.
 	*/
-	AddressPathParameter string
+	Address string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Port.
 
 	   Port number of remote syslog/splunk server.
 	*/
-	PortPathParameter int64
+	Port int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SecurityLogForwardingGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressPathParameter adds the address to the security log forwarding get params
-func (o *SecurityLogForwardingGetParams) WithAddressPathParameter(address string) *SecurityLogForwardingGetParams {
-	o.SetAddressPathParameter(address)
+// WithAddress adds the address to the security log forwarding get params
+func (o *SecurityLogForwardingGetParams) WithAddress(address string) *SecurityLogForwardingGetParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressPathParameter adds the address to the security log forwarding get params
-func (o *SecurityLogForwardingGetParams) SetAddressPathParameter(address string) {
-	o.AddressPathParameter = address
+// SetAddress adds the address to the security log forwarding get params
+func (o *SecurityLogForwardingGetParams) SetAddress(address string) {
+	o.Address = address
 }
 
-// WithFieldsQueryParameter adds the fields to the security log forwarding get params
-func (o *SecurityLogForwardingGetParams) WithFieldsQueryParameter(fields []string) *SecurityLogForwardingGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security log forwarding get params
+func (o *SecurityLogForwardingGetParams) WithFields(fields []string) *SecurityLogForwardingGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security log forwarding get params
-func (o *SecurityLogForwardingGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security log forwarding get params
+func (o *SecurityLogForwardingGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithPortPathParameter adds the port to the security log forwarding get params
-func (o *SecurityLogForwardingGetParams) WithPortPathParameter(port int64) *SecurityLogForwardingGetParams {
-	o.SetPortPathParameter(port)
+// WithPort adds the port to the security log forwarding get params
+func (o *SecurityLogForwardingGetParams) WithPort(port int64) *SecurityLogForwardingGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetPortPathParameter adds the port to the security log forwarding get params
-func (o *SecurityLogForwardingGetParams) SetPortPathParameter(port int64) {
-	o.PortPathParameter = port
+// SetPort adds the port to the security log forwarding get params
+func (o *SecurityLogForwardingGetParams) SetPort(port int64) {
+	o.Port = port
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *SecurityLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest,
 	var res []error
 
 	// path param address
-	if err := r.SetPathParam("address", o.AddressPathParameter); err != nil {
+	if err := r.SetPathParam("address", o.Address); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *SecurityLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param port
-	if err := r.SetPathParam("port", swag.FormatInt64(o.PortPathParameter)); err != nil {
+	if err := r.SetPathParam("port", swag.FormatInt64(o.Port)); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SecurityLogForwardingGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamSecurityLogForwardingGet binds the parameter fields
 func (o *SecurityLogForwardingGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

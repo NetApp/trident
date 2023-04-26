@@ -65,13 +65,13 @@ type SnaplockLegalHoldOperationDeleteParams struct {
 
 	   Operation ID.
 	*/
-	IDPathParameter string
+	ID string
 
 	/* LitigationID.
 
 	   Litigation ID
 	*/
-	LitigationIDPathParameter string
+	LitigationID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *SnaplockLegalHoldOperationDeleteParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the snaplock legal hold operation delete params
-func (o *SnaplockLegalHoldOperationDeleteParams) WithIDPathParameter(id string) *SnaplockLegalHoldOperationDeleteParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock legal hold operation delete params
+func (o *SnaplockLegalHoldOperationDeleteParams) WithID(id string) *SnaplockLegalHoldOperationDeleteParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock legal hold operation delete params
-func (o *SnaplockLegalHoldOperationDeleteParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock legal hold operation delete params
+func (o *SnaplockLegalHoldOperationDeleteParams) SetID(id string) {
+	o.ID = id
 }
 
-// WithLitigationIDPathParameter adds the litigationID to the snaplock legal hold operation delete params
-func (o *SnaplockLegalHoldOperationDeleteParams) WithLitigationIDPathParameter(litigationID string) *SnaplockLegalHoldOperationDeleteParams {
-	o.SetLitigationIDPathParameter(litigationID)
+// WithLitigationID adds the litigationID to the snaplock legal hold operation delete params
+func (o *SnaplockLegalHoldOperationDeleteParams) WithLitigationID(litigationID string) *SnaplockLegalHoldOperationDeleteParams {
+	o.SetLitigationID(litigationID)
 	return o
 }
 
-// SetLitigationIDPathParameter adds the litigationId to the snaplock legal hold operation delete params
-func (o *SnaplockLegalHoldOperationDeleteParams) SetLitigationIDPathParameter(litigationID string) {
-	o.LitigationIDPathParameter = litigationID
+// SetLitigationID adds the litigationId to the snaplock legal hold operation delete params
+func (o *SnaplockLegalHoldOperationDeleteParams) SetLitigationID(litigationID string) {
+	o.LitigationID = litigationID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *SnaplockLegalHoldOperationDeleteParams) WriteToRequest(r runtime.Client
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
 	// path param litigation.id
-	if err := r.SetPathParam("litigation.id", o.LitigationIDPathParameter); err != nil {
+	if err := r.SetPathParam("litigation.id", o.LitigationID); err != nil {
 		return err
 	}
 

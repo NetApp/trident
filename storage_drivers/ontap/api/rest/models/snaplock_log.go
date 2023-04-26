@@ -22,19 +22,19 @@ import (
 type SnaplockLog struct {
 
 	// links
-	Links *SnaplockLogLinks `json:"_links,omitempty"`
+	Links *SnaplockLogInlineLinks `json:"_links,omitempty"`
 
 	// log archive
-	LogArchive *SnaplockLogLogArchive `json:"log_archive,omitempty"`
-
-	// log files
-	LogFiles []*SnaplockLogFile `json:"log_files,omitempty"`
+	LogArchive *SnaplockLogInlineLogArchive `json:"log_archive,omitempty"`
 
 	// log volume
 	LogVolume *SnaplockLogVolume `json:"log_volume,omitempty"`
 
+	// snaplock log inline log files
+	SnaplockLogInlineLogFiles []*SnaplockLogFile `json:"log_files,omitempty"`
+
 	// svm
-	Svm *SnaplockLogSvm `json:"svm,omitempty"`
+	Svm *SnaplockLogInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this snaplock log
@@ -49,11 +49,11 @@ func (m *SnaplockLog) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateLogFiles(formats); err != nil {
+	if err := m.validateLogVolume(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateLogVolume(formats); err != nil {
+	if err := m.validateSnaplockLogInlineLogFiles(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -101,30 +101,6 @@ func (m *SnaplockLog) validateLogArchive(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLog) validateLogFiles(formats strfmt.Registry) error {
-	if swag.IsZero(m.LogFiles) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.LogFiles); i++ {
-		if swag.IsZero(m.LogFiles[i]) { // not required
-			continue
-		}
-
-		if m.LogFiles[i] != nil {
-			if err := m.LogFiles[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("log_files" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *SnaplockLog) validateLogVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.LogVolume) { // not required
 		return nil
@@ -137,6 +113,30 @@ func (m *SnaplockLog) validateLogVolume(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnaplockLog) validateSnaplockLogInlineLogFiles(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnaplockLogInlineLogFiles) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SnaplockLogInlineLogFiles); i++ {
+		if swag.IsZero(m.SnaplockLogInlineLogFiles[i]) { // not required
+			continue
+		}
+
+		if m.SnaplockLogInlineLogFiles[i] != nil {
+			if err := m.SnaplockLogInlineLogFiles[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("log_files" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -171,11 +171,11 @@ func (m *SnaplockLog) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateLogFiles(ctx, formats); err != nil {
+	if err := m.contextValidateLogVolume(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateLogVolume(ctx, formats); err != nil {
+	if err := m.contextValidateSnaplockLogInlineLogFiles(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -217,24 +217,6 @@ func (m *SnaplockLog) contextValidateLogArchive(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnaplockLog) contextValidateLogFiles(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.LogFiles); i++ {
-
-		if m.LogFiles[i] != nil {
-			if err := m.LogFiles[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("log_files" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *SnaplockLog) contextValidateLogVolume(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LogVolume != nil {
@@ -244,6 +226,24 @@ func (m *SnaplockLog) contextValidateLogVolume(ctx context.Context, formats strf
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnaplockLog) contextValidateSnaplockLogInlineLogFiles(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SnaplockLogInlineLogFiles); i++ {
+
+		if m.SnaplockLogInlineLogFiles[i] != nil {
+			if err := m.SnaplockLogInlineLogFiles[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("log_files" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -281,17 +281,17 @@ func (m *SnaplockLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogLinks snaplock log links
+// SnaplockLogInlineLinks snaplock log inline links
 //
-// swagger:model SnaplockLogLinks
-type SnaplockLogLinks struct {
+// swagger:model snaplock_log_inline__links
+type SnaplockLogInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock log links
-func (m *SnaplockLogLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log inline links
+func (m *SnaplockLogInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -304,7 +304,7 @@ func (m *SnaplockLogLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -321,8 +321,8 @@ func (m *SnaplockLogLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock log links based on the context it is used
-func (m *SnaplockLogLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log inline links based on the context it is used
+func (m *SnaplockLogInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -335,7 +335,7 @@ func (m *SnaplockLogLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *SnaplockLogLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -350,7 +350,7 @@ func (m *SnaplockLogLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -358,8 +358,8 @@ func (m *SnaplockLogLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogLinks
+func (m *SnaplockLogInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -367,20 +367,20 @@ func (m *SnaplockLogLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogLogArchive snaplock log log archive
+// SnaplockLogInlineLogArchive snaplock log inline log archive
 //
-// swagger:model SnaplockLogLogArchive
-type SnaplockLogLogArchive struct {
+// swagger:model snaplock_log_inline_log_archive
+type SnaplockLogInlineLogArchive struct {
 
 	// links
-	Links *SnaplockLogLogArchiveLinks `json:"_links,omitempty"`
+	Links *SnaplockLogInlineLogArchiveInlineLinks `json:"_links,omitempty"`
 
 	// Archive the specified SnapLock log file for the given base_name, and create a new log file. If base_name is not mentioned, archive all log files.
 	Archive *bool `json:"archive,omitempty"`
 
 	// Base name of log file
 	// Enum: [legal_hold privileged_delete system]
-	BaseName string `json:"base_name,omitempty"`
+	BaseName *string `json:"base_name,omitempty"`
 
 	// Expiry time of the log file in date-time format. Value '9999-12-31T00:00:00Z' indicates infinite expiry time.
 	// Example: 2058-06-04T19:00:00Z
@@ -391,16 +391,16 @@ type SnaplockLogLogArchive struct {
 	// Absolute path of the log file in the volume
 	// Example: /snaplock_log/system_logs/20180822_005947_GMT-present
 	// Read Only: true
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Size of the log file in bytes
 	// Example: 20000
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 }
 
-// Validate validates this snaplock log log archive
-func (m *SnaplockLogLogArchive) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log inline log archive
+func (m *SnaplockLogInlineLogArchive) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -421,7 +421,7 @@ func (m *SnaplockLogLogArchive) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -438,7 +438,7 @@ func (m *SnaplockLogLogArchive) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var snaplockLogLogArchiveTypeBaseNamePropEnum []interface{}
+var snaplockLogInlineLogArchiveTypeBaseNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -446,65 +446,65 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		snaplockLogLogArchiveTypeBaseNamePropEnum = append(snaplockLogLogArchiveTypeBaseNamePropEnum, v)
+		snaplockLogInlineLogArchiveTypeBaseNamePropEnum = append(snaplockLogInlineLogArchiveTypeBaseNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SnaplockLogLogArchive
-	// SnaplockLogLogArchive
+	// snaplock_log_inline_log_archive
+	// SnaplockLogInlineLogArchive
 	// base_name
 	// BaseName
 	// legal_hold
 	// END DEBUGGING
-	// SnaplockLogLogArchiveBaseNameLegalHold captures enum value "legal_hold"
-	SnaplockLogLogArchiveBaseNameLegalHold string = "legal_hold"
+	// SnaplockLogInlineLogArchiveBaseNameLegalHold captures enum value "legal_hold"
+	SnaplockLogInlineLogArchiveBaseNameLegalHold string = "legal_hold"
 
 	// BEGIN DEBUGGING
-	// SnaplockLogLogArchive
-	// SnaplockLogLogArchive
+	// snaplock_log_inline_log_archive
+	// SnaplockLogInlineLogArchive
 	// base_name
 	// BaseName
 	// privileged_delete
 	// END DEBUGGING
-	// SnaplockLogLogArchiveBaseNamePrivilegedDelete captures enum value "privileged_delete"
-	SnaplockLogLogArchiveBaseNamePrivilegedDelete string = "privileged_delete"
+	// SnaplockLogInlineLogArchiveBaseNamePrivilegedDelete captures enum value "privileged_delete"
+	SnaplockLogInlineLogArchiveBaseNamePrivilegedDelete string = "privileged_delete"
 
 	// BEGIN DEBUGGING
-	// SnaplockLogLogArchive
-	// SnaplockLogLogArchive
+	// snaplock_log_inline_log_archive
+	// SnaplockLogInlineLogArchive
 	// base_name
 	// BaseName
 	// system
 	// END DEBUGGING
-	// SnaplockLogLogArchiveBaseNameSystem captures enum value "system"
-	SnaplockLogLogArchiveBaseNameSystem string = "system"
+	// SnaplockLogInlineLogArchiveBaseNameSystem captures enum value "system"
+	SnaplockLogInlineLogArchiveBaseNameSystem string = "system"
 )
 
 // prop value enum
-func (m *SnaplockLogLogArchive) validateBaseNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, snaplockLogLogArchiveTypeBaseNamePropEnum, true); err != nil {
+func (m *SnaplockLogInlineLogArchive) validateBaseNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snaplockLogInlineLogArchiveTypeBaseNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) validateBaseName(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) validateBaseName(formats strfmt.Registry) error {
 	if swag.IsZero(m.BaseName) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateBaseNameEnum("log_archive"+"."+"base_name", "body", m.BaseName); err != nil {
+	if err := m.validateBaseNameEnum("log_archive"+"."+"base_name", "body", *m.BaseName); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) validateExpiryTime(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) validateExpiryTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExpiryTime) { // not required
 		return nil
 	}
@@ -516,8 +516,8 @@ func (m *SnaplockLogLogArchive) validateExpiryTime(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this snaplock log log archive based on the context it is used
-func (m *SnaplockLogLogArchive) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log inline log archive based on the context it is used
+func (m *SnaplockLogInlineLogArchive) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -542,7 +542,7 @@ func (m *SnaplockLogLogArchive) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -556,7 +556,7 @@ func (m *SnaplockLogLogArchive) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) contextValidateExpiryTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) contextValidateExpiryTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "log_archive"+"."+"expiry_time", "body", m.ExpiryTime); err != nil {
 		return err
@@ -565,18 +565,18 @@ func (m *SnaplockLogLogArchive) contextValidateExpiryTime(ctx context.Context, f
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "log_archive"+"."+"path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "log_archive"+"."+"path", "body", m.Path); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SnaplockLogLogArchive) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchive) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "log_archive"+"."+"size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "log_archive"+"."+"size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -584,7 +584,7 @@ func (m *SnaplockLogLogArchive) contextValidateSize(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogLogArchive) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogInlineLogArchive) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -592,8 +592,8 @@ func (m *SnaplockLogLogArchive) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogLogArchive) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogLogArchive
+func (m *SnaplockLogInlineLogArchive) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogInlineLogArchive
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -601,17 +601,17 @@ func (m *SnaplockLogLogArchive) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogLogArchiveLinks snaplock log log archive links
+// SnaplockLogInlineLogArchiveInlineLinks snaplock log inline log archive inline links
 //
-// swagger:model SnaplockLogLogArchiveLinks
-type SnaplockLogLogArchiveLinks struct {
+// swagger:model snaplock_log_inline_log_archive_inline__links
+type SnaplockLogInlineLogArchiveInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock log log archive links
-func (m *SnaplockLogLogArchiveLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log inline log archive inline links
+func (m *SnaplockLogInlineLogArchiveInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -624,7 +624,7 @@ func (m *SnaplockLogLogArchiveLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogLogArchiveLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchiveInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -641,8 +641,8 @@ func (m *SnaplockLogLogArchiveLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this snaplock log log archive links based on the context it is used
-func (m *SnaplockLogLogArchiveLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log inline log archive inline links based on the context it is used
+func (m *SnaplockLogInlineLogArchiveInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -655,7 +655,7 @@ func (m *SnaplockLogLogArchiveLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnaplockLogLogArchiveLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineLogArchiveInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -670,7 +670,7 @@ func (m *SnaplockLogLogArchiveLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogLogArchiveLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogInlineLogArchiveInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -678,8 +678,8 @@ func (m *SnaplockLogLogArchiveLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogLogArchiveLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogLogArchiveLinks
+func (m *SnaplockLogInlineLogArchiveInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogInlineLogArchiveInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -687,27 +687,27 @@ func (m *SnaplockLogLogArchiveLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogSvm snaplock log svm
+// SnaplockLogInlineSvm snaplock log inline svm
 //
-// swagger:model SnaplockLogSvm
-type SnaplockLogSvm struct {
+// swagger:model snaplock_log_inline_svm
+type SnaplockLogInlineSvm struct {
 
 	// links
-	Links *SnaplockLogSvmLinks `json:"_links,omitempty"`
+	Links *SnaplockLogInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock log svm
-func (m *SnaplockLogSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log inline svm
+func (m *SnaplockLogInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -720,7 +720,7 @@ func (m *SnaplockLogSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -737,8 +737,8 @@ func (m *SnaplockLogSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock log svm based on the context it is used
-func (m *SnaplockLogSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log inline svm based on the context it is used
+func (m *SnaplockLogInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -751,7 +751,7 @@ func (m *SnaplockLogSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *SnaplockLogSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -766,7 +766,7 @@ func (m *SnaplockLogSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogSvm) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -774,8 +774,8 @@ func (m *SnaplockLogSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogSvm) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogSvm
+func (m *SnaplockLogInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -783,17 +783,17 @@ func (m *SnaplockLogSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLogSvmLinks snaplock log svm links
+// SnaplockLogInlineSvmInlineLinks snaplock log inline svm inline links
 //
-// swagger:model SnaplockLogSvmLinks
-type SnaplockLogSvmLinks struct {
+// swagger:model snaplock_log_inline_svm_inline__links
+type SnaplockLogInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock log svm links
-func (m *SnaplockLogSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock log inline svm inline links
+func (m *SnaplockLogInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -806,7 +806,7 @@ func (m *SnaplockLogSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockLogSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLogInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -823,8 +823,8 @@ func (m *SnaplockLogSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snaplock log svm links based on the context it is used
-func (m *SnaplockLogSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock log inline svm inline links based on the context it is used
+func (m *SnaplockLogInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -837,7 +837,7 @@ func (m *SnaplockLogSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SnaplockLogSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLogInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -852,7 +852,7 @@ func (m *SnaplockLogSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLogSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLogInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -860,8 +860,8 @@ func (m *SnaplockLogSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLogSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLogSvmLinks
+func (m *SnaplockLogInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLogInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

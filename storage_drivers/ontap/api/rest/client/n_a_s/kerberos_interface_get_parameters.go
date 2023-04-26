@@ -66,13 +66,13 @@ type KerberosInterfaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfaceUUID.
 
 	   Network interface UUID
 	*/
-	InterfaceUUIDPathParameter string
+	InterfaceUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *KerberosInterfaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the kerberos interface get params
-func (o *KerberosInterfaceGetParams) WithFieldsQueryParameter(fields []string) *KerberosInterfaceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the kerberos interface get params
+func (o *KerberosInterfaceGetParams) WithFields(fields []string) *KerberosInterfaceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the kerberos interface get params
-func (o *KerberosInterfaceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the kerberos interface get params
+func (o *KerberosInterfaceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfaceUUIDPathParameter adds the interfaceUUID to the kerberos interface get params
-func (o *KerberosInterfaceGetParams) WithInterfaceUUIDPathParameter(interfaceUUID string) *KerberosInterfaceGetParams {
-	o.SetInterfaceUUIDPathParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the kerberos interface get params
+func (o *KerberosInterfaceGetParams) WithInterfaceUUID(interfaceUUID string) *KerberosInterfaceGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDPathParameter adds the interfaceUuid to the kerberos interface get params
-func (o *KerberosInterfaceGetParams) SetInterfaceUUIDPathParameter(interfaceUUID string) {
-	o.InterfaceUUIDPathParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the kerberos interface get params
+func (o *KerberosInterfaceGetParams) SetInterfaceUUID(interfaceUUID string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *KerberosInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *KerberosInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param interface.uuid
-	if err := r.SetPathParam("interface.uuid", o.InterfaceUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("interface.uuid", o.InterfaceUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *KerberosInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamKerberosInterfaceGet binds the parameter fields
 func (o *KerberosInterfaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

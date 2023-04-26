@@ -19,7 +19,7 @@ type UnixGroupUsersNoRecords struct {
 
 	// UNIX user who belongs to the specified UNIX group and the SVM.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this unix group users no records

@@ -66,25 +66,25 @@ type SplitStatusCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PendingSplits.
 
 	   Filter by pending_splits
 	*/
-	PendingSplitsQueryParameter *int64
+	PendingSplits *int64
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type SplitStatusCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,37 +100,37 @@ type SplitStatusCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UnsplitCloneSize.
 
 	   Filter by unsplit_clone_size
 	*/
-	UnsplitCloneSizeQueryParameter *int64
+	UnsplitCloneSize *int64
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *SplitStatusCollectionGetParams) WithDefaults() *SplitStatusCollectionGe
 // All values with no default are reset to their zero value.
 func (o *SplitStatusCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SplitStatusCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *SplitStatusCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithFieldsQueryParameter(fields []string) *SplitStatusCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithFields(fields []string) *SplitStatusCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SplitStatusCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithMaxRecords(maxRecords *int64) *SplitStatusCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SplitStatusCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithOrderBy(orderBy []string) *SplitStatusCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPendingSplitsQueryParameter adds the pendingSplits to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithPendingSplitsQueryParameter(pendingSplits *int64) *SplitStatusCollectionGetParams {
-	o.SetPendingSplitsQueryParameter(pendingSplits)
+// WithPendingSplits adds the pendingSplits to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithPendingSplits(pendingSplits *int64) *SplitStatusCollectionGetParams {
+	o.SetPendingSplits(pendingSplits)
 	return o
 }
 
-// SetPendingSplitsQueryParameter adds the pendingSplits to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetPendingSplitsQueryParameter(pendingSplits *int64) {
-	o.PendingSplitsQueryParameter = pendingSplits
+// SetPendingSplits adds the pendingSplits to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetPendingSplits(pendingSplits *int64) {
+	o.PendingSplits = pendingSplits
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SplitStatusCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithReturnRecords(returnRecords *bool) *SplitStatusCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SplitStatusCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SplitStatusCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SplitStatusCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithSvmName(svmName *string) *SplitStatusCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SplitStatusCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithSvmUUID(svmUUID *string) *SplitStatusCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnsplitCloneSizeQueryParameter adds the unsplitCloneSize to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithUnsplitCloneSizeQueryParameter(unsplitCloneSize *int64) *SplitStatusCollectionGetParams {
-	o.SetUnsplitCloneSizeQueryParameter(unsplitCloneSize)
+// WithUnsplitCloneSize adds the unsplitCloneSize to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithUnsplitCloneSize(unsplitCloneSize *int64) *SplitStatusCollectionGetParams {
+	o.SetUnsplitCloneSize(unsplitCloneSize)
 	return o
 }
 
-// SetUnsplitCloneSizeQueryParameter adds the unsplitCloneSize to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetUnsplitCloneSizeQueryParameter(unsplitCloneSize *int64) {
-	o.UnsplitCloneSizeQueryParameter = unsplitCloneSize
+// SetUnsplitCloneSize adds the unsplitCloneSize to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetUnsplitCloneSize(unsplitCloneSize *int64) {
+	o.UnsplitCloneSize = unsplitCloneSize
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *SplitStatusCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithVolumeName(volumeName *string) *SplitStatusCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the split status collection get params
-func (o *SplitStatusCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *SplitStatusCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the split status collection get params
+func (o *SplitStatusCollectionGetParams) WithVolumeUUID(volumeUUID *string) *SplitStatusCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the split status collection get params
-func (o *SplitStatusCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the split status collection get params
+func (o *SplitStatusCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,7 +328,7 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -339,13 +339,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -356,7 +356,7 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -367,13 +367,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.PendingSplitsQueryParameter != nil {
+	if o.PendingSplits != nil {
 
 		// query param pending_splits
 		var qrPendingSplits int64
 
-		if o.PendingSplitsQueryParameter != nil {
-			qrPendingSplits = *o.PendingSplitsQueryParameter
+		if o.PendingSplits != nil {
+			qrPendingSplits = *o.PendingSplits
 		}
 		qPendingSplits := swag.FormatInt64(qrPendingSplits)
 		if qPendingSplits != "" {
@@ -384,13 +384,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -401,13 +401,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -418,13 +418,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -435,13 +435,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -452,13 +452,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UnsplitCloneSizeQueryParameter != nil {
+	if o.UnsplitCloneSize != nil {
 
 		// query param unsplit_clone_size
 		var qrUnsplitCloneSize int64
 
-		if o.UnsplitCloneSizeQueryParameter != nil {
-			qrUnsplitCloneSize = *o.UnsplitCloneSizeQueryParameter
+		if o.UnsplitCloneSize != nil {
+			qrUnsplitCloneSize = *o.UnsplitCloneSize
 		}
 		qUnsplitCloneSize := swag.FormatInt64(qrUnsplitCloneSize)
 		if qUnsplitCloneSize != "" {
@@ -469,13 +469,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -486,13 +486,13 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -511,7 +511,7 @@ func (o *SplitStatusCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamSplitStatusCollectionGet binds the parameter fields
 func (o *SplitStatusCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *SplitStatusCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamSplitStatusCollectionGet binds the parameter order_by
 func (o *SplitStatusCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

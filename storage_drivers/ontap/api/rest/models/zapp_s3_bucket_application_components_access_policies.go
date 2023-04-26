@@ -21,36 +21,32 @@ import (
 // swagger:model zapp_s3_bucket_application_components_access_policies
 type ZappS3BucketApplicationComponentsAccessPolicies struct {
 
-	// actions
-	Actions []string `json:"actions,omitempty"`
-
-	// conditions.
-	Conditions []*ZappS3BucketApplicationComponentsAccessPoliciesConditions `json:"conditions,omitempty"`
-
 	// Allow or Deny Access.
 	// Required: true
 	// Enum: [allow deny]
 	Effect *string `json:"effect"`
 
-	// principals
-	Principals []string `json:"principals,omitempty"`
-
-	// resources
-	Resources []string `json:"resources,omitempty"`
-
 	// Statement Identifier Usage: &lt;(size 1..256)&gt;
 	// Max Length: 256
 	// Min Length: 1
-	Sid string `json:"sid,omitempty"`
+	Sid *string `json:"sid,omitempty"`
+
+	// zapp s3 bucket application components access policies inline actions
+	ZappS3BucketApplicationComponentsAccessPoliciesInlineActions []*string `json:"actions,omitempty"`
+
+	// conditions.
+	ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions []*ZappS3BucketApplicationComponentsAccessPoliciesConditions `json:"conditions,omitempty"`
+
+	// zapp s3 bucket application components access policies inline principals
+	ZappS3BucketApplicationComponentsAccessPoliciesInlinePrincipals []*string `json:"principals,omitempty"`
+
+	// zapp s3 bucket application components access policies inline resources
+	ZappS3BucketApplicationComponentsAccessPoliciesInlineResources []*string `json:"resources,omitempty"`
 }
 
 // Validate validates this zapp s3 bucket application components access policies
 func (m *ZappS3BucketApplicationComponentsAccessPolicies) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateConditions(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateEffect(formats); err != nil {
 		res = append(res, err)
@@ -60,33 +56,13 @@ func (m *ZappS3BucketApplicationComponentsAccessPolicies) Validate(formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.validateZappS3BucketApplicationComponentsAccessPoliciesInlineConditions(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ZappS3BucketApplicationComponentsAccessPolicies) validateConditions(formats strfmt.Registry) error {
-	if swag.IsZero(m.Conditions) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Conditions); i++ {
-		if swag.IsZero(m.Conditions[i]) { // not required
-			continue
-		}
-
-		if m.Conditions[i] != nil {
-			if err := m.Conditions[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("conditions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -152,12 +128,36 @@ func (m *ZappS3BucketApplicationComponentsAccessPolicies) validateSid(formats st
 		return nil
 	}
 
-	if err := validate.MinLength("sid", "body", m.Sid, 1); err != nil {
+	if err := validate.MinLength("sid", "body", *m.Sid, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("sid", "body", m.Sid, 256); err != nil {
+	if err := validate.MaxLength("sid", "body", *m.Sid, 256); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponentsAccessPolicies) validateZappS3BucketApplicationComponentsAccessPoliciesInlineConditions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions); i++ {
+		if swag.IsZero(m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions[i]) { // not required
+			continue
+		}
+
+		if m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions[i] != nil {
+			if err := m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("conditions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -167,7 +167,7 @@ func (m *ZappS3BucketApplicationComponentsAccessPolicies) validateSid(formats st
 func (m *ZappS3BucketApplicationComponentsAccessPolicies) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateConditions(ctx, formats); err != nil {
+	if err := m.contextValidateZappS3BucketApplicationComponentsAccessPoliciesInlineConditions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,12 +177,12 @@ func (m *ZappS3BucketApplicationComponentsAccessPolicies) ContextValidate(ctx co
 	return nil
 }
 
-func (m *ZappS3BucketApplicationComponentsAccessPolicies) contextValidateConditions(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappS3BucketApplicationComponentsAccessPolicies) contextValidateZappS3BucketApplicationComponentsAccessPoliciesInlineConditions(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Conditions); i++ {
+	for i := 0; i < len(m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions); i++ {
 
-		if m.Conditions[i] != nil {
-			if err := m.Conditions[i].ContextValidate(ctx, formats); err != nil {
+		if m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions[i] != nil {
+			if err := m.ZappS3BucketApplicationComponentsAccessPoliciesInlineConditions[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("conditions" + "." + strconv.Itoa(i))
 				}

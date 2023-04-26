@@ -73,13 +73,13 @@ type AccountModifyParams struct {
 
 	   User account name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Account owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *AccountModifyParams) SetInfo(info *models.Account) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the account modify params
-func (o *AccountModifyParams) WithNamePathParameter(name string) *AccountModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the account modify params
+func (o *AccountModifyParams) WithName(name string) *AccountModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the account modify params
-func (o *AccountModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the account modify params
+func (o *AccountModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the account modify params
-func (o *AccountModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *AccountModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the account modify params
+func (o *AccountModifyParams) WithOwnerUUID(ownerUUID string) *AccountModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the account modify params
-func (o *AccountModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the account modify params
+func (o *AccountModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *AccountModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

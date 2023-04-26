@@ -66,79 +66,79 @@ type MetroclusterInterconnectCollectionGetParams struct {
 
 	   Filter by adapter
 	*/
-	AdapterQueryParameter *string
+	Adapter *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfacesAddress.
 
 	   Filter by interfaces.address
 	*/
-	InterfacesAddressQueryParameter *string
+	InterfacesAddress *string
 
 	/* InterfacesGateway.
 
 	   Filter by interfaces.gateway
 	*/
-	InterfacesGatewayQueryParameter *string
+	InterfacesGateway *string
 
 	/* InterfacesNetmask.
 
 	   Filter by interfaces.netmask
 	*/
-	InterfacesNetmaskQueryParameter *string
+	InterfacesNetmask *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MirrorEnabled.
 
 	   Filter by mirror.enabled
 	*/
-	MirrorEnabledQueryParameter *bool
+	MirrorEnabled *bool
 
 	/* MirrorState.
 
 	   Filter by mirror.state
 	*/
-	MirrorStateQueryParameter *string
+	MirrorState *string
 
 	/* MultipathPolicy.
 
 	   Filter by multipath_policy
 	*/
-	MultipathPolicyQueryParameter *string
+	MultipathPolicy *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PartnerType.
 
 	   Filter by partner_type
 	*/
-	PartnerTypeQueryParameter *string
+	PartnerType *string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type MetroclusterInterconnectCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,25 +154,25 @@ type MetroclusterInterconnectCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* VlanID.
 
 	   Filter by vlan_id
 	*/
-	VlanIDQueryParameter *int64
+	VlanID *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -192,14 +192,14 @@ func (o *MetroclusterInterconnectCollectionGetParams) WithDefaults() *Metroclust
 // All values with no default are reset to their zero value.
 func (o *MetroclusterInterconnectCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MetroclusterInterconnectCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -241,202 +241,202 @@ func (o *MetroclusterInterconnectCollectionGetParams) SetHTTPClient(client *http
 	o.HTTPClient = client
 }
 
-// WithAdapterQueryParameter adds the adapter to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithAdapterQueryParameter(adapter *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetAdapterQueryParameter(adapter)
+// WithAdapter adds the adapter to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithAdapter(adapter *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetAdapter(adapter)
 	return o
 }
 
-// SetAdapterQueryParameter adds the adapter to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetAdapterQueryParameter(adapter *string) {
-	o.AdapterQueryParameter = adapter
+// SetAdapter adds the adapter to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetAdapter(adapter *string) {
+	o.Adapter = adapter
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithFields(fields []string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfacesAddressQueryParameter adds the interfacesAddress to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithInterfacesAddressQueryParameter(interfacesAddress *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetInterfacesAddressQueryParameter(interfacesAddress)
+// WithInterfacesAddress adds the interfacesAddress to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithInterfacesAddress(interfacesAddress *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetInterfacesAddress(interfacesAddress)
 	return o
 }
 
-// SetInterfacesAddressQueryParameter adds the interfacesAddress to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetInterfacesAddressQueryParameter(interfacesAddress *string) {
-	o.InterfacesAddressQueryParameter = interfacesAddress
+// SetInterfacesAddress adds the interfacesAddress to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetInterfacesAddress(interfacesAddress *string) {
+	o.InterfacesAddress = interfacesAddress
 }
 
-// WithInterfacesGatewayQueryParameter adds the interfacesGateway to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithInterfacesGatewayQueryParameter(interfacesGateway *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetInterfacesGatewayQueryParameter(interfacesGateway)
+// WithInterfacesGateway adds the interfacesGateway to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithInterfacesGateway(interfacesGateway *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetInterfacesGateway(interfacesGateway)
 	return o
 }
 
-// SetInterfacesGatewayQueryParameter adds the interfacesGateway to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetInterfacesGatewayQueryParameter(interfacesGateway *string) {
-	o.InterfacesGatewayQueryParameter = interfacesGateway
+// SetInterfacesGateway adds the interfacesGateway to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetInterfacesGateway(interfacesGateway *string) {
+	o.InterfacesGateway = interfacesGateway
 }
 
-// WithInterfacesNetmaskQueryParameter adds the interfacesNetmask to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithInterfacesNetmaskQueryParameter(interfacesNetmask *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetInterfacesNetmaskQueryParameter(interfacesNetmask)
+// WithInterfacesNetmask adds the interfacesNetmask to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithInterfacesNetmask(interfacesNetmask *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetInterfacesNetmask(interfacesNetmask)
 	return o
 }
 
-// SetInterfacesNetmaskQueryParameter adds the interfacesNetmask to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetInterfacesNetmaskQueryParameter(interfacesNetmask *string) {
-	o.InterfacesNetmaskQueryParameter = interfacesNetmask
+// SetInterfacesNetmask adds the interfacesNetmask to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetInterfacesNetmask(interfacesNetmask *string) {
+	o.InterfacesNetmask = interfacesNetmask
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MetroclusterInterconnectCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMaxRecords(maxRecords *int64) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMirrorEnabledQueryParameter adds the mirrorEnabled to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithMirrorEnabledQueryParameter(mirrorEnabled *bool) *MetroclusterInterconnectCollectionGetParams {
-	o.SetMirrorEnabledQueryParameter(mirrorEnabled)
+// WithMirrorEnabled adds the mirrorEnabled to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMirrorEnabled(mirrorEnabled *bool) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMirrorEnabled(mirrorEnabled)
 	return o
 }
 
-// SetMirrorEnabledQueryParameter adds the mirrorEnabled to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetMirrorEnabledQueryParameter(mirrorEnabled *bool) {
-	o.MirrorEnabledQueryParameter = mirrorEnabled
+// SetMirrorEnabled adds the mirrorEnabled to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMirrorEnabled(mirrorEnabled *bool) {
+	o.MirrorEnabled = mirrorEnabled
 }
 
-// WithMirrorStateQueryParameter adds the mirrorState to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithMirrorStateQueryParameter(mirrorState *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetMirrorStateQueryParameter(mirrorState)
+// WithMirrorState adds the mirrorState to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMirrorState(mirrorState *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMirrorState(mirrorState)
 	return o
 }
 
-// SetMirrorStateQueryParameter adds the mirrorState to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetMirrorStateQueryParameter(mirrorState *string) {
-	o.MirrorStateQueryParameter = mirrorState
+// SetMirrorState adds the mirrorState to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMirrorState(mirrorState *string) {
+	o.MirrorState = mirrorState
 }
 
-// WithMultipathPolicyQueryParameter adds the multipathPolicy to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithMultipathPolicyQueryParameter(multipathPolicy *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetMultipathPolicyQueryParameter(multipathPolicy)
+// WithMultipathPolicy adds the multipathPolicy to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithMultipathPolicy(multipathPolicy *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetMultipathPolicy(multipathPolicy)
 	return o
 }
 
-// SetMultipathPolicyQueryParameter adds the multipathPolicy to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetMultipathPolicyQueryParameter(multipathPolicy *string) {
-	o.MultipathPolicyQueryParameter = multipathPolicy
+// SetMultipathPolicy adds the multipathPolicy to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetMultipathPolicy(multipathPolicy *string) {
+	o.MultipathPolicy = multipathPolicy
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithNodeName(nodeName *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithNodeUUID(nodeUUID *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithOrderBy(orderBy []string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPartnerTypeQueryParameter adds the partnerType to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithPartnerTypeQueryParameter(partnerType *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetPartnerTypeQueryParameter(partnerType)
+// WithPartnerType adds the partnerType to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithPartnerType(partnerType *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetPartnerType(partnerType)
 	return o
 }
 
-// SetPartnerTypeQueryParameter adds the partnerType to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetPartnerTypeQueryParameter(partnerType *string) {
-	o.PartnerTypeQueryParameter = partnerType
+// SetPartnerType adds the partnerType to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetPartnerType(partnerType *string) {
+	o.PartnerType = partnerType
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MetroclusterInterconnectCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithReturnRecords(returnRecords *bool) *MetroclusterInterconnectCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterInterconnectCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterInterconnectCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStateQueryParameter adds the state to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithStateQueryParameter(state *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithState(state *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithTypeQueryParameter adds the typeVar to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithTypeQueryParameter(typeVar *string) *MetroclusterInterconnectCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithType(typeVar *string) *MetroclusterInterconnectCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithVlanIDQueryParameter adds the vlanID to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) WithVlanIDQueryParameter(vlanID *int64) *MetroclusterInterconnectCollectionGetParams {
-	o.SetVlanIDQueryParameter(vlanID)
+// WithVlanID adds the vlanID to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) WithVlanID(vlanID *int64) *MetroclusterInterconnectCollectionGetParams {
+	o.SetVlanID(vlanID)
 	return o
 }
 
-// SetVlanIDQueryParameter adds the vlanId to the metrocluster interconnect collection get params
-func (o *MetroclusterInterconnectCollectionGetParams) SetVlanIDQueryParameter(vlanID *int64) {
-	o.VlanIDQueryParameter = vlanID
+// SetVlanID adds the vlanId to the metrocluster interconnect collection get params
+func (o *MetroclusterInterconnectCollectionGetParams) SetVlanID(vlanID *int64) {
+	o.VlanID = vlanID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -447,13 +447,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 	}
 	var res []error
 
-	if o.AdapterQueryParameter != nil {
+	if o.Adapter != nil {
 
 		// query param adapter
 		var qrAdapter string
 
-		if o.AdapterQueryParameter != nil {
-			qrAdapter = *o.AdapterQueryParameter
+		if o.Adapter != nil {
+			qrAdapter = *o.Adapter
 		}
 		qAdapter := qrAdapter
 		if qAdapter != "" {
@@ -464,7 +464,7 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.InterfacesAddressQueryParameter != nil {
+	if o.InterfacesAddress != nil {
 
 		// query param interfaces.address
 		var qrInterfacesAddress string
 
-		if o.InterfacesAddressQueryParameter != nil {
-			qrInterfacesAddress = *o.InterfacesAddressQueryParameter
+		if o.InterfacesAddress != nil {
+			qrInterfacesAddress = *o.InterfacesAddress
 		}
 		qInterfacesAddress := qrInterfacesAddress
 		if qInterfacesAddress != "" {
@@ -492,13 +492,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.InterfacesGatewayQueryParameter != nil {
+	if o.InterfacesGateway != nil {
 
 		// query param interfaces.gateway
 		var qrInterfacesGateway string
 
-		if o.InterfacesGatewayQueryParameter != nil {
-			qrInterfacesGateway = *o.InterfacesGatewayQueryParameter
+		if o.InterfacesGateway != nil {
+			qrInterfacesGateway = *o.InterfacesGateway
 		}
 		qInterfacesGateway := qrInterfacesGateway
 		if qInterfacesGateway != "" {
@@ -509,13 +509,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.InterfacesNetmaskQueryParameter != nil {
+	if o.InterfacesNetmask != nil {
 
 		// query param interfaces.netmask
 		var qrInterfacesNetmask string
 
-		if o.InterfacesNetmaskQueryParameter != nil {
-			qrInterfacesNetmask = *o.InterfacesNetmaskQueryParameter
+		if o.InterfacesNetmask != nil {
+			qrInterfacesNetmask = *o.InterfacesNetmask
 		}
 		qInterfacesNetmask := qrInterfacesNetmask
 		if qInterfacesNetmask != "" {
@@ -526,13 +526,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -543,13 +543,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.MirrorEnabledQueryParameter != nil {
+	if o.MirrorEnabled != nil {
 
 		// query param mirror.enabled
 		var qrMirrorEnabled bool
 
-		if o.MirrorEnabledQueryParameter != nil {
-			qrMirrorEnabled = *o.MirrorEnabledQueryParameter
+		if o.MirrorEnabled != nil {
+			qrMirrorEnabled = *o.MirrorEnabled
 		}
 		qMirrorEnabled := swag.FormatBool(qrMirrorEnabled)
 		if qMirrorEnabled != "" {
@@ -560,13 +560,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.MirrorStateQueryParameter != nil {
+	if o.MirrorState != nil {
 
 		// query param mirror.state
 		var qrMirrorState string
 
-		if o.MirrorStateQueryParameter != nil {
-			qrMirrorState = *o.MirrorStateQueryParameter
+		if o.MirrorState != nil {
+			qrMirrorState = *o.MirrorState
 		}
 		qMirrorState := qrMirrorState
 		if qMirrorState != "" {
@@ -577,13 +577,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.MultipathPolicyQueryParameter != nil {
+	if o.MultipathPolicy != nil {
 
 		// query param multipath_policy
 		var qrMultipathPolicy string
 
-		if o.MultipathPolicyQueryParameter != nil {
-			qrMultipathPolicy = *o.MultipathPolicyQueryParameter
+		if o.MultipathPolicy != nil {
+			qrMultipathPolicy = *o.MultipathPolicy
 		}
 		qMultipathPolicy := qrMultipathPolicy
 		if qMultipathPolicy != "" {
@@ -594,13 +594,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -611,13 +611,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -628,7 +628,7 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -639,13 +639,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.PartnerTypeQueryParameter != nil {
+	if o.PartnerType != nil {
 
 		// query param partner_type
 		var qrPartnerType string
 
-		if o.PartnerTypeQueryParameter != nil {
-			qrPartnerType = *o.PartnerTypeQueryParameter
+		if o.PartnerType != nil {
+			qrPartnerType = *o.PartnerType
 		}
 		qPartnerType := qrPartnerType
 		if qPartnerType != "" {
@@ -656,13 +656,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -673,13 +673,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -690,13 +690,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -707,13 +707,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -724,13 +724,13 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	if o.VlanIDQueryParameter != nil {
+	if o.VlanID != nil {
 
 		// query param vlan_id
 		var qrVlanID int64
 
-		if o.VlanIDQueryParameter != nil {
-			qrVlanID = *o.VlanIDQueryParameter
+		if o.VlanID != nil {
+			qrVlanID = *o.VlanID
 		}
 		qVlanID := swag.FormatInt64(qrVlanID)
 		if qVlanID != "" {
@@ -749,7 +749,7 @@ func (o *MetroclusterInterconnectCollectionGetParams) WriteToRequest(r runtime.C
 
 // bindParamMetroclusterInterconnectCollectionGet binds the parameter fields
 func (o *MetroclusterInterconnectCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -766,7 +766,7 @@ func (o *MetroclusterInterconnectCollectionGetParams) bindParamFields(formats st
 
 // bindParamMetroclusterInterconnectCollectionGet binds the parameter order_by
 func (o *MetroclusterInterconnectCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

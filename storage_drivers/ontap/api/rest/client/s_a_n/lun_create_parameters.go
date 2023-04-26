@@ -75,7 +75,7 @@ type LunCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -95,11 +95,11 @@ func (o *LunCreateParams) WithDefaults() *LunCreateParams {
 // All values with no default are reset to their zero value.
 func (o *LunCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := LunCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,15 +152,15 @@ func (o *LunCreateParams) SetInfo(info *models.Lun) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the lun create params
-func (o *LunCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LunCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the lun create params
+func (o *LunCreateParams) WithReturnRecords(returnRecords *bool) *LunCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the lun create params
-func (o *LunCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the lun create params
+func (o *LunCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,13 +176,13 @@ func (o *LunCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

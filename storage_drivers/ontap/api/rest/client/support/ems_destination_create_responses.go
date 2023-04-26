@@ -52,6 +52,11 @@ EmsDestinationCreateCreated describes a response with status code 201, with defa
 Created
 */
 type EmsDestinationCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.EmsDestinationResponse
 }
 
@@ -94,6 +99,13 @@ func (o *EmsDestinationCreateCreated) GetPayload() *models.EmsDestinationRespons
 
 func (o *EmsDestinationCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.EmsDestinationResponse)
 
 	// response payload
@@ -118,9 +130,10 @@ func NewEmsDestinationCreateDefault(code int) *EmsDestinationCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 983088     | The destination name provided cannot be empty |
-| 983089     | The destination name provided cannot contain spaces |
-| 983094     | The destination name provided is invalid. The destination name must contain between 2 and 64 characters and start and end with an alphanumeric symbol or _(underscore). The allowed special characters are _(underscore) and -(hyphen) |
+| 983179     | The value for the destination field cannot be empty |
+| 983180     | The destination name provided cannot be empty |
+| 983181     | The destination name provided cannot contain spaces |
+| 983182     | The destination name provided is invalid. The destination name must contain between 2 and 64 characters and start and end with an alphanumeric symbol or _(underscore). The allowed special characters are _(underscore) and -(hyphen) |
 | 983104     | The syslog destination provided is invalid |
 | 983116     | The number of notifications has reached maximum capacity |
 | 983117     | The number of destinations has reached maximum capacity |
@@ -130,10 +143,13 @@ func NewEmsDestinationCreateDefault(code int) *EmsDestinationCreateDefault {
 | 983144     | The security certificate information provided is incomplete. Provide the certificate and serial number |
 | 983145     | The rest-api destination provided has an 'http://' scheme. It is invalid to provide certificate information |
 | 983149     | New SNMP destinations cannot be created |
-| 983151     | A property provided cannot be configured on the requested destination type |
 | 983152     | Default destinations cannot be modified or removed |
 | 983153     | The security certificate provided does not exist |
 | 983154     | The necessary private key is not installed on the system |
+| 983170     | Connectivity check is not supported for the specified destination type on the node |
+| 983171     | Connectivity check failed for the specified destination on the node |
+| 983176     | Connectivity check is only supported for TCP-based syslog destinations |
+| 983184     | A provided property cannot be configured on the requested destination type |
 */
 type EmsDestinationCreateDefault struct {
 	_statusCode int

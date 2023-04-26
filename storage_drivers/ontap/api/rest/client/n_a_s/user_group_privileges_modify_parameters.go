@@ -73,13 +73,13 @@ type UserGroupPrivilegesModifyParams struct {
 
 	   Local or Active Directory user or group name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *UserGroupPrivilegesModifyParams) SetInfo(info *models.UserGroupPrivileg
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the user group privileges modify params
-func (o *UserGroupPrivilegesModifyParams) WithNamePathParameter(name string) *UserGroupPrivilegesModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the user group privileges modify params
+func (o *UserGroupPrivilegesModifyParams) WithName(name string) *UserGroupPrivilegesModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the user group privileges modify params
-func (o *UserGroupPrivilegesModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the user group privileges modify params
+func (o *UserGroupPrivilegesModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the user group privileges modify params
-func (o *UserGroupPrivilegesModifyParams) WithSVMUUIDPathParameter(svmUUID string) *UserGroupPrivilegesModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the user group privileges modify params
+func (o *UserGroupPrivilegesModifyParams) WithSvmUUID(svmUUID string) *UserGroupPrivilegesModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the user group privileges modify params
-func (o *UserGroupPrivilegesModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the user group privileges modify params
+func (o *UserGroupPrivilegesModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *UserGroupPrivilegesModifyParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

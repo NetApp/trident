@@ -52,6 +52,11 @@ CloudTargetCreateAccepted describes a response with status code 202, with defaul
 Accepted
 */
 type CloudTargetCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -93,6 +98,13 @@ func (o *CloudTargetCreateAccepted) GetPayload() *models.JobLinkResponse {
 }
 
 func (o *CloudTargetCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

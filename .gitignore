@@ -322,3 +322,18 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+###############################################################################
+# Non-PHONY make targets that can be skipped
+# If this list is changed, please update BUILD.md and Makefile
+###############################################################################
+default
+binaries
+operator_binaries
+images
+operator_images
+manifest
+operator_manifest
+chart
+installer
+all

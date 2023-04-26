@@ -19,15 +19,15 @@ import (
 type QosPolicyGroupReference struct {
 
 	// links
-	Links *QosPolicyGroupReferenceLinks `json:"_links,omitempty"`
+	Links *QosPolicyGroupReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this qos policy group reference
@@ -107,17 +107,17 @@ func (m *QosPolicyGroupReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyGroupReferenceLinks qos policy group reference links
+// QosPolicyGroupReferenceInlineLinks qos policy group reference inline links
 //
-// swagger:model QosPolicyGroupReferenceLinks
-type QosPolicyGroupReferenceLinks struct {
+// swagger:model qos_policy_group_reference_inline__links
+type QosPolicyGroupReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos policy group reference links
-func (m *QosPolicyGroupReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy group reference inline links
+func (m *QosPolicyGroupReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *QosPolicyGroupReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicyGroupReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosPolicyGroupReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *QosPolicyGroupReferenceLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this qos policy group reference links based on the context it is used
-func (m *QosPolicyGroupReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos policy group reference inline links based on the context it is used
+func (m *QosPolicyGroupReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *QosPolicyGroupReferenceLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *QosPolicyGroupReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyGroupReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *QosPolicyGroupReferenceLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicyGroupReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyGroupReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *QosPolicyGroupReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicyGroupReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res QosPolicyGroupReferenceLinks
+func (m *QosPolicyGroupReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosPolicyGroupReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

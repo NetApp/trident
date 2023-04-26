@@ -19,19 +19,19 @@ import (
 type Rfc2307 struct {
 
 	// attribute
-	Attribute *Rfc2307AttributeType `json:"attribute,omitempty"`
+	Attribute *Rfc2307InlineAttribute `json:"attribute,omitempty"`
 
 	// cn
-	Cn *Rfc2307Cn `json:"cn,omitempty"`
+	Cn *Rfc2307InlineCn `json:"cn,omitempty"`
 
 	// member
-	Member *Rfc2307Member `json:"member,omitempty"`
+	Member *Rfc2307InlineMember `json:"member,omitempty"`
 
 	// nis
-	Nis *Rfc2307Nis `json:"nis,omitempty"`
+	Nis *Rfc2307InlineNis `json:"nis,omitempty"`
 
 	// posix
-	Posix *Rfc2307Posix `json:"posix,omitempty"`
+	Posix *Rfc2307InlinePosix `json:"posix,omitempty"`
 }
 
 // Validate validates this rfc2307
@@ -267,52 +267,52 @@ func (m *Rfc2307) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// Rfc2307AttributeType rfc2307 attribute type
+// Rfc2307InlineAttribute rfc2307 inline attribute
 //
-// swagger:model Rfc2307AttributeType
-type Rfc2307AttributeType struct {
+// swagger:model rfc2307_inline_attribute
+type Rfc2307InlineAttribute struct {
 
 	// RFC 2307 gecos attribute.
 	// Example: name
-	Gecos string `json:"gecos,omitempty"`
+	Gecos *string `json:"gecos,omitempty"`
 
 	// RFC 2307 gidNumber attribute.
 	// Example: msSFU30GidNumber
-	GidNumber string `json:"gid_number,omitempty"`
+	GidNumber *string `json:"gid_number,omitempty"`
 
 	// RFC 2307 homeDirectory attribute.
 	// Example: msSFU30HomeDirectory
-	HomeDirectory string `json:"home_directory,omitempty"`
+	HomeDirectory *string `json:"home_directory,omitempty"`
 
 	// RFC 2307 loginShell attribute.
 	// Example: msSFU30LoginShell
-	LoginShell string `json:"login_shell,omitempty"`
+	LoginShell *string `json:"login_shell,omitempty"`
 
 	// RFC 1274 userid attribute used by RFC 2307 as UID.
 	// Example: sAMAccountName
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 
 	// RFC 2307 uidNumber attribute.
 	// Example: msSFU30UidNumber
-	UIDNumber string `json:"uid_number,omitempty"`
+	UIDNumber *string `json:"uid_number,omitempty"`
 
 	// RFC 2256 userPassword attribute used by RFC 2307.
 	// Example: msSFU30Password
-	UserPassword string `json:"user_password,omitempty"`
+	UserPassword *string `json:"user_password,omitempty"`
 }
 
-// Validate validates this rfc2307 attribute type
-func (m *Rfc2307AttributeType) Validate(formats strfmt.Registry) error {
+// Validate validates this rfc2307 inline attribute
+func (m *Rfc2307InlineAttribute) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this rfc2307 attribute type based on context it is used
-func (m *Rfc2307AttributeType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this rfc2307 inline attribute based on context it is used
+func (m *Rfc2307InlineAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Rfc2307AttributeType) MarshalBinary() ([]byte, error) {
+func (m *Rfc2307InlineAttribute) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -320,8 +320,8 @@ func (m *Rfc2307AttributeType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Rfc2307AttributeType) UnmarshalBinary(b []byte) error {
-	var res Rfc2307AttributeType
+func (m *Rfc2307InlineAttribute) UnmarshalBinary(b []byte) error {
+	var res Rfc2307InlineAttribute
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -329,32 +329,32 @@ func (m *Rfc2307AttributeType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// Rfc2307Cn rfc2307 cn
+// Rfc2307InlineCn rfc2307 inline cn
 //
-// swagger:model Rfc2307Cn
-type Rfc2307Cn struct {
+// swagger:model rfc2307_inline_cn
+type Rfc2307InlineCn struct {
 
 	// RFC 2256 cn attribute used by RFC 2307 when working with groups.
 	// Example: cn
-	Group string `json:"group,omitempty"`
+	Group *string `json:"group,omitempty"`
 
 	// RFC 2256 cn attribute used by RFC 2307 when working with netgroups.
 	// Example: name
-	Netgroup string `json:"netgroup,omitempty"`
+	Netgroup *string `json:"netgroup,omitempty"`
 }
 
-// Validate validates this rfc2307 cn
-func (m *Rfc2307Cn) Validate(formats strfmt.Registry) error {
+// Validate validates this rfc2307 inline cn
+func (m *Rfc2307InlineCn) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this rfc2307 cn based on context it is used
-func (m *Rfc2307Cn) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this rfc2307 inline cn based on context it is used
+func (m *Rfc2307InlineCn) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Rfc2307Cn) MarshalBinary() ([]byte, error) {
+func (m *Rfc2307InlineCn) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -362,8 +362,8 @@ func (m *Rfc2307Cn) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Rfc2307Cn) UnmarshalBinary(b []byte) error {
-	var res Rfc2307Cn
+func (m *Rfc2307InlineCn) UnmarshalBinary(b []byte) error {
+	var res Rfc2307InlineCn
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -371,32 +371,32 @@ func (m *Rfc2307Cn) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// Rfc2307Member rfc2307 member
+// Rfc2307InlineMember rfc2307 inline member
 //
-// swagger:model Rfc2307Member
-type Rfc2307Member struct {
+// swagger:model rfc2307_inline_member
+type Rfc2307InlineMember struct {
 
 	// RFC 2307 memberNisNetgroup attribute.
 	// Example: msSFU30MemberNisNetgroup
-	NisNetgroup string `json:"nis_netgroup,omitempty"`
+	NisNetgroup *string `json:"nis_netgroup,omitempty"`
 
 	// RFC 2307 memberUid attribute.
 	// Example: msSFU30MemberUid
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 }
 
-// Validate validates this rfc2307 member
-func (m *Rfc2307Member) Validate(formats strfmt.Registry) error {
+// Validate validates this rfc2307 inline member
+func (m *Rfc2307InlineMember) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this rfc2307 member based on context it is used
-func (m *Rfc2307Member) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this rfc2307 inline member based on context it is used
+func (m *Rfc2307InlineMember) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Rfc2307Member) MarshalBinary() ([]byte, error) {
+func (m *Rfc2307InlineMember) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -404,8 +404,8 @@ func (m *Rfc2307Member) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Rfc2307Member) UnmarshalBinary(b []byte) error {
-	var res Rfc2307Member
+func (m *Rfc2307InlineMember) UnmarshalBinary(b []byte) error {
+	var res Rfc2307InlineMember
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -413,44 +413,44 @@ func (m *Rfc2307Member) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// Rfc2307Nis rfc2307 nis
+// Rfc2307InlineNis rfc2307 inline nis
 //
-// swagger:model Rfc2307Nis
-type Rfc2307Nis struct {
+// swagger:model rfc2307_inline_nis
+type Rfc2307InlineNis struct {
 
 	// RFC 2307 nisMapEntry attribute.
 	// Example: msSFU30NisMapEntry
-	Mapentry string `json:"mapentry,omitempty"`
+	Mapentry *string `json:"mapentry,omitempty"`
 
 	// RFC 2307 nisMapName attribute.
 	// Example: msSFU30NisMapName
-	Mapname string `json:"mapname,omitempty"`
+	Mapname *string `json:"mapname,omitempty"`
 
 	// RFC 2307 nisNetgroup object class.
 	// Example: msSFU30NisNetGroup
-	Netgroup string `json:"netgroup,omitempty"`
+	Netgroup *string `json:"netgroup,omitempty"`
 
 	// RFC 2307 nisNetgroupTriple attribute.
 	// Example: msSFU30MemberOfNisNetgroup
-	NetgroupTriple string `json:"netgroup_triple,omitempty"`
+	NetgroupTriple *string `json:"netgroup_triple,omitempty"`
 
 	// RFC 2307 nisObject object class.
 	// Example: msSFU30NisObject
-	Object string `json:"object,omitempty"`
+	Object *string `json:"object,omitempty"`
 }
 
-// Validate validates this rfc2307 nis
-func (m *Rfc2307Nis) Validate(formats strfmt.Registry) error {
+// Validate validates this rfc2307 inline nis
+func (m *Rfc2307InlineNis) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this rfc2307 nis based on context it is used
-func (m *Rfc2307Nis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this rfc2307 inline nis based on context it is used
+func (m *Rfc2307InlineNis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Rfc2307Nis) MarshalBinary() ([]byte, error) {
+func (m *Rfc2307InlineNis) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -458,8 +458,8 @@ func (m *Rfc2307Nis) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Rfc2307Nis) UnmarshalBinary(b []byte) error {
-	var res Rfc2307Nis
+func (m *Rfc2307InlineNis) UnmarshalBinary(b []byte) error {
+	var res Rfc2307InlineNis
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -467,32 +467,32 @@ func (m *Rfc2307Nis) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// Rfc2307Posix rfc2307 posix
+// Rfc2307InlinePosix rfc2307 inline posix
 //
-// swagger:model Rfc2307Posix
-type Rfc2307Posix struct {
+// swagger:model rfc2307_inline_posix
+type Rfc2307InlinePosix struct {
 
 	// RFC 2307 posixAccount object class.
 	// Example: User
-	Account string `json:"account,omitempty"`
+	Account *string `json:"account,omitempty"`
 
 	// RFC 2307 posixGroup object class.
 	// Example: Group
-	Group string `json:"group,omitempty"`
+	Group *string `json:"group,omitempty"`
 }
 
-// Validate validates this rfc2307 posix
-func (m *Rfc2307Posix) Validate(formats strfmt.Registry) error {
+// Validate validates this rfc2307 inline posix
+func (m *Rfc2307InlinePosix) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this rfc2307 posix based on context it is used
-func (m *Rfc2307Posix) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this rfc2307 inline posix based on context it is used
+func (m *Rfc2307InlinePosix) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *Rfc2307Posix) MarshalBinary() ([]byte, error) {
+func (m *Rfc2307InlinePosix) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -500,8 +500,8 @@ func (m *Rfc2307Posix) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Rfc2307Posix) UnmarshalBinary(b []byte) error {
-	var res Rfc2307Posix
+func (m *Rfc2307InlinePosix) UnmarshalBinary(b []byte) error {
+	var res Rfc2307InlinePosix
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -845,18 +845,33 @@ func (mr *MockZapiClientInterfaceMockRecorder) LunGetAllForVserver(arg0 interfac
 }
 
 // LunGetAttribute mocks base method.
-func (m *MockZapiClientInterface) LunGetAttribute(arg0, arg1 string) (*azgo.LunGetAttributeResponse, error) {
+func (m *MockZapiClientInterface) LunGetAttribute(arg0 context.Context, arg1, arg2 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetAttribute", arg0, arg1)
-	ret0, _ := ret[0].(*azgo.LunGetAttributeResponse)
+	ret := m.ctrl.Call(m, "LunGetAttribute", arg0, arg1, arg2)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetAttribute indicates an expected call of LunGetAttribute.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetAttribute(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetAttribute(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAttribute), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAttribute), arg0, arg1, arg2)
+}
+
+// LunGetComment mocks base method.
+func (m *MockZapiClientInterface) LunGetComment(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunGetComment", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunGetComment indicates an expected call of LunGetComment.
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetComment(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetComment), arg0, arg1)
 }
 
 // LunGetGeometry mocks base method.
@@ -1144,21 +1159,6 @@ func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGetDataLIFs(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetInterfaceGetDataLIFs), arg0, arg1)
 }
 
-// NetInterfaceGetDataLIFsNode mocks base method.
-func (m *MockZapiClientInterface) NetInterfaceGetDataLIFsNode(arg0 context.Context, arg1 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetInterfaceGetDataLIFsNode", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NetInterfaceGetDataLIFsNode indicates an expected call of NetInterfaceGetDataLIFsNode.
-func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGetDataLIFsNode(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetInterfaceGetDataLIFsNode", reflect.TypeOf((*MockZapiClientInterface)(nil).NetInterfaceGetDataLIFsNode), arg0, arg1)
-}
-
 // NodeListSerialNumbers mocks base method.
 func (m *MockZapiClientInterface) NodeListSerialNumbers(arg0 context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -1413,6 +1413,51 @@ func (m *MockZapiClientInterface) QuotaStatus(arg0 string) (*azgo.QuotaStatusRes
 func (mr *MockZapiClientInterfaceMockRecorder) QuotaStatus(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaStatus", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaStatus), arg0)
+}
+
+// SMBShareCreate mocks base method.
+func (m *MockZapiClientInterface) SMBShareCreate(arg0, arg1 string) (*azgo.CifsShareCreateResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareCreate", arg0, arg1)
+	ret0, _ := ret[0].(*azgo.CifsShareCreateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SMBShareCreate indicates an expected call of SMBShareCreate.
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareCreate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareCreate), arg0, arg1)
+}
+
+// SMBShareDestroy mocks base method.
+func (m *MockZapiClientInterface) SMBShareDestroy(arg0 string) (*azgo.CifsShareDeleteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareDestroy", arg0)
+	ret0, _ := ret[0].(*azgo.CifsShareDeleteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SMBShareDestroy indicates an expected call of SMBShareDestroy.
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareDestroy(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareDestroy), arg0)
+}
+
+// SMBShareExists mocks base method.
+func (m *MockZapiClientInterface) SMBShareExists(arg0 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareExists", arg0)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SMBShareExists indicates an expected call of SMBShareExists.
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareExists(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareExists", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareExists), arg0)
 }
 
 // SVMGetAggregateNames mocks base method.

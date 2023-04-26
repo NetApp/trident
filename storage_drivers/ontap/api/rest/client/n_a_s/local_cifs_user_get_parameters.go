@@ -66,19 +66,19 @@ type LocalCifsUserGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Sid.
 
 	   Local user SID
 	*/
-	SIDPathParameter string
+	Sid string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *LocalCifsUserGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the local cifs user get params
-func (o *LocalCifsUserGetParams) WithFieldsQueryParameter(fields []string) *LocalCifsUserGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the local cifs user get params
+func (o *LocalCifsUserGetParams) WithFields(fields []string) *LocalCifsUserGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the local cifs user get params
-func (o *LocalCifsUserGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the local cifs user get params
+func (o *LocalCifsUserGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSIDPathParameter adds the sid to the local cifs user get params
-func (o *LocalCifsUserGetParams) WithSIDPathParameter(sid string) *LocalCifsUserGetParams {
-	o.SetSIDPathParameter(sid)
+// WithSid adds the sid to the local cifs user get params
+func (o *LocalCifsUserGetParams) WithSid(sid string) *LocalCifsUserGetParams {
+	o.SetSid(sid)
 	return o
 }
 
-// SetSIDPathParameter adds the sid to the local cifs user get params
-func (o *LocalCifsUserGetParams) SetSIDPathParameter(sid string) {
-	o.SIDPathParameter = sid
+// SetSid adds the sid to the local cifs user get params
+func (o *LocalCifsUserGetParams) SetSid(sid string) {
+	o.Sid = sid
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs user get params
-func (o *LocalCifsUserGetParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsUserGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs user get params
+func (o *LocalCifsUserGetParams) WithSvmUUID(svmUUID string) *LocalCifsUserGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs user get params
-func (o *LocalCifsUserGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs user get params
+func (o *LocalCifsUserGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *LocalCifsUserGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *LocalCifsUserGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param sid
-	if err := r.SetPathParam("sid", o.SIDPathParameter); err != nil {
+	if err := r.SetPathParam("sid", o.Sid); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *LocalCifsUserGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamLocalCifsUserGet binds the parameter fields
 func (o *LocalCifsUserGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -23,33 +23,33 @@ type CifsDomainDiscoveredServer struct {
 	// Fully Qualified Domain Name.
 	//
 	// Example: test.com
-	Domain string `json:"domain,omitempty"`
+	Domain *string `json:"domain,omitempty"`
 
 	// node
-	Node *CifsDomainDiscoveredServerNode `json:"node,omitempty"`
+	Node *CifsDomainDiscoveredServerInlineNode `json:"node,omitempty"`
 
 	// Server Preference
 	//
 	// Enum: [unknown preferred favored adequate]
-	Preference string `json:"preference,omitempty"`
+	Preference *string `json:"preference,omitempty"`
 
 	// Server IP address
 	//
-	ServerIP string `json:"server_ip,omitempty"`
+	ServerIP *string `json:"server_ip,omitempty"`
 
 	// Server Name
 	//
-	ServerName string `json:"server_name,omitempty"`
+	ServerName *string `json:"server_name,omitempty"`
 
 	// Server Type
 	//
 	// Enum: [unknown kerberos ms_ldap ms_dc ldap]
-	ServerType string `json:"server_type,omitempty"`
+	ServerType *string `json:"server_type,omitempty"`
 
 	// Server status
 	//
 	// Enum: [ok unavailable slow expired undetermined unreachable]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this cifs domain discovered server
@@ -164,7 +164,7 @@ func (m *CifsDomainDiscoveredServer) validatePreference(formats strfmt.Registry)
 	}
 
 	// value enum
-	if err := m.validatePreferenceEnum("preference", "body", m.Preference); err != nil {
+	if err := m.validatePreferenceEnum("preference", "body", *m.Preference); err != nil {
 		return err
 	}
 
@@ -250,7 +250,7 @@ func (m *CifsDomainDiscoveredServer) validateServerType(formats strfmt.Registry)
 	}
 
 	// value enum
-	if err := m.validateServerTypeEnum("server_type", "body", m.ServerType); err != nil {
+	if err := m.validateServerTypeEnum("server_type", "body", *m.ServerType); err != nil {
 		return err
 	}
 
@@ -346,7 +346,7 @@ func (m *CifsDomainDiscoveredServer) validateState(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -399,25 +399,25 @@ func (m *CifsDomainDiscoveredServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainDiscoveredServerNode cifs domain discovered server node
+// CifsDomainDiscoveredServerInlineNode cifs domain discovered server inline node
 //
-// swagger:model CifsDomainDiscoveredServerNode
-type CifsDomainDiscoveredServerNode struct {
+// swagger:model cifs_domain_discovered_server_inline_node
+type CifsDomainDiscoveredServerInlineNode struct {
 
 	// links
-	Links *CifsDomainDiscoveredServerNodeLinks `json:"_links,omitempty"`
+	Links *CifsDomainDiscoveredServerInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs domain discovered server node
-func (m *CifsDomainDiscoveredServerNode) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain discovered server inline node
+func (m *CifsDomainDiscoveredServerInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -430,7 +430,7 @@ func (m *CifsDomainDiscoveredServerNode) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServerNode) validateLinks(formats strfmt.Registry) error {
+func (m *CifsDomainDiscoveredServerInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -447,8 +447,8 @@ func (m *CifsDomainDiscoveredServerNode) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this cifs domain discovered server node based on the context it is used
-func (m *CifsDomainDiscoveredServerNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain discovered server inline node based on the context it is used
+func (m *CifsDomainDiscoveredServerInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -461,7 +461,7 @@ func (m *CifsDomainDiscoveredServerNode) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServerNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainDiscoveredServerInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -476,7 +476,7 @@ func (m *CifsDomainDiscoveredServerNode) contextValidateLinks(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServerNode) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainDiscoveredServerInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -484,8 +484,8 @@ func (m *CifsDomainDiscoveredServerNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServerNode) UnmarshalBinary(b []byte) error {
-	var res CifsDomainDiscoveredServerNode
+func (m *CifsDomainDiscoveredServerInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsDomainDiscoveredServerInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -493,17 +493,17 @@ func (m *CifsDomainDiscoveredServerNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainDiscoveredServerNodeLinks cifs domain discovered server node links
+// CifsDomainDiscoveredServerInlineNodeInlineLinks cifs domain discovered server inline node inline links
 //
-// swagger:model CifsDomainDiscoveredServerNodeLinks
-type CifsDomainDiscoveredServerNodeLinks struct {
+// swagger:model cifs_domain_discovered_server_inline_node_inline__links
+type CifsDomainDiscoveredServerInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain discovered server node links
-func (m *CifsDomainDiscoveredServerNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain discovered server inline node inline links
+func (m *CifsDomainDiscoveredServerInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -516,7 +516,7 @@ func (m *CifsDomainDiscoveredServerNodeLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServerNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainDiscoveredServerInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -533,8 +533,8 @@ func (m *CifsDomainDiscoveredServerNodeLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this cifs domain discovered server node links based on the context it is used
-func (m *CifsDomainDiscoveredServerNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain discovered server inline node inline links based on the context it is used
+func (m *CifsDomainDiscoveredServerInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -547,7 +547,7 @@ func (m *CifsDomainDiscoveredServerNodeLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServerNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainDiscoveredServerInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -562,7 +562,7 @@ func (m *CifsDomainDiscoveredServerNodeLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServerNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainDiscoveredServerInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -570,8 +570,8 @@ func (m *CifsDomainDiscoveredServerNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServerNodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainDiscoveredServerNodeLinks
+func (m *CifsDomainDiscoveredServerInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainDiscoveredServerInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

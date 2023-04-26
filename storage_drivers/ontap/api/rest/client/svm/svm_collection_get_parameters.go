@@ -66,277 +66,289 @@ type SvmCollectionGetParams struct {
 
 	   Filter by aggregates.name
 	*/
-	AggregatesNameQueryParameter *string
+	AggregatesName *string
 
 	/* AggregatesUUID.
 
 	   Filter by aggregates.uuid
 	*/
-	AggregatesUUIDQueryParameter *string
+	AggregatesUUID *string
 
 	/* AntiRansomwareDefaultVolumeState.
 
 	   Filter by anti_ransomware_default_volume_state
 	*/
-	AntiRansomwareDefaultVolumeStateQueryParameter *string
+	AntiRansomwareDefaultVolumeState *string
+
+	/* AutoEnableActivityTracking.
+
+	   Filter by auto_enable_activity_tracking.
+	*/
+	AutoEnableActivityTracking *bool
+
+	/* AutoEnableAnalytics.
+
+	   Filter by auto_enable_analytics.
+	*/
+	AutoEnableAnalytics *bool
 
 	/* CertificateUUID.
 
 	   Filter by certificate.uuid
 	*/
-	CertificateUUIDQueryParameter *string
+	CertificateUUID *string
 
 	/* CifsAdDomainFqdn.
 
 	   Filter by cifs.ad_domain.fqdn
 	*/
-	CifsAdDomainFqdnQueryParameter *string
+	CifsAdDomainFqdn *string
 
 	/* CifsAdDomainOrganizationalUnit.
 
 	   Filter by cifs.ad_domain.organizational_unit
 	*/
-	CifsAdDomainOrganizationalUnitQueryParameter *string
+	CifsAdDomainOrganizationalUnit *string
 
 	/* CifsAllowed.
 
 	   Filter by cifs.allowed
 	*/
-	CifsAllowedQueryParameter *bool
+	CifsAllowed *bool
 
 	/* CifsEnabled.
 
 	   Filter by cifs.enabled
 	*/
-	CifsEnabledQueryParameter *bool
+	CifsEnabled *bool
 
 	/* CifsName.
 
 	   Filter by cifs.name
 	*/
-	CifsNameQueryParameter *string
+	CifsName *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* DNSDomains.
 
 	   Filter by dns.domains
 	*/
-	DNSDomainsQueryParameter *string
+	DNSDomains *string
 
 	/* DNSServers.
 
 	   Filter by dns.servers
 	*/
-	DNSServersQueryParameter *string
+	DNSServers *string
 
 	/* FcInterfacesDataProtocol.
 
 	   Filter by fc_interfaces.data_protocol
 	*/
-	FcInterfacesDataProtocolQueryParameter *string
+	FcInterfacesDataProtocol *string
 
 	/* FcInterfacesName.
 
 	   Filter by fc_interfaces.name
 	*/
-	FcInterfacesNameQueryParameter *string
+	FcInterfacesName *string
 
 	/* FcpAllowed.
 
 	   Filter by fcp.allowed
 	*/
-	FcpAllowedQueryParameter *bool
+	FcpAllowed *bool
 
 	/* FcpEnabled.
 
 	   Filter by fcp.enabled
 	*/
-	FcpEnabledQueryParameter *bool
+	FcpEnabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* IscsiAllowed.
 
 	   Filter by iscsi.allowed
 	*/
-	IscsiAllowedQueryParameter *bool
+	IscsiAllowed *bool
 
 	/* IscsiEnabled.
 
 	   Filter by iscsi.enabled
 	*/
-	IscsiEnabledQueryParameter *bool
+	IscsiEnabled *bool
 
 	/* Language.
 
 	   Filter by language
 	*/
-	LanguageQueryParameter *string
+	Language *string
 
 	/* LdapAdDomain.
 
 	   Filter by ldap.ad_domain
 	*/
-	LdapAdDomainQueryParameter *string
+	LdapAdDomain *string
 
 	/* LdapBaseDn.
 
 	   Filter by ldap.base_dn
 	*/
-	LdapBaseDnQueryParameter *string
+	LdapBaseDn *string
 
 	/* LdapBindDn.
 
 	   Filter by ldap.bind_dn
 	*/
-	LdapBindDnQueryParameter *string
+	LdapBindDn *string
 
 	/* LdapEnabled.
 
 	   Filter by ldap.enabled
 	*/
-	LdapEnabledQueryParameter *bool
+	LdapEnabled *bool
 
 	/* LdapServers.
 
 	   Filter by ldap.servers
 	*/
-	LdapServersQueryParameter *string
+	LdapServers *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MaxVolumes.
 
 	   Filter max_volumes
 	*/
-	MaxVolumesQueryParameter *string
+	MaxVolumes *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NdmpAllowed.
 
 	   Filter by ndmp.allowed
 	*/
-	NdmpAllowedQueryParameter *bool
+	NdmpAllowed *bool
 
 	/* NfsAllowed.
 
 	   Filter by nfs.allowed
 	*/
-	NfsAllowedQueryParameter *bool
+	NfsAllowed *bool
 
 	/* NfsEnabled.
 
 	   Filter by nfs.enabled
 	*/
-	NfsEnabledQueryParameter *bool
+	NfsEnabled *bool
 
 	/* NisDomain.
 
 	   Filter by nis.domain
 	*/
-	NisDomainQueryParameter *string
+	NisDomain *string
 
 	/* NisEnabled.
 
 	   Filter by nis.enabled
 	*/
-	NisEnabledQueryParameter *bool
+	NisEnabled *bool
 
 	/* NisServers.
 
 	   Filter by nis.servers
 	*/
-	NisServersQueryParameter *string
+	NisServers *string
 
 	/* NsswitchGroup.
 
 	   Filter by nsswitch.group
 	*/
-	NsswitchGroupQueryParameter *string
+	NsswitchGroup *string
 
 	/* NsswitchHosts.
 
 	   Filter by nsswitch.hosts
 	*/
-	NsswitchHostsQueryParameter *string
+	NsswitchHosts *string
 
 	/* NsswitchNamemap.
 
 	   Filter by nsswitch.namemap
 	*/
-	NsswitchNamemapQueryParameter *string
+	NsswitchNamemap *string
 
 	/* NsswitchNetgroup.
 
 	   Filter by nsswitch.netgroup
 	*/
-	NsswitchNetgroupQueryParameter *string
+	NsswitchNetgroup *string
 
 	/* NsswitchPasswd.
 
 	   Filter by nsswitch.passwd
 	*/
-	NsswitchPasswdQueryParameter *string
+	NsswitchPasswd *string
 
 	/* NvmeAllowed.
 
 	   Filter by nvme.allowed
 	*/
-	NvmeAllowedQueryParameter *bool
+	NvmeAllowed *bool
 
 	/* NvmeEnabled.
 
 	   Filter by nvme.enabled
 	*/
-	NvmeEnabledQueryParameter *bool
+	NvmeEnabled *bool
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* QosPolicyName.
 
 	   Filter qos_policy.name
 	*/
-	QosPolicyNameQueryParameter *string
+	QosPolicyName *string
 
 	/* QosPolicyUUID.
 
 	   Filter qos_policy.uuid
 	*/
-	QosPolicyUUIDQueryParameter *string
+	QosPolicyUUID *string
 
 	/* ReturnRecords.
 
@@ -344,7 +356,7 @@ type SvmCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -352,49 +364,55 @@ type SvmCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
+
+	/* S3Allowed.
+
+	   Filter by s3.allowed
+	*/
+	S3Allowed *bool
 
 	/* S3Enabled.
 
 	   Filter by s3.enabled
 	*/
-	S3EnabledQueryParameter *bool
+	S3Enabled *bool
 
 	/* S3Name.
 
 	   Filter by s3.name
 	*/
-	S3NameQueryParameter *string
+	S3Name *string
 
 	/* SnapshotPolicyName.
 
 	   Filter by snapshot_policy.name
 	*/
-	SnapshotPolicyNameQueryParameter *string
+	SnapshotPolicyName *string
 
 	/* SnapshotPolicyUUID.
 
 	   Filter by snapshot_policy.uuid
 	*/
-	SnapshotPolicyUUIDQueryParameter *string
+	SnapshotPolicyUUID *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Subtype.
 
 	   Filter by subtype
 	*/
-	SubtypeQueryParameter *string
+	Subtype *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -414,14 +432,14 @@ func (o *SvmCollectionGetParams) WithDefaults() *SvmCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *SvmCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SvmCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -463,609 +481,642 @@ func (o *SvmCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregatesNameQueryParameter adds the aggregatesName to the svm collection get params
-func (o *SvmCollectionGetParams) WithAggregatesNameQueryParameter(aggregatesName *string) *SvmCollectionGetParams {
-	o.SetAggregatesNameQueryParameter(aggregatesName)
+// WithAggregatesName adds the aggregatesName to the svm collection get params
+func (o *SvmCollectionGetParams) WithAggregatesName(aggregatesName *string) *SvmCollectionGetParams {
+	o.SetAggregatesName(aggregatesName)
 	return o
 }
 
-// SetAggregatesNameQueryParameter adds the aggregatesName to the svm collection get params
-func (o *SvmCollectionGetParams) SetAggregatesNameQueryParameter(aggregatesName *string) {
-	o.AggregatesNameQueryParameter = aggregatesName
+// SetAggregatesName adds the aggregatesName to the svm collection get params
+func (o *SvmCollectionGetParams) SetAggregatesName(aggregatesName *string) {
+	o.AggregatesName = aggregatesName
 }
 
-// WithAggregatesUUIDQueryParameter adds the aggregatesUUID to the svm collection get params
-func (o *SvmCollectionGetParams) WithAggregatesUUIDQueryParameter(aggregatesUUID *string) *SvmCollectionGetParams {
-	o.SetAggregatesUUIDQueryParameter(aggregatesUUID)
+// WithAggregatesUUID adds the aggregatesUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithAggregatesUUID(aggregatesUUID *string) *SvmCollectionGetParams {
+	o.SetAggregatesUUID(aggregatesUUID)
 	return o
 }
 
-// SetAggregatesUUIDQueryParameter adds the aggregatesUuid to the svm collection get params
-func (o *SvmCollectionGetParams) SetAggregatesUUIDQueryParameter(aggregatesUUID *string) {
-	o.AggregatesUUIDQueryParameter = aggregatesUUID
+// SetAggregatesUUID adds the aggregatesUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetAggregatesUUID(aggregatesUUID *string) {
+	o.AggregatesUUID = aggregatesUUID
 }
 
-// WithAntiRansomwareDefaultVolumeStateQueryParameter adds the antiRansomwareDefaultVolumeState to the svm collection get params
-func (o *SvmCollectionGetParams) WithAntiRansomwareDefaultVolumeStateQueryParameter(antiRansomwareDefaultVolumeState *string) *SvmCollectionGetParams {
-	o.SetAntiRansomwareDefaultVolumeStateQueryParameter(antiRansomwareDefaultVolumeState)
+// WithAntiRansomwareDefaultVolumeState adds the antiRansomwareDefaultVolumeState to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareDefaultVolumeState(antiRansomwareDefaultVolumeState *string) *SvmCollectionGetParams {
+	o.SetAntiRansomwareDefaultVolumeState(antiRansomwareDefaultVolumeState)
 	return o
 }
 
-// SetAntiRansomwareDefaultVolumeStateQueryParameter adds the antiRansomwareDefaultVolumeState to the svm collection get params
-func (o *SvmCollectionGetParams) SetAntiRansomwareDefaultVolumeStateQueryParameter(antiRansomwareDefaultVolumeState *string) {
-	o.AntiRansomwareDefaultVolumeStateQueryParameter = antiRansomwareDefaultVolumeState
+// SetAntiRansomwareDefaultVolumeState adds the antiRansomwareDefaultVolumeState to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareDefaultVolumeState(antiRansomwareDefaultVolumeState *string) {
+	o.AntiRansomwareDefaultVolumeState = antiRansomwareDefaultVolumeState
 }
 
-// WithCertificateUUIDQueryParameter adds the certificateUUID to the svm collection get params
-func (o *SvmCollectionGetParams) WithCertificateUUIDQueryParameter(certificateUUID *string) *SvmCollectionGetParams {
-	o.SetCertificateUUIDQueryParameter(certificateUUID)
+// WithAutoEnableActivityTracking adds the autoEnableActivityTracking to the svm collection get params
+func (o *SvmCollectionGetParams) WithAutoEnableActivityTracking(autoEnableActivityTracking *bool) *SvmCollectionGetParams {
+	o.SetAutoEnableActivityTracking(autoEnableActivityTracking)
 	return o
 }
 
-// SetCertificateUUIDQueryParameter adds the certificateUuid to the svm collection get params
-func (o *SvmCollectionGetParams) SetCertificateUUIDQueryParameter(certificateUUID *string) {
-	o.CertificateUUIDQueryParameter = certificateUUID
+// SetAutoEnableActivityTracking adds the autoEnableActivityTracking to the svm collection get params
+func (o *SvmCollectionGetParams) SetAutoEnableActivityTracking(autoEnableActivityTracking *bool) {
+	o.AutoEnableActivityTracking = autoEnableActivityTracking
 }
 
-// WithCifsAdDomainFqdnQueryParameter adds the cifsAdDomainFqdn to the svm collection get params
-func (o *SvmCollectionGetParams) WithCifsAdDomainFqdnQueryParameter(cifsAdDomainFqdn *string) *SvmCollectionGetParams {
-	o.SetCifsAdDomainFqdnQueryParameter(cifsAdDomainFqdn)
+// WithAutoEnableAnalytics adds the autoEnableAnalytics to the svm collection get params
+func (o *SvmCollectionGetParams) WithAutoEnableAnalytics(autoEnableAnalytics *bool) *SvmCollectionGetParams {
+	o.SetAutoEnableAnalytics(autoEnableAnalytics)
 	return o
 }
 
-// SetCifsAdDomainFqdnQueryParameter adds the cifsAdDomainFqdn to the svm collection get params
-func (o *SvmCollectionGetParams) SetCifsAdDomainFqdnQueryParameter(cifsAdDomainFqdn *string) {
-	o.CifsAdDomainFqdnQueryParameter = cifsAdDomainFqdn
+// SetAutoEnableAnalytics adds the autoEnableAnalytics to the svm collection get params
+func (o *SvmCollectionGetParams) SetAutoEnableAnalytics(autoEnableAnalytics *bool) {
+	o.AutoEnableAnalytics = autoEnableAnalytics
 }
 
-// WithCifsAdDomainOrganizationalUnitQueryParameter adds the cifsAdDomainOrganizationalUnit to the svm collection get params
-func (o *SvmCollectionGetParams) WithCifsAdDomainOrganizationalUnitQueryParameter(cifsAdDomainOrganizationalUnit *string) *SvmCollectionGetParams {
-	o.SetCifsAdDomainOrganizationalUnitQueryParameter(cifsAdDomainOrganizationalUnit)
+// WithCertificateUUID adds the certificateUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithCertificateUUID(certificateUUID *string) *SvmCollectionGetParams {
+	o.SetCertificateUUID(certificateUUID)
 	return o
 }
 
-// SetCifsAdDomainOrganizationalUnitQueryParameter adds the cifsAdDomainOrganizationalUnit to the svm collection get params
-func (o *SvmCollectionGetParams) SetCifsAdDomainOrganizationalUnitQueryParameter(cifsAdDomainOrganizationalUnit *string) {
-	o.CifsAdDomainOrganizationalUnitQueryParameter = cifsAdDomainOrganizationalUnit
+// SetCertificateUUID adds the certificateUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetCertificateUUID(certificateUUID *string) {
+	o.CertificateUUID = certificateUUID
 }
 
-// WithCifsAllowedQueryParameter adds the cifsAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) WithCifsAllowedQueryParameter(cifsAllowed *bool) *SvmCollectionGetParams {
-	o.SetCifsAllowedQueryParameter(cifsAllowed)
+// WithCifsAdDomainFqdn adds the cifsAdDomainFqdn to the svm collection get params
+func (o *SvmCollectionGetParams) WithCifsAdDomainFqdn(cifsAdDomainFqdn *string) *SvmCollectionGetParams {
+	o.SetCifsAdDomainFqdn(cifsAdDomainFqdn)
 	return o
 }
 
-// SetCifsAllowedQueryParameter adds the cifsAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) SetCifsAllowedQueryParameter(cifsAllowed *bool) {
-	o.CifsAllowedQueryParameter = cifsAllowed
+// SetCifsAdDomainFqdn adds the cifsAdDomainFqdn to the svm collection get params
+func (o *SvmCollectionGetParams) SetCifsAdDomainFqdn(cifsAdDomainFqdn *string) {
+	o.CifsAdDomainFqdn = cifsAdDomainFqdn
 }
 
-// WithCifsEnabledQueryParameter adds the cifsEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithCifsEnabledQueryParameter(cifsEnabled *bool) *SvmCollectionGetParams {
-	o.SetCifsEnabledQueryParameter(cifsEnabled)
+// WithCifsAdDomainOrganizationalUnit adds the cifsAdDomainOrganizationalUnit to the svm collection get params
+func (o *SvmCollectionGetParams) WithCifsAdDomainOrganizationalUnit(cifsAdDomainOrganizationalUnit *string) *SvmCollectionGetParams {
+	o.SetCifsAdDomainOrganizationalUnit(cifsAdDomainOrganizationalUnit)
 	return o
 }
 
-// SetCifsEnabledQueryParameter adds the cifsEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetCifsEnabledQueryParameter(cifsEnabled *bool) {
-	o.CifsEnabledQueryParameter = cifsEnabled
+// SetCifsAdDomainOrganizationalUnit adds the cifsAdDomainOrganizationalUnit to the svm collection get params
+func (o *SvmCollectionGetParams) SetCifsAdDomainOrganizationalUnit(cifsAdDomainOrganizationalUnit *string) {
+	o.CifsAdDomainOrganizationalUnit = cifsAdDomainOrganizationalUnit
 }
 
-// WithCifsNameQueryParameter adds the cifsName to the svm collection get params
-func (o *SvmCollectionGetParams) WithCifsNameQueryParameter(cifsName *string) *SvmCollectionGetParams {
-	o.SetCifsNameQueryParameter(cifsName)
+// WithCifsAllowed adds the cifsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithCifsAllowed(cifsAllowed *bool) *SvmCollectionGetParams {
+	o.SetCifsAllowed(cifsAllowed)
 	return o
 }
 
-// SetCifsNameQueryParameter adds the cifsName to the svm collection get params
-func (o *SvmCollectionGetParams) SetCifsNameQueryParameter(cifsName *string) {
-	o.CifsNameQueryParameter = cifsName
+// SetCifsAllowed adds the cifsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetCifsAllowed(cifsAllowed *bool) {
+	o.CifsAllowed = cifsAllowed
 }
 
-// WithCommentQueryParameter adds the comment to the svm collection get params
-func (o *SvmCollectionGetParams) WithCommentQueryParameter(comment *string) *SvmCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithCifsEnabled adds the cifsEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithCifsEnabled(cifsEnabled *bool) *SvmCollectionGetParams {
+	o.SetCifsEnabled(cifsEnabled)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the svm collection get params
-func (o *SvmCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetCifsEnabled adds the cifsEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetCifsEnabled(cifsEnabled *bool) {
+	o.CifsEnabled = cifsEnabled
 }
 
-// WithDNSDomainsQueryParameter adds the dNSDomains to the svm collection get params
-func (o *SvmCollectionGetParams) WithDNSDomainsQueryParameter(dNSDomains *string) *SvmCollectionGetParams {
-	o.SetDNSDomainsQueryParameter(dNSDomains)
+// WithCifsName adds the cifsName to the svm collection get params
+func (o *SvmCollectionGetParams) WithCifsName(cifsName *string) *SvmCollectionGetParams {
+	o.SetCifsName(cifsName)
 	return o
 }
 
-// SetDNSDomainsQueryParameter adds the dnsDomains to the svm collection get params
-func (o *SvmCollectionGetParams) SetDNSDomainsQueryParameter(dNSDomains *string) {
-	o.DNSDomainsQueryParameter = dNSDomains
+// SetCifsName adds the cifsName to the svm collection get params
+func (o *SvmCollectionGetParams) SetCifsName(cifsName *string) {
+	o.CifsName = cifsName
 }
 
-// WithDNSServersQueryParameter adds the dNSServers to the svm collection get params
-func (o *SvmCollectionGetParams) WithDNSServersQueryParameter(dNSServers *string) *SvmCollectionGetParams {
-	o.SetDNSServersQueryParameter(dNSServers)
+// WithComment adds the comment to the svm collection get params
+func (o *SvmCollectionGetParams) WithComment(comment *string) *SvmCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetDNSServersQueryParameter adds the dnsServers to the svm collection get params
-func (o *SvmCollectionGetParams) SetDNSServersQueryParameter(dNSServers *string) {
-	o.DNSServersQueryParameter = dNSServers
+// SetComment adds the comment to the svm collection get params
+func (o *SvmCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithFcInterfacesDataProtocolQueryParameter adds the fcInterfacesDataProtocol to the svm collection get params
-func (o *SvmCollectionGetParams) WithFcInterfacesDataProtocolQueryParameter(fcInterfacesDataProtocol *string) *SvmCollectionGetParams {
-	o.SetFcInterfacesDataProtocolQueryParameter(fcInterfacesDataProtocol)
+// WithDNSDomains adds the dNSDomains to the svm collection get params
+func (o *SvmCollectionGetParams) WithDNSDomains(dNSDomains *string) *SvmCollectionGetParams {
+	o.SetDNSDomains(dNSDomains)
 	return o
 }
 
-// SetFcInterfacesDataProtocolQueryParameter adds the fcInterfacesDataProtocol to the svm collection get params
-func (o *SvmCollectionGetParams) SetFcInterfacesDataProtocolQueryParameter(fcInterfacesDataProtocol *string) {
-	o.FcInterfacesDataProtocolQueryParameter = fcInterfacesDataProtocol
+// SetDNSDomains adds the dnsDomains to the svm collection get params
+func (o *SvmCollectionGetParams) SetDNSDomains(dNSDomains *string) {
+	o.DNSDomains = dNSDomains
 }
 
-// WithFcInterfacesNameQueryParameter adds the fcInterfacesName to the svm collection get params
-func (o *SvmCollectionGetParams) WithFcInterfacesNameQueryParameter(fcInterfacesName *string) *SvmCollectionGetParams {
-	o.SetFcInterfacesNameQueryParameter(fcInterfacesName)
+// WithDNSServers adds the dNSServers to the svm collection get params
+func (o *SvmCollectionGetParams) WithDNSServers(dNSServers *string) *SvmCollectionGetParams {
+	o.SetDNSServers(dNSServers)
 	return o
 }
 
-// SetFcInterfacesNameQueryParameter adds the fcInterfacesName to the svm collection get params
-func (o *SvmCollectionGetParams) SetFcInterfacesNameQueryParameter(fcInterfacesName *string) {
-	o.FcInterfacesNameQueryParameter = fcInterfacesName
+// SetDNSServers adds the dnsServers to the svm collection get params
+func (o *SvmCollectionGetParams) SetDNSServers(dNSServers *string) {
+	o.DNSServers = dNSServers
 }
 
-// WithFcpAllowedQueryParameter adds the fcpAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) WithFcpAllowedQueryParameter(fcpAllowed *bool) *SvmCollectionGetParams {
-	o.SetFcpAllowedQueryParameter(fcpAllowed)
+// WithFcInterfacesDataProtocol adds the fcInterfacesDataProtocol to the svm collection get params
+func (o *SvmCollectionGetParams) WithFcInterfacesDataProtocol(fcInterfacesDataProtocol *string) *SvmCollectionGetParams {
+	o.SetFcInterfacesDataProtocol(fcInterfacesDataProtocol)
 	return o
 }
 
-// SetFcpAllowedQueryParameter adds the fcpAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) SetFcpAllowedQueryParameter(fcpAllowed *bool) {
-	o.FcpAllowedQueryParameter = fcpAllowed
+// SetFcInterfacesDataProtocol adds the fcInterfacesDataProtocol to the svm collection get params
+func (o *SvmCollectionGetParams) SetFcInterfacesDataProtocol(fcInterfacesDataProtocol *string) {
+	o.FcInterfacesDataProtocol = fcInterfacesDataProtocol
 }
 
-// WithFcpEnabledQueryParameter adds the fcpEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithFcpEnabledQueryParameter(fcpEnabled *bool) *SvmCollectionGetParams {
-	o.SetFcpEnabledQueryParameter(fcpEnabled)
+// WithFcInterfacesName adds the fcInterfacesName to the svm collection get params
+func (o *SvmCollectionGetParams) WithFcInterfacesName(fcInterfacesName *string) *SvmCollectionGetParams {
+	o.SetFcInterfacesName(fcInterfacesName)
 	return o
 }
 
-// SetFcpEnabledQueryParameter adds the fcpEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetFcpEnabledQueryParameter(fcpEnabled *bool) {
-	o.FcpEnabledQueryParameter = fcpEnabled
+// SetFcInterfacesName adds the fcInterfacesName to the svm collection get params
+func (o *SvmCollectionGetParams) SetFcInterfacesName(fcInterfacesName *string) {
+	o.FcInterfacesName = fcInterfacesName
 }
 
-// WithFieldsQueryParameter adds the fields to the svm collection get params
-func (o *SvmCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFcpAllowed adds the fcpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithFcpAllowed(fcpAllowed *bool) *SvmCollectionGetParams {
+	o.SetFcpAllowed(fcpAllowed)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm collection get params
-func (o *SvmCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFcpAllowed adds the fcpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetFcpAllowed(fcpAllowed *bool) {
+	o.FcpAllowed = fcpAllowed
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the svm collection get params
-func (o *SvmCollectionGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *SvmCollectionGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithFcpEnabled adds the fcpEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithFcpEnabled(fcpEnabled *bool) *SvmCollectionGetParams {
+	o.SetFcpEnabled(fcpEnabled)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the svm collection get params
-func (o *SvmCollectionGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetFcpEnabled adds the fcpEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetFcpEnabled(fcpEnabled *bool) {
+	o.FcpEnabled = fcpEnabled
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the svm collection get params
-func (o *SvmCollectionGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *SvmCollectionGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithFields adds the fields to the svm collection get params
+func (o *SvmCollectionGetParams) WithFields(fields []string) *SvmCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the svm collection get params
-func (o *SvmCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetFields adds the fields to the svm collection get params
+func (o *SvmCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIscsiAllowedQueryParameter adds the iscsiAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) WithIscsiAllowedQueryParameter(iscsiAllowed *bool) *SvmCollectionGetParams {
-	o.SetIscsiAllowedQueryParameter(iscsiAllowed)
+// WithIpspaceName adds the ipspaceName to the svm collection get params
+func (o *SvmCollectionGetParams) WithIpspaceName(ipspaceName *string) *SvmCollectionGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIscsiAllowedQueryParameter adds the iscsiAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) SetIscsiAllowedQueryParameter(iscsiAllowed *bool) {
-	o.IscsiAllowedQueryParameter = iscsiAllowed
+// SetIpspaceName adds the ipspaceName to the svm collection get params
+func (o *SvmCollectionGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIscsiEnabledQueryParameter adds the iscsiEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithIscsiEnabledQueryParameter(iscsiEnabled *bool) *SvmCollectionGetParams {
-	o.SetIscsiEnabledQueryParameter(iscsiEnabled)
+// WithIpspaceUUID adds the ipspaceUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithIpspaceUUID(ipspaceUUID *string) *SvmCollectionGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIscsiEnabledQueryParameter adds the iscsiEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetIscsiEnabledQueryParameter(iscsiEnabled *bool) {
-	o.IscsiEnabledQueryParameter = iscsiEnabled
+// SetIpspaceUUID adds the ipspaceUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithLanguageQueryParameter adds the language to the svm collection get params
-func (o *SvmCollectionGetParams) WithLanguageQueryParameter(language *string) *SvmCollectionGetParams {
-	o.SetLanguageQueryParameter(language)
+// WithIscsiAllowed adds the iscsiAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithIscsiAllowed(iscsiAllowed *bool) *SvmCollectionGetParams {
+	o.SetIscsiAllowed(iscsiAllowed)
 	return o
 }
 
-// SetLanguageQueryParameter adds the language to the svm collection get params
-func (o *SvmCollectionGetParams) SetLanguageQueryParameter(language *string) {
-	o.LanguageQueryParameter = language
+// SetIscsiAllowed adds the iscsiAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetIscsiAllowed(iscsiAllowed *bool) {
+	o.IscsiAllowed = iscsiAllowed
 }
 
-// WithLdapAdDomainQueryParameter adds the ldapAdDomain to the svm collection get params
-func (o *SvmCollectionGetParams) WithLdapAdDomainQueryParameter(ldapAdDomain *string) *SvmCollectionGetParams {
-	o.SetLdapAdDomainQueryParameter(ldapAdDomain)
+// WithIscsiEnabled adds the iscsiEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithIscsiEnabled(iscsiEnabled *bool) *SvmCollectionGetParams {
+	o.SetIscsiEnabled(iscsiEnabled)
 	return o
 }
 
-// SetLdapAdDomainQueryParameter adds the ldapAdDomain to the svm collection get params
-func (o *SvmCollectionGetParams) SetLdapAdDomainQueryParameter(ldapAdDomain *string) {
-	o.LdapAdDomainQueryParameter = ldapAdDomain
+// SetIscsiEnabled adds the iscsiEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetIscsiEnabled(iscsiEnabled *bool) {
+	o.IscsiEnabled = iscsiEnabled
 }
 
-// WithLdapBaseDnQueryParameter adds the ldapBaseDn to the svm collection get params
-func (o *SvmCollectionGetParams) WithLdapBaseDnQueryParameter(ldapBaseDn *string) *SvmCollectionGetParams {
-	o.SetLdapBaseDnQueryParameter(ldapBaseDn)
+// WithLanguage adds the language to the svm collection get params
+func (o *SvmCollectionGetParams) WithLanguage(language *string) *SvmCollectionGetParams {
+	o.SetLanguage(language)
 	return o
 }
 
-// SetLdapBaseDnQueryParameter adds the ldapBaseDn to the svm collection get params
-func (o *SvmCollectionGetParams) SetLdapBaseDnQueryParameter(ldapBaseDn *string) {
-	o.LdapBaseDnQueryParameter = ldapBaseDn
+// SetLanguage adds the language to the svm collection get params
+func (o *SvmCollectionGetParams) SetLanguage(language *string) {
+	o.Language = language
 }
 
-// WithLdapBindDnQueryParameter adds the ldapBindDn to the svm collection get params
-func (o *SvmCollectionGetParams) WithLdapBindDnQueryParameter(ldapBindDn *string) *SvmCollectionGetParams {
-	o.SetLdapBindDnQueryParameter(ldapBindDn)
+// WithLdapAdDomain adds the ldapAdDomain to the svm collection get params
+func (o *SvmCollectionGetParams) WithLdapAdDomain(ldapAdDomain *string) *SvmCollectionGetParams {
+	o.SetLdapAdDomain(ldapAdDomain)
 	return o
 }
 
-// SetLdapBindDnQueryParameter adds the ldapBindDn to the svm collection get params
-func (o *SvmCollectionGetParams) SetLdapBindDnQueryParameter(ldapBindDn *string) {
-	o.LdapBindDnQueryParameter = ldapBindDn
+// SetLdapAdDomain adds the ldapAdDomain to the svm collection get params
+func (o *SvmCollectionGetParams) SetLdapAdDomain(ldapAdDomain *string) {
+	o.LdapAdDomain = ldapAdDomain
 }
 
-// WithLdapEnabledQueryParameter adds the ldapEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithLdapEnabledQueryParameter(ldapEnabled *bool) *SvmCollectionGetParams {
-	o.SetLdapEnabledQueryParameter(ldapEnabled)
+// WithLdapBaseDn adds the ldapBaseDn to the svm collection get params
+func (o *SvmCollectionGetParams) WithLdapBaseDn(ldapBaseDn *string) *SvmCollectionGetParams {
+	o.SetLdapBaseDn(ldapBaseDn)
 	return o
 }
 
-// SetLdapEnabledQueryParameter adds the ldapEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetLdapEnabledQueryParameter(ldapEnabled *bool) {
-	o.LdapEnabledQueryParameter = ldapEnabled
+// SetLdapBaseDn adds the ldapBaseDn to the svm collection get params
+func (o *SvmCollectionGetParams) SetLdapBaseDn(ldapBaseDn *string) {
+	o.LdapBaseDn = ldapBaseDn
 }
 
-// WithLdapServersQueryParameter adds the ldapServers to the svm collection get params
-func (o *SvmCollectionGetParams) WithLdapServersQueryParameter(ldapServers *string) *SvmCollectionGetParams {
-	o.SetLdapServersQueryParameter(ldapServers)
+// WithLdapBindDn adds the ldapBindDn to the svm collection get params
+func (o *SvmCollectionGetParams) WithLdapBindDn(ldapBindDn *string) *SvmCollectionGetParams {
+	o.SetLdapBindDn(ldapBindDn)
 	return o
 }
 
-// SetLdapServersQueryParameter adds the ldapServers to the svm collection get params
-func (o *SvmCollectionGetParams) SetLdapServersQueryParameter(ldapServers *string) {
-	o.LdapServersQueryParameter = ldapServers
+// SetLdapBindDn adds the ldapBindDn to the svm collection get params
+func (o *SvmCollectionGetParams) SetLdapBindDn(ldapBindDn *string) {
+	o.LdapBindDn = ldapBindDn
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the svm collection get params
-func (o *SvmCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithLdapEnabled adds the ldapEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithLdapEnabled(ldapEnabled *bool) *SvmCollectionGetParams {
+	o.SetLdapEnabled(ldapEnabled)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the svm collection get params
-func (o *SvmCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetLdapEnabled adds the ldapEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetLdapEnabled(ldapEnabled *bool) {
+	o.LdapEnabled = ldapEnabled
 }
 
-// WithMaxVolumesQueryParameter adds the maxVolumes to the svm collection get params
-func (o *SvmCollectionGetParams) WithMaxVolumesQueryParameter(maxVolumes *string) *SvmCollectionGetParams {
-	o.SetMaxVolumesQueryParameter(maxVolumes)
+// WithLdapServers adds the ldapServers to the svm collection get params
+func (o *SvmCollectionGetParams) WithLdapServers(ldapServers *string) *SvmCollectionGetParams {
+	o.SetLdapServers(ldapServers)
 	return o
 }
 
-// SetMaxVolumesQueryParameter adds the maxVolumes to the svm collection get params
-func (o *SvmCollectionGetParams) SetMaxVolumesQueryParameter(maxVolumes *string) {
-	o.MaxVolumesQueryParameter = maxVolumes
+// SetLdapServers adds the ldapServers to the svm collection get params
+func (o *SvmCollectionGetParams) SetLdapServers(ldapServers *string) {
+	o.LdapServers = ldapServers
 }
 
-// WithNameQueryParameter adds the name to the svm collection get params
-func (o *SvmCollectionGetParams) WithNameQueryParameter(name *string) *SvmCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithMaxRecords adds the maxRecords to the svm collection get params
+func (o *SvmCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the svm collection get params
-func (o *SvmCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetMaxRecords adds the maxRecords to the svm collection get params
+func (o *SvmCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNdmpAllowedQueryParameter adds the ndmpAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) WithNdmpAllowedQueryParameter(ndmpAllowed *bool) *SvmCollectionGetParams {
-	o.SetNdmpAllowedQueryParameter(ndmpAllowed)
+// WithMaxVolumes adds the maxVolumes to the svm collection get params
+func (o *SvmCollectionGetParams) WithMaxVolumes(maxVolumes *string) *SvmCollectionGetParams {
+	o.SetMaxVolumes(maxVolumes)
 	return o
 }
 
-// SetNdmpAllowedQueryParameter adds the ndmpAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) SetNdmpAllowedQueryParameter(ndmpAllowed *bool) {
-	o.NdmpAllowedQueryParameter = ndmpAllowed
+// SetMaxVolumes adds the maxVolumes to the svm collection get params
+func (o *SvmCollectionGetParams) SetMaxVolumes(maxVolumes *string) {
+	o.MaxVolumes = maxVolumes
 }
 
-// WithNfsAllowedQueryParameter adds the nfsAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) WithNfsAllowedQueryParameter(nfsAllowed *bool) *SvmCollectionGetParams {
-	o.SetNfsAllowedQueryParameter(nfsAllowed)
+// WithName adds the name to the svm collection get params
+func (o *SvmCollectionGetParams) WithName(name *string) *SvmCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNfsAllowedQueryParameter adds the nfsAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) SetNfsAllowedQueryParameter(nfsAllowed *bool) {
-	o.NfsAllowedQueryParameter = nfsAllowed
+// SetName adds the name to the svm collection get params
+func (o *SvmCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNfsEnabledQueryParameter adds the nfsEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithNfsEnabledQueryParameter(nfsEnabled *bool) *SvmCollectionGetParams {
-	o.SetNfsEnabledQueryParameter(nfsEnabled)
+// WithNdmpAllowed adds the ndmpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithNdmpAllowed(ndmpAllowed *bool) *SvmCollectionGetParams {
+	o.SetNdmpAllowed(ndmpAllowed)
 	return o
 }
 
-// SetNfsEnabledQueryParameter adds the nfsEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetNfsEnabledQueryParameter(nfsEnabled *bool) {
-	o.NfsEnabledQueryParameter = nfsEnabled
+// SetNdmpAllowed adds the ndmpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetNdmpAllowed(ndmpAllowed *bool) {
+	o.NdmpAllowed = ndmpAllowed
 }
 
-// WithNisDomainQueryParameter adds the nisDomain to the svm collection get params
-func (o *SvmCollectionGetParams) WithNisDomainQueryParameter(nisDomain *string) *SvmCollectionGetParams {
-	o.SetNisDomainQueryParameter(nisDomain)
+// WithNfsAllowed adds the nfsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithNfsAllowed(nfsAllowed *bool) *SvmCollectionGetParams {
+	o.SetNfsAllowed(nfsAllowed)
 	return o
 }
 
-// SetNisDomainQueryParameter adds the nisDomain to the svm collection get params
-func (o *SvmCollectionGetParams) SetNisDomainQueryParameter(nisDomain *string) {
-	o.NisDomainQueryParameter = nisDomain
+// SetNfsAllowed adds the nfsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetNfsAllowed(nfsAllowed *bool) {
+	o.NfsAllowed = nfsAllowed
 }
 
-// WithNisEnabledQueryParameter adds the nisEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithNisEnabledQueryParameter(nisEnabled *bool) *SvmCollectionGetParams {
-	o.SetNisEnabledQueryParameter(nisEnabled)
+// WithNfsEnabled adds the nfsEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithNfsEnabled(nfsEnabled *bool) *SvmCollectionGetParams {
+	o.SetNfsEnabled(nfsEnabled)
 	return o
 }
 
-// SetNisEnabledQueryParameter adds the nisEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetNisEnabledQueryParameter(nisEnabled *bool) {
-	o.NisEnabledQueryParameter = nisEnabled
+// SetNfsEnabled adds the nfsEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetNfsEnabled(nfsEnabled *bool) {
+	o.NfsEnabled = nfsEnabled
 }
 
-// WithNisServersQueryParameter adds the nisServers to the svm collection get params
-func (o *SvmCollectionGetParams) WithNisServersQueryParameter(nisServers *string) *SvmCollectionGetParams {
-	o.SetNisServersQueryParameter(nisServers)
+// WithNisDomain adds the nisDomain to the svm collection get params
+func (o *SvmCollectionGetParams) WithNisDomain(nisDomain *string) *SvmCollectionGetParams {
+	o.SetNisDomain(nisDomain)
 	return o
 }
 
-// SetNisServersQueryParameter adds the nisServers to the svm collection get params
-func (o *SvmCollectionGetParams) SetNisServersQueryParameter(nisServers *string) {
-	o.NisServersQueryParameter = nisServers
+// SetNisDomain adds the nisDomain to the svm collection get params
+func (o *SvmCollectionGetParams) SetNisDomain(nisDomain *string) {
+	o.NisDomain = nisDomain
 }
 
-// WithNsswitchGroupQueryParameter adds the nsswitchGroup to the svm collection get params
-func (o *SvmCollectionGetParams) WithNsswitchGroupQueryParameter(nsswitchGroup *string) *SvmCollectionGetParams {
-	o.SetNsswitchGroupQueryParameter(nsswitchGroup)
+// WithNisEnabled adds the nisEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithNisEnabled(nisEnabled *bool) *SvmCollectionGetParams {
+	o.SetNisEnabled(nisEnabled)
 	return o
 }
 
-// SetNsswitchGroupQueryParameter adds the nsswitchGroup to the svm collection get params
-func (o *SvmCollectionGetParams) SetNsswitchGroupQueryParameter(nsswitchGroup *string) {
-	o.NsswitchGroupQueryParameter = nsswitchGroup
+// SetNisEnabled adds the nisEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetNisEnabled(nisEnabled *bool) {
+	o.NisEnabled = nisEnabled
 }
 
-// WithNsswitchHostsQueryParameter adds the nsswitchHosts to the svm collection get params
-func (o *SvmCollectionGetParams) WithNsswitchHostsQueryParameter(nsswitchHosts *string) *SvmCollectionGetParams {
-	o.SetNsswitchHostsQueryParameter(nsswitchHosts)
+// WithNisServers adds the nisServers to the svm collection get params
+func (o *SvmCollectionGetParams) WithNisServers(nisServers *string) *SvmCollectionGetParams {
+	o.SetNisServers(nisServers)
 	return o
 }
 
-// SetNsswitchHostsQueryParameter adds the nsswitchHosts to the svm collection get params
-func (o *SvmCollectionGetParams) SetNsswitchHostsQueryParameter(nsswitchHosts *string) {
-	o.NsswitchHostsQueryParameter = nsswitchHosts
+// SetNisServers adds the nisServers to the svm collection get params
+func (o *SvmCollectionGetParams) SetNisServers(nisServers *string) {
+	o.NisServers = nisServers
 }
 
-// WithNsswitchNamemapQueryParameter adds the nsswitchNamemap to the svm collection get params
-func (o *SvmCollectionGetParams) WithNsswitchNamemapQueryParameter(nsswitchNamemap *string) *SvmCollectionGetParams {
-	o.SetNsswitchNamemapQueryParameter(nsswitchNamemap)
+// WithNsswitchGroup adds the nsswitchGroup to the svm collection get params
+func (o *SvmCollectionGetParams) WithNsswitchGroup(nsswitchGroup *string) *SvmCollectionGetParams {
+	o.SetNsswitchGroup(nsswitchGroup)
 	return o
 }
 
-// SetNsswitchNamemapQueryParameter adds the nsswitchNamemap to the svm collection get params
-func (o *SvmCollectionGetParams) SetNsswitchNamemapQueryParameter(nsswitchNamemap *string) {
-	o.NsswitchNamemapQueryParameter = nsswitchNamemap
+// SetNsswitchGroup adds the nsswitchGroup to the svm collection get params
+func (o *SvmCollectionGetParams) SetNsswitchGroup(nsswitchGroup *string) {
+	o.NsswitchGroup = nsswitchGroup
 }
 
-// WithNsswitchNetgroupQueryParameter adds the nsswitchNetgroup to the svm collection get params
-func (o *SvmCollectionGetParams) WithNsswitchNetgroupQueryParameter(nsswitchNetgroup *string) *SvmCollectionGetParams {
-	o.SetNsswitchNetgroupQueryParameter(nsswitchNetgroup)
+// WithNsswitchHosts adds the nsswitchHosts to the svm collection get params
+func (o *SvmCollectionGetParams) WithNsswitchHosts(nsswitchHosts *string) *SvmCollectionGetParams {
+	o.SetNsswitchHosts(nsswitchHosts)
 	return o
 }
 
-// SetNsswitchNetgroupQueryParameter adds the nsswitchNetgroup to the svm collection get params
-func (o *SvmCollectionGetParams) SetNsswitchNetgroupQueryParameter(nsswitchNetgroup *string) {
-	o.NsswitchNetgroupQueryParameter = nsswitchNetgroup
+// SetNsswitchHosts adds the nsswitchHosts to the svm collection get params
+func (o *SvmCollectionGetParams) SetNsswitchHosts(nsswitchHosts *string) {
+	o.NsswitchHosts = nsswitchHosts
 }
 
-// WithNsswitchPasswdQueryParameter adds the nsswitchPasswd to the svm collection get params
-func (o *SvmCollectionGetParams) WithNsswitchPasswdQueryParameter(nsswitchPasswd *string) *SvmCollectionGetParams {
-	o.SetNsswitchPasswdQueryParameter(nsswitchPasswd)
+// WithNsswitchNamemap adds the nsswitchNamemap to the svm collection get params
+func (o *SvmCollectionGetParams) WithNsswitchNamemap(nsswitchNamemap *string) *SvmCollectionGetParams {
+	o.SetNsswitchNamemap(nsswitchNamemap)
 	return o
 }
 
-// SetNsswitchPasswdQueryParameter adds the nsswitchPasswd to the svm collection get params
-func (o *SvmCollectionGetParams) SetNsswitchPasswdQueryParameter(nsswitchPasswd *string) {
-	o.NsswitchPasswdQueryParameter = nsswitchPasswd
+// SetNsswitchNamemap adds the nsswitchNamemap to the svm collection get params
+func (o *SvmCollectionGetParams) SetNsswitchNamemap(nsswitchNamemap *string) {
+	o.NsswitchNamemap = nsswitchNamemap
 }
 
-// WithNvmeAllowedQueryParameter adds the nvmeAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) WithNvmeAllowedQueryParameter(nvmeAllowed *bool) *SvmCollectionGetParams {
-	o.SetNvmeAllowedQueryParameter(nvmeAllowed)
+// WithNsswitchNetgroup adds the nsswitchNetgroup to the svm collection get params
+func (o *SvmCollectionGetParams) WithNsswitchNetgroup(nsswitchNetgroup *string) *SvmCollectionGetParams {
+	o.SetNsswitchNetgroup(nsswitchNetgroup)
 	return o
 }
 
-// SetNvmeAllowedQueryParameter adds the nvmeAllowed to the svm collection get params
-func (o *SvmCollectionGetParams) SetNvmeAllowedQueryParameter(nvmeAllowed *bool) {
-	o.NvmeAllowedQueryParameter = nvmeAllowed
+// SetNsswitchNetgroup adds the nsswitchNetgroup to the svm collection get params
+func (o *SvmCollectionGetParams) SetNsswitchNetgroup(nsswitchNetgroup *string) {
+	o.NsswitchNetgroup = nsswitchNetgroup
 }
 
-// WithNvmeEnabledQueryParameter adds the nvmeEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithNvmeEnabledQueryParameter(nvmeEnabled *bool) *SvmCollectionGetParams {
-	o.SetNvmeEnabledQueryParameter(nvmeEnabled)
+// WithNsswitchPasswd adds the nsswitchPasswd to the svm collection get params
+func (o *SvmCollectionGetParams) WithNsswitchPasswd(nsswitchPasswd *string) *SvmCollectionGetParams {
+	o.SetNsswitchPasswd(nsswitchPasswd)
 	return o
 }
 
-// SetNvmeEnabledQueryParameter adds the nvmeEnabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetNvmeEnabledQueryParameter(nvmeEnabled *bool) {
-	o.NvmeEnabledQueryParameter = nvmeEnabled
+// SetNsswitchPasswd adds the nsswitchPasswd to the svm collection get params
+func (o *SvmCollectionGetParams) SetNsswitchPasswd(nsswitchPasswd *string) {
+	o.NsswitchPasswd = nsswitchPasswd
 }
 
-// WithOrderByQueryParameter adds the orderBy to the svm collection get params
-func (o *SvmCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithNvmeAllowed adds the nvmeAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithNvmeAllowed(nvmeAllowed *bool) *SvmCollectionGetParams {
+	o.SetNvmeAllowed(nvmeAllowed)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the svm collection get params
-func (o *SvmCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetNvmeAllowed adds the nvmeAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetNvmeAllowed(nvmeAllowed *bool) {
+	o.NvmeAllowed = nvmeAllowed
 }
 
-// WithQosPolicyNameQueryParameter adds the qosPolicyName to the svm collection get params
-func (o *SvmCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *SvmCollectionGetParams {
-	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+// WithNvmeEnabled adds the nvmeEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithNvmeEnabled(nvmeEnabled *bool) *SvmCollectionGetParams {
+	o.SetNvmeEnabled(nvmeEnabled)
 	return o
 }
 
-// SetQosPolicyNameQueryParameter adds the qosPolicyName to the svm collection get params
-func (o *SvmCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
-	o.QosPolicyNameQueryParameter = qosPolicyName
+// SetNvmeEnabled adds the nvmeEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetNvmeEnabled(nvmeEnabled *bool) {
+	o.NvmeEnabled = nvmeEnabled
 }
 
-// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the svm collection get params
-func (o *SvmCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *SvmCollectionGetParams {
-	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+// WithOrderBy adds the orderBy to the svm collection get params
+func (o *SvmCollectionGetParams) WithOrderBy(orderBy []string) *SvmCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the svm collection get params
-func (o *SvmCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
-	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+// SetOrderBy adds the orderBy to the svm collection get params
+func (o *SvmCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the svm collection get params
-func (o *SvmCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithQosPolicyName adds the qosPolicyName to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *SvmCollectionGetParams {
+	o.SetQosPolicyName(qosPolicyName)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the svm collection get params
-func (o *SvmCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetQosPolicyName adds the qosPolicyName to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosPolicyName(qosPolicyName *string) {
+	o.QosPolicyName = qosPolicyName
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm collection get params
-func (o *SvmCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithQosPolicyUUID adds the qosPolicyUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *SvmCollectionGetParams {
+	o.SetQosPolicyUUID(qosPolicyUUID)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm collection get params
-func (o *SvmCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetQosPolicyUUID adds the qosPolicyUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
+	o.QosPolicyUUID = qosPolicyUUID
 }
 
-// WithS3EnabledQueryParameter adds the s3Enabled to the svm collection get params
-func (o *SvmCollectionGetParams) WithS3EnabledQueryParameter(s3Enabled *bool) *SvmCollectionGetParams {
-	o.SetS3EnabledQueryParameter(s3Enabled)
+// WithReturnRecords adds the returnRecords to the svm collection get params
+func (o *SvmCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetS3EnabledQueryParameter adds the s3Enabled to the svm collection get params
-func (o *SvmCollectionGetParams) SetS3EnabledQueryParameter(s3Enabled *bool) {
-	o.S3EnabledQueryParameter = s3Enabled
+// SetReturnRecords adds the returnRecords to the svm collection get params
+func (o *SvmCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithS3NameQueryParameter adds the s3Name to the svm collection get params
-func (o *SvmCollectionGetParams) WithS3NameQueryParameter(s3Name *string) *SvmCollectionGetParams {
-	o.SetS3NameQueryParameter(s3Name)
+// WithReturnTimeout adds the returnTimeout to the svm collection get params
+func (o *SvmCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetS3NameQueryParameter adds the s3Name to the svm collection get params
-func (o *SvmCollectionGetParams) SetS3NameQueryParameter(s3Name *string) {
-	o.S3NameQueryParameter = s3Name
+// SetReturnTimeout adds the returnTimeout to the svm collection get params
+func (o *SvmCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSnapshotPolicyNameQueryParameter adds the snapshotPolicyName to the svm collection get params
-func (o *SvmCollectionGetParams) WithSnapshotPolicyNameQueryParameter(snapshotPolicyName *string) *SvmCollectionGetParams {
-	o.SetSnapshotPolicyNameQueryParameter(snapshotPolicyName)
+// WithS3Allowed adds the s3Allowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithS3Allowed(s3Allowed *bool) *SvmCollectionGetParams {
+	o.SetS3Allowed(s3Allowed)
 	return o
 }
 
-// SetSnapshotPolicyNameQueryParameter adds the snapshotPolicyName to the svm collection get params
-func (o *SvmCollectionGetParams) SetSnapshotPolicyNameQueryParameter(snapshotPolicyName *string) {
-	o.SnapshotPolicyNameQueryParameter = snapshotPolicyName
+// SetS3Allowed adds the s3Allowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetS3Allowed(s3Allowed *bool) {
+	o.S3Allowed = s3Allowed
 }
 
-// WithSnapshotPolicyUUIDQueryParameter adds the snapshotPolicyUUID to the svm collection get params
-func (o *SvmCollectionGetParams) WithSnapshotPolicyUUIDQueryParameter(snapshotPolicyUUID *string) *SvmCollectionGetParams {
-	o.SetSnapshotPolicyUUIDQueryParameter(snapshotPolicyUUID)
+// WithS3Enabled adds the s3Enabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithS3Enabled(s3Enabled *bool) *SvmCollectionGetParams {
+	o.SetS3Enabled(s3Enabled)
 	return o
 }
 
-// SetSnapshotPolicyUUIDQueryParameter adds the snapshotPolicyUuid to the svm collection get params
-func (o *SvmCollectionGetParams) SetSnapshotPolicyUUIDQueryParameter(snapshotPolicyUUID *string) {
-	o.SnapshotPolicyUUIDQueryParameter = snapshotPolicyUUID
+// SetS3Enabled adds the s3Enabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetS3Enabled(s3Enabled *bool) {
+	o.S3Enabled = s3Enabled
 }
 
-// WithStateQueryParameter adds the state to the svm collection get params
-func (o *SvmCollectionGetParams) WithStateQueryParameter(state *string) *SvmCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithS3Name adds the s3Name to the svm collection get params
+func (o *SvmCollectionGetParams) WithS3Name(s3Name *string) *SvmCollectionGetParams {
+	o.SetS3Name(s3Name)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the svm collection get params
-func (o *SvmCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetS3Name adds the s3Name to the svm collection get params
+func (o *SvmCollectionGetParams) SetS3Name(s3Name *string) {
+	o.S3Name = s3Name
 }
 
-// WithSubtypeQueryParameter adds the subtype to the svm collection get params
-func (o *SvmCollectionGetParams) WithSubtypeQueryParameter(subtype *string) *SvmCollectionGetParams {
-	o.SetSubtypeQueryParameter(subtype)
+// WithSnapshotPolicyName adds the snapshotPolicyName to the svm collection get params
+func (o *SvmCollectionGetParams) WithSnapshotPolicyName(snapshotPolicyName *string) *SvmCollectionGetParams {
+	o.SetSnapshotPolicyName(snapshotPolicyName)
 	return o
 }
 
-// SetSubtypeQueryParameter adds the subtype to the svm collection get params
-func (o *SvmCollectionGetParams) SetSubtypeQueryParameter(subtype *string) {
-	o.SubtypeQueryParameter = subtype
+// SetSnapshotPolicyName adds the snapshotPolicyName to the svm collection get params
+func (o *SvmCollectionGetParams) SetSnapshotPolicyName(snapshotPolicyName *string) {
+	o.SnapshotPolicyName = snapshotPolicyName
 }
 
-// WithUUIDQueryParameter adds the uuid to the svm collection get params
-func (o *SvmCollectionGetParams) WithUUIDQueryParameter(uuid *string) *SvmCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID *string) *SvmCollectionGetParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the svm collection get params
-func (o *SvmCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID *string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
+}
+
+// WithState adds the state to the svm collection get params
+func (o *SvmCollectionGetParams) WithState(state *string) *SvmCollectionGetParams {
+	o.SetState(state)
+	return o
+}
+
+// SetState adds the state to the svm collection get params
+func (o *SvmCollectionGetParams) SetState(state *string) {
+	o.State = state
+}
+
+// WithSubtype adds the subtype to the svm collection get params
+func (o *SvmCollectionGetParams) WithSubtype(subtype *string) *SvmCollectionGetParams {
+	o.SetSubtype(subtype)
+	return o
+}
+
+// SetSubtype adds the subtype to the svm collection get params
+func (o *SvmCollectionGetParams) SetSubtype(subtype *string) {
+	o.Subtype = subtype
+}
+
+// WithUUID adds the uuid to the svm collection get params
+func (o *SvmCollectionGetParams) WithUUID(uuid *string) *SvmCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1076,13 +1127,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.AggregatesNameQueryParameter != nil {
+	if o.AggregatesName != nil {
 
 		// query param aggregates.name
 		var qrAggregatesName string
 
-		if o.AggregatesNameQueryParameter != nil {
-			qrAggregatesName = *o.AggregatesNameQueryParameter
+		if o.AggregatesName != nil {
+			qrAggregatesName = *o.AggregatesName
 		}
 		qAggregatesName := qrAggregatesName
 		if qAggregatesName != "" {
@@ -1093,13 +1144,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.AggregatesUUIDQueryParameter != nil {
+	if o.AggregatesUUID != nil {
 
 		// query param aggregates.uuid
 		var qrAggregatesUUID string
 
-		if o.AggregatesUUIDQueryParameter != nil {
-			qrAggregatesUUID = *o.AggregatesUUIDQueryParameter
+		if o.AggregatesUUID != nil {
+			qrAggregatesUUID = *o.AggregatesUUID
 		}
 		qAggregatesUUID := qrAggregatesUUID
 		if qAggregatesUUID != "" {
@@ -1110,13 +1161,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.AntiRansomwareDefaultVolumeStateQueryParameter != nil {
+	if o.AntiRansomwareDefaultVolumeState != nil {
 
 		// query param anti_ransomware_default_volume_state
 		var qrAntiRansomwareDefaultVolumeState string
 
-		if o.AntiRansomwareDefaultVolumeStateQueryParameter != nil {
-			qrAntiRansomwareDefaultVolumeState = *o.AntiRansomwareDefaultVolumeStateQueryParameter
+		if o.AntiRansomwareDefaultVolumeState != nil {
+			qrAntiRansomwareDefaultVolumeState = *o.AntiRansomwareDefaultVolumeState
 		}
 		qAntiRansomwareDefaultVolumeState := qrAntiRansomwareDefaultVolumeState
 		if qAntiRansomwareDefaultVolumeState != "" {
@@ -1127,13 +1178,47 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CertificateUUIDQueryParameter != nil {
+	if o.AutoEnableActivityTracking != nil {
+
+		// query param auto_enable_activity_tracking
+		var qrAutoEnableActivityTracking bool
+
+		if o.AutoEnableActivityTracking != nil {
+			qrAutoEnableActivityTracking = *o.AutoEnableActivityTracking
+		}
+		qAutoEnableActivityTracking := swag.FormatBool(qrAutoEnableActivityTracking)
+		if qAutoEnableActivityTracking != "" {
+
+			if err := r.SetQueryParam("auto_enable_activity_tracking", qAutoEnableActivityTracking); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AutoEnableAnalytics != nil {
+
+		// query param auto_enable_analytics
+		var qrAutoEnableAnalytics bool
+
+		if o.AutoEnableAnalytics != nil {
+			qrAutoEnableAnalytics = *o.AutoEnableAnalytics
+		}
+		qAutoEnableAnalytics := swag.FormatBool(qrAutoEnableAnalytics)
+		if qAutoEnableAnalytics != "" {
+
+			if err := r.SetQueryParam("auto_enable_analytics", qAutoEnableAnalytics); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateUUID != nil {
 
 		// query param certificate.uuid
 		var qrCertificateUUID string
 
-		if o.CertificateUUIDQueryParameter != nil {
-			qrCertificateUUID = *o.CertificateUUIDQueryParameter
+		if o.CertificateUUID != nil {
+			qrCertificateUUID = *o.CertificateUUID
 		}
 		qCertificateUUID := qrCertificateUUID
 		if qCertificateUUID != "" {
@@ -1144,13 +1229,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CifsAdDomainFqdnQueryParameter != nil {
+	if o.CifsAdDomainFqdn != nil {
 
 		// query param cifs.ad_domain.fqdn
 		var qrCifsAdDomainFqdn string
 
-		if o.CifsAdDomainFqdnQueryParameter != nil {
-			qrCifsAdDomainFqdn = *o.CifsAdDomainFqdnQueryParameter
+		if o.CifsAdDomainFqdn != nil {
+			qrCifsAdDomainFqdn = *o.CifsAdDomainFqdn
 		}
 		qCifsAdDomainFqdn := qrCifsAdDomainFqdn
 		if qCifsAdDomainFqdn != "" {
@@ -1161,13 +1246,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CifsAdDomainOrganizationalUnitQueryParameter != nil {
+	if o.CifsAdDomainOrganizationalUnit != nil {
 
 		// query param cifs.ad_domain.organizational_unit
 		var qrCifsAdDomainOrganizationalUnit string
 
-		if o.CifsAdDomainOrganizationalUnitQueryParameter != nil {
-			qrCifsAdDomainOrganizationalUnit = *o.CifsAdDomainOrganizationalUnitQueryParameter
+		if o.CifsAdDomainOrganizationalUnit != nil {
+			qrCifsAdDomainOrganizationalUnit = *o.CifsAdDomainOrganizationalUnit
 		}
 		qCifsAdDomainOrganizationalUnit := qrCifsAdDomainOrganizationalUnit
 		if qCifsAdDomainOrganizationalUnit != "" {
@@ -1178,13 +1263,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CifsAllowedQueryParameter != nil {
+	if o.CifsAllowed != nil {
 
 		// query param cifs.allowed
 		var qrCifsAllowed bool
 
-		if o.CifsAllowedQueryParameter != nil {
-			qrCifsAllowed = *o.CifsAllowedQueryParameter
+		if o.CifsAllowed != nil {
+			qrCifsAllowed = *o.CifsAllowed
 		}
 		qCifsAllowed := swag.FormatBool(qrCifsAllowed)
 		if qCifsAllowed != "" {
@@ -1195,13 +1280,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CifsEnabledQueryParameter != nil {
+	if o.CifsEnabled != nil {
 
 		// query param cifs.enabled
 		var qrCifsEnabled bool
 
-		if o.CifsEnabledQueryParameter != nil {
-			qrCifsEnabled = *o.CifsEnabledQueryParameter
+		if o.CifsEnabled != nil {
+			qrCifsEnabled = *o.CifsEnabled
 		}
 		qCifsEnabled := swag.FormatBool(qrCifsEnabled)
 		if qCifsEnabled != "" {
@@ -1212,13 +1297,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CifsNameQueryParameter != nil {
+	if o.CifsName != nil {
 
 		// query param cifs.name
 		var qrCifsName string
 
-		if o.CifsNameQueryParameter != nil {
-			qrCifsName = *o.CifsNameQueryParameter
+		if o.CifsName != nil {
+			qrCifsName = *o.CifsName
 		}
 		qCifsName := qrCifsName
 		if qCifsName != "" {
@@ -1229,13 +1314,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -1246,13 +1331,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DNSDomainsQueryParameter != nil {
+	if o.DNSDomains != nil {
 
 		// query param dns.domains
 		var qrDNSDomains string
 
-		if o.DNSDomainsQueryParameter != nil {
-			qrDNSDomains = *o.DNSDomainsQueryParameter
+		if o.DNSDomains != nil {
+			qrDNSDomains = *o.DNSDomains
 		}
 		qDNSDomains := qrDNSDomains
 		if qDNSDomains != "" {
@@ -1263,13 +1348,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.DNSServersQueryParameter != nil {
+	if o.DNSServers != nil {
 
 		// query param dns.servers
 		var qrDNSServers string
 
-		if o.DNSServersQueryParameter != nil {
-			qrDNSServers = *o.DNSServersQueryParameter
+		if o.DNSServers != nil {
+			qrDNSServers = *o.DNSServers
 		}
 		qDNSServers := qrDNSServers
 		if qDNSServers != "" {
@@ -1280,13 +1365,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FcInterfacesDataProtocolQueryParameter != nil {
+	if o.FcInterfacesDataProtocol != nil {
 
 		// query param fc_interfaces.data_protocol
 		var qrFcInterfacesDataProtocol string
 
-		if o.FcInterfacesDataProtocolQueryParameter != nil {
-			qrFcInterfacesDataProtocol = *o.FcInterfacesDataProtocolQueryParameter
+		if o.FcInterfacesDataProtocol != nil {
+			qrFcInterfacesDataProtocol = *o.FcInterfacesDataProtocol
 		}
 		qFcInterfacesDataProtocol := qrFcInterfacesDataProtocol
 		if qFcInterfacesDataProtocol != "" {
@@ -1297,13 +1382,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FcInterfacesNameQueryParameter != nil {
+	if o.FcInterfacesName != nil {
 
 		// query param fc_interfaces.name
 		var qrFcInterfacesName string
 
-		if o.FcInterfacesNameQueryParameter != nil {
-			qrFcInterfacesName = *o.FcInterfacesNameQueryParameter
+		if o.FcInterfacesName != nil {
+			qrFcInterfacesName = *o.FcInterfacesName
 		}
 		qFcInterfacesName := qrFcInterfacesName
 		if qFcInterfacesName != "" {
@@ -1314,13 +1399,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FcpAllowedQueryParameter != nil {
+	if o.FcpAllowed != nil {
 
 		// query param fcp.allowed
 		var qrFcpAllowed bool
 
-		if o.FcpAllowedQueryParameter != nil {
-			qrFcpAllowed = *o.FcpAllowedQueryParameter
+		if o.FcpAllowed != nil {
+			qrFcpAllowed = *o.FcpAllowed
 		}
 		qFcpAllowed := swag.FormatBool(qrFcpAllowed)
 		if qFcpAllowed != "" {
@@ -1331,13 +1416,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FcpEnabledQueryParameter != nil {
+	if o.FcpEnabled != nil {
 
 		// query param fcp.enabled
 		var qrFcpEnabled bool
 
-		if o.FcpEnabledQueryParameter != nil {
-			qrFcpEnabled = *o.FcpEnabledQueryParameter
+		if o.FcpEnabled != nil {
+			qrFcpEnabled = *o.FcpEnabled
 		}
 		qFcpEnabled := swag.FormatBool(qrFcpEnabled)
 		if qFcpEnabled != "" {
@@ -1348,7 +1433,7 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1359,13 +1444,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -1376,13 +1461,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -1393,13 +1478,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.IscsiAllowedQueryParameter != nil {
+	if o.IscsiAllowed != nil {
 
 		// query param iscsi.allowed
 		var qrIscsiAllowed bool
 
-		if o.IscsiAllowedQueryParameter != nil {
-			qrIscsiAllowed = *o.IscsiAllowedQueryParameter
+		if o.IscsiAllowed != nil {
+			qrIscsiAllowed = *o.IscsiAllowed
 		}
 		qIscsiAllowed := swag.FormatBool(qrIscsiAllowed)
 		if qIscsiAllowed != "" {
@@ -1410,13 +1495,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.IscsiEnabledQueryParameter != nil {
+	if o.IscsiEnabled != nil {
 
 		// query param iscsi.enabled
 		var qrIscsiEnabled bool
 
-		if o.IscsiEnabledQueryParameter != nil {
-			qrIscsiEnabled = *o.IscsiEnabledQueryParameter
+		if o.IscsiEnabled != nil {
+			qrIscsiEnabled = *o.IscsiEnabled
 		}
 		qIscsiEnabled := swag.FormatBool(qrIscsiEnabled)
 		if qIscsiEnabled != "" {
@@ -1427,13 +1512,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LanguageQueryParameter != nil {
+	if o.Language != nil {
 
 		// query param language
 		var qrLanguage string
 
-		if o.LanguageQueryParameter != nil {
-			qrLanguage = *o.LanguageQueryParameter
+		if o.Language != nil {
+			qrLanguage = *o.Language
 		}
 		qLanguage := qrLanguage
 		if qLanguage != "" {
@@ -1444,13 +1529,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LdapAdDomainQueryParameter != nil {
+	if o.LdapAdDomain != nil {
 
 		// query param ldap.ad_domain
 		var qrLdapAdDomain string
 
-		if o.LdapAdDomainQueryParameter != nil {
-			qrLdapAdDomain = *o.LdapAdDomainQueryParameter
+		if o.LdapAdDomain != nil {
+			qrLdapAdDomain = *o.LdapAdDomain
 		}
 		qLdapAdDomain := qrLdapAdDomain
 		if qLdapAdDomain != "" {
@@ -1461,13 +1546,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LdapBaseDnQueryParameter != nil {
+	if o.LdapBaseDn != nil {
 
 		// query param ldap.base_dn
 		var qrLdapBaseDn string
 
-		if o.LdapBaseDnQueryParameter != nil {
-			qrLdapBaseDn = *o.LdapBaseDnQueryParameter
+		if o.LdapBaseDn != nil {
+			qrLdapBaseDn = *o.LdapBaseDn
 		}
 		qLdapBaseDn := qrLdapBaseDn
 		if qLdapBaseDn != "" {
@@ -1478,13 +1563,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LdapBindDnQueryParameter != nil {
+	if o.LdapBindDn != nil {
 
 		// query param ldap.bind_dn
 		var qrLdapBindDn string
 
-		if o.LdapBindDnQueryParameter != nil {
-			qrLdapBindDn = *o.LdapBindDnQueryParameter
+		if o.LdapBindDn != nil {
+			qrLdapBindDn = *o.LdapBindDn
 		}
 		qLdapBindDn := qrLdapBindDn
 		if qLdapBindDn != "" {
@@ -1495,13 +1580,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LdapEnabledQueryParameter != nil {
+	if o.LdapEnabled != nil {
 
 		// query param ldap.enabled
 		var qrLdapEnabled bool
 
-		if o.LdapEnabledQueryParameter != nil {
-			qrLdapEnabled = *o.LdapEnabledQueryParameter
+		if o.LdapEnabled != nil {
+			qrLdapEnabled = *o.LdapEnabled
 		}
 		qLdapEnabled := swag.FormatBool(qrLdapEnabled)
 		if qLdapEnabled != "" {
@@ -1512,13 +1597,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LdapServersQueryParameter != nil {
+	if o.LdapServers != nil {
 
 		// query param ldap.servers
 		var qrLdapServers string
 
-		if o.LdapServersQueryParameter != nil {
-			qrLdapServers = *o.LdapServersQueryParameter
+		if o.LdapServers != nil {
+			qrLdapServers = *o.LdapServers
 		}
 		qLdapServers := qrLdapServers
 		if qLdapServers != "" {
@@ -1529,13 +1614,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1546,13 +1631,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxVolumesQueryParameter != nil {
+	if o.MaxVolumes != nil {
 
 		// query param max_volumes
 		var qrMaxVolumes string
 
-		if o.MaxVolumesQueryParameter != nil {
-			qrMaxVolumes = *o.MaxVolumesQueryParameter
+		if o.MaxVolumes != nil {
+			qrMaxVolumes = *o.MaxVolumes
 		}
 		qMaxVolumes := qrMaxVolumes
 		if qMaxVolumes != "" {
@@ -1563,13 +1648,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1580,13 +1665,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NdmpAllowedQueryParameter != nil {
+	if o.NdmpAllowed != nil {
 
 		// query param ndmp.allowed
 		var qrNdmpAllowed bool
 
-		if o.NdmpAllowedQueryParameter != nil {
-			qrNdmpAllowed = *o.NdmpAllowedQueryParameter
+		if o.NdmpAllowed != nil {
+			qrNdmpAllowed = *o.NdmpAllowed
 		}
 		qNdmpAllowed := swag.FormatBool(qrNdmpAllowed)
 		if qNdmpAllowed != "" {
@@ -1597,13 +1682,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NfsAllowedQueryParameter != nil {
+	if o.NfsAllowed != nil {
 
 		// query param nfs.allowed
 		var qrNfsAllowed bool
 
-		if o.NfsAllowedQueryParameter != nil {
-			qrNfsAllowed = *o.NfsAllowedQueryParameter
+		if o.NfsAllowed != nil {
+			qrNfsAllowed = *o.NfsAllowed
 		}
 		qNfsAllowed := swag.FormatBool(qrNfsAllowed)
 		if qNfsAllowed != "" {
@@ -1614,13 +1699,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NfsEnabledQueryParameter != nil {
+	if o.NfsEnabled != nil {
 
 		// query param nfs.enabled
 		var qrNfsEnabled bool
 
-		if o.NfsEnabledQueryParameter != nil {
-			qrNfsEnabled = *o.NfsEnabledQueryParameter
+		if o.NfsEnabled != nil {
+			qrNfsEnabled = *o.NfsEnabled
 		}
 		qNfsEnabled := swag.FormatBool(qrNfsEnabled)
 		if qNfsEnabled != "" {
@@ -1631,13 +1716,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NisDomainQueryParameter != nil {
+	if o.NisDomain != nil {
 
 		// query param nis.domain
 		var qrNisDomain string
 
-		if o.NisDomainQueryParameter != nil {
-			qrNisDomain = *o.NisDomainQueryParameter
+		if o.NisDomain != nil {
+			qrNisDomain = *o.NisDomain
 		}
 		qNisDomain := qrNisDomain
 		if qNisDomain != "" {
@@ -1648,13 +1733,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NisEnabledQueryParameter != nil {
+	if o.NisEnabled != nil {
 
 		// query param nis.enabled
 		var qrNisEnabled bool
 
-		if o.NisEnabledQueryParameter != nil {
-			qrNisEnabled = *o.NisEnabledQueryParameter
+		if o.NisEnabled != nil {
+			qrNisEnabled = *o.NisEnabled
 		}
 		qNisEnabled := swag.FormatBool(qrNisEnabled)
 		if qNisEnabled != "" {
@@ -1665,13 +1750,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NisServersQueryParameter != nil {
+	if o.NisServers != nil {
 
 		// query param nis.servers
 		var qrNisServers string
 
-		if o.NisServersQueryParameter != nil {
-			qrNisServers = *o.NisServersQueryParameter
+		if o.NisServers != nil {
+			qrNisServers = *o.NisServers
 		}
 		qNisServers := qrNisServers
 		if qNisServers != "" {
@@ -1682,13 +1767,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NsswitchGroupQueryParameter != nil {
+	if o.NsswitchGroup != nil {
 
 		// query param nsswitch.group
 		var qrNsswitchGroup string
 
-		if o.NsswitchGroupQueryParameter != nil {
-			qrNsswitchGroup = *o.NsswitchGroupQueryParameter
+		if o.NsswitchGroup != nil {
+			qrNsswitchGroup = *o.NsswitchGroup
 		}
 		qNsswitchGroup := qrNsswitchGroup
 		if qNsswitchGroup != "" {
@@ -1699,13 +1784,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NsswitchHostsQueryParameter != nil {
+	if o.NsswitchHosts != nil {
 
 		// query param nsswitch.hosts
 		var qrNsswitchHosts string
 
-		if o.NsswitchHostsQueryParameter != nil {
-			qrNsswitchHosts = *o.NsswitchHostsQueryParameter
+		if o.NsswitchHosts != nil {
+			qrNsswitchHosts = *o.NsswitchHosts
 		}
 		qNsswitchHosts := qrNsswitchHosts
 		if qNsswitchHosts != "" {
@@ -1716,13 +1801,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NsswitchNamemapQueryParameter != nil {
+	if o.NsswitchNamemap != nil {
 
 		// query param nsswitch.namemap
 		var qrNsswitchNamemap string
 
-		if o.NsswitchNamemapQueryParameter != nil {
-			qrNsswitchNamemap = *o.NsswitchNamemapQueryParameter
+		if o.NsswitchNamemap != nil {
+			qrNsswitchNamemap = *o.NsswitchNamemap
 		}
 		qNsswitchNamemap := qrNsswitchNamemap
 		if qNsswitchNamemap != "" {
@@ -1733,13 +1818,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NsswitchNetgroupQueryParameter != nil {
+	if o.NsswitchNetgroup != nil {
 
 		// query param nsswitch.netgroup
 		var qrNsswitchNetgroup string
 
-		if o.NsswitchNetgroupQueryParameter != nil {
-			qrNsswitchNetgroup = *o.NsswitchNetgroupQueryParameter
+		if o.NsswitchNetgroup != nil {
+			qrNsswitchNetgroup = *o.NsswitchNetgroup
 		}
 		qNsswitchNetgroup := qrNsswitchNetgroup
 		if qNsswitchNetgroup != "" {
@@ -1750,13 +1835,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NsswitchPasswdQueryParameter != nil {
+	if o.NsswitchPasswd != nil {
 
 		// query param nsswitch.passwd
 		var qrNsswitchPasswd string
 
-		if o.NsswitchPasswdQueryParameter != nil {
-			qrNsswitchPasswd = *o.NsswitchPasswdQueryParameter
+		if o.NsswitchPasswd != nil {
+			qrNsswitchPasswd = *o.NsswitchPasswd
 		}
 		qNsswitchPasswd := qrNsswitchPasswd
 		if qNsswitchPasswd != "" {
@@ -1767,13 +1852,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NvmeAllowedQueryParameter != nil {
+	if o.NvmeAllowed != nil {
 
 		// query param nvme.allowed
 		var qrNvmeAllowed bool
 
-		if o.NvmeAllowedQueryParameter != nil {
-			qrNvmeAllowed = *o.NvmeAllowedQueryParameter
+		if o.NvmeAllowed != nil {
+			qrNvmeAllowed = *o.NvmeAllowed
 		}
 		qNvmeAllowed := swag.FormatBool(qrNvmeAllowed)
 		if qNvmeAllowed != "" {
@@ -1784,13 +1869,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NvmeEnabledQueryParameter != nil {
+	if o.NvmeEnabled != nil {
 
 		// query param nvme.enabled
 		var qrNvmeEnabled bool
 
-		if o.NvmeEnabledQueryParameter != nil {
-			qrNvmeEnabled = *o.NvmeEnabledQueryParameter
+		if o.NvmeEnabled != nil {
+			qrNvmeEnabled = *o.NvmeEnabled
 		}
 		qNvmeEnabled := swag.FormatBool(qrNvmeEnabled)
 		if qNvmeEnabled != "" {
@@ -1801,7 +1886,7 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1812,13 +1897,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.QosPolicyNameQueryParameter != nil {
+	if o.QosPolicyName != nil {
 
 		// query param qos_policy.name
 		var qrQosPolicyName string
 
-		if o.QosPolicyNameQueryParameter != nil {
-			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		if o.QosPolicyName != nil {
+			qrQosPolicyName = *o.QosPolicyName
 		}
 		qQosPolicyName := qrQosPolicyName
 		if qQosPolicyName != "" {
@@ -1829,13 +1914,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.QosPolicyUUIDQueryParameter != nil {
+	if o.QosPolicyUUID != nil {
 
 		// query param qos_policy.uuid
 		var qrQosPolicyUUID string
 
-		if o.QosPolicyUUIDQueryParameter != nil {
-			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		if o.QosPolicyUUID != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUID
 		}
 		qQosPolicyUUID := qrQosPolicyUUID
 		if qQosPolicyUUID != "" {
@@ -1846,13 +1931,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1863,13 +1948,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1880,13 +1965,30 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.S3EnabledQueryParameter != nil {
+	if o.S3Allowed != nil {
+
+		// query param s3.allowed
+		var qrS3Allowed bool
+
+		if o.S3Allowed != nil {
+			qrS3Allowed = *o.S3Allowed
+		}
+		qS3Allowed := swag.FormatBool(qrS3Allowed)
+		if qS3Allowed != "" {
+
+			if err := r.SetQueryParam("s3.allowed", qS3Allowed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3Enabled != nil {
 
 		// query param s3.enabled
 		var qrS3Enabled bool
 
-		if o.S3EnabledQueryParameter != nil {
-			qrS3Enabled = *o.S3EnabledQueryParameter
+		if o.S3Enabled != nil {
+			qrS3Enabled = *o.S3Enabled
 		}
 		qS3Enabled := swag.FormatBool(qrS3Enabled)
 		if qS3Enabled != "" {
@@ -1897,13 +1999,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.S3NameQueryParameter != nil {
+	if o.S3Name != nil {
 
 		// query param s3.name
 		var qrS3Name string
 
-		if o.S3NameQueryParameter != nil {
-			qrS3Name = *o.S3NameQueryParameter
+		if o.S3Name != nil {
+			qrS3Name = *o.S3Name
 		}
 		qS3Name := qrS3Name
 		if qS3Name != "" {
@@ -1914,13 +2016,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SnapshotPolicyNameQueryParameter != nil {
+	if o.SnapshotPolicyName != nil {
 
 		// query param snapshot_policy.name
 		var qrSnapshotPolicyName string
 
-		if o.SnapshotPolicyNameQueryParameter != nil {
-			qrSnapshotPolicyName = *o.SnapshotPolicyNameQueryParameter
+		if o.SnapshotPolicyName != nil {
+			qrSnapshotPolicyName = *o.SnapshotPolicyName
 		}
 		qSnapshotPolicyName := qrSnapshotPolicyName
 		if qSnapshotPolicyName != "" {
@@ -1931,13 +2033,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SnapshotPolicyUUIDQueryParameter != nil {
+	if o.SnapshotPolicyUUID != nil {
 
 		// query param snapshot_policy.uuid
 		var qrSnapshotPolicyUUID string
 
-		if o.SnapshotPolicyUUIDQueryParameter != nil {
-			qrSnapshotPolicyUUID = *o.SnapshotPolicyUUIDQueryParameter
+		if o.SnapshotPolicyUUID != nil {
+			qrSnapshotPolicyUUID = *o.SnapshotPolicyUUID
 		}
 		qSnapshotPolicyUUID := qrSnapshotPolicyUUID
 		if qSnapshotPolicyUUID != "" {
@@ -1948,13 +2050,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -1965,13 +2067,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SubtypeQueryParameter != nil {
+	if o.Subtype != nil {
 
 		// query param subtype
 		var qrSubtype string
 
-		if o.SubtypeQueryParameter != nil {
-			qrSubtype = *o.SubtypeQueryParameter
+		if o.Subtype != nil {
+			qrSubtype = *o.Subtype
 		}
 		qSubtype := qrSubtype
 		if qSubtype != "" {
@@ -1982,13 +2084,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -2007,7 +2109,7 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamSvmCollectionGet binds the parameter fields
 func (o *SvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2024,7 +2126,7 @@ func (o *SvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamSvmCollectionGet binds the parameter order_by
 func (o *SvmCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

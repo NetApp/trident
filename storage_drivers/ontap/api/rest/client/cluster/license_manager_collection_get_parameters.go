@@ -66,25 +66,25 @@ type LicenseManagerCollectionGetParams struct {
 
 	   Filter by default
 	*/
-	DefaultQueryParameter *bool
+	Default *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type LicenseManagerCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,19 +100,19 @@ type LicenseManagerCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* URIHost.
 
 	   Filter by uri.host
 	*/
-	URIHostQueryParameter *string
+	URIHost *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,14 +132,14 @@ func (o *LicenseManagerCollectionGetParams) WithDefaults() *LicenseManagerCollec
 // All values with no default are reset to their zero value.
 func (o *LicenseManagerCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LicenseManagerCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -181,92 +181,92 @@ func (o *LicenseManagerCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDefaultQueryParameter adds the defaultVar to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithDefaultQueryParameter(defaultVar *bool) *LicenseManagerCollectionGetParams {
-	o.SetDefaultQueryParameter(defaultVar)
+// WithDefault adds the defaultVar to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithDefault(defaultVar *bool) *LicenseManagerCollectionGetParams {
+	o.SetDefault(defaultVar)
 	return o
 }
 
-// SetDefaultQueryParameter adds the default to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetDefaultQueryParameter(defaultVar *bool) {
-	o.DefaultQueryParameter = defaultVar
+// SetDefault adds the default to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetDefault(defaultVar *bool) {
+	o.Default = defaultVar
 }
 
-// WithFieldsQueryParameter adds the fields to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithFieldsQueryParameter(fields []string) *LicenseManagerCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithFields(fields []string) *LicenseManagerCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LicenseManagerCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithMaxRecords(maxRecords *int64) *LicenseManagerCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LicenseManagerCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithOrderBy(orderBy []string) *LicenseManagerCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LicenseManagerCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithReturnRecords(returnRecords *bool) *LicenseManagerCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LicenseManagerCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LicenseManagerCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithURIHostQueryParameter adds the uRIHost to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithURIHostQueryParameter(uRIHost *string) *LicenseManagerCollectionGetParams {
-	o.SetURIHostQueryParameter(uRIHost)
+// WithURIHost adds the uRIHost to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithURIHost(uRIHost *string) *LicenseManagerCollectionGetParams {
+	o.SetURIHost(uRIHost)
 	return o
 }
 
-// SetURIHostQueryParameter adds the uriHost to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetURIHostQueryParameter(uRIHost *string) {
-	o.URIHostQueryParameter = uRIHost
+// SetURIHost adds the uriHost to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetURIHost(uRIHost *string) {
+	o.URIHost = uRIHost
 }
 
-// WithUUIDQueryParameter adds the uuid to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithUUIDQueryParameter(uuid *string) *LicenseManagerCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithUUID(uuid *string) *LicenseManagerCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -277,13 +277,13 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.DefaultQueryParameter != nil {
+	if o.Default != nil {
 
 		// query param default
 		var qrDefault bool
 
-		if o.DefaultQueryParameter != nil {
-			qrDefault = *o.DefaultQueryParameter
+		if o.Default != nil {
+			qrDefault = *o.Default
 		}
 		qDefault := swag.FormatBool(qrDefault)
 		if qDefault != "" {
@@ -294,7 +294,7 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -305,13 +305,13 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -322,7 +322,7 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -333,13 +333,13 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -350,13 +350,13 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -367,13 +367,13 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.URIHostQueryParameter != nil {
+	if o.URIHost != nil {
 
 		// query param uri.host
 		var qrURIHost string
 
-		if o.URIHostQueryParameter != nil {
-			qrURIHost = *o.URIHostQueryParameter
+		if o.URIHost != nil {
+			qrURIHost = *o.URIHost
 		}
 		qURIHost := qrURIHost
 		if qURIHost != "" {
@@ -384,13 +384,13 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -409,7 +409,7 @@ func (o *LicenseManagerCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamLicenseManagerCollectionGet binds the parameter fields
 func (o *LicenseManagerCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -426,7 +426,7 @@ func (o *LicenseManagerCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamLicenseManagerCollectionGet binds the parameter order_by
 func (o *LicenseManagerCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

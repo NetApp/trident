@@ -23,12 +23,12 @@ type Entitlement struct {
 	// Entitlement action to be taken to mitigate the risk
 	// Read Only: true
 	// Enum: [acquire_license adjust_capacity verify_entitlement verify_system_health none]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Entitlement risk of the package
 	// Read Only: true
 	// Enum: [high medium low unlicensed unknown]
-	Risk string `json:"risk,omitempty"`
+	Risk *string `json:"risk,omitempty"`
 }
 
 // Validate validates this entitlement
@@ -128,7 +128,7 @@ func (m *Entitlement) validateAction(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 
@@ -214,7 +214,7 @@ func (m *Entitlement) validateRisk(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateRiskEnum("risk", "body", m.Risk); err != nil {
+	if err := m.validateRiskEnum("risk", "body", *m.Risk); err != nil {
 		return err
 	}
 
@@ -241,7 +241,7 @@ func (m *Entitlement) ContextValidate(ctx context.Context, formats strfmt.Regist
 
 func (m *Entitlement) contextValidateAction(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "action", "body", string(m.Action)); err != nil {
+	if err := validate.ReadOnly(ctx, "action", "body", m.Action); err != nil {
 		return err
 	}
 
@@ -250,7 +250,7 @@ func (m *Entitlement) contextValidateAction(ctx context.Context, formats strfmt.
 
 func (m *Entitlement) contextValidateRisk(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "risk", "body", string(m.Risk)); err != nil {
+	if err := validate.ReadOnly(ctx, "risk", "body", m.Risk); err != nil {
 		return err
 	}
 

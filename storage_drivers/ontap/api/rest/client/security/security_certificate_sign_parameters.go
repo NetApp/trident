@@ -68,7 +68,7 @@ type SecurityCertificateSignParams struct {
 
 	   UUID of the existing certificate authority certificate
 	*/
-	CaUUIDPathParameter string
+	CaUUID string
 
 	/* Info.
 
@@ -80,7 +80,7 @@ type SecurityCertificateSignParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *SecurityCertificateSignParams) WithDefaults() *SecurityCertificateSignP
 // All values with no default are reset to their zero value.
 func (o *SecurityCertificateSignParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SecurityCertificateSignParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -146,15 +146,15 @@ func (o *SecurityCertificateSignParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCaUUIDPathParameter adds the caUUID to the security certificate sign params
-func (o *SecurityCertificateSignParams) WithCaUUIDPathParameter(caUUID string) *SecurityCertificateSignParams {
-	o.SetCaUUIDPathParameter(caUUID)
+// WithCaUUID adds the caUUID to the security certificate sign params
+func (o *SecurityCertificateSignParams) WithCaUUID(caUUID string) *SecurityCertificateSignParams {
+	o.SetCaUUID(caUUID)
 	return o
 }
 
-// SetCaUUIDPathParameter adds the caUuid to the security certificate sign params
-func (o *SecurityCertificateSignParams) SetCaUUIDPathParameter(caUUID string) {
-	o.CaUUIDPathParameter = caUUID
+// SetCaUUID adds the caUuid to the security certificate sign params
+func (o *SecurityCertificateSignParams) SetCaUUID(caUUID string) {
+	o.CaUUID = caUUID
 }
 
 // WithInfo adds the info to the security certificate sign params
@@ -168,15 +168,15 @@ func (o *SecurityCertificateSignParams) SetInfo(info *models.SecurityCertificate
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security certificate sign params
-func (o *SecurityCertificateSignParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityCertificateSignParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the security certificate sign params
+func (o *SecurityCertificateSignParams) WithReturnRecords(returnRecords *bool) *SecurityCertificateSignParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the security certificate sign params
-func (o *SecurityCertificateSignParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the security certificate sign params
+func (o *SecurityCertificateSignParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -188,7 +188,7 @@ func (o *SecurityCertificateSignParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param ca.uuid
-	if err := r.SetPathParam("ca.uuid", o.CaUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("ca.uuid", o.CaUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -197,13 +197,13 @@ func (o *SecurityCertificateSignParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

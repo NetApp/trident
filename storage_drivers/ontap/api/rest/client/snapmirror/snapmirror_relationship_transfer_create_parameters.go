@@ -74,19 +74,19 @@ type SnapmirrorRelationshipTransferCreateParams struct {
 
 	   Relationship UUID
 	*/
-	RelationshIPUUIDPathParameter string
+	RelationshipUUID string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,14 +106,14 @@ func (o *SnapmirrorRelationshipTransferCreateParams) WithDefaults() *SnapmirrorR
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipTransferCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnapmirrorRelationshipTransferCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -166,37 +166,37 @@ func (o *SnapmirrorRelationshipTransferCreateParams) SetInfo(info *models.Snapmi
 	o.Info = info
 }
 
-// WithRelationshIPUUIDPathParameter adds the relationshipUUID to the snapmirror relationship transfer create params
-func (o *SnapmirrorRelationshipTransferCreateParams) WithRelationshIPUUIDPathParameter(relationshipUUID string) *SnapmirrorRelationshipTransferCreateParams {
-	o.SetRelationshIPUUIDPathParameter(relationshipUUID)
+// WithRelationshipUUID adds the relationshipUUID to the snapmirror relationship transfer create params
+func (o *SnapmirrorRelationshipTransferCreateParams) WithRelationshipUUID(relationshipUUID string) *SnapmirrorRelationshipTransferCreateParams {
+	o.SetRelationshipUUID(relationshipUUID)
 	return o
 }
 
-// SetRelationshIPUUIDPathParameter adds the relationshipUuid to the snapmirror relationship transfer create params
-func (o *SnapmirrorRelationshipTransferCreateParams) SetRelationshIPUUIDPathParameter(relationshipUUID string) {
-	o.RelationshIPUUIDPathParameter = relationshipUUID
+// SetRelationshipUUID adds the relationshipUuid to the snapmirror relationship transfer create params
+func (o *SnapmirrorRelationshipTransferCreateParams) SetRelationshipUUID(relationshipUUID string) {
+	o.RelationshipUUID = relationshipUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationship transfer create params
-func (o *SnapmirrorRelationshipTransferCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorRelationshipTransferCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snapmirror relationship transfer create params
+func (o *SnapmirrorRelationshipTransferCreateParams) WithReturnRecords(returnRecords *bool) *SnapmirrorRelationshipTransferCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationship transfer create params
-func (o *SnapmirrorRelationshipTransferCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snapmirror relationship transfer create params
+func (o *SnapmirrorRelationshipTransferCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship transfer create params
-func (o *SnapmirrorRelationshipTransferCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipTransferCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snapmirror relationship transfer create params
+func (o *SnapmirrorRelationshipTransferCreateParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipTransferCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship transfer create params
-func (o *SnapmirrorRelationshipTransferCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snapmirror relationship transfer create params
+func (o *SnapmirrorRelationshipTransferCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -213,17 +213,17 @@ func (o *SnapmirrorRelationshipTransferCreateParams) WriteToRequest(r runtime.Cl
 	}
 
 	// path param relationship.uuid
-	if err := r.SetPathParam("relationship.uuid", o.RelationshIPUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("relationship.uuid", o.RelationshipUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -234,13 +234,13 @@ func (o *SnapmirrorRelationshipTransferCreateParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

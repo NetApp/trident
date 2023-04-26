@@ -20,13 +20,14 @@ import (
 type DiskResponse struct {
 
 	// links
-	Links *DiskResponseLinks `json:"_links,omitempty"`
+	Links *DiskResponseInlineLinks `json:"_links,omitempty"`
+
+	// disk response inline records
+	DiskResponseInlineRecords []*Disk `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*Disk `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this disk response
@@ -37,7 +38,7 @@ func (m *DiskResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateDiskResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *DiskResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *DiskResponse) validateDiskResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.DiskResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.DiskResponseInlineRecords); i++ {
+		if swag.IsZero(m.DiskResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.DiskResponseInlineRecords[i] != nil {
+			if err := m.DiskResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *DiskResponse) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateDiskResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *DiskResponse) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *DiskResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskResponse) contextValidateDiskResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.DiskResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.DiskResponseInlineRecords[i] != nil {
+			if err := m.DiskResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *DiskResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskResponseLinks disk response links
+// DiskResponseInlineLinks disk response inline links
 //
-// swagger:model DiskResponseLinks
-type DiskResponseLinks struct {
+// swagger:model disk_response_inline__links
+type DiskResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type DiskResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk response links
-func (m *DiskResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this disk response inline links
+func (m *DiskResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *DiskResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *DiskResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *DiskResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DiskResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *DiskResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk response links based on the context it is used
-func (m *DiskResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk response inline links based on the context it is used
+func (m *DiskResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *DiskResponseLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *DiskResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *DiskResponseLinks) contextValidateNext(ctx context.Context, formats str
 	return nil
 }
 
-func (m *DiskResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *DiskResponseLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *DiskResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *DiskResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *DiskResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskResponseLinks) UnmarshalBinary(b []byte) error {
-	var res DiskResponseLinks
+func (m *DiskResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

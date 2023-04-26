@@ -66,74 +66,74 @@ type ConsistencyGroupSnapshotGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* ConsistencyGroupName.
 
 	   Filter by consistency_group.name
 	*/
-	ConsistencyGroupNameQueryParameter *string
+	ConsistencyGroupName *string
 
 	/* ConsistencyGroupUUID.
 
 	   The unique identifier of the consistency group to retrieve.
 
 	*/
-	ConsistencyGroupUUIDPathParameter string
+	ConsistencyGroupUUID string
 
 	/* ConsistencyType.
 
 	   Filter by consistency_type
 	*/
-	ConsistencyTypeQueryParameter *string
+	ConsistencyType *string
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IsPartial.
 
 	   Filter by is_partial
 	*/
-	IsPartialQueryParameter *bool
+	IsPartial *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MissingVolumesName.
 
 	   Filter by missing_volumes.name
 	*/
-	MissingVolumesNameQueryParameter *string
+	MissingVolumesName *string
 
 	/* MissingVolumesUUID.
 
 	   Filter by missing_volumes.uuid
 	*/
-	MissingVolumesUUIDQueryParameter *string
+	MissingVolumesUUID *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -141,7 +141,7 @@ type ConsistencyGroupSnapshotGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -149,32 +149,56 @@ type ConsistencyGroupSnapshotGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SnapmirrorLabel.
 
 	   Filter by snapmirror_label
 	*/
-	SnapmirrorLabelQueryParameter *string
+	SnapmirrorLabel *string
+
+	/* SnapshotVolumesSnapshotName.
+
+	   Filter by snapshot_volumes.snapshot.name
+	*/
+	SnapshotVolumesSnapshotName *string
+
+	/* SnapshotVolumesSnapshotUUID.
+
+	   Filter by snapshot_volumes.snapshot.uuid
+	*/
+	SnapshotVolumesSnapshotUUID *string
+
+	/* SnapshotVolumesVolumeName.
+
+	   Filter by snapshot_volumes.volume.name
+	*/
+	SnapshotVolumesVolumeName *string
+
+	/* SnapshotVolumesVolumeUUID.
+
+	   Filter by snapshot_volumes.volume.uuid
+	*/
+	SnapshotVolumesVolumeUUID *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   The unique identifier of the Snapshot copy of the consistency group to retrieve.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -194,14 +218,14 @@ func (o *ConsistencyGroupSnapshotGetParams) WithDefaults() *ConsistencyGroupSnap
 // All values with no default are reset to their zero value.
 func (o *ConsistencyGroupSnapshotGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ConsistencyGroupSnapshotGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -243,202 +267,246 @@ func (o *ConsistencyGroupSnapshotGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithCommentQueryParameter(comment *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithComment(comment *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithConsistencyGroupNameQueryParameter adds the consistencyGroupName to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithConsistencyGroupNameQueryParameter(consistencyGroupName *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetConsistencyGroupNameQueryParameter(consistencyGroupName)
+// WithConsistencyGroupName adds the consistencyGroupName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithConsistencyGroupName(consistencyGroupName *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetConsistencyGroupName(consistencyGroupName)
 	return o
 }
 
-// SetConsistencyGroupNameQueryParameter adds the consistencyGroupName to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetConsistencyGroupNameQueryParameter(consistencyGroupName *string) {
-	o.ConsistencyGroupNameQueryParameter = consistencyGroupName
+// SetConsistencyGroupName adds the consistencyGroupName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetConsistencyGroupName(consistencyGroupName *string) {
+	o.ConsistencyGroupName = consistencyGroupName
 }
 
-// WithConsistencyGroupUUIDPathParameter adds the consistencyGroupUUID to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) *ConsistencyGroupSnapshotGetParams {
-	o.SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID)
+// WithConsistencyGroupUUID adds the consistencyGroupUUID to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithConsistencyGroupUUID(consistencyGroupUUID string) *ConsistencyGroupSnapshotGetParams {
+	o.SetConsistencyGroupUUID(consistencyGroupUUID)
 	return o
 }
 
-// SetConsistencyGroupUUIDPathParameter adds the consistencyGroupUuid to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) {
-	o.ConsistencyGroupUUIDPathParameter = consistencyGroupUUID
+// SetConsistencyGroupUUID adds the consistencyGroupUuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetConsistencyGroupUUID(consistencyGroupUUID string) {
+	o.ConsistencyGroupUUID = consistencyGroupUUID
 }
 
-// WithConsistencyTypeQueryParameter adds the consistencyType to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithConsistencyTypeQueryParameter(consistencyType *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetConsistencyTypeQueryParameter(consistencyType)
+// WithConsistencyType adds the consistencyType to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithConsistencyType(consistencyType *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetConsistencyType(consistencyType)
 	return o
 }
 
-// SetConsistencyTypeQueryParameter adds the consistencyType to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetConsistencyTypeQueryParameter(consistencyType *string) {
-	o.ConsistencyTypeQueryParameter = consistencyType
+// SetConsistencyType adds the consistencyType to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetConsistencyType(consistencyType *string) {
+	o.ConsistencyType = consistencyType
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithCreateTimeQueryParameter(createTime *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithCreateTime(createTime *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithFieldsQueryParameter adds the fields to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithFieldsQueryParameter(fields []string) *ConsistencyGroupSnapshotGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithFields(fields []string) *ConsistencyGroupSnapshotGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIsPartialQueryParameter adds the isPartial to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithIsPartialQueryParameter(isPartial *bool) *ConsistencyGroupSnapshotGetParams {
-	o.SetIsPartialQueryParameter(isPartial)
+// WithIsPartial adds the isPartial to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithIsPartial(isPartial *bool) *ConsistencyGroupSnapshotGetParams {
+	o.SetIsPartial(isPartial)
 	return o
 }
 
-// SetIsPartialQueryParameter adds the isPartial to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetIsPartialQueryParameter(isPartial *bool) {
-	o.IsPartialQueryParameter = isPartial
+// SetIsPartial adds the isPartial to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetIsPartial(isPartial *bool) {
+	o.IsPartial = isPartial
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ConsistencyGroupSnapshotGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithMaxRecords(maxRecords *int64) *ConsistencyGroupSnapshotGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMissingVolumesNameQueryParameter adds the missingVolumesName to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithMissingVolumesNameQueryParameter(missingVolumesName *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetMissingVolumesNameQueryParameter(missingVolumesName)
+// WithMissingVolumesName adds the missingVolumesName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithMissingVolumesName(missingVolumesName *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetMissingVolumesName(missingVolumesName)
 	return o
 }
 
-// SetMissingVolumesNameQueryParameter adds the missingVolumesName to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetMissingVolumesNameQueryParameter(missingVolumesName *string) {
-	o.MissingVolumesNameQueryParameter = missingVolumesName
+// SetMissingVolumesName adds the missingVolumesName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetMissingVolumesName(missingVolumesName *string) {
+	o.MissingVolumesName = missingVolumesName
 }
 
-// WithMissingVolumesUUIDQueryParameter adds the missingVolumesUUID to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithMissingVolumesUUIDQueryParameter(missingVolumesUUID *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetMissingVolumesUUIDQueryParameter(missingVolumesUUID)
+// WithMissingVolumesUUID adds the missingVolumesUUID to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithMissingVolumesUUID(missingVolumesUUID *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetMissingVolumesUUID(missingVolumesUUID)
 	return o
 }
 
-// SetMissingVolumesUUIDQueryParameter adds the missingVolumesUuid to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetMissingVolumesUUIDQueryParameter(missingVolumesUUID *string) {
-	o.MissingVolumesUUIDQueryParameter = missingVolumesUUID
+// SetMissingVolumesUUID adds the missingVolumesUuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetMissingVolumesUUID(missingVolumesUUID *string) {
+	o.MissingVolumesUUID = missingVolumesUUID
 }
 
-// WithNameQueryParameter adds the name to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithNameQueryParameter(name *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithName(name *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithOrderByQueryParameter(orderBy []string) *ConsistencyGroupSnapshotGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithOrderBy(orderBy []string) *ConsistencyGroupSnapshotGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ConsistencyGroupSnapshotGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithReturnRecords(returnRecords *bool) *ConsistencyGroupSnapshotGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ConsistencyGroupSnapshotGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithReturnTimeout(returnTimeout *int64) *ConsistencyGroupSnapshotGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSnapmirrorLabelQueryParameter adds the snapmirrorLabel to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithSnapmirrorLabelQueryParameter(snapmirrorLabel *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetSnapmirrorLabelQueryParameter(snapmirrorLabel)
+// WithSnapmirrorLabel adds the snapmirrorLabel to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSnapmirrorLabel(snapmirrorLabel *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSnapmirrorLabel(snapmirrorLabel)
 	return o
 }
 
-// SetSnapmirrorLabelQueryParameter adds the snapmirrorLabel to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetSnapmirrorLabelQueryParameter(snapmirrorLabel *string) {
-	o.SnapmirrorLabelQueryParameter = snapmirrorLabel
+// SetSnapmirrorLabel adds the snapmirrorLabel to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSnapmirrorLabel(snapmirrorLabel *string) {
+	o.SnapmirrorLabel = snapmirrorLabel
 }
 
-// WithSVMNameQueryParameter adds the svmName to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithSVMNameQueryParameter(svmName *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSnapshotVolumesSnapshotName adds the snapshotVolumesSnapshotName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSnapshotVolumesSnapshotName(snapshotVolumesSnapshotName *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSnapshotVolumesSnapshotName(snapshotVolumesSnapshotName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSnapshotVolumesSnapshotName adds the snapshotVolumesSnapshotName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSnapshotVolumesSnapshotName(snapshotVolumesSnapshotName *string) {
+	o.SnapshotVolumesSnapshotName = snapshotVolumesSnapshotName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ConsistencyGroupSnapshotGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSnapshotVolumesSnapshotUUID adds the snapshotVolumesSnapshotUUID to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSnapshotVolumesSnapshotUUID(snapshotVolumesSnapshotUUID *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSnapshotVolumesSnapshotUUID(snapshotVolumesSnapshotUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSnapshotVolumesSnapshotUUID adds the snapshotVolumesSnapshotUuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSnapshotVolumesSnapshotUUID(snapshotVolumesSnapshotUUID *string) {
+	o.SnapshotVolumesSnapshotUUID = snapshotVolumesSnapshotUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) WithUUIDPathParameter(uuid string) *ConsistencyGroupSnapshotGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithSnapshotVolumesVolumeName adds the snapshotVolumesVolumeName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSnapshotVolumesVolumeName(snapshotVolumesVolumeName *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSnapshotVolumesVolumeName(snapshotVolumesVolumeName)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the consistency group snapshot get params
-func (o *ConsistencyGroupSnapshotGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetSnapshotVolumesVolumeName adds the snapshotVolumesVolumeName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSnapshotVolumesVolumeName(snapshotVolumesVolumeName *string) {
+	o.SnapshotVolumesVolumeName = snapshotVolumesVolumeName
+}
+
+// WithSnapshotVolumesVolumeUUID adds the snapshotVolumesVolumeUUID to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSnapshotVolumesVolumeUUID(snapshotVolumesVolumeUUID *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSnapshotVolumesVolumeUUID(snapshotVolumesVolumeUUID)
+	return o
+}
+
+// SetSnapshotVolumesVolumeUUID adds the snapshotVolumesVolumeUuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSnapshotVolumesVolumeUUID(snapshotVolumesVolumeUUID *string) {
+	o.SnapshotVolumesVolumeUUID = snapshotVolumesVolumeUUID
+}
+
+// WithSvmName adds the svmName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSvmName(svmName *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSvmName(svmName)
+	return o
+}
+
+// SetSvmName adds the svmName to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
+// WithSvmUUID adds the svmUUID to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithSvmUUID(svmUUID *string) *ConsistencyGroupSnapshotGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
+}
+
+// WithUUID adds the uuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) WithUUID(uuid string) *ConsistencyGroupSnapshotGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the consistency group snapshot get params
+func (o *ConsistencyGroupSnapshotGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -449,13 +517,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -466,13 +534,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConsistencyGroupNameQueryParameter != nil {
+	if o.ConsistencyGroupName != nil {
 
 		// query param consistency_group.name
 		var qrConsistencyGroupName string
 
-		if o.ConsistencyGroupNameQueryParameter != nil {
-			qrConsistencyGroupName = *o.ConsistencyGroupNameQueryParameter
+		if o.ConsistencyGroupName != nil {
+			qrConsistencyGroupName = *o.ConsistencyGroupName
 		}
 		qConsistencyGroupName := qrConsistencyGroupName
 		if qConsistencyGroupName != "" {
@@ -484,17 +552,17 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param consistency_group.uuid
-	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUID); err != nil {
 		return err
 	}
 
-	if o.ConsistencyTypeQueryParameter != nil {
+	if o.ConsistencyType != nil {
 
 		// query param consistency_type
 		var qrConsistencyType string
 
-		if o.ConsistencyTypeQueryParameter != nil {
-			qrConsistencyType = *o.ConsistencyTypeQueryParameter
+		if o.ConsistencyType != nil {
+			qrConsistencyType = *o.ConsistencyType
 		}
 		qConsistencyType := qrConsistencyType
 		if qConsistencyType != "" {
@@ -505,13 +573,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -522,7 +590,7 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -533,13 +601,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IsPartialQueryParameter != nil {
+	if o.IsPartial != nil {
 
 		// query param is_partial
 		var qrIsPartial bool
 
-		if o.IsPartialQueryParameter != nil {
-			qrIsPartial = *o.IsPartialQueryParameter
+		if o.IsPartial != nil {
+			qrIsPartial = *o.IsPartial
 		}
 		qIsPartial := swag.FormatBool(qrIsPartial)
 		if qIsPartial != "" {
@@ -550,13 +618,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -567,13 +635,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MissingVolumesNameQueryParameter != nil {
+	if o.MissingVolumesName != nil {
 
 		// query param missing_volumes.name
 		var qrMissingVolumesName string
 
-		if o.MissingVolumesNameQueryParameter != nil {
-			qrMissingVolumesName = *o.MissingVolumesNameQueryParameter
+		if o.MissingVolumesName != nil {
+			qrMissingVolumesName = *o.MissingVolumesName
 		}
 		qMissingVolumesName := qrMissingVolumesName
 		if qMissingVolumesName != "" {
@@ -584,13 +652,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MissingVolumesUUIDQueryParameter != nil {
+	if o.MissingVolumesUUID != nil {
 
 		// query param missing_volumes.uuid
 		var qrMissingVolumesUUID string
 
-		if o.MissingVolumesUUIDQueryParameter != nil {
-			qrMissingVolumesUUID = *o.MissingVolumesUUIDQueryParameter
+		if o.MissingVolumesUUID != nil {
+			qrMissingVolumesUUID = *o.MissingVolumesUUID
 		}
 		qMissingVolumesUUID := qrMissingVolumesUUID
 		if qMissingVolumesUUID != "" {
@@ -601,13 +669,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -618,7 +686,7 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -629,13 +697,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -646,13 +714,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -663,13 +731,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SnapmirrorLabelQueryParameter != nil {
+	if o.SnapmirrorLabel != nil {
 
 		// query param snapmirror_label
 		var qrSnapmirrorLabel string
 
-		if o.SnapmirrorLabelQueryParameter != nil {
-			qrSnapmirrorLabel = *o.SnapmirrorLabelQueryParameter
+		if o.SnapmirrorLabel != nil {
+			qrSnapmirrorLabel = *o.SnapmirrorLabel
 		}
 		qSnapmirrorLabel := qrSnapmirrorLabel
 		if qSnapmirrorLabel != "" {
@@ -680,13 +748,81 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SnapshotVolumesSnapshotName != nil {
+
+		// query param snapshot_volumes.snapshot.name
+		var qrSnapshotVolumesSnapshotName string
+
+		if o.SnapshotVolumesSnapshotName != nil {
+			qrSnapshotVolumesSnapshotName = *o.SnapshotVolumesSnapshotName
+		}
+		qSnapshotVolumesSnapshotName := qrSnapshotVolumesSnapshotName
+		if qSnapshotVolumesSnapshotName != "" {
+
+			if err := r.SetQueryParam("snapshot_volumes.snapshot.name", qSnapshotVolumesSnapshotName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotVolumesSnapshotUUID != nil {
+
+		// query param snapshot_volumes.snapshot.uuid
+		var qrSnapshotVolumesSnapshotUUID string
+
+		if o.SnapshotVolumesSnapshotUUID != nil {
+			qrSnapshotVolumesSnapshotUUID = *o.SnapshotVolumesSnapshotUUID
+		}
+		qSnapshotVolumesSnapshotUUID := qrSnapshotVolumesSnapshotUUID
+		if qSnapshotVolumesSnapshotUUID != "" {
+
+			if err := r.SetQueryParam("snapshot_volumes.snapshot.uuid", qSnapshotVolumesSnapshotUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotVolumesVolumeName != nil {
+
+		// query param snapshot_volumes.volume.name
+		var qrSnapshotVolumesVolumeName string
+
+		if o.SnapshotVolumesVolumeName != nil {
+			qrSnapshotVolumesVolumeName = *o.SnapshotVolumesVolumeName
+		}
+		qSnapshotVolumesVolumeName := qrSnapshotVolumesVolumeName
+		if qSnapshotVolumesVolumeName != "" {
+
+			if err := r.SetQueryParam("snapshot_volumes.volume.name", qSnapshotVolumesVolumeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotVolumesVolumeUUID != nil {
+
+		// query param snapshot_volumes.volume.uuid
+		var qrSnapshotVolumesVolumeUUID string
+
+		if o.SnapshotVolumesVolumeUUID != nil {
+			qrSnapshotVolumesVolumeUUID = *o.SnapshotVolumesVolumeUUID
+		}
+		qSnapshotVolumesVolumeUUID := qrSnapshotVolumesVolumeUUID
+		if qSnapshotVolumesVolumeUUID != "" {
+
+			if err := r.SetQueryParam("snapshot_volumes.volume.uuid", qSnapshotVolumesVolumeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -697,13 +833,13 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -715,7 +851,7 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -727,7 +863,7 @@ func (o *ConsistencyGroupSnapshotGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamConsistencyGroupSnapshotGet binds the parameter fields
 func (o *ConsistencyGroupSnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -744,7 +880,7 @@ func (o *ConsistencyGroupSnapshotGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamConsistencyGroupSnapshotGet binds the parameter order_by
 func (o *ConsistencyGroupSnapshotGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

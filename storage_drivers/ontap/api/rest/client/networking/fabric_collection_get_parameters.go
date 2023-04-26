@@ -66,13 +66,13 @@ type FabricCollectionGetParams struct {
 
 	   Filter by cache.age
 	*/
-	CacheAgeQueryParameter *string
+	CacheAge *string
 
 	/* CacheIsCurrent.
 
 	   Filter by cache.is_current
 	*/
-	CacheIsCurrentQueryParameter *bool
+	CacheIsCurrent *bool
 
 	/* CacheMaximumAge.
 
@@ -81,73 +81,73 @@ type FabricCollectionGetParams struct {
 	   Format: iso8601
 	   Default: "15 minutes"
 	*/
-	CacheMaximumAgeQueryParameter *string
+	CacheMaximumAge *string
 
 	/* CacheUpdateTime.
 
 	   Filter by cache.update_time
 	*/
-	CacheUpdateTimeQueryParameter *string
+	CacheUpdateTime *string
 
 	/* ConnectionsClusterPortName.
 
 	   Filter by connections.cluster_port.name
 	*/
-	ConnectionsClusterPortNameQueryParameter *string
+	ConnectionsClusterPortName *string
 
 	/* ConnectionsClusterPortNodeName.
 
 	   Filter by connections.cluster_port.node.name
 	*/
-	ConnectionsClusterPortNodeNameQueryParameter *string
+	ConnectionsClusterPortNodeName *string
 
 	/* ConnectionsClusterPortUUID.
 
 	   Filter by connections.cluster_port.uuid
 	*/
-	ConnectionsClusterPortUUIDQueryParameter *string
+	ConnectionsClusterPortUUID *string
 
 	/* ConnectionsClusterPortWwpn.
 
 	   Filter by connections.cluster_port.wwpn
 	*/
-	ConnectionsClusterPortWwpnQueryParameter *string
+	ConnectionsClusterPortWwpn *string
 
 	/* ConnectionsSwitchPortWwpn.
 
 	   Filter by connections.switch.port.wwpn
 	*/
-	ConnectionsSwitchPortWwpnQueryParameter *string
+	ConnectionsSwitchPortWwpn *string
 
 	/* ConnectionsSwitchWwn.
 
 	   Filter by connections.switch.wwn
 	*/
-	ConnectionsSwitchWwnQueryParameter *string
+	ConnectionsSwitchWwn *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -155,7 +155,7 @@ type FabricCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -163,13 +163,13 @@ type FabricCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ZonesetName.
 
 	   Filter by zoneset.name
 	*/
-	ZonesetNameQueryParameter *string
+	ZonesetName *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -189,17 +189,17 @@ func (o *FabricCollectionGetParams) WithDefaults() *FabricCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *FabricCollectionGetParams) SetDefaults() {
 	var (
-		cacheMaximumAgeQueryParameterDefault = string("15 minutes")
+		cacheMaximumAgeDefault = string("15 minutes")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FabricCollectionGetParams{
-		CacheMaximumAgeQueryParameter: &cacheMaximumAgeQueryParameterDefault,
-		ReturnRecordsQueryParameter:   &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter:   &returnTimeoutQueryParameterDefault,
+		CacheMaximumAge: &cacheMaximumAgeDefault,
+		ReturnRecords:   &returnRecordsDefault,
+		ReturnTimeout:   &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -241,191 +241,191 @@ func (o *FabricCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCacheAgeQueryParameter adds the cacheAge to the fabric collection get params
-func (o *FabricCollectionGetParams) WithCacheAgeQueryParameter(cacheAge *string) *FabricCollectionGetParams {
-	o.SetCacheAgeQueryParameter(cacheAge)
+// WithCacheAge adds the cacheAge to the fabric collection get params
+func (o *FabricCollectionGetParams) WithCacheAge(cacheAge *string) *FabricCollectionGetParams {
+	o.SetCacheAge(cacheAge)
 	return o
 }
 
-// SetCacheAgeQueryParameter adds the cacheAge to the fabric collection get params
-func (o *FabricCollectionGetParams) SetCacheAgeQueryParameter(cacheAge *string) {
-	o.CacheAgeQueryParameter = cacheAge
+// SetCacheAge adds the cacheAge to the fabric collection get params
+func (o *FabricCollectionGetParams) SetCacheAge(cacheAge *string) {
+	o.CacheAge = cacheAge
 }
 
-// WithCacheIsCurrentQueryParameter adds the cacheIsCurrent to the fabric collection get params
-func (o *FabricCollectionGetParams) WithCacheIsCurrentQueryParameter(cacheIsCurrent *bool) *FabricCollectionGetParams {
-	o.SetCacheIsCurrentQueryParameter(cacheIsCurrent)
+// WithCacheIsCurrent adds the cacheIsCurrent to the fabric collection get params
+func (o *FabricCollectionGetParams) WithCacheIsCurrent(cacheIsCurrent *bool) *FabricCollectionGetParams {
+	o.SetCacheIsCurrent(cacheIsCurrent)
 	return o
 }
 
-// SetCacheIsCurrentQueryParameter adds the cacheIsCurrent to the fabric collection get params
-func (o *FabricCollectionGetParams) SetCacheIsCurrentQueryParameter(cacheIsCurrent *bool) {
-	o.CacheIsCurrentQueryParameter = cacheIsCurrent
+// SetCacheIsCurrent adds the cacheIsCurrent to the fabric collection get params
+func (o *FabricCollectionGetParams) SetCacheIsCurrent(cacheIsCurrent *bool) {
+	o.CacheIsCurrent = cacheIsCurrent
 }
 
-// WithCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fabric collection get params
-func (o *FabricCollectionGetParams) WithCacheMaximumAgeQueryParameter(cacheMaximumAge *string) *FabricCollectionGetParams {
-	o.SetCacheMaximumAgeQueryParameter(cacheMaximumAge)
+// WithCacheMaximumAge adds the cacheMaximumAge to the fabric collection get params
+func (o *FabricCollectionGetParams) WithCacheMaximumAge(cacheMaximumAge *string) *FabricCollectionGetParams {
+	o.SetCacheMaximumAge(cacheMaximumAge)
 	return o
 }
 
-// SetCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fabric collection get params
-func (o *FabricCollectionGetParams) SetCacheMaximumAgeQueryParameter(cacheMaximumAge *string) {
-	o.CacheMaximumAgeQueryParameter = cacheMaximumAge
+// SetCacheMaximumAge adds the cacheMaximumAge to the fabric collection get params
+func (o *FabricCollectionGetParams) SetCacheMaximumAge(cacheMaximumAge *string) {
+	o.CacheMaximumAge = cacheMaximumAge
 }
 
-// WithCacheUpdateTimeQueryParameter adds the cacheUpdateTime to the fabric collection get params
-func (o *FabricCollectionGetParams) WithCacheUpdateTimeQueryParameter(cacheUpdateTime *string) *FabricCollectionGetParams {
-	o.SetCacheUpdateTimeQueryParameter(cacheUpdateTime)
+// WithCacheUpdateTime adds the cacheUpdateTime to the fabric collection get params
+func (o *FabricCollectionGetParams) WithCacheUpdateTime(cacheUpdateTime *string) *FabricCollectionGetParams {
+	o.SetCacheUpdateTime(cacheUpdateTime)
 	return o
 }
 
-// SetCacheUpdateTimeQueryParameter adds the cacheUpdateTime to the fabric collection get params
-func (o *FabricCollectionGetParams) SetCacheUpdateTimeQueryParameter(cacheUpdateTime *string) {
-	o.CacheUpdateTimeQueryParameter = cacheUpdateTime
+// SetCacheUpdateTime adds the cacheUpdateTime to the fabric collection get params
+func (o *FabricCollectionGetParams) SetCacheUpdateTime(cacheUpdateTime *string) {
+	o.CacheUpdateTime = cacheUpdateTime
 }
 
-// WithConnectionsClusterPortNameQueryParameter adds the connectionsClusterPortName to the fabric collection get params
-func (o *FabricCollectionGetParams) WithConnectionsClusterPortNameQueryParameter(connectionsClusterPortName *string) *FabricCollectionGetParams {
-	o.SetConnectionsClusterPortNameQueryParameter(connectionsClusterPortName)
+// WithConnectionsClusterPortName adds the connectionsClusterPortName to the fabric collection get params
+func (o *FabricCollectionGetParams) WithConnectionsClusterPortName(connectionsClusterPortName *string) *FabricCollectionGetParams {
+	o.SetConnectionsClusterPortName(connectionsClusterPortName)
 	return o
 }
 
-// SetConnectionsClusterPortNameQueryParameter adds the connectionsClusterPortName to the fabric collection get params
-func (o *FabricCollectionGetParams) SetConnectionsClusterPortNameQueryParameter(connectionsClusterPortName *string) {
-	o.ConnectionsClusterPortNameQueryParameter = connectionsClusterPortName
+// SetConnectionsClusterPortName adds the connectionsClusterPortName to the fabric collection get params
+func (o *FabricCollectionGetParams) SetConnectionsClusterPortName(connectionsClusterPortName *string) {
+	o.ConnectionsClusterPortName = connectionsClusterPortName
 }
 
-// WithConnectionsClusterPortNodeNameQueryParameter adds the connectionsClusterPortNodeName to the fabric collection get params
-func (o *FabricCollectionGetParams) WithConnectionsClusterPortNodeNameQueryParameter(connectionsClusterPortNodeName *string) *FabricCollectionGetParams {
-	o.SetConnectionsClusterPortNodeNameQueryParameter(connectionsClusterPortNodeName)
+// WithConnectionsClusterPortNodeName adds the connectionsClusterPortNodeName to the fabric collection get params
+func (o *FabricCollectionGetParams) WithConnectionsClusterPortNodeName(connectionsClusterPortNodeName *string) *FabricCollectionGetParams {
+	o.SetConnectionsClusterPortNodeName(connectionsClusterPortNodeName)
 	return o
 }
 
-// SetConnectionsClusterPortNodeNameQueryParameter adds the connectionsClusterPortNodeName to the fabric collection get params
-func (o *FabricCollectionGetParams) SetConnectionsClusterPortNodeNameQueryParameter(connectionsClusterPortNodeName *string) {
-	o.ConnectionsClusterPortNodeNameQueryParameter = connectionsClusterPortNodeName
+// SetConnectionsClusterPortNodeName adds the connectionsClusterPortNodeName to the fabric collection get params
+func (o *FabricCollectionGetParams) SetConnectionsClusterPortNodeName(connectionsClusterPortNodeName *string) {
+	o.ConnectionsClusterPortNodeName = connectionsClusterPortNodeName
 }
 
-// WithConnectionsClusterPortUUIDQueryParameter adds the connectionsClusterPortUUID to the fabric collection get params
-func (o *FabricCollectionGetParams) WithConnectionsClusterPortUUIDQueryParameter(connectionsClusterPortUUID *string) *FabricCollectionGetParams {
-	o.SetConnectionsClusterPortUUIDQueryParameter(connectionsClusterPortUUID)
+// WithConnectionsClusterPortUUID adds the connectionsClusterPortUUID to the fabric collection get params
+func (o *FabricCollectionGetParams) WithConnectionsClusterPortUUID(connectionsClusterPortUUID *string) *FabricCollectionGetParams {
+	o.SetConnectionsClusterPortUUID(connectionsClusterPortUUID)
 	return o
 }
 
-// SetConnectionsClusterPortUUIDQueryParameter adds the connectionsClusterPortUuid to the fabric collection get params
-func (o *FabricCollectionGetParams) SetConnectionsClusterPortUUIDQueryParameter(connectionsClusterPortUUID *string) {
-	o.ConnectionsClusterPortUUIDQueryParameter = connectionsClusterPortUUID
+// SetConnectionsClusterPortUUID adds the connectionsClusterPortUuid to the fabric collection get params
+func (o *FabricCollectionGetParams) SetConnectionsClusterPortUUID(connectionsClusterPortUUID *string) {
+	o.ConnectionsClusterPortUUID = connectionsClusterPortUUID
 }
 
-// WithConnectionsClusterPortWwpnQueryParameter adds the connectionsClusterPortWwpn to the fabric collection get params
-func (o *FabricCollectionGetParams) WithConnectionsClusterPortWwpnQueryParameter(connectionsClusterPortWwpn *string) *FabricCollectionGetParams {
-	o.SetConnectionsClusterPortWwpnQueryParameter(connectionsClusterPortWwpn)
+// WithConnectionsClusterPortWwpn adds the connectionsClusterPortWwpn to the fabric collection get params
+func (o *FabricCollectionGetParams) WithConnectionsClusterPortWwpn(connectionsClusterPortWwpn *string) *FabricCollectionGetParams {
+	o.SetConnectionsClusterPortWwpn(connectionsClusterPortWwpn)
 	return o
 }
 
-// SetConnectionsClusterPortWwpnQueryParameter adds the connectionsClusterPortWwpn to the fabric collection get params
-func (o *FabricCollectionGetParams) SetConnectionsClusterPortWwpnQueryParameter(connectionsClusterPortWwpn *string) {
-	o.ConnectionsClusterPortWwpnQueryParameter = connectionsClusterPortWwpn
+// SetConnectionsClusterPortWwpn adds the connectionsClusterPortWwpn to the fabric collection get params
+func (o *FabricCollectionGetParams) SetConnectionsClusterPortWwpn(connectionsClusterPortWwpn *string) {
+	o.ConnectionsClusterPortWwpn = connectionsClusterPortWwpn
 }
 
-// WithConnectionsSwitchPortWwpnQueryParameter adds the connectionsSwitchPortWwpn to the fabric collection get params
-func (o *FabricCollectionGetParams) WithConnectionsSwitchPortWwpnQueryParameter(connectionsSwitchPortWwpn *string) *FabricCollectionGetParams {
-	o.SetConnectionsSwitchPortWwpnQueryParameter(connectionsSwitchPortWwpn)
+// WithConnectionsSwitchPortWwpn adds the connectionsSwitchPortWwpn to the fabric collection get params
+func (o *FabricCollectionGetParams) WithConnectionsSwitchPortWwpn(connectionsSwitchPortWwpn *string) *FabricCollectionGetParams {
+	o.SetConnectionsSwitchPortWwpn(connectionsSwitchPortWwpn)
 	return o
 }
 
-// SetConnectionsSwitchPortWwpnQueryParameter adds the connectionsSwitchPortWwpn to the fabric collection get params
-func (o *FabricCollectionGetParams) SetConnectionsSwitchPortWwpnQueryParameter(connectionsSwitchPortWwpn *string) {
-	o.ConnectionsSwitchPortWwpnQueryParameter = connectionsSwitchPortWwpn
+// SetConnectionsSwitchPortWwpn adds the connectionsSwitchPortWwpn to the fabric collection get params
+func (o *FabricCollectionGetParams) SetConnectionsSwitchPortWwpn(connectionsSwitchPortWwpn *string) {
+	o.ConnectionsSwitchPortWwpn = connectionsSwitchPortWwpn
 }
 
-// WithConnectionsSwitchWwnQueryParameter adds the connectionsSwitchWwn to the fabric collection get params
-func (o *FabricCollectionGetParams) WithConnectionsSwitchWwnQueryParameter(connectionsSwitchWwn *string) *FabricCollectionGetParams {
-	o.SetConnectionsSwitchWwnQueryParameter(connectionsSwitchWwn)
+// WithConnectionsSwitchWwn adds the connectionsSwitchWwn to the fabric collection get params
+func (o *FabricCollectionGetParams) WithConnectionsSwitchWwn(connectionsSwitchWwn *string) *FabricCollectionGetParams {
+	o.SetConnectionsSwitchWwn(connectionsSwitchWwn)
 	return o
 }
 
-// SetConnectionsSwitchWwnQueryParameter adds the connectionsSwitchWwn to the fabric collection get params
-func (o *FabricCollectionGetParams) SetConnectionsSwitchWwnQueryParameter(connectionsSwitchWwn *string) {
-	o.ConnectionsSwitchWwnQueryParameter = connectionsSwitchWwn
+// SetConnectionsSwitchWwn adds the connectionsSwitchWwn to the fabric collection get params
+func (o *FabricCollectionGetParams) SetConnectionsSwitchWwn(connectionsSwitchWwn *string) {
+	o.ConnectionsSwitchWwn = connectionsSwitchWwn
 }
 
-// WithFieldsQueryParameter adds the fields to the fabric collection get params
-func (o *FabricCollectionGetParams) WithFieldsQueryParameter(fields []string) *FabricCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fabric collection get params
+func (o *FabricCollectionGetParams) WithFields(fields []string) *FabricCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fabric collection get params
-func (o *FabricCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fabric collection get params
+func (o *FabricCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fabric collection get params
-func (o *FabricCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FabricCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fabric collection get params
+func (o *FabricCollectionGetParams) WithMaxRecords(maxRecords *int64) *FabricCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fabric collection get params
-func (o *FabricCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fabric collection get params
+func (o *FabricCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the fabric collection get params
-func (o *FabricCollectionGetParams) WithNameQueryParameter(name *string) *FabricCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the fabric collection get params
+func (o *FabricCollectionGetParams) WithName(name *string) *FabricCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the fabric collection get params
-func (o *FabricCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the fabric collection get params
+func (o *FabricCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fabric collection get params
-func (o *FabricCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FabricCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fabric collection get params
+func (o *FabricCollectionGetParams) WithOrderBy(orderBy []string) *FabricCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fabric collection get params
-func (o *FabricCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fabric collection get params
+func (o *FabricCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fabric collection get params
-func (o *FabricCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FabricCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fabric collection get params
+func (o *FabricCollectionGetParams) WithReturnRecords(returnRecords *bool) *FabricCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fabric collection get params
-func (o *FabricCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fabric collection get params
+func (o *FabricCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fabric collection get params
-func (o *FabricCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FabricCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fabric collection get params
+func (o *FabricCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FabricCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fabric collection get params
-func (o *FabricCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fabric collection get params
+func (o *FabricCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithZonesetNameQueryParameter adds the zonesetName to the fabric collection get params
-func (o *FabricCollectionGetParams) WithZonesetNameQueryParameter(zonesetName *string) *FabricCollectionGetParams {
-	o.SetZonesetNameQueryParameter(zonesetName)
+// WithZonesetName adds the zonesetName to the fabric collection get params
+func (o *FabricCollectionGetParams) WithZonesetName(zonesetName *string) *FabricCollectionGetParams {
+	o.SetZonesetName(zonesetName)
 	return o
 }
 
-// SetZonesetNameQueryParameter adds the zonesetName to the fabric collection get params
-func (o *FabricCollectionGetParams) SetZonesetNameQueryParameter(zonesetName *string) {
-	o.ZonesetNameQueryParameter = zonesetName
+// SetZonesetName adds the zonesetName to the fabric collection get params
+func (o *FabricCollectionGetParams) SetZonesetName(zonesetName *string) {
+	o.ZonesetName = zonesetName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -436,13 +436,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.CacheAgeQueryParameter != nil {
+	if o.CacheAge != nil {
 
 		// query param cache.age
 		var qrCacheAge string
 
-		if o.CacheAgeQueryParameter != nil {
-			qrCacheAge = *o.CacheAgeQueryParameter
+		if o.CacheAge != nil {
+			qrCacheAge = *o.CacheAge
 		}
 		qCacheAge := qrCacheAge
 		if qCacheAge != "" {
@@ -453,13 +453,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.CacheIsCurrentQueryParameter != nil {
+	if o.CacheIsCurrent != nil {
 
 		// query param cache.is_current
 		var qrCacheIsCurrent bool
 
-		if o.CacheIsCurrentQueryParameter != nil {
-			qrCacheIsCurrent = *o.CacheIsCurrentQueryParameter
+		if o.CacheIsCurrent != nil {
+			qrCacheIsCurrent = *o.CacheIsCurrent
 		}
 		qCacheIsCurrent := swag.FormatBool(qrCacheIsCurrent)
 		if qCacheIsCurrent != "" {
@@ -470,13 +470,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.CacheMaximumAgeQueryParameter != nil {
+	if o.CacheMaximumAge != nil {
 
 		// query param cache.maximum_age
 		var qrCacheMaximumAge string
 
-		if o.CacheMaximumAgeQueryParameter != nil {
-			qrCacheMaximumAge = *o.CacheMaximumAgeQueryParameter
+		if o.CacheMaximumAge != nil {
+			qrCacheMaximumAge = *o.CacheMaximumAge
 		}
 		qCacheMaximumAge := qrCacheMaximumAge
 		if qCacheMaximumAge != "" {
@@ -487,13 +487,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.CacheUpdateTimeQueryParameter != nil {
+	if o.CacheUpdateTime != nil {
 
 		// query param cache.update_time
 		var qrCacheUpdateTime string
 
-		if o.CacheUpdateTimeQueryParameter != nil {
-			qrCacheUpdateTime = *o.CacheUpdateTimeQueryParameter
+		if o.CacheUpdateTime != nil {
+			qrCacheUpdateTime = *o.CacheUpdateTime
 		}
 		qCacheUpdateTime := qrCacheUpdateTime
 		if qCacheUpdateTime != "" {
@@ -504,13 +504,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectionsClusterPortNameQueryParameter != nil {
+	if o.ConnectionsClusterPortName != nil {
 
 		// query param connections.cluster_port.name
 		var qrConnectionsClusterPortName string
 
-		if o.ConnectionsClusterPortNameQueryParameter != nil {
-			qrConnectionsClusterPortName = *o.ConnectionsClusterPortNameQueryParameter
+		if o.ConnectionsClusterPortName != nil {
+			qrConnectionsClusterPortName = *o.ConnectionsClusterPortName
 		}
 		qConnectionsClusterPortName := qrConnectionsClusterPortName
 		if qConnectionsClusterPortName != "" {
@@ -521,13 +521,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectionsClusterPortNodeNameQueryParameter != nil {
+	if o.ConnectionsClusterPortNodeName != nil {
 
 		// query param connections.cluster_port.node.name
 		var qrConnectionsClusterPortNodeName string
 
-		if o.ConnectionsClusterPortNodeNameQueryParameter != nil {
-			qrConnectionsClusterPortNodeName = *o.ConnectionsClusterPortNodeNameQueryParameter
+		if o.ConnectionsClusterPortNodeName != nil {
+			qrConnectionsClusterPortNodeName = *o.ConnectionsClusterPortNodeName
 		}
 		qConnectionsClusterPortNodeName := qrConnectionsClusterPortNodeName
 		if qConnectionsClusterPortNodeName != "" {
@@ -538,13 +538,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectionsClusterPortUUIDQueryParameter != nil {
+	if o.ConnectionsClusterPortUUID != nil {
 
 		// query param connections.cluster_port.uuid
 		var qrConnectionsClusterPortUUID string
 
-		if o.ConnectionsClusterPortUUIDQueryParameter != nil {
-			qrConnectionsClusterPortUUID = *o.ConnectionsClusterPortUUIDQueryParameter
+		if o.ConnectionsClusterPortUUID != nil {
+			qrConnectionsClusterPortUUID = *o.ConnectionsClusterPortUUID
 		}
 		qConnectionsClusterPortUUID := qrConnectionsClusterPortUUID
 		if qConnectionsClusterPortUUID != "" {
@@ -555,13 +555,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectionsClusterPortWwpnQueryParameter != nil {
+	if o.ConnectionsClusterPortWwpn != nil {
 
 		// query param connections.cluster_port.wwpn
 		var qrConnectionsClusterPortWwpn string
 
-		if o.ConnectionsClusterPortWwpnQueryParameter != nil {
-			qrConnectionsClusterPortWwpn = *o.ConnectionsClusterPortWwpnQueryParameter
+		if o.ConnectionsClusterPortWwpn != nil {
+			qrConnectionsClusterPortWwpn = *o.ConnectionsClusterPortWwpn
 		}
 		qConnectionsClusterPortWwpn := qrConnectionsClusterPortWwpn
 		if qConnectionsClusterPortWwpn != "" {
@@ -572,13 +572,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectionsSwitchPortWwpnQueryParameter != nil {
+	if o.ConnectionsSwitchPortWwpn != nil {
 
 		// query param connections.switch.port.wwpn
 		var qrConnectionsSwitchPortWwpn string
 
-		if o.ConnectionsSwitchPortWwpnQueryParameter != nil {
-			qrConnectionsSwitchPortWwpn = *o.ConnectionsSwitchPortWwpnQueryParameter
+		if o.ConnectionsSwitchPortWwpn != nil {
+			qrConnectionsSwitchPortWwpn = *o.ConnectionsSwitchPortWwpn
 		}
 		qConnectionsSwitchPortWwpn := qrConnectionsSwitchPortWwpn
 		if qConnectionsSwitchPortWwpn != "" {
@@ -589,13 +589,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ConnectionsSwitchWwnQueryParameter != nil {
+	if o.ConnectionsSwitchWwn != nil {
 
 		// query param connections.switch.wwn
 		var qrConnectionsSwitchWwn string
 
-		if o.ConnectionsSwitchWwnQueryParameter != nil {
-			qrConnectionsSwitchWwn = *o.ConnectionsSwitchWwnQueryParameter
+		if o.ConnectionsSwitchWwn != nil {
+			qrConnectionsSwitchWwn = *o.ConnectionsSwitchWwn
 		}
 		qConnectionsSwitchWwn := qrConnectionsSwitchWwn
 		if qConnectionsSwitchWwn != "" {
@@ -606,7 +606,7 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -617,13 +617,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -634,13 +634,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -651,7 +651,7 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -662,13 +662,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -679,13 +679,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -696,13 +696,13 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ZonesetNameQueryParameter != nil {
+	if o.ZonesetName != nil {
 
 		// query param zoneset.name
 		var qrZonesetName string
 
-		if o.ZonesetNameQueryParameter != nil {
-			qrZonesetName = *o.ZonesetNameQueryParameter
+		if o.ZonesetName != nil {
+			qrZonesetName = *o.ZonesetName
 		}
 		qZonesetName := qrZonesetName
 		if qZonesetName != "" {
@@ -721,7 +721,7 @@ func (o *FabricCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamFabricCollectionGet binds the parameter fields
 func (o *FabricCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -738,7 +738,7 @@ func (o *FabricCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamFabricCollectionGet binds the parameter order_by
 func (o *FabricCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

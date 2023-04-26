@@ -19,11 +19,11 @@ import (
 type DiskReference struct {
 
 	// links
-	Links *DiskReferenceLinks `json:"_links,omitempty"`
+	Links *DiskReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: 1.0.1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this disk reference
@@ -103,17 +103,17 @@ func (m *DiskReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DiskReferenceLinks disk reference links
+// DiskReferenceInlineLinks disk reference inline links
 //
-// swagger:model DiskReferenceLinks
-type DiskReferenceLinks struct {
+// swagger:model disk_reference_inline__links
+type DiskReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this disk reference links
-func (m *DiskReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this disk reference inline links
+func (m *DiskReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *DiskReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DiskReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DiskReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *DiskReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk reference links based on the context it is used
-func (m *DiskReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this disk reference inline links based on the context it is used
+func (m *DiskReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *DiskReferenceLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *DiskReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DiskReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *DiskReferenceLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *DiskReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *DiskReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *DiskReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DiskReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res DiskReferenceLinks
+func (m *DiskReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DiskReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

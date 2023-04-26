@@ -66,55 +66,55 @@ type CifsConnectionCollectionGetParams struct {
 
 	   Filter by client_ip
 	*/
-	ClientIPQueryParameter *string
+	ClientIP *string
 
 	/* ClientPort.
 
 	   Filter by client_port
 	*/
-	ClientPortQueryParameter *int64
+	ClientPort *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Identifier.
 
 	   Filter by identifier
 	*/
-	IdentifierQueryParameter *int64
+	Identifier *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NetworkContextID.
 
 	   Filter by network_context_id
 	*/
-	NetworkContextIDQueryParameter *int64
+	NetworkContextID *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type CifsConnectionCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,31 +130,31 @@ type CifsConnectionCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ServerIP.
 
 	   Filter by server_ip
 	*/
-	ServerIPQueryParameter *string
+	ServerIP *string
 
 	/* SessionsIdentifier.
 
 	   Filter by sessions.identifier
 	*/
-	SessionsIDentifierQueryParameter *int64
+	SessionsIdentifier *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *CifsConnectionCollectionGetParams) WithDefaults() *CifsConnectionCollec
 // All values with no default are reset to their zero value.
 func (o *CifsConnectionCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsConnectionCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *CifsConnectionCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClientIPQueryParameter adds the clientIP to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithClientIPQueryParameter(clientIP *string) *CifsConnectionCollectionGetParams {
-	o.SetClientIPQueryParameter(clientIP)
+// WithClientIP adds the clientIP to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithClientIP(clientIP *string) *CifsConnectionCollectionGetParams {
+	o.SetClientIP(clientIP)
 	return o
 }
 
-// SetClientIPQueryParameter adds the clientIp to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetClientIPQueryParameter(clientIP *string) {
-	o.ClientIPQueryParameter = clientIP
+// SetClientIP adds the clientIp to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetClientIP(clientIP *string) {
+	o.ClientIP = clientIP
 }
 
-// WithClientPortQueryParameter adds the clientPort to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithClientPortQueryParameter(clientPort *int64) *CifsConnectionCollectionGetParams {
-	o.SetClientPortQueryParameter(clientPort)
+// WithClientPort adds the clientPort to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithClientPort(clientPort *int64) *CifsConnectionCollectionGetParams {
+	o.SetClientPort(clientPort)
 	return o
 }
 
-// SetClientPortQueryParameter adds the clientPort to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetClientPortQueryParameter(clientPort *int64) {
-	o.ClientPortQueryParameter = clientPort
+// SetClientPort adds the clientPort to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetClientPort(clientPort *int64) {
+	o.ClientPort = clientPort
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsConnectionCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithFields(fields []string) *CifsConnectionCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentifierQueryParameter adds the identifier to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithIdentifierQueryParameter(identifier *int64) *CifsConnectionCollectionGetParams {
-	o.SetIdentifierQueryParameter(identifier)
+// WithIdentifier adds the identifier to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithIdentifier(identifier *int64) *CifsConnectionCollectionGetParams {
+	o.SetIdentifier(identifier)
 	return o
 }
 
-// SetIdentifierQueryParameter adds the identifier to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetIdentifierQueryParameter(identifier *int64) {
-	o.IdentifierQueryParameter = identifier
+// SetIdentifier adds the identifier to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetIdentifier(identifier *int64) {
+	o.Identifier = identifier
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsConnectionCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsConnectionCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNetworkContextIDQueryParameter adds the networkContextID to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithNetworkContextIDQueryParameter(networkContextID *int64) *CifsConnectionCollectionGetParams {
-	o.SetNetworkContextIDQueryParameter(networkContextID)
+// WithNetworkContextID adds the networkContextID to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithNetworkContextID(networkContextID *int64) *CifsConnectionCollectionGetParams {
+	o.SetNetworkContextID(networkContextID)
 	return o
 }
 
-// SetNetworkContextIDQueryParameter adds the networkContextId to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetNetworkContextIDQueryParameter(networkContextID *int64) {
-	o.NetworkContextIDQueryParameter = networkContextID
+// SetNetworkContextID adds the networkContextId to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetNetworkContextID(networkContextID *int64) {
+	o.NetworkContextID = networkContextID
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *CifsConnectionCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithNodeName(nodeName *string) *CifsConnectionCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *CifsConnectionCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithNodeUUID(nodeUUID *string) *CifsConnectionCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsConnectionCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithOrderBy(orderBy []string) *CifsConnectionCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsConnectionCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsConnectionCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsConnectionCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsConnectionCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerIPQueryParameter adds the serverIP to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithServerIPQueryParameter(serverIP *string) *CifsConnectionCollectionGetParams {
-	o.SetServerIPQueryParameter(serverIP)
+// WithServerIP adds the serverIP to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithServerIP(serverIP *string) *CifsConnectionCollectionGetParams {
+	o.SetServerIP(serverIP)
 	return o
 }
 
-// SetServerIPQueryParameter adds the serverIp to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetServerIPQueryParameter(serverIP *string) {
-	o.ServerIPQueryParameter = serverIP
+// SetServerIP adds the serverIp to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetServerIP(serverIP *string) {
+	o.ServerIP = serverIP
 }
 
-// WithSessionsIDentifierQueryParameter adds the sessionsIdentifier to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithSessionsIDentifierQueryParameter(sessionsIdentifier *int64) *CifsConnectionCollectionGetParams {
-	o.SetSessionsIDentifierQueryParameter(sessionsIdentifier)
+// WithSessionsIdentifier adds the sessionsIdentifier to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithSessionsIdentifier(sessionsIdentifier *int64) *CifsConnectionCollectionGetParams {
+	o.SetSessionsIdentifier(sessionsIdentifier)
 	return o
 }
 
-// SetSessionsIDentifierQueryParameter adds the sessionsIdentifier to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetSessionsIDentifierQueryParameter(sessionsIdentifier *int64) {
-	o.SessionsIDentifierQueryParameter = sessionsIdentifier
+// SetSessionsIdentifier adds the sessionsIdentifier to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetSessionsIdentifier(sessionsIdentifier *int64) {
+	o.SessionsIdentifier = sessionsIdentifier
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsConnectionCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithSvmName(svmName *string) *CifsConnectionCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsConnectionCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsConnectionCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs connection collection get params
-func (o *CifsConnectionCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs connection collection get params
+func (o *CifsConnectionCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.ClientIPQueryParameter != nil {
+	if o.ClientIP != nil {
 
 		// query param client_ip
 		var qrClientIP string
 
-		if o.ClientIPQueryParameter != nil {
-			qrClientIP = *o.ClientIPQueryParameter
+		if o.ClientIP != nil {
+			qrClientIP = *o.ClientIP
 		}
 		qClientIP := qrClientIP
 		if qClientIP != "" {
@@ -413,13 +413,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ClientPortQueryParameter != nil {
+	if o.ClientPort != nil {
 
 		// query param client_port
 		var qrClientPort int64
 
-		if o.ClientPortQueryParameter != nil {
-			qrClientPort = *o.ClientPortQueryParameter
+		if o.ClientPort != nil {
+			qrClientPort = *o.ClientPort
 		}
 		qClientPort := swag.FormatInt64(qrClientPort)
 		if qClientPort != "" {
@@ -430,7 +430,7 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -441,13 +441,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IdentifierQueryParameter != nil {
+	if o.Identifier != nil {
 
 		// query param identifier
 		var qrIdentifier int64
 
-		if o.IdentifierQueryParameter != nil {
-			qrIdentifier = *o.IdentifierQueryParameter
+		if o.Identifier != nil {
+			qrIdentifier = *o.Identifier
 		}
 		qIdentifier := swag.FormatInt64(qrIdentifier)
 		if qIdentifier != "" {
@@ -458,13 +458,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,13 +475,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NetworkContextIDQueryParameter != nil {
+	if o.NetworkContextID != nil {
 
 		// query param network_context_id
 		var qrNetworkContextID int64
 
-		if o.NetworkContextIDQueryParameter != nil {
-			qrNetworkContextID = *o.NetworkContextIDQueryParameter
+		if o.NetworkContextID != nil {
+			qrNetworkContextID = *o.NetworkContextID
 		}
 		qNetworkContextID := swag.FormatInt64(qrNetworkContextID)
 		if qNetworkContextID != "" {
@@ -492,13 +492,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -509,13 +509,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -526,7 +526,7 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -537,13 +537,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ServerIPQueryParameter != nil {
+	if o.ServerIP != nil {
 
 		// query param server_ip
 		var qrServerIP string
 
-		if o.ServerIPQueryParameter != nil {
-			qrServerIP = *o.ServerIPQueryParameter
+		if o.ServerIP != nil {
+			qrServerIP = *o.ServerIP
 		}
 		qServerIP := qrServerIP
 		if qServerIP != "" {
@@ -588,13 +588,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SessionsIDentifierQueryParameter != nil {
+	if o.SessionsIdentifier != nil {
 
 		// query param sessions.identifier
 		var qrSessionsIdentifier int64
 
-		if o.SessionsIDentifierQueryParameter != nil {
-			qrSessionsIdentifier = *o.SessionsIDentifierQueryParameter
+		if o.SessionsIdentifier != nil {
+			qrSessionsIdentifier = *o.SessionsIdentifier
 		}
 		qSessionsIdentifier := swag.FormatInt64(qrSessionsIdentifier)
 		if qSessionsIdentifier != "" {
@@ -605,13 +605,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -622,13 +622,13 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -647,7 +647,7 @@ func (o *CifsConnectionCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamCifsConnectionCollectionGet binds the parameter fields
 func (o *CifsConnectionCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -664,7 +664,7 @@ func (o *CifsConnectionCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamCifsConnectionCollectionGet binds the parameter order_by
 func (o *CifsConnectionCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

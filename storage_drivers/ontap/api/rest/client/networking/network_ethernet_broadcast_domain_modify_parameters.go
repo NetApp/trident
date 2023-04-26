@@ -70,7 +70,7 @@ type NetworkEthernetBroadcastDomainModifyParams struct {
 
 	   Broadcast domain UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *NetworkEthernetBroadcastDomainModifyParams) SetInfo(info *models.Broadc
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the network ethernet broadcast domain modify params
-func (o *NetworkEthernetBroadcastDomainModifyParams) WithUUIDPathParameter(uuid string) *NetworkEthernetBroadcastDomainModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ethernet broadcast domain modify params
+func (o *NetworkEthernetBroadcastDomainModifyParams) WithUUID(uuid string) *NetworkEthernetBroadcastDomainModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ethernet broadcast domain modify params
-func (o *NetworkEthernetBroadcastDomainModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ethernet broadcast domain modify params
+func (o *NetworkEthernetBroadcastDomainModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *NetworkEthernetBroadcastDomainModifyParams) WriteToRequest(r runtime.Cl
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

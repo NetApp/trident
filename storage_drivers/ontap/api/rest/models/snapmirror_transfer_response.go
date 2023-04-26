@@ -20,13 +20,14 @@ import (
 type SnapmirrorTransferResponse struct {
 
 	// links
-	Links *SnapmirrorTransferResponseLinks `json:"_links,omitempty"`
+	Links *SnapmirrorTransferResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SnapmirrorTransfer `json:"records,omitempty"`
+	// snapmirror transfer response inline records
+	SnapmirrorTransferResponseInlineRecords []*SnapmirrorTransfer `json:"records,omitempty"`
 }
 
 // Validate validates this snapmirror transfer response
@@ -37,7 +38,7 @@ func (m *SnapmirrorTransferResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSnapmirrorTransferResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SnapmirrorTransferResponse) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SnapmirrorTransferResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SnapmirrorTransferResponse) validateSnapmirrorTransferResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapmirrorTransferResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SnapmirrorTransferResponseInlineRecords); i++ {
+		if swag.IsZero(m.SnapmirrorTransferResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SnapmirrorTransferResponseInlineRecords[i] != nil {
+			if err := m.SnapmirrorTransferResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SnapmirrorTransferResponse) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSnapmirrorTransferResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SnapmirrorTransferResponse) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *SnapmirrorTransferResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorTransferResponse) contextValidateSnapmirrorTransferResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SnapmirrorTransferResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SnapmirrorTransferResponseInlineRecords[i] != nil {
+			if err := m.SnapmirrorTransferResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SnapmirrorTransferResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorTransferResponseLinks snapmirror transfer response links
+// SnapmirrorTransferResponseInlineLinks snapmirror transfer response inline links
 //
-// swagger:model SnapmirrorTransferResponseLinks
-type SnapmirrorTransferResponseLinks struct {
+// swagger:model snapmirror_transfer_response_inline__links
+type SnapmirrorTransferResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SnapmirrorTransferResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapmirror transfer response links
-func (m *SnapmirrorTransferResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror transfer response inline links
+func (m *SnapmirrorTransferResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SnapmirrorTransferResponseLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SnapmirrorTransferResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SnapmirrorTransferResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SnapmirrorTransferResponseLinks) validateNext(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SnapmirrorTransferResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapmirrorTransferResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SnapmirrorTransferResponseLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this snapmirror transfer response links based on the context it is used
-func (m *SnapmirrorTransferResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapmirror transfer response inline links based on the context it is used
+func (m *SnapmirrorTransferResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SnapmirrorTransferResponseLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SnapmirrorTransferResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorTransferResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SnapmirrorTransferResponseLinks) contextValidateNext(ctx context.Contex
 	return nil
 }
 
-func (m *SnapmirrorTransferResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapmirrorTransferResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SnapmirrorTransferResponseLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorTransferResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorTransferResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SnapmirrorTransferResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorTransferResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorTransferResponseLinks
+func (m *SnapmirrorTransferResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorTransferResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

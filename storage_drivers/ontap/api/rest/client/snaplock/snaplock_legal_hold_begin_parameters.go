@@ -74,7 +74,7 @@ type SnaplockLegalHoldBeginParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *SnaplockLegalHoldBeginParams) WithDefaults() *SnaplockLegalHoldBeginPar
 // All values with no default are reset to their zero value.
 func (o *SnaplockLegalHoldBeginParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SnaplockLegalHoldBeginParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *SnaplockLegalHoldBeginParams) SetInfo(info *models.SnaplockLitigation) 
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock legal hold begin params
-func (o *SnaplockLegalHoldBeginParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockLegalHoldBeginParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock legal hold begin params
+func (o *SnaplockLegalHoldBeginParams) WithReturnRecords(returnRecords *bool) *SnaplockLegalHoldBeginParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock legal hold begin params
-func (o *SnaplockLegalHoldBeginParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock legal hold begin params
+func (o *SnaplockLegalHoldBeginParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *SnaplockLegalHoldBeginParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

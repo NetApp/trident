@@ -20,13 +20,14 @@ import (
 type KerberosRealmResponse struct {
 
 	// links
-	Links *KerberosRealmResponseLinks `json:"_links,omitempty"`
+	Links *KerberosRealmResponseInlineLinks `json:"_links,omitempty"`
+
+	// kerberos realm response inline records
+	KerberosRealmResponseInlineRecords []*KerberosRealm `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*KerberosRealm `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this kerberos realm response
@@ -37,7 +38,7 @@ func (m *KerberosRealmResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateKerberosRealmResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *KerberosRealmResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosRealmResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *KerberosRealmResponse) validateKerberosRealmResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.KerberosRealmResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.KerberosRealmResponseInlineRecords); i++ {
+		if swag.IsZero(m.KerberosRealmResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.KerberosRealmResponseInlineRecords[i] != nil {
+			if err := m.KerberosRealmResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *KerberosRealmResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateKerberosRealmResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *KerberosRealmResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *KerberosRealmResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosRealmResponse) contextValidateKerberosRealmResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.KerberosRealmResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.KerberosRealmResponseInlineRecords[i] != nil {
+			if err := m.KerberosRealmResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *KerberosRealmResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmResponseLinks kerberos realm response links
+// KerberosRealmResponseInlineLinks kerberos realm response inline links
 //
-// swagger:model KerberosRealmResponseLinks
-type KerberosRealmResponseLinks struct {
+// swagger:model kerberos_realm_response_inline__links
+type KerberosRealmResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type KerberosRealmResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this kerberos realm response links
-func (m *KerberosRealmResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos realm response inline links
+func (m *KerberosRealmResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *KerberosRealmResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosRealmResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *KerberosRealmResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *KerberosRealmResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *KerberosRealmResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KerberosRealmResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *KerberosRealmResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this kerberos realm response links based on the context it is used
-func (m *KerberosRealmResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos realm response inline links based on the context it is used
+func (m *KerberosRealmResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *KerberosRealmResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *KerberosRealmResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosRealmResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *KerberosRealmResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *KerberosRealmResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosRealmResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *KerberosRealmResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosRealmResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *KerberosRealmResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *KerberosRealmResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosRealmResponseLinks) UnmarshalBinary(b []byte) error {
-	var res KerberosRealmResponseLinks
+func (m *KerberosRealmResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

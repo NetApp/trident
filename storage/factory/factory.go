@@ -11,7 +11,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure"
@@ -115,25 +115,25 @@ func GetStorageDriver(driverName string) (storage.Driver, error) {
 
 	// Pre-driver initialization setup
 	switch driverName {
-	case drivers.OntapNASStorageDriverName:
+	case config.OntapNASStorageDriverName:
 		storageDriver = &ontap.NASStorageDriver{}
-	case drivers.OntapNASFlexGroupStorageDriverName:
+	case config.OntapNASFlexGroupStorageDriverName:
 		storageDriver = &ontap.NASFlexGroupStorageDriver{}
-	case drivers.OntapNASQtreeStorageDriverName:
+	case config.OntapNASQtreeStorageDriverName:
 		storageDriver = &ontap.NASQtreeStorageDriver{}
-	case drivers.OntapSANStorageDriverName:
+	case config.OntapSANStorageDriverName:
 		storageDriver = &ontap.SANStorageDriver{}
-	case drivers.OntapSANEconomyStorageDriverName:
+	case config.OntapSANEconomyStorageDriverName:
 		storageDriver = &ontap.SANEconomyStorageDriver{}
-	case drivers.SolidfireSANStorageDriverName:
+	case config.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SANStorageDriver{}
-	case drivers.AzureNASStorageDriverName:
+	case config.AzureNASStorageDriverName:
 		storageDriver = &azure.NASStorageDriver{}
-	case drivers.AzureNASBlockStorageDriverName:
+	case config.AzureNASBlockStorageDriverName:
 		storageDriver = &azure.NASBlockStorageDriver{}
-	case drivers.GCPNFSStorageDriverName:
+	case config.GCPNFSStorageDriverName:
 		storageDriver = &gcp.NFSStorageDriver{}
-	case drivers.FakeStorageDriverName:
+	case config.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:
 		return nil, fmt.Errorf("unknown storage driver: %v", driverName)

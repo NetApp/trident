@@ -66,55 +66,55 @@ type TopMetricsFileCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IopsErrorLowerBound.
 
 	   Filter by iops.error.lower_bound
 	*/
-	IopsErrorLowerBoundQueryParameter *int64
+	IopsErrorLowerBound *int64
 
 	/* IopsErrorUpperBound.
 
 	   Filter by iops.error.upper_bound
 	*/
-	IopsErrorUpperBoundQueryParameter *int64
+	IopsErrorUpperBound *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MaxRecordsPerVolume.
 
 	   Max records per volume.
 	*/
-	MaxRecordsPerVolumeQueryParameter *int64
+	MaxRecordsPerVolume *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Path.
 
 	   Filter by path
 	*/
-	PathQueryParameter *string
+	Path *string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type TopMetricsFileCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,43 +130,43 @@ type TopMetricsFileCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* ThroughputErrorLowerBound.
 
 	   Filter by throughput.error.lower_bound
 	*/
-	ThroughputErrorLowerBoundQueryParameter *int64
+	ThroughputErrorLowerBound *int64
 
 	/* ThroughputErrorUpperBound.
 
 	   Filter by throughput.error.upper_bound
 	*/
-	ThroughputErrorUpperBoundQueryParameter *int64
+	ThroughputErrorUpperBound *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* TopMetric.
 
@@ -174,19 +174,19 @@ type TopMetricsFileCollectionGetParams struct {
 
 	   Default: "iops.read"
 	*/
-	TopMetricQueryParameter *string
+	TopMetric *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -206,17 +206,17 @@ func (o *TopMetricsFileCollectionGetParams) WithDefaults() *TopMetricsFileCollec
 // All values with no default are reset to their zero value.
 func (o *TopMetricsFileCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 
-		topMetricQueryParameterDefault = string("iops.read")
+		topMetricDefault = string("iops.read")
 	)
 
 	val := TopMetricsFileCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
-		TopMetricQueryParameter:     &topMetricQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
+		TopMetric:     &topMetricDefault,
 	}
 
 	val.timeout = o.timeout
@@ -258,224 +258,224 @@ func (o *TopMetricsFileCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithFieldsQueryParameter(fields []string) *TopMetricsFileCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithFields(fields []string) *TopMetricsFileCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIopsErrorLowerBoundQueryParameter adds the iopsErrorLowerBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound *int64) *TopMetricsFileCollectionGetParams {
-	o.SetIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound)
+// WithIopsErrorLowerBound adds the iopsErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithIopsErrorLowerBound(iopsErrorLowerBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetIopsErrorLowerBound(iopsErrorLowerBound)
 	return o
 }
 
-// SetIopsErrorLowerBoundQueryParameter adds the iopsErrorLowerBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound *int64) {
-	o.IopsErrorLowerBoundQueryParameter = iopsErrorLowerBound
+// SetIopsErrorLowerBound adds the iopsErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetIopsErrorLowerBound(iopsErrorLowerBound *int64) {
+	o.IopsErrorLowerBound = iopsErrorLowerBound
 }
 
-// WithIopsErrorUpperBoundQueryParameter adds the iopsErrorUpperBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound *int64) *TopMetricsFileCollectionGetParams {
-	o.SetIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound)
+// WithIopsErrorUpperBound adds the iopsErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithIopsErrorUpperBound(iopsErrorUpperBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetIopsErrorUpperBound(iopsErrorUpperBound)
 	return o
 }
 
-// SetIopsErrorUpperBoundQueryParameter adds the iopsErrorUpperBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound *int64) {
-	o.IopsErrorUpperBoundQueryParameter = iopsErrorUpperBound
+// SetIopsErrorUpperBound adds the iopsErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetIopsErrorUpperBound(iopsErrorUpperBound *int64) {
+	o.IopsErrorUpperBound = iopsErrorUpperBound
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithIopsReadQueryParameter(iopsRead *int64) *TopMetricsFileCollectionGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithIopsRead(iopsRead *int64) *TopMetricsFileCollectionGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *TopMetricsFileCollectionGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithIopsWrite(iopsWrite *int64) *TopMetricsFileCollectionGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *TopMetricsFileCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithMaxRecords(maxRecords *int64) *TopMetricsFileCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMaxRecordsPerVolumeQueryParameter adds the maxRecordsPerVolume to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithMaxRecordsPerVolumeQueryParameter(maxRecordsPerVolume *int64) *TopMetricsFileCollectionGetParams {
-	o.SetMaxRecordsPerVolumeQueryParameter(maxRecordsPerVolume)
+// WithMaxRecordsPerVolume adds the maxRecordsPerVolume to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithMaxRecordsPerVolume(maxRecordsPerVolume *int64) *TopMetricsFileCollectionGetParams {
+	o.SetMaxRecordsPerVolume(maxRecordsPerVolume)
 	return o
 }
 
-// SetMaxRecordsPerVolumeQueryParameter adds the maxRecordsPerVolume to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetMaxRecordsPerVolumeQueryParameter(maxRecordsPerVolume *int64) {
-	o.MaxRecordsPerVolumeQueryParameter = maxRecordsPerVolume
+// SetMaxRecordsPerVolume adds the maxRecordsPerVolume to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetMaxRecordsPerVolume(maxRecordsPerVolume *int64) {
+	o.MaxRecordsPerVolume = maxRecordsPerVolume
 }
 
-// WithOrderByQueryParameter adds the orderBy to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *TopMetricsFileCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithOrderBy(orderBy []string) *TopMetricsFileCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPathQueryParameter adds the path to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithPathQueryParameter(path *string) *TopMetricsFileCollectionGetParams {
-	o.SetPathQueryParameter(path)
+// WithPath adds the path to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithPath(path *string) *TopMetricsFileCollectionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathQueryParameter adds the path to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetPathQueryParameter(path *string) {
-	o.PathQueryParameter = path
+// SetPath adds the path to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetPath(path *string) {
+	o.Path = path
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *TopMetricsFileCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithReturnRecords(returnRecords *bool) *TopMetricsFileCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *TopMetricsFileCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *TopMetricsFileCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *TopMetricsFileCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithSvmName(svmName *string) *TopMetricsFileCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *TopMetricsFileCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithSvmUUID(svmUUID *string) *TopMetricsFileCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithThroughputErrorLowerBoundQueryParameter adds the throughputErrorLowerBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound *int64) *TopMetricsFileCollectionGetParams {
-	o.SetThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound)
+// WithThroughputErrorLowerBound adds the throughputErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithThroughputErrorLowerBound(throughputErrorLowerBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetThroughputErrorLowerBound(throughputErrorLowerBound)
 	return o
 }
 
-// SetThroughputErrorLowerBoundQueryParameter adds the throughputErrorLowerBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound *int64) {
-	o.ThroughputErrorLowerBoundQueryParameter = throughputErrorLowerBound
+// SetThroughputErrorLowerBound adds the throughputErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetThroughputErrorLowerBound(throughputErrorLowerBound *int64) {
+	o.ThroughputErrorLowerBound = throughputErrorLowerBound
 }
 
-// WithThroughputErrorUpperBoundQueryParameter adds the throughputErrorUpperBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound *int64) *TopMetricsFileCollectionGetParams {
-	o.SetThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound)
+// WithThroughputErrorUpperBound adds the throughputErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithThroughputErrorUpperBound(throughputErrorUpperBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetThroughputErrorUpperBound(throughputErrorUpperBound)
 	return o
 }
 
-// SetThroughputErrorUpperBoundQueryParameter adds the throughputErrorUpperBound to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound *int64) {
-	o.ThroughputErrorUpperBoundQueryParameter = throughputErrorUpperBound
+// SetThroughputErrorUpperBound adds the throughputErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetThroughputErrorUpperBound(throughputErrorUpperBound *int64) {
+	o.ThroughputErrorUpperBound = throughputErrorUpperBound
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *TopMetricsFileCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithThroughputRead(throughputRead *int64) *TopMetricsFileCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *TopMetricsFileCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *TopMetricsFileCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTopMetricQueryParameter adds the topMetric to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithTopMetricQueryParameter(topMetric *string) *TopMetricsFileCollectionGetParams {
-	o.SetTopMetricQueryParameter(topMetric)
+// WithTopMetric adds the topMetric to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTopMetric(topMetric *string) *TopMetricsFileCollectionGetParams {
+	o.SetTopMetric(topMetric)
 	return o
 }
 
-// SetTopMetricQueryParameter adds the topMetric to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetTopMetricQueryParameter(topMetric *string) {
-	o.TopMetricQueryParameter = topMetric
+// SetTopMetric adds the topMetric to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTopMetric(topMetric *string) {
+	o.TopMetric = topMetric
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *TopMetricsFileCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithVolumeName(volumeName *string) *TopMetricsFileCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *TopMetricsFileCollectionGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithVolumeUUID(volumeUUID string) *TopMetricsFileCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the top metrics file collection get params
-func (o *TopMetricsFileCollectionGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -486,7 +486,7 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -497,13 +497,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IopsErrorLowerBoundQueryParameter != nil {
+	if o.IopsErrorLowerBound != nil {
 
 		// query param iops.error.lower_bound
 		var qrIopsErrorLowerBound int64
 
-		if o.IopsErrorLowerBoundQueryParameter != nil {
-			qrIopsErrorLowerBound = *o.IopsErrorLowerBoundQueryParameter
+		if o.IopsErrorLowerBound != nil {
+			qrIopsErrorLowerBound = *o.IopsErrorLowerBound
 		}
 		qIopsErrorLowerBound := swag.FormatInt64(qrIopsErrorLowerBound)
 		if qIopsErrorLowerBound != "" {
@@ -514,13 +514,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IopsErrorUpperBoundQueryParameter != nil {
+	if o.IopsErrorUpperBound != nil {
 
 		// query param iops.error.upper_bound
 		var qrIopsErrorUpperBound int64
 
-		if o.IopsErrorUpperBoundQueryParameter != nil {
-			qrIopsErrorUpperBound = *o.IopsErrorUpperBoundQueryParameter
+		if o.IopsErrorUpperBound != nil {
+			qrIopsErrorUpperBound = *o.IopsErrorUpperBound
 		}
 		qIopsErrorUpperBound := swag.FormatInt64(qrIopsErrorUpperBound)
 		if qIopsErrorUpperBound != "" {
@@ -531,13 +531,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -548,13 +548,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -565,13 +565,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -582,13 +582,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsPerVolumeQueryParameter != nil {
+	if o.MaxRecordsPerVolume != nil {
 
 		// query param max_records_per_volume
 		var qrMaxRecordsPerVolume int64
 
-		if o.MaxRecordsPerVolumeQueryParameter != nil {
-			qrMaxRecordsPerVolume = *o.MaxRecordsPerVolumeQueryParameter
+		if o.MaxRecordsPerVolume != nil {
+			qrMaxRecordsPerVolume = *o.MaxRecordsPerVolume
 		}
 		qMaxRecordsPerVolume := swag.FormatInt64(qrMaxRecordsPerVolume)
 		if qMaxRecordsPerVolume != "" {
@@ -599,7 +599,7 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -610,13 +610,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.PathQueryParameter != nil {
+	if o.Path != nil {
 
 		// query param path
 		var qrPath string
 
-		if o.PathQueryParameter != nil {
-			qrPath = *o.PathQueryParameter
+		if o.Path != nil {
+			qrPath = *o.Path
 		}
 		qPath := qrPath
 		if qPath != "" {
@@ -627,13 +627,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -644,13 +644,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -661,13 +661,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -678,13 +678,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -695,13 +695,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ThroughputErrorLowerBoundQueryParameter != nil {
+	if o.ThroughputErrorLowerBound != nil {
 
 		// query param throughput.error.lower_bound
 		var qrThroughputErrorLowerBound int64
 
-		if o.ThroughputErrorLowerBoundQueryParameter != nil {
-			qrThroughputErrorLowerBound = *o.ThroughputErrorLowerBoundQueryParameter
+		if o.ThroughputErrorLowerBound != nil {
+			qrThroughputErrorLowerBound = *o.ThroughputErrorLowerBound
 		}
 		qThroughputErrorLowerBound := swag.FormatInt64(qrThroughputErrorLowerBound)
 		if qThroughputErrorLowerBound != "" {
@@ -712,13 +712,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ThroughputErrorUpperBoundQueryParameter != nil {
+	if o.ThroughputErrorUpperBound != nil {
 
 		// query param throughput.error.upper_bound
 		var qrThroughputErrorUpperBound int64
 
-		if o.ThroughputErrorUpperBoundQueryParameter != nil {
-			qrThroughputErrorUpperBound = *o.ThroughputErrorUpperBoundQueryParameter
+		if o.ThroughputErrorUpperBound != nil {
+			qrThroughputErrorUpperBound = *o.ThroughputErrorUpperBound
 		}
 		qThroughputErrorUpperBound := swag.FormatInt64(qrThroughputErrorUpperBound)
 		if qThroughputErrorUpperBound != "" {
@@ -729,13 +729,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -746,13 +746,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -763,13 +763,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.TopMetricQueryParameter != nil {
+	if o.TopMetric != nil {
 
 		// query param top_metric
 		var qrTopMetric string
 
-		if o.TopMetricQueryParameter != nil {
-			qrTopMetric = *o.TopMetricQueryParameter
+		if o.TopMetric != nil {
+			qrTopMetric = *o.TopMetric
 		}
 		qTopMetric := qrTopMetric
 		if qTopMetric != "" {
@@ -780,13 +780,13 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -798,7 +798,7 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -810,7 +810,7 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamTopMetricsFileCollectionGet binds the parameter fields
 func (o *TopMetricsFileCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -827,7 +827,7 @@ func (o *TopMetricsFileCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamTopMetricsFileCollectionGet binds the parameter order_by
 func (o *TopMetricsFileCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

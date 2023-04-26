@@ -22,19 +22,19 @@ import (
 type VvolBinding struct {
 
 	// links
-	Links *VvolBindingLinks `json:"_links,omitempty"`
+	Links *VvolBindingInlineLinks `json:"_links,omitempty"`
 
 	// The vVol binding between any two specific LUNs is reference counted. When a REST POST is executed for a vVol binding that already exists, the vVol binding reference count is incremented. When a REST DELETE is executed, the vVol binding reference count is decremented. Only when the vVol binding count reaches zero, or the query parameter `delete_all_references` is supplied, is the vVol binding destroyed.
 	//
 	// Example: 1
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The identifier assigned to the vVol binding. The bind identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.
 	//
 	// Example: 1
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Indicates if the class `procotol_endpoint` LUN and the class `vvol` LUN are on the same cluster node.
 	//
@@ -43,13 +43,13 @@ type VvolBinding struct {
 	IsOptimal *bool `json:"is_optimal,omitempty"`
 
 	// protocol endpoint
-	ProtocolEndpoint *VvolBindingProtocolEndpoint `json:"protocol_endpoint,omitempty"`
+	ProtocolEndpoint *VvolBindingInlineProtocolEndpoint `json:"protocol_endpoint,omitempty"`
 
 	// svm
-	Svm *VvolBindingSvm `json:"svm,omitempty"`
+	Svm *VvolBindingInlineSvm `json:"svm,omitempty"`
 
 	// vvol
-	Vvol *VvolBindingVvol `json:"vvol,omitempty"`
+	Vvol *VvolBindingInlineVvol `json:"vvol,omitempty"`
 }
 
 // Validate validates this vvol binding
@@ -200,7 +200,7 @@ func (m *VvolBinding) contextValidateLinks(ctx context.Context, formats strfmt.R
 
 func (m *VvolBinding) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "count", "body", m.Count); err != nil {
 		return err
 	}
 
@@ -209,7 +209,7 @@ func (m *VvolBinding) contextValidateCount(ctx context.Context, formats strfmt.R
 
 func (m *VvolBinding) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -285,17 +285,17 @@ func (m *VvolBinding) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingLinks vvol binding links
+// VvolBindingInlineLinks vvol binding inline links
 //
-// swagger:model VvolBindingLinks
-type VvolBindingLinks struct {
+// swagger:model vvol_binding_inline__links
+type VvolBindingInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vvol binding links
-func (m *VvolBindingLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline links
+func (m *VvolBindingInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -308,7 +308,7 @@ func (m *VvolBindingLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VvolBindingLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VvolBindingInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -325,8 +325,8 @@ func (m *VvolBindingLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vvol binding links based on the context it is used
-func (m *VvolBindingLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline links based on the context it is used
+func (m *VvolBindingInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -339,7 +339,7 @@ func (m *VvolBindingLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *VvolBindingLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -354,7 +354,7 @@ func (m *VvolBindingLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingLinks) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -362,8 +362,8 @@ func (m *VvolBindingLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingLinks) UnmarshalBinary(b []byte) error {
-	var res VvolBindingLinks
+func (m *VvolBindingInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -371,27 +371,27 @@ func (m *VvolBindingLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingProtocolEndpoint The class `protocol_endpoint` LUN in the vVol binding. Required in POST.
+// VvolBindingInlineProtocolEndpoint The class `protocol_endpoint` LUN in the vVol binding. Required in POST.
 //
-// swagger:model VvolBindingProtocolEndpoint
-type VvolBindingProtocolEndpoint struct {
+// swagger:model vvol_binding_inline_protocol_endpoint
+type VvolBindingInlineProtocolEndpoint struct {
 
 	// links
-	Links *VvolBindingProtocolEndpointLinks `json:"_links,omitempty"`
+	Links *VvolBindingInlineProtocolEndpointInlineLinks `json:"_links,omitempty"`
 
 	// The fully qualified path name of the LUN composed of the "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
 	//
 	// Example: /vol/volume1/lun1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the LUN.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vvol binding protocol endpoint
-func (m *VvolBindingProtocolEndpoint) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline protocol endpoint
+func (m *VvolBindingInlineProtocolEndpoint) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -404,7 +404,7 @@ func (m *VvolBindingProtocolEndpoint) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VvolBindingProtocolEndpoint) validateLinks(formats strfmt.Registry) error {
+func (m *VvolBindingInlineProtocolEndpoint) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -421,8 +421,8 @@ func (m *VvolBindingProtocolEndpoint) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this vvol binding protocol endpoint based on the context it is used
-func (m *VvolBindingProtocolEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline protocol endpoint based on the context it is used
+func (m *VvolBindingInlineProtocolEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -435,7 +435,7 @@ func (m *VvolBindingProtocolEndpoint) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *VvolBindingProtocolEndpoint) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineProtocolEndpoint) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -450,7 +450,7 @@ func (m *VvolBindingProtocolEndpoint) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingProtocolEndpoint) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineProtocolEndpoint) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -458,8 +458,8 @@ func (m *VvolBindingProtocolEndpoint) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingProtocolEndpoint) UnmarshalBinary(b []byte) error {
-	var res VvolBindingProtocolEndpoint
+func (m *VvolBindingInlineProtocolEndpoint) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineProtocolEndpoint
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -467,17 +467,17 @@ func (m *VvolBindingProtocolEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingProtocolEndpointLinks vvol binding protocol endpoint links
+// VvolBindingInlineProtocolEndpointInlineLinks vvol binding inline protocol endpoint inline links
 //
-// swagger:model VvolBindingProtocolEndpointLinks
-type VvolBindingProtocolEndpointLinks struct {
+// swagger:model vvol_binding_inline_protocol_endpoint_inline__links
+type VvolBindingInlineProtocolEndpointInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vvol binding protocol endpoint links
-func (m *VvolBindingProtocolEndpointLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline protocol endpoint inline links
+func (m *VvolBindingInlineProtocolEndpointInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -490,7 +490,7 @@ func (m *VvolBindingProtocolEndpointLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *VvolBindingProtocolEndpointLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VvolBindingInlineProtocolEndpointInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -507,8 +507,8 @@ func (m *VvolBindingProtocolEndpointLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this vvol binding protocol endpoint links based on the context it is used
-func (m *VvolBindingProtocolEndpointLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline protocol endpoint inline links based on the context it is used
+func (m *VvolBindingInlineProtocolEndpointInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -521,7 +521,7 @@ func (m *VvolBindingProtocolEndpointLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *VvolBindingProtocolEndpointLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineProtocolEndpointInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -536,7 +536,7 @@ func (m *VvolBindingProtocolEndpointLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingProtocolEndpointLinks) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineProtocolEndpointInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -544,8 +544,8 @@ func (m *VvolBindingProtocolEndpointLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingProtocolEndpointLinks) UnmarshalBinary(b []byte) error {
-	var res VvolBindingProtocolEndpointLinks
+func (m *VvolBindingInlineProtocolEndpointInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineProtocolEndpointInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -553,27 +553,27 @@ func (m *VvolBindingProtocolEndpointLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingSvm The SVM in which the vVol binding and its LUNs are located. Required in POST.
+// VvolBindingInlineSvm The SVM in which the vVol binding and its LUNs are located. Required in POST.
 //
-// swagger:model VvolBindingSvm
-type VvolBindingSvm struct {
+// swagger:model vvol_binding_inline_svm
+type VvolBindingInlineSvm struct {
 
 	// links
-	Links *VvolBindingSvmLinks `json:"_links,omitempty"`
+	Links *VvolBindingInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vvol binding svm
-func (m *VvolBindingSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline svm
+func (m *VvolBindingInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -586,7 +586,7 @@ func (m *VvolBindingSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VvolBindingSvm) validateLinks(formats strfmt.Registry) error {
+func (m *VvolBindingInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -603,8 +603,8 @@ func (m *VvolBindingSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vvol binding svm based on the context it is used
-func (m *VvolBindingSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline svm based on the context it is used
+func (m *VvolBindingInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -617,7 +617,7 @@ func (m *VvolBindingSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *VvolBindingSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -632,7 +632,7 @@ func (m *VvolBindingSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingSvm) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -640,8 +640,8 @@ func (m *VvolBindingSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingSvm) UnmarshalBinary(b []byte) error {
-	var res VvolBindingSvm
+func (m *VvolBindingInlineSvm) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -649,17 +649,17 @@ func (m *VvolBindingSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingSvmLinks vvol binding svm links
+// VvolBindingInlineSvmInlineLinks vvol binding inline svm inline links
 //
-// swagger:model VvolBindingSvmLinks
-type VvolBindingSvmLinks struct {
+// swagger:model vvol_binding_inline_svm_inline__links
+type VvolBindingInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vvol binding svm links
-func (m *VvolBindingSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline svm inline links
+func (m *VvolBindingInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -672,7 +672,7 @@ func (m *VvolBindingSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VvolBindingSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VvolBindingInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -689,8 +689,8 @@ func (m *VvolBindingSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vvol binding svm links based on the context it is used
-func (m *VvolBindingSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline svm inline links based on the context it is used
+func (m *VvolBindingInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -703,7 +703,7 @@ func (m *VvolBindingSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *VvolBindingSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -718,7 +718,7 @@ func (m *VvolBindingSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -726,8 +726,8 @@ func (m *VvolBindingSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingSvmLinks) UnmarshalBinary(b []byte) error {
-	var res VvolBindingSvmLinks
+func (m *VvolBindingInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -735,27 +735,27 @@ func (m *VvolBindingSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingVvol The class `vvol` LUN in the vVol binding. Required in POST.
+// VvolBindingInlineVvol The class `vvol` LUN in the vVol binding. Required in POST.
 //
-// swagger:model VvolBindingVvol
-type VvolBindingVvol struct {
+// swagger:model vvol_binding_inline_vvol
+type VvolBindingInlineVvol struct {
 
 	// links
-	Links *VvolBindingVvolLinks `json:"_links,omitempty"`
+	Links *VvolBindingInlineVvolInlineLinks `json:"_links,omitempty"`
 
 	// The fully qualified path name of the LUN composed of the "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN. Valid in POST and PATCH.
 	//
 	// Example: /vol/volume1/lun1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the LUN.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vvol binding vvol
-func (m *VvolBindingVvol) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline vvol
+func (m *VvolBindingInlineVvol) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -768,7 +768,7 @@ func (m *VvolBindingVvol) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VvolBindingVvol) validateLinks(formats strfmt.Registry) error {
+func (m *VvolBindingInlineVvol) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -785,8 +785,8 @@ func (m *VvolBindingVvol) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vvol binding vvol based on the context it is used
-func (m *VvolBindingVvol) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline vvol based on the context it is used
+func (m *VvolBindingInlineVvol) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -799,7 +799,7 @@ func (m *VvolBindingVvol) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *VvolBindingVvol) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineVvol) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -814,7 +814,7 @@ func (m *VvolBindingVvol) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingVvol) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineVvol) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -822,8 +822,8 @@ func (m *VvolBindingVvol) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingVvol) UnmarshalBinary(b []byte) error {
-	var res VvolBindingVvol
+func (m *VvolBindingInlineVvol) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineVvol
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -831,17 +831,17 @@ func (m *VvolBindingVvol) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VvolBindingVvolLinks vvol binding vvol links
+// VvolBindingInlineVvolInlineLinks vvol binding inline vvol inline links
 //
-// swagger:model VvolBindingVvolLinks
-type VvolBindingVvolLinks struct {
+// swagger:model vvol_binding_inline_vvol_inline__links
+type VvolBindingInlineVvolInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vvol binding vvol links
-func (m *VvolBindingVvolLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vvol binding inline vvol inline links
+func (m *VvolBindingInlineVvolInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -854,7 +854,7 @@ func (m *VvolBindingVvolLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VvolBindingVvolLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VvolBindingInlineVvolInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -871,8 +871,8 @@ func (m *VvolBindingVvolLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vvol binding vvol links based on the context it is used
-func (m *VvolBindingVvolLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vvol binding inline vvol inline links based on the context it is used
+func (m *VvolBindingInlineVvolInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -885,7 +885,7 @@ func (m *VvolBindingVvolLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *VvolBindingVvolLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VvolBindingInlineVvolInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -900,7 +900,7 @@ func (m *VvolBindingVvolLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *VvolBindingVvolLinks) MarshalBinary() ([]byte, error) {
+func (m *VvolBindingInlineVvolInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -908,8 +908,8 @@ func (m *VvolBindingVvolLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VvolBindingVvolLinks) UnmarshalBinary(b []byte) error {
-	var res VvolBindingVvolLinks
+func (m *VvolBindingInlineVvolInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VvolBindingInlineVvolInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

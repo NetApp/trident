@@ -66,25 +66,25 @@ type MetroclusterInterconnectGetParams struct {
 
 	   Interconnect adapter.
 	*/
-	AdapterPathParameter string
+	Adapter string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* PartnerType.
 
 	   DR Partner type
 	*/
-	PartnerTypePathParameter string
+	PartnerType string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *MetroclusterInterconnectGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAdapterPathParameter adds the adapter to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) WithAdapterPathParameter(adapter string) *MetroclusterInterconnectGetParams {
-	o.SetAdapterPathParameter(adapter)
+// WithAdapter adds the adapter to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) WithAdapter(adapter string) *MetroclusterInterconnectGetParams {
+	o.SetAdapter(adapter)
 	return o
 }
 
-// SetAdapterPathParameter adds the adapter to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) SetAdapterPathParameter(adapter string) {
-	o.AdapterPathParameter = adapter
+// SetAdapter adds the adapter to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) SetAdapter(adapter string) {
+	o.Adapter = adapter
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterInterconnectGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) WithFields(fields []string) *MetroclusterInterconnectGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) WithNodeUUIDPathParameter(nodeUUID string) *MetroclusterInterconnectGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) WithNodeUUID(nodeUUID string) *MetroclusterInterconnectGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithPartnerTypePathParameter adds the partnerType to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) WithPartnerTypePathParameter(partnerType string) *MetroclusterInterconnectGetParams {
-	o.SetPartnerTypePathParameter(partnerType)
+// WithPartnerType adds the partnerType to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) WithPartnerType(partnerType string) *MetroclusterInterconnectGetParams {
+	o.SetPartnerType(partnerType)
 	return o
 }
 
-// SetPartnerTypePathParameter adds the partnerType to the metrocluster interconnect get params
-func (o *MetroclusterInterconnectGetParams) SetPartnerTypePathParameter(partnerType string) {
-	o.PartnerTypePathParameter = partnerType
+// SetPartnerType adds the partnerType to the metrocluster interconnect get params
+func (o *MetroclusterInterconnectGetParams) SetPartnerType(partnerType string) {
+	o.PartnerType = partnerType
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,11 +192,11 @@ func (o *MetroclusterInterconnectGetParams) WriteToRequest(r runtime.ClientReque
 	var res []error
 
 	// path param adapter
-	if err := r.SetPathParam("adapter", o.AdapterPathParameter); err != nil {
+	if err := r.SetPathParam("adapter", o.Adapter); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -208,12 +208,12 @@ func (o *MetroclusterInterconnectGetParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param partner_type
-	if err := r.SetPathParam("partner_type", o.PartnerTypePathParameter); err != nil {
+	if err := r.SetPathParam("partner_type", o.PartnerType); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *MetroclusterInterconnectGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamMetroclusterInterconnectGet binds the parameter fields
 func (o *MetroclusterInterconnectGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

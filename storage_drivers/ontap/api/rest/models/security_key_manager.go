@@ -21,35 +21,35 @@ import (
 type SecurityKeyManager struct {
 
 	// links
-	Links *SecurityKeyManagerLinks `json:"_links,omitempty"`
+	Links *SecurityKeyManagerInlineLinks `json:"_links,omitempty"`
 
 	// external
-	External *SecurityKeyManagerExternal `json:"external,omitempty"`
+	External *SecurityKeyManagerInlineExternal `json:"external,omitempty"`
 
 	// Indicates whether default data-at-rest encryption is disabled in the cluster. This field is deprecated in ONTAP 9.8 and later. Use the "software_data_encryption.disabled_by_default" of /api/security endpoint.
 	IsDefaultDataAtRestEncryptionDisabled *bool `json:"is_default_data_at_rest_encryption_disabled,omitempty"`
 
 	// onboard
-	Onboard *SecurityKeyManagerOnboard `json:"onboard,omitempty"`
+	Onboard *SecurityKeyManagerInlineOnboard `json:"onboard,omitempty"`
 
 	// Security policy associated with the key manager. This value is currently ignored if specified for the onboard key manager.
-	Policy string `json:"policy,omitempty"`
+	Policy *string `json:"policy,omitempty"`
 
 	// scope
-	Scope NetworkScopeReadonly `json:"scope,omitempty"`
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
 
 	// status
-	Status *SecurityKeyManagerStatus `json:"status,omitempty"`
+	Status *SecurityKeyManagerInlineStatus `json:"status,omitempty"`
 
 	// svm
-	Svm *SecurityKeyManagerSvm `json:"svm,omitempty"`
+	Svm *SecurityKeyManagerInlineSvm `json:"svm,omitempty"`
 
 	// uuid
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// volume encryption
-	VolumeEncryption *SecurityKeyManagerVolumeEncryption `json:"volume_encryption,omitempty"`
+	VolumeEncryption *SecurityKeyManagerInlineVolumeEncryption `json:"volume_encryption,omitempty"`
 }
 
 // Validate validates this security key manager
@@ -146,11 +146,13 @@ func (m *SecurityKeyManager) validateScope(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -293,11 +295,13 @@ func (m *SecurityKeyManager) contextValidateOnboard(ctx context.Context, formats
 
 func (m *SecurityKeyManager) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -333,7 +337,7 @@ func (m *SecurityKeyManager) contextValidateSvm(ctx context.Context, formats str
 
 func (m *SecurityKeyManager) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -372,13 +376,13 @@ func (m *SecurityKeyManager) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerExternal Configures external key management
+// SecurityKeyManagerInlineExternal Configures external key management
 //
-// swagger:model SecurityKeyManagerExternal
-type SecurityKeyManagerExternal struct {
+// swagger:model security_key_manager_inline_external
+type SecurityKeyManagerInlineExternal struct {
 
 	// client certificate
-	ClientCertificate *SecurityKeyManagerExternalClientCertificate `json:"client_certificate,omitempty"`
+	ClientCertificate *SecurityKeyManagerInlineExternalInlineClientCertificate `json:"client_certificate,omitempty"`
 
 	// The UUIDs of the server CA certificates already installed in the cluster or SVM. The array of certificates are common for all the keyservers per SVM.
 	ServerCaCertificates []*SecurityKeyManagerExternalServerCaCertificatesItems0 `json:"server_ca_certificates,omitempty"`
@@ -388,8 +392,8 @@ type SecurityKeyManagerExternal struct {
 	Servers []*KeyServerReadcreate `json:"servers,omitempty"`
 }
 
-// Validate validates this security key manager external
-func (m *SecurityKeyManagerExternal) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline external
+func (m *SecurityKeyManagerInlineExternal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateClientCertificate(formats); err != nil {
@@ -410,7 +414,7 @@ func (m *SecurityKeyManagerExternal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeyManagerExternal) validateClientCertificate(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternal) validateClientCertificate(formats strfmt.Registry) error {
 	if swag.IsZero(m.ClientCertificate) { // not required
 		return nil
 	}
@@ -427,7 +431,7 @@ func (m *SecurityKeyManagerExternal) validateClientCertificate(formats strfmt.Re
 	return nil
 }
 
-func (m *SecurityKeyManagerExternal) validateServerCaCertificates(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternal) validateServerCaCertificates(formats strfmt.Registry) error {
 	if swag.IsZero(m.ServerCaCertificates) { // not required
 		return nil
 	}
@@ -451,7 +455,7 @@ func (m *SecurityKeyManagerExternal) validateServerCaCertificates(formats strfmt
 	return nil
 }
 
-func (m *SecurityKeyManagerExternal) validateServers(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternal) validateServers(formats strfmt.Registry) error {
 	if swag.IsZero(m.Servers) { // not required
 		return nil
 	}
@@ -481,8 +485,8 @@ func (m *SecurityKeyManagerExternal) validateServers(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this security key manager external based on the context it is used
-func (m *SecurityKeyManagerExternal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline external based on the context it is used
+func (m *SecurityKeyManagerInlineExternal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateClientCertificate(ctx, formats); err != nil {
@@ -503,7 +507,7 @@ func (m *SecurityKeyManagerExternal) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SecurityKeyManagerExternal) contextValidateClientCertificate(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternal) contextValidateClientCertificate(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ClientCertificate != nil {
 		if err := m.ClientCertificate.ContextValidate(ctx, formats); err != nil {
@@ -517,7 +521,7 @@ func (m *SecurityKeyManagerExternal) contextValidateClientCertificate(ctx contex
 	return nil
 }
 
-func (m *SecurityKeyManagerExternal) contextValidateServerCaCertificates(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternal) contextValidateServerCaCertificates(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.ServerCaCertificates); i++ {
 
@@ -535,7 +539,7 @@ func (m *SecurityKeyManagerExternal) contextValidateServerCaCertificates(ctx con
 	return nil
 }
 
-func (m *SecurityKeyManagerExternal) contextValidateServers(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternal) contextValidateServers(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Servers); i++ {
 
@@ -554,7 +558,7 @@ func (m *SecurityKeyManagerExternal) contextValidateServers(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerExternal) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineExternal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -562,8 +566,8 @@ func (m *SecurityKeyManagerExternal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerExternal) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerExternal
+func (m *SecurityKeyManagerInlineExternal) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineExternal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -571,25 +575,21 @@ func (m *SecurityKeyManagerExternal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerExternalClientCertificate Client certificate
+// SecurityKeyManagerInlineExternalInlineClientCertificate Client certificate
 //
-// swagger:model SecurityKeyManagerExternalClientCertificate
-type SecurityKeyManagerExternalClientCertificate struct {
+// swagger:model security_key_manager_inline_external_inline_client_certificate
+type SecurityKeyManagerInlineExternalInlineClientCertificate struct {
 
 	// links
-	Links *SecurityKeyManagerExternalClientCertificateLinks `json:"_links,omitempty"`
-
-	// Certificate name
-	// Example: cert1
-	Name string `json:"name,omitempty"`
+	Links *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security key manager external client certificate
-func (m *SecurityKeyManagerExternalClientCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline external inline client certificate
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -602,7 +602,7 @@ func (m *SecurityKeyManagerExternalClientCertificate) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *SecurityKeyManagerExternalClientCertificate) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -619,8 +619,8 @@ func (m *SecurityKeyManagerExternalClientCertificate) validateLinks(formats strf
 	return nil
 }
 
-// ContextValidate validate this security key manager external client certificate based on the context it is used
-func (m *SecurityKeyManagerExternalClientCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline external inline client certificate based on the context it is used
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -633,7 +633,7 @@ func (m *SecurityKeyManagerExternalClientCertificate) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *SecurityKeyManagerExternalClientCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -648,7 +648,7 @@ func (m *SecurityKeyManagerExternalClientCertificate) contextValidateLinks(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerExternalClientCertificate) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -656,8 +656,8 @@ func (m *SecurityKeyManagerExternalClientCertificate) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerExternalClientCertificate) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerExternalClientCertificate
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificate) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineExternalInlineClientCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -665,17 +665,17 @@ func (m *SecurityKeyManagerExternalClientCertificate) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// SecurityKeyManagerExternalClientCertificateLinks security key manager external client certificate links
+// SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks security key manager inline external inline client certificate inline links
 //
-// swagger:model SecurityKeyManagerExternalClientCertificateLinks
-type SecurityKeyManagerExternalClientCertificateLinks struct {
+// swagger:model security_key_manager_inline_external_inline_client_certificate_inline__links
+type SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security key manager external client certificate links
-func (m *SecurityKeyManagerExternalClientCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline external inline client certificate inline links
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -688,7 +688,7 @@ func (m *SecurityKeyManagerExternalClientCertificateLinks) Validate(formats strf
 	return nil
 }
 
-func (m *SecurityKeyManagerExternalClientCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -705,8 +705,8 @@ func (m *SecurityKeyManagerExternalClientCertificateLinks) validateSelf(formats 
 	return nil
 }
 
-// ContextValidate validate this security key manager external client certificate links based on the context it is used
-func (m *SecurityKeyManagerExternalClientCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline external inline client certificate inline links based on the context it is used
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -719,7 +719,7 @@ func (m *SecurityKeyManagerExternalClientCertificateLinks) ContextValidate(ctx c
 	return nil
 }
 
-func (m *SecurityKeyManagerExternalClientCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -734,7 +734,7 @@ func (m *SecurityKeyManagerExternalClientCertificateLinks) contextValidateSelf(c
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerExternalClientCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -742,8 +742,8 @@ func (m *SecurityKeyManagerExternalClientCertificateLinks) MarshalBinary() ([]by
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerExternalClientCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerExternalClientCertificateLinks
+func (m *SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineExternalInlineClientCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -759,13 +759,9 @@ type SecurityKeyManagerExternalServerCaCertificatesItems0 struct {
 	// links
 	Links *SecurityKeyManagerExternalServerCaCertificatesItems0Links `json:"_links,omitempty"`
 
-	// Certificate name
-	// Example: cert1
-	Name string `json:"name,omitempty"`
-
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this security key manager external server ca certificates items0
@@ -931,17 +927,17 @@ func (m *SecurityKeyManagerExternalServerCaCertificatesItems0Links) UnmarshalBin
 	return nil
 }
 
-// SecurityKeyManagerLinks security key manager links
+// SecurityKeyManagerInlineLinks security key manager inline links
 //
-// swagger:model SecurityKeyManagerLinks
-type SecurityKeyManagerLinks struct {
+// swagger:model security_key_manager_inline__links
+type SecurityKeyManagerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security key manager links
-func (m *SecurityKeyManagerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline links
+func (m *SecurityKeyManagerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -954,7 +950,7 @@ func (m *SecurityKeyManagerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeyManagerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -971,8 +967,8 @@ func (m *SecurityKeyManagerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security key manager links based on the context it is used
-func (m *SecurityKeyManagerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline links based on the context it is used
+func (m *SecurityKeyManagerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -985,7 +981,7 @@ func (m *SecurityKeyManagerLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SecurityKeyManagerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1000,7 +996,7 @@ func (m *SecurityKeyManagerLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1008,8 +1004,8 @@ func (m *SecurityKeyManagerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerLinks
+func (m *SecurityKeyManagerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1017,10 +1013,10 @@ func (m *SecurityKeyManagerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerOnboard Configures onboard key management. After configuring onboard key management, save the encrypted configuration data in a safe location so that you can use it if you need to perform a manual recovery operation.
+// SecurityKeyManagerInlineOnboard Configures onboard key management. After configuring onboard key management, save the encrypted configuration data in a safe location so that you can use it if you need to perform a manual recovery operation.
 //
-// swagger:model SecurityKeyManagerOnboard
-type SecurityKeyManagerOnboard struct {
+// swagger:model security_key_manager_inline_onboard
+type SecurityKeyManagerInlineOnboard struct {
 
 	// Is the onboard key manager enabled?
 	// Read Only: true
@@ -1029,24 +1025,24 @@ type SecurityKeyManagerOnboard struct {
 	// The cluster-wide passphrase. This is not audited.
 	// Example: The cluster password of length 32-256 ASCII characters.
 	// Format: password
-	ExistingPassphrase strfmt.Password `json:"existing_passphrase,omitempty"`
+	ExistingPassphrase *strfmt.Password `json:"existing_passphrase,omitempty"`
 
 	// Backup of the onboard key manager's key hierarchy. It is required to save this backup after configuring the onboard key manager to help in the recovery of the cluster in case of catastrophic failures.
 	// Example: '--------------------------BEGIN BACKUP-------------------------- TmV0QXBwIEtleSBCbG9iAAEAAAAEAAAAcAEAAAAAAAAxBFWWAAAAACEAAAAAAAAA QAAAAAAAAABzDyyVAAAAALI5Jsjvy6gUxnT78KoDKXHYb6sSeraM00quOULY6BeV n6dMFxuErCD1lbERaOQZSuaYy1p8oQHtTEfGMLZM4TYiAAAAAAAAACgAAAAAAAAA 3WTh7gAAAAAAAAAAAAAAAAIAAAAAAAgAZJEIWvdeHr5RCAvHGclo+wAAAAAAAAAA IgAAAAAAAAAoAAAAAAAAAEOTcR0AAAAAAAAAAAAAAAACAAAAAAAJAGr3tJA/LRzU QRHwv+1aWvAAAAAAAAAAACQAAAAAAAAAgAAAAAAAAADV1Vd/AAAAAMFM9Q229Bhp mDaTSdqku5DCd8wG+fOZSr4bx4JT5WHvV/r5gJnXDQQAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABOZXRBcHAgS2V5IEJsb2IA AQAAAAMAAAAYAQAAAAAAALgePkcAAAAAIgAAAAAAAAAoAAAAAAAAAEOTcR0AAAAA AAAAAAAAAAACAAAAAAAJAGr3tJA/LRzUQRHwv+1aWvAAAAAAAAAAACIAAAAAAAAA KAAAAAAAAACIlCHZAAAAAAAAAAAAAAAAAgAAAAAAAQCafcabsxRXMM7gxhLRrzxh AAAAAAAAAAAkAAAAAAAAAIAAAAAAAAAA2JjQBQAAAACt4IqXcNpVggahl0axLsN4 yQjnNVKWY7mANB29O42hI7b70DTGCTaVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAE5ldEFwcCBLZXkgQmxvYgABAAAAAwAAABgBAAAAAAAA 7sbaoQAAAAAiAAAAAAAAACgAAAAAAAAAQ5NxHQAAAAAAAAAAAAAAAAIAAAAAAAkA ave0kD8tHNRBEfC/7Vpa8AAAAAAAAAAAIgAAAAAAAAAoAAAAAAAAALOHfWkAAAAA AAAAAAAAAAACAAAAAAABAMoI9UxrHOGthQm/CB+EHdAAAAAAAAAAACQAAAAAAAAA gAAAAAAAAACnMmUtAAAAAGVk8AtPzENFgsGdsFvnmucmYrlQCsFew0HDSFKaZqK6 W8IEVzBAhPoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ---------------------------END BACKUP---------------------------'
 	// Read Only: true
-	KeyBackup string `json:"key_backup,omitempty"`
+	KeyBackup *string `json:"key_backup,omitempty"`
 
 	// The cluster-wide passphrase. This is not audited.
 	// Example: The cluster password of length 32-256 ASCII characters.
 	// Format: password
-	Passphrase strfmt.Password `json:"passphrase,omitempty"`
+	Passphrase *strfmt.Password `json:"passphrase,omitempty"`
 
 	// Synchronizes missing onboard keys on any node in the cluster. If a node is added to a cluster that has onboard key management configured, the synchronize operation needs to be performed in a PATCH operation. In a MetroCluster configuration, if onboard key management is enabled on one site, then the synchronize operation needs to be run as a POST operation on the remote site providing the same passphrase.
-	Synchronize bool `json:"synchronize,omitempty"`
+	Synchronize *bool `json:"synchronize,omitempty"`
 }
 
-// Validate validates this security key manager onboard
-func (m *SecurityKeyManagerOnboard) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline onboard
+func (m *SecurityKeyManagerInlineOnboard) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateExistingPassphrase(formats); err != nil {
@@ -1063,7 +1059,7 @@ func (m *SecurityKeyManagerOnboard) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeyManagerOnboard) validateExistingPassphrase(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineOnboard) validateExistingPassphrase(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExistingPassphrase) { // not required
 		return nil
 	}
@@ -1075,7 +1071,7 @@ func (m *SecurityKeyManagerOnboard) validateExistingPassphrase(formats strfmt.Re
 	return nil
 }
 
-func (m *SecurityKeyManagerOnboard) validatePassphrase(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineOnboard) validatePassphrase(formats strfmt.Registry) error {
 	if swag.IsZero(m.Passphrase) { // not required
 		return nil
 	}
@@ -1087,8 +1083,8 @@ func (m *SecurityKeyManagerOnboard) validatePassphrase(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this security key manager onboard based on the context it is used
-func (m *SecurityKeyManagerOnboard) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline onboard based on the context it is used
+func (m *SecurityKeyManagerInlineOnboard) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateEnabled(ctx, formats); err != nil {
@@ -1105,7 +1101,7 @@ func (m *SecurityKeyManagerOnboard) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *SecurityKeyManagerOnboard) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineOnboard) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "onboard"+"."+"enabled", "body", m.Enabled); err != nil {
 		return err
@@ -1114,9 +1110,9 @@ func (m *SecurityKeyManagerOnboard) contextValidateEnabled(ctx context.Context, 
 	return nil
 }
 
-func (m *SecurityKeyManagerOnboard) contextValidateKeyBackup(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineOnboard) contextValidateKeyBackup(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "onboard"+"."+"key_backup", "body", string(m.KeyBackup)); err != nil {
+	if err := validate.ReadOnly(ctx, "onboard"+"."+"key_backup", "body", m.KeyBackup); err != nil {
 		return err
 	}
 
@@ -1124,7 +1120,7 @@ func (m *SecurityKeyManagerOnboard) contextValidateKeyBackup(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerOnboard) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineOnboard) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1132,8 +1128,8 @@ func (m *SecurityKeyManagerOnboard) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerOnboard) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerOnboard
+func (m *SecurityKeyManagerInlineOnboard) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineOnboard
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1141,32 +1137,32 @@ func (m *SecurityKeyManagerOnboard) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerStatus Optional status information on the current state of the key manager indicating if it is fully setup or requires more action.
+// SecurityKeyManagerInlineStatus Optional status information on the current state of the key manager indicating if it is fully setup or requires more action.
 //
-// swagger:model SecurityKeyManagerStatus
-type SecurityKeyManagerStatus struct {
+// swagger:model security_key_manager_inline_status
+type SecurityKeyManagerInlineStatus struct {
 
-	// Code corresponding to the status message. Returns 0 if the setup is complete. This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+	// Code corresponding to the status message. Returns 0 if the setup is complete. This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
-	// Current state of the key manager indicating any additional steps to perform to finish the setup. This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+	// Current state of the key manager indicating any additional steps to perform to finish the setup. This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 	// Example: This cluster is part of a MetroCluster configuration. Use the REST API POST method security/key_managers/ with the synchronize option and the same passphrase on the partner cluster before proceeding with any key manager operations.  Failure to do so could lead to switchover or switchback failure.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this security key manager status
-func (m *SecurityKeyManagerStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline status
+func (m *SecurityKeyManagerInlineStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security key manager status based on context it is used
-func (m *SecurityKeyManagerStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security key manager inline status based on context it is used
+func (m *SecurityKeyManagerInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerStatus) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1174,8 +1170,8 @@ func (m *SecurityKeyManagerStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerStatus) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerStatus
+func (m *SecurityKeyManagerInlineStatus) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1183,27 +1179,27 @@ func (m *SecurityKeyManagerStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerSvm security key manager svm
+// SecurityKeyManagerInlineSvm security key manager inline svm
 //
-// swagger:model SecurityKeyManagerSvm
-type SecurityKeyManagerSvm struct {
+// swagger:model security_key_manager_inline_svm
+type SecurityKeyManagerInlineSvm struct {
 
 	// links
-	Links *SecurityKeyManagerSvmLinks `json:"_links,omitempty"`
+	Links *SecurityKeyManagerInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security key manager svm
-func (m *SecurityKeyManagerSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline svm
+func (m *SecurityKeyManagerInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1216,7 +1212,7 @@ func (m *SecurityKeyManagerSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeyManagerSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1233,8 +1229,8 @@ func (m *SecurityKeyManagerSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security key manager svm based on the context it is used
-func (m *SecurityKeyManagerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline svm based on the context it is used
+func (m *SecurityKeyManagerInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1247,7 +1243,7 @@ func (m *SecurityKeyManagerSvm) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SecurityKeyManagerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1262,7 +1258,7 @@ func (m *SecurityKeyManagerSvm) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerSvm) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1270,8 +1266,8 @@ func (m *SecurityKeyManagerSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerSvm) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerSvm
+func (m *SecurityKeyManagerInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1279,17 +1275,17 @@ func (m *SecurityKeyManagerSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerSvmLinks security key manager svm links
+// SecurityKeyManagerInlineSvmInlineLinks security key manager inline svm inline links
 //
-// swagger:model SecurityKeyManagerSvmLinks
-type SecurityKeyManagerSvmLinks struct {
+// swagger:model security_key_manager_inline_svm_inline__links
+type SecurityKeyManagerInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security key manager svm links
-func (m *SecurityKeyManagerSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline svm inline links
+func (m *SecurityKeyManagerInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1302,7 +1298,7 @@ func (m *SecurityKeyManagerSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeyManagerSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1319,8 +1315,8 @@ func (m *SecurityKeyManagerSvmLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this security key manager svm links based on the context it is used
-func (m *SecurityKeyManagerSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager inline svm inline links based on the context it is used
+func (m *SecurityKeyManagerInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1333,7 +1329,7 @@ func (m *SecurityKeyManagerSvmLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SecurityKeyManagerSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1348,7 +1344,7 @@ func (m *SecurityKeyManagerSvmLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1356,8 +1352,8 @@ func (m *SecurityKeyManagerSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerSvmLinks
+func (m *SecurityKeyManagerInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1365,35 +1361,35 @@ func (m *SecurityKeyManagerSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerVolumeEncryption Indicates whether volume encryption is supported in the cluster.
+// SecurityKeyManagerInlineVolumeEncryption Indicates whether volume encryption is supported in the cluster.
 //
-// swagger:model SecurityKeyManagerVolumeEncryption
-type SecurityKeyManagerVolumeEncryption struct {
+// swagger:model security_key_manager_inline_volume_encryption
+type SecurityKeyManagerInlineVolumeEncryption struct {
 
 	// Code corresponding to the status message. Returns a 0 if volume encryption is supported in all nodes of the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Reason for not supporting volume encryption.
 	// Example: No platform support for volume encryption in following nodes - node1, node2.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Set to true when volume encryption support is available on all nodes of the cluster.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
-// Validate validates this security key manager volume encryption
-func (m *SecurityKeyManagerVolumeEncryption) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager inline volume encryption
+func (m *SecurityKeyManagerInlineVolumeEncryption) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this security key manager volume encryption based on context it is used
-func (m *SecurityKeyManagerVolumeEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security key manager inline volume encryption based on context it is used
+func (m *SecurityKeyManagerInlineVolumeEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerVolumeEncryption) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerInlineVolumeEncryption) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1401,8 +1397,8 @@ func (m *SecurityKeyManagerVolumeEncryption) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerVolumeEncryption) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerVolumeEncryption
+func (m *SecurityKeyManagerInlineVolumeEncryption) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerInlineVolumeEncryption
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -104,8 +104,8 @@ func NewNameMappingModifyDefault(code int) *NameMappingModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 65798185   | Failed to resolve the specified hostname |
-| 65798179   | Cannot swap entries because one or both entries have hostname or address configured.|
-|            | Delete and recreate the new entry at the specified position.|
+| 65798179   | Cannot swap entries because one or both entries have host name or address configured.|
+|            | Delete and re-create the new entry at the specified position.|
 schema:
 $ref: "#/definitions/error_response"
 */

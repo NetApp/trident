@@ -19,14 +19,14 @@ import (
 type StoragePortReference struct {
 
 	// links
-	Links *StoragePortReferenceLinks `json:"_links,omitempty"`
+	Links *StoragePortReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: 2a
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *StoragePortReferenceNode `json:"node,omitempty"`
+	Node *StoragePortReferenceInlineNode `json:"node,omitempty"`
 }
 
 // Validate validates this storage port reference
@@ -145,17 +145,17 @@ func (m *StoragePortReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortReferenceLinks storage port reference links
+// StoragePortReferenceInlineLinks storage port reference inline links
 //
-// swagger:model StoragePortReferenceLinks
-type StoragePortReferenceLinks struct {
+// swagger:model storage_port_reference_inline__links
+type StoragePortReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage port reference links
-func (m *StoragePortReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port reference inline links
+func (m *StoragePortReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -168,7 +168,7 @@ func (m *StoragePortReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePortReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -185,8 +185,8 @@ func (m *StoragePortReferenceLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this storage port reference links based on the context it is used
-func (m *StoragePortReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage port reference inline links based on the context it is used
+func (m *StoragePortReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -199,7 +199,7 @@ func (m *StoragePortReferenceLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *StoragePortReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -214,7 +214,7 @@ func (m *StoragePortReferenceLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePortReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -222,8 +222,8 @@ func (m *StoragePortReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePortReferenceLinks
+func (m *StoragePortReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePortReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -231,25 +231,25 @@ func (m *StoragePortReferenceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortReferenceNode storage port reference node
+// StoragePortReferenceInlineNode storage port reference inline node
 //
-// swagger:model StoragePortReferenceNode
-type StoragePortReferenceNode struct {
+// swagger:model storage_port_reference_inline_node
+type StoragePortReferenceInlineNode struct {
 
 	// links
-	Links *StoragePortReferenceNodeLinks `json:"_links,omitempty"`
+	Links *StoragePortReferenceInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this storage port reference node
-func (m *StoragePortReferenceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port reference inline node
+func (m *StoragePortReferenceInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -262,7 +262,7 @@ func (m *StoragePortReferenceNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortReferenceNode) validateLinks(formats strfmt.Registry) error {
+func (m *StoragePortReferenceInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -279,8 +279,8 @@ func (m *StoragePortReferenceNode) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this storage port reference node based on the context it is used
-func (m *StoragePortReferenceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage port reference inline node based on the context it is used
+func (m *StoragePortReferenceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -293,7 +293,7 @@ func (m *StoragePortReferenceNode) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StoragePortReferenceNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortReferenceInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -308,7 +308,7 @@ func (m *StoragePortReferenceNode) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortReferenceNode) MarshalBinary() ([]byte, error) {
+func (m *StoragePortReferenceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -316,8 +316,8 @@ func (m *StoragePortReferenceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortReferenceNode) UnmarshalBinary(b []byte) error {
-	var res StoragePortReferenceNode
+func (m *StoragePortReferenceInlineNode) UnmarshalBinary(b []byte) error {
+	var res StoragePortReferenceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -325,17 +325,17 @@ func (m *StoragePortReferenceNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortReferenceNodeLinks storage port reference node links
+// StoragePortReferenceInlineNodeInlineLinks storage port reference inline node inline links
 //
-// swagger:model StoragePortReferenceNodeLinks
-type StoragePortReferenceNodeLinks struct {
+// swagger:model storage_port_reference_inline_node_inline__links
+type StoragePortReferenceInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage port reference node links
-func (m *StoragePortReferenceNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port reference inline node inline links
+func (m *StoragePortReferenceInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -348,7 +348,7 @@ func (m *StoragePortReferenceNodeLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *StoragePortReferenceNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePortReferenceInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -365,8 +365,8 @@ func (m *StoragePortReferenceNodeLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this storage port reference node links based on the context it is used
-func (m *StoragePortReferenceNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage port reference inline node inline links based on the context it is used
+func (m *StoragePortReferenceInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -379,7 +379,7 @@ func (m *StoragePortReferenceNodeLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *StoragePortReferenceNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortReferenceInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -394,7 +394,7 @@ func (m *StoragePortReferenceNodeLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortReferenceNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePortReferenceInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -402,8 +402,8 @@ func (m *StoragePortReferenceNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortReferenceNodeLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePortReferenceNodeLinks
+func (m *StoragePortReferenceInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePortReferenceInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

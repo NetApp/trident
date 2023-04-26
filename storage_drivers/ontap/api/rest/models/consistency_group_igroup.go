@@ -36,23 +36,23 @@ type ConsistencyGroupIgroup struct {
 
 	// Separate igroup definitions to include in this igroup.
 	//
-	Igroups []*ConsistencyGroupIgroupIgroupsItems0 `json:"igroups,omitempty"`
+	ConsistencyGroupIgroupInlineIgroups []*ConsistencyGroupIgroupInlineIgroupsInlineArrayItem `json:"igroups,omitempty"`
 
 	// The initiators that are members of the group.
 	//
-	Initiators []*ConsistencyGroupIgroupInitiatorsItems0 `json:"initiators,omitempty"`
+	ConsistencyGroupIgroupInlineInitiators []*ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem `json:"initiators,omitempty"`
 
 	// The name of the initiator group. Required in POST; optional in PATCH.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The host operating system of the initiator group. All initiators in the group should be hosts of the same operating system. Required in POST; optional in PATCH.
 	//
 	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of an initiator group cannot be changed after creation of the group.
@@ -64,7 +64,7 @@ type ConsistencyGroupIgroup struct {
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this consistency group igroup
@@ -75,11 +75,11 @@ func (m *ConsistencyGroupIgroup) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateIgroups(formats); err != nil {
+	if err := m.validateConsistencyGroupIgroupInlineIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateInitiators(formats); err != nil {
+	if err := m.validateConsistencyGroupIgroupInlineInitiators(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,18 +117,18 @@ func (m *ConsistencyGroupIgroup) validateComment(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ConsistencyGroupIgroup) validateIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroups) { // not required
+func (m *ConsistencyGroupIgroup) validateConsistencyGroupIgroupInlineIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroupIgroupInlineIgroups) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
-		if swag.IsZero(m.Igroups[i]) { // not required
+	for i := 0; i < len(m.ConsistencyGroupIgroupInlineIgroups); i++ {
+		if swag.IsZero(m.ConsistencyGroupIgroupInlineIgroups[i]) { // not required
 			continue
 		}
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].Validate(formats); err != nil {
+		if m.ConsistencyGroupIgroupInlineIgroups[i] != nil {
+			if err := m.ConsistencyGroupIgroupInlineIgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -141,18 +141,18 @@ func (m *ConsistencyGroupIgroup) validateIgroups(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ConsistencyGroupIgroup) validateInitiators(formats strfmt.Registry) error {
-	if swag.IsZero(m.Initiators) { // not required
+func (m *ConsistencyGroupIgroup) validateConsistencyGroupIgroupInlineInitiators(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroupIgroupInlineInitiators) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Initiators); i++ {
-		if swag.IsZero(m.Initiators[i]) { // not required
+	for i := 0; i < len(m.ConsistencyGroupIgroupInlineInitiators); i++ {
+		if swag.IsZero(m.ConsistencyGroupIgroupInlineInitiators[i]) { // not required
 			continue
 		}
 
-		if m.Initiators[i] != nil {
-			if err := m.Initiators[i].Validate(formats); err != nil {
+		if m.ConsistencyGroupIgroupInlineInitiators[i] != nil {
+			if err := m.ConsistencyGroupIgroupInlineInitiators[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("initiators" + "." + strconv.Itoa(i))
 				}
@@ -170,11 +170,11 @@ func (m *ConsistencyGroupIgroup) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
@@ -310,7 +310,7 @@ func (m *ConsistencyGroupIgroup) validateOsType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -387,11 +387,11 @@ func (m *ConsistencyGroupIgroup) validateProtocol(formats strfmt.Registry) error
 func (m *ConsistencyGroupIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateConsistencyGroupIgroupInlineIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateInitiators(ctx, formats); err != nil {
+	if err := m.contextValidateConsistencyGroupIgroupInlineInitiators(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -405,12 +405,12 @@ func (m *ConsistencyGroupIgroup) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ConsistencyGroupIgroup) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupIgroup) contextValidateConsistencyGroupIgroupInlineIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Igroups); i++ {
+	for i := 0; i < len(m.ConsistencyGroupIgroupInlineIgroups); i++ {
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+		if m.ConsistencyGroupIgroupInlineIgroups[i] != nil {
+			if err := m.ConsistencyGroupIgroupInlineIgroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -423,12 +423,12 @@ func (m *ConsistencyGroupIgroup) contextValidateIgroups(ctx context.Context, for
 	return nil
 }
 
-func (m *ConsistencyGroupIgroup) contextValidateInitiators(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupIgroup) contextValidateConsistencyGroupIgroupInlineInitiators(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Initiators); i++ {
+	for i := 0; i < len(m.ConsistencyGroupIgroupInlineInitiators); i++ {
 
-		if m.Initiators[i] != nil {
-			if err := m.Initiators[i].ContextValidate(ctx, formats); err != nil {
+		if m.ConsistencyGroupIgroupInlineInitiators[i] != nil {
+			if err := m.ConsistencyGroupIgroupInlineInitiators[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("initiators" + "." + strconv.Itoa(i))
 				}
@@ -443,7 +443,7 @@ func (m *ConsistencyGroupIgroup) contextValidateInitiators(ctx context.Context, 
 
 func (m *ConsistencyGroupIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -468,10 +468,10 @@ func (m *ConsistencyGroupIgroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupIgroupIgroupsItems0 consistency group igroup igroups items0
+// ConsistencyGroupIgroupInlineIgroupsInlineArrayItem consistency group igroup inline igroups inline array item
 //
-// swagger:model ConsistencyGroupIgroupIgroupsItems0
-type ConsistencyGroupIgroupIgroupsItems0 struct {
+// swagger:model consistency_group_igroup_inline_igroups_inline_array_item
+type ConsistencyGroupIgroupInlineIgroupsInlineArrayItem struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
@@ -481,16 +481,16 @@ type ConsistencyGroupIgroupIgroupsItems0 struct {
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this consistency group igroup igroups items0
-func (m *ConsistencyGroupIgroupIgroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group igroup inline igroups inline array item
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -507,7 +507,7 @@ func (m *ConsistencyGroupIgroupIgroupsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ConsistencyGroupIgroupIgroupsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -524,24 +524,24 @@ func (m *ConsistencyGroupIgroupIgroupsItems0) validateLinks(formats strfmt.Regis
 	return nil
 }
 
-func (m *ConsistencyGroupIgroupIgroupsItems0) validateName(formats strfmt.Registry) error {
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this consistency group igroup igroups items0 based on the context it is used
-func (m *ConsistencyGroupIgroupIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this consistency group igroup inline igroups inline array item based on the context it is used
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -554,7 +554,7 @@ func (m *ConsistencyGroupIgroupIgroupsItems0) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ConsistencyGroupIgroupIgroupsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -569,7 +569,7 @@ func (m *ConsistencyGroupIgroupIgroupsItems0) contextValidateLinks(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupIgroupIgroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -577,8 +577,8 @@ func (m *ConsistencyGroupIgroupIgroupsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupIgroupIgroupsItems0) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupIgroupIgroupsItems0
+func (m *ConsistencyGroupIgroupInlineIgroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupIgroupInlineIgroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -586,10 +586,10 @@ func (m *ConsistencyGroupIgroupIgroupsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupIgroupInitiatorsItems0 The initiators that are members of the initiator group.
+// ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem The initiators that are members of the initiator group.
 //
-// swagger:model ConsistencyGroupIgroupInitiatorsItems0
-type ConsistencyGroupIgroupInitiatorsItems0 struct {
+// swagger:model consistency_group_igroup_inline_initiators_inline_array_item
+type ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem struct {
 
 	// A comment available for use by the administrator.
 	//
@@ -601,11 +601,11 @@ type ConsistencyGroupIgroupInitiatorsItems0 struct {
 	// Name of initiator that is a member of the initiator group.
 	//
 	// Example: iqn.1998-01.com.corp.iscsi:name1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this consistency group igroup initiators items0
-func (m *ConsistencyGroupIgroupInitiatorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this consistency group igroup inline initiators inline array item
+func (m *ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComment(formats); err != nil {
@@ -618,7 +618,7 @@ func (m *ConsistencyGroupIgroupInitiatorsItems0) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *ConsistencyGroupIgroupInitiatorsItems0) validateComment(formats strfmt.Registry) error {
+func (m *ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem) validateComment(formats strfmt.Registry) error {
 	if swag.IsZero(m.Comment) { // not required
 		return nil
 	}
@@ -634,13 +634,13 @@ func (m *ConsistencyGroupIgroupInitiatorsItems0) validateComment(formats strfmt.
 	return nil
 }
 
-// ContextValidate validates this consistency group igroup initiators items0 based on context it is used
-func (m *ConsistencyGroupIgroupInitiatorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this consistency group igroup inline initiators inline array item based on context it is used
+func (m *ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ConsistencyGroupIgroupInitiatorsItems0) MarshalBinary() ([]byte, error) {
+func (m *ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -648,8 +648,8 @@ func (m *ConsistencyGroupIgroupInitiatorsItems0) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConsistencyGroupIgroupInitiatorsItems0) UnmarshalBinary(b []byte) error {
-	var res ConsistencyGroupIgroupInitiatorsItems0
+func (m *ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupIgroupInlineInitiatorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

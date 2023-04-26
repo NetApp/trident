@@ -22,10 +22,10 @@ type Share struct {
 	// taken as the default. If this parameter is specified, the effective share permission of the user is also displayed.
 	// Wildcard query characters are not supported.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Displays the CIFS share path.
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 }
 
 // Validate validates this share

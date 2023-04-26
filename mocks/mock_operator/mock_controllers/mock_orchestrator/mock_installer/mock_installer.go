@@ -12,7 +12,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	v1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	versioned "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	utils "github.com/netapp/trident/utils"
+	version "github.com/netapp/trident/utils/version"
 	v10 "k8s.io/api/apps/v1"
 	v11 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/policy/v1beta1"
@@ -20,7 +20,7 @@ import (
 	v13 "k8s.io/api/storage/v1"
 	v14 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	types "k8s.io/apimachinery/pkg/types"
-	version "k8s.io/apimachinery/pkg/version"
+	version0 "k8s.io/apimachinery/pkg/version"
 )
 
 // MockTridentInstaller is a mock of TridentInstaller interface.
@@ -3011,10 +3011,10 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveTridentUserFromOpenShiftSCC(a
 }
 
 // ServerVersion mocks base method.
-func (m *MockExtendedK8sClient) ServerVersion() *utils.Version {
+func (m *MockExtendedK8sClient) ServerVersion() *version.Version {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServerVersion")
-	ret0, _ := ret[0].(*utils.Version)
+	ret0, _ := ret[0].(*version.Version)
 	return ret0
 }
 
@@ -3064,10 +3064,10 @@ func (mr *MockExtendedK8sClientMockRecorder) UpdateSecret(arg0 interface{}) *gom
 }
 
 // Version mocks base method.
-func (m *MockExtendedK8sClient) Version() *version.Info {
+func (m *MockExtendedK8sClient) Version() *version0.Info {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Version")
-	ret0, _ := ret[0].(*version.Info)
+	ret0, _ := ret[0].(*version0.Info)
 	return ret0
 }
 

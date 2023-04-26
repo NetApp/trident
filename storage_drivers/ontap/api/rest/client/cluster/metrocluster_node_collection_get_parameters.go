@@ -66,73 +66,181 @@ type MetroclusterNodeCollectionGetParams struct {
 
 	   Filter by automatic_uso
 	*/
-	AutomaticUsoQueryParameter *bool
+	AutomaticUso *bool
 
 	/* ClusterName.
 
 	   Filter by cluster.name
 	*/
-	ClusterNameQueryParameter *string
+	ClusterName *string
 
 	/* ClusterUUID.
 
 	   Filter by cluster.uuid
 	*/
-	ClusterUUIDQueryParameter *string
+	ClusterUUID *string
 
 	/* ConfigurationState.
 
 	   Filter by configuration_state
 	*/
-	ConfigurationStateQueryParameter *string
+	ConfigurationState *string
+
+	/* DrAuxiliaryClusterName.
+
+	   Filter by dr_auxiliary_cluster.name
+	*/
+	DrAuxiliaryClusterName *string
+
+	/* DrAuxiliaryClusterUUID.
+
+	   Filter by dr_auxiliary_cluster.uuid
+	*/
+	DrAuxiliaryClusterUUID *string
+
+	/* DrAuxiliaryPartnerName.
+
+	   Filter by dr_auxiliary_partner.name
+	*/
+	DrAuxiliaryPartnerName *string
+
+	/* DrAuxiliaryPartnerSystemID.
+
+	   Filter by dr_auxiliary_partner.system_id
+	*/
+	DrAuxiliaryPartnerSystemID *string
+
+	/* DrAuxiliaryPartnerUUID.
+
+	   Filter by dr_auxiliary_partner.uuid
+	*/
+	DrAuxiliaryPartnerUUID *string
 
 	/* DrGroupID.
 
 	   Filter by dr_group_id
 	*/
-	DrGroupIDQueryParameter *int64
+	DrGroupID *int64
 
 	/* DrMirroringState.
 
 	   Filter by dr_mirroring_state
 	*/
-	DrMirroringStateQueryParameter *string
+	DrMirroringState *string
 
 	/* DrOperationState.
 
 	   Filter by dr_operation_state
 	*/
-	DrOperationStateQueryParameter *string
+	DrOperationState *string
+
+	/* DrPartnerName.
+
+	   Filter by dr_partner.name
+	*/
+	DrPartnerName *string
+
+	/* DrPartnerSystemID.
+
+	   Filter by dr_partner.system_id
+	*/
+	DrPartnerSystemID *string
+
+	/* DrPartnerUUID.
+
+	   Filter by dr_partner.uuid
+	*/
+	DrPartnerUUID *string
+
+	/* DrPartnerClusterName.
+
+	   Filter by dr_partner_cluster.name
+	*/
+	DrPartnerClusterName *string
+
+	/* DrPartnerClusterUUID.
+
+	   Filter by dr_partner_cluster.uuid
+	*/
+	DrPartnerClusterUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* HaPartnerName.
+
+	   Filter by ha_partner.name
+	*/
+	HaPartnerName *string
+
+	/* HaPartnerSystemID.
+
+	   Filter by ha_partner.system_id
+	*/
+	HaPartnerSystemID *string
+
+	/* HaPartnerUUID.
+
+	   Filter by ha_partner.uuid
+	*/
+	HaPartnerUUID *string
+
+	/* HaPartnerClusterName.
+
+	   Filter by ha_partner_cluster.name
+	*/
+	HaPartnerClusterName *string
+
+	/* HaPartnerClusterUUID.
+
+	   Filter by ha_partner_cluster.uuid
+	*/
+	HaPartnerClusterUUID *string
+
+	/* IsMccip.
+
+	   Filter by is_mccip
+	*/
+	IsMccip *bool
+
+	/* LimitEnforcement.
+
+	   Filter by limit_enforcement
+	*/
+	LimitEnforcement *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
+
+	/* NodeSystemID.
+
+	   Filter by node.system_id
+	*/
+	NodeSystemID *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -140,7 +248,7 @@ type MetroclusterNodeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -148,7 +256,7 @@ type MetroclusterNodeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +276,14 @@ func (o *MetroclusterNodeCollectionGetParams) WithDefaults() *MetroclusterNodeCo
 // All values with no default are reset to their zero value.
 func (o *MetroclusterNodeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MetroclusterNodeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +325,356 @@ func (o *MetroclusterNodeCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithAutomaticUsoQueryParameter adds the automaticUso to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithAutomaticUsoQueryParameter(automaticUso *bool) *MetroclusterNodeCollectionGetParams {
-	o.SetAutomaticUsoQueryParameter(automaticUso)
+// WithAutomaticUso adds the automaticUso to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithAutomaticUso(automaticUso *bool) *MetroclusterNodeCollectionGetParams {
+	o.SetAutomaticUso(automaticUso)
 	return o
 }
 
-// SetAutomaticUsoQueryParameter adds the automaticUso to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetAutomaticUsoQueryParameter(automaticUso *bool) {
-	o.AutomaticUsoQueryParameter = automaticUso
+// SetAutomaticUso adds the automaticUso to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetAutomaticUso(automaticUso *bool) {
+	o.AutomaticUso = automaticUso
 }
 
-// WithClusterNameQueryParameter adds the clusterName to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithClusterNameQueryParameter(clusterName *string) *MetroclusterNodeCollectionGetParams {
-	o.SetClusterNameQueryParameter(clusterName)
+// WithClusterName adds the clusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithClusterName(clusterName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetClusterName(clusterName)
 	return o
 }
 
-// SetClusterNameQueryParameter adds the clusterName to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetClusterNameQueryParameter(clusterName *string) {
-	o.ClusterNameQueryParameter = clusterName
+// SetClusterName adds the clusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetClusterName(clusterName *string) {
+	o.ClusterName = clusterName
 }
 
-// WithClusterUUIDQueryParameter adds the clusterUUID to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithClusterUUIDQueryParameter(clusterUUID *string) *MetroclusterNodeCollectionGetParams {
-	o.SetClusterUUIDQueryParameter(clusterUUID)
+// WithClusterUUID adds the clusterUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithClusterUUID(clusterUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetClusterUUID(clusterUUID)
 	return o
 }
 
-// SetClusterUUIDQueryParameter adds the clusterUuid to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetClusterUUIDQueryParameter(clusterUUID *string) {
-	o.ClusterUUIDQueryParameter = clusterUUID
+// SetClusterUUID adds the clusterUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetClusterUUID(clusterUUID *string) {
+	o.ClusterUUID = clusterUUID
 }
 
-// WithConfigurationStateQueryParameter adds the configurationState to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithConfigurationStateQueryParameter(configurationState *string) *MetroclusterNodeCollectionGetParams {
-	o.SetConfigurationStateQueryParameter(configurationState)
+// WithConfigurationState adds the configurationState to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithConfigurationState(configurationState *string) *MetroclusterNodeCollectionGetParams {
+	o.SetConfigurationState(configurationState)
 	return o
 }
 
-// SetConfigurationStateQueryParameter adds the configurationState to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetConfigurationStateQueryParameter(configurationState *string) {
-	o.ConfigurationStateQueryParameter = configurationState
+// SetConfigurationState adds the configurationState to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetConfigurationState(configurationState *string) {
+	o.ConfigurationState = configurationState
 }
 
-// WithDrGroupIDQueryParameter adds the drGroupID to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithDrGroupIDQueryParameter(drGroupID *int64) *MetroclusterNodeCollectionGetParams {
-	o.SetDrGroupIDQueryParameter(drGroupID)
+// WithDrAuxiliaryClusterName adds the drAuxiliaryClusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrAuxiliaryClusterName(drAuxiliaryClusterName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrAuxiliaryClusterName(drAuxiliaryClusterName)
 	return o
 }
 
-// SetDrGroupIDQueryParameter adds the drGroupId to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetDrGroupIDQueryParameter(drGroupID *int64) {
-	o.DrGroupIDQueryParameter = drGroupID
+// SetDrAuxiliaryClusterName adds the drAuxiliaryClusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrAuxiliaryClusterName(drAuxiliaryClusterName *string) {
+	o.DrAuxiliaryClusterName = drAuxiliaryClusterName
 }
 
-// WithDrMirroringStateQueryParameter adds the drMirroringState to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithDrMirroringStateQueryParameter(drMirroringState *string) *MetroclusterNodeCollectionGetParams {
-	o.SetDrMirroringStateQueryParameter(drMirroringState)
+// WithDrAuxiliaryClusterUUID adds the drAuxiliaryClusterUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrAuxiliaryClusterUUID(drAuxiliaryClusterUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrAuxiliaryClusterUUID(drAuxiliaryClusterUUID)
 	return o
 }
 
-// SetDrMirroringStateQueryParameter adds the drMirroringState to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetDrMirroringStateQueryParameter(drMirroringState *string) {
-	o.DrMirroringStateQueryParameter = drMirroringState
+// SetDrAuxiliaryClusterUUID adds the drAuxiliaryClusterUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrAuxiliaryClusterUUID(drAuxiliaryClusterUUID *string) {
+	o.DrAuxiliaryClusterUUID = drAuxiliaryClusterUUID
 }
 
-// WithDrOperationStateQueryParameter adds the drOperationState to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithDrOperationStateQueryParameter(drOperationState *string) *MetroclusterNodeCollectionGetParams {
-	o.SetDrOperationStateQueryParameter(drOperationState)
+// WithDrAuxiliaryPartnerName adds the drAuxiliaryPartnerName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrAuxiliaryPartnerName(drAuxiliaryPartnerName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrAuxiliaryPartnerName(drAuxiliaryPartnerName)
 	return o
 }
 
-// SetDrOperationStateQueryParameter adds the drOperationState to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetDrOperationStateQueryParameter(drOperationState *string) {
-	o.DrOperationStateQueryParameter = drOperationState
+// SetDrAuxiliaryPartnerName adds the drAuxiliaryPartnerName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrAuxiliaryPartnerName(drAuxiliaryPartnerName *string) {
+	o.DrAuxiliaryPartnerName = drAuxiliaryPartnerName
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterNodeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithDrAuxiliaryPartnerSystemID adds the drAuxiliaryPartnerSystemID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrAuxiliaryPartnerSystemID(drAuxiliaryPartnerSystemID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrAuxiliaryPartnerSystemID(drAuxiliaryPartnerSystemID)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetDrAuxiliaryPartnerSystemID adds the drAuxiliaryPartnerSystemId to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrAuxiliaryPartnerSystemID(drAuxiliaryPartnerSystemID *string) {
+	o.DrAuxiliaryPartnerSystemID = drAuxiliaryPartnerSystemID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MetroclusterNodeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithDrAuxiliaryPartnerUUID adds the drAuxiliaryPartnerUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrAuxiliaryPartnerUUID(drAuxiliaryPartnerUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrAuxiliaryPartnerUUID(drAuxiliaryPartnerUUID)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetDrAuxiliaryPartnerUUID adds the drAuxiliaryPartnerUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrAuxiliaryPartnerUUID(drAuxiliaryPartnerUUID *string) {
+	o.DrAuxiliaryPartnerUUID = drAuxiliaryPartnerUUID
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *MetroclusterNodeCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithDrGroupID adds the drGroupID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrGroupID(drGroupID *int64) *MetroclusterNodeCollectionGetParams {
+	o.SetDrGroupID(drGroupID)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetDrGroupID adds the drGroupId to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrGroupID(drGroupID *int64) {
+	o.DrGroupID = drGroupID
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *MetroclusterNodeCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithDrMirroringState adds the drMirroringState to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrMirroringState(drMirroringState *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrMirroringState(drMirroringState)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetDrMirroringState adds the drMirroringState to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrMirroringState(drMirroringState *string) {
+	o.DrMirroringState = drMirroringState
 }
 
-// WithOrderByQueryParameter adds the orderBy to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MetroclusterNodeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithDrOperationState adds the drOperationState to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrOperationState(drOperationState *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrOperationState(drOperationState)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetDrOperationState adds the drOperationState to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrOperationState(drOperationState *string) {
+	o.DrOperationState = drOperationState
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MetroclusterNodeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithDrPartnerName adds the drPartnerName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrPartnerName(drPartnerName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrPartnerName(drPartnerName)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetDrPartnerName adds the drPartnerName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrPartnerName(drPartnerName *string) {
+	o.DrPartnerName = drPartnerName
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterNodeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithDrPartnerSystemID adds the drPartnerSystemID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrPartnerSystemID(drPartnerSystemID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrPartnerSystemID(drPartnerSystemID)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster node collection get params
-func (o *MetroclusterNodeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetDrPartnerSystemID adds the drPartnerSystemId to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrPartnerSystemID(drPartnerSystemID *string) {
+	o.DrPartnerSystemID = drPartnerSystemID
+}
+
+// WithDrPartnerUUID adds the drPartnerUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrPartnerUUID(drPartnerUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrPartnerUUID(drPartnerUUID)
+	return o
+}
+
+// SetDrPartnerUUID adds the drPartnerUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrPartnerUUID(drPartnerUUID *string) {
+	o.DrPartnerUUID = drPartnerUUID
+}
+
+// WithDrPartnerClusterName adds the drPartnerClusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrPartnerClusterName(drPartnerClusterName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrPartnerClusterName(drPartnerClusterName)
+	return o
+}
+
+// SetDrPartnerClusterName adds the drPartnerClusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrPartnerClusterName(drPartnerClusterName *string) {
+	o.DrPartnerClusterName = drPartnerClusterName
+}
+
+// WithDrPartnerClusterUUID adds the drPartnerClusterUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithDrPartnerClusterUUID(drPartnerClusterUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetDrPartnerClusterUUID(drPartnerClusterUUID)
+	return o
+}
+
+// SetDrPartnerClusterUUID adds the drPartnerClusterUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetDrPartnerClusterUUID(drPartnerClusterUUID *string) {
+	o.DrPartnerClusterUUID = drPartnerClusterUUID
+}
+
+// WithFields adds the fields to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithFields(fields []string) *MetroclusterNodeCollectionGetParams {
+	o.SetFields(fields)
+	return o
+}
+
+// SetFields adds the fields to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
+}
+
+// WithHaPartnerName adds the haPartnerName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithHaPartnerName(haPartnerName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetHaPartnerName(haPartnerName)
+	return o
+}
+
+// SetHaPartnerName adds the haPartnerName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetHaPartnerName(haPartnerName *string) {
+	o.HaPartnerName = haPartnerName
+}
+
+// WithHaPartnerSystemID adds the haPartnerSystemID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithHaPartnerSystemID(haPartnerSystemID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetHaPartnerSystemID(haPartnerSystemID)
+	return o
+}
+
+// SetHaPartnerSystemID adds the haPartnerSystemId to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetHaPartnerSystemID(haPartnerSystemID *string) {
+	o.HaPartnerSystemID = haPartnerSystemID
+}
+
+// WithHaPartnerUUID adds the haPartnerUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithHaPartnerUUID(haPartnerUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetHaPartnerUUID(haPartnerUUID)
+	return o
+}
+
+// SetHaPartnerUUID adds the haPartnerUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetHaPartnerUUID(haPartnerUUID *string) {
+	o.HaPartnerUUID = haPartnerUUID
+}
+
+// WithHaPartnerClusterName adds the haPartnerClusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithHaPartnerClusterName(haPartnerClusterName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetHaPartnerClusterName(haPartnerClusterName)
+	return o
+}
+
+// SetHaPartnerClusterName adds the haPartnerClusterName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetHaPartnerClusterName(haPartnerClusterName *string) {
+	o.HaPartnerClusterName = haPartnerClusterName
+}
+
+// WithHaPartnerClusterUUID adds the haPartnerClusterUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithHaPartnerClusterUUID(haPartnerClusterUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetHaPartnerClusterUUID(haPartnerClusterUUID)
+	return o
+}
+
+// SetHaPartnerClusterUUID adds the haPartnerClusterUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetHaPartnerClusterUUID(haPartnerClusterUUID *string) {
+	o.HaPartnerClusterUUID = haPartnerClusterUUID
+}
+
+// WithIsMccip adds the isMccip to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithIsMccip(isMccip *bool) *MetroclusterNodeCollectionGetParams {
+	o.SetIsMccip(isMccip)
+	return o
+}
+
+// SetIsMccip adds the isMccip to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetIsMccip(isMccip *bool) {
+	o.IsMccip = isMccip
+}
+
+// WithLimitEnforcement adds the limitEnforcement to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithLimitEnforcement(limitEnforcement *string) *MetroclusterNodeCollectionGetParams {
+	o.SetLimitEnforcement(limitEnforcement)
+	return o
+}
+
+// SetLimitEnforcement adds the limitEnforcement to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetLimitEnforcement(limitEnforcement *string) {
+	o.LimitEnforcement = limitEnforcement
+}
+
+// WithMaxRecords adds the maxRecords to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithMaxRecords(maxRecords *int64) *MetroclusterNodeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
+	return o
+}
+
+// SetMaxRecords adds the maxRecords to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
+}
+
+// WithNodeName adds the nodeName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithNodeName(nodeName *string) *MetroclusterNodeCollectionGetParams {
+	o.SetNodeName(nodeName)
+	return o
+}
+
+// SetNodeName adds the nodeName to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
+}
+
+// WithNodeSystemID adds the nodeSystemID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithNodeSystemID(nodeSystemID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetNodeSystemID(nodeSystemID)
+	return o
+}
+
+// SetNodeSystemID adds the nodeSystemId to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetNodeSystemID(nodeSystemID *string) {
+	o.NodeSystemID = nodeSystemID
+}
+
+// WithNodeUUID adds the nodeUUID to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithNodeUUID(nodeUUID *string) *MetroclusterNodeCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
+	return o
+}
+
+// SetNodeUUID adds the nodeUuid to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
+}
+
+// WithOrderBy adds the orderBy to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithOrderBy(orderBy []string) *MetroclusterNodeCollectionGetParams {
+	o.SetOrderBy(orderBy)
+	return o
+}
+
+// SetOrderBy adds the orderBy to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
+}
+
+// WithReturnRecords adds the returnRecords to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithReturnRecords(returnRecords *bool) *MetroclusterNodeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
+	return o
+}
+
+// SetReturnRecords adds the returnRecords to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
+}
+
+// WithReturnTimeout adds the returnTimeout to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterNodeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the metrocluster node collection get params
+func (o *MetroclusterNodeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,13 +685,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.AutomaticUsoQueryParameter != nil {
+	if o.AutomaticUso != nil {
 
 		// query param automatic_uso
 		var qrAutomaticUso bool
 
-		if o.AutomaticUsoQueryParameter != nil {
-			qrAutomaticUso = *o.AutomaticUsoQueryParameter
+		if o.AutomaticUso != nil {
+			qrAutomaticUso = *o.AutomaticUso
 		}
 		qAutomaticUso := swag.FormatBool(qrAutomaticUso)
 		if qAutomaticUso != "" {
@@ -396,13 +702,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ClusterNameQueryParameter != nil {
+	if o.ClusterName != nil {
 
 		// query param cluster.name
 		var qrClusterName string
 
-		if o.ClusterNameQueryParameter != nil {
-			qrClusterName = *o.ClusterNameQueryParameter
+		if o.ClusterName != nil {
+			qrClusterName = *o.ClusterName
 		}
 		qClusterName := qrClusterName
 		if qClusterName != "" {
@@ -413,13 +719,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ClusterUUIDQueryParameter != nil {
+	if o.ClusterUUID != nil {
 
 		// query param cluster.uuid
 		var qrClusterUUID string
 
-		if o.ClusterUUIDQueryParameter != nil {
-			qrClusterUUID = *o.ClusterUUIDQueryParameter
+		if o.ClusterUUID != nil {
+			qrClusterUUID = *o.ClusterUUID
 		}
 		qClusterUUID := qrClusterUUID
 		if qClusterUUID != "" {
@@ -430,13 +736,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConfigurationStateQueryParameter != nil {
+	if o.ConfigurationState != nil {
 
 		// query param configuration_state
 		var qrConfigurationState string
 
-		if o.ConfigurationStateQueryParameter != nil {
-			qrConfigurationState = *o.ConfigurationStateQueryParameter
+		if o.ConfigurationState != nil {
+			qrConfigurationState = *o.ConfigurationState
 		}
 		qConfigurationState := qrConfigurationState
 		if qConfigurationState != "" {
@@ -447,13 +753,98 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DrGroupIDQueryParameter != nil {
+	if o.DrAuxiliaryClusterName != nil {
+
+		// query param dr_auxiliary_cluster.name
+		var qrDrAuxiliaryClusterName string
+
+		if o.DrAuxiliaryClusterName != nil {
+			qrDrAuxiliaryClusterName = *o.DrAuxiliaryClusterName
+		}
+		qDrAuxiliaryClusterName := qrDrAuxiliaryClusterName
+		if qDrAuxiliaryClusterName != "" {
+
+			if err := r.SetQueryParam("dr_auxiliary_cluster.name", qDrAuxiliaryClusterName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrAuxiliaryClusterUUID != nil {
+
+		// query param dr_auxiliary_cluster.uuid
+		var qrDrAuxiliaryClusterUUID string
+
+		if o.DrAuxiliaryClusterUUID != nil {
+			qrDrAuxiliaryClusterUUID = *o.DrAuxiliaryClusterUUID
+		}
+		qDrAuxiliaryClusterUUID := qrDrAuxiliaryClusterUUID
+		if qDrAuxiliaryClusterUUID != "" {
+
+			if err := r.SetQueryParam("dr_auxiliary_cluster.uuid", qDrAuxiliaryClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrAuxiliaryPartnerName != nil {
+
+		// query param dr_auxiliary_partner.name
+		var qrDrAuxiliaryPartnerName string
+
+		if o.DrAuxiliaryPartnerName != nil {
+			qrDrAuxiliaryPartnerName = *o.DrAuxiliaryPartnerName
+		}
+		qDrAuxiliaryPartnerName := qrDrAuxiliaryPartnerName
+		if qDrAuxiliaryPartnerName != "" {
+
+			if err := r.SetQueryParam("dr_auxiliary_partner.name", qDrAuxiliaryPartnerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrAuxiliaryPartnerSystemID != nil {
+
+		// query param dr_auxiliary_partner.system_id
+		var qrDrAuxiliaryPartnerSystemID string
+
+		if o.DrAuxiliaryPartnerSystemID != nil {
+			qrDrAuxiliaryPartnerSystemID = *o.DrAuxiliaryPartnerSystemID
+		}
+		qDrAuxiliaryPartnerSystemID := qrDrAuxiliaryPartnerSystemID
+		if qDrAuxiliaryPartnerSystemID != "" {
+
+			if err := r.SetQueryParam("dr_auxiliary_partner.system_id", qDrAuxiliaryPartnerSystemID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrAuxiliaryPartnerUUID != nil {
+
+		// query param dr_auxiliary_partner.uuid
+		var qrDrAuxiliaryPartnerUUID string
+
+		if o.DrAuxiliaryPartnerUUID != nil {
+			qrDrAuxiliaryPartnerUUID = *o.DrAuxiliaryPartnerUUID
+		}
+		qDrAuxiliaryPartnerUUID := qrDrAuxiliaryPartnerUUID
+		if qDrAuxiliaryPartnerUUID != "" {
+
+			if err := r.SetQueryParam("dr_auxiliary_partner.uuid", qDrAuxiliaryPartnerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrGroupID != nil {
 
 		// query param dr_group_id
 		var qrDrGroupID int64
 
-		if o.DrGroupIDQueryParameter != nil {
-			qrDrGroupID = *o.DrGroupIDQueryParameter
+		if o.DrGroupID != nil {
+			qrDrGroupID = *o.DrGroupID
 		}
 		qDrGroupID := swag.FormatInt64(qrDrGroupID)
 		if qDrGroupID != "" {
@@ -464,13 +855,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DrMirroringStateQueryParameter != nil {
+	if o.DrMirroringState != nil {
 
 		// query param dr_mirroring_state
 		var qrDrMirroringState string
 
-		if o.DrMirroringStateQueryParameter != nil {
-			qrDrMirroringState = *o.DrMirroringStateQueryParameter
+		if o.DrMirroringState != nil {
+			qrDrMirroringState = *o.DrMirroringState
 		}
 		qDrMirroringState := qrDrMirroringState
 		if qDrMirroringState != "" {
@@ -481,13 +872,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.DrOperationStateQueryParameter != nil {
+	if o.DrOperationState != nil {
 
 		// query param dr_operation_state
 		var qrDrOperationState string
 
-		if o.DrOperationStateQueryParameter != nil {
-			qrDrOperationState = *o.DrOperationStateQueryParameter
+		if o.DrOperationState != nil {
+			qrDrOperationState = *o.DrOperationState
 		}
 		qDrOperationState := qrDrOperationState
 		if qDrOperationState != "" {
@@ -498,7 +889,92 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.DrPartnerName != nil {
+
+		// query param dr_partner.name
+		var qrDrPartnerName string
+
+		if o.DrPartnerName != nil {
+			qrDrPartnerName = *o.DrPartnerName
+		}
+		qDrPartnerName := qrDrPartnerName
+		if qDrPartnerName != "" {
+
+			if err := r.SetQueryParam("dr_partner.name", qDrPartnerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrPartnerSystemID != nil {
+
+		// query param dr_partner.system_id
+		var qrDrPartnerSystemID string
+
+		if o.DrPartnerSystemID != nil {
+			qrDrPartnerSystemID = *o.DrPartnerSystemID
+		}
+		qDrPartnerSystemID := qrDrPartnerSystemID
+		if qDrPartnerSystemID != "" {
+
+			if err := r.SetQueryParam("dr_partner.system_id", qDrPartnerSystemID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrPartnerUUID != nil {
+
+		// query param dr_partner.uuid
+		var qrDrPartnerUUID string
+
+		if o.DrPartnerUUID != nil {
+			qrDrPartnerUUID = *o.DrPartnerUUID
+		}
+		qDrPartnerUUID := qrDrPartnerUUID
+		if qDrPartnerUUID != "" {
+
+			if err := r.SetQueryParam("dr_partner.uuid", qDrPartnerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrPartnerClusterName != nil {
+
+		// query param dr_partner_cluster.name
+		var qrDrPartnerClusterName string
+
+		if o.DrPartnerClusterName != nil {
+			qrDrPartnerClusterName = *o.DrPartnerClusterName
+		}
+		qDrPartnerClusterName := qrDrPartnerClusterName
+		if qDrPartnerClusterName != "" {
+
+			if err := r.SetQueryParam("dr_partner_cluster.name", qDrPartnerClusterName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DrPartnerClusterUUID != nil {
+
+		// query param dr_partner_cluster.uuid
+		var qrDrPartnerClusterUUID string
+
+		if o.DrPartnerClusterUUID != nil {
+			qrDrPartnerClusterUUID = *o.DrPartnerClusterUUID
+		}
+		qDrPartnerClusterUUID := qrDrPartnerClusterUUID
+		if qDrPartnerClusterUUID != "" {
+
+			if err := r.SetQueryParam("dr_partner_cluster.uuid", qDrPartnerClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -509,13 +985,132 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.HaPartnerName != nil {
+
+		// query param ha_partner.name
+		var qrHaPartnerName string
+
+		if o.HaPartnerName != nil {
+			qrHaPartnerName = *o.HaPartnerName
+		}
+		qHaPartnerName := qrHaPartnerName
+		if qHaPartnerName != "" {
+
+			if err := r.SetQueryParam("ha_partner.name", qHaPartnerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPartnerSystemID != nil {
+
+		// query param ha_partner.system_id
+		var qrHaPartnerSystemID string
+
+		if o.HaPartnerSystemID != nil {
+			qrHaPartnerSystemID = *o.HaPartnerSystemID
+		}
+		qHaPartnerSystemID := qrHaPartnerSystemID
+		if qHaPartnerSystemID != "" {
+
+			if err := r.SetQueryParam("ha_partner.system_id", qHaPartnerSystemID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPartnerUUID != nil {
+
+		// query param ha_partner.uuid
+		var qrHaPartnerUUID string
+
+		if o.HaPartnerUUID != nil {
+			qrHaPartnerUUID = *o.HaPartnerUUID
+		}
+		qHaPartnerUUID := qrHaPartnerUUID
+		if qHaPartnerUUID != "" {
+
+			if err := r.SetQueryParam("ha_partner.uuid", qHaPartnerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPartnerClusterName != nil {
+
+		// query param ha_partner_cluster.name
+		var qrHaPartnerClusterName string
+
+		if o.HaPartnerClusterName != nil {
+			qrHaPartnerClusterName = *o.HaPartnerClusterName
+		}
+		qHaPartnerClusterName := qrHaPartnerClusterName
+		if qHaPartnerClusterName != "" {
+
+			if err := r.SetQueryParam("ha_partner_cluster.name", qHaPartnerClusterName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPartnerClusterUUID != nil {
+
+		// query param ha_partner_cluster.uuid
+		var qrHaPartnerClusterUUID string
+
+		if o.HaPartnerClusterUUID != nil {
+			qrHaPartnerClusterUUID = *o.HaPartnerClusterUUID
+		}
+		qHaPartnerClusterUUID := qrHaPartnerClusterUUID
+		if qHaPartnerClusterUUID != "" {
+
+			if err := r.SetQueryParam("ha_partner_cluster.uuid", qHaPartnerClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsMccip != nil {
+
+		// query param is_mccip
+		var qrIsMccip bool
+
+		if o.IsMccip != nil {
+			qrIsMccip = *o.IsMccip
+		}
+		qIsMccip := swag.FormatBool(qrIsMccip)
+		if qIsMccip != "" {
+
+			if err := r.SetQueryParam("is_mccip", qIsMccip); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LimitEnforcement != nil {
+
+		// query param limit_enforcement
+		var qrLimitEnforcement string
+
+		if o.LimitEnforcement != nil {
+			qrLimitEnforcement = *o.LimitEnforcement
+		}
+		qLimitEnforcement := qrLimitEnforcement
+		if qLimitEnforcement != "" {
+
+			if err := r.SetQueryParam("limit_enforcement", qLimitEnforcement); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -526,13 +1121,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -543,13 +1138,30 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeSystemID != nil {
+
+		// query param node.system_id
+		var qrNodeSystemID string
+
+		if o.NodeSystemID != nil {
+			qrNodeSystemID = *o.NodeSystemID
+		}
+		qNodeSystemID := qrNodeSystemID
+		if qNodeSystemID != "" {
+
+			if err := r.SetQueryParam("node.system_id", qNodeSystemID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -560,7 +1172,7 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -571,13 +1183,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -588,13 +1200,13 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -613,7 +1225,7 @@ func (o *MetroclusterNodeCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamMetroclusterNodeCollectionGet binds the parameter fields
 func (o *MetroclusterNodeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +1242,7 @@ func (o *MetroclusterNodeCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamMetroclusterNodeCollectionGet binds the parameter order_by
 func (o *MetroclusterNodeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

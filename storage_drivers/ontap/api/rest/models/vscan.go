@@ -20,7 +20,7 @@ import (
 type Vscan struct {
 
 	// links
-	Links *VscanLinks `json:"_links,omitempty"`
+	Links *VscanInlineLinks `json:"_links,omitempty"`
 
 	// Discards the cached information of the files that have been successfully scanned. Once the cache is cleared, files are scanned again when they are accessed. PATCH only
 	CacheClear *bool `json:"cache_clear,omitempty"`
@@ -28,17 +28,17 @@ type Vscan struct {
 	// Specifies whether or not Vscan is enabled on the SVM.
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// on access policies
-	OnAccessPolicies []*VscanOnAccess `json:"on_access_policies,omitempty"`
-
-	// on demand policies
-	OnDemandPolicies []*VscanOnDemandPolicy `json:"on_demand_policies,omitempty"`
-
-	// scanner pools
-	ScannerPools []*ScannerPool `json:"scanner_pools,omitempty"`
-
 	// svm
-	Svm *VscanSvm `json:"svm,omitempty"`
+	Svm *VscanInlineSvm `json:"svm,omitempty"`
+
+	// vscan inline on access policies
+	VscanInlineOnAccessPolicies []*VscanOnAccess `json:"on_access_policies,omitempty"`
+
+	// vscan inline on demand policies
+	VscanInlineOnDemandPolicies []*VscanOnDemandPolicy `json:"on_demand_policies,omitempty"`
+
+	// vscan inline scanner pools
+	VscanInlineScannerPools []*ScannerPool `json:"scanner_pools,omitempty"`
 }
 
 // Validate validates this vscan
@@ -49,19 +49,19 @@ func (m *Vscan) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateOnAccessPolicies(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateOnDemandPolicies(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateScannerPools(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVscanInlineOnAccessPolicies(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVscanInlineOnDemandPolicies(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVscanInlineScannerPools(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,78 +88,6 @@ func (m *Vscan) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Vscan) validateOnAccessPolicies(formats strfmt.Registry) error {
-	if swag.IsZero(m.OnAccessPolicies) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.OnAccessPolicies); i++ {
-		if swag.IsZero(m.OnAccessPolicies[i]) { // not required
-			continue
-		}
-
-		if m.OnAccessPolicies[i] != nil {
-			if err := m.OnAccessPolicies[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("on_access_policies" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Vscan) validateOnDemandPolicies(formats strfmt.Registry) error {
-	if swag.IsZero(m.OnDemandPolicies) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.OnDemandPolicies); i++ {
-		if swag.IsZero(m.OnDemandPolicies[i]) { // not required
-			continue
-		}
-
-		if m.OnDemandPolicies[i] != nil {
-			if err := m.OnDemandPolicies[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("on_demand_policies" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Vscan) validateScannerPools(formats strfmt.Registry) error {
-	if swag.IsZero(m.ScannerPools) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ScannerPools); i++ {
-		if swag.IsZero(m.ScannerPools[i]) { // not required
-			continue
-		}
-
-		if m.ScannerPools[i] != nil {
-			if err := m.ScannerPools[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("scanner_pools" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *Vscan) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -177,6 +105,78 @@ func (m *Vscan) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Vscan) validateVscanInlineOnAccessPolicies(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanInlineOnAccessPolicies) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VscanInlineOnAccessPolicies); i++ {
+		if swag.IsZero(m.VscanInlineOnAccessPolicies[i]) { // not required
+			continue
+		}
+
+		if m.VscanInlineOnAccessPolicies[i] != nil {
+			if err := m.VscanInlineOnAccessPolicies[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("on_access_policies" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Vscan) validateVscanInlineOnDemandPolicies(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanInlineOnDemandPolicies) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VscanInlineOnDemandPolicies); i++ {
+		if swag.IsZero(m.VscanInlineOnDemandPolicies[i]) { // not required
+			continue
+		}
+
+		if m.VscanInlineOnDemandPolicies[i] != nil {
+			if err := m.VscanInlineOnDemandPolicies[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("on_demand_policies" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Vscan) validateVscanInlineScannerPools(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanInlineScannerPools) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VscanInlineScannerPools); i++ {
+		if swag.IsZero(m.VscanInlineScannerPools[i]) { // not required
+			continue
+		}
+
+		if m.VscanInlineScannerPools[i] != nil {
+			if err := m.VscanInlineScannerPools[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("scanner_pools" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this vscan based on the context it is used
 func (m *Vscan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -185,19 +185,19 @@ func (m *Vscan) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateOnAccessPolicies(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateOnDemandPolicies(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateScannerPools(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVscanInlineOnAccessPolicies(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVscanInlineOnDemandPolicies(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVscanInlineScannerPools(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -221,12 +221,26 @@ func (m *Vscan) contextValidateLinks(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *Vscan) contextValidateOnAccessPolicies(ctx context.Context, formats strfmt.Registry) error {
+func (m *Vscan) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.OnAccessPolicies); i++ {
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
 
-		if m.OnAccessPolicies[i] != nil {
-			if err := m.OnAccessPolicies[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *Vscan) contextValidateVscanInlineOnAccessPolicies(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VscanInlineOnAccessPolicies); i++ {
+
+		if m.VscanInlineOnAccessPolicies[i] != nil {
+			if err := m.VscanInlineOnAccessPolicies[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("on_access_policies" + "." + strconv.Itoa(i))
 				}
@@ -239,12 +253,12 @@ func (m *Vscan) contextValidateOnAccessPolicies(ctx context.Context, formats str
 	return nil
 }
 
-func (m *Vscan) contextValidateOnDemandPolicies(ctx context.Context, formats strfmt.Registry) error {
+func (m *Vscan) contextValidateVscanInlineOnDemandPolicies(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.OnDemandPolicies); i++ {
+	for i := 0; i < len(m.VscanInlineOnDemandPolicies); i++ {
 
-		if m.OnDemandPolicies[i] != nil {
-			if err := m.OnDemandPolicies[i].ContextValidate(ctx, formats); err != nil {
+		if m.VscanInlineOnDemandPolicies[i] != nil {
+			if err := m.VscanInlineOnDemandPolicies[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("on_demand_policies" + "." + strconv.Itoa(i))
 				}
@@ -257,12 +271,12 @@ func (m *Vscan) contextValidateOnDemandPolicies(ctx context.Context, formats str
 	return nil
 }
 
-func (m *Vscan) contextValidateScannerPools(ctx context.Context, formats strfmt.Registry) error {
+func (m *Vscan) contextValidateVscanInlineScannerPools(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ScannerPools); i++ {
+	for i := 0; i < len(m.VscanInlineScannerPools); i++ {
 
-		if m.ScannerPools[i] != nil {
-			if err := m.ScannerPools[i].ContextValidate(ctx, formats); err != nil {
+		if m.VscanInlineScannerPools[i] != nil {
+			if err := m.VscanInlineScannerPools[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("scanner_pools" + "." + strconv.Itoa(i))
 				}
@@ -270,20 +284,6 @@ func (m *Vscan) contextValidateScannerPools(ctx context.Context, formats strfmt.
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *Vscan) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Svm != nil {
-		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("svm")
-			}
-			return err
-		}
 	}
 
 	return nil
@@ -307,17 +307,17 @@ func (m *Vscan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanLinks vscan links
+// VscanInlineLinks vscan inline links
 //
-// swagger:model VscanLinks
-type VscanLinks struct {
+// swagger:model vscan_inline__links
+type VscanInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan links
-func (m *VscanLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan inline links
+func (m *VscanInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -330,7 +330,7 @@ func (m *VscanLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -347,8 +347,8 @@ func (m *VscanLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan links based on the context it is used
-func (m *VscanLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan inline links based on the context it is used
+func (m *VscanInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -361,7 +361,7 @@ func (m *VscanLinks) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *VscanLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -376,7 +376,7 @@ func (m *VscanLinks) contextValidateSelf(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *VscanLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -384,8 +384,8 @@ func (m *VscanLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanLinks) UnmarshalBinary(b []byte) error {
-	var res VscanLinks
+func (m *VscanInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -393,27 +393,27 @@ func (m *VscanLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanSvm vscan svm
+// VscanInlineSvm vscan inline svm
 //
-// swagger:model VscanSvm
-type VscanSvm struct {
+// swagger:model vscan_inline_svm
+type VscanInlineSvm struct {
 
 	// links
-	Links *VscanSvmLinks `json:"_links,omitempty"`
+	Links *VscanInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan svm
-func (m *VscanSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan inline svm
+func (m *VscanInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -426,7 +426,7 @@ func (m *VscanSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanSvm) validateLinks(formats strfmt.Registry) error {
+func (m *VscanInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -443,8 +443,8 @@ func (m *VscanSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan svm based on the context it is used
-func (m *VscanSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan inline svm based on the context it is used
+func (m *VscanInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -457,7 +457,7 @@ func (m *VscanSvm) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *VscanSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -472,7 +472,7 @@ func (m *VscanSvm) contextValidateLinks(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *VscanSvm) MarshalBinary() ([]byte, error) {
+func (m *VscanInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -480,8 +480,8 @@ func (m *VscanSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanSvm) UnmarshalBinary(b []byte) error {
-	var res VscanSvm
+func (m *VscanInlineSvm) UnmarshalBinary(b []byte) error {
+	var res VscanInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -489,17 +489,17 @@ func (m *VscanSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanSvmLinks vscan svm links
+// VscanInlineSvmInlineLinks vscan inline svm inline links
 //
-// swagger:model VscanSvmLinks
-type VscanSvmLinks struct {
+// swagger:model vscan_inline_svm_inline__links
+type VscanInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan svm links
-func (m *VscanSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan inline svm inline links
+func (m *VscanInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -512,7 +512,7 @@ func (m *VscanSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -529,8 +529,8 @@ func (m *VscanSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan svm links based on the context it is used
-func (m *VscanSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan inline svm inline links based on the context it is used
+func (m *VscanInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -543,7 +543,7 @@ func (m *VscanSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *VscanSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -558,7 +558,7 @@ func (m *VscanSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *VscanSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -566,8 +566,8 @@ func (m *VscanSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanSvmLinks) UnmarshalBinary(b []byte) error {
-	var res VscanSvmLinks
+func (m *VscanInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

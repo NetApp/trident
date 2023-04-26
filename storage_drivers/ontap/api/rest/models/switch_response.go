@@ -23,10 +23,11 @@ type SwitchResponse struct {
 	Links *CollectionLinks `json:"_links,omitempty"`
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Switch `json:"records,omitempty"`
+	// switch response inline records
+	SwitchResponseInlineRecords []*Switch `json:"records,omitempty"`
 }
 
 // Validate validates this switch response
@@ -37,7 +38,7 @@ func (m *SwitchResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSwitchResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SwitchResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SwitchResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SwitchResponse) validateSwitchResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SwitchResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SwitchResponseInlineRecords); i++ {
+		if swag.IsZero(m.SwitchResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SwitchResponseInlineRecords[i] != nil {
+			if err := m.SwitchResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SwitchResponse) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSwitchResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SwitchResponse) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SwitchResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchResponse) contextValidateSwitchResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SwitchResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SwitchResponseInlineRecords[i] != nil {
+			if err := m.SwitchResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

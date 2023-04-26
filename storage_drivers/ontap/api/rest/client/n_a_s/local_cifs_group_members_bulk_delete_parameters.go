@@ -74,19 +74,19 @@ type LocalCifsGroupMembersBulkDeleteParams struct {
 
 	   Local group SID
 	*/
-	LocalCifsGroupSIDPathParameter string
+	LocalCifsGroupSid string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *LocalCifsGroupMembersBulkDeleteParams) WithDefaults() *LocalCifsGroupMe
 // All values with no default are reset to their zero value.
 func (o *LocalCifsGroupMembersBulkDeleteParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := LocalCifsGroupMembersBulkDeleteParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -163,37 +163,37 @@ func (o *LocalCifsGroupMembersBulkDeleteParams) SetInfo(info *models.LocalCifsGr
 	o.Info = info
 }
 
-// WithLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members bulk delete params
-func (o *LocalCifsGroupMembersBulkDeleteParams) WithLocalCifsGroupSIDPathParameter(localCifsGroupSid string) *LocalCifsGroupMembersBulkDeleteParams {
-	o.SetLocalCifsGroupSIDPathParameter(localCifsGroupSid)
+// WithLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members bulk delete params
+func (o *LocalCifsGroupMembersBulkDeleteParams) WithLocalCifsGroupSid(localCifsGroupSid string) *LocalCifsGroupMembersBulkDeleteParams {
+	o.SetLocalCifsGroupSid(localCifsGroupSid)
 	return o
 }
 
-// SetLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members bulk delete params
-func (o *LocalCifsGroupMembersBulkDeleteParams) SetLocalCifsGroupSIDPathParameter(localCifsGroupSid string) {
-	o.LocalCifsGroupSIDPathParameter = localCifsGroupSid
+// SetLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members bulk delete params
+func (o *LocalCifsGroupMembersBulkDeleteParams) SetLocalCifsGroupSid(localCifsGroupSid string) {
+	o.LocalCifsGroupSid = localCifsGroupSid
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the local cifs group members bulk delete params
-func (o *LocalCifsGroupMembersBulkDeleteParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LocalCifsGroupMembersBulkDeleteParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the local cifs group members bulk delete params
+func (o *LocalCifsGroupMembersBulkDeleteParams) WithReturnRecords(returnRecords *bool) *LocalCifsGroupMembersBulkDeleteParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the local cifs group members bulk delete params
-func (o *LocalCifsGroupMembersBulkDeleteParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the local cifs group members bulk delete params
+func (o *LocalCifsGroupMembersBulkDeleteParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs group members bulk delete params
-func (o *LocalCifsGroupMembersBulkDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsGroupMembersBulkDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs group members bulk delete params
+func (o *LocalCifsGroupMembersBulkDeleteParams) WithSvmUUID(svmUUID string) *LocalCifsGroupMembersBulkDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs group members bulk delete params
-func (o *LocalCifsGroupMembersBulkDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs group members bulk delete params
+func (o *LocalCifsGroupMembersBulkDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -210,17 +210,17 @@ func (o *LocalCifsGroupMembersBulkDeleteParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param local_cifs_group.sid
-	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSIDPathParameter); err != nil {
+	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSid); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -232,7 +232,7 @@ func (o *LocalCifsGroupMembersBulkDeleteParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

@@ -66,67 +66,67 @@ type SensorsCollectionGetParams struct {
 
 	   Filter by critical_high_threshold
 	*/
-	CriticalHighThresholdQueryParameter *int64
+	CriticalHighThreshold *int64
 
 	/* CriticalLowThreshold.
 
 	   Filter by critical_low_threshold
 	*/
-	CriticalLowThresholdQueryParameter *int64
+	CriticalLowThreshold *int64
 
 	/* DiscreteState.
 
 	   Filter by discrete_state
 	*/
-	DiscreteStateQueryParameter *string
+	DiscreteState *string
 
 	/* DiscreteValue.
 
 	   Filter by discrete_value
 	*/
-	DiscreteValueQueryParameter *string
+	DiscreteValue *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type SensorsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,43 +142,43 @@ type SensorsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ThresholdState.
 
 	   Filter by threshold_state
 	*/
-	ThresholdStateQueryParameter *string
+	ThresholdState *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* Value.
 
 	   Filter by value
 	*/
-	ValueQueryParameter *int64
+	Value *int64
 
 	/* ValueUnits.
 
 	   Filter by value_units
 	*/
-	ValueUnitsQueryParameter *string
+	ValueUnits *string
 
 	/* WarningHighThreshold.
 
 	   Filter by warning_high_threshold
 	*/
-	WarningHighThresholdQueryParameter *int64
+	WarningHighThreshold *int64
 
 	/* WarningLowThreshold.
 
 	   Filter by warning_low_threshold
 	*/
-	WarningLowThresholdQueryParameter *int64
+	WarningLowThreshold *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *SensorsCollectionGetParams) WithDefaults() *SensorsCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *SensorsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SensorsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *SensorsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCriticalHighThresholdQueryParameter adds the criticalHighThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithCriticalHighThresholdQueryParameter(criticalHighThreshold *int64) *SensorsCollectionGetParams {
-	o.SetCriticalHighThresholdQueryParameter(criticalHighThreshold)
+// WithCriticalHighThreshold adds the criticalHighThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithCriticalHighThreshold(criticalHighThreshold *int64) *SensorsCollectionGetParams {
+	o.SetCriticalHighThreshold(criticalHighThreshold)
 	return o
 }
 
-// SetCriticalHighThresholdQueryParameter adds the criticalHighThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetCriticalHighThresholdQueryParameter(criticalHighThreshold *int64) {
-	o.CriticalHighThresholdQueryParameter = criticalHighThreshold
+// SetCriticalHighThreshold adds the criticalHighThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetCriticalHighThreshold(criticalHighThreshold *int64) {
+	o.CriticalHighThreshold = criticalHighThreshold
 }
 
-// WithCriticalLowThresholdQueryParameter adds the criticalLowThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithCriticalLowThresholdQueryParameter(criticalLowThreshold *int64) *SensorsCollectionGetParams {
-	o.SetCriticalLowThresholdQueryParameter(criticalLowThreshold)
+// WithCriticalLowThreshold adds the criticalLowThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithCriticalLowThreshold(criticalLowThreshold *int64) *SensorsCollectionGetParams {
+	o.SetCriticalLowThreshold(criticalLowThreshold)
 	return o
 }
 
-// SetCriticalLowThresholdQueryParameter adds the criticalLowThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetCriticalLowThresholdQueryParameter(criticalLowThreshold *int64) {
-	o.CriticalLowThresholdQueryParameter = criticalLowThreshold
+// SetCriticalLowThreshold adds the criticalLowThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetCriticalLowThreshold(criticalLowThreshold *int64) {
+	o.CriticalLowThreshold = criticalLowThreshold
 }
 
-// WithDiscreteStateQueryParameter adds the discreteState to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithDiscreteStateQueryParameter(discreteState *string) *SensorsCollectionGetParams {
-	o.SetDiscreteStateQueryParameter(discreteState)
+// WithDiscreteState adds the discreteState to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithDiscreteState(discreteState *string) *SensorsCollectionGetParams {
+	o.SetDiscreteState(discreteState)
 	return o
 }
 
-// SetDiscreteStateQueryParameter adds the discreteState to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetDiscreteStateQueryParameter(discreteState *string) {
-	o.DiscreteStateQueryParameter = discreteState
+// SetDiscreteState adds the discreteState to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetDiscreteState(discreteState *string) {
+	o.DiscreteState = discreteState
 }
 
-// WithDiscreteValueQueryParameter adds the discreteValue to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithDiscreteValueQueryParameter(discreteValue *string) *SensorsCollectionGetParams {
-	o.SetDiscreteValueQueryParameter(discreteValue)
+// WithDiscreteValue adds the discreteValue to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithDiscreteValue(discreteValue *string) *SensorsCollectionGetParams {
+	o.SetDiscreteValue(discreteValue)
 	return o
 }
 
-// SetDiscreteValueQueryParameter adds the discreteValue to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetDiscreteValueQueryParameter(discreteValue *string) {
-	o.DiscreteValueQueryParameter = discreteValue
+// SetDiscreteValue adds the discreteValue to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetDiscreteValue(discreteValue *string) {
+	o.DiscreteValue = discreteValue
 }
 
-// WithFieldsQueryParameter adds the fields to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithFieldsQueryParameter(fields []string) *SensorsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithFields(fields []string) *SensorsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexQueryParameter adds the index to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithIndexQueryParameter(index *int64) *SensorsCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithIndex(index *int64) *SensorsCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SensorsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithMaxRecords(maxRecords *int64) *SensorsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithNameQueryParameter(name *string) *SensorsCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithName(name *string) *SensorsCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *SensorsCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithNodeName(nodeName *string) *SensorsCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *SensorsCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithNodeUUID(nodeUUID *string) *SensorsCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SensorsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithOrderBy(orderBy []string) *SensorsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SensorsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithReturnRecords(returnRecords *bool) *SensorsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SensorsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SensorsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithThresholdStateQueryParameter adds the thresholdState to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithThresholdStateQueryParameter(thresholdState *string) *SensorsCollectionGetParams {
-	o.SetThresholdStateQueryParameter(thresholdState)
+// WithThresholdState adds the thresholdState to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithThresholdState(thresholdState *string) *SensorsCollectionGetParams {
+	o.SetThresholdState(thresholdState)
 	return o
 }
 
-// SetThresholdStateQueryParameter adds the thresholdState to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetThresholdStateQueryParameter(thresholdState *string) {
-	o.ThresholdStateQueryParameter = thresholdState
+// SetThresholdState adds the thresholdState to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetThresholdState(thresholdState *string) {
+	o.ThresholdState = thresholdState
 }
 
-// WithTypeQueryParameter adds the typeVar to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithTypeQueryParameter(typeVar *string) *SensorsCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithType(typeVar *string) *SensorsCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithValueQueryParameter adds the value to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithValueQueryParameter(value *int64) *SensorsCollectionGetParams {
-	o.SetValueQueryParameter(value)
+// WithValue adds the value to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithValue(value *int64) *SensorsCollectionGetParams {
+	o.SetValue(value)
 	return o
 }
 
-// SetValueQueryParameter adds the value to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetValueQueryParameter(value *int64) {
-	o.ValueQueryParameter = value
+// SetValue adds the value to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetValue(value *int64) {
+	o.Value = value
 }
 
-// WithValueUnitsQueryParameter adds the valueUnits to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithValueUnitsQueryParameter(valueUnits *string) *SensorsCollectionGetParams {
-	o.SetValueUnitsQueryParameter(valueUnits)
+// WithValueUnits adds the valueUnits to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithValueUnits(valueUnits *string) *SensorsCollectionGetParams {
+	o.SetValueUnits(valueUnits)
 	return o
 }
 
-// SetValueUnitsQueryParameter adds the valueUnits to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetValueUnitsQueryParameter(valueUnits *string) {
-	o.ValueUnitsQueryParameter = valueUnits
+// SetValueUnits adds the valueUnits to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetValueUnits(valueUnits *string) {
+	o.ValueUnits = valueUnits
 }
 
-// WithWarningHighThresholdQueryParameter adds the warningHighThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithWarningHighThresholdQueryParameter(warningHighThreshold *int64) *SensorsCollectionGetParams {
-	o.SetWarningHighThresholdQueryParameter(warningHighThreshold)
+// WithWarningHighThreshold adds the warningHighThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithWarningHighThreshold(warningHighThreshold *int64) *SensorsCollectionGetParams {
+	o.SetWarningHighThreshold(warningHighThreshold)
 	return o
 }
 
-// SetWarningHighThresholdQueryParameter adds the warningHighThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetWarningHighThresholdQueryParameter(warningHighThreshold *int64) {
-	o.WarningHighThresholdQueryParameter = warningHighThreshold
+// SetWarningHighThreshold adds the warningHighThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetWarningHighThreshold(warningHighThreshold *int64) {
+	o.WarningHighThreshold = warningHighThreshold
 }
 
-// WithWarningLowThresholdQueryParameter adds the warningLowThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) WithWarningLowThresholdQueryParameter(warningLowThreshold *int64) *SensorsCollectionGetParams {
-	o.SetWarningLowThresholdQueryParameter(warningLowThreshold)
+// WithWarningLowThreshold adds the warningLowThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) WithWarningLowThreshold(warningLowThreshold *int64) *SensorsCollectionGetParams {
+	o.SetWarningLowThreshold(warningLowThreshold)
 	return o
 }
 
-// SetWarningLowThresholdQueryParameter adds the warningLowThreshold to the sensors collection get params
-func (o *SensorsCollectionGetParams) SetWarningLowThresholdQueryParameter(warningLowThreshold *int64) {
-	o.WarningLowThresholdQueryParameter = warningLowThreshold
+// SetWarningLowThreshold adds the warningLowThreshold to the sensors collection get params
+func (o *SensorsCollectionGetParams) SetWarningLowThreshold(warningLowThreshold *int64) {
+	o.WarningLowThreshold = warningLowThreshold
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +464,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.CriticalHighThresholdQueryParameter != nil {
+	if o.CriticalHighThreshold != nil {
 
 		// query param critical_high_threshold
 		var qrCriticalHighThreshold int64
 
-		if o.CriticalHighThresholdQueryParameter != nil {
-			qrCriticalHighThreshold = *o.CriticalHighThresholdQueryParameter
+		if o.CriticalHighThreshold != nil {
+			qrCriticalHighThreshold = *o.CriticalHighThreshold
 		}
 		qCriticalHighThreshold := swag.FormatInt64(qrCriticalHighThreshold)
 		if qCriticalHighThreshold != "" {
@@ -481,13 +481,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.CriticalLowThresholdQueryParameter != nil {
+	if o.CriticalLowThreshold != nil {
 
 		// query param critical_low_threshold
 		var qrCriticalLowThreshold int64
 
-		if o.CriticalLowThresholdQueryParameter != nil {
-			qrCriticalLowThreshold = *o.CriticalLowThresholdQueryParameter
+		if o.CriticalLowThreshold != nil {
+			qrCriticalLowThreshold = *o.CriticalLowThreshold
 		}
 		qCriticalLowThreshold := swag.FormatInt64(qrCriticalLowThreshold)
 		if qCriticalLowThreshold != "" {
@@ -498,13 +498,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.DiscreteStateQueryParameter != nil {
+	if o.DiscreteState != nil {
 
 		// query param discrete_state
 		var qrDiscreteState string
 
-		if o.DiscreteStateQueryParameter != nil {
-			qrDiscreteState = *o.DiscreteStateQueryParameter
+		if o.DiscreteState != nil {
+			qrDiscreteState = *o.DiscreteState
 		}
 		qDiscreteState := qrDiscreteState
 		if qDiscreteState != "" {
@@ -515,13 +515,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.DiscreteValueQueryParameter != nil {
+	if o.DiscreteValue != nil {
 
 		// query param discrete_value
 		var qrDiscreteValue string
 
-		if o.DiscreteValueQueryParameter != nil {
-			qrDiscreteValue = *o.DiscreteValueQueryParameter
+		if o.DiscreteValue != nil {
+			qrDiscreteValue = *o.DiscreteValue
 		}
 		qDiscreteValue := qrDiscreteValue
 		if qDiscreteValue != "" {
@@ -532,7 +532,7 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -543,13 +543,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -560,13 +560,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -577,13 +577,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -594,13 +594,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -611,13 +611,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -628,7 +628,7 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -639,13 +639,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -656,13 +656,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -673,13 +673,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ThresholdStateQueryParameter != nil {
+	if o.ThresholdState != nil {
 
 		// query param threshold_state
 		var qrThresholdState string
 
-		if o.ThresholdStateQueryParameter != nil {
-			qrThresholdState = *o.ThresholdStateQueryParameter
+		if o.ThresholdState != nil {
+			qrThresholdState = *o.ThresholdState
 		}
 		qThresholdState := qrThresholdState
 		if qThresholdState != "" {
@@ -690,13 +690,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -707,13 +707,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ValueQueryParameter != nil {
+	if o.Value != nil {
 
 		// query param value
 		var qrValue int64
 
-		if o.ValueQueryParameter != nil {
-			qrValue = *o.ValueQueryParameter
+		if o.Value != nil {
+			qrValue = *o.Value
 		}
 		qValue := swag.FormatInt64(qrValue)
 		if qValue != "" {
@@ -724,13 +724,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ValueUnitsQueryParameter != nil {
+	if o.ValueUnits != nil {
 
 		// query param value_units
 		var qrValueUnits string
 
-		if o.ValueUnitsQueryParameter != nil {
-			qrValueUnits = *o.ValueUnitsQueryParameter
+		if o.ValueUnits != nil {
+			qrValueUnits = *o.ValueUnits
 		}
 		qValueUnits := qrValueUnits
 		if qValueUnits != "" {
@@ -741,13 +741,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.WarningHighThresholdQueryParameter != nil {
+	if o.WarningHighThreshold != nil {
 
 		// query param warning_high_threshold
 		var qrWarningHighThreshold int64
 
-		if o.WarningHighThresholdQueryParameter != nil {
-			qrWarningHighThreshold = *o.WarningHighThresholdQueryParameter
+		if o.WarningHighThreshold != nil {
+			qrWarningHighThreshold = *o.WarningHighThreshold
 		}
 		qWarningHighThreshold := swag.FormatInt64(qrWarningHighThreshold)
 		if qWarningHighThreshold != "" {
@@ -758,13 +758,13 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.WarningLowThresholdQueryParameter != nil {
+	if o.WarningLowThreshold != nil {
 
 		// query param warning_low_threshold
 		var qrWarningLowThreshold int64
 
-		if o.WarningLowThresholdQueryParameter != nil {
-			qrWarningLowThreshold = *o.WarningLowThresholdQueryParameter
+		if o.WarningLowThreshold != nil {
+			qrWarningLowThreshold = *o.WarningLowThreshold
 		}
 		qWarningLowThreshold := swag.FormatInt64(qrWarningLowThreshold)
 		if qWarningLowThreshold != "" {
@@ -783,7 +783,7 @@ func (o *SensorsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamSensorsCollectionGet binds the parameter fields
 func (o *SensorsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *SensorsCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamSensorsCollectionGet binds the parameter order_by
 func (o *SensorsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

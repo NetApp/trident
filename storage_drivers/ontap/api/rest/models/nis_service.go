@@ -21,29 +21,29 @@ import (
 type NisService struct {
 
 	// links
-	Links *NisServiceLinks `json:"_links,omitempty"`
-
-	// An array of objects where each object represents the NIS server and it's status for a given NIS domain. It is an advanced field.
-	BindingDetails []*NisServiceBindingDetailsItems0 `json:"binding_details,omitempty"`
-
-	// bound servers
-	// Read Only: true
-	BoundServers []string `json:"bound_servers,omitempty"`
+	Links *NisServiceInlineLinks `json:"_links,omitempty"`
 
 	// The NIS domain to which this configuration belongs.
 	//
 	// Max Length: 64
 	// Min Length: 1
-	Domain string `json:"domain,omitempty"`
+	Domain *string `json:"domain,omitempty"`
+
+	// An array of objects where each object represents the NIS server and it's status for a given NIS domain. It is an advanced field.
+	NisServiceInlineBindingDetails []*NisServiceInlineBindingDetailsInlineArrayItem `json:"binding_details,omitempty"`
+
+	// nis service inline bound servers
+	// Read Only: true
+	NisServiceInlineBoundServers []*string `json:"bound_servers,omitempty"`
 
 	// A list of hostnames or IP addresses of NIS servers used
 	// by the NIS domain configuration.
 	//
 	// Max Items: 10
-	Servers []string `json:"servers,omitempty"`
+	NisServiceInlineServers []*string `json:"servers,omitempty"`
 
 	// svm
-	Svm *NisServiceSvm `json:"svm,omitempty"`
+	Svm *NisServiceInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this nis service
@@ -54,19 +54,19 @@ func (m *NisService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateBindingDetails(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateBoundServers(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateDomain(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateServers(formats); err != nil {
+	if err := m.validateNisServiceInlineBindingDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNisServiceInlineBoundServers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNisServiceInlineServers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -97,18 +97,34 @@ func (m *NisService) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisService) validateBindingDetails(formats strfmt.Registry) error {
-	if swag.IsZero(m.BindingDetails) { // not required
+func (m *NisService) validateDomain(formats strfmt.Registry) error {
+	if swag.IsZero(m.Domain) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.BindingDetails); i++ {
-		if swag.IsZero(m.BindingDetails[i]) { // not required
+	if err := validate.MinLength("domain", "body", *m.Domain, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("domain", "body", *m.Domain, 64); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NisService) validateNisServiceInlineBindingDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.NisServiceInlineBindingDetails) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NisServiceInlineBindingDetails); i++ {
+		if swag.IsZero(m.NisServiceInlineBindingDetails[i]) { // not required
 			continue
 		}
 
-		if m.BindingDetails[i] != nil {
-			if err := m.BindingDetails[i].Validate(formats); err != nil {
+		if m.NisServiceInlineBindingDetails[i] != nil {
+			if err := m.NisServiceInlineBindingDetails[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("binding_details" + "." + strconv.Itoa(i))
 				}
@@ -121,18 +137,21 @@ func (m *NisService) validateBindingDetails(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisService) validateBoundServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.BoundServers) { // not required
+func (m *NisService) validateNisServiceInlineBoundServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.NisServiceInlineBoundServers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.BoundServers); i++ {
+	for i := 0; i < len(m.NisServiceInlineBoundServers); i++ {
+		if swag.IsZero(m.NisServiceInlineBoundServers[i]) { // not required
+			continue
+		}
 
-		if err := validate.MinLength("bound_servers"+"."+strconv.Itoa(i), "body", m.BoundServers[i], 1); err != nil {
+		if err := validate.MinLength("bound_servers"+"."+strconv.Itoa(i), "body", *m.NisServiceInlineBoundServers[i], 1); err != nil {
 			return err
 		}
 
-		if err := validate.MaxLength("bound_servers"+"."+strconv.Itoa(i), "body", m.BoundServers[i], 255); err != nil {
+		if err := validate.MaxLength("bound_servers"+"."+strconv.Itoa(i), "body", *m.NisServiceInlineBoundServers[i], 255); err != nil {
 			return err
 		}
 
@@ -141,40 +160,27 @@ func (m *NisService) validateBoundServers(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisService) validateDomain(formats strfmt.Registry) error {
-	if swag.IsZero(m.Domain) { // not required
+func (m *NisService) validateNisServiceInlineServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.NisServiceInlineServers) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("domain", "body", m.Domain, 1); err != nil {
+	iNisServiceInlineServersSize := int64(len(m.NisServiceInlineServers))
+
+	if err := validate.MaxItems("servers", "body", iNisServiceInlineServersSize, 10); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("domain", "body", m.Domain, 64); err != nil {
-		return err
-	}
+	for i := 0; i < len(m.NisServiceInlineServers); i++ {
+		if swag.IsZero(m.NisServiceInlineServers[i]) { // not required
+			continue
+		}
 
-	return nil
-}
-
-func (m *NisService) validateServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Servers) { // not required
-		return nil
-	}
-
-	iServersSize := int64(len(m.Servers))
-
-	if err := validate.MaxItems("servers", "body", iServersSize, 10); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Servers); i++ {
-
-		if err := validate.MinLength("servers"+"."+strconv.Itoa(i), "body", m.Servers[i], 1); err != nil {
+		if err := validate.MinLength("servers"+"."+strconv.Itoa(i), "body", *m.NisServiceInlineServers[i], 1); err != nil {
 			return err
 		}
 
-		if err := validate.MaxLength("servers"+"."+strconv.Itoa(i), "body", m.Servers[i], 255); err != nil {
+		if err := validate.MaxLength("servers"+"."+strconv.Itoa(i), "body", *m.NisServiceInlineServers[i], 255); err != nil {
 			return err
 		}
 
@@ -208,11 +214,11 @@ func (m *NisService) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateBindingDetails(ctx, formats); err != nil {
+	if err := m.contextValidateNisServiceInlineBindingDetails(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateBoundServers(ctx, formats); err != nil {
+	if err := m.contextValidateNisServiceInlineBoundServers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -240,12 +246,12 @@ func (m *NisService) contextValidateLinks(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NisService) contextValidateBindingDetails(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisService) contextValidateNisServiceInlineBindingDetails(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.BindingDetails); i++ {
+	for i := 0; i < len(m.NisServiceInlineBindingDetails); i++ {
 
-		if m.BindingDetails[i] != nil {
-			if err := m.BindingDetails[i].ContextValidate(ctx, formats); err != nil {
+		if m.NisServiceInlineBindingDetails[i] != nil {
+			if err := m.NisServiceInlineBindingDetails[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("binding_details" + "." + strconv.Itoa(i))
 				}
@@ -258,9 +264,9 @@ func (m *NisService) contextValidateBindingDetails(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NisService) contextValidateBoundServers(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisService) contextValidateNisServiceInlineBoundServers(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "bound_servers", "body", []string(m.BoundServers)); err != nil {
+	if err := validate.ReadOnly(ctx, "bound_servers", "body", []*string(m.NisServiceInlineBoundServers)); err != nil {
 		return err
 	}
 
@@ -299,22 +305,22 @@ func (m *NisService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NisServiceBindingDetailsItems0 nis service binding details items0
+// NisServiceInlineBindingDetailsInlineArrayItem nis service inline binding details inline array item
 //
-// swagger:model NisServiceBindingDetailsItems0
-type NisServiceBindingDetailsItems0 struct {
+// swagger:model nis_service_inline_binding_details_inline_array_item
+type NisServiceInlineBindingDetailsInlineArrayItem struct {
 
 	// Hostname/IP address of the NIS server in the domain.
 	// Max Length: 255
 	// Min Length: 1
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// status
 	Status *BindingStatus `json:"status,omitempty"`
 }
 
-// Validate validates this nis service binding details items0
-func (m *NisServiceBindingDetailsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this nis service inline binding details inline array item
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateServer(formats); err != nil {
@@ -331,23 +337,23 @@ func (m *NisServiceBindingDetailsItems0) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NisServiceBindingDetailsItems0) validateServer(formats strfmt.Registry) error {
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) validateServer(formats strfmt.Registry) error {
 	if swag.IsZero(m.Server) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("server", "body", m.Server, 1); err != nil {
+	if err := validate.MinLength("server", "body", *m.Server, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("server", "body", m.Server, 255); err != nil {
+	if err := validate.MaxLength("server", "body", *m.Server, 255); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NisServiceBindingDetailsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
@@ -364,8 +370,8 @@ func (m *NisServiceBindingDetailsItems0) validateStatus(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this nis service binding details items0 based on the context it is used
-func (m *NisServiceBindingDetailsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nis service inline binding details inline array item based on the context it is used
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
@@ -378,7 +384,7 @@ func (m *NisServiceBindingDetailsItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NisServiceBindingDetailsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Status != nil {
 		if err := m.Status.ContextValidate(ctx, formats); err != nil {
@@ -393,7 +399,7 @@ func (m *NisServiceBindingDetailsItems0) contextValidateStatus(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *NisServiceBindingDetailsItems0) MarshalBinary() ([]byte, error) {
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -401,8 +407,8 @@ func (m *NisServiceBindingDetailsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NisServiceBindingDetailsItems0) UnmarshalBinary(b []byte) error {
-	var res NisServiceBindingDetailsItems0
+func (m *NisServiceInlineBindingDetailsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NisServiceInlineBindingDetailsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -410,17 +416,17 @@ func (m *NisServiceBindingDetailsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NisServiceLinks nis service links
+// NisServiceInlineLinks nis service inline links
 //
-// swagger:model NisServiceLinks
-type NisServiceLinks struct {
+// swagger:model nis_service_inline__links
+type NisServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nis service links
-func (m *NisServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nis service inline links
+func (m *NisServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -433,7 +439,7 @@ func (m *NisServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NisServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -450,8 +456,8 @@ func (m *NisServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nis service links based on the context it is used
-func (m *NisServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nis service inline links based on the context it is used
+func (m *NisServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -464,7 +470,7 @@ func (m *NisServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NisServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -479,7 +485,7 @@ func (m *NisServiceLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NisServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *NisServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -487,8 +493,8 @@ func (m *NisServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NisServiceLinks) UnmarshalBinary(b []byte) error {
-	var res NisServiceLinks
+func (m *NisServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NisServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -496,27 +502,27 @@ func (m *NisServiceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NisServiceSvm nis service svm
+// NisServiceInlineSvm nis service inline svm
 //
-// swagger:model NisServiceSvm
-type NisServiceSvm struct {
+// swagger:model nis_service_inline_svm
+type NisServiceInlineSvm struct {
 
 	// links
-	Links *NisServiceSvmLinks `json:"_links,omitempty"`
+	Links *NisServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nis service svm
-func (m *NisServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nis service inline svm
+func (m *NisServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -529,7 +535,7 @@ func (m *NisServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NisServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -546,8 +552,8 @@ func (m *NisServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nis service svm based on the context it is used
-func (m *NisServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nis service inline svm based on the context it is used
+func (m *NisServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -560,7 +566,7 @@ func (m *NisServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *NisServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -575,7 +581,7 @@ func (m *NisServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *NisServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *NisServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -583,8 +589,8 @@ func (m *NisServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NisServiceSvm) UnmarshalBinary(b []byte) error {
-	var res NisServiceSvm
+func (m *NisServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NisServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -592,17 +598,17 @@ func (m *NisServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NisServiceSvmLinks nis service svm links
+// NisServiceInlineSvmInlineLinks nis service inline svm inline links
 //
-// swagger:model NisServiceSvmLinks
-type NisServiceSvmLinks struct {
+// swagger:model nis_service_inline_svm_inline__links
+type NisServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nis service svm links
-func (m *NisServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nis service inline svm inline links
+func (m *NisServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -615,7 +621,7 @@ func (m *NisServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NisServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NisServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -632,8 +638,8 @@ func (m *NisServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nis service svm links based on the context it is used
-func (m *NisServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nis service inline svm inline links based on the context it is used
+func (m *NisServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -646,7 +652,7 @@ func (m *NisServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NisServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NisServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -661,7 +667,7 @@ func (m *NisServiceSvmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NisServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NisServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -669,8 +675,8 @@ func (m *NisServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NisServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NisServiceSvmLinks
+func (m *NisServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NisServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

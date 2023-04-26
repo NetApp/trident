@@ -66,37 +66,37 @@ type NetgroupsSettingsGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NegativeCacheEnabledByhost.
 
 	   Filter by negative_cache_enabled_byhost
 	*/
-	NegativeCacheEnabledByhostQueryParameter *bool
+	NegativeCacheEnabledByhost *bool
 
 	/* NegativeTTLByhost.
 
 	   Filter by negative_ttl_byhost
 	*/
-	NegativeTTLByhostQueryParameter *string
+	NegativeTTLByhost *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type NetgroupsSettingsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,31 +112,31 @@ type NetgroupsSettingsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   SVM UUID.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* TTLByhost.
 
 	   Filter by ttl_byhost
 	*/
-	TTLByhostQueryParameter *string
+	TTLByhost *string
 
 	/* TTLForMembers.
 
 	   Filter by ttl_for_members
 	*/
-	TTLForMembersQueryParameter *string
+	TTLForMembers *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *NetgroupsSettingsGetParams) WithDefaults() *NetgroupsSettingsGetParams 
 // All values with no default are reset to their zero value.
 func (o *NetgroupsSettingsGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetgroupsSettingsGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *NetgroupsSettingsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithEnabledQueryParameter(enabled *bool) *NetgroupsSettingsGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithEnabled(enabled *bool) *NetgroupsSettingsGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithFieldsQueryParameter(fields []string) *NetgroupsSettingsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithFields(fields []string) *NetgroupsSettingsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetgroupsSettingsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithMaxRecords(maxRecords *int64) *NetgroupsSettingsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNegativeCacheEnabledByhostQueryParameter adds the negativeCacheEnabledByhost to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithNegativeCacheEnabledByhostQueryParameter(negativeCacheEnabledByhost *bool) *NetgroupsSettingsGetParams {
-	o.SetNegativeCacheEnabledByhostQueryParameter(negativeCacheEnabledByhost)
+// WithNegativeCacheEnabledByhost adds the negativeCacheEnabledByhost to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithNegativeCacheEnabledByhost(negativeCacheEnabledByhost *bool) *NetgroupsSettingsGetParams {
+	o.SetNegativeCacheEnabledByhost(negativeCacheEnabledByhost)
 	return o
 }
 
-// SetNegativeCacheEnabledByhostQueryParameter adds the negativeCacheEnabledByhost to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetNegativeCacheEnabledByhostQueryParameter(negativeCacheEnabledByhost *bool) {
-	o.NegativeCacheEnabledByhostQueryParameter = negativeCacheEnabledByhost
+// SetNegativeCacheEnabledByhost adds the negativeCacheEnabledByhost to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetNegativeCacheEnabledByhost(negativeCacheEnabledByhost *bool) {
+	o.NegativeCacheEnabledByhost = negativeCacheEnabledByhost
 }
 
-// WithNegativeTTLByhostQueryParameter adds the negativeTTLByhost to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithNegativeTTLByhostQueryParameter(negativeTTLByhost *string) *NetgroupsSettingsGetParams {
-	o.SetNegativeTTLByhostQueryParameter(negativeTTLByhost)
+// WithNegativeTTLByhost adds the negativeTTLByhost to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithNegativeTTLByhost(negativeTTLByhost *string) *NetgroupsSettingsGetParams {
+	o.SetNegativeTTLByhost(negativeTTLByhost)
 	return o
 }
 
-// SetNegativeTTLByhostQueryParameter adds the negativeTtlByhost to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetNegativeTTLByhostQueryParameter(negativeTTLByhost *string) {
-	o.NegativeTTLByhostQueryParameter = negativeTTLByhost
+// SetNegativeTTLByhost adds the negativeTtlByhost to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetNegativeTTLByhost(negativeTTLByhost *string) {
+	o.NegativeTTLByhost = negativeTTLByhost
 }
 
-// WithOrderByQueryParameter adds the orderBy to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithOrderByQueryParameter(orderBy []string) *NetgroupsSettingsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithOrderBy(orderBy []string) *NetgroupsSettingsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetgroupsSettingsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithReturnRecords(returnRecords *bool) *NetgroupsSettingsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetgroupsSettingsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithReturnTimeout(returnTimeout *int64) *NetgroupsSettingsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithSVMNameQueryParameter(svmName *string) *NetgroupsSettingsGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithSvmName(svmName *string) *NetgroupsSettingsGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithSVMUUIDPathParameter(svmUUID string) *NetgroupsSettingsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithSvmUUID(svmUUID string) *NetgroupsSettingsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTTLByhostQueryParameter adds the tTLByhost to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithTTLByhostQueryParameter(tTLByhost *string) *NetgroupsSettingsGetParams {
-	o.SetTTLByhostQueryParameter(tTLByhost)
+// WithTTLByhost adds the tTLByhost to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithTTLByhost(tTLByhost *string) *NetgroupsSettingsGetParams {
+	o.SetTTLByhost(tTLByhost)
 	return o
 }
 
-// SetTTLByhostQueryParameter adds the ttlByhost to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetTTLByhostQueryParameter(tTLByhost *string) {
-	o.TTLByhostQueryParameter = tTLByhost
+// SetTTLByhost adds the ttlByhost to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetTTLByhost(tTLByhost *string) {
+	o.TTLByhost = tTLByhost
 }
 
-// WithTTLForMembersQueryParameter adds the tTLForMembers to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) WithTTLForMembersQueryParameter(tTLForMembers *string) *NetgroupsSettingsGetParams {
-	o.SetTTLForMembersQueryParameter(tTLForMembers)
+// WithTTLForMembers adds the tTLForMembers to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) WithTTLForMembers(tTLForMembers *string) *NetgroupsSettingsGetParams {
+	o.SetTTLForMembers(tTLForMembers)
 	return o
 }
 
-// SetTTLForMembersQueryParameter adds the ttlForMembers to the netgroups settings get params
-func (o *NetgroupsSettingsGetParams) SetTTLForMembersQueryParameter(tTLForMembers *string) {
-	o.TTLForMembersQueryParameter = tTLForMembers
+// SetTTLForMembers adds the ttlForMembers to the netgroups settings get params
+func (o *NetgroupsSettingsGetParams) SetTTLForMembers(tTLForMembers *string) {
+	o.TTLForMembers = tTLForMembers
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -362,7 +362,7 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,13 +390,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NegativeCacheEnabledByhostQueryParameter != nil {
+	if o.NegativeCacheEnabledByhost != nil {
 
 		// query param negative_cache_enabled_byhost
 		var qrNegativeCacheEnabledByhost bool
 
-		if o.NegativeCacheEnabledByhostQueryParameter != nil {
-			qrNegativeCacheEnabledByhost = *o.NegativeCacheEnabledByhostQueryParameter
+		if o.NegativeCacheEnabledByhost != nil {
+			qrNegativeCacheEnabledByhost = *o.NegativeCacheEnabledByhost
 		}
 		qNegativeCacheEnabledByhost := swag.FormatBool(qrNegativeCacheEnabledByhost)
 		if qNegativeCacheEnabledByhost != "" {
@@ -407,13 +407,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NegativeTTLByhostQueryParameter != nil {
+	if o.NegativeTTLByhost != nil {
 
 		// query param negative_ttl_byhost
 		var qrNegativeTTLByhost string
 
-		if o.NegativeTTLByhostQueryParameter != nil {
-			qrNegativeTTLByhost = *o.NegativeTTLByhostQueryParameter
+		if o.NegativeTTLByhost != nil {
+			qrNegativeTTLByhost = *o.NegativeTTLByhost
 		}
 		qNegativeTTLByhost := qrNegativeTTLByhost
 		if qNegativeTTLByhost != "" {
@@ -424,7 +424,7 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -435,13 +435,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -452,13 +452,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -469,13 +469,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -487,17 +487,17 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TTLByhostQueryParameter != nil {
+	if o.TTLByhost != nil {
 
 		// query param ttl_byhost
 		var qrTTLByhost string
 
-		if o.TTLByhostQueryParameter != nil {
-			qrTTLByhost = *o.TTLByhostQueryParameter
+		if o.TTLByhost != nil {
+			qrTTLByhost = *o.TTLByhost
 		}
 		qTTLByhost := qrTTLByhost
 		if qTTLByhost != "" {
@@ -508,13 +508,13 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.TTLForMembersQueryParameter != nil {
+	if o.TTLForMembers != nil {
 
 		// query param ttl_for_members
 		var qrTTLForMembers string
 
-		if o.TTLForMembersQueryParameter != nil {
-			qrTTLForMembers = *o.TTLForMembersQueryParameter
+		if o.TTLForMembers != nil {
+			qrTTLForMembers = *o.TTLForMembers
 		}
 		qTTLForMembers := qrTTLForMembers
 		if qTTLForMembers != "" {
@@ -533,7 +533,7 @@ func (o *NetgroupsSettingsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamNetgroupsSettingsGet binds the parameter fields
 func (o *NetgroupsSettingsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -550,7 +550,7 @@ func (o *NetgroupsSettingsGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamNetgroupsSettingsGet binds the parameter order_by
 func (o *NetgroupsSettingsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

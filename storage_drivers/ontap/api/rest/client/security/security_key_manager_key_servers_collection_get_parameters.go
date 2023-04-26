@@ -66,19 +66,19 @@ type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -86,7 +86,7 @@ type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -94,37 +94,37 @@ type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SecondaryKeyServers.
 
 	   Filter by secondary_key_servers
 	*/
-	SecondaryKeyServersQueryParameter *string
+	SecondaryKeyServers *string
 
 	/* Server.
 
 	   Filter by server
 	*/
-	ServerQueryParameter *string
+	Server *string
 
 	/* Timeout.
 
 	   Filter by timeout
 	*/
-	TimeoutQueryParameter *int64
+	Timeout *int64
 
 	/* Username.
 
 	   Filter by username
 	*/
-	UsernameQueryParameter *string
+	Username *string
 
 	/* UUID.
 
 	   External key manager UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	requestTimeout time.Duration
 	Context        context.Context
@@ -144,14 +144,14 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithDefaults() *Securi
 // All values with no default are reset to their zero value.
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SecurityKeyManagerKeyServersCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.requestTimeout = o.requestTimeout
@@ -193,114 +193,114 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetHTTPClient(client *
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithFields(fields []string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithOrderBy(orderBy []string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSecondaryKeyServersQueryParameter adds the secondaryKeyServers to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithSecondaryKeyServersQueryParameter(secondaryKeyServers *string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetSecondaryKeyServersQueryParameter(secondaryKeyServers)
+// WithSecondaryKeyServers adds the secondaryKeyServers to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithSecondaryKeyServers(secondaryKeyServers *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetSecondaryKeyServers(secondaryKeyServers)
 	return o
 }
 
-// SetSecondaryKeyServersQueryParameter adds the secondaryKeyServers to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetSecondaryKeyServersQueryParameter(secondaryKeyServers *string) {
-	o.SecondaryKeyServersQueryParameter = secondaryKeyServers
+// SetSecondaryKeyServers adds the secondaryKeyServers to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetSecondaryKeyServers(secondaryKeyServers *string) {
+	o.SecondaryKeyServers = secondaryKeyServers
 }
 
-// WithServerQueryParameter adds the server to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithServerQueryParameter(server *string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetServerQueryParameter(server)
+// WithServer adds the server to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithServer(server *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerQueryParameter adds the server to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetServerQueryParameter(server *string) {
-	o.ServerQueryParameter = server
+// SetServer adds the server to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetServer(server *string) {
+	o.Server = server
 }
 
-// WithTimeoutQueryParameter adds the timeout to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithTimeoutQueryParameter(timeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetTimeoutQueryParameter(timeout)
+// WithTimeout adds the timeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithTimeout(timeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetTimeout(timeout)
 	return o
 }
 
-// SetTimeoutQueryParameter adds the timeout to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetTimeoutQueryParameter(timeout *int64) {
-	o.TimeoutQueryParameter = timeout
+// SetTimeout adds the timeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetTimeout(timeout *int64) {
+	o.Timeout = timeout
 }
 
-// WithUsernameQueryParameter adds the username to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithUsernameQueryParameter(username *string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetUsernameQueryParameter(username)
+// WithUsername adds the username to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithUsername(username *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetUsername(username)
 	return o
 }
 
-// SetUsernameQueryParameter adds the username to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetUsernameQueryParameter(username *string) {
-	o.UsernameQueryParameter = username
+// SetUsername adds the username to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetUsername(username *string) {
+	o.Username = username
 }
 
-// WithUUIDPathParameter adds the uuid to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithUUIDPathParameter(uuid string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithUUID(uuid string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,7 +311,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -322,13 +322,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -339,7 +339,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -350,13 +350,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -367,13 +367,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -384,13 +384,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.SecondaryKeyServersQueryParameter != nil {
+	if o.SecondaryKeyServers != nil {
 
 		// query param secondary_key_servers
 		var qrSecondaryKeyServers string
 
-		if o.SecondaryKeyServersQueryParameter != nil {
-			qrSecondaryKeyServers = *o.SecondaryKeyServersQueryParameter
+		if o.SecondaryKeyServers != nil {
+			qrSecondaryKeyServers = *o.SecondaryKeyServers
 		}
 		qSecondaryKeyServers := qrSecondaryKeyServers
 		if qSecondaryKeyServers != "" {
@@ -401,13 +401,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ServerQueryParameter != nil {
+	if o.Server != nil {
 
 		// query param server
 		var qrServer string
 
-		if o.ServerQueryParameter != nil {
-			qrServer = *o.ServerQueryParameter
+		if o.Server != nil {
+			qrServer = *o.Server
 		}
 		qServer := qrServer
 		if qServer != "" {
@@ -418,13 +418,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.TimeoutQueryParameter != nil {
+	if o.Timeout != nil {
 
 		// query param timeout
 		var qrTimeout int64
 
-		if o.TimeoutQueryParameter != nil {
-			qrTimeout = *o.TimeoutQueryParameter
+		if o.Timeout != nil {
+			qrTimeout = *o.Timeout
 		}
 		qTimeout := swag.FormatInt64(qrTimeout)
 		if qTimeout != "" {
@@ -435,13 +435,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.UsernameQueryParameter != nil {
+	if o.Username != nil {
 
 		// query param username
 		var qrUsername string
 
-		if o.UsernameQueryParameter != nil {
-			qrUsername = *o.UsernameQueryParameter
+		if o.Username != nil {
+			qrUsername = *o.Username
 		}
 		qUsername := qrUsername
 		if qUsername != "" {
@@ -453,7 +453,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -465,7 +465,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 
 // bindParamSecurityKeyManagerKeyServersCollectionGet binds the parameter fields
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -482,7 +482,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) bindParamFields(format
 
 // bindParamSecurityKeyManagerKeyServersCollectionGet binds the parameter order_by
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -20,14 +20,14 @@ import (
 type S3PolicyReference struct {
 
 	// links
-	Links *S3PolicyReferenceLinks `json:"_links,omitempty"`
+	Links *S3PolicyReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the name of the policy. A policy name length can range from 1 to 128 characters and can only contain the following combination of characters 0-9, A-Z, a-z, "_", "+", "=", ",", ".","@", and "-".
 	// Example: Policy1
 	// Max Length: 128
 	// Min Length: 1
 	// Pattern: ^[0-9A-Za-z_+=,.@-]{1,128}$
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this s3 policy reference
@@ -70,15 +70,15 @@ func (m *S3PolicyReference) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 128); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 128); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", m.Name, `^[0-9A-Za-z_+=,.@-]{1,128}$`); err != nil {
+	if err := validate.Pattern("name", "body", *m.Name, `^[0-9A-Za-z_+=,.@-]{1,128}$`); err != nil {
 		return err
 	}
 
@@ -131,17 +131,17 @@ func (m *S3PolicyReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3PolicyReferenceLinks s3 policy reference links
+// S3PolicyReferenceInlineLinks s3 policy reference inline links
 //
-// swagger:model S3PolicyReferenceLinks
-type S3PolicyReferenceLinks struct {
+// swagger:model s3_policy_reference_inline__links
+type S3PolicyReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 policy reference links
-func (m *S3PolicyReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 policy reference inline links
+func (m *S3PolicyReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -154,7 +154,7 @@ func (m *S3PolicyReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3PolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3PolicyReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -171,8 +171,8 @@ func (m *S3PolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 policy reference links based on the context it is used
-func (m *S3PolicyReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 policy reference inline links based on the context it is used
+func (m *S3PolicyReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -185,7 +185,7 @@ func (m *S3PolicyReferenceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *S3PolicyReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3PolicyReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +200,7 @@ func (m *S3PolicyReferenceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *S3PolicyReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *S3PolicyReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *S3PolicyReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3PolicyReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res S3PolicyReferenceLinks
+func (m *S3PolicyReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3PolicyReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

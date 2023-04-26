@@ -68,7 +68,7 @@ type ClusterNtpKeysModifyParams struct {
 
 	   Key identifier
 	*/
-	IDPathParameter int64
+	ID int64
 
 	/* Info.
 
@@ -129,15 +129,15 @@ func (o *ClusterNtpKeysModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the cluster ntp keys modify params
-func (o *ClusterNtpKeysModifyParams) WithIDPathParameter(id int64) *ClusterNtpKeysModifyParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the cluster ntp keys modify params
+func (o *ClusterNtpKeysModifyParams) WithID(id int64) *ClusterNtpKeysModifyParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the cluster ntp keys modify params
-func (o *ClusterNtpKeysModifyParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the cluster ntp keys modify params
+func (o *ClusterNtpKeysModifyParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WithInfo adds the info to the cluster ntp keys modify params
@@ -160,7 +160,7 @@ func (o *ClusterNtpKeysModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 	if o.Info != nil {

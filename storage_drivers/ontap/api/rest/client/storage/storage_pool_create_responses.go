@@ -58,6 +58,11 @@ StoragePoolCreateCreated describes a response with status code 201, with default
 Created
 */
 type StoragePoolCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.StoragePoolResponse
 }
 
@@ -100,6 +105,13 @@ func (o *StoragePoolCreateCreated) GetPayload() *models.StoragePoolResponse {
 
 func (o *StoragePoolCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.StoragePoolResponse)
 
 	// response payload
@@ -121,6 +133,11 @@ StoragePoolCreateAccepted describes a response with status code 202, with defaul
 Accepted
 */
 type StoragePoolCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -162,6 +179,13 @@ func (o *StoragePoolCreateAccepted) GetPayload() *models.JobLinkResponse {
 }
 
 func (o *StoragePoolCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.JobLinkResponse)
 

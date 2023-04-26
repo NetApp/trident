@@ -66,19 +66,19 @@ type S3PolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Policy name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *S3PolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the s3 policy get params
-func (o *S3PolicyGetParams) WithFieldsQueryParameter(fields []string) *S3PolicyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the s3 policy get params
+func (o *S3PolicyGetParams) WithFields(fields []string) *S3PolicyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the s3 policy get params
-func (o *S3PolicyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the s3 policy get params
+func (o *S3PolicyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the s3 policy get params
-func (o *S3PolicyGetParams) WithNamePathParameter(name string) *S3PolicyGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the s3 policy get params
+func (o *S3PolicyGetParams) WithName(name string) *S3PolicyGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the s3 policy get params
-func (o *S3PolicyGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the s3 policy get params
+func (o *S3PolicyGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 policy get params
-func (o *S3PolicyGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3PolicyGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 policy get params
+func (o *S3PolicyGetParams) WithSvmUUID(svmUUID string) *S3PolicyGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 policy get params
-func (o *S3PolicyGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 policy get params
+func (o *S3PolicyGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *S3PolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *S3PolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *S3PolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamS3PolicyGet binds the parameter fields
 func (o *S3PolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

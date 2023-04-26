@@ -20,14 +20,14 @@ import (
 type PortsetInterfaceResponse struct {
 
 	// links
-	Links *PortsetInterfaceResponseLinks `json:"_links,omitempty"`
+	Links *PortsetInterfaceResponseInlineLinks `json:"_links,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PortsetInterface `json:"records,omitempty"`
+	// portset interface response inline records
+	PortsetInterfaceResponseInlineRecords []*PortsetInterface `json:"records,omitempty"`
 }
 
 // Validate validates this portset interface response
@@ -38,7 +38,7 @@ func (m *PortsetInterfaceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePortsetInterfaceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *PortsetInterfaceResponse) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *PortsetInterfaceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PortsetInterfaceResponse) validatePortsetInterfaceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PortsetInterfaceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PortsetInterfaceResponseInlineRecords); i++ {
+		if swag.IsZero(m.PortsetInterfaceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PortsetInterfaceResponseInlineRecords[i] != nil {
+			if err := m.PortsetInterfaceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *PortsetInterfaceResponse) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePortsetInterfaceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *PortsetInterfaceResponse) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *PortsetInterfaceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInterfaceResponse) contextValidatePortsetInterfaceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PortsetInterfaceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PortsetInterfaceResponseInlineRecords[i] != nil {
+			if err := m.PortsetInterfaceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *PortsetInterfaceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfaceResponseLinks portset interface response links
+// PortsetInterfaceResponseInlineLinks portset interface response inline links
 //
-// swagger:model PortsetInterfaceResponseLinks
-type PortsetInterfaceResponseLinks struct {
+// swagger:model portset_interface_response_inline__links
+type PortsetInterfaceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type PortsetInterfaceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this portset interface response links
-func (m *PortsetInterfaceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this portset interface response inline links
+func (m *PortsetInterfaceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *PortsetInterfaceResponseLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *PortsetInterfaceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PortsetInterfaceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *PortsetInterfaceResponseLinks) validateNext(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *PortsetInterfaceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PortsetInterfaceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *PortsetInterfaceResponseLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this portset interface response links based on the context it is used
-func (m *PortsetInterfaceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this portset interface response inline links based on the context it is used
+func (m *PortsetInterfaceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *PortsetInterfaceResponseLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *PortsetInterfaceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInterfaceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *PortsetInterfaceResponseLinks) contextValidateNext(ctx context.Context,
 	return nil
 }
 
-func (m *PortsetInterfaceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PortsetInterfaceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *PortsetInterfaceResponseLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *PortsetInterfaceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PortsetInterfaceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *PortsetInterfaceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortsetInterfaceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PortsetInterfaceResponseLinks
+func (m *PortsetInterfaceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PortsetInterfaceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

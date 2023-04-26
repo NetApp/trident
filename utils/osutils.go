@@ -14,9 +14,8 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 var (
@@ -31,6 +30,8 @@ var (
 
 	execCmd = exec.CommandContext
 )
+
+const devMapperRoot = "/dev/mapper/"
 
 func init() {
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
@@ -81,18 +82,18 @@ func GetIPAddresses(ctx context.Context) ([]string, error) {
 
 // execCommand invokes an external process
 func execCommand(ctx context.Context, name string, args ...string) ([]byte, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"command": name,
 		"args":    args,
 	}).Debug(">>>> osutils.execCommand.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"command": name,
 		"output":  sanitizeExecOutput(string(out)),
 		"error":   err,
@@ -118,17 +119,17 @@ func execCommandRedacted(
 		sanitizedArgs = append(sanitizedArgs, sanitizedArg)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"command": name,
 		"args":    sanitizedArgs,
 	}).Debug(">>>> osutils.execCommand.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"command": name,
 		"output":  sanitizeExecOutput(string(out)),
 		"error":   err,
@@ -148,15 +149,15 @@ type execCommandResult struct {
 func execCommandWithTimeout(
 	ctx context.Context, name string, timeout time.Duration, logOutput bool, args ...string,
 ) ([]byte, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"command": name,
 		"timeout": timeout,
 		"args":    args,
-	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
+	}).Debug(">>>> osutils.execCommandWithTimeout.")
 
 	out, err := execCommandWithTimeoutAndInput(ctx, name, timeout, logOutput, "", args...)
 
-	Logc(ctx).Debug("<<<< osutils.execCommandWithTimeoutAndInput.")
+	Logc(ctx).Debug("<<<< osutils.execCommandWithTimeout.")
 	return out, err
 }
 
@@ -165,14 +166,14 @@ func execCommandWithTimeout(
 func execCommandWithTimeoutAndInput(
 	ctx context.Context, name string, timeout time.Duration, logOutput bool, stdin string, args ...string,
 ) ([]byte, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"command":        name,
 		"timeoutSeconds": timeout,
 		"args":           args,
 	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithTimeout(ctx, timeout)
+	cancelCtx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	cmd := execCmd(cancelCtx, name, args...)
@@ -188,12 +189,12 @@ func execCommandWithTimeoutAndInput(
 	select {
 	case <-cancelCtx.Done():
 		if err := cancelCtx.Err(); err == context.DeadlineExceeded {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"process": name,
 			}).Error("process killed after timeout")
 			result = execCommandResult{Output: nil, Error: TimeoutError("process killed after timeout")}
 		} else {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"process": name,
 				"error":   err,
 			}).Error("context ended unexpectedly")
@@ -203,13 +204,13 @@ func execCommandWithTimeoutAndInput(
 		break
 	}
 
-	logFields := Logc(ctx).WithFields(log.Fields{
+	logFields := Logc(ctx).WithFields(LogFields{
 		"command": name,
 		"error":   result.Error,
 	})
 
 	if logOutput {
-		logFields.WithFields(log.Fields{
+		logFields.WithFields(LogFields{
 			"output": sanitizeExecOutput(string(result.Output)),
 		})
 	}
@@ -236,7 +237,7 @@ func PathExists(path string) (bool, error) {
 
 // EnsureFileExists makes sure that file of given name exists
 func EnsureFileExists(ctx context.Context, path string) error {
-	fields := log.Fields{"path": path}
+	fields := LogFields{"path": path}
 	if info, err := os.Stat(path); err == nil {
 		if info.IsDir() {
 			Logc(ctx).WithFields(fields).Error("Path exists but is a directory")
@@ -260,7 +261,7 @@ func EnsureFileExists(ctx context.Context, path string) error {
 
 // DeleteResourceAtPath makes sure that given named file or (empty) directory is removed
 func DeleteResourceAtPath(ctx context.Context, resource string) error {
-	fields := log.Fields{"resource": resource}
+	fields := LogFields{"resource": resource}
 
 	// Check if resource exists
 	if _, err := os.Stat(resource); err != nil {
@@ -284,7 +285,7 @@ func DeleteResourceAtPath(ctx context.Context, resource string) error {
 
 // WaitForResourceDeletionAtPath accepts a resource name and waits until it is deleted and returns error if it times out
 func WaitForResourceDeletionAtPath(ctx context.Context, resource string, maxDuration time.Duration) error {
-	fields := log.Fields{"resource": resource}
+	fields := LogFields{"resource": resource}
 	Logc(ctx).WithFields(fields).Debug(">>>> osutils.WaitForResourceDeletionAtPath")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.WaitForResourceDeletionAtPath")
 
@@ -313,7 +314,7 @@ func WaitForResourceDeletionAtPath(ctx context.Context, resource string, maxDura
 
 // EnsureDirExists makes sure that given directory structure exists
 func EnsureDirExists(ctx context.Context, path string) error {
-	fields := log.Fields{
+	fields := LogFields{
 		"path": path,
 	}
 	if info, err := os.Stat(path); err == nil {

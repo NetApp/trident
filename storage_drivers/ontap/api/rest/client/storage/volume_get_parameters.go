@@ -66,19 +66,19 @@ type VolumeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IsConstituent.
 
 	   When set to false, only FlexVol and FlexGroup volumes are returned.  When set to true, only FlexGroup constituent volumes are returned. Default for GET calls is false.
 	*/
-	IsConstituentQueryParameter *bool
+	IsConstituent *bool
 
 	/* UUID.
 
 	   Unique identifier of the volume.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *VolumeGetParams) WithDefaults() *VolumeGetParams {
 // All values with no default are reset to their zero value.
 func (o *VolumeGetParams) SetDefaults() {
 	var (
-		isConstituentQueryParameterDefault = bool(false)
+		isConstituentDefault = bool(false)
 	)
 
 	val := VolumeGetParams{
-		IsConstituentQueryParameter: &isConstituentQueryParameterDefault,
+		IsConstituent: &isConstituentDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *VolumeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the volume get params
-func (o *VolumeGetParams) WithFieldsQueryParameter(fields []string) *VolumeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the volume get params
+func (o *VolumeGetParams) WithFields(fields []string) *VolumeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the volume get params
-func (o *VolumeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the volume get params
+func (o *VolumeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIsConstituentQueryParameter adds the isConstituent to the volume get params
-func (o *VolumeGetParams) WithIsConstituentQueryParameter(isConstituent *bool) *VolumeGetParams {
-	o.SetIsConstituentQueryParameter(isConstituent)
+// WithIsConstituent adds the isConstituent to the volume get params
+func (o *VolumeGetParams) WithIsConstituent(isConstituent *bool) *VolumeGetParams {
+	o.SetIsConstituent(isConstituent)
 	return o
 }
 
-// SetIsConstituentQueryParameter adds the isConstituent to the volume get params
-func (o *VolumeGetParams) SetIsConstituentQueryParameter(isConstituent *bool) {
-	o.IsConstituentQueryParameter = isConstituent
+// SetIsConstituent adds the isConstituent to the volume get params
+func (o *VolumeGetParams) SetIsConstituent(isConstituent *bool) {
+	o.IsConstituent = isConstituent
 }
 
-// WithUUIDPathParameter adds the uuid to the volume get params
-func (o *VolumeGetParams) WithUUIDPathParameter(uuid string) *VolumeGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the volume get params
+func (o *VolumeGetParams) WithUUID(uuid string) *VolumeGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the volume get params
-func (o *VolumeGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the volume get params
+func (o *VolumeGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -185,7 +185,7 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -196,13 +196,13 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		}
 	}
 
-	if o.IsConstituentQueryParameter != nil {
+	if o.IsConstituent != nil {
 
 		// query param is_constituent
 		var qrIsConstituent bool
 
-		if o.IsConstituentQueryParameter != nil {
-			qrIsConstituent = *o.IsConstituentQueryParameter
+		if o.IsConstituent != nil {
+			qrIsConstituent = *o.IsConstituent
 		}
 		qIsConstituent := swag.FormatBool(qrIsConstituent)
 		if qIsConstituent != "" {
@@ -214,7 +214,7 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -226,7 +226,7 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamVolumeGet binds the parameter fields
 func (o *VolumeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -16,6 +15,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	commonconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
 	versionedTprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 )
@@ -38,10 +38,10 @@ func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
 
 	// Get the API config based on whether we are running in or out of cluster
 	if kubeConfigPath != "" {
-		log.Debug("Creating ex-cluster Kubernetes clients.")
+		Log().Debug("Creating ex-cluster Kubernetes clients.")
 		clients, err = createK8SClientsExCluster(apiServerIP, kubeConfigPath)
 	} else {
-		log.Debug("Creating in-cluster Kubernetes clients.")
+		Log().Debug("Creating in-cluster Kubernetes clients.")
 		clients, err = createK8SClientsInCluster()
 	}
 	if err != nil {
@@ -72,7 +72,7 @@ func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
 		return nil, fmt.Errorf("could not get Kubernetes version: %v", err)
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"namespace": clients.Namespace,
 		"version":   clients.K8SVersion.String(),
 	}).Info("Created Kubernetes clients.")

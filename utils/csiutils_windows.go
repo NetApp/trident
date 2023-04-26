@@ -16,10 +16,9 @@ import (
 	fsclient "github.com/kubernetes-csi/csi-proxy/client/groups/filesystem/v1"
 	smbclient "github.com/kubernetes-csi/csi-proxy/client/groups/smb/v1"
 	volumeclient "github.com/kubernetes-csi/csi-proxy/client/groups/volume/v1"
-	log "github.com/sirupsen/logrus"
 	"k8s.io/mount-utils"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 var _ CSIProxyUtils = &csiProxyUtils{}
@@ -40,7 +39,9 @@ func normalizeWindowsPath(path string) string {
 }
 
 func (mounter *csiProxyUtils) GetFilesystemUsage(ctx context.Context, path string) (capacity, used int64, err error) {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"path": path,
 	}).Debug(">>>> csiutils.GetFilesystemUsage")
 	defer Logc(ctx).Debug("<<<< csiutils.GetFilesystemUsage")
@@ -64,7 +65,9 @@ func (mounter *csiProxyUtils) GetFilesystemUsage(ctx context.Context, path strin
 }
 
 func (mounter *csiProxyUtils) SMBMount(ctx context.Context, source, target, fsType, username, password string) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"remote path": source,
 		"local path":  target,
 	}).Debug(">>>> csiutils.SMBMount")
@@ -81,7 +84,7 @@ func (mounter *csiProxyUtils) SMBMount(ctx context.Context, source, target, fsTy
 	}
 
 	if !parentExists {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"parent directory": parentDir,
 		}).Info("Parent directory does not exists. Creating the directory")
 		if err := mounter.MakeDir(ctx, parentDir); err != nil {
@@ -103,7 +106,9 @@ func (mounter *csiProxyUtils) SMBMount(ctx context.Context, source, target, fsTy
 }
 
 func (mounter *csiProxyUtils) SMBUnmount(ctx context.Context, mappingPath, target string) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"local path": target,
 	}).Debug(">>>> csiutils.SMBUnmount")
 	defer Logc(ctx).Debug("<<<< csiutils.SMBUnmount")
@@ -124,10 +129,12 @@ func (mounter *csiProxyUtils) SMBUnmount(ctx context.Context, mappingPath, targe
 
 // Mount just creates a soft link at target pointing to source.
 func (mounter *csiProxyUtils) Mount(
-	ctx context.Context, source string, target string, fstype string,
+	ctx context.Context, source, target, fstype string,
 	options []string,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"old name": source,
 		"new name": target,
 	}).Debug(">>>> csiutils.Mount")
@@ -157,7 +164,9 @@ func Split(r rune) bool {
 //	proxy does a relaxed check for prefix as c:\var\lib\kubelet, so we can do
 //	rmdir with either pod or plugin context.
 func (mounter *csiProxyUtils) Rmdir(ctx context.Context, path string) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"remove directory": path,
 	}).Debug(">>>> csiutils.Rmdir")
 	defer Logc(ctx).Debug("<<<< csiutils.Rmdir")
@@ -175,7 +184,9 @@ func (mounter *csiProxyUtils) Rmdir(ctx context.Context, path string) error {
 
 // Unmount - Removes the directory - equivalent to unmount on Linux.
 func (mounter *csiProxyUtils) Unmount(ctx context.Context, target string) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"Unmount": target,
 	}).Debug(">>>> csiutils.Unmount")
 	defer Logc(ctx).Debug("<<<< csiutils.Unmount")
@@ -184,6 +195,8 @@ func (mounter *csiProxyUtils) Unmount(ctx context.Context, target string) error 
 }
 
 func (mounter *csiProxyUtils) List(ctx context.Context) ([]mount.MountPoint, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.List")
 	defer Logc(ctx).Debug("<<<< csiutils.List")
 
@@ -191,6 +204,8 @@ func (mounter *csiProxyUtils) List(ctx context.Context) ([]mount.MountPoint, err
 }
 
 func (mounter *csiProxyUtils) IsMountPointMatch(ctx context.Context, mp mount.MountPoint, dir string) bool {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.IsMountPointMatch")
 	defer Logc(ctx).Debug("<<<< csiutils.IsMountPointMatch")
 
@@ -202,7 +217,9 @@ func (mounter *csiProxyUtils) IsMountPointMatch(ctx context.Context, mp mount.Mo
 //	If the path exists, call to CSI proxy will check if its a link, if its a link then existence of target
 //	path is checked.
 func (mounter *csiProxyUtils) IsLikelyNotMountPoint(ctx context.Context, path string) (bool, error) {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"IsLikelyNotMountPoint": path,
 	}).Debug(">>>> csiutils.IsLikelyNotMountPoint")
 	defer Logc(ctx).Debug("<<<< csiutils.IsLikelyNotMountPoint")
@@ -226,6 +243,8 @@ func (mounter *csiProxyUtils) IsLikelyNotMountPoint(ctx context.Context, path st
 }
 
 func (mounter *csiProxyUtils) PathIsDevice(ctx context.Context, pathname string) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.PathIsDevice")
 	defer Logc(ctx).Debug("<<<< csiutils.PathIsDevice")
 
@@ -233,6 +252,8 @@ func (mounter *csiProxyUtils) PathIsDevice(ctx context.Context, pathname string)
 }
 
 func (mounter *csiProxyUtils) DeviceOpened(ctx context.Context, pathname string) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.DeviceOpened")
 	defer Logc(ctx).Debug("<<<< csiutils.DeviceOpened")
 
@@ -242,6 +263,8 @@ func (mounter *csiProxyUtils) DeviceOpened(ctx context.Context, pathname string)
 func (mounter *csiProxyUtils) GetDeviceNameFromMount(ctx context.Context, mountPath, pluginMountDir string) (string,
 	error,
 ) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.GetDeviceNameFromMount")
 	defer Logc(ctx).Debug("<<<< csiutils.GetDeviceNameFromMount")
 
@@ -249,6 +272,8 @@ func (mounter *csiProxyUtils) GetDeviceNameFromMount(ctx context.Context, mountP
 }
 
 func (mounter *csiProxyUtils) MakeRShared(ctx context.Context, path string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.MakeRShared")
 	defer Logc(ctx).Debug("<<<< csiutils.MakeRShared")
 
@@ -256,6 +281,8 @@ func (mounter *csiProxyUtils) MakeRShared(ctx context.Context, path string) erro
 }
 
 func (mounter *csiProxyUtils) MakeFile(ctx context.Context, pathname string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.MakeFile")
 	defer Logc(ctx).Debug("<<<< csiutils.MakeFile")
 
@@ -266,7 +293,9 @@ func (mounter *csiProxyUtils) MakeFile(ctx context.Context, pathname string) err
 // Currently the make dir is only used from the staging code path, hence we call it
 // with Plugin context..
 func (mounter *csiProxyUtils) MakeDir(ctx context.Context, path string) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"make directory": path,
 	}).Debug(">>>> csiutils.MakeDir")
 	defer Logc(ctx).Debug("<<<< csiutils.MakeDir")
@@ -284,7 +313,9 @@ func (mounter *csiProxyUtils) MakeDir(ctx context.Context, path string) error {
 
 // ExistsPath - Checks if a path exists. Unlike util ExistsPath, this call does not perform follow link.
 func (mounter *csiProxyUtils) ExistsPath(ctx context.Context, path string) (bool, error) {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"exists path": path,
 	}).Debug(">>>> csiutils.ExistsPath")
 	defer Logc(ctx).Debug("<<<< csiutils.ExistsPath")
@@ -301,6 +332,8 @@ func (mounter *csiProxyUtils) ExistsPath(ctx context.Context, path string) (bool
 
 // GetAPIVersions returns the versions of the client APIs this mounter is using.
 func (mounter *csiProxyUtils) GetAPIVersions(ctx context.Context) string {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.GetAPIVersions")
 	defer Logc(ctx).Debug("<<<< csiutils.GetAPIVersions")
 
@@ -312,6 +345,8 @@ func (mounter *csiProxyUtils) GetAPIVersions(ctx context.Context) string {
 }
 
 func (mounter *csiProxyUtils) EvalHostSymlinks(ctx context.Context, pathname string) (string, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.EvalHostSymlinks")
 	defer Logc(ctx).Debug("<<<< csiutils.EvalHostSymlinks")
 
@@ -319,6 +354,8 @@ func (mounter *csiProxyUtils) EvalHostSymlinks(ctx context.Context, pathname str
 }
 
 func (mounter *csiProxyUtils) GetMountRefs(ctx context.Context, pathname string) ([]string, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.GetMountRefs")
 	defer Logc(ctx).Debug("<<<< csiutils.GetMountRefs")
 
@@ -326,6 +363,8 @@ func (mounter *csiProxyUtils) GetMountRefs(ctx context.Context, pathname string)
 }
 
 func (mounter *csiProxyUtils) GetFSGroup(ctx context.Context, pathname string) (int64, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.GetFSGroup")
 	defer Logc(ctx).Debug("<<<< csiutils.GetFSGroup")
 
@@ -333,6 +372,8 @@ func (mounter *csiProxyUtils) GetFSGroup(ctx context.Context, pathname string) (
 }
 
 func (mounter *csiProxyUtils) GetSELinuxSupport(ctx context.Context, pathname string) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.GetSELinuxSupport")
 	defer Logc(ctx).Debug("<<<< csiutils.GetSELinuxSupport")
 
@@ -340,6 +381,8 @@ func (mounter *csiProxyUtils) GetSELinuxSupport(ctx context.Context, pathname st
 }
 
 func (mounter *csiProxyUtils) GetMode(ctx context.Context, pathname string) (os.FileMode, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.GetMode")
 	defer Logc(ctx).Debug("<<<< csiutils.GetMode")
 
@@ -348,8 +391,10 @@ func (mounter *csiProxyUtils) GetMode(ctx context.Context, pathname string) (os.
 
 func (mounter *csiProxyUtils) MountSensitive(
 	ctx context.Context,
-	source string, target string, fstype string, options []string, sensitiveOptions []string,
+	source, target, fstype string, options, sensitiveOptions []string,
 ) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.MountSensitive")
 	defer Logc(ctx).Debug("<<<< csiutils.MountSensitive")
 
@@ -358,8 +403,10 @@ func (mounter *csiProxyUtils) MountSensitive(
 
 func (mounter *csiProxyUtils) MountSensitiveWithoutSystemd(
 	ctx context.Context,
-	source string, target string, fstype string, options []string, sensitiveOptions []string,
+	source, target, fstype string, options, sensitiveOptions []string,
 ) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.MountSensitiveWithoutSystemd")
 	defer Logc(ctx).Debug("<<<< csiutils.MountSensitiveWithoutSystemd")
 
@@ -368,8 +415,10 @@ func (mounter *csiProxyUtils) MountSensitiveWithoutSystemd(
 
 func (mounter *csiProxyUtils) MountSensitiveWithoutSystemdWithMountFlags(
 	ctx context.Context,
-	source string, target string, fstype string, options []string, sensitiveOptions []string, mountFlags []string,
+	source, target, fstype string, options, sensitiveOptions, mountFlags []string,
 ) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> csiutils.MountSensitiveWithoutSystemdWithMountFlags")
 	defer Logc(ctx).Debug("<<<< csiutils.MountSensitiveWithoutSystemdWithMountFlags")
 

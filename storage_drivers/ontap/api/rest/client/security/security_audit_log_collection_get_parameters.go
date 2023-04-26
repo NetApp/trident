@@ -66,67 +66,67 @@ type SecurityAuditLogCollectionGetParams struct {
 
 	   Filter by application
 	*/
-	ApplicationQueryParameter *string
+	Application *string
 
 	/* CommandID.
 
 	   Filter by command_id
 	*/
-	CommandIDQueryParameter *string
+	CommandID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* Input.
 
 	   Filter by input
 	*/
-	InputQueryParameter *string
+	Input *string
 
 	/* Location.
 
 	   Filter by location
 	*/
-	LocationQueryParameter *string
+	Location *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Message.
 
 	   Filter by message
 	*/
-	MessageQueryParameter *string
+	Message *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type SecurityAuditLogCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,43 +142,43 @@ type SecurityAuditLogCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* SessionID.
 
 	   Filter by session_id
 	*/
-	SessionIDQueryParameter *string
+	SessionID *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* User.
 
 	   Filter by user
 	*/
-	UserQueryParameter *string
+	User *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *SecurityAuditLogCollectionGetParams) WithDefaults() *SecurityAuditLogCo
 // All values with no default are reset to their zero value.
 func (o *SecurityAuditLogCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SecurityAuditLogCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *SecurityAuditLogCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithApplicationQueryParameter adds the application to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithApplicationQueryParameter(application *string) *SecurityAuditLogCollectionGetParams {
-	o.SetApplicationQueryParameter(application)
+// WithApplication adds the application to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithApplication(application *string) *SecurityAuditLogCollectionGetParams {
+	o.SetApplication(application)
 	return o
 }
 
-// SetApplicationQueryParameter adds the application to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetApplicationQueryParameter(application *string) {
-	o.ApplicationQueryParameter = application
+// SetApplication adds the application to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetApplication(application *string) {
+	o.Application = application
 }
 
-// WithCommandIDQueryParameter adds the commandID to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithCommandIDQueryParameter(commandID *string) *SecurityAuditLogCollectionGetParams {
-	o.SetCommandIDQueryParameter(commandID)
+// WithCommandID adds the commandID to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithCommandID(commandID *string) *SecurityAuditLogCollectionGetParams {
+	o.SetCommandID(commandID)
 	return o
 }
 
-// SetCommandIDQueryParameter adds the commandId to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetCommandIDQueryParameter(commandID *string) {
-	o.CommandIDQueryParameter = commandID
+// SetCommandID adds the commandId to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetCommandID(commandID *string) {
+	o.CommandID = commandID
 }
 
-// WithFieldsQueryParameter adds the fields to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityAuditLogCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithFields(fields []string) *SecurityAuditLogCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexQueryParameter adds the index to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithIndexQueryParameter(index *int64) *SecurityAuditLogCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithIndex(index *int64) *SecurityAuditLogCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithInputQueryParameter adds the input to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithInputQueryParameter(input *string) *SecurityAuditLogCollectionGetParams {
-	o.SetInputQueryParameter(input)
+// WithInput adds the input to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithInput(input *string) *SecurityAuditLogCollectionGetParams {
+	o.SetInput(input)
 	return o
 }
 
-// SetInputQueryParameter adds the input to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetInputQueryParameter(input *string) {
-	o.InputQueryParameter = input
+// SetInput adds the input to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetInput(input *string) {
+	o.Input = input
 }
 
-// WithLocationQueryParameter adds the location to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithLocationQueryParameter(location *string) *SecurityAuditLogCollectionGetParams {
-	o.SetLocationQueryParameter(location)
+// WithLocation adds the location to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithLocation(location *string) *SecurityAuditLogCollectionGetParams {
+	o.SetLocation(location)
 	return o
 }
 
-// SetLocationQueryParameter adds the location to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetLocationQueryParameter(location *string) {
-	o.LocationQueryParameter = location
+// SetLocation adds the location to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetLocation(location *string) {
+	o.Location = location
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityAuditLogCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityAuditLogCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMessageQueryParameter adds the message to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithMessageQueryParameter(message *string) *SecurityAuditLogCollectionGetParams {
-	o.SetMessageQueryParameter(message)
+// WithMessage adds the message to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithMessage(message *string) *SecurityAuditLogCollectionGetParams {
+	o.SetMessage(message)
 	return o
 }
 
-// SetMessageQueryParameter adds the message to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetMessageQueryParameter(message *string) {
-	o.MessageQueryParameter = message
+// SetMessage adds the message to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetMessage(message *string) {
+	o.Message = message
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *SecurityAuditLogCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithNodeName(nodeName *string) *SecurityAuditLogCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *SecurityAuditLogCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithNodeUUID(nodeUUID *string) *SecurityAuditLogCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityAuditLogCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithOrderBy(orderBy []string) *SecurityAuditLogCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityAuditLogCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityAuditLogCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityAuditLogCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityAuditLogCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithScopeQueryParameter(scope *string) *SecurityAuditLogCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithScope(scope *string) *SecurityAuditLogCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSessionIDQueryParameter adds the sessionID to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithSessionIDQueryParameter(sessionID *string) *SecurityAuditLogCollectionGetParams {
-	o.SetSessionIDQueryParameter(sessionID)
+// WithSessionID adds the sessionID to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithSessionID(sessionID *string) *SecurityAuditLogCollectionGetParams {
+	o.SetSessionID(sessionID)
 	return o
 }
 
-// SetSessionIDQueryParameter adds the sessionId to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetSessionIDQueryParameter(sessionID *string) {
-	o.SessionIDQueryParameter = sessionID
+// SetSessionID adds the sessionId to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetSessionID(sessionID *string) {
+	o.SessionID = sessionID
 }
 
-// WithStateQueryParameter adds the state to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithStateQueryParameter(state *string) *SecurityAuditLogCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithState(state *string) *SecurityAuditLogCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSVMNameQueryParameter adds the svmName to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SecurityAuditLogCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithSvmName(svmName *string) *SecurityAuditLogCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithTimestampQueryParameter adds the timestamp to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *SecurityAuditLogCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithTimestamp(timestamp *string) *SecurityAuditLogCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithUserQueryParameter adds the user to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) WithUserQueryParameter(user *string) *SecurityAuditLogCollectionGetParams {
-	o.SetUserQueryParameter(user)
+// WithUser adds the user to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithUser(user *string) *SecurityAuditLogCollectionGetParams {
+	o.SetUser(user)
 	return o
 }
 
-// SetUserQueryParameter adds the user to the security audit log collection get params
-func (o *SecurityAuditLogCollectionGetParams) SetUserQueryParameter(user *string) {
-	o.UserQueryParameter = user
+// SetUser adds the user to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetUser(user *string) {
+	o.User = user
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +464,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.ApplicationQueryParameter != nil {
+	if o.Application != nil {
 
 		// query param application
 		var qrApplication string
 
-		if o.ApplicationQueryParameter != nil {
-			qrApplication = *o.ApplicationQueryParameter
+		if o.Application != nil {
+			qrApplication = *o.Application
 		}
 		qApplication := qrApplication
 		if qApplication != "" {
@@ -481,13 +481,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.CommandIDQueryParameter != nil {
+	if o.CommandID != nil {
 
 		// query param command_id
 		var qrCommandID string
 
-		if o.CommandIDQueryParameter != nil {
-			qrCommandID = *o.CommandIDQueryParameter
+		if o.CommandID != nil {
+			qrCommandID = *o.CommandID
 		}
 		qCommandID := qrCommandID
 		if qCommandID != "" {
@@ -498,7 +498,7 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -509,13 +509,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -526,13 +526,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.InputQueryParameter != nil {
+	if o.Input != nil {
 
 		// query param input
 		var qrInput string
 
-		if o.InputQueryParameter != nil {
-			qrInput = *o.InputQueryParameter
+		if o.Input != nil {
+			qrInput = *o.Input
 		}
 		qInput := qrInput
 		if qInput != "" {
@@ -543,13 +543,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LocationQueryParameter != nil {
+	if o.Location != nil {
 
 		// query param location
 		var qrLocation string
 
-		if o.LocationQueryParameter != nil {
-			qrLocation = *o.LocationQueryParameter
+		if o.Location != nil {
+			qrLocation = *o.Location
 		}
 		qLocation := qrLocation
 		if qLocation != "" {
@@ -560,13 +560,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -577,13 +577,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MessageQueryParameter != nil {
+	if o.Message != nil {
 
 		// query param message
 		var qrMessage string
 
-		if o.MessageQueryParameter != nil {
-			qrMessage = *o.MessageQueryParameter
+		if o.Message != nil {
+			qrMessage = *o.Message
 		}
 		qMessage := qrMessage
 		if qMessage != "" {
@@ -594,13 +594,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -611,13 +611,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -628,7 +628,7 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -639,13 +639,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -656,13 +656,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -673,13 +673,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -690,13 +690,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SessionIDQueryParameter != nil {
+	if o.SessionID != nil {
 
 		// query param session_id
 		var qrSessionID string
 
-		if o.SessionIDQueryParameter != nil {
-			qrSessionID = *o.SessionIDQueryParameter
+		if o.SessionID != nil {
+			qrSessionID = *o.SessionID
 		}
 		qSessionID := qrSessionID
 		if qSessionID != "" {
@@ -707,13 +707,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -724,13 +724,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -741,13 +741,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -758,13 +758,13 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.UserQueryParameter != nil {
+	if o.User != nil {
 
 		// query param user
 		var qrUser string
 
-		if o.UserQueryParameter != nil {
-			qrUser = *o.UserQueryParameter
+		if o.User != nil {
+			qrUser = *o.User
 		}
 		qUser := qrUser
 		if qUser != "" {
@@ -783,7 +783,7 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamSecurityAuditLogCollectionGet binds the parameter fields
 func (o *SecurityAuditLogCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *SecurityAuditLogCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamSecurityAuditLogCollectionGet binds the parameter order_by
 func (o *SecurityAuditLogCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

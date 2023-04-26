@@ -66,37 +66,37 @@ type FileDeleteParams struct {
 
 	   The relative path of a directory in the volume. The path field requires using "%2E" to represent "." and "%2F" to represent "/" for the path provided.
 	*/
-	PathPathParameter string
+	Path string
 
 	/* Recurse.
 
 	   Delete an entire directory. The behaviour of this call is equivalent to rm -rf.
 	*/
-	RecurseQueryParameter *bool
+	Recurse *bool
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ThrottleDeletion.
 
 	   The maximum number of directory delete operations per second. A valid throttle_deletion number is an integer from 10 to 100000.
 	*/
-	ThrottleDeletionQueryParameter *int64
+	ThrottleDeletion *int64
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -116,17 +116,17 @@ func (o *FileDeleteParams) WithDefaults() *FileDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *FileDeleteParams) SetDefaults() {
 	var (
-		recurseQueryParameterDefault = bool(false)
+		recurseDefault = bool(false)
 
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := FileDeleteParams{
-		RecurseQueryParameter:       &recurseQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Recurse:       &recurseDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -168,70 +168,70 @@ func (o *FileDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithPathPathParameter adds the path to the file delete params
-func (o *FileDeleteParams) WithPathPathParameter(path string) *FileDeleteParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the file delete params
+func (o *FileDeleteParams) WithPath(path string) *FileDeleteParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the file delete params
-func (o *FileDeleteParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the file delete params
+func (o *FileDeleteParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithRecurseQueryParameter adds the recurse to the file delete params
-func (o *FileDeleteParams) WithRecurseQueryParameter(recurse *bool) *FileDeleteParams {
-	o.SetRecurseQueryParameter(recurse)
+// WithRecurse adds the recurse to the file delete params
+func (o *FileDeleteParams) WithRecurse(recurse *bool) *FileDeleteParams {
+	o.SetRecurse(recurse)
 	return o
 }
 
-// SetRecurseQueryParameter adds the recurse to the file delete params
-func (o *FileDeleteParams) SetRecurseQueryParameter(recurse *bool) {
-	o.RecurseQueryParameter = recurse
+// SetRecurse adds the recurse to the file delete params
+func (o *FileDeleteParams) SetRecurse(recurse *bool) {
+	o.Recurse = recurse
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the file delete params
-func (o *FileDeleteParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileDeleteParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the file delete params
+func (o *FileDeleteParams) WithReturnRecords(returnRecords *bool) *FileDeleteParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the file delete params
-func (o *FileDeleteParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the file delete params
+func (o *FileDeleteParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the file delete params
-func (o *FileDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FileDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the file delete params
+func (o *FileDeleteParams) WithReturnTimeout(returnTimeout *int64) *FileDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the file delete params
-func (o *FileDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the file delete params
+func (o *FileDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithThrottleDeletionQueryParameter adds the throttleDeletion to the file delete params
-func (o *FileDeleteParams) WithThrottleDeletionQueryParameter(throttleDeletion *int64) *FileDeleteParams {
-	o.SetThrottleDeletionQueryParameter(throttleDeletion)
+// WithThrottleDeletion adds the throttleDeletion to the file delete params
+func (o *FileDeleteParams) WithThrottleDeletion(throttleDeletion *int64) *FileDeleteParams {
+	o.SetThrottleDeletion(throttleDeletion)
 	return o
 }
 
-// SetThrottleDeletionQueryParameter adds the throttleDeletion to the file delete params
-func (o *FileDeleteParams) SetThrottleDeletionQueryParameter(throttleDeletion *int64) {
-	o.ThrottleDeletionQueryParameter = throttleDeletion
+// SetThrottleDeletion adds the throttleDeletion to the file delete params
+func (o *FileDeleteParams) SetThrottleDeletion(throttleDeletion *int64) {
+	o.ThrottleDeletion = throttleDeletion
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the file delete params
-func (o *FileDeleteParams) WithVolumeUUIDPathParameter(volumeUUID string) *FileDeleteParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the file delete params
+func (o *FileDeleteParams) WithVolumeUUID(volumeUUID string) *FileDeleteParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the file delete params
-func (o *FileDeleteParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the file delete params
+func (o *FileDeleteParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -243,17 +243,17 @@ func (o *FileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	var res []error
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
-	if o.RecurseQueryParameter != nil {
+	if o.Recurse != nil {
 
 		// query param recurse
 		var qrRecurse bool
 
-		if o.RecurseQueryParameter != nil {
-			qrRecurse = *o.RecurseQueryParameter
+		if o.Recurse != nil {
+			qrRecurse = *o.Recurse
 		}
 		qRecurse := swag.FormatBool(qrRecurse)
 		if qRecurse != "" {
@@ -264,13 +264,13 @@ func (o *FileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -281,13 +281,13 @@ func (o *FileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -298,13 +298,13 @@ func (o *FileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ThrottleDeletionQueryParameter != nil {
+	if o.ThrottleDeletion != nil {
 
 		// query param throttle_deletion
 		var qrThrottleDeletion int64
 
-		if o.ThrottleDeletionQueryParameter != nil {
-			qrThrottleDeletion = *o.ThrottleDeletionQueryParameter
+		if o.ThrottleDeletion != nil {
+			qrThrottleDeletion = *o.ThrottleDeletion
 		}
 		qThrottleDeletion := swag.FormatInt64(qrThrottleDeletion)
 		if qThrottleDeletion != "" {
@@ -316,7 +316,7 @@ func (o *FileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

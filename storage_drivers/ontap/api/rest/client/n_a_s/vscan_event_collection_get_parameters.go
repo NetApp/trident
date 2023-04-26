@@ -66,67 +66,67 @@ type VscanEventCollectionGetParams struct {
 
 	   Filter by disconnect_reason
 	*/
-	DisconnectReasonQueryParameter *string
+	DisconnectReason *string
 
 	/* EventTime.
 
 	   Filter by event_time
 	*/
-	EventTimeQueryParameter *string
+	EventTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FilePath.
 
 	   Filter by file_path
 	*/
-	FilePathQueryParameter *string
+	FilePath *string
 
 	/* InterfaceIPAddress.
 
 	   Filter by interface.ip.address
 	*/
-	InterfaceIPAddressQueryParameter *string
+	InterfaceIPAddress *string
 
 	/* InterfaceName.
 
 	   Filter by interface.name
 	*/
-	InterfaceNameQueryParameter *string
+	InterfaceName *string
 
 	/* InterfaceUUID.
 
 	   Filter by interface.uuid
 	*/
-	InterfaceUUIDQueryParameter *string
+	InterfaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type VscanEventCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,43 +142,43 @@ type VscanEventCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Server.
 
 	   Filter by server
 	*/
-	ServerQueryParameter *string
+	Server *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* Vendor.
 
 	   Filter by vendor
 	*/
-	VendorQueryParameter *string
+	Vendor *string
 
 	/* Version.
 
 	   Filter by version
 	*/
-	VersionQueryParameter *string
+	Version *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *VscanEventCollectionGetParams) WithDefaults() *VscanEventCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *VscanEventCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := VscanEventCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *VscanEventCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDisconnectReasonQueryParameter adds the disconnectReason to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithDisconnectReasonQueryParameter(disconnectReason *string) *VscanEventCollectionGetParams {
-	o.SetDisconnectReasonQueryParameter(disconnectReason)
+// WithDisconnectReason adds the disconnectReason to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithDisconnectReason(disconnectReason *string) *VscanEventCollectionGetParams {
+	o.SetDisconnectReason(disconnectReason)
 	return o
 }
 
-// SetDisconnectReasonQueryParameter adds the disconnectReason to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetDisconnectReasonQueryParameter(disconnectReason *string) {
-	o.DisconnectReasonQueryParameter = disconnectReason
+// SetDisconnectReason adds the disconnectReason to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetDisconnectReason(disconnectReason *string) {
+	o.DisconnectReason = disconnectReason
 }
 
-// WithEventTimeQueryParameter adds the eventTime to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithEventTimeQueryParameter(eventTime *string) *VscanEventCollectionGetParams {
-	o.SetEventTimeQueryParameter(eventTime)
+// WithEventTime adds the eventTime to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithEventTime(eventTime *string) *VscanEventCollectionGetParams {
+	o.SetEventTime(eventTime)
 	return o
 }
 
-// SetEventTimeQueryParameter adds the eventTime to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetEventTimeQueryParameter(eventTime *string) {
-	o.EventTimeQueryParameter = eventTime
+// SetEventTime adds the eventTime to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetEventTime(eventTime *string) {
+	o.EventTime = eventTime
 }
 
-// WithFieldsQueryParameter adds the fields to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithFieldsQueryParameter(fields []string) *VscanEventCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithFields(fields []string) *VscanEventCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFilePathQueryParameter adds the filePath to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithFilePathQueryParameter(filePath *string) *VscanEventCollectionGetParams {
-	o.SetFilePathQueryParameter(filePath)
+// WithFilePath adds the filePath to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithFilePath(filePath *string) *VscanEventCollectionGetParams {
+	o.SetFilePath(filePath)
 	return o
 }
 
-// SetFilePathQueryParameter adds the filePath to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetFilePathQueryParameter(filePath *string) {
-	o.FilePathQueryParameter = filePath
+// SetFilePath adds the filePath to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetFilePath(filePath *string) {
+	o.FilePath = filePath
 }
 
-// WithInterfaceIPAddressQueryParameter adds the interfaceIPAddress to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithInterfaceIPAddressQueryParameter(interfaceIPAddress *string) *VscanEventCollectionGetParams {
-	o.SetInterfaceIPAddressQueryParameter(interfaceIPAddress)
+// WithInterfaceIPAddress adds the interfaceIPAddress to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithInterfaceIPAddress(interfaceIPAddress *string) *VscanEventCollectionGetParams {
+	o.SetInterfaceIPAddress(interfaceIPAddress)
 	return o
 }
 
-// SetInterfaceIPAddressQueryParameter adds the interfaceIpAddress to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetInterfaceIPAddressQueryParameter(interfaceIPAddress *string) {
-	o.InterfaceIPAddressQueryParameter = interfaceIPAddress
+// SetInterfaceIPAddress adds the interfaceIpAddress to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetInterfaceIPAddress(interfaceIPAddress *string) {
+	o.InterfaceIPAddress = interfaceIPAddress
 }
 
-// WithInterfaceNameQueryParameter adds the interfaceName to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithInterfaceNameQueryParameter(interfaceName *string) *VscanEventCollectionGetParams {
-	o.SetInterfaceNameQueryParameter(interfaceName)
+// WithInterfaceName adds the interfaceName to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithInterfaceName(interfaceName *string) *VscanEventCollectionGetParams {
+	o.SetInterfaceName(interfaceName)
 	return o
 }
 
-// SetInterfaceNameQueryParameter adds the interfaceName to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetInterfaceNameQueryParameter(interfaceName *string) {
-	o.InterfaceNameQueryParameter = interfaceName
+// SetInterfaceName adds the interfaceName to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetInterfaceName(interfaceName *string) {
+	o.InterfaceName = interfaceName
 }
 
-// WithInterfaceUUIDQueryParameter adds the interfaceUUID to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithInterfaceUUIDQueryParameter(interfaceUUID *string) *VscanEventCollectionGetParams {
-	o.SetInterfaceUUIDQueryParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithInterfaceUUID(interfaceUUID *string) *VscanEventCollectionGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDQueryParameter adds the interfaceUuid to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetInterfaceUUIDQueryParameter(interfaceUUID *string) {
-	o.InterfaceUUIDQueryParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetInterfaceUUID(interfaceUUID *string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VscanEventCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithMaxRecords(maxRecords *int64) *VscanEventCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *VscanEventCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithNodeName(nodeName *string) *VscanEventCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *VscanEventCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithNodeUUID(nodeUUID *string) *VscanEventCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VscanEventCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithOrderBy(orderBy []string) *VscanEventCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanEventCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithReturnRecords(returnRecords *bool) *VscanEventCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VscanEventCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VscanEventCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerQueryParameter adds the server to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithServerQueryParameter(server *string) *VscanEventCollectionGetParams {
-	o.SetServerQueryParameter(server)
+// WithServer adds the server to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithServer(server *string) *VscanEventCollectionGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerQueryParameter adds the server to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetServerQueryParameter(server *string) {
-	o.ServerQueryParameter = server
+// SetServer adds the server to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetServer(server *string) {
+	o.Server = server
 }
 
-// WithSVMNameQueryParameter adds the svmName to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *VscanEventCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithSvmName(svmName *string) *VscanEventCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanEventCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithSvmUUID(svmUUID string) *VscanEventCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithTypeQueryParameter(typeVar *string) *VscanEventCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithType(typeVar *string) *VscanEventCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithVendorQueryParameter adds the vendor to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithVendorQueryParameter(vendor *string) *VscanEventCollectionGetParams {
-	o.SetVendorQueryParameter(vendor)
+// WithVendor adds the vendor to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithVendor(vendor *string) *VscanEventCollectionGetParams {
+	o.SetVendor(vendor)
 	return o
 }
 
-// SetVendorQueryParameter adds the vendor to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetVendorQueryParameter(vendor *string) {
-	o.VendorQueryParameter = vendor
+// SetVendor adds the vendor to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetVendor(vendor *string) {
+	o.Vendor = vendor
 }
 
-// WithVersionQueryParameter adds the version to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) WithVersionQueryParameter(version *string) *VscanEventCollectionGetParams {
-	o.SetVersionQueryParameter(version)
+// WithVersion adds the version to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithVersion(version *string) *VscanEventCollectionGetParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionQueryParameter adds the version to the vscan event collection get params
-func (o *VscanEventCollectionGetParams) SetVersionQueryParameter(version *string) {
-	o.VersionQueryParameter = version
+// SetVersion adds the version to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetVersion(version *string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +464,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.DisconnectReasonQueryParameter != nil {
+	if o.DisconnectReason != nil {
 
 		// query param disconnect_reason
 		var qrDisconnectReason string
 
-		if o.DisconnectReasonQueryParameter != nil {
-			qrDisconnectReason = *o.DisconnectReasonQueryParameter
+		if o.DisconnectReason != nil {
+			qrDisconnectReason = *o.DisconnectReason
 		}
 		qDisconnectReason := qrDisconnectReason
 		if qDisconnectReason != "" {
@@ -481,13 +481,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.EventTimeQueryParameter != nil {
+	if o.EventTime != nil {
 
 		// query param event_time
 		var qrEventTime string
 
-		if o.EventTimeQueryParameter != nil {
-			qrEventTime = *o.EventTimeQueryParameter
+		if o.EventTime != nil {
+			qrEventTime = *o.EventTime
 		}
 		qEventTime := qrEventTime
 		if qEventTime != "" {
@@ -498,7 +498,7 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -509,13 +509,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FilePathQueryParameter != nil {
+	if o.FilePath != nil {
 
 		// query param file_path
 		var qrFilePath string
 
-		if o.FilePathQueryParameter != nil {
-			qrFilePath = *o.FilePathQueryParameter
+		if o.FilePath != nil {
+			qrFilePath = *o.FilePath
 		}
 		qFilePath := qrFilePath
 		if qFilePath != "" {
@@ -526,13 +526,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceIPAddressQueryParameter != nil {
+	if o.InterfaceIPAddress != nil {
 
 		// query param interface.ip.address
 		var qrInterfaceIPAddress string
 
-		if o.InterfaceIPAddressQueryParameter != nil {
-			qrInterfaceIPAddress = *o.InterfaceIPAddressQueryParameter
+		if o.InterfaceIPAddress != nil {
+			qrInterfaceIPAddress = *o.InterfaceIPAddress
 		}
 		qInterfaceIPAddress := qrInterfaceIPAddress
 		if qInterfaceIPAddress != "" {
@@ -543,13 +543,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceNameQueryParameter != nil {
+	if o.InterfaceName != nil {
 
 		// query param interface.name
 		var qrInterfaceName string
 
-		if o.InterfaceNameQueryParameter != nil {
-			qrInterfaceName = *o.InterfaceNameQueryParameter
+		if o.InterfaceName != nil {
+			qrInterfaceName = *o.InterfaceName
 		}
 		qInterfaceName := qrInterfaceName
 		if qInterfaceName != "" {
@@ -560,13 +560,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.InterfaceUUIDQueryParameter != nil {
+	if o.InterfaceUUID != nil {
 
 		// query param interface.uuid
 		var qrInterfaceUUID string
 
-		if o.InterfaceUUIDQueryParameter != nil {
-			qrInterfaceUUID = *o.InterfaceUUIDQueryParameter
+		if o.InterfaceUUID != nil {
+			qrInterfaceUUID = *o.InterfaceUUID
 		}
 		qInterfaceUUID := qrInterfaceUUID
 		if qInterfaceUUID != "" {
@@ -577,13 +577,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -594,13 +594,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -611,13 +611,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -628,7 +628,7 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -639,13 +639,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -656,13 +656,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -673,13 +673,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ServerQueryParameter != nil {
+	if o.Server != nil {
 
 		// query param server
 		var qrServer string
 
-		if o.ServerQueryParameter != nil {
-			qrServer = *o.ServerQueryParameter
+		if o.Server != nil {
+			qrServer = *o.Server
 		}
 		qServer := qrServer
 		if qServer != "" {
@@ -690,13 +690,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -708,17 +708,17 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -729,13 +729,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VendorQueryParameter != nil {
+	if o.Vendor != nil {
 
 		// query param vendor
 		var qrVendor string
 
-		if o.VendorQueryParameter != nil {
-			qrVendor = *o.VendorQueryParameter
+		if o.Vendor != nil {
+			qrVendor = *o.Vendor
 		}
 		qVendor := qrVendor
 		if qVendor != "" {
@@ -746,13 +746,13 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VersionQueryParameter != nil {
+	if o.Version != nil {
 
 		// query param version
 		var qrVersion string
 
-		if o.VersionQueryParameter != nil {
-			qrVersion = *o.VersionQueryParameter
+		if o.Version != nil {
+			qrVersion = *o.Version
 		}
 		qVersion := qrVersion
 		if qVersion != "" {
@@ -771,7 +771,7 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamVscanEventCollectionGet binds the parameter fields
 func (o *VscanEventCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -788,7 +788,7 @@ func (o *VscanEventCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamVscanEventCollectionGet binds the parameter order_by
 func (o *VscanEventCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

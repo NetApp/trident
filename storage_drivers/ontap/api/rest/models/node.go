@@ -22,17 +22,13 @@ import (
 type Node struct {
 
 	// links
-	Links *NodeLinks `json:"_links,omitempty"`
+	Links *NodeInlineLinks `json:"_links,omitempty"`
 
 	// cluster interface
-	ClusterInterface *NodeClusterInterface `json:"cluster_interface,omitempty"`
-
-	// cluster interfaces
-	// Read Only: true
-	ClusterInterfaces []*NodeClusterInterfacesItems0 `json:"cluster_interfaces,omitempty"`
+	ClusterInterface *NodeInlineClusterInterface `json:"cluster_interface,omitempty"`
 
 	// controller
-	Controller *NodeController `json:"controller,omitempty"`
+	Controller *NodeInlineController `json:"controller,omitempty"`
 
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
@@ -43,13 +39,13 @@ type Node struct {
 	Date *strfmt.DateTime `json:"date,omitempty"`
 
 	// external cache
-	ExternalCache *NodeExternalCache `json:"external_cache,omitempty"`
+	ExternalCache *NodeInlineExternalCache `json:"external_cache,omitempty"`
 
 	// ha
-	Ha *NodeHa `json:"ha,omitempty"`
+	Ha *NodeInlineHa `json:"ha,omitempty"`
 
 	// hw assist
-	HwAssist *NodeHwAssist `json:"hw_assist,omitempty"`
+	HwAssist *NodeInlineHwAssist `json:"hw_assist,omitempty"`
 
 	// Specifies whether or not the node is in spares low condition.
 	// Read Only: true
@@ -57,14 +53,10 @@ type Node struct {
 
 	// location
 	// Example: rack 2 row 5
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// management interface
-	ManagementInterface *NodeManagementInterface `json:"management_interface,omitempty"`
-
-	// management interfaces
-	// Read Only: true
-	ManagementInterfaces []*NodeManagementInterfacesItems0 `json:"management_interfaces,omitempty"`
+	ManagementInterface *NodeInlineManagementInterface `json:"management_interface,omitempty"`
 
 	// Possible values:
 	// * <i>available</i> - A node is detected on the internal cluster network and can be added to the cluster.  Nodes that have a membership of "available" are not returned when a GET request is called when the cluster exists. Provide a query on the "membership" property for <i>available</i> to scan for nodes on the cluster network. Nodes that have a membership of "available" are returned automatically before a cluster is created.
@@ -73,37 +65,48 @@ type Node struct {
 	//
 	// Read Only: true
 	// Enum: [available joining member]
-	Membership string `json:"membership,omitempty"`
+	Membership *string `json:"membership,omitempty"`
 
 	// metric
-	Metric *NodeMetric `json:"metric,omitempty"`
+	Metric *NodeInlineMetric `json:"metric,omitempty"`
 
 	// metrocluster
-	Metrocluster *NodeMetrocluster `json:"metrocluster,omitempty"`
+	Metrocluster *NodeInlineMetrocluster `json:"metrocluster,omitempty"`
 
 	// model
 	// Example: FAS3070
 	// Read Only: true
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// name
 	// Example: node-01
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// node inline cluster interfaces
+	// Read Only: true
+	NodeInlineClusterInterfaces []*NodeInlineClusterInterfacesInlineArrayItem `json:"cluster_interfaces,omitempty"`
+
+	// node inline management interfaces
+	// Read Only: true
+	NodeInlineManagementInterfaces []*NodeInlineManagementInterfacesInlineArrayItem `json:"management_interfaces,omitempty"`
 
 	// nvram
-	Nvram *NodeNvram `json:"nvram,omitempty"`
+	Nvram *NodeInlineNvram `json:"nvram,omitempty"`
 
 	// Owner of the node.
 	// Example: Example Corp
-	Owner string `json:"owner,omitempty"`
+	Owner *string `json:"owner,omitempty"`
 
 	// serial number
 	// Example: 4048820-60-9
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// service processor
-	ServiceProcessor *NodeServiceProcessor `json:"service_processor,omitempty"`
+	ServiceProcessor *NodeInlineServiceProcessor `json:"service_processor,omitempty"`
+
+	// snaplock
+	Snaplock *NodeInlineSnaplock `json:"snaplock,omitempty"`
 
 	// State of the node:
 	// * <i>up</i> - Node is up and operational.
@@ -116,10 +119,10 @@ type Node struct {
 	//
 	// Read Only: true
 	// Enum: [up booting down taken_over waiting_for_giveback degraded unknown]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *NodeStatisticsType `json:"statistics,omitempty"`
+	Statistics *NodeInlineStatistics `json:"statistics,omitempty"`
 
 	// The storage configuration in the system. Possible values:
 	// * <i>mixed_path</i>
@@ -134,39 +137,39 @@ type Node struct {
 	//
 	// Read Only: true
 	// Enum: [unknown single_path multi_path mixed_path quad_path single_path_ha multi_path_ha mixed_path_ha quad_path_ha]
-	StorageConfiguration string `json:"storage_configuration,omitempty"`
+	StorageConfiguration *string `json:"storage_configuration,omitempty"`
 
 	// system id
 	// Example: 0537035403
 	// Read Only: true
-	SystemID string `json:"system_id,omitempty"`
+	SystemID *string `json:"system_id,omitempty"`
 
 	// OEM system machine type.
 	// Example: 7Y56-CTOWW1
 	// Read Only: true
-	SystemMachineType string `json:"system_machine_type,omitempty"`
+	SystemMachineType *string `json:"system_machine_type,omitempty"`
 
 	// The total time, in seconds, that the node has been up.
 	// Example: 300536
 	// Read Only: true
-	Uptime int64 `json:"uptime,omitempty"`
+	Uptime *int64 `json:"uptime,omitempty"`
 
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 
 	// OEM vendor serial number.
 	// Example: 791603000068
 	// Read Only: true
-	VendorSerialNumber string `json:"vendor_serial_number,omitempty"`
+	VendorSerialNumber *string `json:"vendor_serial_number,omitempty"`
 
 	// version
-	Version *NodeVersion `json:"version,omitempty"`
+	Version *NodeInlineVersion `json:"version,omitempty"`
 
 	// vm
-	VM *NodeVM `json:"vm,omitempty"`
+	VM *NodeInlineVM `json:"vm,omitempty"`
 }
 
 // Validate validates this node
@@ -178,10 +181,6 @@ func (m *Node) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateClusterInterface(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateClusterInterfaces(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -209,10 +208,6 @@ func (m *Node) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateManagementInterfaces(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateMembership(formats); err != nil {
 		res = append(res, err)
 	}
@@ -225,11 +220,23 @@ func (m *Node) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNodeInlineClusterInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNodeInlineManagementInterfaces(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNvram(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateServiceProcessor(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnaplock(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -292,30 +299,6 @@ func (m *Node) validateClusterInterface(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Node) validateClusterInterfaces(formats strfmt.Registry) error {
-	if swag.IsZero(m.ClusterInterfaces) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ClusterInterfaces); i++ {
-		if swag.IsZero(m.ClusterInterfaces[i]) { // not required
-			continue
-		}
-
-		if m.ClusterInterfaces[i] != nil {
-			if err := m.ClusterInterfaces[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("cluster_interfaces" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -418,30 +401,6 @@ func (m *Node) validateManagementInterface(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Node) validateManagementInterfaces(formats strfmt.Registry) error {
-	if swag.IsZero(m.ManagementInterfaces) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ManagementInterfaces); i++ {
-		if swag.IsZero(m.ManagementInterfaces[i]) { // not required
-			continue
-		}
-
-		if m.ManagementInterfaces[i] != nil {
-			if err := m.ManagementInterfaces[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("management_interfaces" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 var nodeTypeMembershipPropEnum []interface{}
 
 func init() {
@@ -501,7 +460,7 @@ func (m *Node) validateMembership(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateMembershipEnum("membership", "body", m.Membership); err != nil {
+	if err := m.validateMembershipEnum("membership", "body", *m.Membership); err != nil {
 		return err
 	}
 
@@ -542,6 +501,54 @@ func (m *Node) validateMetrocluster(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Node) validateNodeInlineClusterInterfaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.NodeInlineClusterInterfaces) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NodeInlineClusterInterfaces); i++ {
+		if swag.IsZero(m.NodeInlineClusterInterfaces[i]) { // not required
+			continue
+		}
+
+		if m.NodeInlineClusterInterfaces[i] != nil {
+			if err := m.NodeInlineClusterInterfaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cluster_interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Node) validateNodeInlineManagementInterfaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.NodeInlineManagementInterfaces) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NodeInlineManagementInterfaces); i++ {
+		if swag.IsZero(m.NodeInlineManagementInterfaces[i]) { // not required
+			continue
+		}
+
+		if m.NodeInlineManagementInterfaces[i] != nil {
+			if err := m.NodeInlineManagementInterfaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("management_interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Node) validateNvram(formats strfmt.Registry) error {
 	if swag.IsZero(m.Nvram) { // not required
 		return nil
@@ -568,6 +575,23 @@ func (m *Node) validateServiceProcessor(formats strfmt.Registry) error {
 		if err := m.ServiceProcessor.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("service_processor")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Node) validateSnaplock(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snaplock) { // not required
+		return nil
+	}
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
 			}
 			return err
 		}
@@ -675,7 +699,7 @@ func (m *Node) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -818,7 +842,7 @@ func (m *Node) validateStorageConfiguration(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStorageConfigurationEnum("storage_configuration", "body", m.StorageConfiguration); err != nil {
+	if err := m.validateStorageConfigurationEnum("storage_configuration", "body", *m.StorageConfiguration); err != nil {
 		return err
 	}
 
@@ -883,10 +907,6 @@ func (m *Node) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateClusterInterfaces(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateController(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -915,10 +935,6 @@ func (m *Node) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateManagementInterfaces(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateMembership(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -935,6 +951,14 @@ func (m *Node) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateNodeInlineClusterInterfaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNodeInlineManagementInterfaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNvram(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -944,6 +968,10 @@ func (m *Node) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateServiceProcessor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnaplock(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1016,28 +1044,6 @@ func (m *Node) contextValidateClusterInterface(ctx context.Context, formats strf
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Node) contextValidateClusterInterfaces(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "cluster_interfaces", "body", []*NodeClusterInterfacesItems0(m.ClusterInterfaces)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.ClusterInterfaces); i++ {
-
-		if m.ClusterInterfaces[i] != nil {
-			if err := m.ClusterInterfaces[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("cluster_interfaces" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -1131,31 +1137,9 @@ func (m *Node) contextValidateManagementInterface(ctx context.Context, formats s
 	return nil
 }
 
-func (m *Node) contextValidateManagementInterfaces(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "management_interfaces", "body", []*NodeManagementInterfacesItems0(m.ManagementInterfaces)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.ManagementInterfaces); i++ {
-
-		if m.ManagementInterfaces[i] != nil {
-			if err := m.ManagementInterfaces[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("management_interfaces" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *Node) contextValidateMembership(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "membership", "body", string(m.Membership)); err != nil {
+	if err := validate.ReadOnly(ctx, "membership", "body", m.Membership); err != nil {
 		return err
 	}
 
@@ -1192,8 +1176,52 @@ func (m *Node) contextValidateMetrocluster(ctx context.Context, formats strfmt.R
 
 func (m *Node) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
+	if err := validate.ReadOnly(ctx, "model", "body", m.Model); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Node) contextValidateNodeInlineClusterInterfaces(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cluster_interfaces", "body", []*NodeInlineClusterInterfacesInlineArrayItem(m.NodeInlineClusterInterfaces)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.NodeInlineClusterInterfaces); i++ {
+
+		if m.NodeInlineClusterInterfaces[i] != nil {
+			if err := m.NodeInlineClusterInterfaces[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cluster_interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Node) contextValidateNodeInlineManagementInterfaces(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "management_interfaces", "body", []*NodeInlineManagementInterfacesInlineArrayItem(m.NodeInlineManagementInterfaces)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.NodeInlineManagementInterfaces); i++ {
+
+		if m.NodeInlineManagementInterfaces[i] != nil {
+			if err := m.NodeInlineManagementInterfaces[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("management_interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -1215,7 +1243,7 @@ func (m *Node) contextValidateNvram(ctx context.Context, formats strfmt.Registry
 
 func (m *Node) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -1236,9 +1264,23 @@ func (m *Node) contextValidateServiceProcessor(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *Node) contextValidateSnaplock(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snaplock != nil {
+		if err := m.Snaplock.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snaplock")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Node) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -1261,7 +1303,7 @@ func (m *Node) contextValidateStatistics(ctx context.Context, formats strfmt.Reg
 
 func (m *Node) contextValidateStorageConfiguration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_configuration", "body", string(m.StorageConfiguration)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_configuration", "body", m.StorageConfiguration); err != nil {
 		return err
 	}
 
@@ -1270,7 +1312,7 @@ func (m *Node) contextValidateStorageConfiguration(ctx context.Context, formats 
 
 func (m *Node) contextValidateSystemID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "system_id", "body", string(m.SystemID)); err != nil {
+	if err := validate.ReadOnly(ctx, "system_id", "body", m.SystemID); err != nil {
 		return err
 	}
 
@@ -1279,7 +1321,7 @@ func (m *Node) contextValidateSystemID(ctx context.Context, formats strfmt.Regis
 
 func (m *Node) contextValidateSystemMachineType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "system_machine_type", "body", string(m.SystemMachineType)); err != nil {
+	if err := validate.ReadOnly(ctx, "system_machine_type", "body", m.SystemMachineType); err != nil {
 		return err
 	}
 
@@ -1288,7 +1330,7 @@ func (m *Node) contextValidateSystemMachineType(ctx context.Context, formats str
 
 func (m *Node) contextValidateUptime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uptime", "body", int64(m.Uptime)); err != nil {
+	if err := validate.ReadOnly(ctx, "uptime", "body", m.Uptime); err != nil {
 		return err
 	}
 
@@ -1297,7 +1339,7 @@ func (m *Node) contextValidateUptime(ctx context.Context, formats strfmt.Registr
 
 func (m *Node) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1306,7 +1348,7 @@ func (m *Node) contextValidateUUID(ctx context.Context, formats strfmt.Registry)
 
 func (m *Node) contextValidateVendorSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "vendor_serial_number", "body", string(m.VendorSerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "vendor_serial_number", "body", m.VendorSerialNumber); err != nil {
 		return err
 	}
 
@@ -1359,17 +1401,17 @@ func (m *Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeClusterInterface The cluster network IP address of the node to be added.
+// NodeInlineClusterInterface The cluster network IP address of the node to be added.
 //
-// swagger:model NodeClusterInterface
-type NodeClusterInterface struct {
+// swagger:model node_inline_cluster_interface
+type NodeInlineClusterInterface struct {
 
 	// ip
 	IP *NodeSetupIP `json:"ip,omitempty"`
 }
 
-// Validate validates this node cluster interface
-func (m *NodeClusterInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline cluster interface
+func (m *NodeInlineClusterInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIP(formats); err != nil {
@@ -1382,7 +1424,7 @@ func (m *NodeClusterInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeClusterInterface) validateIP(formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -1399,8 +1441,8 @@ func (m *NodeClusterInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node cluster interface based on the context it is used
-func (m *NodeClusterInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline cluster interface based on the context it is used
+func (m *NodeInlineClusterInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIP(ctx, formats); err != nil {
@@ -1413,7 +1455,7 @@ func (m *NodeClusterInterface) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NodeClusterInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -1428,7 +1470,7 @@ func (m *NodeClusterInterface) contextValidateIP(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NodeClusterInterface) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineClusterInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1436,8 +1478,8 @@ func (m *NodeClusterInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeClusterInterface) UnmarshalBinary(b []byte) error {
-	var res NodeClusterInterface
+func (m *NodeInlineClusterInterface) UnmarshalBinary(b []byte) error {
+	var res NodeInlineClusterInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1445,30 +1487,30 @@ func (m *NodeClusterInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeClusterInterfacesItems0 Network interface
+// NodeInlineClusterInterfacesInlineArrayItem Network interface
 //
-// swagger:model NodeClusterInterfacesItems0
-type NodeClusterInterfacesItems0 struct {
+// swagger:model node_inline_cluster_interfaces_inline_array_item
+type NodeInlineClusterInterfacesInlineArrayItem struct {
 
 	// links
-	Links *NodeClusterInterfacesItems0Links `json:"_links,omitempty"`
+	Links *NodeInlineClusterInterfacesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *NodeClusterInterfacesItems0IP `json:"ip,omitempty"`
+	IP *NodeInlineClusterInterfacesInlineArrayItemInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this node cluster interfaces items0
-func (m *NodeClusterInterfacesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline cluster interfaces inline array item
+func (m *NodeInlineClusterInterfacesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1485,7 +1527,7 @@ func (m *NodeClusterInterfacesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1502,7 +1544,7 @@ func (m *NodeClusterInterfacesItems0) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0) validateIP(formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItem) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -1519,8 +1561,8 @@ func (m *NodeClusterInterfacesItems0) validateIP(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this node cluster interfaces items0 based on the context it is used
-func (m *NodeClusterInterfacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline cluster interfaces inline array item based on the context it is used
+func (m *NodeInlineClusterInterfacesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1537,7 +1579,7 @@ func (m *NodeClusterInterfacesItems0) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1551,7 +1593,7 @@ func (m *NodeClusterInterfacesItems0) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItem) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -1566,7 +1608,7 @@ func (m *NodeClusterInterfacesItems0) contextValidateIP(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *NodeClusterInterfacesItems0) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineClusterInterfacesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1574,8 +1616,8 @@ func (m *NodeClusterInterfacesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeClusterInterfacesItems0) UnmarshalBinary(b []byte) error {
-	var res NodeClusterInterfacesItems0
+func (m *NodeInlineClusterInterfacesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NodeInlineClusterInterfacesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1583,17 +1625,17 @@ func (m *NodeClusterInterfacesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeClusterInterfacesItems0IP IP information
+// NodeInlineClusterInterfacesInlineArrayItemInlineIP IP information
 //
-// swagger:model NodeClusterInterfacesItems0IP
-type NodeClusterInterfacesItems0IP struct {
+// swagger:model node_inline_cluster_interfaces_inline_array_item_inline_ip
+type NodeInlineClusterInterfacesInlineArrayItemInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this node cluster interfaces items0 IP
-func (m *NodeClusterInterfacesItems0IP) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline cluster interfaces inline array item inline ip
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -1606,23 +1648,25 @@ func (m *NodeClusterInterfacesItems0IP) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0IP) validateAddress(formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node cluster interfaces items0 IP based on the context it is used
-func (m *NodeClusterInterfacesItems0IP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline cluster interfaces inline array item inline ip based on the context it is used
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -1635,20 +1679,22 @@ func (m *NodeClusterInterfacesItems0IP) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0IP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeClusterInterfacesItems0IP) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1656,8 +1702,8 @@ func (m *NodeClusterInterfacesItems0IP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeClusterInterfacesItems0IP) UnmarshalBinary(b []byte) error {
-	var res NodeClusterInterfacesItems0IP
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineIP) UnmarshalBinary(b []byte) error {
+	var res NodeInlineClusterInterfacesInlineArrayItemInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1665,17 +1711,17 @@ func (m *NodeClusterInterfacesItems0IP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeClusterInterfacesItems0Links node cluster interfaces items0 links
+// NodeInlineClusterInterfacesInlineArrayItemInlineLinks node inline cluster interfaces inline array item inline links
 //
-// swagger:model NodeClusterInterfacesItems0Links
-type NodeClusterInterfacesItems0Links struct {
+// swagger:model node_inline_cluster_interfaces_inline_array_item_inline__links
+type NodeInlineClusterInterfacesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node cluster interfaces items0 links
-func (m *NodeClusterInterfacesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline cluster interfaces inline array item inline links
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1688,7 +1734,7 @@ func (m *NodeClusterInterfacesItems0Links) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1705,8 +1751,8 @@ func (m *NodeClusterInterfacesItems0Links) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this node cluster interfaces items0 links based on the context it is used
-func (m *NodeClusterInterfacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline cluster interfaces inline array item inline links based on the context it is used
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1719,7 +1765,7 @@ func (m *NodeClusterInterfacesItems0Links) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *NodeClusterInterfacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1734,7 +1780,7 @@ func (m *NodeClusterInterfacesItems0Links) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *NodeClusterInterfacesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1742,8 +1788,8 @@ func (m *NodeClusterInterfacesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeClusterInterfacesItems0Links) UnmarshalBinary(b []byte) error {
-	var res NodeClusterInterfacesItems0Links
+func (m *NodeInlineClusterInterfacesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeInlineClusterInterfacesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1751,24 +1797,24 @@ func (m *NodeClusterInterfacesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeController Controller information
+// NodeInlineController Controller information
 //
-// swagger:model NodeController
-type NodeController struct {
+// swagger:model node_inline_controller
+type NodeInlineController struct {
 
 	// Type of the system board. This is defined by vendor.
 	// Example: System Board XXVIII
 	// Read Only: true
-	Board string `json:"board,omitempty"`
+	Board *string `json:"board,omitempty"`
 
 	// cpu
-	CPU *NodeControllerCPU `json:"cpu,omitempty"`
+	CPU *NodeInlineControllerInlineCPU `json:"cpu,omitempty"`
 
 	// failed fan
-	FailedFan *NodeControllerFailedFan `json:"failed_fan,omitempty"`
+	FailedFan *NodeInlineControllerInlineFailedFan `json:"failed_fan,omitempty"`
 
 	// failed power supply
-	FailedPowerSupply *NodeControllerFailedPowerSupply `json:"failed_power_supply,omitempty"`
+	FailedPowerSupply *NodeInlineControllerInlineFailedPowerSupply `json:"failed_power_supply,omitempty"`
 
 	// A list of Flash-Cache devices. Only returned when requested by name.
 	// Read Only: true
@@ -1780,16 +1826,16 @@ type NodeController struct {
 	// Memory available on the node, in bytes.
 	// Example: 1024000000
 	// Read Only: true
-	MemorySize int64 `json:"memory_size,omitempty"`
+	MemorySize *int64 `json:"memory_size,omitempty"`
 
 	// Specifies whether the hardware is currently operating outside of its recommended temperature range. The hardware shuts down if the temperature exceeds critical thresholds.
 	// Read Only: true
 	// Enum: [over normal]
-	OverTemperature string `json:"over_temperature,omitempty"`
+	OverTemperature *string `json:"over_temperature,omitempty"`
 }
 
-// Validate validates this node controller
-func (m *NodeController) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline controller
+func (m *NodeInlineController) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCPU(formats); err != nil {
@@ -1822,7 +1868,7 @@ func (m *NodeController) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeController) validateCPU(formats strfmt.Registry) error {
+func (m *NodeInlineController) validateCPU(formats strfmt.Registry) error {
 	if swag.IsZero(m.CPU) { // not required
 		return nil
 	}
@@ -1839,7 +1885,7 @@ func (m *NodeController) validateCPU(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeController) validateFailedFan(formats strfmt.Registry) error {
+func (m *NodeInlineController) validateFailedFan(formats strfmt.Registry) error {
 	if swag.IsZero(m.FailedFan) { // not required
 		return nil
 	}
@@ -1856,7 +1902,7 @@ func (m *NodeController) validateFailedFan(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeController) validateFailedPowerSupply(formats strfmt.Registry) error {
+func (m *NodeInlineController) validateFailedPowerSupply(formats strfmt.Registry) error {
 	if swag.IsZero(m.FailedPowerSupply) { // not required
 		return nil
 	}
@@ -1873,7 +1919,7 @@ func (m *NodeController) validateFailedPowerSupply(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *NodeController) validateFlashCache(formats strfmt.Registry) error {
+func (m *NodeInlineController) validateFlashCache(formats strfmt.Registry) error {
 	if swag.IsZero(m.FlashCache) { // not required
 		return nil
 	}
@@ -1897,7 +1943,7 @@ func (m *NodeController) validateFlashCache(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeController) validateFrus(formats strfmt.Registry) error {
+func (m *NodeInlineController) validateFrus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Frus) { // not required
 		return nil
 	}
@@ -1921,7 +1967,7 @@ func (m *NodeController) validateFrus(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeControllerTypeOverTemperaturePropEnum []interface{}
+var nodeInlineControllerTypeOverTemperaturePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1929,56 +1975,56 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeControllerTypeOverTemperaturePropEnum = append(nodeControllerTypeOverTemperaturePropEnum, v)
+		nodeInlineControllerTypeOverTemperaturePropEnum = append(nodeInlineControllerTypeOverTemperaturePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeController
-	// NodeController
+	// node_inline_controller
+	// NodeInlineController
 	// over_temperature
 	// OverTemperature
 	// over
 	// END DEBUGGING
-	// NodeControllerOverTemperatureOver captures enum value "over"
-	NodeControllerOverTemperatureOver string = "over"
+	// NodeInlineControllerOverTemperatureOver captures enum value "over"
+	NodeInlineControllerOverTemperatureOver string = "over"
 
 	// BEGIN DEBUGGING
-	// NodeController
-	// NodeController
+	// node_inline_controller
+	// NodeInlineController
 	// over_temperature
 	// OverTemperature
 	// normal
 	// END DEBUGGING
-	// NodeControllerOverTemperatureNormal captures enum value "normal"
-	NodeControllerOverTemperatureNormal string = "normal"
+	// NodeInlineControllerOverTemperatureNormal captures enum value "normal"
+	NodeInlineControllerOverTemperatureNormal string = "normal"
 )
 
 // prop value enum
-func (m *NodeController) validateOverTemperatureEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeControllerTypeOverTemperaturePropEnum, true); err != nil {
+func (m *NodeInlineController) validateOverTemperatureEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineControllerTypeOverTemperaturePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeController) validateOverTemperature(formats strfmt.Registry) error {
+func (m *NodeInlineController) validateOverTemperature(formats strfmt.Registry) error {
 	if swag.IsZero(m.OverTemperature) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateOverTemperatureEnum("controller"+"."+"over_temperature", "body", m.OverTemperature); err != nil {
+	if err := m.validateOverTemperatureEnum("controller"+"."+"over_temperature", "body", *m.OverTemperature); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node controller based on the context it is used
-func (m *NodeController) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline controller based on the context it is used
+func (m *NodeInlineController) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBoard(ctx, formats); err != nil {
@@ -2019,16 +2065,16 @@ func (m *NodeController) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NodeController) contextValidateBoard(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateBoard(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"board", "body", string(m.Board)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"board", "body", m.Board); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeController) contextValidateCPU(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateCPU(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.CPU != nil {
 		if err := m.CPU.ContextValidate(ctx, formats); err != nil {
@@ -2042,7 +2088,7 @@ func (m *NodeController) contextValidateCPU(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NodeController) contextValidateFailedFan(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateFailedFan(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.FailedFan != nil {
 		if err := m.FailedFan.ContextValidate(ctx, formats); err != nil {
@@ -2056,7 +2102,7 @@ func (m *NodeController) contextValidateFailedFan(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NodeController) contextValidateFailedPowerSupply(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateFailedPowerSupply(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.FailedPowerSupply != nil {
 		if err := m.FailedPowerSupply.ContextValidate(ctx, formats); err != nil {
@@ -2070,7 +2116,7 @@ func (m *NodeController) contextValidateFailedPowerSupply(ctx context.Context, f
 	return nil
 }
 
-func (m *NodeController) contextValidateFlashCache(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateFlashCache(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "controller"+"."+"flash_cache", "body", []*NodeControllerFlashCacheItems0(m.FlashCache)); err != nil {
 		return err
@@ -2092,7 +2138,7 @@ func (m *NodeController) contextValidateFlashCache(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NodeController) contextValidateFrus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateFrus(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Frus); i++ {
 
@@ -2110,18 +2156,18 @@ func (m *NodeController) contextValidateFrus(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NodeController) contextValidateMemorySize(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateMemorySize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"memory_size", "body", int64(m.MemorySize)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"memory_size", "body", m.MemorySize); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeController) contextValidateOverTemperature(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineController) contextValidateOverTemperature(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"over_temperature", "body", string(m.OverTemperature)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"over_temperature", "body", m.OverTemperature); err != nil {
 		return err
 	}
 
@@ -2129,7 +2175,7 @@ func (m *NodeController) contextValidateOverTemperature(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *NodeController) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineController) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2137,8 +2183,8 @@ func (m *NodeController) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeController) UnmarshalBinary(b []byte) error {
-	var res NodeController
+func (m *NodeInlineController) UnmarshalBinary(b []byte) error {
+	var res NodeInlineController
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2146,32 +2192,32 @@ func (m *NodeController) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeControllerCPU CPU information.
+// NodeInlineControllerInlineCPU CPU information.
 //
-// swagger:model NodeControllerCPU
-type NodeControllerCPU struct {
+// swagger:model node_inline_controller_inline_cpu
+type NodeInlineControllerInlineCPU struct {
 
 	// Number of CPUs on the node.
 	// Example: 20
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// Firmware release number. Defined by the CPU manufacturer.
 	// Read Only: true
-	FirmwareRelease string `json:"firmware_release,omitempty"`
+	FirmwareRelease *string `json:"firmware_release,omitempty"`
 
 	// CPU type on the node.
 	// Read Only: true
-	Processor string `json:"processor,omitempty"`
+	Processor *string `json:"processor,omitempty"`
 }
 
-// Validate validates this node controller CPU
-func (m *NodeControllerCPU) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline controller inline cpu
+func (m *NodeInlineControllerInlineCPU) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node controller CPU based on the context it is used
-func (m *NodeControllerCPU) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline controller inline cpu based on the context it is used
+func (m *NodeInlineControllerInlineCPU) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -2192,27 +2238,27 @@ func (m *NodeControllerCPU) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NodeControllerCPU) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineCPU) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeControllerCPU) contextValidateFirmwareRelease(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineCPU) contextValidateFirmwareRelease(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"firmware_release", "body", string(m.FirmwareRelease)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"firmware_release", "body", m.FirmwareRelease); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeControllerCPU) contextValidateProcessor(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineCPU) contextValidateProcessor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"processor", "body", string(m.Processor)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"processor", "body", m.Processor); err != nil {
 		return err
 	}
 
@@ -2220,7 +2266,7 @@ func (m *NodeControllerCPU) contextValidateProcessor(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *NodeControllerCPU) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineControllerInlineCPU) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2228,8 +2274,8 @@ func (m *NodeControllerCPU) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeControllerCPU) UnmarshalBinary(b []byte) error {
-	var res NodeControllerCPU
+func (m *NodeInlineControllerInlineCPU) UnmarshalBinary(b []byte) error {
+	var res NodeInlineControllerInlineCPU
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2237,22 +2283,22 @@ func (m *NodeControllerCPU) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeControllerFailedFan node controller failed fan
+// NodeInlineControllerInlineFailedFan node inline controller inline failed fan
 //
-// swagger:model NodeControllerFailedFan
-type NodeControllerFailedFan struct {
+// swagger:model node_inline_controller_inline_failed_fan
+type NodeInlineControllerInlineFailedFan struct {
 
 	// Specifies a count of the number of chassis fans that are not operating within the recommended RPM range.
 	// Example: 1
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// message
-	Message *NodeControllerFailedFanMessage `json:"message,omitempty"`
+	Message *NodeInlineControllerInlineFailedFanInlineMessage `json:"message,omitempty"`
 }
 
-// Validate validates this node controller failed fan
-func (m *NodeControllerFailedFan) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline controller inline failed fan
+func (m *NodeInlineControllerInlineFailedFan) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMessage(formats); err != nil {
@@ -2265,7 +2311,7 @@ func (m *NodeControllerFailedFan) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeControllerFailedFan) validateMessage(formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedFan) validateMessage(formats strfmt.Registry) error {
 	if swag.IsZero(m.Message) { // not required
 		return nil
 	}
@@ -2282,8 +2328,8 @@ func (m *NodeControllerFailedFan) validateMessage(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this node controller failed fan based on the context it is used
-func (m *NodeControllerFailedFan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline controller inline failed fan based on the context it is used
+func (m *NodeInlineControllerInlineFailedFan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -2300,16 +2346,16 @@ func (m *NodeControllerFailedFan) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NodeControllerFailedFan) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedFan) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeControllerFailedFan) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedFan) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Message != nil {
 		if err := m.Message.ContextValidate(ctx, formats); err != nil {
@@ -2324,7 +2370,7 @@ func (m *NodeControllerFailedFan) contextValidateMessage(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NodeControllerFailedFan) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineControllerInlineFailedFan) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2332,8 +2378,8 @@ func (m *NodeControllerFailedFan) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeControllerFailedFan) UnmarshalBinary(b []byte) error {
-	var res NodeControllerFailedFan
+func (m *NodeInlineControllerInlineFailedFan) UnmarshalBinary(b []byte) error {
+	var res NodeInlineControllerInlineFailedFan
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2341,29 +2387,29 @@ func (m *NodeControllerFailedFan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeControllerFailedFanMessage node controller failed fan message
+// NodeInlineControllerInlineFailedFanInlineMessage node inline controller inline failed fan inline message
 //
-// swagger:model NodeControllerFailedFanMessage
-type NodeControllerFailedFanMessage struct {
+// swagger:model node_inline_controller_inline_failed_fan_inline_message
+type NodeInlineControllerInlineFailedFanInlineMessage struct {
 
 	// Error code describing the current condition of chassis fans.
 	// Example: 111411207
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message describing the current condition of chassis fans. It is only of use when `failed_fan.count` is not zero.
 	// Example: There are no failed fans.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this node controller failed fan message
-func (m *NodeControllerFailedFanMessage) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline controller inline failed fan inline message
+func (m *NodeInlineControllerInlineFailedFanInlineMessage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node controller failed fan message based on the context it is used
-func (m *NodeControllerFailedFanMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline controller inline failed fan inline message based on the context it is used
+func (m *NodeInlineControllerInlineFailedFanInlineMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -2380,18 +2426,18 @@ func (m *NodeControllerFailedFanMessage) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NodeControllerFailedFanMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedFanInlineMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeControllerFailedFanMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedFanInlineMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -2399,7 +2445,7 @@ func (m *NodeControllerFailedFanMessage) contextValidateMessage(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *NodeControllerFailedFanMessage) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineControllerInlineFailedFanInlineMessage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2407,8 +2453,8 @@ func (m *NodeControllerFailedFanMessage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeControllerFailedFanMessage) UnmarshalBinary(b []byte) error {
-	var res NodeControllerFailedFanMessage
+func (m *NodeInlineControllerInlineFailedFanInlineMessage) UnmarshalBinary(b []byte) error {
+	var res NodeInlineControllerInlineFailedFanInlineMessage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2416,22 +2462,22 @@ func (m *NodeControllerFailedFanMessage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeControllerFailedPowerSupply node controller failed power supply
+// NodeInlineControllerInlineFailedPowerSupply node inline controller inline failed power supply
 //
-// swagger:model NodeControllerFailedPowerSupply
-type NodeControllerFailedPowerSupply struct {
+// swagger:model node_inline_controller_inline_failed_power_supply
+type NodeInlineControllerInlineFailedPowerSupply struct {
 
 	// Number of failed power supply units.
 	// Example: 1
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// message
-	Message *NodeControllerFailedPowerSupplyMessage `json:"message,omitempty"`
+	Message *NodeInlineControllerInlineFailedPowerSupplyInlineMessage `json:"message,omitempty"`
 }
 
-// Validate validates this node controller failed power supply
-func (m *NodeControllerFailedPowerSupply) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline controller inline failed power supply
+func (m *NodeInlineControllerInlineFailedPowerSupply) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMessage(formats); err != nil {
@@ -2444,7 +2490,7 @@ func (m *NodeControllerFailedPowerSupply) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *NodeControllerFailedPowerSupply) validateMessage(formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedPowerSupply) validateMessage(formats strfmt.Registry) error {
 	if swag.IsZero(m.Message) { // not required
 		return nil
 	}
@@ -2461,8 +2507,8 @@ func (m *NodeControllerFailedPowerSupply) validateMessage(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this node controller failed power supply based on the context it is used
-func (m *NodeControllerFailedPowerSupply) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline controller inline failed power supply based on the context it is used
+func (m *NodeInlineControllerInlineFailedPowerSupply) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -2479,16 +2525,16 @@ func (m *NodeControllerFailedPowerSupply) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *NodeControllerFailedPowerSupply) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedPowerSupply) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeControllerFailedPowerSupply) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedPowerSupply) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Message != nil {
 		if err := m.Message.ContextValidate(ctx, formats); err != nil {
@@ -2503,7 +2549,7 @@ func (m *NodeControllerFailedPowerSupply) contextValidateMessage(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *NodeControllerFailedPowerSupply) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineControllerInlineFailedPowerSupply) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2511,8 +2557,8 @@ func (m *NodeControllerFailedPowerSupply) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeControllerFailedPowerSupply) UnmarshalBinary(b []byte) error {
-	var res NodeControllerFailedPowerSupply
+func (m *NodeInlineControllerInlineFailedPowerSupply) UnmarshalBinary(b []byte) error {
+	var res NodeInlineControllerInlineFailedPowerSupply
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2520,29 +2566,29 @@ func (m *NodeControllerFailedPowerSupply) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeControllerFailedPowerSupplyMessage node controller failed power supply message
+// NodeInlineControllerInlineFailedPowerSupplyInlineMessage node inline controller inline failed power supply inline message
 //
-// swagger:model NodeControllerFailedPowerSupplyMessage
-type NodeControllerFailedPowerSupplyMessage struct {
+// swagger:model node_inline_controller_inline_failed_power_supply_inline_message
+type NodeInlineControllerInlineFailedPowerSupplyInlineMessage struct {
 
 	// Error code describing the current condition of power supply.
 	// Example: 111411208
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message describing the state of any power supplies that are currently degraded. It is only of use when `failed_power_supply.count` is not zero.
 	// Example: There are no failed power supplies.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this node controller failed power supply message
-func (m *NodeControllerFailedPowerSupplyMessage) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline controller inline failed power supply inline message
+func (m *NodeInlineControllerInlineFailedPowerSupplyInlineMessage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node controller failed power supply message based on the context it is used
-func (m *NodeControllerFailedPowerSupplyMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline controller inline failed power supply inline message based on the context it is used
+func (m *NodeInlineControllerInlineFailedPowerSupplyInlineMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -2559,18 +2605,18 @@ func (m *NodeControllerFailedPowerSupplyMessage) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *NodeControllerFailedPowerSupplyMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedPowerSupplyInlineMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeControllerFailedPowerSupplyMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineControllerInlineFailedPowerSupplyInlineMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -2578,7 +2624,7 @@ func (m *NodeControllerFailedPowerSupplyMessage) contextValidateMessage(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *NodeControllerFailedPowerSupplyMessage) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineControllerInlineFailedPowerSupplyInlineMessage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2586,8 +2632,8 @@ func (m *NodeControllerFailedPowerSupplyMessage) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeControllerFailedPowerSupplyMessage) UnmarshalBinary(b []byte) error {
-	var res NodeControllerFailedPowerSupplyMessage
+func (m *NodeInlineControllerInlineFailedPowerSupplyInlineMessage) UnmarshalBinary(b []byte) error {
+	var res NodeInlineControllerInlineFailedPowerSupplyInlineMessage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2603,52 +2649,52 @@ type NodeControllerFlashCacheItems0 struct {
 	// Size in bytes
 	// Example: 1024000000000
 	// Read Only: true
-	Capacity int64 `json:"capacity,omitempty"`
+	Capacity *int64 `json:"capacity,omitempty"`
 
 	// device id
 	// Example: 0
 	// Read Only: true
-	DeviceID int64 `json:"device_id,omitempty"`
+	DeviceID *int64 `json:"device_id,omitempty"`
 
 	// firmware file
 	// Example: X9170_O000Z6300NVM
 	// Read Only: true
-	FirmwareFile string `json:"firmware_file,omitempty"`
+	FirmwareFile *string `json:"firmware_file,omitempty"`
 
 	// firmware version
 	// Example: NA05
 	// Read Only: true
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// hardware revision
 	// Example: A1
 	// Read Only: true
-	HardwareRevision string `json:"hardware_revision,omitempty"`
+	HardwareRevision *string `json:"hardware_revision,omitempty"`
 
 	// model
 	// Example: X1970A
 	// Read Only: true
-	Model string `json:"model,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// part number
 	// Example: 119-00207
 	// Read Only: true
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// serial number
 	// Example: A22P5061550000187
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// slot
 	// Example: 6-1
 	// Read Only: true
-	Slot string `json:"slot,omitempty"`
+	Slot *string `json:"slot,omitempty"`
 
 	// state
 	// Read Only: true
 	// Enum: [ok erasing erased failed removed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this node controller flash cache items0
@@ -2744,7 +2790,7 @@ func (m *NodeControllerFlashCacheItems0) validateState(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -2803,7 +2849,7 @@ func (m *NodeControllerFlashCacheItems0) ContextValidate(ctx context.Context, fo
 
 func (m *NodeControllerFlashCacheItems0) contextValidateCapacity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "capacity", "body", int64(m.Capacity)); err != nil {
+	if err := validate.ReadOnly(ctx, "capacity", "body", m.Capacity); err != nil {
 		return err
 	}
 
@@ -2812,7 +2858,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateCapacity(ctx context.Con
 
 func (m *NodeControllerFlashCacheItems0) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "device_id", "body", int64(m.DeviceID)); err != nil {
+	if err := validate.ReadOnly(ctx, "device_id", "body", m.DeviceID); err != nil {
 		return err
 	}
 
@@ -2821,7 +2867,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateDeviceID(ctx context.Con
 
 func (m *NodeControllerFlashCacheItems0) contextValidateFirmwareFile(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "firmware_file", "body", string(m.FirmwareFile)); err != nil {
+	if err := validate.ReadOnly(ctx, "firmware_file", "body", m.FirmwareFile); err != nil {
 		return err
 	}
 
@@ -2830,7 +2876,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateFirmwareFile(ctx context
 
 func (m *NodeControllerFlashCacheItems0) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "firmware_version", "body", string(m.FirmwareVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "firmware_version", "body", m.FirmwareVersion); err != nil {
 		return err
 	}
 
@@ -2839,7 +2885,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateFirmwareVersion(ctx cont
 
 func (m *NodeControllerFlashCacheItems0) contextValidateHardwareRevision(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "hardware_revision", "body", string(m.HardwareRevision)); err != nil {
+	if err := validate.ReadOnly(ctx, "hardware_revision", "body", m.HardwareRevision); err != nil {
 		return err
 	}
 
@@ -2848,7 +2894,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateHardwareRevision(ctx con
 
 func (m *NodeControllerFlashCacheItems0) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
+	if err := validate.ReadOnly(ctx, "model", "body", m.Model); err != nil {
 		return err
 	}
 
@@ -2857,7 +2903,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateModel(ctx context.Contex
 
 func (m *NodeControllerFlashCacheItems0) contextValidatePartNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "part_number", "body", string(m.PartNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "part_number", "body", m.PartNumber); err != nil {
 		return err
 	}
 
@@ -2866,7 +2912,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidatePartNumber(ctx context.C
 
 func (m *NodeControllerFlashCacheItems0) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -2875,7 +2921,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateSerialNumber(ctx context
 
 func (m *NodeControllerFlashCacheItems0) contextValidateSlot(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "slot", "body", string(m.Slot)); err != nil {
+	if err := validate.ReadOnly(ctx, "slot", "body", m.Slot); err != nil {
 		return err
 	}
 
@@ -2884,7 +2930,7 @@ func (m *NodeControllerFlashCacheItems0) contextValidateSlot(ctx context.Context
 
 func (m *NodeControllerFlashCacheItems0) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -2916,17 +2962,17 @@ type NodeControllerFrusItems0 struct {
 
 	// id
 	// Read Only: true
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// state
 	// Read Only: true
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// type
 	// Read Only: true
 	// Enum: [fan psu pcie disk nvs dimm controller]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this node controller frus items0
@@ -2996,7 +3042,7 @@ func (m *NodeControllerFrusItems0) validateState(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -3102,7 +3148,7 @@ func (m *NodeControllerFrusItems0) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -3133,7 +3179,7 @@ func (m *NodeControllerFrusItems0) ContextValidate(ctx context.Context, formats 
 
 func (m *NodeControllerFrusItems0) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -3142,7 +3188,7 @@ func (m *NodeControllerFrusItems0) contextValidateID(ctx context.Context, format
 
 func (m *NodeControllerFrusItems0) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -3151,7 +3197,7 @@ func (m *NodeControllerFrusItems0) contextValidateState(ctx context.Context, for
 
 func (m *NodeControllerFrusItems0) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -3176,39 +3222,39 @@ func (m *NodeControllerFrusItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeExternalCache Cache used for buffer management.
+// NodeInlineExternalCache Cache used for buffer management.
 //
-// swagger:model NodeExternalCache
-type NodeExternalCache struct {
+// swagger:model node_inline_external_cache
+type NodeInlineExternalCache struct {
 
 	// Indicates whether the external cache is enabled.
 	// Example: true
-	IsEnabled bool `json:"is_enabled,omitempty"`
+	IsEnabled *bool `json:"is_enabled,omitempty"`
 
 	// Indicates whether HyA caching is enabled.
 	// Example: true
-	IsHyaEnabled bool `json:"is_hya_enabled,omitempty"`
+	IsHyaEnabled *bool `json:"is_hya_enabled,omitempty"`
 
 	// Indicates whether rewarm is enabled.
 	// Example: true
-	IsRewarmEnabled bool `json:"is_rewarm_enabled,omitempty"`
+	IsRewarmEnabled *bool `json:"is_rewarm_enabled,omitempty"`
 
 	// PCS size in gigabytes.
-	PcsSize int64 `json:"pcs_size,omitempty"`
+	PcsSize *int64 `json:"pcs_size,omitempty"`
 }
 
-// Validate validates this node external cache
-func (m *NodeExternalCache) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline external cache
+func (m *NodeInlineExternalCache) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this node external cache based on context it is used
-func (m *NodeExternalCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this node inline external cache based on context it is used
+func (m *NodeInlineExternalCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeExternalCache) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineExternalCache) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3216,8 +3262,8 @@ func (m *NodeExternalCache) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeExternalCache) UnmarshalBinary(b []byte) error {
-	var res NodeExternalCache
+func (m *NodeInlineExternalCache) UnmarshalBinary(b []byte) error {
+	var res NodeInlineExternalCache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3225,24 +3271,22 @@ func (m *NodeExternalCache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHa node ha
+// NodeInlineHa node inline ha
 //
-// swagger:model NodeHa
-type NodeHa struct {
+// swagger:model node_inline_ha
+type NodeInlineHa struct {
 
 	// Specifies whether giveback is automatically initiated when the node that owns the storage is ready.
-	// Read Only: true
 	AutoGiveback *bool `json:"auto_giveback,omitempty"`
 
 	// Specifies whether or not storage failover is enabled.
-	// Read Only: true
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// giveback
-	Giveback *NodeHaGiveback `json:"giveback,omitempty"`
+	Giveback *NodeInlineHaInlineGiveback `json:"giveback,omitempty"`
 
 	// interconnect
-	Interconnect *NodeHaInterconnect `json:"interconnect,omitempty"`
+	Interconnect *NodeInlineHaInlineInterconnect `json:"interconnect,omitempty"`
 
 	// Nodes in this node's High Availability (HA) group.
 	// Read Only: true
@@ -3253,11 +3297,11 @@ type NodeHa struct {
 	Ports []*NodeHaPortsItems0 `json:"ports,omitempty"`
 
 	// takeover
-	Takeover *NodeHaTakeover `json:"takeover,omitempty"`
+	Takeover *NodeInlineHaInlineTakeover `json:"takeover,omitempty"`
 }
 
-// Validate validates this node ha
-func (m *NodeHa) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline ha
+func (m *NodeInlineHa) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateGiveback(formats); err != nil {
@@ -3286,7 +3330,7 @@ func (m *NodeHa) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHa) validateGiveback(formats strfmt.Registry) error {
+func (m *NodeInlineHa) validateGiveback(formats strfmt.Registry) error {
 	if swag.IsZero(m.Giveback) { // not required
 		return nil
 	}
@@ -3303,7 +3347,7 @@ func (m *NodeHa) validateGiveback(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHa) validateInterconnect(formats strfmt.Registry) error {
+func (m *NodeInlineHa) validateInterconnect(formats strfmt.Registry) error {
 	if swag.IsZero(m.Interconnect) { // not required
 		return nil
 	}
@@ -3320,7 +3364,7 @@ func (m *NodeHa) validateInterconnect(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHa) validatePartners(formats strfmt.Registry) error {
+func (m *NodeInlineHa) validatePartners(formats strfmt.Registry) error {
 	if swag.IsZero(m.Partners) { // not required
 		return nil
 	}
@@ -3344,7 +3388,7 @@ func (m *NodeHa) validatePartners(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHa) validatePorts(formats strfmt.Registry) error {
+func (m *NodeInlineHa) validatePorts(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ports) { // not required
 		return nil
 	}
@@ -3368,7 +3412,7 @@ func (m *NodeHa) validatePorts(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHa) validateTakeover(formats strfmt.Registry) error {
+func (m *NodeInlineHa) validateTakeover(formats strfmt.Registry) error {
 	if swag.IsZero(m.Takeover) { // not required
 		return nil
 	}
@@ -3385,17 +3429,9 @@ func (m *NodeHa) validateTakeover(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node ha based on the context it is used
-func (m *NodeHa) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline ha based on the context it is used
+func (m *NodeInlineHa) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.contextValidateAutoGiveback(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateEnabled(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.contextValidateGiveback(ctx, formats); err != nil {
 		res = append(res, err)
@@ -3423,25 +3459,7 @@ func (m *NodeHa) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NodeHa) contextValidateAutoGiveback(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "ha"+"."+"auto_giveback", "body", m.AutoGiveback); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *NodeHa) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "ha"+"."+"enabled", "body", m.Enabled); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *NodeHa) contextValidateGiveback(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHa) contextValidateGiveback(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Giveback != nil {
 		if err := m.Giveback.ContextValidate(ctx, formats); err != nil {
@@ -3455,7 +3473,7 @@ func (m *NodeHa) contextValidateGiveback(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NodeHa) contextValidateInterconnect(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHa) contextValidateInterconnect(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Interconnect != nil {
 		if err := m.Interconnect.ContextValidate(ctx, formats); err != nil {
@@ -3469,7 +3487,7 @@ func (m *NodeHa) contextValidateInterconnect(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NodeHa) contextValidatePartners(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHa) contextValidatePartners(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "ha"+"."+"partners", "body", []*NodeHaPartnersItems0(m.Partners)); err != nil {
 		return err
@@ -3491,7 +3509,7 @@ func (m *NodeHa) contextValidatePartners(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NodeHa) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHa) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "ha"+"."+"ports", "body", []*NodeHaPortsItems0(m.Ports)); err != nil {
 		return err
@@ -3513,7 +3531,7 @@ func (m *NodeHa) contextValidatePorts(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *NodeHa) contextValidateTakeover(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHa) contextValidateTakeover(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Takeover != nil {
 		if err := m.Takeover.ContextValidate(ctx, formats); err != nil {
@@ -3528,7 +3546,7 @@ func (m *NodeHa) contextValidateTakeover(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHa) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHa) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3536,8 +3554,8 @@ func (m *NodeHa) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHa) UnmarshalBinary(b []byte) error {
-	var res NodeHa
+func (m *NodeInlineHa) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHa
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3545,26 +3563,26 @@ func (m *NodeHa) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHaGiveback Represents the state of the node that is giving storage back to its HA partner.
+// NodeInlineHaInlineGiveback Represents the state of the node that is giving storage back to its HA partner.
 //
-// swagger:model NodeHaGiveback
-type NodeHaGiveback struct {
+// swagger:model node_inline_ha_inline_giveback
+type NodeInlineHaInlineGiveback struct {
 
 	// failure
-	Failure *NodeHaGivebackFailure `json:"failure,omitempty"`
+	Failure *NodeInlineHaInlineGivebackInlineFailure `json:"failure,omitempty"`
 
 	// state
 	// Example: failed
 	// Enum: [nothing_to_giveback not_attempted in_progress failed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Giveback status of each aggregate.
 	// Read Only: true
 	Status []*NodeHaGivebackStatusItems0 `json:"status,omitempty"`
 }
 
-// Validate validates this node ha giveback
-func (m *NodeHaGiveback) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline ha inline giveback
+func (m *NodeInlineHaInlineGiveback) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFailure(formats); err != nil {
@@ -3585,7 +3603,7 @@ func (m *NodeHaGiveback) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHaGiveback) validateFailure(formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineGiveback) validateFailure(formats strfmt.Registry) error {
 	if swag.IsZero(m.Failure) { // not required
 		return nil
 	}
@@ -3602,7 +3620,7 @@ func (m *NodeHaGiveback) validateFailure(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeHaGivebackTypeStatePropEnum []interface{}
+var nodeInlineHaInlineGivebackTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3610,75 +3628,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeHaGivebackTypeStatePropEnum = append(nodeHaGivebackTypeStatePropEnum, v)
+		nodeInlineHaInlineGivebackTypeStatePropEnum = append(nodeInlineHaInlineGivebackTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeHaGiveback
-	// NodeHaGiveback
+	// node_inline_ha_inline_giveback
+	// NodeInlineHaInlineGiveback
 	// state
 	// State
 	// nothing_to_giveback
 	// END DEBUGGING
-	// NodeHaGivebackStateNothingToGiveback captures enum value "nothing_to_giveback"
-	NodeHaGivebackStateNothingToGiveback string = "nothing_to_giveback"
+	// NodeInlineHaInlineGivebackStateNothingToGiveback captures enum value "nothing_to_giveback"
+	NodeInlineHaInlineGivebackStateNothingToGiveback string = "nothing_to_giveback"
 
 	// BEGIN DEBUGGING
-	// NodeHaGiveback
-	// NodeHaGiveback
+	// node_inline_ha_inline_giveback
+	// NodeInlineHaInlineGiveback
 	// state
 	// State
 	// not_attempted
 	// END DEBUGGING
-	// NodeHaGivebackStateNotAttempted captures enum value "not_attempted"
-	NodeHaGivebackStateNotAttempted string = "not_attempted"
+	// NodeInlineHaInlineGivebackStateNotAttempted captures enum value "not_attempted"
+	NodeInlineHaInlineGivebackStateNotAttempted string = "not_attempted"
 
 	// BEGIN DEBUGGING
-	// NodeHaGiveback
-	// NodeHaGiveback
+	// node_inline_ha_inline_giveback
+	// NodeInlineHaInlineGiveback
 	// state
 	// State
 	// in_progress
 	// END DEBUGGING
-	// NodeHaGivebackStateInProgress captures enum value "in_progress"
-	NodeHaGivebackStateInProgress string = "in_progress"
+	// NodeInlineHaInlineGivebackStateInProgress captures enum value "in_progress"
+	NodeInlineHaInlineGivebackStateInProgress string = "in_progress"
 
 	// BEGIN DEBUGGING
-	// NodeHaGiveback
-	// NodeHaGiveback
+	// node_inline_ha_inline_giveback
+	// NodeInlineHaInlineGiveback
 	// state
 	// State
 	// failed
 	// END DEBUGGING
-	// NodeHaGivebackStateFailed captures enum value "failed"
-	NodeHaGivebackStateFailed string = "failed"
+	// NodeInlineHaInlineGivebackStateFailed captures enum value "failed"
+	NodeInlineHaInlineGivebackStateFailed string = "failed"
 )
 
 // prop value enum
-func (m *NodeHaGiveback) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeHaGivebackTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineHaInlineGiveback) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineHaInlineGivebackTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeHaGiveback) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineGiveback) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("ha"+"."+"giveback"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("ha"+"."+"giveback"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeHaGiveback) validateStatus(formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineGiveback) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
@@ -3702,8 +3720,8 @@ func (m *NodeHaGiveback) validateStatus(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node ha giveback based on the context it is used
-func (m *NodeHaGiveback) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline ha inline giveback based on the context it is used
+func (m *NodeInlineHaInlineGiveback) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFailure(ctx, formats); err != nil {
@@ -3720,7 +3738,7 @@ func (m *NodeHaGiveback) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NodeHaGiveback) contextValidateFailure(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineGiveback) contextValidateFailure(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Failure != nil {
 		if err := m.Failure.ContextValidate(ctx, formats); err != nil {
@@ -3734,7 +3752,7 @@ func (m *NodeHaGiveback) contextValidateFailure(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NodeHaGiveback) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineGiveback) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "ha"+"."+"giveback"+"."+"status", "body", []*NodeHaGivebackStatusItems0(m.Status)); err != nil {
 		return err
@@ -3757,7 +3775,7 @@ func (m *NodeHaGiveback) contextValidateStatus(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHaGiveback) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHaInlineGiveback) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3765,8 +3783,8 @@ func (m *NodeHaGiveback) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHaGiveback) UnmarshalBinary(b []byte) error {
-	var res NodeHaGiveback
+func (m *NodeInlineHaInlineGiveback) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHaInlineGiveback
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3774,27 +3792,27 @@ func (m *NodeHaGiveback) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHaGivebackFailure Indicates the failure code and message.
+// NodeInlineHaInlineGivebackInlineFailure Indicates the failure code and message.
 //
-// swagger:model NodeHaGivebackFailure
-type NodeHaGivebackFailure struct {
+// swagger:model node_inline_ha_inline_giveback_inline_failure
+type NodeInlineHaInlineGivebackInlineFailure struct {
 
 	// Message code
 	// Example: 852126
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Detailed message based on the state.
 	// Example: Failed to initiate giveback. Run the \"storage failover show-giveback\" command for more information.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this node ha giveback failure
-func (m *NodeHaGivebackFailure) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline ha inline giveback inline failure
+func (m *NodeInlineHaInlineGivebackInlineFailure) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node ha giveback failure based on the context it is used
-func (m *NodeHaGivebackFailure) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline ha inline giveback inline failure based on the context it is used
+func (m *NodeInlineHaInlineGivebackInlineFailure) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -3804,7 +3822,7 @@ func (m *NodeHaGivebackFailure) ContextValidate(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHaGivebackFailure) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHaInlineGivebackInlineFailure) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3812,8 +3830,8 @@ func (m *NodeHaGivebackFailure) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHaGivebackFailure) UnmarshalBinary(b []byte) error {
-	var res NodeHaGivebackFailure
+func (m *NodeInlineHaInlineGivebackInlineFailure) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHaInlineGivebackInlineFailure
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3837,7 +3855,7 @@ type NodeHaGivebackStatusItems0 struct {
 	// giveback delayed as disk firmware update is in progress on source node(delayed_bdfu_source), performing veto checks(running_checks). <br/>
 	//
 	// Enum: [done failed in_progress not_started nothing_to_giveback failed_bdfu_source failed_bdfu_dest delayed_bdfu_source delayed_bdfu_dest running_checks]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this node ha giveback status items0
@@ -4025,7 +4043,7 @@ func (m *NodeHaGivebackStatusItems0) validateState(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -4106,11 +4124,11 @@ type NodeHaGivebackStatusItems0Aggregate struct {
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this node ha giveback status items0 aggregate
@@ -4284,12 +4302,12 @@ type NodeHaGivebackStatusItems0Error struct {
 	// Message code.
 	// Example: 852126
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Detailed message based on the state.
 	// Read Only: true
 	// Enum: [shutdown not_homes_partner not_sfo failed_limbo offline_failed migrating veto communication_err online_timeout online_failed hdd_to_aff_dest]
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this node ha giveback status items0 error
@@ -4445,7 +4463,7 @@ func (m *NodeHaGivebackStatusItems0Error) validateMessage(formats strfmt.Registr
 	}
 
 	// value enum
-	if err := m.validateMessageEnum("error"+"."+"message", "body", m.Message); err != nil {
+	if err := m.validateMessageEnum("error"+"."+"message", "body", *m.Message); err != nil {
 		return err
 	}
 
@@ -4472,7 +4490,7 @@ func (m *NodeHaGivebackStatusItems0Error) ContextValidate(ctx context.Context, f
 
 func (m *NodeHaGivebackStatusItems0Error) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
@@ -4481,7 +4499,7 @@ func (m *NodeHaGivebackStatusItems0Error) contextValidateCode(ctx context.Contex
 
 func (m *NodeHaGivebackStatusItems0Error) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -4506,24 +4524,24 @@ func (m *NodeHaGivebackStatusItems0Error) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHaInterconnect node ha interconnect
+// NodeInlineHaInlineInterconnect node inline ha inline interconnect
 //
-// swagger:model NodeHaInterconnect
-type NodeHaInterconnect struct {
+// swagger:model node_inline_ha_inline_interconnect
+type NodeInlineHaInlineInterconnect struct {
 
 	// HA interconnect device name.
 	// Example: MVIA-RDMA
 	// Read Only: true
-	Adapter string `json:"adapter,omitempty"`
+	Adapter *string `json:"adapter,omitempty"`
 
 	// Indicates the HA interconnect status.
 	// Read Only: true
 	// Enum: [down up]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this node ha interconnect
-func (m *NodeHaInterconnect) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline ha inline interconnect
+func (m *NodeInlineHaInlineInterconnect) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -4536,7 +4554,7 @@ func (m *NodeHaInterconnect) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeHaInterconnectTypeStatePropEnum []interface{}
+var nodeInlineHaInlineInterconnectTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -4544,56 +4562,56 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeHaInterconnectTypeStatePropEnum = append(nodeHaInterconnectTypeStatePropEnum, v)
+		nodeInlineHaInlineInterconnectTypeStatePropEnum = append(nodeInlineHaInlineInterconnectTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeHaInterconnect
-	// NodeHaInterconnect
+	// node_inline_ha_inline_interconnect
+	// NodeInlineHaInlineInterconnect
 	// state
 	// State
 	// down
 	// END DEBUGGING
-	// NodeHaInterconnectStateDown captures enum value "down"
-	NodeHaInterconnectStateDown string = "down"
+	// NodeInlineHaInlineInterconnectStateDown captures enum value "down"
+	NodeInlineHaInlineInterconnectStateDown string = "down"
 
 	// BEGIN DEBUGGING
-	// NodeHaInterconnect
-	// NodeHaInterconnect
+	// node_inline_ha_inline_interconnect
+	// NodeInlineHaInlineInterconnect
 	// state
 	// State
 	// up
 	// END DEBUGGING
-	// NodeHaInterconnectStateUp captures enum value "up"
-	NodeHaInterconnectStateUp string = "up"
+	// NodeInlineHaInlineInterconnectStateUp captures enum value "up"
+	NodeInlineHaInlineInterconnectStateUp string = "up"
 )
 
 // prop value enum
-func (m *NodeHaInterconnect) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeHaInterconnectTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineHaInlineInterconnect) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineHaInlineInterconnectTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeHaInterconnect) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineInterconnect) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("ha"+"."+"interconnect"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("ha"+"."+"interconnect"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node ha interconnect based on the context it is used
-func (m *NodeHaInterconnect) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline ha inline interconnect based on the context it is used
+func (m *NodeInlineHaInlineInterconnect) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAdapter(ctx, formats); err != nil {
@@ -4610,18 +4628,18 @@ func (m *NodeHaInterconnect) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NodeHaInterconnect) contextValidateAdapter(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineInterconnect) contextValidateAdapter(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "ha"+"."+"interconnect"+"."+"adapter", "body", string(m.Adapter)); err != nil {
+	if err := validate.ReadOnly(ctx, "ha"+"."+"interconnect"+"."+"adapter", "body", m.Adapter); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeHaInterconnect) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineInterconnect) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "ha"+"."+"interconnect"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "ha"+"."+"interconnect"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -4629,7 +4647,7 @@ func (m *NodeHaInterconnect) contextValidateState(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHaInterconnect) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHaInlineInterconnect) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -4637,8 +4655,8 @@ func (m *NodeHaInterconnect) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHaInterconnect) UnmarshalBinary(b []byte) error {
-	var res NodeHaInterconnect
+func (m *NodeInlineHaInlineInterconnect) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHaInlineInterconnect
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4656,11 +4674,11 @@ type NodeHaPartnersItems0 struct {
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this node ha partners items0
@@ -4834,7 +4852,7 @@ type NodeHaPortsItems0 struct {
 	// HA port number
 	// Example: 0
 	// Read Only: true
-	Number int64 `json:"number,omitempty"`
+	Number *int64 `json:"number,omitempty"`
 
 	// HA port state:
 	// * <i>down</i> - Logical HA link is down.
@@ -4846,7 +4864,7 @@ type NodeHaPortsItems0 struct {
 	// Example: active
 	// Read Only: true
 	// Enum: [down initialized armed active reserved]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this node ha ports items0
@@ -4942,7 +4960,7 @@ func (m *NodeHaPortsItems0) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -4969,7 +4987,7 @@ func (m *NodeHaPortsItems0) ContextValidate(ctx context.Context, formats strfmt.
 
 func (m *NodeHaPortsItems0) contextValidateNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "number", "body", int64(m.Number)); err != nil {
+	if err := validate.ReadOnly(ctx, "number", "body", m.Number); err != nil {
 		return err
 	}
 
@@ -4978,7 +4996,7 @@ func (m *NodeHaPortsItems0) contextValidateNumber(ctx context.Context, formats s
 
 func (m *NodeHaPortsItems0) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -5003,22 +5021,22 @@ func (m *NodeHaPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHaTakeover This represents the state of the node that is taking over storage from its HA partner.
+// NodeInlineHaInlineTakeover This represents the state of the node that is taking over storage from its HA partner.
 //
-// swagger:model NodeHaTakeover
-type NodeHaTakeover struct {
+// swagger:model node_inline_ha_inline_takeover
+type NodeInlineHaInlineTakeover struct {
 
 	// failure
-	Failure *NodeHaTakeoverFailure `json:"failure,omitempty"`
+	Failure *NodeInlineHaInlineTakeoverInlineFailure `json:"failure,omitempty"`
 
 	// state
 	// Example: failed
 	// Enum: [not_possible not_attempted in_takeover in_progress failed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this node ha takeover
-func (m *NodeHaTakeover) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline ha inline takeover
+func (m *NodeInlineHaInlineTakeover) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFailure(formats); err != nil {
@@ -5035,7 +5053,7 @@ func (m *NodeHaTakeover) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHaTakeover) validateFailure(formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineTakeover) validateFailure(formats strfmt.Registry) error {
 	if swag.IsZero(m.Failure) { // not required
 		return nil
 	}
@@ -5052,7 +5070,7 @@ func (m *NodeHaTakeover) validateFailure(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeHaTakeoverTypeStatePropEnum []interface{}
+var nodeInlineHaInlineTakeoverTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -5060,86 +5078,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeHaTakeoverTypeStatePropEnum = append(nodeHaTakeoverTypeStatePropEnum, v)
+		nodeInlineHaInlineTakeoverTypeStatePropEnum = append(nodeInlineHaInlineTakeoverTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeHaTakeover
-	// NodeHaTakeover
+	// node_inline_ha_inline_takeover
+	// NodeInlineHaInlineTakeover
 	// state
 	// State
 	// not_possible
 	// END DEBUGGING
-	// NodeHaTakeoverStateNotPossible captures enum value "not_possible"
-	NodeHaTakeoverStateNotPossible string = "not_possible"
+	// NodeInlineHaInlineTakeoverStateNotPossible captures enum value "not_possible"
+	NodeInlineHaInlineTakeoverStateNotPossible string = "not_possible"
 
 	// BEGIN DEBUGGING
-	// NodeHaTakeover
-	// NodeHaTakeover
+	// node_inline_ha_inline_takeover
+	// NodeInlineHaInlineTakeover
 	// state
 	// State
 	// not_attempted
 	// END DEBUGGING
-	// NodeHaTakeoverStateNotAttempted captures enum value "not_attempted"
-	NodeHaTakeoverStateNotAttempted string = "not_attempted"
+	// NodeInlineHaInlineTakeoverStateNotAttempted captures enum value "not_attempted"
+	NodeInlineHaInlineTakeoverStateNotAttempted string = "not_attempted"
 
 	// BEGIN DEBUGGING
-	// NodeHaTakeover
-	// NodeHaTakeover
+	// node_inline_ha_inline_takeover
+	// NodeInlineHaInlineTakeover
 	// state
 	// State
 	// in_takeover
 	// END DEBUGGING
-	// NodeHaTakeoverStateInTakeover captures enum value "in_takeover"
-	NodeHaTakeoverStateInTakeover string = "in_takeover"
+	// NodeInlineHaInlineTakeoverStateInTakeover captures enum value "in_takeover"
+	NodeInlineHaInlineTakeoverStateInTakeover string = "in_takeover"
 
 	// BEGIN DEBUGGING
-	// NodeHaTakeover
-	// NodeHaTakeover
+	// node_inline_ha_inline_takeover
+	// NodeInlineHaInlineTakeover
 	// state
 	// State
 	// in_progress
 	// END DEBUGGING
-	// NodeHaTakeoverStateInProgress captures enum value "in_progress"
-	NodeHaTakeoverStateInProgress string = "in_progress"
+	// NodeInlineHaInlineTakeoverStateInProgress captures enum value "in_progress"
+	NodeInlineHaInlineTakeoverStateInProgress string = "in_progress"
 
 	// BEGIN DEBUGGING
-	// NodeHaTakeover
-	// NodeHaTakeover
+	// node_inline_ha_inline_takeover
+	// NodeInlineHaInlineTakeover
 	// state
 	// State
 	// failed
 	// END DEBUGGING
-	// NodeHaTakeoverStateFailed captures enum value "failed"
-	NodeHaTakeoverStateFailed string = "failed"
+	// NodeInlineHaInlineTakeoverStateFailed captures enum value "failed"
+	NodeInlineHaInlineTakeoverStateFailed string = "failed"
 )
 
 // prop value enum
-func (m *NodeHaTakeover) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeHaTakeoverTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineHaInlineTakeover) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineHaInlineTakeoverTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeHaTakeover) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineTakeover) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("ha"+"."+"takeover"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("ha"+"."+"takeover"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node ha takeover based on the context it is used
-func (m *NodeHaTakeover) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline ha inline takeover based on the context it is used
+func (m *NodeInlineHaInlineTakeover) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFailure(ctx, formats); err != nil {
@@ -5152,7 +5170,7 @@ func (m *NodeHaTakeover) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NodeHaTakeover) contextValidateFailure(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHaInlineTakeover) contextValidateFailure(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Failure != nil {
 		if err := m.Failure.ContextValidate(ctx, formats); err != nil {
@@ -5167,7 +5185,7 @@ func (m *NodeHaTakeover) contextValidateFailure(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHaTakeover) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHaInlineTakeover) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5175,8 +5193,8 @@ func (m *NodeHaTakeover) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHaTakeover) UnmarshalBinary(b []byte) error {
-	var res NodeHaTakeover
+func (m *NodeInlineHaInlineTakeover) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHaInlineTakeover
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5184,27 +5202,27 @@ func (m *NodeHaTakeover) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHaTakeoverFailure Indicates the failure code and message.
+// NodeInlineHaInlineTakeoverInlineFailure Indicates the failure code and message.
 //
-// swagger:model NodeHaTakeoverFailure
-type NodeHaTakeoverFailure struct {
+// swagger:model node_inline_ha_inline_takeover_inline_failure
+type NodeInlineHaInlineTakeoverInlineFailure struct {
 
 	// Message code
 	// Example: 852130
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Detailed message based on the state.
 	// Example: Failed to initiate takeover. Run the \"storage failover show-takeover\" command for more information.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this node ha takeover failure
-func (m *NodeHaTakeoverFailure) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline ha inline takeover inline failure
+func (m *NodeInlineHaInlineTakeoverInlineFailure) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node ha takeover failure based on the context it is used
-func (m *NodeHaTakeoverFailure) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline ha inline takeover inline failure based on the context it is used
+func (m *NodeInlineHaInlineTakeoverInlineFailure) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -5214,7 +5232,7 @@ func (m *NodeHaTakeoverFailure) ContextValidate(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHaTakeoverFailure) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHaInlineTakeoverInlineFailure) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5222,8 +5240,8 @@ func (m *NodeHaTakeoverFailure) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHaTakeoverFailure) UnmarshalBinary(b []byte) error {
-	var res NodeHaTakeoverFailure
+func (m *NodeInlineHaInlineTakeoverInlineFailure) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHaInlineTakeoverInlineFailure
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5231,17 +5249,17 @@ func (m *NodeHaTakeoverFailure) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHwAssist The hardware assist information.
+// NodeInlineHwAssist The hardware assist information.
 //
-// swagger:model NodeHwAssist
-type NodeHwAssist struct {
+// swagger:model node_inline_hw_assist
+type NodeInlineHwAssist struct {
 
 	// status
-	Status *NodeHwAssistStatus `json:"status,omitempty"`
+	Status *NodeInlineHwAssistInlineStatus `json:"status,omitempty"`
 }
 
-// Validate validates this node hw assist
-func (m *NodeHwAssist) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline hw assist
+func (m *NodeInlineHwAssist) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStatus(formats); err != nil {
@@ -5254,7 +5272,7 @@ func (m *NodeHwAssist) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHwAssist) validateStatus(formats strfmt.Registry) error {
+func (m *NodeInlineHwAssist) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
@@ -5271,8 +5289,8 @@ func (m *NodeHwAssist) validateStatus(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node hw assist based on the context it is used
-func (m *NodeHwAssist) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline hw assist based on the context it is used
+func (m *NodeInlineHwAssist) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
@@ -5285,7 +5303,7 @@ func (m *NodeHwAssist) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *NodeHwAssist) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHwAssist) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Status != nil {
 		if err := m.Status.ContextValidate(ctx, formats); err != nil {
@@ -5300,7 +5318,7 @@ func (m *NodeHwAssist) contextValidateStatus(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHwAssist) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHwAssist) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5308,8 +5326,8 @@ func (m *NodeHwAssist) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHwAssist) UnmarshalBinary(b []byte) error {
-	var res NodeHwAssist
+func (m *NodeInlineHwAssist) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHwAssist
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5317,23 +5335,23 @@ func (m *NodeHwAssist) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHwAssistStatus node hw assist status
+// NodeInlineHwAssistInlineStatus node inline hw assist inline status
 //
-// swagger:model NodeHwAssistStatus
-type NodeHwAssistStatus struct {
+// swagger:model node_inline_hw_assist_inline_status
+type NodeInlineHwAssistInlineStatus struct {
 
 	// Indicates whether hardware assist is enabled on the node.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// local
-	Local *NodeHwAssistStatusLocal `json:"local,omitempty"`
+	Local *NodeInlineHwAssistInlineStatusInlineLocal `json:"local,omitempty"`
 
 	// partner
-	Partner *NodeHwAssistStatusPartner `json:"partner,omitempty"`
+	Partner *NodeInlineHwAssistInlineStatusInlinePartner `json:"partner,omitempty"`
 }
 
-// Validate validates this node hw assist status
-func (m *NodeHwAssistStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline hw assist inline status
+func (m *NodeInlineHwAssistInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocal(formats); err != nil {
@@ -5350,7 +5368,7 @@ func (m *NodeHwAssistStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHwAssistStatus) validateLocal(formats strfmt.Registry) error {
+func (m *NodeInlineHwAssistInlineStatus) validateLocal(formats strfmt.Registry) error {
 	if swag.IsZero(m.Local) { // not required
 		return nil
 	}
@@ -5367,7 +5385,7 @@ func (m *NodeHwAssistStatus) validateLocal(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeHwAssistStatus) validatePartner(formats strfmt.Registry) error {
+func (m *NodeInlineHwAssistInlineStatus) validatePartner(formats strfmt.Registry) error {
 	if swag.IsZero(m.Partner) { // not required
 		return nil
 	}
@@ -5384,8 +5402,8 @@ func (m *NodeHwAssistStatus) validatePartner(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node hw assist status based on the context it is used
-func (m *NodeHwAssistStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline hw assist inline status based on the context it is used
+func (m *NodeInlineHwAssistInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLocal(ctx, formats); err != nil {
@@ -5402,7 +5420,7 @@ func (m *NodeHwAssistStatus) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NodeHwAssistStatus) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHwAssistInlineStatus) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Local != nil {
 		if err := m.Local.ContextValidate(ctx, formats); err != nil {
@@ -5416,7 +5434,7 @@ func (m *NodeHwAssistStatus) contextValidateLocal(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NodeHwAssistStatus) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineHwAssistInlineStatus) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Partner != nil {
 		if err := m.Partner.ContextValidate(ctx, formats); err != nil {
@@ -5431,7 +5449,7 @@ func (m *NodeHwAssistStatus) contextValidatePartner(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHwAssistStatus) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHwAssistInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5439,8 +5457,8 @@ func (m *NodeHwAssistStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHwAssistStatus) UnmarshalBinary(b []byte) error {
-	var res NodeHwAssistStatus
+func (m *NodeInlineHwAssistInlineStatus) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHwAssistInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5448,24 +5466,24 @@ func (m *NodeHwAssistStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHwAssistStatusLocal node hw assist status local
+// NodeInlineHwAssistInlineStatusInlineLocal node inline hw assist inline status inline local
 //
-// swagger:model NodeHwAssistStatusLocal
-type NodeHwAssistStatusLocal struct {
+// swagger:model node_inline_hw_assist_inline_status_inline_local
+type NodeInlineHwAssistInlineStatusInlineLocal struct {
 
 	// The hardware assist IP address.
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// The hardware assist port.
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
 	// Enum: [active inactive]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this node hw assist status local
-func (m *NodeHwAssistStatusLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline hw assist inline status inline local
+func (m *NodeInlineHwAssistInlineStatusInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -5478,7 +5496,7 @@ func (m *NodeHwAssistStatusLocal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeHwAssistStatusLocalTypeStatePropEnum []interface{}
+var nodeInlineHwAssistInlineStatusInlineLocalTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -5486,61 +5504,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeHwAssistStatusLocalTypeStatePropEnum = append(nodeHwAssistStatusLocalTypeStatePropEnum, v)
+		nodeInlineHwAssistInlineStatusInlineLocalTypeStatePropEnum = append(nodeInlineHwAssistInlineStatusInlineLocalTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeHwAssistStatusLocal
-	// NodeHwAssistStatusLocal
+	// node_inline_hw_assist_inline_status_inline_local
+	// NodeInlineHwAssistInlineStatusInlineLocal
 	// state
 	// State
 	// active
 	// END DEBUGGING
-	// NodeHwAssistStatusLocalStateActive captures enum value "active"
-	NodeHwAssistStatusLocalStateActive string = "active"
+	// NodeInlineHwAssistInlineStatusInlineLocalStateActive captures enum value "active"
+	NodeInlineHwAssistInlineStatusInlineLocalStateActive string = "active"
 
 	// BEGIN DEBUGGING
-	// NodeHwAssistStatusLocal
-	// NodeHwAssistStatusLocal
+	// node_inline_hw_assist_inline_status_inline_local
+	// NodeInlineHwAssistInlineStatusInlineLocal
 	// state
 	// State
 	// inactive
 	// END DEBUGGING
-	// NodeHwAssistStatusLocalStateInactive captures enum value "inactive"
-	NodeHwAssistStatusLocalStateInactive string = "inactive"
+	// NodeInlineHwAssistInlineStatusInlineLocalStateInactive captures enum value "inactive"
+	NodeInlineHwAssistInlineStatusInlineLocalStateInactive string = "inactive"
 )
 
 // prop value enum
-func (m *NodeHwAssistStatusLocal) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeHwAssistStatusLocalTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineHwAssistInlineStatusInlineLocal) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineHwAssistInlineStatusInlineLocalTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeHwAssistStatusLocal) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineHwAssistInlineStatusInlineLocal) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("hw_assist"+"."+"status"+"."+"local"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("hw_assist"+"."+"status"+"."+"local"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this node hw assist status local based on context it is used
-func (m *NodeHwAssistStatusLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this node inline hw assist inline status inline local based on context it is used
+func (m *NodeInlineHwAssistInlineStatusInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHwAssistStatusLocal) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHwAssistInlineStatusInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5548,8 +5566,8 @@ func (m *NodeHwAssistStatusLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHwAssistStatusLocal) UnmarshalBinary(b []byte) error {
-	var res NodeHwAssistStatusLocal
+func (m *NodeInlineHwAssistInlineStatusInlineLocal) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHwAssistInlineStatusInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5557,24 +5575,24 @@ func (m *NodeHwAssistStatusLocal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeHwAssistStatusPartner node hw assist status partner
+// NodeInlineHwAssistInlineStatusInlinePartner node inline hw assist inline status inline partner
 //
-// swagger:model NodeHwAssistStatusPartner
-type NodeHwAssistStatusPartner struct {
+// swagger:model node_inline_hw_assist_inline_status_inline_partner
+type NodeInlineHwAssistInlineStatusInlinePartner struct {
 
 	// The hardware assist IP address.
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// The hardware assist port.
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
 	// Enum: [active inactive]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this node hw assist status partner
-func (m *NodeHwAssistStatusPartner) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline hw assist inline status inline partner
+func (m *NodeInlineHwAssistInlineStatusInlinePartner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -5587,7 +5605,7 @@ func (m *NodeHwAssistStatusPartner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeHwAssistStatusPartnerTypeStatePropEnum []interface{}
+var nodeInlineHwAssistInlineStatusInlinePartnerTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -5595,61 +5613,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeHwAssistStatusPartnerTypeStatePropEnum = append(nodeHwAssistStatusPartnerTypeStatePropEnum, v)
+		nodeInlineHwAssistInlineStatusInlinePartnerTypeStatePropEnum = append(nodeInlineHwAssistInlineStatusInlinePartnerTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeHwAssistStatusPartner
-	// NodeHwAssistStatusPartner
+	// node_inline_hw_assist_inline_status_inline_partner
+	// NodeInlineHwAssistInlineStatusInlinePartner
 	// state
 	// State
 	// active
 	// END DEBUGGING
-	// NodeHwAssistStatusPartnerStateActive captures enum value "active"
-	NodeHwAssistStatusPartnerStateActive string = "active"
+	// NodeInlineHwAssistInlineStatusInlinePartnerStateActive captures enum value "active"
+	NodeInlineHwAssistInlineStatusInlinePartnerStateActive string = "active"
 
 	// BEGIN DEBUGGING
-	// NodeHwAssistStatusPartner
-	// NodeHwAssistStatusPartner
+	// node_inline_hw_assist_inline_status_inline_partner
+	// NodeInlineHwAssistInlineStatusInlinePartner
 	// state
 	// State
 	// inactive
 	// END DEBUGGING
-	// NodeHwAssistStatusPartnerStateInactive captures enum value "inactive"
-	NodeHwAssistStatusPartnerStateInactive string = "inactive"
+	// NodeInlineHwAssistInlineStatusInlinePartnerStateInactive captures enum value "inactive"
+	NodeInlineHwAssistInlineStatusInlinePartnerStateInactive string = "inactive"
 )
 
 // prop value enum
-func (m *NodeHwAssistStatusPartner) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeHwAssistStatusPartnerTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineHwAssistInlineStatusInlinePartner) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineHwAssistInlineStatusInlinePartnerTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeHwAssistStatusPartner) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineHwAssistInlineStatusInlinePartner) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("hw_assist"+"."+"status"+"."+"partner"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("hw_assist"+"."+"status"+"."+"partner"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this node hw assist status partner based on context it is used
-func (m *NodeHwAssistStatusPartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this node inline hw assist inline status inline partner based on context it is used
+func (m *NodeInlineHwAssistInlineStatusInlinePartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeHwAssistStatusPartner) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineHwAssistInlineStatusInlinePartner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5657,8 +5675,8 @@ func (m *NodeHwAssistStatusPartner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeHwAssistStatusPartner) UnmarshalBinary(b []byte) error {
-	var res NodeHwAssistStatusPartner
+func (m *NodeInlineHwAssistInlineStatusInlinePartner) UnmarshalBinary(b []byte) error {
+	var res NodeInlineHwAssistInlineStatusInlinePartner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5666,17 +5684,17 @@ func (m *NodeHwAssistStatusPartner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeLinks node links
+// NodeInlineLinks node inline links
 //
-// swagger:model NodeLinks
-type NodeLinks struct {
+// swagger:model node_inline__links
+type NodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node links
-func (m *NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline links
+func (m *NodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -5689,7 +5707,7 @@ func (m *NodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -5706,8 +5724,8 @@ func (m *NodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node links based on the context it is used
-func (m *NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline links based on the context it is used
+func (m *NodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -5720,7 +5738,7 @@ func (m *NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -5735,7 +5753,7 @@ func (m *NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5743,8 +5761,8 @@ func (m *NodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeLinks) UnmarshalBinary(b []byte) error {
-	var res NodeLinks
+func (m *NodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5752,17 +5770,17 @@ func (m *NodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeManagementInterface The management interface of the node to be added. The subnet mask is set based on the management interface of the cluster or the managment interfaces of other nodes.
+// NodeInlineManagementInterface The management interface of the node to be added. The subnet mask is set based on the management interface of the cluster or the managment interfaces of other nodes.
 //
-// swagger:model NodeManagementInterface
-type NodeManagementInterface struct {
+// swagger:model node_inline_management_interface
+type NodeInlineManagementInterface struct {
 
 	// ip
 	IP *NodeSetupIP `json:"ip,omitempty"`
 }
 
-// Validate validates this node management interface
-func (m *NodeManagementInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline management interface
+func (m *NodeInlineManagementInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIP(formats); err != nil {
@@ -5775,7 +5793,7 @@ func (m *NodeManagementInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeManagementInterface) validateIP(formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -5792,8 +5810,8 @@ func (m *NodeManagementInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node management interface based on the context it is used
-func (m *NodeManagementInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline management interface based on the context it is used
+func (m *NodeInlineManagementInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIP(ctx, formats); err != nil {
@@ -5806,7 +5824,7 @@ func (m *NodeManagementInterface) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NodeManagementInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -5821,7 +5839,7 @@ func (m *NodeManagementInterface) contextValidateIP(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NodeManagementInterface) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineManagementInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5829,8 +5847,8 @@ func (m *NodeManagementInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeManagementInterface) UnmarshalBinary(b []byte) error {
-	var res NodeManagementInterface
+func (m *NodeInlineManagementInterface) UnmarshalBinary(b []byte) error {
+	var res NodeInlineManagementInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5838,30 +5856,30 @@ func (m *NodeManagementInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeManagementInterfacesItems0 Network interface
+// NodeInlineManagementInterfacesInlineArrayItem Network interface
 //
-// swagger:model NodeManagementInterfacesItems0
-type NodeManagementInterfacesItems0 struct {
+// swagger:model node_inline_management_interfaces_inline_array_item
+type NodeInlineManagementInterfacesInlineArrayItem struct {
 
 	// links
-	Links *NodeManagementInterfacesItems0Links `json:"_links,omitempty"`
+	Links *NodeInlineManagementInterfacesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *NodeManagementInterfacesItems0IP `json:"ip,omitempty"`
+	IP *NodeInlineManagementInterfacesInlineArrayItemInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this node management interfaces items0
-func (m *NodeManagementInterfacesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline management interfaces inline array item
+func (m *NodeInlineManagementInterfacesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -5878,7 +5896,7 @@ func (m *NodeManagementInterfacesItems0) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -5895,7 +5913,7 @@ func (m *NodeManagementInterfacesItems0) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0) validateIP(formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItem) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -5912,8 +5930,8 @@ func (m *NodeManagementInterfacesItems0) validateIP(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this node management interfaces items0 based on the context it is used
-func (m *NodeManagementInterfacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline management interfaces inline array item based on the context it is used
+func (m *NodeInlineManagementInterfacesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -5930,7 +5948,7 @@ func (m *NodeManagementInterfacesItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -5944,7 +5962,7 @@ func (m *NodeManagementInterfacesItems0) contextValidateLinks(ctx context.Contex
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItem) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -5959,7 +5977,7 @@ func (m *NodeManagementInterfacesItems0) contextValidateIP(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *NodeManagementInterfacesItems0) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineManagementInterfacesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -5967,8 +5985,8 @@ func (m *NodeManagementInterfacesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeManagementInterfacesItems0) UnmarshalBinary(b []byte) error {
-	var res NodeManagementInterfacesItems0
+func (m *NodeInlineManagementInterfacesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NodeInlineManagementInterfacesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5976,17 +5994,17 @@ func (m *NodeManagementInterfacesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeManagementInterfacesItems0IP IP information
+// NodeInlineManagementInterfacesInlineArrayItemInlineIP IP information
 //
-// swagger:model NodeManagementInterfacesItems0IP
-type NodeManagementInterfacesItems0IP struct {
+// swagger:model node_inline_management_interfaces_inline_array_item_inline_ip
+type NodeInlineManagementInterfacesInlineArrayItemInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this node management interfaces items0 IP
-func (m *NodeManagementInterfacesItems0IP) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline management interfaces inline array item inline ip
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -5999,23 +6017,25 @@ func (m *NodeManagementInterfacesItems0IP) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0IP) validateAddress(formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node management interfaces items0 IP based on the context it is used
-func (m *NodeManagementInterfacesItems0IP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline management interfaces inline array item inline ip based on the context it is used
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -6028,20 +6048,22 @@ func (m *NodeManagementInterfacesItems0IP) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0IP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeManagementInterfacesItems0IP) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6049,8 +6071,8 @@ func (m *NodeManagementInterfacesItems0IP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeManagementInterfacesItems0IP) UnmarshalBinary(b []byte) error {
-	var res NodeManagementInterfacesItems0IP
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineIP) UnmarshalBinary(b []byte) error {
+	var res NodeInlineManagementInterfacesInlineArrayItemInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6058,17 +6080,17 @@ func (m *NodeManagementInterfacesItems0IP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeManagementInterfacesItems0Links node management interfaces items0 links
+// NodeInlineManagementInterfacesInlineArrayItemInlineLinks node inline management interfaces inline array item inline links
 //
-// swagger:model NodeManagementInterfacesItems0Links
-type NodeManagementInterfacesItems0Links struct {
+// swagger:model node_inline_management_interfaces_inline_array_item_inline__links
+type NodeInlineManagementInterfacesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node management interfaces items0 links
-func (m *NodeManagementInterfacesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline management interfaces inline array item inline links
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -6081,7 +6103,7 @@ func (m *NodeManagementInterfacesItems0Links) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -6098,8 +6120,8 @@ func (m *NodeManagementInterfacesItems0Links) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this node management interfaces items0 links based on the context it is used
-func (m *NodeManagementInterfacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline management interfaces inline array item inline links based on the context it is used
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -6112,7 +6134,7 @@ func (m *NodeManagementInterfacesItems0Links) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *NodeManagementInterfacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -6127,7 +6149,7 @@ func (m *NodeManagementInterfacesItems0Links) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *NodeManagementInterfacesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6135,8 +6157,8 @@ func (m *NodeManagementInterfacesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeManagementInterfacesItems0Links) UnmarshalBinary(b []byte) error {
-	var res NodeManagementInterfacesItems0Links
+func (m *NodeInlineManagementInterfacesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeInlineManagementInterfacesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6144,28 +6166,28 @@ func (m *NodeManagementInterfacesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetric CPU performance for the nodes.
+// NodeInlineMetric CPU performance for the nodes.
 //
-// swagger:model NodeMetric
-type NodeMetric struct {
+// swagger:model node_inline_metric
+type NodeInlineMetric struct {
 
 	// links
-	Links *NodeMetricLinks `json:"_links,omitempty"`
+	Links *NodeInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT5M PT30M PT2H P1D]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Average CPU Utilization for the node
 	// Example: 13
-	ProcessorUtilization int64 `json:"processor_utilization,omitempty"`
+	ProcessorUtilization *int64 `json:"processor_utilization,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -6174,11 +6196,11 @@ type NodeMetric struct {
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this node metric
-func (m *NodeMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline metric
+func (m *NodeInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -6203,7 +6225,7 @@ func (m *NodeMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetric) validateLinks(formats strfmt.Registry) error {
+func (m *NodeInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -6220,7 +6242,7 @@ func (m *NodeMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeMetricTypeDurationPropEnum []interface{}
+var nodeInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -6228,85 +6250,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeMetricTypeDurationPropEnum = append(nodeMetricTypeDurationPropEnum, v)
+		nodeInlineMetricTypeDurationPropEnum = append(nodeInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// NodeMetricDurationPT15S captures enum value "PT15S"
-	NodeMetricDurationPT15S string = "PT15S"
+	// NodeInlineMetricDurationPT15S captures enum value "PT15S"
+	NodeInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// NodeMetricDurationPT5M captures enum value "PT5M"
-	NodeMetricDurationPT5M string = "PT5M"
+	// NodeInlineMetricDurationPT5M captures enum value "PT5M"
+	NodeInlineMetricDurationPT5M string = "PT5M"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// NodeMetricDurationPT30M captures enum value "PT30M"
-	NodeMetricDurationPT30M string = "PT30M"
+	// NodeInlineMetricDurationPT30M captures enum value "PT30M"
+	NodeInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// NodeMetricDurationPT2H captures enum value "PT2H"
-	NodeMetricDurationPT2H string = "PT2H"
+	// NodeInlineMetricDurationPT2H captures enum value "PT2H"
+	NodeInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// NodeMetricDurationP1D captures enum value "P1D"
-	NodeMetricDurationP1D string = "P1D"
+	// NodeInlineMetricDurationP1D captures enum value "P1D"
+	NodeInlineMetricDurationP1D string = "P1D"
 )
 
 // prop value enum
-func (m *NodeMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeMetricTypeDurationPropEnum, true); err != nil {
+func (m *NodeInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeMetric) validateDuration(formats strfmt.Registry) error {
+func (m *NodeInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var nodeMetricTypeStatusPropEnum []interface{}
+var nodeInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -6314,135 +6336,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeMetricTypeStatusPropEnum = append(nodeMetricTypeStatusPropEnum, v)
+		nodeInlineMetricTypeStatusPropEnum = append(nodeInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NodeMetricStatusOk captures enum value "ok"
-	NodeMetricStatusOk string = "ok"
+	// NodeInlineMetricStatusOk captures enum value "ok"
+	NodeInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NodeMetricStatusError captures enum value "error"
-	NodeMetricStatusError string = "error"
+	// NodeInlineMetricStatusError captures enum value "error"
+	NodeInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NodeMetricStatusPartialNoData captures enum value "partial_no_data"
-	NodeMetricStatusPartialNoData string = "partial_no_data"
+	// NodeInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	NodeInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NodeMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NodeMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// NodeInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NodeInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NodeMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	NodeMetricStatusPartialNoResponse string = "partial_no_response"
+	// NodeInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	NodeInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NodeMetricStatusPartialOtherError captures enum value "partial_other_error"
-	NodeMetricStatusPartialOtherError string = "partial_other_error"
+	// NodeInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	NodeInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NodeMetricStatusNegativeDelta captures enum value "negative_delta"
-	NodeMetricStatusNegativeDelta string = "negative_delta"
+	// NodeInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	NodeInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NodeMetricStatusBackfilledData captures enum value "backfilled_data"
-	NodeMetricStatusBackfilledData string = "backfilled_data"
+	// NodeInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	NodeInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NodeMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NodeMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NodeInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NodeInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NodeMetric
-	// NodeMetric
+	// node_inline_metric
+	// NodeInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NodeMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NodeMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// NodeInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NodeInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *NodeMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeMetricTypeStatusPropEnum, true); err != nil {
+func (m *NodeInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeMetric) validateStatus(formats strfmt.Registry) error {
+func (m *NodeInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *NodeInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -6454,8 +6476,8 @@ func (m *NodeMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node metric based on the context it is used
-func (m *NodeMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline metric based on the context it is used
+func (m *NodeInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -6468,7 +6490,7 @@ func (m *NodeMetric) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *NodeMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -6483,7 +6505,7 @@ func (m *NodeMetric) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetric) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6491,8 +6513,8 @@ func (m *NodeMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetric) UnmarshalBinary(b []byte) error {
-	var res NodeMetric
+func (m *NodeInlineMetric) UnmarshalBinary(b []byte) error {
+	var res NodeInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6500,17 +6522,17 @@ func (m *NodeMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetricLinks node metric links
+// NodeInlineMetricInlineLinks node inline metric inline links
 //
-// swagger:model NodeMetricLinks
-type NodeMetricLinks struct {
+// swagger:model node_inline_metric_inline__links
+type NodeInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this node metric links
-func (m *NodeMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline metric inline links
+func (m *NodeInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -6523,7 +6545,7 @@ func (m *NodeMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NodeInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -6540,8 +6562,8 @@ func (m *NodeMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node metric links based on the context it is used
-func (m *NodeMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline metric inline links based on the context it is used
+func (m *NodeInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -6554,7 +6576,7 @@ func (m *NodeMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NodeMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -6569,7 +6591,7 @@ func (m *NodeMetricLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6577,8 +6599,8 @@ func (m *NodeMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetricLinks) UnmarshalBinary(b []byte) error {
-	var res NodeMetricLinks
+func (m *NodeInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NodeInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6586,10 +6608,10 @@ func (m *NodeMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeMetrocluster Metrocluster
+// NodeInlineMetrocluster Metrocluster
 //
-// swagger:model NodeMetrocluster
-type NodeMetrocluster struct {
+// swagger:model node_inline_metrocluster
+type NodeInlineMetrocluster struct {
 
 	// Indicates whether the MetroCluster over IP platform supports custom VLAN IDs.
 	// Read Only: true
@@ -6602,11 +6624,11 @@ type NodeMetrocluster struct {
 	// The Metrocluster configuration type
 	// Read Only: true
 	// Enum: [fc fc_2_node ip]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this node metrocluster
-func (m *NodeMetrocluster) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline metrocluster
+func (m *NodeInlineMetrocluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePorts(formats); err != nil {
@@ -6623,7 +6645,7 @@ func (m *NodeMetrocluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeMetrocluster) validatePorts(formats strfmt.Registry) error {
+func (m *NodeInlineMetrocluster) validatePorts(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ports) { // not required
 		return nil
 	}
@@ -6647,7 +6669,7 @@ func (m *NodeMetrocluster) validatePorts(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeMetroclusterTypeTypePropEnum []interface{}
+var nodeInlineMetroclusterTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -6655,66 +6677,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeMetroclusterTypeTypePropEnum = append(nodeMetroclusterTypeTypePropEnum, v)
+		nodeInlineMetroclusterTypeTypePropEnum = append(nodeInlineMetroclusterTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeMetrocluster
-	// NodeMetrocluster
+	// node_inline_metrocluster
+	// NodeInlineMetrocluster
 	// type
 	// Type
 	// fc
 	// END DEBUGGING
-	// NodeMetroclusterTypeFc captures enum value "fc"
-	NodeMetroclusterTypeFc string = "fc"
+	// NodeInlineMetroclusterTypeFc captures enum value "fc"
+	NodeInlineMetroclusterTypeFc string = "fc"
 
 	// BEGIN DEBUGGING
-	// NodeMetrocluster
-	// NodeMetrocluster
+	// node_inline_metrocluster
+	// NodeInlineMetrocluster
 	// type
 	// Type
 	// fc_2_node
 	// END DEBUGGING
-	// NodeMetroclusterTypeFc2Node captures enum value "fc_2_node"
-	NodeMetroclusterTypeFc2Node string = "fc_2_node"
+	// NodeInlineMetroclusterTypeFc2Node captures enum value "fc_2_node"
+	NodeInlineMetroclusterTypeFc2Node string = "fc_2_node"
 
 	// BEGIN DEBUGGING
-	// NodeMetrocluster
-	// NodeMetrocluster
+	// node_inline_metrocluster
+	// NodeInlineMetrocluster
 	// type
 	// Type
 	// ip
 	// END DEBUGGING
-	// NodeMetroclusterTypeIP captures enum value "ip"
-	NodeMetroclusterTypeIP string = "ip"
+	// NodeInlineMetroclusterTypeIP captures enum value "ip"
+	NodeInlineMetroclusterTypeIP string = "ip"
 )
 
 // prop value enum
-func (m *NodeMetrocluster) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeMetroclusterTypeTypePropEnum, true); err != nil {
+func (m *NodeInlineMetrocluster) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineMetroclusterTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeMetrocluster) validateType(formats strfmt.Registry) error {
+func (m *NodeInlineMetrocluster) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("metrocluster"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("metrocluster"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node metrocluster based on the context it is used
-func (m *NodeMetrocluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline metrocluster based on the context it is used
+func (m *NodeInlineMetrocluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCustomVlanCapable(ctx, formats); err != nil {
@@ -6735,7 +6757,7 @@ func (m *NodeMetrocluster) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NodeMetrocluster) contextValidateCustomVlanCapable(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineMetrocluster) contextValidateCustomVlanCapable(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"custom_vlan_capable", "body", m.CustomVlanCapable); err != nil {
 		return err
@@ -6744,7 +6766,7 @@ func (m *NodeMetrocluster) contextValidateCustomVlanCapable(ctx context.Context,
 	return nil
 }
 
-func (m *NodeMetrocluster) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineMetrocluster) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"ports", "body", []*NodeMetroclusterPortsItems0(m.Ports)); err != nil {
 		return err
@@ -6766,9 +6788,9 @@ func (m *NodeMetrocluster) contextValidatePorts(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NodeMetrocluster) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineMetrocluster) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -6776,7 +6798,7 @@ func (m *NodeMetrocluster) contextValidateType(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NodeMetrocluster) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineMetrocluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6784,8 +6806,8 @@ func (m *NodeMetrocluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeMetrocluster) UnmarshalBinary(b []byte) error {
-	var res NodeMetrocluster
+func (m *NodeInlineMetrocluster) UnmarshalBinary(b []byte) error {
+	var res NodeInlineMetrocluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6800,7 +6822,7 @@ type NodeMetroclusterPortsItems0 struct {
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this node metrocluster ports items0
@@ -6831,10 +6853,10 @@ func (m *NodeMetroclusterPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeNvram node nvram
+// NodeInlineNvram node inline nvram
 //
-// swagger:model NodeNvram
-type NodeNvram struct {
+// swagger:model node_inline_nvram
+type NodeInlineNvram struct {
 
 	// Specifies status of the NVRAM battery. Possible values:
 	// * <i>battery_ok</i>
@@ -6849,15 +6871,15 @@ type NodeNvram struct {
 	//
 	// Read Only: true
 	// Enum: [battery_ok battery_partially_discharged battery_fully_discharged battery_not_present battery_near_end_of_life battery_at_end_of_life battery_unknown battery_over_charged battery_fully_charged]
-	BatteryState string `json:"battery_state,omitempty"`
+	BatteryState *string `json:"battery_state,omitempty"`
 
 	// Vendor specific NVRAM ID of the node.
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
-// Validate validates this node nvram
-func (m *NodeNvram) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline nvram
+func (m *NodeInlineNvram) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBatteryState(formats); err != nil {
@@ -6870,7 +6892,7 @@ func (m *NodeNvram) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeNvramTypeBatteryStatePropEnum []interface{}
+var nodeInlineNvramTypeBatteryStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -6878,126 +6900,126 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeNvramTypeBatteryStatePropEnum = append(nodeNvramTypeBatteryStatePropEnum, v)
+		nodeInlineNvramTypeBatteryStatePropEnum = append(nodeInlineNvramTypeBatteryStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_ok
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryOk captures enum value "battery_ok"
-	NodeNvramBatteryStateBatteryOk string = "battery_ok"
+	// NodeInlineNvramBatteryStateBatteryOk captures enum value "battery_ok"
+	NodeInlineNvramBatteryStateBatteryOk string = "battery_ok"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_partially_discharged
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryPartiallyDischarged captures enum value "battery_partially_discharged"
-	NodeNvramBatteryStateBatteryPartiallyDischarged string = "battery_partially_discharged"
+	// NodeInlineNvramBatteryStateBatteryPartiallyDischarged captures enum value "battery_partially_discharged"
+	NodeInlineNvramBatteryStateBatteryPartiallyDischarged string = "battery_partially_discharged"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_fully_discharged
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryFullyDischarged captures enum value "battery_fully_discharged"
-	NodeNvramBatteryStateBatteryFullyDischarged string = "battery_fully_discharged"
+	// NodeInlineNvramBatteryStateBatteryFullyDischarged captures enum value "battery_fully_discharged"
+	NodeInlineNvramBatteryStateBatteryFullyDischarged string = "battery_fully_discharged"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_not_present
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryNotPresent captures enum value "battery_not_present"
-	NodeNvramBatteryStateBatteryNotPresent string = "battery_not_present"
+	// NodeInlineNvramBatteryStateBatteryNotPresent captures enum value "battery_not_present"
+	NodeInlineNvramBatteryStateBatteryNotPresent string = "battery_not_present"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_near_end_of_life
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryNearEndOfLife captures enum value "battery_near_end_of_life"
-	NodeNvramBatteryStateBatteryNearEndOfLife string = "battery_near_end_of_life"
+	// NodeInlineNvramBatteryStateBatteryNearEndOfLife captures enum value "battery_near_end_of_life"
+	NodeInlineNvramBatteryStateBatteryNearEndOfLife string = "battery_near_end_of_life"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_at_end_of_life
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryAtEndOfLife captures enum value "battery_at_end_of_life"
-	NodeNvramBatteryStateBatteryAtEndOfLife string = "battery_at_end_of_life"
+	// NodeInlineNvramBatteryStateBatteryAtEndOfLife captures enum value "battery_at_end_of_life"
+	NodeInlineNvramBatteryStateBatteryAtEndOfLife string = "battery_at_end_of_life"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_unknown
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryUnknown captures enum value "battery_unknown"
-	NodeNvramBatteryStateBatteryUnknown string = "battery_unknown"
+	// NodeInlineNvramBatteryStateBatteryUnknown captures enum value "battery_unknown"
+	NodeInlineNvramBatteryStateBatteryUnknown string = "battery_unknown"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_over_charged
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryOverCharged captures enum value "battery_over_charged"
-	NodeNvramBatteryStateBatteryOverCharged string = "battery_over_charged"
+	// NodeInlineNvramBatteryStateBatteryOverCharged captures enum value "battery_over_charged"
+	NodeInlineNvramBatteryStateBatteryOverCharged string = "battery_over_charged"
 
 	// BEGIN DEBUGGING
-	// NodeNvram
-	// NodeNvram
+	// node_inline_nvram
+	// NodeInlineNvram
 	// battery_state
 	// BatteryState
 	// battery_fully_charged
 	// END DEBUGGING
-	// NodeNvramBatteryStateBatteryFullyCharged captures enum value "battery_fully_charged"
-	NodeNvramBatteryStateBatteryFullyCharged string = "battery_fully_charged"
+	// NodeInlineNvramBatteryStateBatteryFullyCharged captures enum value "battery_fully_charged"
+	NodeInlineNvramBatteryStateBatteryFullyCharged string = "battery_fully_charged"
 )
 
 // prop value enum
-func (m *NodeNvram) validateBatteryStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeNvramTypeBatteryStatePropEnum, true); err != nil {
+func (m *NodeInlineNvram) validateBatteryStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineNvramTypeBatteryStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeNvram) validateBatteryState(formats strfmt.Registry) error {
+func (m *NodeInlineNvram) validateBatteryState(formats strfmt.Registry) error {
 	if swag.IsZero(m.BatteryState) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateBatteryStateEnum("nvram"+"."+"battery_state", "body", m.BatteryState); err != nil {
+	if err := m.validateBatteryStateEnum("nvram"+"."+"battery_state", "body", *m.BatteryState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node nvram based on the context it is used
-func (m *NodeNvram) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline nvram based on the context it is used
+func (m *NodeInlineNvram) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBatteryState(ctx, formats); err != nil {
@@ -7014,18 +7036,18 @@ func (m *NodeNvram) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *NodeNvram) contextValidateBatteryState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineNvram) contextValidateBatteryState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nvram"+"."+"battery_state", "body", string(m.BatteryState)); err != nil {
+	if err := validate.ReadOnly(ctx, "nvram"+"."+"battery_state", "body", m.BatteryState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeNvram) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineNvram) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nvram"+"."+"id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "nvram"+"."+"id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -7033,7 +7055,7 @@ func (m *NodeNvram) contextValidateID(ctx context.Context, formats strfmt.Regist
 }
 
 // MarshalBinary interface implementation
-func (m *NodeNvram) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineNvram) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -7041,8 +7063,8 @@ func (m *NodeNvram) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeNvram) UnmarshalBinary(b []byte) error {
-	var res NodeNvram
+func (m *NodeInlineNvram) UnmarshalBinary(b []byte) error {
+	var res NodeInlineNvram
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7050,35 +7072,35 @@ func (m *NodeNvram) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessor node service processor
+// NodeInlineServiceProcessor node inline service processor
 //
-// swagger:model NodeServiceProcessor
-type NodeServiceProcessor struct {
+// swagger:model node_inline_service_processor
+type NodeInlineServiceProcessor struct {
 
 	// api service
-	APIService *NodeServiceProcessorAPIService `json:"api_service,omitempty"`
+	APIService *NodeInlineServiceProcessorInlineAPIService `json:"api_service,omitempty"`
 
 	// auto config
-	AutoConfig *NodeServiceProcessorAutoConfig `json:"auto_config,omitempty"`
+	AutoConfig *NodeInlineServiceProcessorInlineAutoConfig `json:"auto_config,omitempty"`
 
 	// Indicates whether the service processor can be automatically updated from ONTAP.
-	AutoupdateEnabled bool `json:"autoupdate_enabled,omitempty"`
+	AutoupdateEnabled *bool `json:"autoupdate_enabled,omitempty"`
 
 	// backup
-	Backup *NodeServiceProcessorBackup `json:"backup,omitempty"`
+	Backup *NodeInlineServiceProcessorInlineBackup `json:"backup,omitempty"`
 
 	// Set to "true" to use DHCP to configure an IPv4 interface. Do not provide values for address, netmask and gateway when set to "true".
-	DhcpEnabled bool `json:"dhcp_enabled,omitempty"`
+	DhcpEnabled *bool `json:"dhcp_enabled,omitempty"`
 
 	// The version of firmware installed.
 	// Read Only: true
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// ipv4 interface
-	IPV4Interface *NodeServiceProcessorIPV4Interface `json:"ipv4_interface,omitempty"`
+	IPV4Interface *NodeInlineServiceProcessorInlineIPV4Interface `json:"ipv4_interface,omitempty"`
 
 	// ipv6 interface
-	IPV6Interface *NodeServiceProcessorIPV6Interface `json:"ipv6_interface,omitempty"`
+	IPV6Interface *NodeInlineServiceProcessorInlineIPV6Interface `json:"ipv6_interface,omitempty"`
 
 	// Indicates whether the service processor network is configured.
 	// Read Only: true
@@ -7087,36 +7109,36 @@ type NodeServiceProcessor struct {
 	// Provides the "update status" of the last service processor update.
 	// Read Only: true
 	// Enum: [failed passed]
-	LastUpdateState string `json:"last_update_state,omitempty"`
+	LastUpdateState *string `json:"last_update_state,omitempty"`
 
 	// link status
 	// Read Only: true
 	// Enum: [up down disabled unknown]
-	LinkStatus string `json:"link_status,omitempty"`
+	LinkStatus *string `json:"link_status,omitempty"`
 
 	// mac address
 	// Read Only: true
-	MacAddress string `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 
 	// primary
-	Primary *NodeServiceProcessorPrimary `json:"primary,omitempty"`
+	Primary *NodeInlineServiceProcessorInlinePrimary `json:"primary,omitempty"`
 
 	// ssh info
-	SSHInfo *NodeServiceProcessorSSHInfo `json:"ssh_info,omitempty"`
+	SSHInfo *NodeInlineServiceProcessorInlineSSHInfo `json:"ssh_info,omitempty"`
 
 	// state
 	// Read Only: true
 	// Enum: [online offline degraded rebooting unknown updating node_offline sp_daemon_offline]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// type
 	// Read Only: true
 	// Enum: [sp none bmc]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this node service processor
-func (m *NodeServiceProcessor) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor
+func (m *NodeInlineServiceProcessor) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAPIService(formats); err != nil {
@@ -7169,7 +7191,7 @@ func (m *NodeServiceProcessor) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateAPIService(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateAPIService(formats strfmt.Registry) error {
 	if swag.IsZero(m.APIService) { // not required
 		return nil
 	}
@@ -7186,7 +7208,7 @@ func (m *NodeServiceProcessor) validateAPIService(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateAutoConfig(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateAutoConfig(formats strfmt.Registry) error {
 	if swag.IsZero(m.AutoConfig) { // not required
 		return nil
 	}
@@ -7203,7 +7225,7 @@ func (m *NodeServiceProcessor) validateAutoConfig(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateBackup(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateBackup(formats strfmt.Registry) error {
 	if swag.IsZero(m.Backup) { // not required
 		return nil
 	}
@@ -7220,7 +7242,7 @@ func (m *NodeServiceProcessor) validateBackup(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateIPV4Interface(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateIPV4Interface(formats strfmt.Registry) error {
 	if swag.IsZero(m.IPV4Interface) { // not required
 		return nil
 	}
@@ -7237,7 +7259,7 @@ func (m *NodeServiceProcessor) validateIPV4Interface(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateIPV6Interface(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateIPV6Interface(formats strfmt.Registry) error {
 	if swag.IsZero(m.IPV6Interface) { // not required
 		return nil
 	}
@@ -7254,7 +7276,7 @@ func (m *NodeServiceProcessor) validateIPV6Interface(formats strfmt.Registry) er
 	return nil
 }
 
-var nodeServiceProcessorTypeLastUpdateStatePropEnum []interface{}
+var nodeInlineServiceProcessorTypeLastUpdateStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -7262,55 +7284,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeServiceProcessorTypeLastUpdateStatePropEnum = append(nodeServiceProcessorTypeLastUpdateStatePropEnum, v)
+		nodeInlineServiceProcessorTypeLastUpdateStatePropEnum = append(nodeInlineServiceProcessorTypeLastUpdateStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// last_update_state
 	// LastUpdateState
 	// failed
 	// END DEBUGGING
-	// NodeServiceProcessorLastUpdateStateFailed captures enum value "failed"
-	NodeServiceProcessorLastUpdateStateFailed string = "failed"
+	// NodeInlineServiceProcessorLastUpdateStateFailed captures enum value "failed"
+	NodeInlineServiceProcessorLastUpdateStateFailed string = "failed"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// last_update_state
 	// LastUpdateState
 	// passed
 	// END DEBUGGING
-	// NodeServiceProcessorLastUpdateStatePassed captures enum value "passed"
-	NodeServiceProcessorLastUpdateStatePassed string = "passed"
+	// NodeInlineServiceProcessorLastUpdateStatePassed captures enum value "passed"
+	NodeInlineServiceProcessorLastUpdateStatePassed string = "passed"
 )
 
 // prop value enum
-func (m *NodeServiceProcessor) validateLastUpdateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeServiceProcessorTypeLastUpdateStatePropEnum, true); err != nil {
+func (m *NodeInlineServiceProcessor) validateLastUpdateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineServiceProcessorTypeLastUpdateStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateLastUpdateState(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateLastUpdateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.LastUpdateState) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLastUpdateStateEnum("service_processor"+"."+"last_update_state", "body", m.LastUpdateState); err != nil {
+	if err := m.validateLastUpdateStateEnum("service_processor"+"."+"last_update_state", "body", *m.LastUpdateState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var nodeServiceProcessorTypeLinkStatusPropEnum []interface{}
+var nodeInlineServiceProcessorTypeLinkStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -7318,75 +7340,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeServiceProcessorTypeLinkStatusPropEnum = append(nodeServiceProcessorTypeLinkStatusPropEnum, v)
+		nodeInlineServiceProcessorTypeLinkStatusPropEnum = append(nodeInlineServiceProcessorTypeLinkStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// link_status
 	// LinkStatus
 	// up
 	// END DEBUGGING
-	// NodeServiceProcessorLinkStatusUp captures enum value "up"
-	NodeServiceProcessorLinkStatusUp string = "up"
+	// NodeInlineServiceProcessorLinkStatusUp captures enum value "up"
+	NodeInlineServiceProcessorLinkStatusUp string = "up"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// link_status
 	// LinkStatus
 	// down
 	// END DEBUGGING
-	// NodeServiceProcessorLinkStatusDown captures enum value "down"
-	NodeServiceProcessorLinkStatusDown string = "down"
+	// NodeInlineServiceProcessorLinkStatusDown captures enum value "down"
+	NodeInlineServiceProcessorLinkStatusDown string = "down"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// link_status
 	// LinkStatus
 	// disabled
 	// END DEBUGGING
-	// NodeServiceProcessorLinkStatusDisabled captures enum value "disabled"
-	NodeServiceProcessorLinkStatusDisabled string = "disabled"
+	// NodeInlineServiceProcessorLinkStatusDisabled captures enum value "disabled"
+	NodeInlineServiceProcessorLinkStatusDisabled string = "disabled"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// link_status
 	// LinkStatus
 	// unknown
 	// END DEBUGGING
-	// NodeServiceProcessorLinkStatusUnknown captures enum value "unknown"
-	NodeServiceProcessorLinkStatusUnknown string = "unknown"
+	// NodeInlineServiceProcessorLinkStatusUnknown captures enum value "unknown"
+	NodeInlineServiceProcessorLinkStatusUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *NodeServiceProcessor) validateLinkStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeServiceProcessorTypeLinkStatusPropEnum, true); err != nil {
+func (m *NodeInlineServiceProcessor) validateLinkStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineServiceProcessorTypeLinkStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateLinkStatus(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateLinkStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.LinkStatus) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLinkStatusEnum("service_processor"+"."+"link_status", "body", m.LinkStatus); err != nil {
+	if err := m.validateLinkStatusEnum("service_processor"+"."+"link_status", "body", *m.LinkStatus); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessor) validatePrimary(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validatePrimary(formats strfmt.Registry) error {
 	if swag.IsZero(m.Primary) { // not required
 		return nil
 	}
@@ -7403,7 +7425,7 @@ func (m *NodeServiceProcessor) validatePrimary(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateSSHInfo(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateSSHInfo(formats strfmt.Registry) error {
 	if swag.IsZero(m.SSHInfo) { // not required
 		return nil
 	}
@@ -7420,7 +7442,7 @@ func (m *NodeServiceProcessor) validateSSHInfo(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeServiceProcessorTypeStatePropEnum []interface{}
+var nodeInlineServiceProcessorTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -7428,115 +7450,115 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeServiceProcessorTypeStatePropEnum = append(nodeServiceProcessorTypeStatePropEnum, v)
+		nodeInlineServiceProcessorTypeStatePropEnum = append(nodeInlineServiceProcessorTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// online
 	// END DEBUGGING
-	// NodeServiceProcessorStateOnline captures enum value "online"
-	NodeServiceProcessorStateOnline string = "online"
+	// NodeInlineServiceProcessorStateOnline captures enum value "online"
+	NodeInlineServiceProcessorStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// offline
 	// END DEBUGGING
-	// NodeServiceProcessorStateOffline captures enum value "offline"
-	NodeServiceProcessorStateOffline string = "offline"
+	// NodeInlineServiceProcessorStateOffline captures enum value "offline"
+	NodeInlineServiceProcessorStateOffline string = "offline"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// degraded
 	// END DEBUGGING
-	// NodeServiceProcessorStateDegraded captures enum value "degraded"
-	NodeServiceProcessorStateDegraded string = "degraded"
+	// NodeInlineServiceProcessorStateDegraded captures enum value "degraded"
+	NodeInlineServiceProcessorStateDegraded string = "degraded"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// rebooting
 	// END DEBUGGING
-	// NodeServiceProcessorStateRebooting captures enum value "rebooting"
-	NodeServiceProcessorStateRebooting string = "rebooting"
+	// NodeInlineServiceProcessorStateRebooting captures enum value "rebooting"
+	NodeInlineServiceProcessorStateRebooting string = "rebooting"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// unknown
 	// END DEBUGGING
-	// NodeServiceProcessorStateUnknown captures enum value "unknown"
-	NodeServiceProcessorStateUnknown string = "unknown"
+	// NodeInlineServiceProcessorStateUnknown captures enum value "unknown"
+	NodeInlineServiceProcessorStateUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// updating
 	// END DEBUGGING
-	// NodeServiceProcessorStateUpdating captures enum value "updating"
-	NodeServiceProcessorStateUpdating string = "updating"
+	// NodeInlineServiceProcessorStateUpdating captures enum value "updating"
+	NodeInlineServiceProcessorStateUpdating string = "updating"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// node_offline
 	// END DEBUGGING
-	// NodeServiceProcessorStateNodeOffline captures enum value "node_offline"
-	NodeServiceProcessorStateNodeOffline string = "node_offline"
+	// NodeInlineServiceProcessorStateNodeOffline captures enum value "node_offline"
+	NodeInlineServiceProcessorStateNodeOffline string = "node_offline"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// state
 	// State
 	// sp_daemon_offline
 	// END DEBUGGING
-	// NodeServiceProcessorStateSpDaemonOffline captures enum value "sp_daemon_offline"
-	NodeServiceProcessorStateSpDaemonOffline string = "sp_daemon_offline"
+	// NodeInlineServiceProcessorStateSpDaemonOffline captures enum value "sp_daemon_offline"
+	NodeInlineServiceProcessorStateSpDaemonOffline string = "sp_daemon_offline"
 )
 
 // prop value enum
-func (m *NodeServiceProcessor) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeServiceProcessorTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineServiceProcessor) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineServiceProcessorTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("service_processor"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("service_processor"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var nodeServiceProcessorTypeTypePropEnum []interface{}
+var nodeInlineServiceProcessorTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -7544,66 +7566,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeServiceProcessorTypeTypePropEnum = append(nodeServiceProcessorTypeTypePropEnum, v)
+		nodeInlineServiceProcessorTypeTypePropEnum = append(nodeInlineServiceProcessorTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// type
 	// Type
 	// sp
 	// END DEBUGGING
-	// NodeServiceProcessorTypeSp captures enum value "sp"
-	NodeServiceProcessorTypeSp string = "sp"
+	// NodeInlineServiceProcessorTypeSp captures enum value "sp"
+	NodeInlineServiceProcessorTypeSp string = "sp"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// type
 	// Type
 	// none
 	// END DEBUGGING
-	// NodeServiceProcessorTypeNone captures enum value "none"
-	NodeServiceProcessorTypeNone string = "none"
+	// NodeInlineServiceProcessorTypeNone captures enum value "none"
+	NodeInlineServiceProcessorTypeNone string = "none"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessor
-	// NodeServiceProcessor
+	// node_inline_service_processor
+	// NodeInlineServiceProcessor
 	// type
 	// Type
 	// bmc
 	// END DEBUGGING
-	// NodeServiceProcessorTypeBmc captures enum value "bmc"
-	NodeServiceProcessorTypeBmc string = "bmc"
+	// NodeInlineServiceProcessorTypeBmc captures enum value "bmc"
+	NodeInlineServiceProcessorTypeBmc string = "bmc"
 )
 
 // prop value enum
-func (m *NodeServiceProcessor) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeServiceProcessorTypeTypePropEnum, true); err != nil {
+func (m *NodeInlineServiceProcessor) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineServiceProcessorTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeServiceProcessor) validateType(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("service_processor"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("service_processor"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node service processor based on the context it is used
-func (m *NodeServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor based on the context it is used
+func (m *NodeInlineServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAPIService(ctx, formats); err != nil {
@@ -7668,7 +7690,7 @@ func (m *NodeServiceProcessor) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateAPIService(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateAPIService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.APIService != nil {
 		if err := m.APIService.ContextValidate(ctx, formats); err != nil {
@@ -7682,7 +7704,7 @@ func (m *NodeServiceProcessor) contextValidateAPIService(ctx context.Context, fo
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateAutoConfig(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateAutoConfig(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.AutoConfig != nil {
 		if err := m.AutoConfig.ContextValidate(ctx, formats); err != nil {
@@ -7696,7 +7718,7 @@ func (m *NodeServiceProcessor) contextValidateAutoConfig(ctx context.Context, fo
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateBackup(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateBackup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Backup != nil {
 		if err := m.Backup.ContextValidate(ctx, formats); err != nil {
@@ -7710,16 +7732,16 @@ func (m *NodeServiceProcessor) contextValidateBackup(ctx context.Context, format
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"firmware_version", "body", string(m.FirmwareVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"firmware_version", "body", m.FirmwareVersion); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateIPV4Interface(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IPV4Interface != nil {
 		if err := m.IPV4Interface.ContextValidate(ctx, formats); err != nil {
@@ -7733,7 +7755,7 @@ func (m *NodeServiceProcessor) contextValidateIPV4Interface(ctx context.Context,
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateIPV6Interface(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateIPV6Interface(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IPV6Interface != nil {
 		if err := m.IPV6Interface.ContextValidate(ctx, formats); err != nil {
@@ -7747,7 +7769,7 @@ func (m *NodeServiceProcessor) contextValidateIPV6Interface(ctx context.Context,
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateIsIPConfigured(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateIsIPConfigured(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"is_ip_configured", "body", m.IsIPConfigured); err != nil {
 		return err
@@ -7756,34 +7778,34 @@ func (m *NodeServiceProcessor) contextValidateIsIPConfigured(ctx context.Context
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateLastUpdateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateLastUpdateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"last_update_state", "body", string(m.LastUpdateState)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"last_update_state", "body", m.LastUpdateState); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateLinkStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateLinkStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"link_status", "body", string(m.LinkStatus)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"link_status", "body", m.LinkStatus); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateMacAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateMacAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"mac_address", "body", string(m.MacAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"mac_address", "body", m.MacAddress); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Primary != nil {
 		if err := m.Primary.ContextValidate(ctx, formats); err != nil {
@@ -7797,7 +7819,7 @@ func (m *NodeServiceProcessor) contextValidatePrimary(ctx context.Context, forma
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateSSHInfo(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateSSHInfo(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.SSHInfo != nil {
 		if err := m.SSHInfo.ContextValidate(ctx, formats); err != nil {
@@ -7811,18 +7833,18 @@ func (m *NodeServiceProcessor) contextValidateSSHInfo(ctx context.Context, forma
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessor) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessor) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -7830,7 +7852,7 @@ func (m *NodeServiceProcessor) contextValidateType(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessor) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessor) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -7838,8 +7860,8 @@ func (m *NodeServiceProcessor) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessor) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessor
+func (m *NodeInlineServiceProcessor) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessor
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7847,10 +7869,10 @@ func (m *NodeServiceProcessor) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorAPIService Provides the properties of the service processor API service.
+// NodeInlineServiceProcessorInlineAPIService Provides the properties of the service processor API service.
 //
-// swagger:model NodeServiceProcessorAPIService
-type NodeServiceProcessorAPIService struct {
+// swagger:model node_inline_service_processor_inline_api_service
+type NodeInlineServiceProcessorInlineAPIService struct {
 
 	// Indicates whether the service processor API service is enabled.
 	// Read Only: true
@@ -7862,16 +7884,16 @@ type NodeServiceProcessorAPIService struct {
 
 	// Indicates the port number of service processor API service.
 	// Read Only: true
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 }
 
-// Validate validates this node service processor API service
-func (m *NodeServiceProcessorAPIService) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline api service
+func (m *NodeInlineServiceProcessorInlineAPIService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node service processor API service based on the context it is used
-func (m *NodeServiceProcessorAPIService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor inline api service based on the context it is used
+func (m *NodeInlineServiceProcessorInlineAPIService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateEnabled(ctx, formats); err != nil {
@@ -7892,7 +7914,7 @@ func (m *NodeServiceProcessorAPIService) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NodeServiceProcessorAPIService) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineAPIService) contextValidateEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"enabled", "body", m.Enabled); err != nil {
 		return err
@@ -7901,7 +7923,7 @@ func (m *NodeServiceProcessorAPIService) contextValidateEnabled(ctx context.Cont
 	return nil
 }
 
-func (m *NodeServiceProcessorAPIService) contextValidateLimitAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineAPIService) contextValidateLimitAccess(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"limit_access", "body", m.LimitAccess); err != nil {
 		return err
@@ -7910,9 +7932,9 @@ func (m *NodeServiceProcessorAPIService) contextValidateLimitAccess(ctx context.
 	return nil
 }
 
-func (m *NodeServiceProcessorAPIService) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineAPIService) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"port", "body", int64(m.Port)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"api_service"+"."+"port", "body", m.Port); err != nil {
 		return err
 	}
 
@@ -7920,7 +7942,7 @@ func (m *NodeServiceProcessorAPIService) contextValidatePort(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorAPIService) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlineAPIService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -7928,8 +7950,8 @@ func (m *NodeServiceProcessorAPIService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorAPIService) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorAPIService
+func (m *NodeInlineServiceProcessorInlineAPIService) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlineAPIService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7937,27 +7959,27 @@ func (m *NodeServiceProcessorAPIService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorAutoConfig Provides the properties of the service processor auto configuration.
+// NodeInlineServiceProcessorInlineAutoConfig Provides the properties of the service processor auto configuration.
 //
-// swagger:model NodeServiceProcessorAutoConfig
-type NodeServiceProcessorAutoConfig struct {
+// swagger:model node_inline_service_processor_inline_auto_config
+type NodeInlineServiceProcessorInlineAutoConfig struct {
 
 	// Indicates the service processor auto configuration IPv4 subnet name. To enable IPv4 auto-config give the subnet name, give the value as null or an empty string "" to disable auto-config.
 	// Example: ipv4_mgmt
-	IPV4Subnet string `json:"ipv4_subnet,omitempty"`
+	IPV4Subnet *string `json:"ipv4_subnet,omitempty"`
 
 	// Indicates the service processor auto configuration IPv6 subnet name. To enable IPv6 auto-config give the subnet name, give the value as null or an empty string "" to disable auto-config.
 	// Example: ipv6_mgmt
-	IPV6Subnet string `json:"ipv6_subnet,omitempty"`
+	IPV6Subnet *string `json:"ipv6_subnet,omitempty"`
 }
 
-// Validate validates this node service processor auto config
-func (m *NodeServiceProcessorAutoConfig) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline auto config
+func (m *NodeInlineServiceProcessorInlineAutoConfig) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node service processor auto config based on the context it is used
-func (m *NodeServiceProcessorAutoConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor inline auto config based on the context it is used
+func (m *NodeInlineServiceProcessorInlineAutoConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -7967,7 +7989,7 @@ func (m *NodeServiceProcessorAutoConfig) ContextValidate(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorAutoConfig) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlineAutoConfig) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -7975,8 +7997,8 @@ func (m *NodeServiceProcessorAutoConfig) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorAutoConfig) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorAutoConfig
+func (m *NodeInlineServiceProcessorInlineAutoConfig) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlineAutoConfig
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7984,10 +8006,10 @@ func (m *NodeServiceProcessorAutoConfig) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorBackup Provides the properties of the service processor backup partition.
+// NodeInlineServiceProcessorInlineBackup Provides the properties of the service processor backup partition.
 //
-// swagger:model NodeServiceProcessorBackup
-type NodeServiceProcessorBackup struct {
+// swagger:model node_inline_service_processor_inline_backup
+type NodeInlineServiceProcessorInlineBackup struct {
 
 	// Indicates whether the service processor is currently booted from the backup partition.
 	// Read Only: true
@@ -7996,16 +8018,16 @@ type NodeServiceProcessorBackup struct {
 	// Status of the backup partition.
 	// Read Only: true
 	// Enum: [installed corrupt updating auto_updating none]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Firmware version of the backup partition.
 	// Example: 11.6
 	// Read Only: true
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
-// Validate validates this node service processor backup
-func (m *NodeServiceProcessorBackup) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline backup
+func (m *NodeInlineServiceProcessorInlineBackup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -8018,7 +8040,7 @@ func (m *NodeServiceProcessorBackup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeServiceProcessorBackupTypeStatePropEnum []interface{}
+var nodeInlineServiceProcessorInlineBackupTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -8026,86 +8048,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeServiceProcessorBackupTypeStatePropEnum = append(nodeServiceProcessorBackupTypeStatePropEnum, v)
+		nodeInlineServiceProcessorInlineBackupTypeStatePropEnum = append(nodeInlineServiceProcessorInlineBackupTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorBackup
-	// NodeServiceProcessorBackup
+	// node_inline_service_processor_inline_backup
+	// NodeInlineServiceProcessorInlineBackup
 	// state
 	// State
 	// installed
 	// END DEBUGGING
-	// NodeServiceProcessorBackupStateInstalled captures enum value "installed"
-	NodeServiceProcessorBackupStateInstalled string = "installed"
+	// NodeInlineServiceProcessorInlineBackupStateInstalled captures enum value "installed"
+	NodeInlineServiceProcessorInlineBackupStateInstalled string = "installed"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorBackup
-	// NodeServiceProcessorBackup
+	// node_inline_service_processor_inline_backup
+	// NodeInlineServiceProcessorInlineBackup
 	// state
 	// State
 	// corrupt
 	// END DEBUGGING
-	// NodeServiceProcessorBackupStateCorrupt captures enum value "corrupt"
-	NodeServiceProcessorBackupStateCorrupt string = "corrupt"
+	// NodeInlineServiceProcessorInlineBackupStateCorrupt captures enum value "corrupt"
+	NodeInlineServiceProcessorInlineBackupStateCorrupt string = "corrupt"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorBackup
-	// NodeServiceProcessorBackup
+	// node_inline_service_processor_inline_backup
+	// NodeInlineServiceProcessorInlineBackup
 	// state
 	// State
 	// updating
 	// END DEBUGGING
-	// NodeServiceProcessorBackupStateUpdating captures enum value "updating"
-	NodeServiceProcessorBackupStateUpdating string = "updating"
+	// NodeInlineServiceProcessorInlineBackupStateUpdating captures enum value "updating"
+	NodeInlineServiceProcessorInlineBackupStateUpdating string = "updating"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorBackup
-	// NodeServiceProcessorBackup
+	// node_inline_service_processor_inline_backup
+	// NodeInlineServiceProcessorInlineBackup
 	// state
 	// State
 	// auto_updating
 	// END DEBUGGING
-	// NodeServiceProcessorBackupStateAutoUpdating captures enum value "auto_updating"
-	NodeServiceProcessorBackupStateAutoUpdating string = "auto_updating"
+	// NodeInlineServiceProcessorInlineBackupStateAutoUpdating captures enum value "auto_updating"
+	NodeInlineServiceProcessorInlineBackupStateAutoUpdating string = "auto_updating"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorBackup
-	// NodeServiceProcessorBackup
+	// node_inline_service_processor_inline_backup
+	// NodeInlineServiceProcessorInlineBackup
 	// state
 	// State
 	// none
 	// END DEBUGGING
-	// NodeServiceProcessorBackupStateNone captures enum value "none"
-	NodeServiceProcessorBackupStateNone string = "none"
+	// NodeInlineServiceProcessorInlineBackupStateNone captures enum value "none"
+	NodeInlineServiceProcessorInlineBackupStateNone string = "none"
 )
 
 // prop value enum
-func (m *NodeServiceProcessorBackup) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeServiceProcessorBackupTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineServiceProcessorInlineBackup) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineServiceProcessorInlineBackupTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeServiceProcessorBackup) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineBackup) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("service_processor"+"."+"backup"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("service_processor"+"."+"backup"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node service processor backup based on the context it is used
-func (m *NodeServiceProcessorBackup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor inline backup based on the context it is used
+func (m *NodeInlineServiceProcessorInlineBackup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
@@ -8126,7 +8148,7 @@ func (m *NodeServiceProcessorBackup) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *NodeServiceProcessorBackup) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineBackup) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"is_current", "body", m.IsCurrent); err != nil {
 		return err
@@ -8135,18 +8157,18 @@ func (m *NodeServiceProcessorBackup) contextValidateIsCurrent(ctx context.Contex
 	return nil
 }
 
-func (m *NodeServiceProcessorBackup) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineBackup) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessorBackup) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineBackup) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"version", "body", string(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"version", "body", m.Version); err != nil {
 		return err
 	}
 
@@ -8154,7 +8176,7 @@ func (m *NodeServiceProcessorBackup) contextValidateVersion(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorBackup) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlineBackup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8162,8 +8184,8 @@ func (m *NodeServiceProcessorBackup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorBackup) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorBackup
+func (m *NodeInlineServiceProcessorInlineBackup) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlineBackup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8171,25 +8193,25 @@ func (m *NodeServiceProcessorBackup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorIPV4Interface Object to setup an interface along with its default router.
+// NodeInlineServiceProcessorInlineIPV4Interface Object to setup an interface along with its default router.
 //
-// swagger:model NodeServiceProcessorIPV4Interface
-type NodeServiceProcessorIPV4Interface struct {
+// swagger:model node_inline_service_processor_inline_ipv4_interface
+type NodeInlineServiceProcessorInlineIPV4Interface struct {
 
 	// IPv4 or IPv6 address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
-// Validate validates this node service processor IP v4 interface
-func (m *NodeServiceProcessorIPV4Interface) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline ipv4 interface
+func (m *NodeInlineServiceProcessorInlineIPV4Interface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNetmask(formats); err != nil {
@@ -8202,23 +8224,25 @@ func (m *NodeServiceProcessorIPV4Interface) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *NodeServiceProcessorIPV4Interface) validateNetmask(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineIPV4Interface) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("service_processor" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node service processor IP v4 interface based on the context it is used
-func (m *NodeServiceProcessorIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor inline ipv4 interface based on the context it is used
+func (m *NodeInlineServiceProcessorInlineIPV4Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNetmask(ctx, formats); err != nil {
@@ -8231,20 +8255,22 @@ func (m *NodeServiceProcessorIPV4Interface) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *NodeServiceProcessorIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineIPV4Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("service_processor" + "." + "ipv4_interface" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ipv4_interface" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorIPV4Interface) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlineIPV4Interface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8252,8 +8278,8 @@ func (m *NodeServiceProcessorIPV4Interface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorIPV4Interface) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorIPV4Interface
+func (m *NodeInlineServiceProcessorInlineIPV4Interface) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlineIPV4Interface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8261,36 +8287,36 @@ func (m *NodeServiceProcessorIPV4Interface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorIPV6Interface Object to setup an interface along with its default router.
+// NodeInlineServiceProcessorInlineIPV6Interface Object to setup an interface along with its default router.
 //
-// swagger:model NodeServiceProcessorIPV6Interface
-type NodeServiceProcessorIPV6Interface struct {
+// swagger:model node_inline_service_processor_inline_ipv6_interface
+type NodeInlineServiceProcessorInlineIPV6Interface struct {
 
 	// IPv6 address
 	// Example: fd20:8b1e:b255:5011:10:141:4:97
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv6 address of the default router.
 	// Example: fd20:8b1e:b255:5011:10::1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
 	// Example: 64
-	Netmask int64 `json:"netmask,omitempty"`
+	Netmask *int64 `json:"netmask,omitempty"`
 }
 
-// Validate validates this node service processor IP v6 interface
-func (m *NodeServiceProcessorIPV6Interface) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline ipv6 interface
+func (m *NodeInlineServiceProcessorInlineIPV6Interface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this node service processor IP v6 interface based on context it is used
-func (m *NodeServiceProcessorIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this node inline service processor inline ipv6 interface based on context it is used
+func (m *NodeInlineServiceProcessorInlineIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorIPV6Interface) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlineIPV6Interface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8298,8 +8324,8 @@ func (m *NodeServiceProcessorIPV6Interface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorIPV6Interface
+func (m *NodeInlineServiceProcessorInlineIPV6Interface) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlineIPV6Interface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8307,10 +8333,10 @@ func (m *NodeServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorPrimary Provides the properties of the service processor primary partition.
+// NodeInlineServiceProcessorInlinePrimary Provides the properties of the service processor primary partition.
 //
-// swagger:model NodeServiceProcessorPrimary
-type NodeServiceProcessorPrimary struct {
+// swagger:model node_inline_service_processor_inline_primary
+type NodeInlineServiceProcessorInlinePrimary struct {
 
 	// Indicates whether the service processor is currently booted from the primary partition.
 	// Read Only: true
@@ -8319,16 +8345,16 @@ type NodeServiceProcessorPrimary struct {
 	// Status of the primary partition.
 	// Read Only: true
 	// Enum: [installed corrupt updating auto_updating none]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Firmware version of the primary partition.
 	// Example: 11.6
 	// Read Only: true
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
-// Validate validates this node service processor primary
-func (m *NodeServiceProcessorPrimary) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline primary
+func (m *NodeInlineServiceProcessorInlinePrimary) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -8341,7 +8367,7 @@ func (m *NodeServiceProcessorPrimary) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeServiceProcessorPrimaryTypeStatePropEnum []interface{}
+var nodeInlineServiceProcessorInlinePrimaryTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -8349,86 +8375,86 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeServiceProcessorPrimaryTypeStatePropEnum = append(nodeServiceProcessorPrimaryTypeStatePropEnum, v)
+		nodeInlineServiceProcessorInlinePrimaryTypeStatePropEnum = append(nodeInlineServiceProcessorInlinePrimaryTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorPrimary
-	// NodeServiceProcessorPrimary
+	// node_inline_service_processor_inline_primary
+	// NodeInlineServiceProcessorInlinePrimary
 	// state
 	// State
 	// installed
 	// END DEBUGGING
-	// NodeServiceProcessorPrimaryStateInstalled captures enum value "installed"
-	NodeServiceProcessorPrimaryStateInstalled string = "installed"
+	// NodeInlineServiceProcessorInlinePrimaryStateInstalled captures enum value "installed"
+	NodeInlineServiceProcessorInlinePrimaryStateInstalled string = "installed"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorPrimary
-	// NodeServiceProcessorPrimary
+	// node_inline_service_processor_inline_primary
+	// NodeInlineServiceProcessorInlinePrimary
 	// state
 	// State
 	// corrupt
 	// END DEBUGGING
-	// NodeServiceProcessorPrimaryStateCorrupt captures enum value "corrupt"
-	NodeServiceProcessorPrimaryStateCorrupt string = "corrupt"
+	// NodeInlineServiceProcessorInlinePrimaryStateCorrupt captures enum value "corrupt"
+	NodeInlineServiceProcessorInlinePrimaryStateCorrupt string = "corrupt"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorPrimary
-	// NodeServiceProcessorPrimary
+	// node_inline_service_processor_inline_primary
+	// NodeInlineServiceProcessorInlinePrimary
 	// state
 	// State
 	// updating
 	// END DEBUGGING
-	// NodeServiceProcessorPrimaryStateUpdating captures enum value "updating"
-	NodeServiceProcessorPrimaryStateUpdating string = "updating"
+	// NodeInlineServiceProcessorInlinePrimaryStateUpdating captures enum value "updating"
+	NodeInlineServiceProcessorInlinePrimaryStateUpdating string = "updating"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorPrimary
-	// NodeServiceProcessorPrimary
+	// node_inline_service_processor_inline_primary
+	// NodeInlineServiceProcessorInlinePrimary
 	// state
 	// State
 	// auto_updating
 	// END DEBUGGING
-	// NodeServiceProcessorPrimaryStateAutoUpdating captures enum value "auto_updating"
-	NodeServiceProcessorPrimaryStateAutoUpdating string = "auto_updating"
+	// NodeInlineServiceProcessorInlinePrimaryStateAutoUpdating captures enum value "auto_updating"
+	NodeInlineServiceProcessorInlinePrimaryStateAutoUpdating string = "auto_updating"
 
 	// BEGIN DEBUGGING
-	// NodeServiceProcessorPrimary
-	// NodeServiceProcessorPrimary
+	// node_inline_service_processor_inline_primary
+	// NodeInlineServiceProcessorInlinePrimary
 	// state
 	// State
 	// none
 	// END DEBUGGING
-	// NodeServiceProcessorPrimaryStateNone captures enum value "none"
-	NodeServiceProcessorPrimaryStateNone string = "none"
+	// NodeInlineServiceProcessorInlinePrimaryStateNone captures enum value "none"
+	NodeInlineServiceProcessorInlinePrimaryStateNone string = "none"
 )
 
 // prop value enum
-func (m *NodeServiceProcessorPrimary) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeServiceProcessorPrimaryTypeStatePropEnum, true); err != nil {
+func (m *NodeInlineServiceProcessorInlinePrimary) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineServiceProcessorInlinePrimaryTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeServiceProcessorPrimary) validateState(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlinePrimary) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("service_processor"+"."+"primary"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("service_processor"+"."+"primary"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node service processor primary based on the context it is used
-func (m *NodeServiceProcessorPrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor inline primary based on the context it is used
+func (m *NodeInlineServiceProcessorInlinePrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
@@ -8449,7 +8475,7 @@ func (m *NodeServiceProcessorPrimary) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NodeServiceProcessorPrimary) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlinePrimary) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"is_current", "body", m.IsCurrent); err != nil {
 		return err
@@ -8458,18 +8484,18 @@ func (m *NodeServiceProcessorPrimary) contextValidateIsCurrent(ctx context.Conte
 	return nil
 }
 
-func (m *NodeServiceProcessorPrimary) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlinePrimary) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeServiceProcessorPrimary) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlinePrimary) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"version", "body", string(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"version", "body", m.Version); err != nil {
 		return err
 	}
 
@@ -8477,7 +8503,7 @@ func (m *NodeServiceProcessorPrimary) contextValidateVersion(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorPrimary) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlinePrimary) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8485,8 +8511,8 @@ func (m *NodeServiceProcessorPrimary) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorPrimary) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorPrimary
+func (m *NodeInlineServiceProcessorInlinePrimary) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlinePrimary
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8494,17 +8520,17 @@ func (m *NodeServiceProcessorPrimary) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeServiceProcessorSSHInfo Service processor SSH allowed IP address configuration applied across the cluster.
+// NodeInlineServiceProcessorInlineSSHInfo Service processor SSH allowed IP address configuration applied across the cluster.
 //
-// swagger:model NodeServiceProcessorSSHInfo
-type NodeServiceProcessorSSHInfo struct {
+// swagger:model node_inline_service_processor_inline_ssh_info
+type NodeInlineServiceProcessorInlineSSHInfo struct {
 
 	// Allowed IP addresses
-	AllowedAddresses []IPAddressAndNetmask `json:"allowed_addresses,omitempty"`
+	AllowedAddresses []*IPAddressAndNetmask `json:"allowed_addresses,omitempty"`
 }
 
-// Validate validates this node service processor SSH info
-func (m *NodeServiceProcessorSSHInfo) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline service processor inline ssh info
+func (m *NodeInlineServiceProcessorInlineSSHInfo) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAllowedAddresses(formats); err != nil {
@@ -8517,18 +8543,23 @@ func (m *NodeServiceProcessorSSHInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NodeServiceProcessorSSHInfo) validateAllowedAddresses(formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineSSHInfo) validateAllowedAddresses(formats strfmt.Registry) error {
 	if swag.IsZero(m.AllowedAddresses) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.AllowedAddresses); i++ {
+		if swag.IsZero(m.AllowedAddresses[i]) { // not required
+			continue
+		}
 
-		if err := m.AllowedAddresses[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+		if m.AllowedAddresses[i] != nil {
+			if err := m.AllowedAddresses[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -8536,8 +8567,8 @@ func (m *NodeServiceProcessorSSHInfo) validateAllowedAddresses(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this node service processor SSH info based on the context it is used
-func (m *NodeServiceProcessorSSHInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline service processor inline ssh info based on the context it is used
+func (m *NodeInlineServiceProcessorInlineSSHInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAllowedAddresses(ctx, formats); err != nil {
@@ -8550,15 +8581,17 @@ func (m *NodeServiceProcessorSSHInfo) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NodeServiceProcessorSSHInfo) contextValidateAllowedAddresses(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineServiceProcessorInlineSSHInfo) contextValidateAllowedAddresses(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.AllowedAddresses); i++ {
 
-		if err := m.AllowedAddresses[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+		if m.AllowedAddresses[i] != nil {
+			if err := m.AllowedAddresses[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -8567,7 +8600,7 @@ func (m *NodeServiceProcessorSSHInfo) contextValidateAllowedAddresses(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *NodeServiceProcessorSSHInfo) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineServiceProcessorInlineSSHInfo) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8575,8 +8608,8 @@ func (m *NodeServiceProcessorSSHInfo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeServiceProcessorSSHInfo) UnmarshalBinary(b []byte) error {
-	var res NodeServiceProcessorSSHInfo
+func (m *NodeInlineServiceProcessorInlineSSHInfo) UnmarshalBinary(b []byte) error {
+	var res NodeInlineServiceProcessorInlineSSHInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8584,23 +8617,83 @@ func (m *NodeServiceProcessorSSHInfo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeStatisticsType Raw CPU performance for the nodes.
+// NodeInlineSnaplock SnapLock-related properties.
 //
-// swagger:model NodeStatisticsType
-type NodeStatisticsType struct {
+// swagger:model node_inline_snaplock
+type NodeInlineSnaplock struct {
+
+	// SnapLock compliance clock time.
+	// Example: 2018-06-04T19:00:00Z
+	// Format: date-time
+	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
+}
+
+// Validate validates this node inline snaplock
+func (m *NodeInlineSnaplock) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateComplianceClockTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeInlineSnaplock) validateComplianceClockTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ComplianceClockTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("snaplock"+"."+"compliance_clock_time", "body", "date-time", m.ComplianceClockTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this node inline snaplock based on context it is used
+func (m *NodeInlineSnaplock) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeInlineSnaplock) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeInlineSnaplock) UnmarshalBinary(b []byte) error {
+	var res NodeInlineSnaplock
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeInlineStatistics Raw CPU performance for the nodes.
+//
+// swagger:model node_inline_statistics
+type NodeInlineStatistics struct {
 
 	// Base counter for CPU Utilization.
 	// Example: 12345123
-	ProcessorUtilizationBase int64 `json:"processor_utilization_base,omitempty"`
+	ProcessorUtilizationBase *int64 `json:"processor_utilization_base,omitempty"`
 
 	// Raw CPU Utilization for the node. This should be divided by the processor_utilization_base to calculate the percentage CPU utilization for the node.
 	// Example: 13
-	ProcessorUtilizationRaw int64 `json:"processor_utilization_raw,omitempty"`
+	ProcessorUtilizationRaw *int64 `json:"processor_utilization_raw,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -8608,8 +8701,8 @@ type NodeStatisticsType struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this node statistics type
-func (m *NodeStatisticsType) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline statistics
+func (m *NodeInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStatus(formats); err != nil {
@@ -8626,7 +8719,7 @@ func (m *NodeStatisticsType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeStatisticsTypeTypeStatusPropEnum []interface{}
+var nodeInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -8634,135 +8727,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeStatisticsTypeTypeStatusPropEnum = append(nodeStatisticsTypeTypeStatusPropEnum, v)
+		nodeInlineStatisticsTypeStatusPropEnum = append(nodeInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusOk captures enum value "ok"
-	NodeStatisticsTypeStatusOk string = "ok"
+	// NodeInlineStatisticsStatusOk captures enum value "ok"
+	NodeInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusError captures enum value "error"
-	NodeStatisticsTypeStatusError string = "error"
+	// NodeInlineStatisticsStatusError captures enum value "error"
+	NodeInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusPartialNoData captures enum value "partial_no_data"
-	NodeStatisticsTypeStatusPartialNoData string = "partial_no_data"
+	// NodeInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	NodeInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NodeStatisticsTypeStatusPartialNoUUID string = "partial_no_uuid"
+	// NodeInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NodeInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusPartialNoResponse captures enum value "partial_no_response"
-	NodeStatisticsTypeStatusPartialNoResponse string = "partial_no_response"
+	// NodeInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	NodeInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusPartialOtherError captures enum value "partial_other_error"
-	NodeStatisticsTypeStatusPartialOtherError string = "partial_other_error"
+	// NodeInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	NodeInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusNegativeDelta captures enum value "negative_delta"
-	NodeStatisticsTypeStatusNegativeDelta string = "negative_delta"
+	// NodeInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	NodeInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusBackfilledData captures enum value "backfilled_data"
-	NodeStatisticsTypeStatusBackfilledData string = "backfilled_data"
+	// NodeInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	NodeInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	NodeStatisticsTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// NodeInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NodeInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// NodeStatisticsType
-	// NodeStatisticsType
+	// node_inline_statistics
+	// NodeInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// NodeStatisticsTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	NodeStatisticsTypeStatusInconsistentOldData string = "inconsistent_old_data"
+	// NodeInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NodeInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *NodeStatisticsType) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeStatisticsTypeTypeStatusPropEnum, true); err != nil {
+func (m *NodeInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeStatisticsType) validateStatus(formats strfmt.Registry) error {
+func (m *NodeInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeStatisticsType) validateTimestamp(formats strfmt.Registry) error {
+func (m *NodeInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -8774,13 +8867,13 @@ func (m *NodeStatisticsType) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this node statistics type based on context it is used
-func (m *NodeStatisticsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this node inline statistics based on context it is used
+func (m *NodeInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodeStatisticsType) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8788,8 +8881,8 @@ func (m *NodeStatisticsType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeStatisticsType) UnmarshalBinary(b []byte) error {
-	var res NodeStatisticsType
+func (m *NodeInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res NodeInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8797,19 +8890,19 @@ func (m *NodeStatisticsType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeVM node VM
+// NodeInlineVM node inline vm
 //
-// swagger:model NodeVM
-type NodeVM struct {
+// swagger:model node_inline_vm
+type NodeInlineVM struct {
 
 	// Cloud provider where the VM is hosted.
 	// Read Only: true
 	// Enum: [GoogleCloud AWS_S3 Azure_Cloud]
-	ProviderType string `json:"provider_type,omitempty"`
+	ProviderType *string `json:"provider_type,omitempty"`
 }
 
-// Validate validates this node VM
-func (m *NodeVM) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline vm
+func (m *NodeInlineVM) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateProviderType(formats); err != nil {
@@ -8822,7 +8915,7 @@ func (m *NodeVM) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var nodeVmTypeProviderTypePropEnum []interface{}
+var nodeInlineVmTypeProviderTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -8830,66 +8923,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		nodeVmTypeProviderTypePropEnum = append(nodeVmTypeProviderTypePropEnum, v)
+		nodeInlineVmTypeProviderTypePropEnum = append(nodeInlineVmTypeProviderTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// NodeVM
-	// NodeVM
+	// node_inline_vm
+	// NodeInlineVM
 	// provider_type
 	// ProviderType
 	// GoogleCloud
 	// END DEBUGGING
-	// NodeVMProviderTypeGoogleCloud captures enum value "GoogleCloud"
-	NodeVMProviderTypeGoogleCloud string = "GoogleCloud"
+	// NodeInlineVMProviderTypeGoogleCloud captures enum value "GoogleCloud"
+	NodeInlineVMProviderTypeGoogleCloud string = "GoogleCloud"
 
 	// BEGIN DEBUGGING
-	// NodeVM
-	// NodeVM
+	// node_inline_vm
+	// NodeInlineVM
 	// provider_type
 	// ProviderType
 	// AWS_S3
 	// END DEBUGGING
-	// NodeVMProviderTypeAWSS3 captures enum value "AWS_S3"
-	NodeVMProviderTypeAWSS3 string = "AWS_S3"
+	// NodeInlineVMProviderTypeAWSS3 captures enum value "AWS_S3"
+	NodeInlineVMProviderTypeAWSS3 string = "AWS_S3"
 
 	// BEGIN DEBUGGING
-	// NodeVM
-	// NodeVM
+	// node_inline_vm
+	// NodeInlineVM
 	// provider_type
 	// ProviderType
 	// Azure_Cloud
 	// END DEBUGGING
-	// NodeVMProviderTypeAzureCloud captures enum value "Azure_Cloud"
-	NodeVMProviderTypeAzureCloud string = "Azure_Cloud"
+	// NodeInlineVMProviderTypeAzureCloud captures enum value "Azure_Cloud"
+	NodeInlineVMProviderTypeAzureCloud string = "Azure_Cloud"
 )
 
 // prop value enum
-func (m *NodeVM) validateProviderTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, nodeVmTypeProviderTypePropEnum, true); err != nil {
+func (m *NodeInlineVM) validateProviderTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineVmTypeProviderTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *NodeVM) validateProviderType(formats strfmt.Registry) error {
+func (m *NodeInlineVM) validateProviderType(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProviderType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateProviderTypeEnum("vm"+"."+"provider_type", "body", m.ProviderType); err != nil {
+	if err := m.validateProviderTypeEnum("vm"+"."+"provider_type", "body", *m.ProviderType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this node VM based on the context it is used
-func (m *NodeVM) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline vm based on the context it is used
+func (m *NodeInlineVM) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateProviderType(ctx, formats); err != nil {
@@ -8902,9 +8995,9 @@ func (m *NodeVM) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NodeVM) contextValidateProviderType(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineVM) contextValidateProviderType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "vm"+"."+"provider_type", "body", string(m.ProviderType)); err != nil {
+	if err := validate.ReadOnly(ctx, "vm"+"."+"provider_type", "body", m.ProviderType); err != nil {
 		return err
 	}
 
@@ -8912,7 +9005,7 @@ func (m *NodeVM) contextValidateProviderType(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *NodeVM) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineVM) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -8920,8 +9013,8 @@ func (m *NodeVM) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeVM) UnmarshalBinary(b []byte) error {
-	var res NodeVM
+func (m *NodeInlineVM) UnmarshalBinary(b []byte) error {
+	var res NodeInlineVM
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8929,39 +9022,39 @@ func (m *NodeVM) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NodeVersion This returns the cluster version information.  When the cluster has more than one node, the cluster version is equivalent to the lowest of generation, major, and minor versions on all nodes.
+// NodeInlineVersion This returns the cluster version information.  When the cluster has more than one node, the cluster version is equivalent to the lowest of generation, major, and minor versions on all nodes.
 //
-// swagger:model NodeVersion
-type NodeVersion struct {
+// swagger:model node_inline_version
+type NodeInlineVersion struct {
 
 	// The full cluster version string.
 	// Example: NetApp Release 9.4.0: Sun Nov 05 18:20:57 UTC 2017
 	// Read Only: true
-	Full string `json:"full,omitempty"`
+	Full *string `json:"full,omitempty"`
 
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation,omitempty"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major int64 `json:"major,omitempty"`
+	Major *int64 `json:"major,omitempty"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor,omitempty"`
 }
 
-// Validate validates this node version
-func (m *NodeVersion) Validate(formats strfmt.Registry) error {
+// Validate validates this node inline version
+func (m *NodeInlineVersion) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this node version based on the context it is used
-func (m *NodeVersion) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this node inline version based on the context it is used
+func (m *NodeInlineVersion) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateFull(ctx, formats); err != nil {
@@ -8986,36 +9079,36 @@ func (m *NodeVersion) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *NodeVersion) contextValidateFull(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineVersion) contextValidateFull(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"full", "body", string(m.Full)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"full", "body", m.Full); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeVersion) contextValidateGeneration(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineVersion) contextValidateGeneration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"generation", "body", int64(m.Generation)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"generation", "body", m.Generation); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeVersion) contextValidateMajor(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineVersion) contextValidateMajor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"major", "body", int64(m.Major)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"major", "body", m.Major); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NodeVersion) contextValidateMinor(ctx context.Context, formats strfmt.Registry) error {
+func (m *NodeInlineVersion) contextValidateMinor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version"+"."+"minor", "body", int64(m.Minor)); err != nil {
+	if err := validate.ReadOnly(ctx, "version"+"."+"minor", "body", m.Minor); err != nil {
 		return err
 	}
 
@@ -9023,7 +9116,7 @@ func (m *NodeVersion) contextValidateMinor(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *NodeVersion) MarshalBinary() ([]byte, error) {
+func (m *NodeInlineVersion) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -9031,8 +9124,8 @@ func (m *NodeVersion) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodeVersion) UnmarshalBinary(b []byte) error {
-	var res NodeVersion
+func (m *NodeInlineVersion) UnmarshalBinary(b []byte) error {
+	var res NodeInlineVersion
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

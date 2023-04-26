@@ -24,27 +24,27 @@ type FileCopy struct {
 	CutoverTime *int64 `json:"cutover_time,omitempty"`
 
 	// A list of source files along with the destinations they are copied to. If the terminal path component of the destination is a directory, then the source file's basename is replicated in that directory.
-	FilesToCopy []*FileCopyFilesToCopyItems0 `json:"files_to_copy,omitempty"`
+	FileCopyInlineFilesToCopy []*FileCopyInlineFilesToCopyInlineArrayItem `json:"files_to_copy,omitempty"`
 
 	// Specifies whether the source file should be held quiescent for the duration of the copy operation.
 	HoldQuiescence *bool `json:"hold_quiescence,omitempty"`
 
 	// The maximum amount of data (in bytes) that can be transferred per second in support of this operation.
-	MaxThroughput int64 `json:"max_throughput,omitempty"`
+	MaxThroughput *int64 `json:"max_throughput,omitempty"`
 
 	// The maximum amount of time (in seconds) that the source reference file can be quiesced before the corresponding destination file must be made available for read-write traffic.
 	// Example: 10
 	ReferenceCutoverTime *int64 `json:"reference_cutover_time,omitempty"`
 
 	// reference file
-	ReferenceFile *FileCopyReferenceFile `json:"reference_file,omitempty"`
+	ReferenceFile *FileCopyInlineReferenceFile `json:"reference_file,omitempty"`
 }
 
 // Validate validates this file copy
 func (m *FileCopy) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateFilesToCopy(formats); err != nil {
+	if err := m.validateFileCopyInlineFilesToCopy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -58,18 +58,18 @@ func (m *FileCopy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileCopy) validateFilesToCopy(formats strfmt.Registry) error {
-	if swag.IsZero(m.FilesToCopy) { // not required
+func (m *FileCopy) validateFileCopyInlineFilesToCopy(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileCopyInlineFilesToCopy) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.FilesToCopy); i++ {
-		if swag.IsZero(m.FilesToCopy[i]) { // not required
+	for i := 0; i < len(m.FileCopyInlineFilesToCopy); i++ {
+		if swag.IsZero(m.FileCopyInlineFilesToCopy[i]) { // not required
 			continue
 		}
 
-		if m.FilesToCopy[i] != nil {
-			if err := m.FilesToCopy[i].Validate(formats); err != nil {
+		if m.FileCopyInlineFilesToCopy[i] != nil {
+			if err := m.FileCopyInlineFilesToCopy[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("files_to_copy" + "." + strconv.Itoa(i))
 				}
@@ -103,7 +103,7 @@ func (m *FileCopy) validateReferenceFile(formats strfmt.Registry) error {
 func (m *FileCopy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateFilesToCopy(ctx, formats); err != nil {
+	if err := m.contextValidateFileCopyInlineFilesToCopy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,12 +117,12 @@ func (m *FileCopy) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *FileCopy) contextValidateFilesToCopy(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCopy) contextValidateFileCopyInlineFilesToCopy(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.FilesToCopy); i++ {
+	for i := 0; i < len(m.FileCopyInlineFilesToCopy); i++ {
 
-		if m.FilesToCopy[i] != nil {
-			if err := m.FilesToCopy[i].ContextValidate(ctx, formats); err != nil {
+		if m.FileCopyInlineFilesToCopy[i] != nil {
+			if err := m.FileCopyInlineFilesToCopy[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("files_to_copy" + "." + strconv.Itoa(i))
 				}
@@ -167,10 +167,10 @@ func (m *FileCopy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileCopyFilesToCopyItems0 file copy files to copy items0
+// FileCopyInlineFilesToCopyInlineArrayItem file copy inline files to copy inline array item
 //
-// swagger:model FileCopyFilesToCopyItems0
-type FileCopyFilesToCopyItems0 struct {
+// swagger:model file_copy_inline_files_to_copy_inline_array_item
+type FileCopyInlineFilesToCopyInlineArrayItem struct {
 
 	// destination
 	Destination *FileReference `json:"destination,omitempty"`
@@ -179,8 +179,8 @@ type FileCopyFilesToCopyItems0 struct {
 	Source *FileReference `json:"source,omitempty"`
 }
 
-// Validate validates this file copy files to copy items0
-func (m *FileCopyFilesToCopyItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this file copy inline files to copy inline array item
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDestination(formats); err != nil {
@@ -197,7 +197,7 @@ func (m *FileCopyFilesToCopyItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileCopyFilesToCopyItems0) validateDestination(formats strfmt.Registry) error {
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) validateDestination(formats strfmt.Registry) error {
 	if swag.IsZero(m.Destination) { // not required
 		return nil
 	}
@@ -214,7 +214,7 @@ func (m *FileCopyFilesToCopyItems0) validateDestination(formats strfmt.Registry)
 	return nil
 }
 
-func (m *FileCopyFilesToCopyItems0) validateSource(formats strfmt.Registry) error {
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) validateSource(formats strfmt.Registry) error {
 	if swag.IsZero(m.Source) { // not required
 		return nil
 	}
@@ -231,8 +231,8 @@ func (m *FileCopyFilesToCopyItems0) validateSource(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this file copy files to copy items0 based on the context it is used
-func (m *FileCopyFilesToCopyItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file copy inline files to copy inline array item based on the context it is used
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDestination(ctx, formats); err != nil {
@@ -249,7 +249,7 @@ func (m *FileCopyFilesToCopyItems0) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FileCopyFilesToCopyItems0) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Destination != nil {
 		if err := m.Destination.ContextValidate(ctx, formats); err != nil {
@@ -263,7 +263,7 @@ func (m *FileCopyFilesToCopyItems0) contextValidateDestination(ctx context.Conte
 	return nil
 }
 
-func (m *FileCopyFilesToCopyItems0) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Source != nil {
 		if err := m.Source.ContextValidate(ctx, formats); err != nil {
@@ -278,7 +278,7 @@ func (m *FileCopyFilesToCopyItems0) contextValidateSource(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *FileCopyFilesToCopyItems0) MarshalBinary() ([]byte, error) {
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -286,8 +286,8 @@ func (m *FileCopyFilesToCopyItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileCopyFilesToCopyItems0) UnmarshalBinary(b []byte) error {
-	var res FileCopyFilesToCopyItems0
+func (m *FileCopyInlineFilesToCopyInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res FileCopyInlineFilesToCopyInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -295,20 +295,20 @@ func (m *FileCopyFilesToCopyItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileCopyReferenceFile file copy reference file
+// FileCopyInlineReferenceFile file copy inline reference file
 //
-// swagger:model FileCopyReferenceFile
-type FileCopyReferenceFile struct {
+// swagger:model file_copy_inline_reference_file
+type FileCopyInlineReferenceFile struct {
 
 	// The source reference file. If a reference file is specified, data for other files being copied will be transferred as a difference from the reference file. This can save bandwidth and destination storage if the specified source files share blocks. If provided, this input must match one of the source file paths. This input need not be provided if only one source file is specified.
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// volume
-	Volume *FileCopyReferenceFileVolume `json:"volume,omitempty"`
+	Volume *FileCopyInlineReferenceFileInlineVolume `json:"volume,omitempty"`
 }
 
-// Validate validates this file copy reference file
-func (m *FileCopyReferenceFile) Validate(formats strfmt.Registry) error {
+// Validate validates this file copy inline reference file
+func (m *FileCopyInlineReferenceFile) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateVolume(formats); err != nil {
@@ -321,7 +321,7 @@ func (m *FileCopyReferenceFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileCopyReferenceFile) validateVolume(formats strfmt.Registry) error {
+func (m *FileCopyInlineReferenceFile) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
 	}
@@ -338,8 +338,8 @@ func (m *FileCopyReferenceFile) validateVolume(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file copy reference file based on the context it is used
-func (m *FileCopyReferenceFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file copy inline reference file based on the context it is used
+func (m *FileCopyInlineReferenceFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateVolume(ctx, formats); err != nil {
@@ -352,7 +352,7 @@ func (m *FileCopyReferenceFile) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FileCopyReferenceFile) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCopyInlineReferenceFile) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Volume != nil {
 		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
@@ -367,7 +367,7 @@ func (m *FileCopyReferenceFile) contextValidateVolume(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *FileCopyReferenceFile) MarshalBinary() ([]byte, error) {
+func (m *FileCopyInlineReferenceFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -375,8 +375,8 @@ func (m *FileCopyReferenceFile) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileCopyReferenceFile) UnmarshalBinary(b []byte) error {
-	var res FileCopyReferenceFile
+func (m *FileCopyInlineReferenceFile) UnmarshalBinary(b []byte) error {
+	var res FileCopyInlineReferenceFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -384,25 +384,25 @@ func (m *FileCopyReferenceFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileCopyReferenceFileVolume file copy reference file volume
+// FileCopyInlineReferenceFileInlineVolume file copy inline reference file inline volume
 //
-// swagger:model FileCopyReferenceFileVolume
-type FileCopyReferenceFileVolume struct {
+// swagger:model file_copy_inline_reference_file_inline_volume
+type FileCopyInlineReferenceFileInlineVolume struct {
 
 	// links
-	Links *FileCopyReferenceFileVolumeLinks `json:"_links,omitempty"`
+	Links *FileCopyInlineReferenceFileInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file copy reference file volume
-func (m *FileCopyReferenceFileVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file copy inline reference file inline volume
+func (m *FileCopyInlineReferenceFileInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -415,7 +415,7 @@ func (m *FileCopyReferenceFileVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileCopyReferenceFileVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileCopyInlineReferenceFileInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -432,8 +432,8 @@ func (m *FileCopyReferenceFileVolume) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this file copy reference file volume based on the context it is used
-func (m *FileCopyReferenceFileVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file copy inline reference file inline volume based on the context it is used
+func (m *FileCopyInlineReferenceFileInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -446,7 +446,7 @@ func (m *FileCopyReferenceFileVolume) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *FileCopyReferenceFileVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCopyInlineReferenceFileInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -461,7 +461,7 @@ func (m *FileCopyReferenceFileVolume) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *FileCopyReferenceFileVolume) MarshalBinary() ([]byte, error) {
+func (m *FileCopyInlineReferenceFileInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -469,8 +469,8 @@ func (m *FileCopyReferenceFileVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileCopyReferenceFileVolume) UnmarshalBinary(b []byte) error {
-	var res FileCopyReferenceFileVolume
+func (m *FileCopyInlineReferenceFileInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileCopyInlineReferenceFileInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -478,17 +478,17 @@ func (m *FileCopyReferenceFileVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileCopyReferenceFileVolumeLinks file copy reference file volume links
+// FileCopyInlineReferenceFileInlineVolumeInlineLinks file copy inline reference file inline volume inline links
 //
-// swagger:model FileCopyReferenceFileVolumeLinks
-type FileCopyReferenceFileVolumeLinks struct {
+// swagger:model file_copy_inline_reference_file_inline_volume_inline__links
+type FileCopyInlineReferenceFileInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file copy reference file volume links
-func (m *FileCopyReferenceFileVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file copy inline reference file inline volume inline links
+func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -501,7 +501,7 @@ func (m *FileCopyReferenceFileVolumeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *FileCopyReferenceFileVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -518,8 +518,8 @@ func (m *FileCopyReferenceFileVolumeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this file copy reference file volume links based on the context it is used
-func (m *FileCopyReferenceFileVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file copy inline reference file inline volume inline links based on the context it is used
+func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -532,7 +532,7 @@ func (m *FileCopyReferenceFileVolumeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *FileCopyReferenceFileVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -547,7 +547,7 @@ func (m *FileCopyReferenceFileVolumeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *FileCopyReferenceFileVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -555,8 +555,8 @@ func (m *FileCopyReferenceFileVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileCopyReferenceFileVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileCopyReferenceFileVolumeLinks
+func (m *FileCopyInlineReferenceFileInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileCopyInlineReferenceFileInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

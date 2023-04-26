@@ -23,21 +23,21 @@ type FpolicyPolicy struct {
 	// Specifies if the policy is enabled on the SVM or not. If no value is
 	// mentioned for this field but priority is set, then this policy will be enabled.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// engine
 	Engine *FpolicyEngineReference `json:"engine,omitempty"`
 
-	// events
+	// fpolicy policy inline events
 	// Example: ["event_nfs_close","event_open"]
-	Events []*FpolicyEventReference `json:"events,omitempty"`
+	FpolicyPolicyInlineEvents []*FpolicyEventReference `json:"events,omitempty"`
 
 	// Specifies what action to take on a file access event in a case when all primary and secondary servers are down or no response is received from the FPolicy servers within a given timeout period. When this parameter is set to true, file access events will be denied under these circumstances.
 	Mandatory *bool `json:"mandatory,omitempty"`
 
 	// Specifies the name of the policy.
 	// Example: fp_policy_1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies whether passthrough-read should be allowed for FPolicy servers
 	// registered for the policy. Passthrough-read is a way to read data for
@@ -49,20 +49,20 @@ type FpolicyPolicy struct {
 	// Specifies the priority that is assigned to this policy.
 	// Maximum: 10
 	// Minimum: 1
-	Priority int64 `json:"priority,omitempty"`
+	Priority *int64 `json:"priority,omitempty"`
 
 	// Specifies the privileged user name for accessing files on the cluster
 	// using a separate data channel with privileged access. The input for
 	// this field should be in "domain\username" format.
 	//
 	// Example: mydomain\\testuser
-	PrivilegedUser string `json:"privileged_user,omitempty"`
+	PrivilegedUser *string `json:"privileged_user,omitempty"`
 
 	// scope
-	Scope *FpolicyPolicyScope `json:"scope,omitempty"`
+	Scope *FpolicyPolicyInlineScope `json:"scope,omitempty"`
 
 	// svm
-	Svm *FpolicyPolicySvm `json:"svm,omitempty"`
+	Svm *FpolicyPolicyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this fpolicy policy
@@ -73,7 +73,7 @@ func (m *FpolicyPolicy) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateEvents(formats); err != nil {
+	if err := m.validateFpolicyPolicyInlineEvents(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -112,18 +112,18 @@ func (m *FpolicyPolicy) validateEngine(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyPolicy) validateEvents(formats strfmt.Registry) error {
-	if swag.IsZero(m.Events) { // not required
+func (m *FpolicyPolicy) validateFpolicyPolicyInlineEvents(formats strfmt.Registry) error {
+	if swag.IsZero(m.FpolicyPolicyInlineEvents) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Events); i++ {
-		if swag.IsZero(m.Events[i]) { // not required
+	for i := 0; i < len(m.FpolicyPolicyInlineEvents); i++ {
+		if swag.IsZero(m.FpolicyPolicyInlineEvents[i]) { // not required
 			continue
 		}
 
-		if m.Events[i] != nil {
-			if err := m.Events[i].Validate(formats); err != nil {
+		if m.FpolicyPolicyInlineEvents[i] != nil {
+			if err := m.FpolicyPolicyInlineEvents[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("events" + "." + strconv.Itoa(i))
 				}
@@ -141,11 +141,11 @@ func (m *FpolicyPolicy) validatePriority(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("priority", "body", m.Priority, 1, false); err != nil {
+	if err := validate.MinimumInt("priority", "body", *m.Priority, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("priority", "body", m.Priority, 10, false); err != nil {
+	if err := validate.MaximumInt("priority", "body", *m.Priority, 10, false); err != nil {
 		return err
 	}
 
@@ -194,7 +194,7 @@ func (m *FpolicyPolicy) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateEvents(ctx, formats); err != nil {
+	if err := m.contextValidateFpolicyPolicyInlineEvents(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -226,12 +226,12 @@ func (m *FpolicyPolicy) contextValidateEngine(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FpolicyPolicy) contextValidateEvents(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyPolicy) contextValidateFpolicyPolicyInlineEvents(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Events); i++ {
+	for i := 0; i < len(m.FpolicyPolicyInlineEvents); i++ {
 
-		if m.Events[i] != nil {
-			if err := m.Events[i].ContextValidate(ctx, formats); err != nil {
+		if m.FpolicyPolicyInlineEvents[i] != nil {
+			if err := m.FpolicyPolicyInlineEvents[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("events" + "." + strconv.Itoa(i))
 				}
@@ -290,10 +290,10 @@ func (m *FpolicyPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyPolicyScope fpolicy policy scope
+// FpolicyPolicyInlineScope fpolicy policy inline scope
 //
-// swagger:model FpolicyPolicyScope
-type FpolicyPolicyScope struct {
+// swagger:model fpolicy_policy_inline_scope
+type FpolicyPolicyInlineScope struct {
 
 	// Specifies whether the file name extension checks also apply to directory objects. If this parameter is set to true,
 	// the directory objects are subjected to the same extension checks as regular files. If this parameter is set to false,
@@ -303,31 +303,31 @@ type FpolicyPolicyScope struct {
 	CheckExtensionsOnDirectories *bool `json:"check_extensions_on_directories,omitempty"`
 
 	// exclude export policies
-	ExcludeExportPolicies []string `json:"exclude_export_policies,omitempty"`
+	ExcludeExportPolicies []*string `json:"exclude_export_policies,omitempty"`
 
 	// exclude extension
-	ExcludeExtension []string `json:"exclude_extension,omitempty"`
+	ExcludeExtension []*string `json:"exclude_extension,omitempty"`
 
 	// exclude shares
-	ExcludeShares []string `json:"exclude_shares,omitempty"`
+	ExcludeShares []*string `json:"exclude_shares,omitempty"`
 
 	// exclude volumes
 	// Example: ["vol1","vol_svm1","*"]
-	ExcludeVolumes []string `json:"exclude_volumes,omitempty"`
+	ExcludeVolumes []*string `json:"exclude_volumes,omitempty"`
 
 	// include export policies
-	IncludeExportPolicies []string `json:"include_export_policies,omitempty"`
+	IncludeExportPolicies []*string `json:"include_export_policies,omitempty"`
 
 	// include extension
-	IncludeExtension []string `json:"include_extension,omitempty"`
+	IncludeExtension []*string `json:"include_extension,omitempty"`
 
 	// include shares
 	// Example: ["sh1","share_cifs"]
-	IncludeShares []string `json:"include_shares,omitempty"`
+	IncludeShares []*string `json:"include_shares,omitempty"`
 
 	// include volumes
 	// Example: ["vol1","vol_svm1"]
-	IncludeVolumes []string `json:"include_volumes,omitempty"`
+	IncludeVolumes []*string `json:"include_volumes,omitempty"`
 
 	// Specifies whether the extension checks also apply to objects with no extension. If this parameter is set to true,
 	// all objects with or without extensions are monitored. Default is false.
@@ -335,18 +335,18 @@ type FpolicyPolicyScope struct {
 	ObjectMonitoringWithNoExtension *bool `json:"object_monitoring_with_no_extension,omitempty"`
 }
 
-// Validate validates this fpolicy policy scope
-func (m *FpolicyPolicyScope) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy policy inline scope
+func (m *FpolicyPolicyInlineScope) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fpolicy policy scope based on context it is used
-func (m *FpolicyPolicyScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this fpolicy policy inline scope based on context it is used
+func (m *FpolicyPolicyInlineScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyPolicyScope) MarshalBinary() ([]byte, error) {
+func (m *FpolicyPolicyInlineScope) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -354,8 +354,8 @@ func (m *FpolicyPolicyScope) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyPolicyScope) UnmarshalBinary(b []byte) error {
-	var res FpolicyPolicyScope
+func (m *FpolicyPolicyInlineScope) UnmarshalBinary(b []byte) error {
+	var res FpolicyPolicyInlineScope
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -363,23 +363,23 @@ func (m *FpolicyPolicyScope) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyPolicySvm fpolicy policy svm
+// FpolicyPolicyInlineSvm fpolicy policy inline svm
 //
-// swagger:model FpolicyPolicySvm
-type FpolicyPolicySvm struct {
+// swagger:model fpolicy_policy_inline_svm
+type FpolicyPolicyInlineSvm struct {
 
 	// SVM UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fpolicy policy svm
-func (m *FpolicyPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy policy inline svm
+func (m *FpolicyPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fpolicy policy svm based on the context it is used
-func (m *FpolicyPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy policy inline svm based on the context it is used
+func (m *FpolicyPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
@@ -392,9 +392,9 @@ func (m *FpolicyPolicySvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FpolicyPolicySvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyPolicyInlineSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -402,7 +402,7 @@ func (m *FpolicyPolicySvm) contextValidateUUID(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *FpolicyPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -410,8 +410,8 @@ func (m *FpolicyPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyPolicySvm) UnmarshalBinary(b []byte) error {
-	var res FpolicyPolicySvm
+func (m *FpolicyPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FpolicyPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

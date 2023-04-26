@@ -66,13 +66,13 @@ type PortMetricsCollectionGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -87,19 +87,19 @@ type PortMetricsCollectionGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -107,7 +107,7 @@ type PortMetricsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -115,43 +115,43 @@ type PortMetricsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* UUID.
 
 	   Unique identifier of the port.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -171,17 +171,17 @@ func (o *PortMetricsCollectionGetParams) WithDefaults() *PortMetricsCollectionGe
 // All values with no default are reset to their zero value.
 func (o *PortMetricsCollectionGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := PortMetricsCollectionGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,147 +223,147 @@ func (o *PortMetricsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithDurationQueryParameter(duration *string) *PortMetricsCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithDuration(duration *string) *PortMetricsCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithFieldsQueryParameter(fields []string) *PortMetricsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithFields(fields []string) *PortMetricsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithIntervalQueryParameter(interval *string) *PortMetricsCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithInterval(interval *string) *PortMetricsCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PortMetricsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithMaxRecords(maxRecords *int64) *PortMetricsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PortMetricsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithOrderBy(orderBy []string) *PortMetricsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PortMetricsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithReturnRecords(returnRecords *bool) *PortMetricsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PortMetricsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PortMetricsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithStatusQueryParameter(status *string) *PortMetricsCollectionGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithStatus(status *string) *PortMetricsCollectionGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *PortMetricsCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithThroughputRead(throughputRead *int64) *PortMetricsCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *PortMetricsCollectionGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithThroughputTotal(throughputTotal *int64) *PortMetricsCollectionGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *PortMetricsCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *PortMetricsCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *PortMetricsCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithTimestamp(timestamp *string) *PortMetricsCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithUUIDPathParameter adds the uuid to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) WithUUIDPathParameter(uuid string) *PortMetricsCollectionGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) WithUUID(uuid string) *PortMetricsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the port metrics collection get params
-func (o *PortMetricsCollectionGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the port metrics collection get params
+func (o *PortMetricsCollectionGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -374,13 +374,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -391,7 +391,7 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -402,13 +402,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -419,13 +419,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -436,7 +436,7 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -447,13 +447,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -464,13 +464,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -481,13 +481,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -498,13 +498,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -515,13 +515,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -532,13 +532,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -549,13 +549,13 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -567,7 +567,7 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -579,7 +579,7 @@ func (o *PortMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamPortMetricsCollectionGet binds the parameter fields
 func (o *PortMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +596,7 @@ func (o *PortMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamPortMetricsCollectionGet binds the parameter order_by
 func (o *PortMetricsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

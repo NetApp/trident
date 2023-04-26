@@ -65,7 +65,7 @@ type IPSubnetDeleteParams struct {
 
 	   IP subnet UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *IPSubnetDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the ip subnet delete params
-func (o *IPSubnetDeleteParams) WithUUIDPathParameter(uuid string) *IPSubnetDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ip subnet delete params
+func (o *IPSubnetDeleteParams) WithUUID(uuid string) *IPSubnetDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ip subnet delete params
-func (o *IPSubnetDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ip subnet delete params
+func (o *IPSubnetDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *IPSubnetDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

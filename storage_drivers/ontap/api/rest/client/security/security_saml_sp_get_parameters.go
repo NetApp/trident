@@ -66,43 +66,43 @@ type SecuritySamlSpGetParams struct {
 
 	   Filter by certificate.ca
 	*/
-	CertificateCaQueryParameter *string
+	CertificateCa *string
 
 	/* CertificateCommonName.
 
 	   Filter by certificate.common_name
 	*/
-	CertificateCommonNameQueryParameter *string
+	CertificateCommonName *string
 
 	/* CertificateSerialNumber.
 
 	   Filter by certificate.serial_number
 	*/
-	CertificateSerialNumberQueryParameter *string
+	CertificateSerialNumber *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Host.
 
 	   Filter by host
 	*/
-	HostQueryParameter *string
+	Host *string
 
 	/* IdpURI.
 
 	   Filter by idp_uri
 	*/
-	IdpURIQueryParameter *string
+	IdpURI *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -157,81 +157,81 @@ func (o *SecuritySamlSpGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCertificateCaQueryParameter adds the certificateCa to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithCertificateCaQueryParameter(certificateCa *string) *SecuritySamlSpGetParams {
-	o.SetCertificateCaQueryParameter(certificateCa)
+// WithCertificateCa adds the certificateCa to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithCertificateCa(certificateCa *string) *SecuritySamlSpGetParams {
+	o.SetCertificateCa(certificateCa)
 	return o
 }
 
-// SetCertificateCaQueryParameter adds the certificateCa to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetCertificateCaQueryParameter(certificateCa *string) {
-	o.CertificateCaQueryParameter = certificateCa
+// SetCertificateCa adds the certificateCa to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetCertificateCa(certificateCa *string) {
+	o.CertificateCa = certificateCa
 }
 
-// WithCertificateCommonNameQueryParameter adds the certificateCommonName to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithCertificateCommonNameQueryParameter(certificateCommonName *string) *SecuritySamlSpGetParams {
-	o.SetCertificateCommonNameQueryParameter(certificateCommonName)
+// WithCertificateCommonName adds the certificateCommonName to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithCertificateCommonName(certificateCommonName *string) *SecuritySamlSpGetParams {
+	o.SetCertificateCommonName(certificateCommonName)
 	return o
 }
 
-// SetCertificateCommonNameQueryParameter adds the certificateCommonName to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetCertificateCommonNameQueryParameter(certificateCommonName *string) {
-	o.CertificateCommonNameQueryParameter = certificateCommonName
+// SetCertificateCommonName adds the certificateCommonName to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetCertificateCommonName(certificateCommonName *string) {
+	o.CertificateCommonName = certificateCommonName
 }
 
-// WithCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithCertificateSerialNumberQueryParameter(certificateSerialNumber *string) *SecuritySamlSpGetParams {
-	o.SetCertificateSerialNumberQueryParameter(certificateSerialNumber)
+// WithCertificateSerialNumber adds the certificateSerialNumber to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithCertificateSerialNumber(certificateSerialNumber *string) *SecuritySamlSpGetParams {
+	o.SetCertificateSerialNumber(certificateSerialNumber)
 	return o
 }
 
-// SetCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetCertificateSerialNumberQueryParameter(certificateSerialNumber *string) {
-	o.CertificateSerialNumberQueryParameter = certificateSerialNumber
+// SetCertificateSerialNumber adds the certificateSerialNumber to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetCertificateSerialNumber(certificateSerialNumber *string) {
+	o.CertificateSerialNumber = certificateSerialNumber
 }
 
-// WithEnabledQueryParameter adds the enabled to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithEnabledQueryParameter(enabled *bool) *SecuritySamlSpGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithEnabled(enabled *bool) *SecuritySamlSpGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithFieldsQueryParameter(fields []string) *SecuritySamlSpGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithFields(fields []string) *SecuritySamlSpGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHostQueryParameter adds the host to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithHostQueryParameter(host *string) *SecuritySamlSpGetParams {
-	o.SetHostQueryParameter(host)
+// WithHost adds the host to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithHost(host *string) *SecuritySamlSpGetParams {
+	o.SetHost(host)
 	return o
 }
 
-// SetHostQueryParameter adds the host to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetHostQueryParameter(host *string) {
-	o.HostQueryParameter = host
+// SetHost adds the host to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetHost(host *string) {
+	o.Host = host
 }
 
-// WithIdpURIQueryParameter adds the idpURI to the security saml sp get params
-func (o *SecuritySamlSpGetParams) WithIdpURIQueryParameter(idpURI *string) *SecuritySamlSpGetParams {
-	o.SetIdpURIQueryParameter(idpURI)
+// WithIdpURI adds the idpURI to the security saml sp get params
+func (o *SecuritySamlSpGetParams) WithIdpURI(idpURI *string) *SecuritySamlSpGetParams {
+	o.SetIdpURI(idpURI)
 	return o
 }
 
-// SetIdpURIQueryParameter adds the idpUri to the security saml sp get params
-func (o *SecuritySamlSpGetParams) SetIdpURIQueryParameter(idpURI *string) {
-	o.IdpURIQueryParameter = idpURI
+// SetIdpURI adds the idpUri to the security saml sp get params
+func (o *SecuritySamlSpGetParams) SetIdpURI(idpURI *string) {
+	o.IdpURI = idpURI
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -242,13 +242,13 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.CertificateCaQueryParameter != nil {
+	if o.CertificateCa != nil {
 
 		// query param certificate.ca
 		var qrCertificateCa string
 
-		if o.CertificateCaQueryParameter != nil {
-			qrCertificateCa = *o.CertificateCaQueryParameter
+		if o.CertificateCa != nil {
+			qrCertificateCa = *o.CertificateCa
 		}
 		qCertificateCa := qrCertificateCa
 		if qCertificateCa != "" {
@@ -259,13 +259,13 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.CertificateCommonNameQueryParameter != nil {
+	if o.CertificateCommonName != nil {
 
 		// query param certificate.common_name
 		var qrCertificateCommonName string
 
-		if o.CertificateCommonNameQueryParameter != nil {
-			qrCertificateCommonName = *o.CertificateCommonNameQueryParameter
+		if o.CertificateCommonName != nil {
+			qrCertificateCommonName = *o.CertificateCommonName
 		}
 		qCertificateCommonName := qrCertificateCommonName
 		if qCertificateCommonName != "" {
@@ -276,13 +276,13 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.CertificateSerialNumberQueryParameter != nil {
+	if o.CertificateSerialNumber != nil {
 
 		// query param certificate.serial_number
 		var qrCertificateSerialNumber string
 
-		if o.CertificateSerialNumberQueryParameter != nil {
-			qrCertificateSerialNumber = *o.CertificateSerialNumberQueryParameter
+		if o.CertificateSerialNumber != nil {
+			qrCertificateSerialNumber = *o.CertificateSerialNumber
 		}
 		qCertificateSerialNumber := qrCertificateSerialNumber
 		if qCertificateSerialNumber != "" {
@@ -293,13 +293,13 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -310,7 +310,7 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -321,13 +321,13 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.HostQueryParameter != nil {
+	if o.Host != nil {
 
 		// query param host
 		var qrHost string
 
-		if o.HostQueryParameter != nil {
-			qrHost = *o.HostQueryParameter
+		if o.Host != nil {
+			qrHost = *o.Host
 		}
 		qHost := qrHost
 		if qHost != "" {
@@ -338,13 +338,13 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.IdpURIQueryParameter != nil {
+	if o.IdpURI != nil {
 
 		// query param idp_uri
 		var qrIdpURI string
 
-		if o.IdpURIQueryParameter != nil {
-			qrIdpURI = *o.IdpURIQueryParameter
+		if o.IdpURI != nil {
+			qrIdpURI = *o.IdpURI
 		}
 		qIdpURI := qrIdpURI
 		if qIdpURI != "" {
@@ -363,7 +363,7 @@ func (o *SecuritySamlSpGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamSecuritySamlSpGet binds the parameter fields
 func (o *SecuritySamlSpGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

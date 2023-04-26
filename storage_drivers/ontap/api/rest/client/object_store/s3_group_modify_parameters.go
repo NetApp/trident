@@ -68,7 +68,7 @@ type S3GroupModifyParams struct {
 
 	   Group identifier that identifies the unique group.
 	*/
-	IDPathParameter int64
+	ID int64
 
 	/* Info.
 
@@ -80,7 +80,7 @@ type S3GroupModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,15 +135,15 @@ func (o *S3GroupModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIDPathParameter adds the id to the s3 group modify params
-func (o *S3GroupModifyParams) WithIDPathParameter(id int64) *S3GroupModifyParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the s3 group modify params
+func (o *S3GroupModifyParams) WithID(id int64) *S3GroupModifyParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the s3 group modify params
-func (o *S3GroupModifyParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the s3 group modify params
+func (o *S3GroupModifyParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WithInfo adds the info to the s3 group modify params
@@ -157,15 +157,15 @@ func (o *S3GroupModifyParams) SetInfo(info *models.S3Group) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 group modify params
-func (o *S3GroupModifyParams) WithSVMUUIDPathParameter(svmUUID string) *S3GroupModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 group modify params
+func (o *S3GroupModifyParams) WithSvmUUID(svmUUID string) *S3GroupModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 group modify params
-func (o *S3GroupModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 group modify params
+func (o *S3GroupModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -177,7 +177,7 @@ func (o *S3GroupModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -187,7 +187,7 @@ func (o *S3GroupModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

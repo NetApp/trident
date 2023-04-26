@@ -22,11 +22,12 @@ type ClientLockResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// client lock response inline records
+	ClientLockResponseInlineRecords []*ClientLock `json:"records,omitempty"`
 
-	// records
-	Records []*ClientLock `json:"records,omitempty"`
+	// Number of records.
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this client lock response
@@ -37,7 +38,7 @@ func (m *ClientLockResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateClientLockResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ClientLockResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClientLockResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ClientLockResponse) validateClientLockResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientLockResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ClientLockResponseInlineRecords); i++ {
+		if swag.IsZero(m.ClientLockResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ClientLockResponseInlineRecords[i] != nil {
+			if err := m.ClientLockResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ClientLockResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateClientLockResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ClientLockResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ClientLockResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClientLockResponse) contextValidateClientLockResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ClientLockResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ClientLockResponseInlineRecords[i] != nil {
+			if err := m.ClientLockResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

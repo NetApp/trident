@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/config"
@@ -17,7 +16,7 @@ import (
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 var osFs = afero.NewOsFs()
@@ -31,12 +30,14 @@ type helper struct {
 	orchestrator                     core.Orchestrator
 	podsPath                         string
 	publishedPaths                   map[string]map[string]struct{}
+	enableForceDetach                bool
 	nodehelpers.VolumePublishManager // Embedded/extended interface
 }
 
 // NewHelper instantiates this helper when running outside a pod.
-func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string) (frontend.Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForceDetach bool) (frontend.Plugin, error) {
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
 
@@ -48,6 +49,7 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string) (frontend.
 		orchestrator:         orchestrator,
 		podsPath:             kubeConfigPath + "/pods",
 		publishedPaths:       make(map[string]map[string]struct{}),
+		enableForceDetach:    enableForceDetach,
 		VolumePublishManager: csi.NewVolumePublishManager(config.VolumeTrackingInfoPath),
 	}
 
@@ -56,7 +58,8 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string) (frontend.
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginActivate,
+		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
 
@@ -74,7 +77,7 @@ func (h *helper) Activate() error {
 
 // Deactivate stops this Trident frontend.
 func (h *helper) Deactivate() error {
-	log.Info("Deactivating K8S helper frontend.")
+	Log().Info("Deactivating K8S helper frontend.")
 	return nil
 }
 
@@ -129,19 +132,19 @@ func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string
 	if !ok {
 		paths = make(map[string]struct{})
 		h.publishedPaths[volumeId] = paths
-		log.Warningf("Could not determine determine published paths for volume: %s", volumeId)
+		Log().Warningf("Could not determine determine published paths for volume: %s", volumeId)
 	}
 
 	shouldDelete, err := h.VolumePublishManager.UpgradeVolumeTrackingFile(ctx, volumeId, paths)
 	if err != nil {
-		log.Info(fmt.Sprintf("Volume tracking file upgrade failed for volume: %s .", volumeId))
+		Log().Info(fmt.Sprintf("Volume tracking file upgrade failed for volume: %s .", volumeId))
 		return err
 	}
 
 	if !shouldDelete {
 		shouldDelete, err = h.VolumePublishManager.ValidateTrackingFile(ctx, volumeId)
 		if err != nil {
-			log.Debug(fmt.Sprintf("Volume tracking file for volume: %s failed during validation.", volumeId))
+			Log().Debug(fmt.Sprintf("Volume tracking file for volume: %s failed during validation.", volumeId))
 			return err
 		}
 	}
@@ -162,7 +165,7 @@ func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string
 
 // AddPublishedPath adds a new published path to the tracking file when called by NodePublishVolume.
 func (h *helper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd string) error {
-	fields := log.Fields{"volumeID": volumeID}
+	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Debug(">>>> AddPublishedPath")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< AddPublishedPath")
 
@@ -184,7 +187,7 @@ func (h *helper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd strin
 // RemovePublishedPath is called by NodeUnpublishVolume, removes the provided publish path from the tracking file, while
 // leaving all other published paths unmodified.
 func (h *helper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove string) error {
-	fields := log.Fields{"volumeID": volumeID}
+	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Debug(">>>> RemovePublishedPath")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< RemovePublishedPath")
 
@@ -211,14 +214,14 @@ func (h *helper) discoverPVCsToPublishedPaths(ctx context.Context) (map[string]m
 	Logc(ctx).Debug("Discovering PVC mount points...")
 	pods, err := afero.ReadDir(osFs, h.podsPath)
 	if err != nil {
-		fields := log.Fields{"helperPodsPath": h.podsPath}
+		fields := LogFields{"helperPodsPath": h.podsPath}
 		Logc(ctx).WithFields(fields).Errorf("Error reading pods path: %v", err)
 		return nil, err
 	}
 
 	for _, pod := range pods {
 		podUUIDPath := filepath.Join(h.podsPath, pod.Name(), volumesFilesystemPath)
-		fields := log.Fields{"podUUID": podUUIDPath}
+		fields := LogFields{"podUUID": podUUIDPath}
 		Logc(ctx).WithFields(fields).Debug("Current pod UUID path.")
 		volumes, err := afero.ReadDir(osFs, podUUIDPath)
 		if err != nil && !os.IsNotExist(err) {
@@ -232,13 +235,13 @@ func (h *helper) discoverPVCsToPublishedPaths(ctx context.Context) (map[string]m
 			}
 			if strings.Contains(volume.Name(), "pvc-") {
 				pubPath := filepath.Join(podUUIDPath, volume.Name(), "mount")
-				fields := log.Fields{"volumeId": volume.Name(), "publishedPath": pubPath}
+				fields := LogFields{"volumeId": volume.Name(), "publishedPath": pubPath}
 				Logc(ctx).WithFields(fields).Debug("Found published path for volume.")
 				mapping[volume.Name()][pubPath] = struct{}{}
 			}
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{"publishedPaths": mapping}).Debug("Discovered PVC mount points.")
+	Logc(ctx).WithFields(LogFields{"publishedPaths": mapping}).Debug("Discovered PVC mount points.")
 	return mapping, nil
 }

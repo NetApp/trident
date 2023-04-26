@@ -21,25 +21,25 @@ import (
 type AutoUpdateConfiguration struct {
 
 	// links
-	Links *AutoUpdateConfigurationLinks `json:"_links,omitempty"`
+	Links *AutoUpdateConfigurationInlineLinks `json:"_links,omitempty"`
 
 	// The action to be taken by the alert source as specified by the user.
 	// Example: confirm
 	// Enum: [confirm dismiss automatic]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Category for the configuration row.
 	// Example: disk_fw
 	// Read Only: true
-	Category string `json:"category,omitempty"`
+	Category *string `json:"category,omitempty"`
 
 	// description
-	Description *AutoUpdateConfigurationDescription `json:"description,omitempty"`
+	Description *AutoUpdateConfigurationInlineDescription `json:"description,omitempty"`
 
 	// Unique identifier for the configuration row.
 	// Example: 572361f3-e769-439d-9c04-2ba48a08ff47
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this auto update configuration
@@ -140,7 +140,7 @@ func (m *AutoUpdateConfiguration) validateAction(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ func (m *AutoUpdateConfiguration) contextValidateLinks(ctx context.Context, form
 
 func (m *AutoUpdateConfiguration) contextValidateCategory(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "category", "body", string(m.Category)); err != nil {
+	if err := validate.ReadOnly(ctx, "category", "body", m.Category); err != nil {
 		return err
 	}
 
@@ -229,7 +229,7 @@ func (m *AutoUpdateConfiguration) contextValidateDescription(ctx context.Context
 
 func (m *AutoUpdateConfiguration) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -254,32 +254,32 @@ func (m *AutoUpdateConfiguration) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateConfigurationDescription Description of the configuration row.
+// AutoUpdateConfigurationInlineDescription Description of the configuration row.
 // ONTAP Message Codes
 // | Code       | Description |
 // | ---------- | ----------- |
 // | 131072401 | Storage Firmware |
 // | 131072402 | SP/BMC Firmware |
 //
-// swagger:model AutoUpdateConfigurationDescription
-type AutoUpdateConfigurationDescription struct {
+// swagger:model auto_update_configuration_inline_description
+type AutoUpdateConfigurationInlineDescription struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this auto update configuration description
-func (m *AutoUpdateConfigurationDescription) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update configuration inline description
+func (m *AutoUpdateConfigurationInlineDescription) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this auto update configuration description based on the context it is used
-func (m *AutoUpdateConfigurationDescription) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update configuration inline description based on the context it is used
+func (m *AutoUpdateConfigurationInlineDescription) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -296,18 +296,18 @@ func (m *AutoUpdateConfigurationDescription) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *AutoUpdateConfigurationDescription) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationInlineDescription) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "description"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AutoUpdateConfigurationDescription) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationInlineDescription) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "description"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -315,7 +315,7 @@ func (m *AutoUpdateConfigurationDescription) contextValidateMessage(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateConfigurationDescription) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateConfigurationInlineDescription) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -323,8 +323,8 @@ func (m *AutoUpdateConfigurationDescription) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateConfigurationDescription) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateConfigurationDescription
+func (m *AutoUpdateConfigurationInlineDescription) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateConfigurationInlineDescription
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -332,17 +332,17 @@ func (m *AutoUpdateConfigurationDescription) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateConfigurationLinks auto update configuration links
+// AutoUpdateConfigurationInlineLinks auto update configuration inline links
 //
-// swagger:model AutoUpdateConfigurationLinks
-type AutoUpdateConfigurationLinks struct {
+// swagger:model auto_update_configuration_inline__links
+type AutoUpdateConfigurationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this auto update configuration links
-func (m *AutoUpdateConfigurationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update configuration inline links
+func (m *AutoUpdateConfigurationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -355,7 +355,7 @@ func (m *AutoUpdateConfigurationLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateConfigurationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -372,8 +372,8 @@ func (m *AutoUpdateConfigurationLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this auto update configuration links based on the context it is used
-func (m *AutoUpdateConfigurationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update configuration inline links based on the context it is used
+func (m *AutoUpdateConfigurationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -386,7 +386,7 @@ func (m *AutoUpdateConfigurationLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *AutoUpdateConfigurationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateConfigurationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -401,7 +401,7 @@ func (m *AutoUpdateConfigurationLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateConfigurationLinks) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateConfigurationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -409,8 +409,8 @@ func (m *AutoUpdateConfigurationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateConfigurationLinks) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateConfigurationLinks
+func (m *AutoUpdateConfigurationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateConfigurationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

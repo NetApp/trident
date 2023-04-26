@@ -66,13 +66,13 @@ type MetroclusterDiagnosticsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *MetroclusterDiagnosticsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster diagnostics get params
-func (o *MetroclusterDiagnosticsGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterDiagnosticsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster diagnostics get params
+func (o *MetroclusterDiagnosticsGetParams) WithFields(fields []string) *MetroclusterDiagnosticsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster diagnostics get params
-func (o *MetroclusterDiagnosticsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster diagnostics get params
+func (o *MetroclusterDiagnosticsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the metrocluster diagnostics get params
-func (o *MetroclusterDiagnosticsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MetroclusterDiagnosticsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the metrocluster diagnostics get params
+func (o *MetroclusterDiagnosticsGetParams) WithMaxRecords(maxRecords *int64) *MetroclusterDiagnosticsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the metrocluster diagnostics get params
-func (o *MetroclusterDiagnosticsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the metrocluster diagnostics get params
+func (o *MetroclusterDiagnosticsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *MetroclusterDiagnosticsGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -168,13 +168,13 @@ func (o *MetroclusterDiagnosticsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -193,7 +193,7 @@ func (o *MetroclusterDiagnosticsGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamMetroclusterDiagnosticsGet binds the parameter fields
 func (o *MetroclusterDiagnosticsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

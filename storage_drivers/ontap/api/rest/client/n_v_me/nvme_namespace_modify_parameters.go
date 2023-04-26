@@ -75,7 +75,7 @@ type NvmeNamespaceModifyParams struct {
 	   The unique identifier of the NVMe namespace to update.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *NvmeNamespaceModifyParams) SetInfo(info *models.NvmeNamespace) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the nvme namespace modify params
-func (o *NvmeNamespaceModifyParams) WithUUIDPathParameter(uuid string) *NvmeNamespaceModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the nvme namespace modify params
+func (o *NvmeNamespaceModifyParams) WithUUID(uuid string) *NvmeNamespaceModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the nvme namespace modify params
-func (o *NvmeNamespaceModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the nvme namespace modify params
+func (o *NvmeNamespaceModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *NvmeNamespaceModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

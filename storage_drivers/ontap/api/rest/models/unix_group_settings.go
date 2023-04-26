@@ -19,32 +19,32 @@ import (
 type UnixGroupSettings struct {
 
 	// links
-	Links *UnixGroupSettingsLinks `json:"_links,omitempty"`
+	Links *UnixGroupSettingsInlineLinks `json:"_links,omitempty"`
 
 	// Indicates whether or not the cache is enabled.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Indicates whether or not the negative cache is enabled.
 	//
-	NegativeCacheEnabled bool `json:"negative_cache_enabled,omitempty"`
+	NegativeCacheEnabled *bool `json:"negative_cache_enabled,omitempty"`
 
 	// Specifies negative Time to Live, in ISO 8601 format.
 	//
 	// Example: PT5M
-	NegativeTTL string `json:"negative_ttl,omitempty"`
+	NegativeTTL *string `json:"negative_ttl,omitempty"`
 
 	// Specifies whether the propagation setting is enabled or not.
 	//
-	PropagationEnabled bool `json:"propagation_enabled,omitempty"`
+	PropagationEnabled *bool `json:"propagation_enabled,omitempty"`
 
 	// svm
-	Svm *UnixGroupSettingsSvm `json:"svm,omitempty"`
+	Svm *UnixGroupSettingsInlineSvm `json:"svm,omitempty"`
 
 	// Specifies Time to Live (TTL), in ISO 8601 format.
 	//
 	// Example: PT24H
-	TTL string `json:"ttl,omitempty"`
+	TTL *string `json:"ttl,omitempty"`
 }
 
 // Validate validates this unix group settings
@@ -163,17 +163,17 @@ func (m *UnixGroupSettings) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupSettingsLinks unix group settings links
+// UnixGroupSettingsInlineLinks unix group settings inline links
 //
-// swagger:model UnixGroupSettingsLinks
-type UnixGroupSettingsLinks struct {
+// swagger:model unix_group_settings_inline__links
+type UnixGroupSettingsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix group settings links
-func (m *UnixGroupSettingsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group settings inline links
+func (m *UnixGroupSettingsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -186,7 +186,7 @@ func (m *UnixGroupSettingsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroupSettingsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixGroupSettingsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -203,8 +203,8 @@ func (m *UnixGroupSettingsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix group settings links based on the context it is used
-func (m *UnixGroupSettingsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix group settings inline links based on the context it is used
+func (m *UnixGroupSettingsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -217,7 +217,7 @@ func (m *UnixGroupSettingsLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *UnixGroupSettingsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroupSettingsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -232,7 +232,7 @@ func (m *UnixGroupSettingsLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupSettingsLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupSettingsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -240,8 +240,8 @@ func (m *UnixGroupSettingsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupSettingsLinks) UnmarshalBinary(b []byte) error {
-	var res UnixGroupSettingsLinks
+func (m *UnixGroupSettingsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixGroupSettingsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -249,27 +249,27 @@ func (m *UnixGroupSettingsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupSettingsSvm unix group settings svm
+// UnixGroupSettingsInlineSvm unix group settings inline svm
 //
-// swagger:model UnixGroupSettingsSvm
-type UnixGroupSettingsSvm struct {
+// swagger:model unix_group_settings_inline_svm
+type UnixGroupSettingsInlineSvm struct {
 
 	// links
-	Links *UnixGroupSettingsSvmLinks `json:"_links,omitempty"`
+	Links *UnixGroupSettingsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this unix group settings svm
-func (m *UnixGroupSettingsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group settings inline svm
+func (m *UnixGroupSettingsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -282,7 +282,7 @@ func (m *UnixGroupSettingsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroupSettingsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *UnixGroupSettingsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -299,8 +299,8 @@ func (m *UnixGroupSettingsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this unix group settings svm based on the context it is used
-func (m *UnixGroupSettingsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix group settings inline svm based on the context it is used
+func (m *UnixGroupSettingsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -313,7 +313,7 @@ func (m *UnixGroupSettingsSvm) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *UnixGroupSettingsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroupSettingsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -328,7 +328,7 @@ func (m *UnixGroupSettingsSvm) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupSettingsSvm) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupSettingsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -336,8 +336,8 @@ func (m *UnixGroupSettingsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupSettingsSvm) UnmarshalBinary(b []byte) error {
-	var res UnixGroupSettingsSvm
+func (m *UnixGroupSettingsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res UnixGroupSettingsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -345,17 +345,17 @@ func (m *UnixGroupSettingsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UnixGroupSettingsSvmLinks unix group settings svm links
+// UnixGroupSettingsInlineSvmInlineLinks unix group settings inline svm inline links
 //
-// swagger:model UnixGroupSettingsSvmLinks
-type UnixGroupSettingsSvmLinks struct {
+// swagger:model unix_group_settings_inline_svm_inline__links
+type UnixGroupSettingsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this unix group settings svm links
-func (m *UnixGroupSettingsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this unix group settings inline svm inline links
+func (m *UnixGroupSettingsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -368,7 +368,7 @@ func (m *UnixGroupSettingsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UnixGroupSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UnixGroupSettingsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -385,8 +385,8 @@ func (m *UnixGroupSettingsSvmLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this unix group settings svm links based on the context it is used
-func (m *UnixGroupSettingsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this unix group settings inline svm inline links based on the context it is used
+func (m *UnixGroupSettingsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -399,7 +399,7 @@ func (m *UnixGroupSettingsSvmLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *UnixGroupSettingsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UnixGroupSettingsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -414,7 +414,7 @@ func (m *UnixGroupSettingsSvmLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *UnixGroupSettingsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *UnixGroupSettingsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -422,8 +422,8 @@ func (m *UnixGroupSettingsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UnixGroupSettingsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res UnixGroupSettingsSvmLinks
+func (m *UnixGroupSettingsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UnixGroupSettingsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

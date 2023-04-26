@@ -6,10 +6,9 @@ import (
 	"context"
 	"encoding/json"
 
-	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -33,7 +32,7 @@ func NewTridentVolume(ctx context.Context, persistent *storage.VolumeExternal) (
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume.Name":        volume.Name,
 		"volume.BackendUUID": volume.BackendUUID,
 		"volume.Orphaned":    volume.Orphaned,
@@ -46,7 +45,7 @@ func NewTridentVolume(ctx context.Context, persistent *storage.VolumeExternal) (
 // Apply applies changes from an internal storage.VolumeExternal
 // object to its Kubernetes CRD equivalent
 func (in *TridentVolume) Apply(ctx context.Context, persistent *storage.VolumeExternal) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"persistent.BackendUUID": persistent.BackendUUID,
 		"persistent.Orphaned":    persistent.Orphaned,
 		"persistent.Pool":        persistent.Pool,
@@ -87,6 +86,10 @@ func (in *TridentVolume) Persistent() (*storage.VolumeExternal, error) {
 
 func (in *TridentVolume) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
+}
+
+func (in *TridentVolume) GetKind() string {
+	return "TridentVolume"
 }
 
 func (in *TridentVolume) GetFinalizers() []string {

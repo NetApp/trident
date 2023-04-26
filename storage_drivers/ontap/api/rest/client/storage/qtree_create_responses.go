@@ -52,6 +52,11 @@ QtreeCreateAccepted describes a response with status code 202, with default head
 Accepted
 */
 type QtreeCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.JobLinkResponse
 }
 
@@ -94,6 +99,13 @@ func (o *QtreeCreateAccepted) GetPayload() *models.JobLinkResponse {
 
 func (o *QtreeCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.JobLinkResponse)
 
 	// response payload
@@ -121,6 +133,7 @@ func NewQtreeCreateDefault(code int) *QtreeCreateDefault {
 | 917927 | The specified volume was not found. |
 | 918232 | Either `volume.name` or `volume.uuid` must be provided. |
 | 918236 | The specified `volume.uuid` and `volume.name` refer to different volumes. |
+| 1703954 | Export Policy name specified is invalid. |
 | 2621462 | The specified SVM does not exist. |
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be provided. |

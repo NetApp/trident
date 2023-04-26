@@ -52,6 +52,11 @@ S3AuditCreateAccepted describes a response with status code 202, with default he
 Accepted
 */
 type S3AuditCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.S3AuditResponse
 }
 
@@ -93,6 +98,13 @@ func (o *S3AuditCreateAccepted) GetPayload() *models.S3AuditResponse {
 }
 
 func (o *S3AuditCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.S3AuditResponse)
 

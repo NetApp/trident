@@ -12,12 +12,11 @@ import (
 	"path"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"github.com/zcalusic/sysinfo"
 	"golang.org/x/sys/unix"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 type statFSResult struct {
@@ -144,7 +143,7 @@ func getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, er
 	for _, link := range allLinks {
 
 		if link.Type() == "dummy" {
-			log.WithFields(log.Fields{
+			Log().WithFields(LogFields{
 				"interface": link.Attrs().Name,
 				"type":      link.Type(),
 			}).Debug("Dummy interface, skipping.")
@@ -194,31 +193,31 @@ func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []ne
 
 	for _, link := range links {
 
-		logFields := log.Fields{"interface": link.Attrs().Name, "type": link.Type()}
+		logFields := LogFields{"interface": link.Attrs().Name, "type": link.Type()}
 		Logc(ctx).WithFields(logFields).Debug("Considering interface.")
 
 		linkAddrs, err := netlink.AddrList(link, netlink.FAMILY_ALL)
 		if err != nil {
-			log.WithFields(logFields).Errorf("Could not get addresses for interface; %v", err)
+			Log().WithFields(logFields).Errorf("Could not get addresses for interface; %v", err)
 			continue
 		}
 
 		for _, linkAddr := range linkAddrs {
 
-			logFields := log.Fields{"interface": link.Attrs().Name, "address": linkAddr.String()}
+			logFields := LogFields{"interface": link.Attrs().Name, "address": linkAddr.String()}
 
 			ipNet := linkAddr.IPNet
 			if ipNet == nil {
-				log.WithFields(logFields).Debug("Address IPNet is nil, skipping.")
+				Log().WithFields(logFields).Debug("Address IPNet is nil, skipping.")
 				continue
 			}
 
 			if !ipNet.IP.IsGlobalUnicast() {
-				log.WithFields(logFields).Debug("Address is not global unicast, skipping.")
+				Log().WithFields(logFields).Debug("Address is not global unicast, skipping.")
 				continue
 			}
 
-			log.WithFields(logFields).Debug("Address is potentially viable.")
+			Log().WithFields(logFields).Debug("Address is potentially viable.")
 			addrs = append(addrs, ipNet)
 		}
 	}

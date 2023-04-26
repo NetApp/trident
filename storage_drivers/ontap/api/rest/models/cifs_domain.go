@@ -23,31 +23,39 @@ type CifsDomain struct {
 
 	// Specifies the discovered servers records.
 	//
-	DiscoveredServers []*CifsDomainDiscoveredServersItems0 `json:"discovered_servers,omitempty"`
-
-	// name mapping
-	NameMapping *CifsDomainNameMappingType `json:"name_mapping,omitempty"`
-
-	// password schedule
-	PasswordSchedule *CifsDomainPasswordScheduleType `json:"password_schedule,omitempty"`
+	CifsDomainInlineDiscoveredServers []*CifsDomainInlineDiscoveredServersInlineArrayItem `json:"discovered_servers,omitempty"`
 
 	// Specifies the preferred DC records.
 	//
-	PreferredDcs []*CifsDomainPreferredDcsItems0 `json:"preferred_dcs,omitempty"`
-
-	// svm
-	Svm *CifsDomainSvm `json:"svm,omitempty"`
+	CifsDomainInlinePreferredDcs []*CifsDomainInlinePreferredDcsInlineArrayItem `json:"preferred_dcs,omitempty"`
 
 	// Specifies the trusted domain records.
 	//
-	TrustRelationships []*CifsDomainTrustRelationshipsItems0 `json:"trust_relationships,omitempty"`
+	CifsDomainInlineTrustRelationships []*CifsDomainInlineTrustRelationshipsInlineArrayItem `json:"trust_relationships,omitempty"`
+
+	// name mapping
+	NameMapping *CifsDomainInlineNameMapping `json:"name_mapping,omitempty"`
+
+	// password schedule
+	PasswordSchedule *CifsDomainInlinePasswordSchedule `json:"password_schedule,omitempty"`
+
+	// svm
+	Svm *CifsDomainInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this cifs domain
 func (m *CifsDomain) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDiscoveredServers(formats); err != nil {
+	if err := m.validateCifsDomainInlineDiscoveredServers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCifsDomainInlinePreferredDcs(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCifsDomainInlineTrustRelationships(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -59,15 +67,7 @@ func (m *CifsDomain) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePreferredDcs(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateSvm(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTrustRelationships(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -77,20 +77,68 @@ func (m *CifsDomain) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomain) validateDiscoveredServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.DiscoveredServers) { // not required
+func (m *CifsDomain) validateCifsDomainInlineDiscoveredServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsDomainInlineDiscoveredServers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.DiscoveredServers); i++ {
-		if swag.IsZero(m.DiscoveredServers[i]) { // not required
+	for i := 0; i < len(m.CifsDomainInlineDiscoveredServers); i++ {
+		if swag.IsZero(m.CifsDomainInlineDiscoveredServers[i]) { // not required
 			continue
 		}
 
-		if m.DiscoveredServers[i] != nil {
-			if err := m.DiscoveredServers[i].Validate(formats); err != nil {
+		if m.CifsDomainInlineDiscoveredServers[i] != nil {
+			if err := m.CifsDomainInlineDiscoveredServers[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("discovered_servers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CifsDomain) validateCifsDomainInlinePreferredDcs(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsDomainInlinePreferredDcs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CifsDomainInlinePreferredDcs); i++ {
+		if swag.IsZero(m.CifsDomainInlinePreferredDcs[i]) { // not required
+			continue
+		}
+
+		if m.CifsDomainInlinePreferredDcs[i] != nil {
+			if err := m.CifsDomainInlinePreferredDcs[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("preferred_dcs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CifsDomain) validateCifsDomainInlineTrustRelationships(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsDomainInlineTrustRelationships) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CifsDomainInlineTrustRelationships); i++ {
+		if swag.IsZero(m.CifsDomainInlineTrustRelationships[i]) { // not required
+			continue
+		}
+
+		if m.CifsDomainInlineTrustRelationships[i] != nil {
+			if err := m.CifsDomainInlineTrustRelationships[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("trust_relationships" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -135,30 +183,6 @@ func (m *CifsDomain) validatePasswordSchedule(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomain) validatePreferredDcs(formats strfmt.Registry) error {
-	if swag.IsZero(m.PreferredDcs) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.PreferredDcs); i++ {
-		if swag.IsZero(m.PreferredDcs[i]) { // not required
-			continue
-		}
-
-		if m.PreferredDcs[i] != nil {
-			if err := m.PreferredDcs[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("preferred_dcs" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *CifsDomain) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -176,35 +200,19 @@ func (m *CifsDomain) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomain) validateTrustRelationships(formats strfmt.Registry) error {
-	if swag.IsZero(m.TrustRelationships) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.TrustRelationships); i++ {
-		if swag.IsZero(m.TrustRelationships[i]) { // not required
-			continue
-		}
-
-		if m.TrustRelationships[i] != nil {
-			if err := m.TrustRelationships[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("trust_relationships" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this cifs domain based on the context it is used
 func (m *CifsDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateDiscoveredServers(ctx, formats); err != nil {
+	if err := m.contextValidateCifsDomainInlineDiscoveredServers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCifsDomainInlinePreferredDcs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCifsDomainInlineTrustRelationships(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -216,15 +224,7 @@ func (m *CifsDomain) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePreferredDcs(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateTrustRelationships(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -234,14 +234,50 @@ func (m *CifsDomain) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *CifsDomain) contextValidateDiscoveredServers(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomain) contextValidateCifsDomainInlineDiscoveredServers(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.DiscoveredServers); i++ {
+	for i := 0; i < len(m.CifsDomainInlineDiscoveredServers); i++ {
 
-		if m.DiscoveredServers[i] != nil {
-			if err := m.DiscoveredServers[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsDomainInlineDiscoveredServers[i] != nil {
+			if err := m.CifsDomainInlineDiscoveredServers[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("discovered_servers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CifsDomain) contextValidateCifsDomainInlinePreferredDcs(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CifsDomainInlinePreferredDcs); i++ {
+
+		if m.CifsDomainInlinePreferredDcs[i] != nil {
+			if err := m.CifsDomainInlinePreferredDcs[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("preferred_dcs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CifsDomain) contextValidateCifsDomainInlineTrustRelationships(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CifsDomainInlineTrustRelationships); i++ {
+
+		if m.CifsDomainInlineTrustRelationships[i] != nil {
+			if err := m.CifsDomainInlineTrustRelationships[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("trust_relationships" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -280,24 +316,6 @@ func (m *CifsDomain) contextValidatePasswordSchedule(ctx context.Context, format
 	return nil
 }
 
-func (m *CifsDomain) contextValidatePreferredDcs(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.PreferredDcs); i++ {
-
-		if m.PreferredDcs[i] != nil {
-			if err := m.PreferredDcs[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("preferred_dcs" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *CifsDomain) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -307,24 +325,6 @@ func (m *CifsDomain) contextValidateSvm(ctx context.Context, formats strfmt.Regi
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *CifsDomain) contextValidateTrustRelationships(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.TrustRelationships); i++ {
-
-		if m.TrustRelationships[i] != nil {
-			if err := m.TrustRelationships[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("trust_relationships" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -348,45 +348,45 @@ func (m *CifsDomain) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainDiscoveredServersItems0 cifs domain discovered servers items0
+// CifsDomainInlineDiscoveredServersInlineArrayItem cifs domain inline discovered servers inline array item
 //
-// swagger:model CifsDomainDiscoveredServersItems0
-type CifsDomainDiscoveredServersItems0 struct {
+// swagger:model cifs_domain_inline_discovered_servers_inline_array_item
+type CifsDomainInlineDiscoveredServersInlineArrayItem struct {
 
 	// Fully Qualified Domain Name.
 	//
 	// Example: test.com
-	Domain string `json:"domain,omitempty"`
+	Domain *string `json:"domain,omitempty"`
 
 	// node
-	Node *CifsDomainDiscoveredServersItems0Node `json:"node,omitempty"`
+	Node *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// Server Preference
 	//
 	// Enum: [unknown preferred favored adequate]
-	Preference string `json:"preference,omitempty"`
+	Preference *string `json:"preference,omitempty"`
 
 	// Server IP address
 	//
-	ServerIP string `json:"server_ip,omitempty"`
+	ServerIP *string `json:"server_ip,omitempty"`
 
 	// Server Name
 	//
-	ServerName string `json:"server_name,omitempty"`
+	ServerName *string `json:"server_name,omitempty"`
 
 	// Server Type
 	//
 	// Enum: [unknown kerberos ms_ldap ms_dc ldap]
-	ServerType string `json:"server_type,omitempty"`
+	ServerType *string `json:"server_type,omitempty"`
 
 	// Server status
 	//
 	// Enum: [ok unavailable slow expired undetermined unreachable]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this cifs domain discovered servers items0
-func (m *CifsDomainDiscoveredServersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline discovered servers inline array item
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -411,7 +411,7 @@ func (m *CifsDomainDiscoveredServersItems0) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0) validateNode(formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -428,7 +428,7 @@ func (m *CifsDomainDiscoveredServersItems0) validateNode(formats strfmt.Registry
 	return nil
 }
 
-var cifsDomainDiscoveredServersItems0TypePreferencePropEnum []interface{}
+var cifsDomainInlineDiscoveredServersInlineArrayItemTypePreferencePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -436,75 +436,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsDomainDiscoveredServersItems0TypePreferencePropEnum = append(cifsDomainDiscoveredServersItems0TypePreferencePropEnum, v)
+		cifsDomainInlineDiscoveredServersInlineArrayItemTypePreferencePropEnum = append(cifsDomainInlineDiscoveredServersInlineArrayItemTypePreferencePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// preference
 	// Preference
 	// unknown
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0PreferenceUnknown captures enum value "unknown"
-	CifsDomainDiscoveredServersItems0PreferenceUnknown string = "unknown"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemPreferenceUnknown captures enum value "unknown"
+	CifsDomainInlineDiscoveredServersInlineArrayItemPreferenceUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// preference
 	// Preference
 	// preferred
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0PreferencePreferred captures enum value "preferred"
-	CifsDomainDiscoveredServersItems0PreferencePreferred string = "preferred"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemPreferencePreferred captures enum value "preferred"
+	CifsDomainInlineDiscoveredServersInlineArrayItemPreferencePreferred string = "preferred"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// preference
 	// Preference
 	// favored
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0PreferenceFavored captures enum value "favored"
-	CifsDomainDiscoveredServersItems0PreferenceFavored string = "favored"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemPreferenceFavored captures enum value "favored"
+	CifsDomainInlineDiscoveredServersInlineArrayItemPreferenceFavored string = "favored"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// preference
 	// Preference
 	// adequate
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0PreferenceAdequate captures enum value "adequate"
-	CifsDomainDiscoveredServersItems0PreferenceAdequate string = "adequate"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemPreferenceAdequate captures enum value "adequate"
+	CifsDomainInlineDiscoveredServersInlineArrayItemPreferenceAdequate string = "adequate"
 )
 
 // prop value enum
-func (m *CifsDomainDiscoveredServersItems0) validatePreferenceEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsDomainDiscoveredServersItems0TypePreferencePropEnum, true); err != nil {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validatePreferenceEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsDomainInlineDiscoveredServersInlineArrayItemTypePreferencePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0) validatePreference(formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validatePreference(formats strfmt.Registry) error {
 	if swag.IsZero(m.Preference) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validatePreferenceEnum("preference", "body", m.Preference); err != nil {
+	if err := m.validatePreferenceEnum("preference", "body", *m.Preference); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var cifsDomainDiscoveredServersItems0TypeServerTypePropEnum []interface{}
+var cifsDomainInlineDiscoveredServersInlineArrayItemTypeServerTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -512,85 +512,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsDomainDiscoveredServersItems0TypeServerTypePropEnum = append(cifsDomainDiscoveredServersItems0TypeServerTypePropEnum, v)
+		cifsDomainInlineDiscoveredServersInlineArrayItemTypeServerTypePropEnum = append(cifsDomainInlineDiscoveredServersInlineArrayItemTypeServerTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// server_type
 	// ServerType
 	// unknown
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0ServerTypeUnknown captures enum value "unknown"
-	CifsDomainDiscoveredServersItems0ServerTypeUnknown string = "unknown"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeUnknown captures enum value "unknown"
+	CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// server_type
 	// ServerType
 	// kerberos
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0ServerTypeKerberos captures enum value "kerberos"
-	CifsDomainDiscoveredServersItems0ServerTypeKerberos string = "kerberos"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeKerberos captures enum value "kerberos"
+	CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeKerberos string = "kerberos"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// server_type
 	// ServerType
 	// ms_ldap
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0ServerTypeMsLdap captures enum value "ms_ldap"
-	CifsDomainDiscoveredServersItems0ServerTypeMsLdap string = "ms_ldap"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeMsLdap captures enum value "ms_ldap"
+	CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeMsLdap string = "ms_ldap"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// server_type
 	// ServerType
 	// ms_dc
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0ServerTypeMsDc captures enum value "ms_dc"
-	CifsDomainDiscoveredServersItems0ServerTypeMsDc string = "ms_dc"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeMsDc captures enum value "ms_dc"
+	CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeMsDc string = "ms_dc"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// server_type
 	// ServerType
 	// ldap
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0ServerTypeLdap captures enum value "ldap"
-	CifsDomainDiscoveredServersItems0ServerTypeLdap string = "ldap"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeLdap captures enum value "ldap"
+	CifsDomainInlineDiscoveredServersInlineArrayItemServerTypeLdap string = "ldap"
 )
 
 // prop value enum
-func (m *CifsDomainDiscoveredServersItems0) validateServerTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsDomainDiscoveredServersItems0TypeServerTypePropEnum, true); err != nil {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validateServerTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsDomainInlineDiscoveredServersInlineArrayItemTypeServerTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0) validateServerType(formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validateServerType(formats strfmt.Registry) error {
 	if swag.IsZero(m.ServerType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateServerTypeEnum("server_type", "body", m.ServerType); err != nil {
+	if err := m.validateServerTypeEnum("server_type", "body", *m.ServerType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var cifsDomainDiscoveredServersItems0TypeStatePropEnum []interface{}
+var cifsDomainInlineDiscoveredServersInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -598,96 +598,96 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		cifsDomainDiscoveredServersItems0TypeStatePropEnum = append(cifsDomainDiscoveredServersItems0TypeStatePropEnum, v)
+		cifsDomainInlineDiscoveredServersInlineArrayItemTypeStatePropEnum = append(cifsDomainInlineDiscoveredServersInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0StateOk captures enum value "ok"
-	CifsDomainDiscoveredServersItems0StateOk string = "ok"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemStateOk captures enum value "ok"
+	CifsDomainInlineDiscoveredServersInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// state
 	// State
 	// unavailable
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0StateUnavailable captures enum value "unavailable"
-	CifsDomainDiscoveredServersItems0StateUnavailable string = "unavailable"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemStateUnavailable captures enum value "unavailable"
+	CifsDomainInlineDiscoveredServersInlineArrayItemStateUnavailable string = "unavailable"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// state
 	// State
 	// slow
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0StateSlow captures enum value "slow"
-	CifsDomainDiscoveredServersItems0StateSlow string = "slow"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemStateSlow captures enum value "slow"
+	CifsDomainInlineDiscoveredServersInlineArrayItemStateSlow string = "slow"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// state
 	// State
 	// expired
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0StateExpired captures enum value "expired"
-	CifsDomainDiscoveredServersItems0StateExpired string = "expired"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemStateExpired captures enum value "expired"
+	CifsDomainInlineDiscoveredServersInlineArrayItemStateExpired string = "expired"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// state
 	// State
 	// undetermined
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0StateUndetermined captures enum value "undetermined"
-	CifsDomainDiscoveredServersItems0StateUndetermined string = "undetermined"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemStateUndetermined captures enum value "undetermined"
+	CifsDomainInlineDiscoveredServersInlineArrayItemStateUndetermined string = "undetermined"
 
 	// BEGIN DEBUGGING
-	// CifsDomainDiscoveredServersItems0
-	// CifsDomainDiscoveredServersItems0
+	// cifs_domain_inline_discovered_servers_inline_array_item
+	// CifsDomainInlineDiscoveredServersInlineArrayItem
 	// state
 	// State
 	// unreachable
 	// END DEBUGGING
-	// CifsDomainDiscoveredServersItems0StateUnreachable captures enum value "unreachable"
-	CifsDomainDiscoveredServersItems0StateUnreachable string = "unreachable"
+	// CifsDomainInlineDiscoveredServersInlineArrayItemStateUnreachable captures enum value "unreachable"
+	CifsDomainInlineDiscoveredServersInlineArrayItemStateUnreachable string = "unreachable"
 )
 
 // prop value enum
-func (m *CifsDomainDiscoveredServersItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, cifsDomainDiscoveredServersItems0TypeStatePropEnum, true); err != nil {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsDomainInlineDiscoveredServersInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0) validateState(formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this cifs domain discovered servers items0 based on the context it is used
-func (m *CifsDomainDiscoveredServersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline discovered servers inline array item based on the context it is used
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -700,7 +700,7 @@ func (m *CifsDomainDiscoveredServersItems0) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -715,7 +715,7 @@ func (m *CifsDomainDiscoveredServersItems0) contextValidateNode(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServersItems0) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -723,8 +723,8 @@ func (m *CifsDomainDiscoveredServersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServersItems0) UnmarshalBinary(b []byte) error {
-	var res CifsDomainDiscoveredServersItems0
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineDiscoveredServersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -732,25 +732,25 @@ func (m *CifsDomainDiscoveredServersItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainDiscoveredServersItems0Node cifs domain discovered servers items0 node
+// CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode cifs domain inline discovered servers inline array item inline node
 //
-// swagger:model CifsDomainDiscoveredServersItems0Node
-type CifsDomainDiscoveredServersItems0Node struct {
+// swagger:model cifs_domain_inline_discovered_servers_inline_array_item_inline_node
+type CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode struct {
 
 	// links
-	Links *CifsDomainDiscoveredServersItems0NodeLinks `json:"_links,omitempty"`
+	Links *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs domain discovered servers items0 node
-func (m *CifsDomainDiscoveredServersItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline discovered servers inline array item inline node
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -763,7 +763,7 @@ func (m *CifsDomainDiscoveredServersItems0Node) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -780,8 +780,8 @@ func (m *CifsDomainDiscoveredServersItems0Node) validateLinks(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this cifs domain discovered servers items0 node based on the context it is used
-func (m *CifsDomainDiscoveredServersItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline discovered servers inline array item inline node based on the context it is used
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -794,7 +794,7 @@ func (m *CifsDomainDiscoveredServersItems0Node) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -809,7 +809,7 @@ func (m *CifsDomainDiscoveredServersItems0Node) contextValidateLinks(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServersItems0Node) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -817,8 +817,8 @@ func (m *CifsDomainDiscoveredServersItems0Node) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServersItems0Node) UnmarshalBinary(b []byte) error {
-	var res CifsDomainDiscoveredServersItems0Node
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineDiscoveredServersInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -826,17 +826,17 @@ func (m *CifsDomainDiscoveredServersItems0Node) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// CifsDomainDiscoveredServersItems0NodeLinks cifs domain discovered servers items0 node links
+// CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks cifs domain inline discovered servers inline array item inline node inline links
 //
-// swagger:model CifsDomainDiscoveredServersItems0NodeLinks
-type CifsDomainDiscoveredServersItems0NodeLinks struct {
+// swagger:model cifs_domain_inline_discovered_servers_inline_array_item_inline_node_inline__links
+type CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain discovered servers items0 node links
-func (m *CifsDomainDiscoveredServersItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline discovered servers inline array item inline node inline links
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -849,7 +849,7 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -866,8 +866,8 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) validateSelf(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this cifs domain discovered servers items0 node links based on the context it is used
-func (m *CifsDomainDiscoveredServersItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline discovered servers inline array item inline node inline links based on the context it is used
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -880,7 +880,7 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) ContextValidate(ctx context
 	return nil
 }
 
-func (m *CifsDomainDiscoveredServersItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -895,7 +895,7 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) contextValidateSelf(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServersItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -903,8 +903,8 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainDiscoveredServersItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainDiscoveredServersItems0NodeLinks
+func (m *CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineDiscoveredServersInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -912,27 +912,27 @@ func (m *CifsDomainDiscoveredServersItems0NodeLinks) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// CifsDomainNameMappingType Specifies the name mapping search records.
+// CifsDomainInlineNameMapping Specifies the name mapping search records.
 //
-// swagger:model CifsDomainNameMappingType
-type CifsDomainNameMappingType struct {
+// swagger:model cifs_domain_inline_name_mapping
+type CifsDomainInlineNameMapping struct {
 
 	// trusted domains
-	TrustedDomains []string `json:"trusted_domains,omitempty"`
+	TrustedDomains []*string `json:"trusted_domains,omitempty"`
 }
 
-// Validate validates this cifs domain name mapping type
-func (m *CifsDomainNameMappingType) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline name mapping
+func (m *CifsDomainInlineNameMapping) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this cifs domain name mapping type based on context it is used
-func (m *CifsDomainNameMappingType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this cifs domain inline name mapping based on context it is used
+func (m *CifsDomainInlineNameMapping) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainNameMappingType) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineNameMapping) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -940,8 +940,8 @@ func (m *CifsDomainNameMappingType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainNameMappingType) UnmarshalBinary(b []byte) error {
-	var res CifsDomainNameMappingType
+func (m *CifsDomainInlineNameMapping) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineNameMapping
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -949,16 +949,16 @@ func (m *CifsDomainNameMappingType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainPasswordScheduleType Specifies the password schedule records.
+// CifsDomainInlinePasswordSchedule Specifies the password schedule records.
 //
-// swagger:model CifsDomainPasswordScheduleType
-type CifsDomainPasswordScheduleType struct {
+// swagger:model cifs_domain_inline_password_schedule
+type CifsDomainInlinePasswordSchedule struct {
 
 	// Schedule description.
-	ScheduleDescription string `json:"schedule_description,omitempty"`
+	ScheduleDescription *string `json:"schedule_description,omitempty"`
 
 	// Is password schedule enabled.
-	ScheduleEnabled bool `json:"schedule_enabled,omitempty"`
+	ScheduleEnabled *bool `json:"schedule_enabled,omitempty"`
 
 	// Last successful password change time.
 	// Format: date-time
@@ -967,19 +967,19 @@ type CifsDomainPasswordScheduleType struct {
 	// Minutes within which schedule start can be randomized.
 	// Maximum: 180
 	// Minimum: 1
-	ScheduleRandomizedMinute int64 `json:"schedule_randomized_minute,omitempty"`
+	ScheduleRandomizedMinute *int64 `json:"schedule_randomized_minute,omitempty"`
 
 	// Warning message in case job is deleted.
-	ScheduleWarnMessage string `json:"schedule_warn_message,omitempty"`
+	ScheduleWarnMessage *string `json:"schedule_warn_message,omitempty"`
 
 	// Interval in weeks for password change schedule.
 	// Maximum: 52
 	// Minimum: 1
-	ScheduleWeeklyInterval int64 `json:"schedule_weekly_interval,omitempty"`
+	ScheduleWeeklyInterval *int64 `json:"schedule_weekly_interval,omitempty"`
 }
 
-// Validate validates this cifs domain password schedule type
-func (m *CifsDomainPasswordScheduleType) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline password schedule
+func (m *CifsDomainInlinePasswordSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateScheduleLastChangedTime(formats); err != nil {
@@ -1000,7 +1000,7 @@ func (m *CifsDomainPasswordScheduleType) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *CifsDomainPasswordScheduleType) validateScheduleLastChangedTime(formats strfmt.Registry) error {
+func (m *CifsDomainInlinePasswordSchedule) validateScheduleLastChangedTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.ScheduleLastChangedTime) { // not required
 		return nil
 	}
@@ -1012,45 +1012,45 @@ func (m *CifsDomainPasswordScheduleType) validateScheduleLastChangedTime(formats
 	return nil
 }
 
-func (m *CifsDomainPasswordScheduleType) validateScheduleRandomizedMinute(formats strfmt.Registry) error {
+func (m *CifsDomainInlinePasswordSchedule) validateScheduleRandomizedMinute(formats strfmt.Registry) error {
 	if swag.IsZero(m.ScheduleRandomizedMinute) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("password_schedule"+"."+"schedule_randomized_minute", "body", m.ScheduleRandomizedMinute, 1, false); err != nil {
+	if err := validate.MinimumInt("password_schedule"+"."+"schedule_randomized_minute", "body", *m.ScheduleRandomizedMinute, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("password_schedule"+"."+"schedule_randomized_minute", "body", m.ScheduleRandomizedMinute, 180, false); err != nil {
+	if err := validate.MaximumInt("password_schedule"+"."+"schedule_randomized_minute", "body", *m.ScheduleRandomizedMinute, 180, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *CifsDomainPasswordScheduleType) validateScheduleWeeklyInterval(formats strfmt.Registry) error {
+func (m *CifsDomainInlinePasswordSchedule) validateScheduleWeeklyInterval(formats strfmt.Registry) error {
 	if swag.IsZero(m.ScheduleWeeklyInterval) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("password_schedule"+"."+"schedule_weekly_interval", "body", m.ScheduleWeeklyInterval, 1, false); err != nil {
+	if err := validate.MinimumInt("password_schedule"+"."+"schedule_weekly_interval", "body", *m.ScheduleWeeklyInterval, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("password_schedule"+"."+"schedule_weekly_interval", "body", m.ScheduleWeeklyInterval, 52, false); err != nil {
+	if err := validate.MaximumInt("password_schedule"+"."+"schedule_weekly_interval", "body", *m.ScheduleWeeklyInterval, 52, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this cifs domain password schedule type based on context it is used
-func (m *CifsDomainPasswordScheduleType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this cifs domain inline password schedule based on context it is used
+func (m *CifsDomainInlinePasswordSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainPasswordScheduleType) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlinePasswordSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1058,8 +1058,8 @@ func (m *CifsDomainPasswordScheduleType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainPasswordScheduleType) UnmarshalBinary(b []byte) error {
-	var res CifsDomainPasswordScheduleType
+func (m *CifsDomainInlinePasswordSchedule) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlinePasswordSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1067,34 +1067,86 @@ func (m *CifsDomainPasswordScheduleType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainPreferredDcsItems0 cifs domain preferred dcs items0
+// CifsDomainInlinePreferredDcsInlineArrayItem cifs domain inline preferred dcs inline array item
 //
-// swagger:model CifsDomainPreferredDcsItems0
-type CifsDomainPreferredDcsItems0 struct {
+// swagger:model cifs_domain_inline_preferred_dcs_inline_array_item
+type CifsDomainInlinePreferredDcsInlineArrayItem struct {
 
 	// Fully Qualified Domain Name.
 	//
 	// Example: test.com
-	Fqdn string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn,omitempty"`
 
 	// IP address of the preferred domain controller (DC). The address can be either an IPv4 or an IPv6 address.
 	//
 	// Example: 4.4.4.4
-	ServerIP string `json:"server_ip,omitempty"`
+	ServerIP *string `json:"server_ip,omitempty"`
+
+	// status
+	Status *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus `json:"status,omitempty"`
 }
 
-// Validate validates this cifs domain preferred dcs items0
-func (m *CifsDomainPreferredDcsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline preferred dcs inline array item
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this cifs domain preferred dcs items0 based on context it is used
-func (m *CifsDomainPreferredDcsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cifs domain inline preferred dcs inline array item based on the context it is used
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Status != nil {
+		if err := m.Status.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainPreferredDcsItems0) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1102,8 +1154,8 @@ func (m *CifsDomainPreferredDcsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainPreferredDcsItems0) UnmarshalBinary(b []byte) error {
-	var res CifsDomainPreferredDcsItems0
+func (m *CifsDomainInlinePreferredDcsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlinePreferredDcsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1111,27 +1163,104 @@ func (m *CifsDomainPreferredDcsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainSvm cifs domain svm
+// CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus Status of CIFS preferred domain controller.
 //
-// swagger:model CifsDomainSvm
-type CifsDomainSvm struct {
+// swagger:model cifs_domain_inline_preferred_dcs_inline_array_item_inline_status
+type CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus struct {
+
+	// Provides a detailed description of the state if the state is 'down' or
+	// the response time of the DNS server if the state is 'up'.
+	//
+	// Example: Response time (msec): 111
+	// Read Only: true
+	Details *string `json:"details,omitempty"`
+
+	// Indicates whether or not the domain controller is reachable.
+	// Example: true
+	// Read Only: true
+	Reachable *bool `json:"reachable,omitempty"`
+}
+
+// Validate validates this cifs domain inline preferred dcs inline array item inline status
+func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cifs domain inline preferred dcs inline array item inline status based on the context it is used
+func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReachable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status"+"."+"details", "body", m.Details); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) contextValidateReachable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status"+"."+"reachable", "body", m.Reachable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlinePreferredDcsInlineArrayItemInlineStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// CifsDomainInlineSvm cifs domain inline svm
+//
+// swagger:model cifs_domain_inline_svm
+type CifsDomainInlineSvm struct {
 
 	// links
-	Links *CifsDomainSvmLinks `json:"_links,omitempty"`
+	Links *CifsDomainInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs domain svm
-func (m *CifsDomainSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline svm
+func (m *CifsDomainInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1144,7 +1273,7 @@ func (m *CifsDomainSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsDomainInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1161,8 +1290,8 @@ func (m *CifsDomainSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs domain svm based on the context it is used
-func (m *CifsDomainSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline svm based on the context it is used
+func (m *CifsDomainInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1175,7 +1304,7 @@ func (m *CifsDomainSvm) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *CifsDomainSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1190,7 +1319,7 @@ func (m *CifsDomainSvm) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1198,8 +1327,8 @@ func (m *CifsDomainSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainSvm) UnmarshalBinary(b []byte) error {
-	var res CifsDomainSvm
+func (m *CifsDomainInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1207,17 +1336,17 @@ func (m *CifsDomainSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainSvmLinks cifs domain svm links
+// CifsDomainInlineSvmInlineLinks cifs domain inline svm inline links
 //
-// swagger:model CifsDomainSvmLinks
-type CifsDomainSvmLinks struct {
+// swagger:model cifs_domain_inline_svm_inline__links
+type CifsDomainInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain svm links
-func (m *CifsDomainSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline svm inline links
+func (m *CifsDomainInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1230,7 +1359,7 @@ func (m *CifsDomainSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsDomainSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1247,8 +1376,8 @@ func (m *CifsDomainSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs domain svm links based on the context it is used
-func (m *CifsDomainSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline svm inline links based on the context it is used
+func (m *CifsDomainInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1261,7 +1390,7 @@ func (m *CifsDomainSvmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *CifsDomainSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1276,7 +1405,7 @@ func (m *CifsDomainSvmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1284,8 +1413,8 @@ func (m *CifsDomainSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainSvmLinks
+func (m *CifsDomainInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1293,25 +1422,25 @@ func (m *CifsDomainSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainTrustRelationshipsItems0 cifs domain trust relationships items0
+// CifsDomainInlineTrustRelationshipsInlineArrayItem cifs domain inline trust relationships inline array item
 //
-// swagger:model CifsDomainTrustRelationshipsItems0
-type CifsDomainTrustRelationshipsItems0 struct {
+// swagger:model cifs_domain_inline_trust_relationships_inline_array_item
+type CifsDomainInlineTrustRelationshipsInlineArrayItem struct {
 
 	// Home Domain Name
 	//
-	HomeDomain string `json:"home_domain,omitempty"`
+	HomeDomain *string `json:"home_domain,omitempty"`
 
 	// node
-	Node *CifsDomainTrustRelationshipsItems0Node `json:"node,omitempty"`
+	Node *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// Trusted Domain Name
 	//
-	TrustedDomains []string `json:"trusted_domains,omitempty"`
+	TrustedDomains []*string `json:"trusted_domains"`
 }
 
-// Validate validates this cifs domain trust relationships items0
-func (m *CifsDomainTrustRelationshipsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline trust relationships inline array item
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -1324,7 +1453,7 @@ func (m *CifsDomainTrustRelationshipsItems0) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *CifsDomainTrustRelationshipsItems0) validateNode(formats strfmt.Registry) error {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1341,8 +1470,8 @@ func (m *CifsDomainTrustRelationshipsItems0) validateNode(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this cifs domain trust relationships items0 based on the context it is used
-func (m *CifsDomainTrustRelationshipsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline trust relationships inline array item based on the context it is used
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -1355,7 +1484,7 @@ func (m *CifsDomainTrustRelationshipsItems0) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *CifsDomainTrustRelationshipsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1370,7 +1499,7 @@ func (m *CifsDomainTrustRelationshipsItems0) contextValidateNode(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainTrustRelationshipsItems0) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1378,8 +1507,8 @@ func (m *CifsDomainTrustRelationshipsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainTrustRelationshipsItems0) UnmarshalBinary(b []byte) error {
-	var res CifsDomainTrustRelationshipsItems0
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineTrustRelationshipsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1387,25 +1516,25 @@ func (m *CifsDomainTrustRelationshipsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsDomainTrustRelationshipsItems0Node cifs domain trust relationships items0 node
+// CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode cifs domain inline trust relationships inline array item inline node
 //
-// swagger:model CifsDomainTrustRelationshipsItems0Node
-type CifsDomainTrustRelationshipsItems0Node struct {
+// swagger:model cifs_domain_inline_trust_relationships_inline_array_item_inline_node
+type CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *CifsDomainTrustRelationshipsItems0NodeLinks `json:"_links,omitempty"`
+	Links *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs domain trust relationships items0 node
-func (m *CifsDomainTrustRelationshipsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline trust relationships inline array item inline node
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1418,7 +1547,7 @@ func (m *CifsDomainTrustRelationshipsItems0Node) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *CifsDomainTrustRelationshipsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1435,8 +1564,8 @@ func (m *CifsDomainTrustRelationshipsItems0Node) validateLinks(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this cifs domain trust relationships items0 node based on the context it is used
-func (m *CifsDomainTrustRelationshipsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline trust relationships inline array item inline node based on the context it is used
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1449,7 +1578,7 @@ func (m *CifsDomainTrustRelationshipsItems0Node) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *CifsDomainTrustRelationshipsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1464,7 +1593,7 @@ func (m *CifsDomainTrustRelationshipsItems0Node) contextValidateLinks(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainTrustRelationshipsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1472,8 +1601,8 @@ func (m *CifsDomainTrustRelationshipsItems0Node) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainTrustRelationshipsItems0Node) UnmarshalBinary(b []byte) error {
-	var res CifsDomainTrustRelationshipsItems0Node
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1481,17 +1610,17 @@ func (m *CifsDomainTrustRelationshipsItems0Node) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// CifsDomainTrustRelationshipsItems0NodeLinks cifs domain trust relationships items0 node links
+// CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks cifs domain inline trust relationships inline array item inline node inline links
 //
-// swagger:model CifsDomainTrustRelationshipsItems0NodeLinks
-type CifsDomainTrustRelationshipsItems0NodeLinks struct {
+// swagger:model cifs_domain_inline_trust_relationships_inline_array_item_inline_node_inline__links
+type CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs domain trust relationships items0 node links
-func (m *CifsDomainTrustRelationshipsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs domain inline trust relationships inline array item inline node inline links
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1504,7 +1633,7 @@ func (m *CifsDomainTrustRelationshipsItems0NodeLinks) Validate(formats strfmt.Re
 	return nil
 }
 
-func (m *CifsDomainTrustRelationshipsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1521,8 +1650,8 @@ func (m *CifsDomainTrustRelationshipsItems0NodeLinks) validateSelf(formats strfm
 	return nil
 }
 
-// ContextValidate validate this cifs domain trust relationships items0 node links based on the context it is used
-func (m *CifsDomainTrustRelationshipsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs domain inline trust relationships inline array item inline node inline links based on the context it is used
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1535,7 +1664,7 @@ func (m *CifsDomainTrustRelationshipsItems0NodeLinks) ContextValidate(ctx contex
 	return nil
 }
 
-func (m *CifsDomainTrustRelationshipsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1550,7 +1679,7 @@ func (m *CifsDomainTrustRelationshipsItems0NodeLinks) contextValidateSelf(ctx co
 }
 
 // MarshalBinary interface implementation
-func (m *CifsDomainTrustRelationshipsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1558,8 +1687,8 @@ func (m *CifsDomainTrustRelationshipsItems0NodeLinks) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsDomainTrustRelationshipsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsDomainTrustRelationshipsItems0NodeLinks
+func (m *CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsDomainInlineTrustRelationshipsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

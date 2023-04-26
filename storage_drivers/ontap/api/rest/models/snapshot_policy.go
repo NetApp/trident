@@ -22,34 +22,34 @@ import (
 type SnapshotPolicy struct {
 
 	// links
-	Links *SnapshotPolicyLinks `json:"_links,omitempty"`
+	Links *SnapshotPolicyInlineLinks `json:"_links,omitempty"`
 
 	// A comment associated with the Snapshot copy policy.
-	Comment string `json:"comment,omitempty"`
-
-	// copies
-	Copies []*SnapshotPolicyCopiesItems0 `json:"copies,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Is the Snapshot copy policy enabled?
 	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Name of the Snapshot copy policy.
 	// Example: default
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Set to "svm" when the request is on a data SVM, otherwise set to "cluster".
 	// Read Only: true
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
+
+	// snapshot policy inline copies
+	SnapshotPolicyInlineCopies []*SnapshotPolicyInlineCopiesInlineArrayItem `json:"copies,omitempty"`
 
 	// svm
-	Svm *SnapshotPolicySvm `json:"svm,omitempty"`
+	Svm *SnapshotPolicyInlineSvm `json:"svm,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this snapshot policy
@@ -60,11 +60,11 @@ func (m *SnapshotPolicy) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateCopies(formats); err != nil {
+	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateScope(formats); err != nil {
+	if err := m.validateSnapshotPolicyInlineCopies(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -90,30 +90,6 @@ func (m *SnapshotPolicy) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SnapshotPolicy) validateCopies(formats strfmt.Registry) error {
-	if swag.IsZero(m.Copies) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Copies); i++ {
-		if swag.IsZero(m.Copies[i]) { // not required
-			continue
-		}
-
-		if m.Copies[i] != nil {
-			if err := m.Copies[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("copies" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -168,8 +144,32 @@ func (m *SnapshotPolicy) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SnapshotPolicy) validateSnapshotPolicyInlineCopies(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotPolicyInlineCopies) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SnapshotPolicyInlineCopies); i++ {
+		if swag.IsZero(m.SnapshotPolicyInlineCopies[i]) { // not required
+			continue
+		}
+
+		if m.SnapshotPolicyInlineCopies[i] != nil {
+			if err := m.SnapshotPolicyInlineCopies[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("copies" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -200,11 +200,11 @@ func (m *SnapshotPolicy) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCopies(ctx, formats); err != nil {
+	if err := m.contextValidateScope(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateScope(ctx, formats); err != nil {
+	if err := m.contextValidateSnapshotPolicyInlineCopies(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -236,12 +236,21 @@ func (m *SnapshotPolicy) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SnapshotPolicy) contextValidateCopies(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Copies); i++ {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
+	}
 
-		if m.Copies[i] != nil {
-			if err := m.Copies[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *SnapshotPolicy) contextValidateSnapshotPolicyInlineCopies(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SnapshotPolicyInlineCopies); i++ {
+
+		if m.SnapshotPolicyInlineCopies[i] != nil {
+			if err := m.SnapshotPolicyInlineCopies[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("copies" + "." + strconv.Itoa(i))
 				}
@@ -249,15 +258,6 @@ func (m *SnapshotPolicy) contextValidateCopies(ctx context.Context, formats strf
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *SnapshotPolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
-		return err
 	}
 
 	return nil
@@ -279,7 +279,7 @@ func (m *SnapshotPolicy) contextValidateSvm(ctx context.Context, formats strfmt.
 
 func (m *SnapshotPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -304,26 +304,29 @@ func (m *SnapshotPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyCopiesItems0 snapshot policy copies items0
+// SnapshotPolicyInlineCopiesInlineArrayItem snapshot policy inline copies inline array item
 //
-// swagger:model SnapshotPolicyCopiesItems0
-type SnapshotPolicyCopiesItems0 struct {
+// swagger:model snapshot_policy_inline_copies_inline_array_item
+type SnapshotPolicyInlineCopiesInlineArrayItem struct {
 
 	// The number of Snapshot copies to maintain for this schedule.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The prefix to use while creating Snapshot copies at regular intervals.
-	Prefix string `json:"prefix,omitempty"`
+	Prefix *string `json:"prefix,omitempty"`
+
+	// The retention period of Snapshot copies for this schedule. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A period specified for years, months, and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. A duration in hours and minutes is represented by "PT<num>H" and "PT<num>M" respectively. The period string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported.
+	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// schedule
-	Schedule *SnapshotPolicyCopiesItems0Schedule `json:"schedule,omitempty"`
+	Schedule *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule `json:"schedule,omitempty"`
 
 	// Label for SnapMirror operations
-	SnapmirrorLabel string `json:"snapmirror_label,omitempty"`
+	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
 }
 
-// Validate validates this snapshot policy copies items0
-func (m *SnapshotPolicyCopiesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy inline copies inline array item
+func (m *SnapshotPolicyInlineCopiesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSchedule(formats); err != nil {
@@ -336,7 +339,7 @@ func (m *SnapshotPolicyCopiesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotPolicyCopiesItems0) validateSchedule(formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineCopiesInlineArrayItem) validateSchedule(formats strfmt.Registry) error {
 	if swag.IsZero(m.Schedule) { // not required
 		return nil
 	}
@@ -353,8 +356,8 @@ func (m *SnapshotPolicyCopiesItems0) validateSchedule(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this snapshot policy copies items0 based on the context it is used
-func (m *SnapshotPolicyCopiesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy inline copies inline array item based on the context it is used
+func (m *SnapshotPolicyInlineCopiesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSchedule(ctx, formats); err != nil {
@@ -367,7 +370,7 @@ func (m *SnapshotPolicyCopiesItems0) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnapshotPolicyCopiesItems0) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineCopiesInlineArrayItem) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Schedule != nil {
 		if err := m.Schedule.ContextValidate(ctx, formats); err != nil {
@@ -382,7 +385,7 @@ func (m *SnapshotPolicyCopiesItems0) contextValidateSchedule(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyCopiesItems0) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyInlineCopiesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -390,8 +393,8 @@ func (m *SnapshotPolicyCopiesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyCopiesItems0) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyCopiesItems0
+func (m *SnapshotPolicyInlineCopiesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyInlineCopiesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -399,28 +402,28 @@ func (m *SnapshotPolicyCopiesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyCopiesItems0Schedule snapshot policy copies items0 schedule
+// SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule snapshot policy inline copies inline array item inline schedule
 //
-// swagger:model SnapshotPolicyCopiesItems0Schedule
-type SnapshotPolicyCopiesItems0Schedule struct {
+// swagger:model snapshot_policy_inline_copies_inline_array_item_inline_schedule
+type SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule struct {
 
 	// Schedule at which Snapshot copies are captured on the volume. Some common schedules already defined in the system are hourly, daily, weekly, at 15 minute intervals, and at 5 minute intervals. Snapshot copy policies with custom schedules can be referenced.
 	// Example: hourly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this snapshot policy copies items0 schedule
-func (m *SnapshotPolicyCopiesItems0Schedule) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy inline copies inline array item inline schedule
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this snapshot policy copies items0 schedule based on context it is used
-func (m *SnapshotPolicyCopiesItems0Schedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this snapshot policy inline copies inline array item inline schedule based on context it is used
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyCopiesItems0Schedule) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -428,8 +431,8 @@ func (m *SnapshotPolicyCopiesItems0Schedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyCopiesItems0Schedule) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyCopiesItems0Schedule
+func (m *SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyInlineCopiesInlineArrayItemInlineSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -437,17 +440,17 @@ func (m *SnapshotPolicyCopiesItems0Schedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyLinks snapshot policy links
+// SnapshotPolicyInlineLinks snapshot policy inline links
 //
-// swagger:model SnapshotPolicyLinks
-type SnapshotPolicyLinks struct {
+// swagger:model snapshot_policy_inline__links
+type SnapshotPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot policy links
-func (m *SnapshotPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy inline links
+func (m *SnapshotPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -460,7 +463,7 @@ func (m *SnapshotPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -477,8 +480,8 @@ func (m *SnapshotPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot policy links based on the context it is used
-func (m *SnapshotPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy inline links based on the context it is used
+func (m *SnapshotPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -491,7 +494,7 @@ func (m *SnapshotPolicyLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SnapshotPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -506,7 +509,7 @@ func (m *SnapshotPolicyLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -514,8 +517,8 @@ func (m *SnapshotPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyLinks
+func (m *SnapshotPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -523,27 +526,27 @@ func (m *SnapshotPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicySvm snapshot policy svm
+// SnapshotPolicyInlineSvm snapshot policy inline svm
 //
-// swagger:model SnapshotPolicySvm
-type SnapshotPolicySvm struct {
+// swagger:model snapshot_policy_inline_svm
+type SnapshotPolicyInlineSvm struct {
 
 	// links
-	Links *SnapshotPolicySvmLinks `json:"_links,omitempty"`
+	Links *SnapshotPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapshot policy svm
-func (m *SnapshotPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy inline svm
+func (m *SnapshotPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -556,7 +559,7 @@ func (m *SnapshotPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -573,8 +576,8 @@ func (m *SnapshotPolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot policy svm based on the context it is used
-func (m *SnapshotPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy inline svm based on the context it is used
+func (m *SnapshotPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -587,7 +590,7 @@ func (m *SnapshotPolicySvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *SnapshotPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -602,7 +605,7 @@ func (m *SnapshotPolicySvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -610,8 +613,8 @@ func (m *SnapshotPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicySvm) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicySvm
+func (m *SnapshotPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -619,17 +622,17 @@ func (m *SnapshotPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicySvmLinks snapshot policy svm links
+// SnapshotPolicyInlineSvmInlineLinks snapshot policy inline svm inline links
 //
-// swagger:model SnapshotPolicySvmLinks
-type SnapshotPolicySvmLinks struct {
+// swagger:model snapshot_policy_inline_svm_inline__links
+type SnapshotPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot policy svm links
-func (m *SnapshotPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy inline svm inline links
+func (m *SnapshotPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -642,7 +645,7 @@ func (m *SnapshotPolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -659,8 +662,8 @@ func (m *SnapshotPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot policy svm links based on the context it is used
-func (m *SnapshotPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy inline svm inline links based on the context it is used
+func (m *SnapshotPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -673,7 +676,7 @@ func (m *SnapshotPolicySvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SnapshotPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -688,7 +691,7 @@ func (m *SnapshotPolicySvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -696,8 +699,8 @@ func (m *SnapshotPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicySvmLinks
+func (m *SnapshotPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

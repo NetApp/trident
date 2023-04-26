@@ -66,19 +66,19 @@ type QtreeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Qtree ID
 	*/
-	IDPathParameter string
+	ID string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *QtreeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the qtree get params
-func (o *QtreeGetParams) WithFieldsQueryParameter(fields []string) *QtreeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the qtree get params
+func (o *QtreeGetParams) WithFields(fields []string) *QtreeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the qtree get params
-func (o *QtreeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the qtree get params
+func (o *QtreeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the qtree get params
-func (o *QtreeGetParams) WithIDPathParameter(id string) *QtreeGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the qtree get params
+func (o *QtreeGetParams) WithID(id string) *QtreeGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the qtree get params
-func (o *QtreeGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the qtree get params
+func (o *QtreeGetParams) SetID(id string) {
+	o.ID = id
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the qtree get params
-func (o *QtreeGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *QtreeGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the qtree get params
+func (o *QtreeGetParams) WithVolumeUUID(volumeUUID string) *QtreeGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the qtree get params
-func (o *QtreeGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the qtree get params
+func (o *QtreeGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *QtreeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *QtreeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *QtreeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamQtreeGet binds the parameter fields
 func (o *QtreeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

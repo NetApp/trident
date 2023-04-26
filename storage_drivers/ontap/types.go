@@ -21,7 +21,7 @@ type StorageDriver interface {
 }
 
 type NASDriver interface {
-	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]sa.Request) (map[string]string, error)
+	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]sa.Request) map[string]string
 	GetAPI() api.OntapAPI
 	GetConfig() *drivers.OntapStorageDriverConfig
 }

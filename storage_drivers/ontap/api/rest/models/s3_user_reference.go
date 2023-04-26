@@ -20,14 +20,14 @@ import (
 type S3UserReference struct {
 
 	// links
-	Links *S3UserReferenceLinks `json:"_links,omitempty"`
+	Links *S3UserReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the name of the user. A user name length can range from 1 to 64 characters and can only contain the following combination of characters 0-9, A-Z, a-z, "_", "+", "=", ",", ".","@", and "-".
 	// Example: user-1
 	// Max Length: 64
 	// Min Length: 1
 	// Pattern: ^[0-9A-Za-z_+=,.@-]{1,64}$
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this s3 user reference
@@ -70,15 +70,15 @@ func (m *S3UserReference) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 64); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", m.Name, `^[0-9A-Za-z_+=,.@-]{1,64}$`); err != nil {
+	if err := validate.Pattern("name", "body", *m.Name, `^[0-9A-Za-z_+=,.@-]{1,64}$`); err != nil {
 		return err
 	}
 
@@ -131,17 +131,17 @@ func (m *S3UserReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3UserReferenceLinks s3 user reference links
+// S3UserReferenceInlineLinks s3 user reference inline links
 //
-// swagger:model S3UserReferenceLinks
-type S3UserReferenceLinks struct {
+// swagger:model s3_user_reference_inline__links
+type S3UserReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 user reference links
-func (m *S3UserReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 user reference inline links
+func (m *S3UserReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -154,7 +154,7 @@ func (m *S3UserReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3UserReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3UserReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -171,8 +171,8 @@ func (m *S3UserReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 user reference links based on the context it is used
-func (m *S3UserReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 user reference inline links based on the context it is used
+func (m *S3UserReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -185,7 +185,7 @@ func (m *S3UserReferenceLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *S3UserReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3UserReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +200,7 @@ func (m *S3UserReferenceLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *S3UserReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *S3UserReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *S3UserReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3UserReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res S3UserReferenceLinks
+func (m *S3UserReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3UserReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

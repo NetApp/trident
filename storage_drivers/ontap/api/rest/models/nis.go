@@ -19,23 +19,23 @@ type Nis struct {
 
 	// RFC 2307 nisMapEntry attribute.
 	// Example: msSFU30NisMapEntry
-	Mapentry string `json:"mapentry,omitempty"`
+	Mapentry *string `json:"mapentry,omitempty"`
 
 	// RFC 2307 nisMapName attribute.
 	// Example: msSFU30NisMapName
-	Mapname string `json:"mapname,omitempty"`
+	Mapname *string `json:"mapname,omitempty"`
 
 	// RFC 2307 nisNetgroup object class.
 	// Example: msSFU30NisNetGroup
-	Netgroup string `json:"netgroup,omitempty"`
+	Netgroup *string `json:"netgroup,omitempty"`
 
 	// RFC 2307 nisNetgroupTriple attribute.
 	// Example: msSFU30MemberOfNisNetgroup
-	NetgroupTriple string `json:"netgroup_triple,omitempty"`
+	NetgroupTriple *string `json:"netgroup_triple,omitempty"`
 
 	// RFC 2307 nisObject object class.
 	// Example: msSFU30NisObject
-	Object string `json:"object,omitempty"`
+	Object *string `json:"object,omitempty"`
 }
 
 // Validate validates this nis

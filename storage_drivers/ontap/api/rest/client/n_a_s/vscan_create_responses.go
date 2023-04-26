@@ -52,6 +52,11 @@ VscanCreateCreated describes a response with status code 201, with default heade
 Created
 */
 type VscanCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.VscanResponse
 }
 
@@ -93,6 +98,13 @@ func (o *VscanCreateCreated) GetPayload() *models.VscanResponse {
 }
 
 func (o *VscanCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.VscanResponse)
 

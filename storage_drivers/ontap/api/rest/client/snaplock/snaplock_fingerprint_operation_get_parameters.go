@@ -66,13 +66,13 @@ type SnaplockFingerprintOperationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Unique identifier of the operation
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SnaplockFingerprintOperationGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock fingerprint operation get params
-func (o *SnaplockFingerprintOperationGetParams) WithFieldsQueryParameter(fields []string) *SnaplockFingerprintOperationGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock fingerprint operation get params
+func (o *SnaplockFingerprintOperationGetParams) WithFields(fields []string) *SnaplockFingerprintOperationGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock fingerprint operation get params
-func (o *SnaplockFingerprintOperationGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock fingerprint operation get params
+func (o *SnaplockFingerprintOperationGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the snaplock fingerprint operation get params
-func (o *SnaplockFingerprintOperationGetParams) WithIDPathParameter(id string) *SnaplockFingerprintOperationGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock fingerprint operation get params
+func (o *SnaplockFingerprintOperationGetParams) WithID(id string) *SnaplockFingerprintOperationGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock fingerprint operation get params
-func (o *SnaplockFingerprintOperationGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock fingerprint operation get params
+func (o *SnaplockFingerprintOperationGetParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SnaplockFingerprintOperationGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SnaplockFingerprintOperationGetParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SnaplockFingerprintOperationGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamSnaplockFingerprintOperationGet binds the parameter fields
 func (o *SnaplockFingerprintOperationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

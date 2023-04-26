@@ -72,7 +72,7 @@ type LunModifyParams struct {
 
 	     Format: int64
 	*/
-	DataOffsetQueryParameter *int64
+	DataOffset *int64
 
 	/* Info.
 
@@ -87,7 +87,7 @@ type LunModifyParams struct {
 	   The unique identifier of the LUN to retrieve.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -142,15 +142,15 @@ func (o *LunModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDataOffsetQueryParameter adds the dataOffset to the lun modify params
-func (o *LunModifyParams) WithDataOffsetQueryParameter(dataOffset *int64) *LunModifyParams {
-	o.SetDataOffsetQueryParameter(dataOffset)
+// WithDataOffset adds the dataOffset to the lun modify params
+func (o *LunModifyParams) WithDataOffset(dataOffset *int64) *LunModifyParams {
+	o.SetDataOffset(dataOffset)
 	return o
 }
 
-// SetDataOffsetQueryParameter adds the dataOffset to the lun modify params
-func (o *LunModifyParams) SetDataOffsetQueryParameter(dataOffset *int64) {
-	o.DataOffsetQueryParameter = dataOffset
+// SetDataOffset adds the dataOffset to the lun modify params
+func (o *LunModifyParams) SetDataOffset(dataOffset *int64) {
+	o.DataOffset = dataOffset
 }
 
 // WithInfo adds the info to the lun modify params
@@ -164,15 +164,15 @@ func (o *LunModifyParams) SetInfo(info *models.Lun) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the lun modify params
-func (o *LunModifyParams) WithUUIDPathParameter(uuid string) *LunModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the lun modify params
+func (o *LunModifyParams) WithUUID(uuid string) *LunModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the lun modify params
-func (o *LunModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the lun modify params
+func (o *LunModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -183,13 +183,13 @@ func (o *LunModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.DataOffsetQueryParameter != nil {
+	if o.DataOffset != nil {
 
 		// query param data.offset
 		var qrDataOffset int64
 
-		if o.DataOffsetQueryParameter != nil {
-			qrDataOffset = *o.DataOffsetQueryParameter
+		if o.DataOffset != nil {
+			qrDataOffset = *o.DataOffset
 		}
 		qDataOffset := swag.FormatInt64(qrDataOffset)
 		if qDataOffset != "" {
@@ -206,7 +206,7 @@ func (o *LunModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

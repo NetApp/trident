@@ -11,10 +11,9 @@ import (
 	"strings"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
@@ -27,7 +26,7 @@ import (
 // A return value of true means it's not a mount this function knows how to find,
 // but it could still be a mount point.
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
-	fields := log.Fields{"mountpoint": mountpoint}
+	fields := LogFields{"mountpoint": mountpoint}
 	Logc(ctx).WithFields(fields).Debug(">>>> mount_linux.IsLikelyNotMountPoint")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< mount_linux.IsLikelyNotMountPoint")
 
@@ -54,7 +53,7 @@ func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error)
 // If no source device is specified, any existing mount with the specified mountpoint returns true.
 // If no mountpoint is specified, any existing mount with the specified device returns true.
 func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error) {
-	logFields := log.Fields{"source": sourceDevice, "target": mountpoint}
+	logFields := LogFields{"source": sourceDevice, "target": mountpoint}
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount_linux.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount_linux.IsMounted")
 
@@ -89,14 +88,17 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 
 			procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
 
-			// Resolve any symlinks to get the real device
 			if strings.HasPrefix(procMount.MountSource, "/dev/") {
-				procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
-				if err != nil {
-					Logc(ctx).Error(err)
-					continue
+				procSourceDevice = strings.TrimPrefix(procMount.MountSource, "/dev/")
+				if sourceDevice != procSourceDevice {
+					// Resolve any symlinks to get the real device
+					procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
+					if err != nil {
+						Logc(ctx).Error(err)
+						continue
+					}
+					procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
 				}
-				procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
 			}
 
 			if sourceDevice != procSourceDevice {
@@ -105,7 +107,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 				Logc(ctx).Debugf("Device found: %v", sourceDevice)
 
 				if err = CheckMountOptions(ctx, procMount, mountOptions); err != nil {
-					Logc(ctx).WithFields(logFields).Errorf("checking mount options failed; %s", err)
+					Logc(ctx).WithFields(logFields).WithError(err).Warning("Checking mount options failed.")
 				}
 			}
 		}
@@ -120,7 +122,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 
 // mountNFSPath attaches the supplied NFS share at the supplied location with options.
 func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (err error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"exportPath": exportPath,
 		"mountpoint": mountpoint,
 		"options":    options,
@@ -176,7 +178,7 @@ func UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
 }
 
 func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool, error) {
-	fields := log.Fields{
+	fields := LogFields{
 		"exportPath": exportPath,
 		"target":     mountpoint,
 	}
@@ -220,7 +222,7 @@ func GetHostMountInfo(ctx context.Context) ([]MountInfo, error) {
 
 // MountDevice attaches the supplied device at the supplied location.  Use this for iSCSI devices.
 func MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"device":     device,
 		"mountpoint": mountpoint,
 		"options":    options,
@@ -263,7 +265,7 @@ func MountDevice(ctx context.Context, device, mountpoint, options string, isMoun
 
 // RemountDevice remounts the mountpoint with supplied mount options.
 func RemountDevice(ctx context.Context, mountpoint, options string) (err error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"mountpoint": mountpoint,
 		"options":    options,
 	}).Debug(">>>> mount_linux.RemountDevice")

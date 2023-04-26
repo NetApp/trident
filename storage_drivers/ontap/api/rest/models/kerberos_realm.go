@@ -22,26 +22,26 @@ import (
 type KerberosRealm struct {
 
 	// links
-	Links *KerberosRealmLinks `json:"_links,omitempty"`
+	Links *KerberosRealmInlineLinks `json:"_links,omitempty"`
 
 	// ad server
-	AdServer *KerberosRealmAdServer `json:"ad_server,omitempty"`
+	AdServer *KerberosRealmInlineAdServer `json:"ad_server,omitempty"`
 
 	// Comment
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// encryption types
 	// Read Only: true
-	EncryptionTypes []string `json:"encryption_types,omitempty"`
+	EncryptionTypes []*string `json:"encryption_types,omitempty"`
 
 	// kdc
-	Kdc *KerberosRealmKdc `json:"kdc,omitempty"`
+	Kdc *KerberosRealmInlineKdc `json:"kdc,omitempty"`
 
 	// Kerberos realm
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// svm
-	Svm *KerberosRealmSvm `json:"svm,omitempty"`
+	Svm *KerberosRealmInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this kerberos realm
@@ -133,9 +133,12 @@ func (m *KerberosRealm) validateEncryptionTypes(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.EncryptionTypes); i++ {
+		if swag.IsZero(m.EncryptionTypes[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateEncryptionTypesItemsEnum("encryption_types"+"."+strconv.Itoa(i), "body", m.EncryptionTypes[i]); err != nil {
+		if err := m.validateEncryptionTypesItemsEnum("encryption_types"+"."+strconv.Itoa(i), "body", *m.EncryptionTypes[i]); err != nil {
 			return err
 		}
 
@@ -238,13 +241,13 @@ func (m *KerberosRealm) contextValidateAdServer(ctx context.Context, formats str
 
 func (m *KerberosRealm) contextValidateEncryptionTypes(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "encryption_types", "body", []string(m.EncryptionTypes)); err != nil {
+	if err := validate.ReadOnly(ctx, "encryption_types", "body", []*string(m.EncryptionTypes)); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.EncryptionTypes); i++ {
 
-		if err := validate.ReadOnly(ctx, "encryption_types"+"."+strconv.Itoa(i), "body", string(m.EncryptionTypes[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "encryption_types"+"."+strconv.Itoa(i), "body", m.EncryptionTypes[i]); err != nil {
 			return err
 		}
 
@@ -299,31 +302,31 @@ func (m *KerberosRealm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmAdServer kerberos realm ad server
+// KerberosRealmInlineAdServer kerberos realm inline ad server
 //
-// swagger:model KerberosRealmAdServer
-type KerberosRealmAdServer struct {
+// swagger:model kerberos_realm_inline_ad_server
+type KerberosRealmInlineAdServer struct {
 
 	// Active Directory server IP address
 	// Example: 1.2.3.4
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// Active Directory server name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this kerberos realm ad server
-func (m *KerberosRealmAdServer) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos realm inline ad server
+func (m *KerberosRealmInlineAdServer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this kerberos realm ad server based on context it is used
-func (m *KerberosRealmAdServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this kerberos realm inline ad server based on context it is used
+func (m *KerberosRealmInlineAdServer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosRealmAdServer) MarshalBinary() ([]byte, error) {
+func (m *KerberosRealmInlineAdServer) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -331,8 +334,8 @@ func (m *KerberosRealmAdServer) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosRealmAdServer) UnmarshalBinary(b []byte) error {
-	var res KerberosRealmAdServer
+func (m *KerberosRealmInlineAdServer) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlineAdServer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -340,31 +343,31 @@ func (m *KerberosRealmAdServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmKdc kerberos realm kdc
+// KerberosRealmInlineKdc kerberos realm inline kdc
 //
-// swagger:model KerberosRealmKdc
-type KerberosRealmKdc struct {
+// swagger:model kerberos_realm_inline_kdc
+type KerberosRealmInlineKdc struct {
 
 	// KDC IP address
 	// Example: 1.2.3.4
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// KDC port
 	// Example: 88
 	// Maximum: 65535
 	// Minimum: 1
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Key Distribution Center (KDC) vendor. Following values are suported:
 	// * microsoft - Microsoft Active Directory KDC
 	// * other - MIT Kerberos KDC or other KDC
 	//
 	// Enum: [microsoft other]
-	Vendor string `json:"vendor,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 }
 
-// Validate validates this kerberos realm kdc
-func (m *KerberosRealmKdc) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos realm inline kdc
+func (m *KerberosRealmInlineKdc) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePort(formats); err != nil {
@@ -381,23 +384,23 @@ func (m *KerberosRealmKdc) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosRealmKdc) validatePort(formats strfmt.Registry) error {
+func (m *KerberosRealmInlineKdc) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("kdc"+"."+"port", "body", m.Port, 1, false); err != nil {
+	if err := validate.MinimumInt("kdc"+"."+"port", "body", *m.Port, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("kdc"+"."+"port", "body", m.Port, 65535, false); err != nil {
+	if err := validate.MaximumInt("kdc"+"."+"port", "body", *m.Port, 65535, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var kerberosRealmKdcTypeVendorPropEnum []interface{}
+var kerberosRealmInlineKdcTypeVendorPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -405,61 +408,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		kerberosRealmKdcTypeVendorPropEnum = append(kerberosRealmKdcTypeVendorPropEnum, v)
+		kerberosRealmInlineKdcTypeVendorPropEnum = append(kerberosRealmInlineKdcTypeVendorPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// KerberosRealmKdc
-	// KerberosRealmKdc
+	// kerberos_realm_inline_kdc
+	// KerberosRealmInlineKdc
 	// vendor
 	// Vendor
 	// microsoft
 	// END DEBUGGING
-	// KerberosRealmKdcVendorMicrosoft captures enum value "microsoft"
-	KerberosRealmKdcVendorMicrosoft string = "microsoft"
+	// KerberosRealmInlineKdcVendorMicrosoft captures enum value "microsoft"
+	KerberosRealmInlineKdcVendorMicrosoft string = "microsoft"
 
 	// BEGIN DEBUGGING
-	// KerberosRealmKdc
-	// KerberosRealmKdc
+	// kerberos_realm_inline_kdc
+	// KerberosRealmInlineKdc
 	// vendor
 	// Vendor
 	// other
 	// END DEBUGGING
-	// KerberosRealmKdcVendorOther captures enum value "other"
-	KerberosRealmKdcVendorOther string = "other"
+	// KerberosRealmInlineKdcVendorOther captures enum value "other"
+	KerberosRealmInlineKdcVendorOther string = "other"
 )
 
 // prop value enum
-func (m *KerberosRealmKdc) validateVendorEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, kerberosRealmKdcTypeVendorPropEnum, true); err != nil {
+func (m *KerberosRealmInlineKdc) validateVendorEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, kerberosRealmInlineKdcTypeVendorPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *KerberosRealmKdc) validateVendor(formats strfmt.Registry) error {
+func (m *KerberosRealmInlineKdc) validateVendor(formats strfmt.Registry) error {
 	if swag.IsZero(m.Vendor) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateVendorEnum("kdc"+"."+"vendor", "body", m.Vendor); err != nil {
+	if err := m.validateVendorEnum("kdc"+"."+"vendor", "body", *m.Vendor); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this kerberos realm kdc based on context it is used
-func (m *KerberosRealmKdc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this kerberos realm inline kdc based on context it is used
+func (m *KerberosRealmInlineKdc) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosRealmKdc) MarshalBinary() ([]byte, error) {
+func (m *KerberosRealmInlineKdc) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -467,8 +470,8 @@ func (m *KerberosRealmKdc) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosRealmKdc) UnmarshalBinary(b []byte) error {
-	var res KerberosRealmKdc
+func (m *KerberosRealmInlineKdc) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlineKdc
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -476,17 +479,17 @@ func (m *KerberosRealmKdc) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmLinks kerberos realm links
+// KerberosRealmInlineLinks kerberos realm inline links
 //
-// swagger:model KerberosRealmLinks
-type KerberosRealmLinks struct {
+// swagger:model kerberos_realm_inline__links
+type KerberosRealmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this kerberos realm links
-func (m *KerberosRealmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos realm inline links
+func (m *KerberosRealmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -499,7 +502,7 @@ func (m *KerberosRealmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosRealmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KerberosRealmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -516,8 +519,8 @@ func (m *KerberosRealmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this kerberos realm links based on the context it is used
-func (m *KerberosRealmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos realm inline links based on the context it is used
+func (m *KerberosRealmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -530,7 +533,7 @@ func (m *KerberosRealmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *KerberosRealmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosRealmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -545,7 +548,7 @@ func (m *KerberosRealmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosRealmLinks) MarshalBinary() ([]byte, error) {
+func (m *KerberosRealmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -553,8 +556,8 @@ func (m *KerberosRealmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosRealmLinks) UnmarshalBinary(b []byte) error {
-	var res KerberosRealmLinks
+func (m *KerberosRealmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -562,27 +565,27 @@ func (m *KerberosRealmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmSvm kerberos realm svm
+// KerberosRealmInlineSvm kerberos realm inline svm
 //
-// swagger:model KerberosRealmSvm
-type KerberosRealmSvm struct {
+// swagger:model kerberos_realm_inline_svm
+type KerberosRealmInlineSvm struct {
 
 	// links
-	Links *KerberosRealmSvmLinks `json:"_links,omitempty"`
+	Links *KerberosRealmInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this kerberos realm svm
-func (m *KerberosRealmSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos realm inline svm
+func (m *KerberosRealmInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -595,7 +598,7 @@ func (m *KerberosRealmSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosRealmSvm) validateLinks(formats strfmt.Registry) error {
+func (m *KerberosRealmInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -612,8 +615,8 @@ func (m *KerberosRealmSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this kerberos realm svm based on the context it is used
-func (m *KerberosRealmSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos realm inline svm based on the context it is used
+func (m *KerberosRealmInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -626,7 +629,7 @@ func (m *KerberosRealmSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *KerberosRealmSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosRealmInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -641,7 +644,7 @@ func (m *KerberosRealmSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosRealmSvm) MarshalBinary() ([]byte, error) {
+func (m *KerberosRealmInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -649,8 +652,8 @@ func (m *KerberosRealmSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosRealmSvm) UnmarshalBinary(b []byte) error {
-	var res KerberosRealmSvm
+func (m *KerberosRealmInlineSvm) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -658,17 +661,17 @@ func (m *KerberosRealmSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KerberosRealmSvmLinks kerberos realm svm links
+// KerberosRealmInlineSvmInlineLinks kerberos realm inline svm inline links
 //
-// swagger:model KerberosRealmSvmLinks
-type KerberosRealmSvmLinks struct {
+// swagger:model kerberos_realm_inline_svm_inline__links
+type KerberosRealmInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this kerberos realm svm links
-func (m *KerberosRealmSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this kerberos realm inline svm inline links
+func (m *KerberosRealmInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -681,7 +684,7 @@ func (m *KerberosRealmSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KerberosRealmSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KerberosRealmInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -698,8 +701,8 @@ func (m *KerberosRealmSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this kerberos realm svm links based on the context it is used
-func (m *KerberosRealmSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this kerberos realm inline svm inline links based on the context it is used
+func (m *KerberosRealmInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -712,7 +715,7 @@ func (m *KerberosRealmSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *KerberosRealmSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KerberosRealmInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -727,7 +730,7 @@ func (m *KerberosRealmSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *KerberosRealmSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *KerberosRealmInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -735,8 +738,8 @@ func (m *KerberosRealmSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KerberosRealmSvmLinks) UnmarshalBinary(b []byte) error {
-	var res KerberosRealmSvmLinks
+func (m *KerberosRealmInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KerberosRealmInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

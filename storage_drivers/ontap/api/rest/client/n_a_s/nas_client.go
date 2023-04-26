@@ -28,6 +28,24 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	ActiveDirectoryCollectionGet(params *ActiveDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryCollectionGetOK, error)
+
+	ActiveDirectoryCreate(params *ActiveDirectoryCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryCreateCreated, error)
+
+	ActiveDirectoryDelete(params *ActiveDirectoryDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryDeleteOK, error)
+
+	ActiveDirectoryGet(params *ActiveDirectoryGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryGetOK, error)
+
+	ActiveDirectoryModify(params *ActiveDirectoryModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryModifyOK, error)
+
+	ActiveDirectoryPreferredDcCollectionGet(params *ActiveDirectoryPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcCollectionGetOK, error)
+
+	ActiveDirectoryPreferredDcCreate(params *ActiveDirectoryPreferredDcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcCreateCreated, error)
+
+	ActiveDirectoryPreferredDcDelete(params *ActiveDirectoryPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcDeleteOK, error)
+
+	ActiveDirectoryPreferredDcGet(params *ActiveDirectoryPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcGetOK, error)
+
 	AuditCollectionGet(params *AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCollectionGetOK, error)
 
 	AuditCreate(params *AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditCreateAccepted, error)
@@ -208,6 +226,24 @@ type ClientService interface {
 
 	FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyPolicyModifyOK, error)
 
+	GroupPoliciesToBeAppliedModify(params *GroupPoliciesToBeAppliedModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPoliciesToBeAppliedModifyOK, error)
+
+	GroupPolicyObjectCentralAccessPolicyCollectionGet(params *GroupPolicyObjectCentralAccessPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessPolicyCollectionGetOK, error)
+
+	GroupPolicyObjectCentralAccessPolicyGet(params *GroupPolicyObjectCentralAccessPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessPolicyGetOK, error)
+
+	GroupPolicyObjectCentralAccessRuleCollectionGet(params *GroupPolicyObjectCentralAccessRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessRuleCollectionGetOK, error)
+
+	GroupPolicyObjectCentralAccessRuleGet(params *GroupPolicyObjectCentralAccessRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessRuleGetOK, error)
+
+	GroupPolicyObjectCollectionGet(params *GroupPolicyObjectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCollectionGetOK, error)
+
+	GroupPolicyObjectGet(params *GroupPolicyObjectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectGetOK, error)
+
+	GroupPolicyObjectRestrictedGroupCollectionGet(params *GroupPolicyObjectRestrictedGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectRestrictedGroupCollectionGetOK, error)
+
+	GroupPolicyObjectRestrictedGroupGet(params *GroupPolicyObjectRestrictedGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectRestrictedGroupGetOK, error)
+
 	KerberosInterfaceCollectionGet(params *KerberosInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceCollectionGetOK, error)
 
 	KerberosInterfaceGet(params *KerberosInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosInterfaceGetOK, error)
@@ -262,6 +298,10 @@ type ClientService interface {
 
 	NetbiosCollectionGet(params *NetbiosCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetbiosCollectionGetOK, error)
 
+	NfsClientsCacheGet(params *NfsClientsCacheGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsCacheGetOK, error)
+
+	NfsClientsCacheModify(params *NfsClientsCacheModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsCacheModifyOK, error)
+
 	NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsGetOK, error)
 
 	NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsMapGetOK, error)
@@ -277,6 +317,10 @@ type ClientService interface {
 	NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsGetOK, error)
 
 	NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyOK, error)
+
+	PoliciesAndRulesToBeAppliedCollectionGet(params *PoliciesAndRulesToBeAppliedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PoliciesAndRulesToBeAppliedCollectionGetOK, error)
+
+	PoliciesAndRulesToBeAppliedGet(params *PoliciesAndRulesToBeAppliedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PoliciesAndRulesToBeAppliedGetOK, error)
 
 	S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error)
 
@@ -351,6 +395,392 @@ type ClientService interface {
 	VscanServerStatusGet(params *VscanServerStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanServerStatusGetOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+	ActiveDirectoryCollectionGet Retrieves Active Directory accounts for all SVMs.
+
+### Related ONTAP commands
+* `vserver active-directory show`
+* `vserver active-directory preferred-dc show`
+* `vserver active-directory discovered-servers show`
+*/
+func (a *Client) ActiveDirectoryCollectionGet(params *ActiveDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/active-directory",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryCreate Creates an Active Directory account for a given SVM.
+
+### Related ONTAP commands
+* `vserver active-directory create`
+### Important notes
+* Active Directory account creation is asynchronous. Response contains Task UUID and Link that can be queried to get the status.
+*/
+func (a *Client) ActiveDirectoryCreate(params *ActiveDirectoryCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/active-directory",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryDelete Deletes the Active Directory account for a given SVM.
+
+### Related ONTAP commands
+* `vserver active-directory delete`
+### Important notes
+* Active Directory account deletion is asynchronous. Response contains Task UUID and Link that can be queried to get the status.
+*/
+func (a *Client) ActiveDirectoryDelete(params *ActiveDirectoryDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryGet Retrieves the Active Directory account for a given SVM.
+
+### Related ONTAP commands
+* `vserver active-directory show`
+* `vserver active-directory preferred-dc show`
+* `vserver active-directory discovered-servers show`
+* `vserver active-directory discovered-servers reset-servers`
+*/
+func (a *Client) ActiveDirectoryGet(params *ActiveDirectoryGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryModify Modifies the Active Directory account for a given SVM.
+
+### Related ONTAP commands
+* `vserver active-directory modify`
+### Important notes
+* Patching Active Directory account is asynchronous. Response contains Task UUID and Link that can be queried to get the status.
+*/
+func (a *Client) ActiveDirectoryModify(params *ActiveDirectoryModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryPreferredDcCollectionGet Retrieves the Active Directory preferred DC configuration of an SVM.
+
+### Related ONTAP commands
+* `vserver active-directory preferred-dc show`
+*/
+func (a *Client) ActiveDirectoryPreferredDcCollectionGet(params *ActiveDirectoryPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryPreferredDcCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_preferred_dc_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryPreferredDcCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryPreferredDcCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryPreferredDcCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryPreferredDcCreate Creates an Active Directory preferred DC configuration for an SVM.
+
+### Required properties
+* `svm.uuid` - Existing SVM in which to create the preferred DC.
+* `domain` - Fully Qualified Domain Name.
+* `server_ip` - IPv4/IPv6 address of the preferred DC.
+#### The following parameters are optional:
+- skip_config_validation
+### Related ONTAP commands
+* `vserver active-directory preferred-dc add`
+*/
+func (a *Client) ActiveDirectoryPreferredDcCreate(params *ActiveDirectoryPreferredDcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryPreferredDcCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_preferred_dc_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryPreferredDcCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryPreferredDcCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryPreferredDcCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryPreferredDcDelete Deletes the Active Directory preferred DC configuration of the specified SVM and domain.
+
+### Related ONTAP commands
+* `vserver active-directory preferred-dc delete`
+*/
+func (a *Client) ActiveDirectoryPreferredDcDelete(params *ActiveDirectoryPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryPreferredDcDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_preferred_dc_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryPreferredDcDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryPreferredDcDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryPreferredDcDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ActiveDirectoryPreferredDcGet Retrieves the Active Directory preferred DC configuration of an SVM.
+
+### Related ONTAP commands
+* `vserver active-directory preferred-dc show`
+*/
+func (a *Client) ActiveDirectoryPreferredDcGet(params *ActiveDirectoryPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryPreferredDcGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewActiveDirectoryPreferredDcGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "active_directory_preferred_dc_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/active-directory/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ActiveDirectoryPreferredDcGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ActiveDirectoryPreferredDcGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ActiveDirectoryPreferredDcGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -772,6 +1202,7 @@ func (a *Client) CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.Cli
 
 ### Related ONTAP commands
 * `vserver cifs domain preferred-dc show`
+* `vserver cifs domain preferred-dc check`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
 */
@@ -909,6 +1340,7 @@ func (a *Client) CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDelete
 
 ### Related ONTAP commands
 * `vserver cifs domain preferred-dc show`
+* `vserver cifs domain preferred-dc check`
 ### Learn more
 * [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
 */
@@ -1286,7 +1718,7 @@ func (a *Client) CifsSearchPathModify(params *CifsSearchPathModifyParams, authIn
 	CifsServiceCollectionGet Retrieves CIFS servers.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -4446,6 +4878,375 @@ func (a *Client) FpolicyPolicyModify(params *FpolicyPolicyModifyParams, authInfo
 }
 
 /*
+	GroupPoliciesToBeAppliedModify Will create a background task to update the GPO settings for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy update`
+*/
+func (a *Client) GroupPoliciesToBeAppliedModify(params *GroupPoliciesToBeAppliedModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPoliciesToBeAppliedModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPoliciesToBeAppliedModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policies_to_be_applied_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPoliciesToBeAppliedModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPoliciesToBeAppliedModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPoliciesToBeAppliedModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectCentralAccessPolicyCollectionGet Retrieves applied central access policies for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy central-access-policy show-applied`
+*/
+func (a *Client) GroupPolicyObjectCentralAccessPolicyCollectionGet(params *GroupPolicyObjectCentralAccessPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessPolicyCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectCentralAccessPolicyCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_central_access_policy_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-policies",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectCentralAccessPolicyCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectCentralAccessPolicyCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectCentralAccessPolicyCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectCentralAccessPolicyGet Retrieves applied central access policy for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy central-access-policy show-applied`
+*/
+func (a *Client) GroupPolicyObjectCentralAccessPolicyGet(params *GroupPolicyObjectCentralAccessPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessPolicyGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectCentralAccessPolicyGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_central_access_policy_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-policies/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectCentralAccessPolicyGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectCentralAccessPolicyGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectCentralAccessPolicyGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectCentralAccessRuleCollectionGet Retrieves applied central access rules for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy central-access-rule show-applied`
+*/
+func (a *Client) GroupPolicyObjectCentralAccessRuleCollectionGet(params *GroupPolicyObjectCentralAccessRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessRuleCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectCentralAccessRuleCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_central_access_rule_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-rules",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectCentralAccessRuleCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectCentralAccessRuleCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectCentralAccessRuleCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectCentralAccessRuleGet Retrieves applied central access rule for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy central-access-rule show-applied`
+*/
+func (a *Client) GroupPolicyObjectCentralAccessRuleGet(params *GroupPolicyObjectCentralAccessRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCentralAccessRuleGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectCentralAccessRuleGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_central_access_rule_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/central-access-rules/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectCentralAccessRuleGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectCentralAccessRuleGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectCentralAccessRuleGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectCollectionGet Retrieves applied group policy objects for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy show-applied`
+*/
+func (a *Client) GroupPolicyObjectCollectionGet(params *GroupPolicyObjectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/objects",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectGet Retrieves applied group policy object for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy show-applied`
+*/
+func (a *Client) GroupPolicyObjectGet(params *GroupPolicyObjectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/objects/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectRestrictedGroupCollectionGet Retrieves applied policies of restricted groups for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy restricted-group show-applied`
+*/
+func (a *Client) GroupPolicyObjectRestrictedGroupCollectionGet(params *GroupPolicyObjectRestrictedGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectRestrictedGroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectRestrictedGroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_restricted_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/restricted-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectRestrictedGroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectRestrictedGroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectRestrictedGroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	GroupPolicyObjectRestrictedGroupGet Retrieves applied policy of restricted group for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy restricted-group show-applied`
+*/
+func (a *Client) GroupPolicyObjectRestrictedGroupGet(params *GroupPolicyObjectRestrictedGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GroupPolicyObjectRestrictedGroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGroupPolicyObjectRestrictedGroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "group_policy_object_restricted_group_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}/restricted-groups/{policy_index}/{group_name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GroupPolicyObjectRestrictedGroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GroupPolicyObjectRestrictedGroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GroupPolicyObjectRestrictedGroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	KerberosInterfaceCollectionGet Retrieves Kerberos interfaces.
 
 ### Related ONTAP commands
@@ -5673,6 +6474,82 @@ func (a *Client) NetbiosCollectionGet(params *NetbiosCollectionGetParams, authIn
 }
 
 /*
+NfsClientsCacheGet Retrieves the NFS connected-client cache settings of the cluster.
+*/
+func (a *Client) NfsClientsCacheGet(params *NfsClientsCacheGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsCacheGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsClientsCacheGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_clients_cache_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/nfs/connected-client-settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsClientsCacheGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsClientsCacheGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsClientsCacheGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NfsClientsCacheModify Updates the properties of the NFS connected-client cache settings.
+*/
+func (a *Client) NfsClientsCacheModify(params *NfsClientsCacheModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsCacheModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNfsClientsCacheModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nfs_clients_cache_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nfs/connected-client-settings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NfsClientsCacheModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NfsClientsCacheModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NfsClientsCacheModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	NfsClientsGet Retrieves the NFS configuration of SVMs.
 
 ### Expensive properties
@@ -5756,7 +6633,7 @@ func (a *Client) NfsClientsMapGet(params *NfsClientsMapGetParams, authInfo runti
 	NfsCollectionGet Retrieves the NFS configuration of SVMs.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Advanced properties
@@ -5779,6 +6656,10 @@ There is an added cost to retrieving values for these properties. They are not i
 * `credential_cache.negative_ttl`
 * `transport.tcp_max_transfer_size`
 * `root.*`
+* `protocol.v41_features.trunking_enabled`
+* `protocol.v42_features.seclabel_enabled`
+* `protocol.v42_features.sparsefile_ops_enabled`
+* `protocol.v42_features.xattrs_enabled`
 ### Diagnostic properties
 * `credential_cache.transient_error_ttl`
 * `access_cache_config.ttl_failure`
@@ -5872,6 +6753,7 @@ If not specified in POST, the following default property values are assigned:
 * `state` - online
 * `transport.udp_enabled` - _true_
 * `transport.tcp_enabled` - _true_
+* `transport.rdma_enabled` - _true_
 * `protocol.v3_enabled` - _true_
 * `protocol.v3_64bit_identifiers_enabled` - _false_
 * `protocol.v4_id_domain` - defaultv4iddomain.com
@@ -6098,6 +6980,88 @@ func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthI
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NfsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	PoliciesAndRulesToBeAppliedCollectionGet Retrieves group policy objects that are yet to be applied for all SVMs.
+
+### Related ONTAP commands
+* `vserver cifs group-policy show-defined`
+*/
+func (a *Client) PoliciesAndRulesToBeAppliedCollectionGet(params *PoliciesAndRulesToBeAppliedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PoliciesAndRulesToBeAppliedCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPoliciesAndRulesToBeAppliedCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "policies_and_rules_to_be_applied_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PoliciesAndRulesToBeAppliedCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PoliciesAndRulesToBeAppliedCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PoliciesAndRulesToBeAppliedCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	PoliciesAndRulesToBeAppliedGet Retrieves group policy objects that are yet to be applied for specified SVM.
+
+### Related ONTAP commands
+* `vserver cifs group-policy show-defined`
+*/
+func (a *Client) PoliciesAndRulesToBeAppliedGet(params *PoliciesAndRulesToBeAppliedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PoliciesAndRulesToBeAppliedGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPoliciesAndRulesToBeAppliedGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "policies_and_rules_to_be_applied_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/group-policies/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PoliciesAndRulesToBeAppliedGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PoliciesAndRulesToBeAppliedGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PoliciesAndRulesToBeAppliedGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

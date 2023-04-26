@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/storage"
@@ -48,7 +47,8 @@ type CRDClientV1 struct {
 }
 
 func NewCRDClientV1(masterURL, kubeConfigPath string) (*CRDClientV1, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowStorageClientCreate,
+		LogLayerPersistentStore)
 
 	Logc(ctx).Debug("Creating CRDv1 persistent store client.")
 
@@ -57,9 +57,9 @@ func NewCRDClientV1(masterURL, kubeConfigPath string) (*CRDClientV1, error) {
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"tridentNamespace": clients.Namespace,
-	}).Debug("Created CRDv1 persistence client.")
+	}).Trace("Created CRDv1 persistence client.")
 
 	return &CRDClientV1{
 		crdClient: clients.TridentClient,
@@ -124,7 +124,7 @@ func (k *CRDClientV1) SetVersion(ctx context.Context, version *config.Persistent
 			return err
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"PersistentStoreVersion": newVersion.PersistentStoreVersion,
 			"OrchestratorAPIVersion": newVersion.OrchestratorAPIVersion,
 		}).Debug("Created persistent state version.")
@@ -144,7 +144,7 @@ func (k *CRDClientV1) SetVersion(ctx context.Context, version *config.Persistent
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"PersistentStoreVersion": existingVersion.PersistentStoreVersion,
 		"OrchestratorAPIVersion": existingVersion.OrchestratorAPIVersion,
 	}).Debug("Updated persistent state version.")
@@ -167,23 +167,12 @@ func (k *CRDClientV1) Stop() error {
 // AddBackend accepts a Backend object and persists it in a custom resource with all of its
 // sensitive data redacted and written to a corresponding K8S Secret.
 func (k *CRDClientV1) AddBackend(ctx context.Context, backend storage.Backend) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":      backend,
 		"backend.Name": backend.Name(),
 	}).Debug("AddBackend.")
 
 	return k.addBackendPersistent(ctx, backend.ConstructPersistent(ctx))
-}
-
-// AddBackendPersistent accepts a BackendPersistent object and persists it in a custom resource
-// with all of its sensitive data redacted and written to a corresponding K8S Secret.
-func (k *CRDClientV1) AddBackendPersistent(ctx context.Context, backendPersistent *storage.BackendPersistent) error {
-	Logc(ctx).WithFields(log.Fields{
-		"backend":      backendPersistent,
-		"backend.Name": backendPersistent.Name,
-	}).Trace("AddBackendPersistent.")
-
-	return k.addBackendPersistent(ctx, backendPersistent)
 }
 
 // addBackendPersistent is the internal method shared by AddBackend and AddBackendPersistent.
@@ -233,7 +222,7 @@ func (k *CRDClientV1) addBackendPersistent(ctx context.Context, backendPersisten
 	if err != nil {
 		return err
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backendName": crd.BackendName,
 		"backendUUID": crd.BackendUUID,
 		"backend":     crd.Name,
@@ -329,7 +318,7 @@ func (k *CRDClientV1) GetBackend(ctx context.Context, backendName string) (*stor
 	// Find the backend with the name we want
 	for _, backend := range list.Items {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":        backend.Name,
 			"backendName": backend.BackendName,
 		}).Debugf("Checking for backend %s.", backendName)
@@ -365,7 +354,7 @@ func (k *CRDClientV1) getBackendCRD(ctx context.Context, backendName string) (*v
 	}
 
 	for _, backend := range list.Items {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":        backend.Name,
 			"backendName": backend.BackendName,
 		}).Debugf("Checking for backend %s.", backendName)
@@ -384,7 +373,7 @@ func (k *CRDClientV1) getBackendCRD(ctx context.Context, backendName string) (*v
 func (k *CRDClientV1) addSecretToBackend(
 	ctx context.Context, backendPersistent *storage.BackendPersistent,
 ) (*storage.BackendPersistent, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"persistentBackend.Name":        backendPersistent.Name,
 		"persistentBackend.BackendUUID": backendPersistent.BackendUUID,
 		"persistentBackend.online":      backendPersistent.Online,
@@ -462,22 +451,12 @@ func (k *CRDClientV1) GetBackendSecret(ctx context.Context, secretName string) (
 
 // UpdateBackend uses a Backend object to update a backend's persistent state
 func (k *CRDClientV1) UpdateBackend(ctx context.Context, update storage.Backend) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"update":      update,
 		"update.Name": update.Name(),
 	}).Debug("UpdateBackend.")
 
 	return k.updateBackendPersistent(ctx, update.ConstructPersistent(ctx))
-}
-
-// UpdateBackendPersistent uses a BackendPersistent object to update a backend's persistent state
-func (k *CRDClientV1) UpdateBackendPersistent(ctx context.Context, update *storage.BackendPersistent) error {
-	Logc(ctx).WithFields(log.Fields{
-		"update":      update,
-		"update.Name": update.Name,
-	}).Debug("UpdateBackendPersistent.")
-
-	return k.updateBackendPersistent(ctx, update)
 }
 
 // updateBackendPersistent is the internal method shared by UpdateBackend and UpdateBackendPersistent.
@@ -514,7 +493,7 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backendName": crd.BackendName,
 		"backendUUID": crd.BackendUUID,
 		"backend":     crd.Name,
@@ -539,7 +518,7 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 			secret = k.makeBackendSecret(secretName, crd, secretMap)
 
 			if _, secretError = k.k8sClient.CreateSecret(secret); secretError != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"secret": secretName,
 					"error":  secretError,
 				}).Error("Could not create backend secret, will unroll backend update.")
@@ -552,7 +531,7 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 
 			if secretError != nil {
 				// No need update if the get failed, so skip to the backend rollback
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"secret": secretName,
 					"error":  secretError,
 				}).Error("Could not get backend secret, will unroll backend update.")
@@ -563,7 +542,7 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 
 				// Update the secret
 				if _, secretError = k.k8sClient.UpdateSecret(secret); secretError != nil {
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"secret": secretName,
 						"error":  secretError,
 					}).Error("Could not update backend secret, will unroll backend update.")
@@ -605,7 +584,7 @@ func (k *CRDClientV1) updateBackendPersistent(ctx context.Context, backendPersis
 // DeleteBackend accepts a Backend object and deletes the custom resource from Kubernetes along
 // with its corresponding secret.
 func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backendName": b.Name(),
 		"backendUUID": b.BackendUUID(),
 	}
@@ -667,7 +646,7 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err
 
 // removeBackendFinalizer accepts a Backend object and removes the finalizer from the corresponding TridentBackend CR
 func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b storage.Backend) error {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backendName": b.Name(),
 		"backendUUID": b.BackendUUID(),
 	}
@@ -709,7 +688,7 @@ func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b storage.Back
 
 // IsBackendDeleting identifies if the backend is a deleting or not based on CR's deletionTimestamp
 func (k *CRDClientV1) IsBackendDeleting(ctx context.Context, b storage.Backend) bool {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"backendName": b.Name(),
 		"backendUUID": b.BackendUUID(),
 	}
@@ -780,14 +759,13 @@ func (k *CRDClientV1) DeleteBackends(ctx context.Context) error {
 	}
 
 	for _, backend := range backendList.Items {
-
 		// Delete the backend resource
 		err = k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, backend.Name, k.deleteOpts())
 		if err != nil {
 			Logc(ctx).WithField("error", err).Error("Could not delete backend.")
 			return err
 		}
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"backend":  backend.BackendName,
 			"resource": backend.Name,
 		}).Debug("Deleted backend resource.")
@@ -812,7 +790,7 @@ func (k *CRDClientV1) DeleteBackends(ctx context.Context) error {
 func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 	ctx context.Context, origBackend, newBackend storage.Backend,
 ) error {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"origBackend":             origBackend,
 		"origBackend.Name":        origBackend.Name(),
 		"origBackend.BackendUUID": origBackend.BackendUUID(),
@@ -829,7 +807,7 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 	// Make a copy in case we have to roll back
 	origCRDCopy := origCRD.DeepCopy()
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backend":                 origCRD,
 		"backend.Name":            origCRD.Name,
 		"backend.BackendName":     origCRD.BackendName,
@@ -878,7 +856,7 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"backendName": newCRD.BackendName,
 		"backendUUID": newCRD.BackendUUID,
 		"backend":     newCRD.Name,
@@ -919,13 +897,18 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 	return nil
 }
 
+// AddVolume accepts a volume, converts it to its persistent form, and writes it to the database.
+// Note that if a record already exists for this volume, it is replaced.  Therefore, this method
+// should be called after creating a new volume with the expectation that the result is a record
+// that matches what was just created.  It is the caller's responsibility to ensure that replacement
+// is appropriate.
 func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) error {
 	persistentVolume, err := v1.NewTridentVolume(ctx, volume.ConstructExternal())
 	if err != nil {
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":                       volume,
 		"volume.BackendUUID":           volume.BackendUUID,
 		"persistentVolume":             persistentVolume,
@@ -933,26 +916,36 @@ func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) err
 	}).Debug("AddVolume")
 
 	_, err = k.crdClient.TridentV1().TridentVolumes(k.namespace).Create(ctx, persistentVolume, createOpts)
-	if err != nil {
+	if err == nil || !errors.IsAlreadyExists(err) {
 		return err
 	}
 
-	return nil
-}
+	// If the Tvol already exists, it means we failed to create it previously and have now repeated the volume
+	// creation workflow, in which case we need to remove finalizers, delete, and recreate the Tvol.
 
-// AddVolumePersistent saves a volume's persistent state to the persistent store
-func (k *CRDClientV1) AddVolumePersistent(ctx context.Context, volume *storage.VolumeExternal) error {
-	persistentVolume, err := v1.NewTridentVolume(ctx, volume)
-	if err != nil {
-		return err
+	tvol, getErr := k.crdClient.TridentV1().TridentVolumes(k.namespace).Get(ctx, persistentVolume.Name, getOpts)
+	if getErr != nil {
+		if !errors.IsNotFound(getErr) {
+			return getErr
+		}
+	} else {
+		tvol = tvol.DeepCopy()
+		tvol.RemoveTridentFinalizers()
+		_, updateErr := k.crdClient.TridentV1().TridentVolumes(k.namespace).Update(ctx, tvol, updateOpts)
+		if updateErr != nil {
+			Logc(ctx).Errorf("Could not remove volume finalizers; %v", updateErr)
+			return updateErr
+		}
+
+		deleteErr := k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, tvol.Name, k.deleteOpts())
+		if deleteErr != nil {
+			Logc(ctx).Errorf("Could not delete volume; %v", deleteErr)
+			return deleteErr
+		}
 	}
 
 	_, err = k.crdClient.TridentV1().TridentVolumes(k.namespace).Create(ctx, persistentVolume, createOpts)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (k *CRDClientV1) HasVolumes(ctx context.Context) (bool, error) {
@@ -997,35 +990,12 @@ func (k *CRDClientV1) UpdateVolume(ctx context.Context, update *storage.Volume) 
 	return nil
 }
 
-// UpdateVolumePersistent updates a volume's persistent state
-func (k *CRDClientV1) UpdateVolumePersistent(ctx context.Context, update *storage.VolumeExternal) error {
-	volume, err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Get(ctx, v1.NameFix(update.Config.Name), getOpts)
-	if err != nil {
-		return err
-	}
-
-	if err = volume.Apply(ctx, update); err != nil {
-		return err
-	}
-
-	_, err = k.crdClient.TridentV1().TridentVolumes(k.namespace).Update(ctx, volume, updateOpts)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) error {
-	return k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
-		k.deleteOpts())
-}
-
-func (k *CRDClientV1) DeleteVolumeIgnoreNotFound(ctx context.Context, volume *storage.Volume) error {
 	err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
 		k.deleteOpts())
 
 	if errors.IsNotFound(err) {
+		Logc(ctx).WithField("volume", volume).Debug("Volume already deleted.")
 		return nil
 	}
 
@@ -1042,7 +1012,7 @@ func (k *CRDClientV1) GetVolumes(ctx context.Context) ([]*storage.VolumeExternal
 
 	for _, item := range volumeList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":              item.Name,
 				"BackendUUID":       item.BackendUUID,
 				"DeletionTimestamp": item.DeletionTimestamp,
@@ -1083,7 +1053,7 @@ func (k *CRDClientV1) AddVolumeTransaction(ctx context.Context, txn *storage.Vol
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"op":   txn.Op,
 		"name": v1.NameFix(txn.Name()),
 	}).Debug("AddVolumeTransaction")
@@ -1116,7 +1086,7 @@ func (k *CRDClientV1) GetVolumeTransactions(ctx context.Context) ([]*storage.Vol
 
 	for _, item := range txnList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":              item.Name,
 				"DeletionTimestamp": item.DeletionTimestamp,
 			}).Debug("GetVolumeTransactions skipping deleted VolumeTransaction")
@@ -1147,7 +1117,7 @@ func (k *CRDClientV1) UpdateVolumeTransaction(ctx context.Context, update *stora
 	return err
 }
 
-func (k *CRDClientV1) GetExistingVolumeTransaction(
+func (k *CRDClientV1) GetVolumeTransaction(
 	ctx context.Context, volTxn *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
 	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(ctx, v1.NameFix(volTxn.Name()), getOpts)
@@ -1159,10 +1129,10 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(
 	}
 
 	if !ttxn.ObjectMeta.DeletionTimestamp.IsZero() {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"Name":              ttxn.Name,
 			"DeletionTimestamp": ttxn.DeletionTimestamp,
-		}).Debug("GetExistingVolumeTransaction skipping deleted VolumeTransaction")
+		}).Debug("GetVolumeTransaction skipping deleted VolumeTransaction")
 		return nil, err
 	}
 
@@ -1174,26 +1144,18 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(
 }
 
 func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
-	return k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
+	err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
 		k.deleteOpts())
+
+	if errors.IsNotFound(err) {
+		return nil
+	}
+
+	return err
 }
 
 func (k *CRDClientV1) AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
 	persistentSC, err := v1.NewTridentStorageClass(sc.ConstructPersistent())
-	if err != nil {
-		return err
-	}
-
-	_, err = k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Create(ctx, persistentSC, createOpts)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (k *CRDClientV1) AddStorageClassPersistent(ctx context.Context, scp *storageclass.Persistent) error {
-	persistentSC, err := v1.NewTridentStorageClass(scp)
 	if err != nil {
 		return err
 	}
@@ -1240,7 +1202,7 @@ func (k *CRDClientV1) GetStorageClasses(ctx context.Context) ([]*storageclass.Pe
 
 	for _, item := range scList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":              item.Name,
 				"DeletionTimestamp": item.DeletionTimestamp,
 			}).Debug("GetStorageClasses skipping deleted Storageclass")
@@ -1259,8 +1221,14 @@ func (k *CRDClientV1) GetStorageClasses(ctx context.Context) ([]*storageclass.Pe
 }
 
 func (k *CRDClientV1) DeleteStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
-	return k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Delete(ctx, v1.NameFix(sc.GetName()),
+	err := k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Delete(ctx, v1.NameFix(sc.GetName()),
 		k.deleteOpts())
+
+	if errors.IsNotFound(err) {
+		return nil
+	}
+
+	return err
 }
 
 func (k *CRDClientV1) AddOrUpdateNode(ctx context.Context, node *utils.Node) error {
@@ -1323,7 +1291,7 @@ func (k *CRDClientV1) GetNodes(ctx context.Context) ([]*utils.Node, error) {
 
 	for _, item := range nodeList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":              item.Name,
 				"DeletionTimestamp": item.DeletionTimestamp,
 			}).Debug("GetNodes skipping deleted Node")
@@ -1342,7 +1310,13 @@ func (k *CRDClientV1) GetNodes(ctx context.Context) ([]*utils.Node, error) {
 }
 
 func (k *CRDClientV1) DeleteNode(ctx context.Context, n *utils.Node) error {
-	return k.crdClient.TridentV1().TridentNodes(k.namespace).Delete(ctx, v1.NameFix(n.Name), k.deleteOpts())
+	err := k.crdClient.TridentV1().TridentNodes(k.namespace).Delete(ctx, v1.NameFix(n.Name), k.deleteOpts())
+
+	if errors.IsNotFound(err) {
+		return nil
+	}
+
+	return err
 }
 
 func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *utils.VolumePublication) error {
@@ -1353,6 +1327,9 @@ func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *uti
 
 	_, err = k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Create(ctx, newPublication, createOpts)
 	if err != nil {
+		if errors.IsAlreadyExists(err) {
+			return NewAlreadyExistsError(newPublication.Kind, newPublication.Name)
+		}
 		return err
 	}
 
@@ -1405,7 +1382,7 @@ func (k *CRDClientV1) GetVolumePublications(ctx context.Context) ([]*utils.Volum
 
 	for _, item := range publicationList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":              item.Name,
 				"DeletionTimestamp": item.DeletionTimestamp,
 			}).Debug("GetVolumePublications skipping deleted VolumePublication")
@@ -1426,6 +1403,7 @@ func (k *CRDClientV1) GetVolumePublications(ctx context.Context) ([]*utils.Volum
 func (k *CRDClientV1) DeleteVolumePublication(ctx context.Context, vp *utils.VolumePublication) error {
 	err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Delete(ctx, v1.NameFix(vp.Name),
 		k.deleteOpts())
+
 	if errors.IsNotFound(err) {
 		return utils.NotFoundError(err.Error())
 	}
@@ -1441,6 +1419,11 @@ func (k *CRDClientV1) deleteOpts() metav1.DeleteOptions {
 	}
 }
 
+// AddSnapshot accepts a snapshot, converts it to its persistent form, and writes it to the database.
+// Note that if a record already exists for this snapshot, it is replaced.  Therefore, this method
+// should be called after creating a new snapshot with the expectation that the result is a record
+// that matches what was just created.  It is the caller's responsibility to ensure that replacement
+// is appropriate.
 func (k *CRDClientV1) AddSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
 	persistentSnapshot, err := v1.NewTridentSnapshot(snapshot.ConstructPersistent())
 	if err != nil {
@@ -1448,11 +1431,36 @@ func (k *CRDClientV1) AddSnapshot(ctx context.Context, snapshot *storage.Snapsho
 	}
 
 	_, err = k.crdClient.TridentV1().TridentSnapshots(k.namespace).Create(ctx, persistentSnapshot, createOpts)
-	if err != nil {
+	if err == nil || !errors.IsAlreadyExists(err) {
 		return err
 	}
 
-	return nil
+	// If the Tsnap already exists, it means we failed to create it previously and have now repeated the snapshot
+	// creation workflow, in which case we need to delete & recreate the Tsnap.
+
+	tsnap, getErr := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Get(ctx, persistentSnapshot.Name, getOpts)
+	if getErr != nil {
+		if !errors.IsNotFound(getErr) {
+			return getErr
+		}
+	} else {
+		tsnap = tsnap.DeepCopy()
+		tsnap.RemoveTridentFinalizers()
+		_, updateErr := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Update(ctx, tsnap, updateOpts)
+		if updateErr != nil {
+			Logc(ctx).Errorf("Could not remove snapshot finalizers; %v", updateErr)
+			return updateErr
+		}
+
+		deleteErr := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Delete(ctx, tsnap.Name, k.deleteOpts())
+		if deleteErr != nil {
+			Logc(ctx).Errorf("Could not delete snapshot; %v", deleteErr)
+			return deleteErr
+		}
+	}
+
+	_, err = k.crdClient.TridentV1().TridentSnapshots(k.namespace).Create(ctx, persistentSnapshot, createOpts)
+	return err
 }
 
 func (k *CRDClientV1) GetSnapshot(ctx context.Context, volumeName, snapshotName string) (
@@ -1482,7 +1490,7 @@ func (k *CRDClientV1) GetSnapshots(ctx context.Context) ([]*storage.SnapshotPers
 
 	for _, item := range snapshotList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"Name":              item.Name,
 				"DeletionTimestamp": item.DeletionTimestamp,
 			}).Debug("GetSnapshots skipping deleted Snapshot")
@@ -1519,10 +1527,6 @@ func (k *CRDClientV1) UpdateSnapshot(ctx context.Context, update *storage.Snapsh
 }
 
 func (k *CRDClientV1) DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
-	return k.crdClient.TridentV1().TridentSnapshots(k.namespace).Delete(ctx, v1.NameFix(snapshot.ID()), k.deleteOpts())
-}
-
-func (k *CRDClientV1) DeleteSnapshotIgnoreNotFound(ctx context.Context, snapshot *storage.Snapshot) error {
 	err := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Delete(ctx, v1.NameFix(snapshot.ID()), k.deleteOpts())
 
 	if errors.IsNotFound(err) {

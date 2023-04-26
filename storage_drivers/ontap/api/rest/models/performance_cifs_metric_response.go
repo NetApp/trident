@@ -22,13 +22,14 @@ import (
 type PerformanceCifsMetricResponse struct {
 
 	// links
-	Links *PerformanceCifsMetricResponseLinks `json:"_links,omitempty"`
+	Links *PerformanceCifsMetricResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PerformanceCifsMetricResponseRecordsItems0 `json:"records,omitempty"`
+	// performance cifs metric response inline records
+	PerformanceCifsMetricResponseInlineRecords []*PerformanceCifsMetricResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this performance cifs metric response
@@ -39,7 +40,7 @@ func (m *PerformanceCifsMetricResponse) Validate(formats strfmt.Registry) error 
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePerformanceCifsMetricResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *PerformanceCifsMetricResponse) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PerformanceCifsMetricResponse) validatePerformanceCifsMetricResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PerformanceCifsMetricResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PerformanceCifsMetricResponseInlineRecords); i++ {
+		if swag.IsZero(m.PerformanceCifsMetricResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PerformanceCifsMetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceCifsMetricResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *PerformanceCifsMetricResponse) ContextValidate(ctx context.Context, for
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePerformanceCifsMetricResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *PerformanceCifsMetricResponse) contextValidateLinks(ctx context.Context
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponse) contextValidatePerformanceCifsMetricResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PerformanceCifsMetricResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PerformanceCifsMetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceCifsMetricResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *PerformanceCifsMetricResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceCifsMetricResponseLinks performance cifs metric response links
+// PerformanceCifsMetricResponseInlineLinks performance cifs metric response inline links
 //
-// swagger:model PerformanceCifsMetricResponseLinks
-type PerformanceCifsMetricResponseLinks struct {
+// swagger:model performance_cifs_metric_response_inline__links
+type PerformanceCifsMetricResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type PerformanceCifsMetricResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance cifs metric response links
-func (m *PerformanceCifsMetricResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric response inline links
+func (m *PerformanceCifsMetricResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *PerformanceCifsMetricResponseLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *PerformanceCifsMetricResponseLinks) validateNext(formats strfmt.Registr
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *PerformanceCifsMetricResponseLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric response links based on the context it is used
-func (m *PerformanceCifsMetricResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric response inline links based on the context it is used
+func (m *PerformanceCifsMetricResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *PerformanceCifsMetricResponseLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *PerformanceCifsMetricResponseLinks) contextValidateNext(ctx context.Con
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *PerformanceCifsMetricResponseLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *PerformanceCifsMetricResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricResponseLinks
+func (m *PerformanceCifsMetricResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,35 +287,35 @@ func (m *PerformanceCifsMetricResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceCifsMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem Performance numbers, such as IOPS latency and throughput.
 //
-// swagger:model PerformanceCifsMetricResponseRecordsItems0
-type PerformanceCifsMetricResponseRecordsItems0 struct {
+// swagger:model performance_cifs_metric_response_inline_records_inline_array_item
+type PerformanceCifsMetricResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *PerformanceCifsMetricResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceCifsMetricResponseRecordsItems0Iops `json:"iops,omitempty"`
+	Iops *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceCifsMetricResponseRecordsItems0Latency `json:"latency,omitempty"`
+	Latency *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceCifsMetricResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -323,8 +324,8 @@ type PerformanceCifsMetricResponseRecordsItems0 struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this performance cifs metric response records items0
-func (m *PerformanceCifsMetricResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric response inline records inline array item
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -361,7 +362,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -378,7 +379,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) validateLinks(formats strfm
 	return nil
 }
 
-var performanceCifsMetricResponseRecordsItems0TypeDurationPropEnum []interface{}
+var performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -386,95 +387,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceCifsMetricResponseRecordsItems0TypeDurationPropEnum = append(performanceCifsMetricResponseRecordsItems0TypeDurationPropEnum, v)
+		performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	PerformanceCifsMetricResponseRecordsItems0DurationPT15S string = "PT15S"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	PerformanceCifsMetricResponseRecordsItems0DurationPT4M string = "PT4M"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	PerformanceCifsMetricResponseRecordsItems0DurationPT30M string = "PT30M"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	PerformanceCifsMetricResponseRecordsItems0DurationPT2H string = "PT2H"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0DurationP1D captures enum value "P1D"
-	PerformanceCifsMetricResponseRecordsItems0DurationP1D string = "P1D"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	PerformanceCifsMetricResponseRecordsItems0DurationPT5M string = "PT5M"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceCifsMetricResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -491,7 +492,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) validateIops(formats strfmt
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -508,7 +509,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) validateLatency(formats str
 	return nil
 }
 
-var performanceCifsMetricResponseRecordsItems0TypeStatusPropEnum []interface{}
+var performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -516,145 +517,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceCifsMetricResponseRecordsItems0TypeStatusPropEnum = append(performanceCifsMetricResponseRecordsItems0TypeStatusPropEnum, v)
+		performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusOk captures enum value "ok"
-	PerformanceCifsMetricResponseRecordsItems0StatusOk string = "ok"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusError captures enum value "error"
-	PerformanceCifsMetricResponseRecordsItems0StatusError string = "error"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceCifsMetricResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceCifsMetricResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceCifsMetricResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceCifsMetricResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusNotFound captures enum value "not_found"
-	PerformanceCifsMetricResponseRecordsItems0StatusNotFound string = "not_found"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusNotFound captures enum value "not_found"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceCifsMetricResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceCifsMetricResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceCifsMetricResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0
-	// PerformanceCifsMetricResponseRecordsItems0
+	// performance_cifs_metric_response_inline_records_inline_array_item
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceCifsMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceCifsMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceCifsMetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceCifsMetricResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceCifsMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -671,7 +672,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) validateThroughput(formats 
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -683,8 +684,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) validateTimestamp(formats s
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric response records items0 based on the context it is used
-func (m *PerformanceCifsMetricResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric response inline records inline array item based on the context it is used
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -721,7 +722,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) ContextValidate(ctx context
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -735,16 +736,16 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateLinks(ctx co
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -758,7 +759,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateIops(ctx con
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -772,16 +773,16 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateLatency(ctx 
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -795,7 +796,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateThroughput(c
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -805,7 +806,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) contextValidateTimestamp(ct
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -813,8 +814,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricResponseRecordsItems0
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -822,34 +823,34 @@ func (m *PerformanceCifsMetricResponseRecordsItems0) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// PerformanceCifsMetricResponseRecordsItems0Iops The rate of I/O operations observed at the storage object.
+// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceCifsMetricResponseRecordsItems0Iops
-type PerformanceCifsMetricResponseRecordsItems0Iops struct {
+// swagger:model performance_cifs_metric_response_inline_records_inline_array_item_inline_iops
+type PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance cifs metric response records items0 iops
-func (m *PerformanceCifsMetricResponseRecordsItems0Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric response inline records inline array item inline iops
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric response records items0 iops based on the context it is used
-func (m *PerformanceCifsMetricResponseRecordsItems0Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric response inline records inline array item inline iops based on the context it is used
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -859,7 +860,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Iops) ContextValidate(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -867,8 +868,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Iops) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricResponseRecordsItems0Iops
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -876,34 +877,34 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Iops) UnmarshalBinary(b []byt
 	return nil
 }
 
-// PerformanceCifsMetricResponseRecordsItems0Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceCifsMetricResponseRecordsItems0Latency
-type PerformanceCifsMetricResponseRecordsItems0Latency struct {
+// swagger:model performance_cifs_metric_response_inline_records_inline_array_item_inline_latency
+type PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance cifs metric response records items0 latency
-func (m *PerformanceCifsMetricResponseRecordsItems0Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric response inline records inline array item inline latency
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric response records items0 latency based on the context it is used
-func (m *PerformanceCifsMetricResponseRecordsItems0Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric response inline records inline array item inline latency based on the context it is used
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -913,7 +914,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Latency) ContextValidate(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -921,8 +922,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Latency) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricResponseRecordsItems0Latency
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -930,17 +931,17 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Latency) UnmarshalBinary(b []
 	return nil
 }
 
-// PerformanceCifsMetricResponseRecordsItems0Links performance cifs metric response records items0 links
+// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks performance cifs metric response inline records inline array item inline links
 //
-// swagger:model PerformanceCifsMetricResponseRecordsItems0Links
-type PerformanceCifsMetricResponseRecordsItems0Links struct {
+// swagger:model performance_cifs_metric_response_inline_records_inline_array_item_inline__links
+type PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance cifs metric response records items0 links
-func (m *PerformanceCifsMetricResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric response inline records inline array item inline links
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -953,7 +954,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Links) Validate(formats strfm
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -970,8 +971,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Links) validateSelf(formats s
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric response records items0 links based on the context it is used
-func (m *PerformanceCifsMetricResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric response inline records inline array item inline links based on the context it is used
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -984,7 +985,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Links) ContextValidate(ctx co
 	return nil
 }
 
-func (m *PerformanceCifsMetricResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -999,7 +1000,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Links) contextValidateSelf(ct
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1007,8 +1008,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Links) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricResponseRecordsItems0Links
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1016,34 +1017,34 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Links) UnmarshalBinary(b []by
 	return nil
 }
 
-// PerformanceCifsMetricResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceCifsMetricResponseRecordsItems0Throughput
-type PerformanceCifsMetricResponseRecordsItems0Throughput struct {
+// swagger:model performance_cifs_metric_response_inline_records_inline_array_item_inline_throughput
+type PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance cifs metric response records items0 throughput
-func (m *PerformanceCifsMetricResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance cifs metric response inline records inline array item inline throughput
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance cifs metric response records items0 throughput based on the context it is used
-func (m *PerformanceCifsMetricResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance cifs metric response inline records inline array item inline throughput based on the context it is used
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1053,7 +1054,7 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Throughput) ContextValidate(c
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1061,8 +1062,8 @@ func (m *PerformanceCifsMetricResponseRecordsItems0Throughput) MarshalBinary() (
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceCifsMetricResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceCifsMetricResponseRecordsItems0Throughput
+func (m *PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceCifsMetricResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

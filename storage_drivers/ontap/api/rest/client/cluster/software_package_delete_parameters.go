@@ -66,10 +66,10 @@ type SoftwarePackageDeleteParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	// Version.
-	VersionPathParameter string
+	Version string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -89,11 +89,11 @@ func (o *SoftwarePackageDeleteParams) WithDefaults() *SoftwarePackageDeleteParam
 // All values with no default are reset to their zero value.
 func (o *SoftwarePackageDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SoftwarePackageDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -135,26 +135,26 @@ func (o *SoftwarePackageDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the software package delete params
-func (o *SoftwarePackageDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwarePackageDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the software package delete params
+func (o *SoftwarePackageDeleteParams) WithReturnTimeout(returnTimeout *int64) *SoftwarePackageDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the software package delete params
-func (o *SoftwarePackageDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the software package delete params
+func (o *SoftwarePackageDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVersionPathParameter adds the version to the software package delete params
-func (o *SoftwarePackageDeleteParams) WithVersionPathParameter(version string) *SoftwarePackageDeleteParams {
-	o.SetVersionPathParameter(version)
+// WithVersion adds the version to the software package delete params
+func (o *SoftwarePackageDeleteParams) WithVersion(version string) *SoftwarePackageDeleteParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionPathParameter adds the version to the software package delete params
-func (o *SoftwarePackageDeleteParams) SetVersionPathParameter(version string) {
-	o.VersionPathParameter = version
+// SetVersion adds the version to the software package delete params
+func (o *SoftwarePackageDeleteParams) SetVersion(version string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -165,13 +165,13 @@ func (o *SoftwarePackageDeleteParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -183,7 +183,7 @@ func (o *SoftwarePackageDeleteParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param version
-	if err := r.SetPathParam("version", o.VersionPathParameter); err != nil {
+	if err := r.SetPathParam("version", o.Version); err != nil {
 		return err
 	}
 

@@ -66,43 +66,43 @@ type UnixUserCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FullName.
 
 	   Filter by full_name
 	*/
-	FullNameQueryParameter *string
+	FullName *string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *int64
+	ID *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PrimaryGid.
 
 	   Filter by primary_gid
 	*/
-	PrimaryGIDQueryParameter *int64
+	PrimaryGid *int64
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type UnixUserCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,19 +118,19 @@ type UnixUserCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *UnixUserCollectionGetParams) WithDefaults() *UnixUserCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *UnixUserCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := UnixUserCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *UnixUserCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithFieldsQueryParameter(fields []string) *UnixUserCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithFields(fields []string) *UnixUserCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFullNameQueryParameter adds the fullName to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithFullNameQueryParameter(fullName *string) *UnixUserCollectionGetParams {
-	o.SetFullNameQueryParameter(fullName)
+// WithFullName adds the fullName to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithFullName(fullName *string) *UnixUserCollectionGetParams {
+	o.SetFullName(fullName)
 	return o
 }
 
-// SetFullNameQueryParameter adds the fullName to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetFullNameQueryParameter(fullName *string) {
-	o.FullNameQueryParameter = fullName
+// SetFullName adds the fullName to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetFullName(fullName *string) {
+	o.FullName = fullName
 }
 
-// WithIDQueryParameter adds the id to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithIDQueryParameter(id *int64) *UnixUserCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithID(id *int64) *UnixUserCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetIDQueryParameter(id *int64) {
-	o.IDQueryParameter = id
+// SetID adds the id to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetID(id *int64) {
+	o.ID = id
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *UnixUserCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithMaxRecords(maxRecords *int64) *UnixUserCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithNameQueryParameter(name *string) *UnixUserCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithName(name *string) *UnixUserCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *UnixUserCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithOrderBy(orderBy []string) *UnixUserCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPrimaryGIDQueryParameter adds the primaryGid to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithPrimaryGIDQueryParameter(primaryGid *int64) *UnixUserCollectionGetParams {
-	o.SetPrimaryGIDQueryParameter(primaryGid)
+// WithPrimaryGid adds the primaryGid to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithPrimaryGid(primaryGid *int64) *UnixUserCollectionGetParams {
+	o.SetPrimaryGid(primaryGid)
 	return o
 }
 
-// SetPrimaryGIDQueryParameter adds the primaryGid to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetPrimaryGIDQueryParameter(primaryGid *int64) {
-	o.PrimaryGIDQueryParameter = primaryGid
+// SetPrimaryGid adds the primaryGid to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetPrimaryGid(primaryGid *int64) {
+	o.PrimaryGid = primaryGid
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *UnixUserCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithReturnRecords(returnRecords *bool) *UnixUserCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *UnixUserCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *UnixUserCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *UnixUserCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithSvmName(svmName *string) *UnixUserCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the unix user collection get params
-func (o *UnixUserCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *UnixUserCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix user collection get params
+func (o *UnixUserCollectionGetParams) WithSvmUUID(svmUUID *string) *UnixUserCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the unix user collection get params
-func (o *UnixUserCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix user collection get params
+func (o *UnixUserCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,7 +328,7 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -339,13 +339,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FullNameQueryParameter != nil {
+	if o.FullName != nil {
 
 		// query param full_name
 		var qrFullName string
 
-		if o.FullNameQueryParameter != nil {
-			qrFullName = *o.FullNameQueryParameter
+		if o.FullName != nil {
+			qrFullName = *o.FullName
 		}
 		qFullName := qrFullName
 		if qFullName != "" {
@@ -356,13 +356,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID int64
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := swag.FormatInt64(qrID)
 		if qID != "" {
@@ -373,13 +373,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,13 +390,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -407,7 +407,7 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PrimaryGIDQueryParameter != nil {
+	if o.PrimaryGid != nil {
 
 		// query param primary_gid
 		var qrPrimaryGid int64
 
-		if o.PrimaryGIDQueryParameter != nil {
-			qrPrimaryGid = *o.PrimaryGIDQueryParameter
+		if o.PrimaryGid != nil {
+			qrPrimaryGid = *o.PrimaryGid
 		}
 		qPrimaryGid := swag.FormatInt64(qrPrimaryGid)
 		if qPrimaryGid != "" {
@@ -435,13 +435,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -452,13 +452,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -469,13 +469,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -486,13 +486,13 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -511,7 +511,7 @@ func (o *UnixUserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamUnixUserCollectionGet binds the parameter fields
 func (o *UnixUserCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *UnixUserCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamUnixUserCollectionGet binds the parameter order_by
 func (o *UnixUserCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

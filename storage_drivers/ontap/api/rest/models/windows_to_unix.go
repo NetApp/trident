@@ -19,15 +19,15 @@ type WindowsToUnix struct {
 
 	// Attribute name used to retrieve the UNIX account information for a Windows user account.
 	// Example: windowsAccount
-	Attribute string `json:"attribute,omitempty"`
+	Attribute *string `json:"attribute,omitempty"`
 
 	// Indicates whether or not the name for Windows to UNIX name mapping should have a domain prefix.
 	// Example: false
-	NoDomainPrefix bool `json:"no_domain_prefix,omitempty"`
+	NoDomainPrefix *bool `json:"no_domain_prefix,omitempty"`
 
 	// Name used to represent the windowsToUnix object class.
 	// Example: User
-	ObjectClass string `json:"object_class,omitempty"`
+	ObjectClass *string `json:"object_class,omitempty"`
 }
 
 // Validate validates this windows to unix

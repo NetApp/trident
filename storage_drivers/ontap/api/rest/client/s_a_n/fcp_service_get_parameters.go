@@ -66,14 +66,14 @@ type FcpServiceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM for which to retrieve the FC Protocol service.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *FcpServiceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fcp service get params
-func (o *FcpServiceGetParams) WithFieldsQueryParameter(fields []string) *FcpServiceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fcp service get params
+func (o *FcpServiceGetParams) WithFields(fields []string) *FcpServiceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fcp service get params
-func (o *FcpServiceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fcp service get params
+func (o *FcpServiceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fcp service get params
-func (o *FcpServiceGetParams) WithSVMUUIDPathParameter(svmUUID string) *FcpServiceGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fcp service get params
+func (o *FcpServiceGetParams) WithSvmUUID(svmUUID string) *FcpServiceGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fcp service get params
-func (o *FcpServiceGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fcp service get params
+func (o *FcpServiceGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,7 +158,7 @@ func (o *FcpServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -170,7 +170,7 @@ func (o *FcpServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (o *FcpServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamFcpServiceGet binds the parameter fields
 func (o *FcpServiceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

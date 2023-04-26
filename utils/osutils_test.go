@@ -13,8 +13,9 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+
+	. "github.com/netapp/trident/logging"
 )
 
 var (
@@ -47,7 +48,7 @@ func TestSanitizeExecOutput(t *testing.T) {
 }
 
 func TestPidRunningOrIdleRegex(t *testing.T) {
-	log.Debug("Running TestPidRegexes...")
+	Log().Debug("Running TestPidRegexes...")
 
 	tests := map[string]struct {
 		input          string

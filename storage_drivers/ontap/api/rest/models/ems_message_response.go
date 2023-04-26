@@ -22,14 +22,14 @@ import (
 type EmsMessageResponse struct {
 
 	// links
-	Links *EmsMessageResponseLinks `json:"_links,omitempty"`
+	Links *EmsMessageResponseInlineLinks `json:"_links,omitempty"`
+
+	// ems message response inline records
+	EmsMessageResponseInlineRecords []*EmsMessageResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
 	// Number of records
-	// Example: 3
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*EmsMessageResponseRecordsItems0 `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this ems message response
@@ -40,7 +40,7 @@ func (m *EmsMessageResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateEmsMessageResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,18 +67,18 @@ func (m *EmsMessageResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsMessageResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *EmsMessageResponse) validateEmsMessageResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.EmsMessageResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.EmsMessageResponseInlineRecords); i++ {
+		if swag.IsZero(m.EmsMessageResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.EmsMessageResponseInlineRecords[i] != nil {
+			if err := m.EmsMessageResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -99,7 +99,7 @@ func (m *EmsMessageResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateEmsMessageResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,12 +123,12 @@ func (m *EmsMessageResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *EmsMessageResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponse) contextValidateEmsMessageResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.EmsMessageResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.EmsMessageResponseInlineRecords[i] != nil {
+			if err := m.EmsMessageResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -159,10 +159,10 @@ func (m *EmsMessageResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsMessageResponseLinks ems message response links
+// EmsMessageResponseInlineLinks ems message response inline links
 //
-// swagger:model EmsMessageResponseLinks
-type EmsMessageResponseLinks struct {
+// swagger:model ems_message_response_inline__links
+type EmsMessageResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -171,8 +171,8 @@ type EmsMessageResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems message response links
-func (m *EmsMessageResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems message response inline links
+func (m *EmsMessageResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -189,7 +189,7 @@ func (m *EmsMessageResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsMessageResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -206,7 +206,7 @@ func (m *EmsMessageResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsMessageResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -223,8 +223,8 @@ func (m *EmsMessageResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems message response links based on the context it is used
-func (m *EmsMessageResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems message response inline links based on the context it is used
+func (m *EmsMessageResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -241,7 +241,7 @@ func (m *EmsMessageResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *EmsMessageResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -255,7 +255,7 @@ func (m *EmsMessageResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *EmsMessageResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -270,7 +270,7 @@ func (m *EmsMessageResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *EmsMessageResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsMessageResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -278,8 +278,8 @@ func (m *EmsMessageResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsMessageResponseLinks) UnmarshalBinary(b []byte) error {
-	var res EmsMessageResponseLinks
+func (m *EmsMessageResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsMessageResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -287,17 +287,17 @@ func (m *EmsMessageResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsMessageResponseRecordsItems0 ems message response records items0
+// EmsMessageResponseInlineRecordsInlineArrayItem ems message response inline records inline array item
 //
-// swagger:model EmsMessageResponseRecordsItems0
-type EmsMessageResponseRecordsItems0 struct {
+// swagger:model ems_message_response_inline_records_inline_array_item
+type EmsMessageResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *EmsMessageResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// Corrective action
 	// Read Only: true
-	CorrectiveAction string `json:"corrective_action,omitempty"`
+	CorrectiveAction *string `json:"corrective_action,omitempty"`
 
 	// Is deprecated?
 	// Example: true
@@ -306,28 +306,28 @@ type EmsMessageResponseRecordsItems0 struct {
 
 	// Description of the event.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// Name of the event.
 	// Example: callhome.spares.low
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Severity
 	// Example: error
 	// Read Only: true
 	// Enum: [emergency alert error notice informational debug]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 
 	// SNMP trap type
 	// Example: standard
 	// Read Only: true
 	// Enum: [standard built_in severity_based]
-	SnmpTrapType string `json:"snmp_trap_type,omitempty"`
+	SnmpTrapType *string `json:"snmp_trap_type,omitempty"`
 }
 
-// Validate validates this ems message response records items0
-func (m *EmsMessageResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this ems message response inline records inline array item
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -348,7 +348,7 @@ func (m *EmsMessageResponseRecordsItems0) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -365,7 +365,7 @@ func (m *EmsMessageResponseRecordsItems0) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-var emsMessageResponseRecordsItems0TypeSeverityPropEnum []interface{}
+var emsMessageResponseInlineRecordsInlineArrayItemTypeSeverityPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -373,95 +373,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		emsMessageResponseRecordsItems0TypeSeverityPropEnum = append(emsMessageResponseRecordsItems0TypeSeverityPropEnum, v)
+		emsMessageResponseInlineRecordsInlineArrayItemTypeSeverityPropEnum = append(emsMessageResponseInlineRecordsInlineArrayItemTypeSeverityPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// severity
 	// Severity
 	// emergency
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SeverityEmergency captures enum value "emergency"
-	EmsMessageResponseRecordsItems0SeverityEmergency string = "emergency"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSeverityEmergency captures enum value "emergency"
+	EmsMessageResponseInlineRecordsInlineArrayItemSeverityEmergency string = "emergency"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// severity
 	// Severity
 	// alert
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SeverityAlert captures enum value "alert"
-	EmsMessageResponseRecordsItems0SeverityAlert string = "alert"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSeverityAlert captures enum value "alert"
+	EmsMessageResponseInlineRecordsInlineArrayItemSeverityAlert string = "alert"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// severity
 	// Severity
 	// error
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SeverityError captures enum value "error"
-	EmsMessageResponseRecordsItems0SeverityError string = "error"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSeverityError captures enum value "error"
+	EmsMessageResponseInlineRecordsInlineArrayItemSeverityError string = "error"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// severity
 	// Severity
 	// notice
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SeverityNotice captures enum value "notice"
-	EmsMessageResponseRecordsItems0SeverityNotice string = "notice"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSeverityNotice captures enum value "notice"
+	EmsMessageResponseInlineRecordsInlineArrayItemSeverityNotice string = "notice"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// severity
 	// Severity
 	// informational
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SeverityInformational captures enum value "informational"
-	EmsMessageResponseRecordsItems0SeverityInformational string = "informational"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSeverityInformational captures enum value "informational"
+	EmsMessageResponseInlineRecordsInlineArrayItemSeverityInformational string = "informational"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// severity
 	// Severity
 	// debug
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SeverityDebug captures enum value "debug"
-	EmsMessageResponseRecordsItems0SeverityDebug string = "debug"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSeverityDebug captures enum value "debug"
+	EmsMessageResponseInlineRecordsInlineArrayItemSeverityDebug string = "debug"
 )
 
 // prop value enum
-func (m *EmsMessageResponseRecordsItems0) validateSeverityEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, emsMessageResponseRecordsItems0TypeSeverityPropEnum, true); err != nil {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) validateSeverityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsMessageResponseInlineRecordsInlineArrayItemTypeSeverityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) validateSeverity(formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) validateSeverity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Severity) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var emsMessageResponseRecordsItems0TypeSnmpTrapTypePropEnum []interface{}
+var emsMessageResponseInlineRecordsInlineArrayItemTypeSnmpTrapTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -469,66 +469,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		emsMessageResponseRecordsItems0TypeSnmpTrapTypePropEnum = append(emsMessageResponseRecordsItems0TypeSnmpTrapTypePropEnum, v)
+		emsMessageResponseInlineRecordsInlineArrayItemTypeSnmpTrapTypePropEnum = append(emsMessageResponseInlineRecordsInlineArrayItemTypeSnmpTrapTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// snmp_trap_type
 	// SnmpTrapType
 	// standard
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SnmpTrapTypeStandard captures enum value "standard"
-	EmsMessageResponseRecordsItems0SnmpTrapTypeStandard string = "standard"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSnmpTrapTypeStandard captures enum value "standard"
+	EmsMessageResponseInlineRecordsInlineArrayItemSnmpTrapTypeStandard string = "standard"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// snmp_trap_type
 	// SnmpTrapType
 	// built_in
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SnmpTrapTypeBuiltIn captures enum value "built_in"
-	EmsMessageResponseRecordsItems0SnmpTrapTypeBuiltIn string = "built_in"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSnmpTrapTypeBuiltIn captures enum value "built_in"
+	EmsMessageResponseInlineRecordsInlineArrayItemSnmpTrapTypeBuiltIn string = "built_in"
 
 	// BEGIN DEBUGGING
-	// EmsMessageResponseRecordsItems0
-	// EmsMessageResponseRecordsItems0
+	// ems_message_response_inline_records_inline_array_item
+	// EmsMessageResponseInlineRecordsInlineArrayItem
 	// snmp_trap_type
 	// SnmpTrapType
 	// severity_based
 	// END DEBUGGING
-	// EmsMessageResponseRecordsItems0SnmpTrapTypeSeverityBased captures enum value "severity_based"
-	EmsMessageResponseRecordsItems0SnmpTrapTypeSeverityBased string = "severity_based"
+	// EmsMessageResponseInlineRecordsInlineArrayItemSnmpTrapTypeSeverityBased captures enum value "severity_based"
+	EmsMessageResponseInlineRecordsInlineArrayItemSnmpTrapTypeSeverityBased string = "severity_based"
 )
 
 // prop value enum
-func (m *EmsMessageResponseRecordsItems0) validateSnmpTrapTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, emsMessageResponseRecordsItems0TypeSnmpTrapTypePropEnum, true); err != nil {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) validateSnmpTrapTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, emsMessageResponseInlineRecordsInlineArrayItemTypeSnmpTrapTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) validateSnmpTrapType(formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) validateSnmpTrapType(formats strfmt.Registry) error {
 	if swag.IsZero(m.SnmpTrapType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateSnmpTrapTypeEnum("snmp_trap_type", "body", m.SnmpTrapType); err != nil {
+	if err := m.validateSnmpTrapTypeEnum("snmp_trap_type", "body", *m.SnmpTrapType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ems message response records items0 based on the context it is used
-func (m *EmsMessageResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems message response inline records inline array item based on the context it is used
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -565,7 +565,7 @@ func (m *EmsMessageResponseRecordsItems0) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -579,16 +579,16 @@ func (m *EmsMessageResponseRecordsItems0) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateCorrectiveAction(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateCorrectiveAction(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "corrective_action", "body", string(m.CorrectiveAction)); err != nil {
+	if err := validate.ReadOnly(ctx, "corrective_action", "body", m.CorrectiveAction); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateDeprecated(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateDeprecated(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "deprecated", "body", m.Deprecated); err != nil {
 		return err
@@ -597,36 +597,36 @@ func (m *EmsMessageResponseRecordsItems0) contextValidateDeprecated(ctx context.
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "description", "body", m.Description); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "severity", "body", string(m.Severity)); err != nil {
+	if err := validate.ReadOnly(ctx, "severity", "body", m.Severity); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0) contextValidateSnmpTrapType(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) contextValidateSnmpTrapType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "snmp_trap_type", "body", string(m.SnmpTrapType)); err != nil {
+	if err := validate.ReadOnly(ctx, "snmp_trap_type", "body", m.SnmpTrapType); err != nil {
 		return err
 	}
 
@@ -634,7 +634,7 @@ func (m *EmsMessageResponseRecordsItems0) contextValidateSnmpTrapType(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *EmsMessageResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -642,8 +642,8 @@ func (m *EmsMessageResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsMessageResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res EmsMessageResponseRecordsItems0
+func (m *EmsMessageResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res EmsMessageResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -651,17 +651,17 @@ func (m *EmsMessageResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsMessageResponseRecordsItems0Links ems message response records items0 links
+// EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks ems message response inline records inline array item inline links
 //
-// swagger:model EmsMessageResponseRecordsItems0Links
-type EmsMessageResponseRecordsItems0Links struct {
+// swagger:model ems_message_response_inline_records_inline_array_item_inline__links
+type EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems message response records items0 links
-func (m *EmsMessageResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this ems message response inline records inline array item inline links
+func (m *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -674,7 +674,7 @@ func (m *EmsMessageResponseRecordsItems0Links) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -691,8 +691,8 @@ func (m *EmsMessageResponseRecordsItems0Links) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this ems message response records items0 links based on the context it is used
-func (m *EmsMessageResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems message response inline records inline array item inline links based on the context it is used
+func (m *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -705,7 +705,7 @@ func (m *EmsMessageResponseRecordsItems0Links) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *EmsMessageResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -720,7 +720,7 @@ func (m *EmsMessageResponseRecordsItems0Links) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *EmsMessageResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -728,8 +728,8 @@ func (m *EmsMessageResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsMessageResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res EmsMessageResponseRecordsItems0Links
+func (m *EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsMessageResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -70,7 +70,7 @@ type IpsecPolicyModifyParams struct {
 
 	   IPsec policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *IpsecPolicyModifyParams) SetInfo(info *models.IpsecPolicy) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the ipsec policy modify params
-func (o *IpsecPolicyModifyParams) WithUUIDPathParameter(uuid string) *IpsecPolicyModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ipsec policy modify params
+func (o *IpsecPolicyModifyParams) WithUUID(uuid string) *IpsecPolicyModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ipsec policy modify params
-func (o *IpsecPolicyModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ipsec policy modify params
+func (o *IpsecPolicyModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *IpsecPolicyModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

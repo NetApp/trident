@@ -22,7 +22,7 @@ import (
 type NvmeSubsystem struct {
 
 	// links
-	Links *NvmeSubsystemLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemInlineLinks `json:"_links,omitempty"`
 
 	// A configurable comment for the NVMe subsystem. Optional in POST and PATCH.
 	//
@@ -30,28 +30,38 @@ type NvmeSubsystem struct {
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
 
-	// An option that causes the subsystem to be deleted when the last subsystem map associated with it is deleted. This property defaults to _false_ when the subsystem is created.
+	// An option that causes the subsystem to be deleted when the last subsystem map associated with it is deleted. Optional in POST and PATCH. This property defaults to _false_ when the subsystem is created.
 	//
 	DeleteOnUnmap *bool `json:"delete_on_unmap,omitempty"`
 
-	// The NVMe hosts configured for access to the NVMe subsystem. Optional in POST.
-	//
-	Hosts []*NvmeSubsystemHostsItems0 `json:"hosts,omitempty"`
-
 	// io queue
-	IoQueue *NvmeSubsystemIoQueue `json:"io_queue,omitempty"`
+	IoQueue *NvmeSubsystemInlineIoQueue `json:"io_queue,omitempty"`
 
 	// The name of the NVMe subsystem. Once created, an NVMe subsystem cannot be renamed. Required in POST.
 	//
 	// Example: subsystem1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// The NVMe hosts configured for access to the NVMe subsystem. Optional in POST.
+	//
+	NvmeSubsystemInlineHosts []*NvmeSubsystemInlineHostsInlineArrayItem `json:"hosts,omitempty"`
+
+	// The NVMe namespaces mapped to the NVMe subsystem.<br/>
+	// There is an added computational cost to retrieving property values for `subsystem_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	//
+	// Read Only: true
+	NvmeSubsystemInlineSubsystemMaps []*NvmeSubsystemInlineSubsystemMapsInlineArrayItem `json:"subsystem_maps,omitempty"`
+
+	// Vendor-specific identifiers (UUIDs) optionally assigned to an NVMe subsystem when the subsystem is created. The identifiers are used to enable vendor-specific NVMe protocol features. The identifiers are provided by a host application vendor and shared with NetApp prior to a joint product release. Creating an NVMe subsystem with an unknown or non-specific identifier will have no effect on the NVMe subsystem. Refer to the ONTAP SAN Administration Guide for a list of the supported vendor-specific identifiers. After a subsystem is created, the vendor-specific identifiers cannot be changed or removed. Optional in POST.
+	//
+	NvmeSubsystemInlineVendorUuids []*string `json:"vendor_uuids,omitempty"`
 
 	// The host operating system of the NVMe subsystem's hosts. Required in POST.
 	//
 	// Enum: [aix linux vmware windows]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// The serial number of the NVMe subsystem.
 	//
@@ -59,16 +69,10 @@ type NvmeSubsystem struct {
 	// Read Only: true
 	// Max Length: 20
 	// Min Length: 20
-	SerialNumber string `json:"serial_number,omitempty"`
-
-	// The NVMe namespaces mapped to the NVMe subsystem.<br/>
-	// There is an added cost to retrieving property values for `subsystem_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	//
-	// Read Only: true
-	SubsystemMaps []*NvmeSubsystemSubsystemMapsItems0 `json:"subsystem_maps,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// svm
-	Svm *NvmeSubsystemSvm `json:"svm,omitempty"`
+	Svm *NvmeSubsystemInlineSvm `json:"svm,omitempty"`
 
 	// The NVMe qualified name (NQN) used to identify the NVMe storage target.
 	//
@@ -76,17 +80,13 @@ type NvmeSubsystem struct {
 	// Read Only: true
 	// Max Length: 223
 	// Min Length: 1
-	TargetNqn string `json:"target_nqn,omitempty"`
+	TargetNqn *string `json:"target_nqn,omitempty"`
 
 	// The unique identifier of the NVMe subsystem.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
-
-	// Vendor-specific identifiers (UUIDs) optionally assigned to an NVMe subsystem when the subsystem is created. The identifiers are used to enable vendor-specific NVMe protocol features. The identifiers are provided by a host application vendor and shared with NetApp prior to a joint product release. Creating an NVMe subsystem with an unknown or non-specific identifier will have no effect on the NVMe subsystem. Refer to the ONTAP SAN Administration Guide for a list of the supported vendor-specific identifiers. After a subsystem is created, the vendor-specific identifiers cannot be changed or removed. Optional in POST.
-	//
-	VendorUuids []string `json:"vendor_uuids,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this nvme subsystem
@@ -101,10 +101,6 @@ func (m *NvmeSubsystem) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateHosts(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateIoQueue(formats); err != nil {
 		res = append(res, err)
 	}
@@ -113,15 +109,19 @@ func (m *NvmeSubsystem) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNvmeSubsystemInlineHosts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNvmeSubsystemInlineSubsystemMaps(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSerialNumber(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSubsystemMaps(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -172,30 +172,6 @@ func (m *NvmeSubsystem) validateComment(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystem) validateHosts(formats strfmt.Registry) error {
-	if swag.IsZero(m.Hosts) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Hosts); i++ {
-		if swag.IsZero(m.Hosts[i]) { // not required
-			continue
-		}
-
-		if m.Hosts[i] != nil {
-			if err := m.Hosts[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("hosts" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *NvmeSubsystem) validateIoQueue(formats strfmt.Registry) error {
 	if swag.IsZero(m.IoQueue) { // not required
 		return nil
@@ -218,12 +194,60 @@ func (m *NvmeSubsystem) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystem) validateNvmeSubsystemInlineHosts(formats strfmt.Registry) error {
+	if swag.IsZero(m.NvmeSubsystemInlineHosts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NvmeSubsystemInlineHosts); i++ {
+		if swag.IsZero(m.NvmeSubsystemInlineHosts[i]) { // not required
+			continue
+		}
+
+		if m.NvmeSubsystemInlineHosts[i] != nil {
+			if err := m.NvmeSubsystemInlineHosts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("hosts" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystem) validateNvmeSubsystemInlineSubsystemMaps(formats strfmt.Registry) error {
+	if swag.IsZero(m.NvmeSubsystemInlineSubsystemMaps) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NvmeSubsystemInlineSubsystemMaps); i++ {
+		if swag.IsZero(m.NvmeSubsystemInlineSubsystemMaps[i]) { // not required
+			continue
+		}
+
+		if m.NvmeSubsystemInlineSubsystemMaps[i] != nil {
+			if err := m.NvmeSubsystemInlineSubsystemMaps[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("subsystem_maps" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -298,7 +322,7 @@ func (m *NvmeSubsystem) validateOsType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -310,36 +334,12 @@ func (m *NvmeSubsystem) validateSerialNumber(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("serial_number", "body", m.SerialNumber, 20); err != nil {
+	if err := validate.MinLength("serial_number", "body", *m.SerialNumber, 20); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("serial_number", "body", m.SerialNumber, 20); err != nil {
+	if err := validate.MaxLength("serial_number", "body", *m.SerialNumber, 20); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *NvmeSubsystem) validateSubsystemMaps(formats strfmt.Registry) error {
-	if swag.IsZero(m.SubsystemMaps) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.SubsystemMaps); i++ {
-		if swag.IsZero(m.SubsystemMaps[i]) { // not required
-			continue
-		}
-
-		if m.SubsystemMaps[i] != nil {
-			if err := m.SubsystemMaps[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("subsystem_maps" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -367,11 +367,11 @@ func (m *NvmeSubsystem) validateTargetNqn(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("target_nqn", "body", m.TargetNqn, 1); err != nil {
+	if err := validate.MinLength("target_nqn", "body", *m.TargetNqn, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("target_nqn", "body", m.TargetNqn, 223); err != nil {
+	if err := validate.MaxLength("target_nqn", "body", *m.TargetNqn, 223); err != nil {
 		return err
 	}
 
@@ -386,19 +386,19 @@ func (m *NvmeSubsystem) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateHosts(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateIoQueue(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+	if err := m.contextValidateNvmeSubsystemInlineHosts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateSubsystemMaps(ctx, formats); err != nil {
+	if err := m.contextValidateNvmeSubsystemInlineSubsystemMaps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -434,24 +434,6 @@ func (m *NvmeSubsystem) contextValidateLinks(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NvmeSubsystem) contextValidateHosts(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Hosts); i++ {
-
-		if m.Hosts[i] != nil {
-			if err := m.Hosts[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("hosts" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *NvmeSubsystem) contextValidateIoQueue(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IoQueue != nil {
@@ -466,25 +448,34 @@ func (m *NvmeSubsystem) contextValidateIoQueue(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NvmeSubsystem) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystem) contextValidateNvmeSubsystemInlineHosts(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
-		return err
+	for i := 0; i < len(m.NvmeSubsystemInlineHosts); i++ {
+
+		if m.NvmeSubsystemInlineHosts[i] != nil {
+			if err := m.NvmeSubsystemInlineHosts[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("hosts" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
 }
 
-func (m *NvmeSubsystem) contextValidateSubsystemMaps(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystem) contextValidateNvmeSubsystemInlineSubsystemMaps(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "subsystem_maps", "body", []*NvmeSubsystemSubsystemMapsItems0(m.SubsystemMaps)); err != nil {
+	if err := validate.ReadOnly(ctx, "subsystem_maps", "body", []*NvmeSubsystemInlineSubsystemMapsInlineArrayItem(m.NvmeSubsystemInlineSubsystemMaps)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.SubsystemMaps); i++ {
+	for i := 0; i < len(m.NvmeSubsystemInlineSubsystemMaps); i++ {
 
-		if m.SubsystemMaps[i] != nil {
-			if err := m.SubsystemMaps[i].ContextValidate(ctx, formats); err != nil {
+		if m.NvmeSubsystemInlineSubsystemMaps[i] != nil {
+			if err := m.NvmeSubsystemInlineSubsystemMaps[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("subsystem_maps" + "." + strconv.Itoa(i))
 				}
@@ -492,6 +483,15 @@ func (m *NvmeSubsystem) contextValidateSubsystemMaps(ctx context.Context, format
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystem) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
+		return err
 	}
 
 	return nil
@@ -513,7 +513,7 @@ func (m *NvmeSubsystem) contextValidateSvm(ctx context.Context, formats strfmt.R
 
 func (m *NvmeSubsystem) contextValidateTargetNqn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "target_nqn", "body", string(m.TargetNqn)); err != nil {
+	if err := validate.ReadOnly(ctx, "target_nqn", "body", m.TargetNqn); err != nil {
 		return err
 	}
 
@@ -522,7 +522,7 @@ func (m *NvmeSubsystem) contextValidateTargetNqn(ctx context.Context, formats st
 
 func (m *NvmeSubsystem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -547,29 +547,81 @@ func (m *NvmeSubsystem) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemHostsItems0 nvme subsystem hosts items0
+// NvmeSubsystemInlineHostsInlineArrayItem nvme subsystem inline hosts inline array item
 //
-// swagger:model NvmeSubsystemHostsItems0
-type NvmeSubsystemHostsItems0 struct {
+// swagger:model nvme_subsystem_inline_hosts_inline_array_item
+type NvmeSubsystemInlineHostsInlineArrayItem struct {
+
+	// dh hmac chap
+	DhHmacChap *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap `json:"dh_hmac_chap,omitempty"`
 
 	// The NVMe qualified name (NQN) used to identify the NVMe storage target.
 	//
 	// Example: nqn.1992-01.example.com:string
-	Nqn string `json:"nqn,omitempty"`
+	Nqn *string `json:"nqn,omitempty"`
 }
 
-// Validate validates this nvme subsystem hosts items0
-func (m *NvmeSubsystemHostsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline hosts inline array item
+func (m *NvmeSubsystemInlineHostsInlineArrayItem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDhHmacChap(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this nvme subsystem hosts items0 based on context it is used
-func (m *NvmeSubsystemHostsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineHostsInlineArrayItem) validateDhHmacChap(formats strfmt.Registry) error {
+	if swag.IsZero(m.DhHmacChap) { // not required
+		return nil
+	}
+
+	if m.DhHmacChap != nil {
+		if err := m.DhHmacChap.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline hosts inline array item based on the context it is used
+func (m *NvmeSubsystemInlineHostsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDhHmacChap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemInlineHostsInlineArrayItem) contextValidateDhHmacChap(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DhHmacChap != nil {
+		if err := m.DhHmacChap.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemHostsItems0) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineHostsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -577,8 +629,8 @@ func (m *NvmeSubsystemHostsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemHostsItems0) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemHostsItems0
+func (m *NvmeSubsystemInlineHostsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineHostsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -586,17 +638,336 @@ func (m *NvmeSubsystemHostsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemIoQueue The properties of the submission queue used to submit I/O commands for execution by the NVMe controller.
+// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap A container for properties of NVMe in-band authentication with the DH-HMAC-CHAP protocol.
 //
-// swagger:model NvmeSubsystemIoQueue
-type NvmeSubsystemIoQueue struct {
+// swagger:model nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+type NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap struct {
 
-	// default
-	Default *NvmeSubsystemIoQueueDefault `json:"default,omitempty"`
+	// The controller secret for NVMe in-band authentication. The value of this property is used by the NVMe host to authenticate the NVMe controller while establishing a connection. If unset, the controller is not authenticated. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.<br/>
+	// This property is write-only. The `mode` property can be used to identify if a controller secret has been set for the host, but the controller secret value cannot be read. To change the value, the host must be deleted from the subsystem and re-added.
+	//
+	// Example: DHHC-1:00:ia6zGodOr4SEG0Zzaw398rpY0wqipUWj4jWjUh4HWUz6aQ2n:
+	ControllerSecretKey *string `json:"controller_secret_key,omitempty"`
+
+	// The Diffie-Hellman group size for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `2048_bit`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
+	//
+	// Enum: [none 2048_bit 3072_bit 4096_bit 6144_bit 8192_bit]
+	GroupSize *string `json:"group_size,omitempty"`
+
+	// The hash function for NVMe in-band authentication. When property `host_secret_key` is provided, this property defaults to `sha_256`. When supplied, the property `host_secret_key` must also be supplied. Optional in POST.
+	//
+	// Enum: [sha_256 sha_512]
+	HashFunction *string `json:"hash_function,omitempty"`
+
+	// The host secret for NVMe in-band authentication. The value of this property is used by the NVMe controller to authenticate the NVMe host while establishing a connection. If unset, no authentication is performed by the host or controller. This property must be supplied if any other NVMe in-band authentication properties are supplied. Optional in POST.<br/>
+	// This property is write-only. The `mode` property can be used to identify if a host secret has been set for the host, but the host secret value cannot be read. To change the value, the host must be deleted from the subsystem and re-added.
+	//
+	// Example: DHHC-1:00:ia6zGodOr4SEG0Zzaw398rpY0wqipUWj4jWjUh4HWUz6aQ2n:
+	HostSecretKey *string `json:"host_secret_key,omitempty"`
+
+	// The expected NVMe in-band authentication mode for the host. This property is an indication of which secrets are configured for the host. When set to:
+	// - none: The host has neither the host nor controller secret configured, and no authentication is performed.
+	// - unidirectional: The host has a host secret configured. The controller will authenticate the host.
+	// - bidirectional: The host has both a host and controller secret configured. The controller will authenticate the host and the host will authenticate the controller.
+	//
+	// Example: bidirectional
+	// Read Only: true
+	// Enum: [none unidirectional bidirectional]
+	Mode *string `json:"mode,omitempty"`
 }
 
-// Validate validates this nvme subsystem io queue
-func (m *NvmeSubsystemIoQueue) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline hosts inline array item inline dh hmac chap
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateGroupSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHashFunction(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","2048_bit","3072_bit","4096_bit","6144_bit","8192_bit"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum = append(nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// none
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNone captures enum value "none"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 2048_bit
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr2048Bit captures enum value "2048_bit"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr2048Bit string = "2048_bit"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 3072_bit
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr3072Bit captures enum value "3072_bit"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr3072Bit string = "3072_bit"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 4096_bit
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr4096Bit captures enum value "4096_bit"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr4096Bit string = "4096_bit"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 6144_bit
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr6144Bit captures enum value "6144_bit"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr6144Bit string = "6144_bit"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// group_size
+	// GroupSize
+	// 8192_bit
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr8192Bit captures enum value "8192_bit"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapGroupSizeNr8192Bit string = "8192_bit"
+)
+
+// prop value enum
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateGroupSizeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeGroupSizePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateGroupSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.GroupSize) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGroupSizeEnum("dh_hmac_chap"+"."+"group_size", "body", *m.GroupSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sha_256","sha_512"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum = append(nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// hash_function
+	// HashFunction
+	// sha_256
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha256 captures enum value "sha_256"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha256 string = "sha_256"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// hash_function
+	// HashFunction
+	// sha_512
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha512 captures enum value "sha_512"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapHashFunctionSha512 string = "sha_512"
+)
+
+// prop value enum
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateHashFunctionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeHashFunctionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateHashFunction(formats strfmt.Registry) error {
+	if swag.IsZero(m.HashFunction) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateHashFunctionEnum("dh_hmac_chap"+"."+"hash_function", "body", *m.HashFunction); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","unidirectional","bidirectional"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeModePropEnum = append(nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// mode
+	// Mode
+	// none
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapModeNone captures enum value "none"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapModeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// mode
+	// Mode
+	// unidirectional
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapModeUnidirectional captures enum value "unidirectional"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapModeUnidirectional string = "unidirectional"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_hosts_inline_array_item_inline_dh_hmac_chap
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	// mode
+	// Mode
+	// bidirectional
+	// END DEBUGGING
+	// NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapModeBidirectional captures enum value "bidirectional"
+	NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapModeBidirectional string = "bidirectional"
+)
+
+// prop value enum
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChapTypeModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) validateMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Mode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateModeEnum("dh_hmac_chap"+"."+"mode", "body", *m.Mode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline hosts inline array item inline dh hmac chap based on the context it is used
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateMode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dh_hmac_chap"+"."+"mode", "body", m.Mode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemInlineIoQueue The properties of the submission queue used to submit I/O commands for execution by the NVMe controller.
+//
+// swagger:model nvme_subsystem_inline_io_queue
+type NvmeSubsystemInlineIoQueue struct {
+
+	// default
+	Default *NvmeSubsystemInlineIoQueueInlineDefault `json:"default,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline io queue
+func (m *NvmeSubsystemInlineIoQueue) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDefault(formats); err != nil {
@@ -609,7 +980,7 @@ func (m *NvmeSubsystemIoQueue) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemIoQueue) validateDefault(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineIoQueue) validateDefault(formats strfmt.Registry) error {
 	if swag.IsZero(m.Default) { // not required
 		return nil
 	}
@@ -626,8 +997,8 @@ func (m *NvmeSubsystemIoQueue) validateDefault(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem io queue based on the context it is used
-func (m *NvmeSubsystemIoQueue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline io queue based on the context it is used
+func (m *NvmeSubsystemInlineIoQueue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDefault(ctx, formats); err != nil {
@@ -640,7 +1011,7 @@ func (m *NvmeSubsystemIoQueue) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NvmeSubsystemIoQueue) contextValidateDefault(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineIoQueue) contextValidateDefault(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Default != nil {
 		if err := m.Default.ContextValidate(ctx, formats); err != nil {
@@ -655,7 +1026,7 @@ func (m *NvmeSubsystemIoQueue) contextValidateDefault(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemIoQueue) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineIoQueue) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -663,8 +1034,8 @@ func (m *NvmeSubsystemIoQueue) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemIoQueue) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemIoQueue
+func (m *NvmeSubsystemInlineIoQueue) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineIoQueue
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -672,10 +1043,10 @@ func (m *NvmeSubsystemIoQueue) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemIoQueueDefault The default I/O queue parameters inherited by NVMe hosts in the NVMe subsystem.
+// NvmeSubsystemInlineIoQueueInlineDefault The default I/O queue parameters inherited by NVMe hosts in the NVMe subsystem.
 //
-// swagger:model NvmeSubsystemIoQueueDefault
-type NvmeSubsystemIoQueueDefault struct {
+// swagger:model nvme_subsystem_inline_io_queue_inline_default
+type NvmeSubsystemInlineIoQueueInlineDefault struct {
 
 	// The number of host I/O queue pairs.
 	//
@@ -683,7 +1054,7 @@ type NvmeSubsystemIoQueueDefault struct {
 	// Read Only: true
 	// Maximum: 15
 	// Minimum: 1
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The host I/O queue depth.
 	//
@@ -691,11 +1062,11 @@ type NvmeSubsystemIoQueueDefault struct {
 	// Read Only: true
 	// Maximum: 128
 	// Minimum: 16
-	Depth int64 `json:"depth,omitempty"`
+	Depth *int64 `json:"depth,omitempty"`
 }
 
-// Validate validates this nvme subsystem io queue default
-func (m *NvmeSubsystemIoQueueDefault) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline io queue inline default
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCount(formats); err != nil {
@@ -712,40 +1083,40 @@ func (m *NvmeSubsystemIoQueueDefault) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemIoQueueDefault) validateCount(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) validateCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.Count) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("io_queue"+"."+"default"+"."+"count", "body", m.Count, 1, false); err != nil {
+	if err := validate.MinimumInt("io_queue"+"."+"default"+"."+"count", "body", *m.Count, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("io_queue"+"."+"default"+"."+"count", "body", m.Count, 15, false); err != nil {
+	if err := validate.MaximumInt("io_queue"+"."+"default"+"."+"count", "body", *m.Count, 15, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeSubsystemIoQueueDefault) validateDepth(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) validateDepth(formats strfmt.Registry) error {
 	if swag.IsZero(m.Depth) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("io_queue"+"."+"default"+"."+"depth", "body", m.Depth, 16, false); err != nil {
+	if err := validate.MinimumInt("io_queue"+"."+"default"+"."+"depth", "body", *m.Depth, 16, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("io_queue"+"."+"default"+"."+"depth", "body", m.Depth, 128, false); err != nil {
+	if err := validate.MaximumInt("io_queue"+"."+"default"+"."+"depth", "body", *m.Depth, 128, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem io queue default based on the context it is used
-func (m *NvmeSubsystemIoQueueDefault) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline io queue inline default based on the context it is used
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCount(ctx, formats); err != nil {
@@ -762,18 +1133,18 @@ func (m *NvmeSubsystemIoQueueDefault) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeSubsystemIoQueueDefault) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "io_queue"+"."+"default"+"."+"count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "io_queue"+"."+"default"+"."+"count", "body", m.Count); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeSubsystemIoQueueDefault) contextValidateDepth(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) contextValidateDepth(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "io_queue"+"."+"default"+"."+"depth", "body", int64(m.Depth)); err != nil {
+	if err := validate.ReadOnly(ctx, "io_queue"+"."+"default"+"."+"depth", "body", m.Depth); err != nil {
 		return err
 	}
 
@@ -781,7 +1152,7 @@ func (m *NvmeSubsystemIoQueueDefault) contextValidateDepth(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemIoQueueDefault) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -789,8 +1160,8 @@ func (m *NvmeSubsystemIoQueueDefault) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemIoQueueDefault) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemIoQueueDefault
+func (m *NvmeSubsystemInlineIoQueueInlineDefault) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineIoQueueInlineDefault
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -798,17 +1169,17 @@ func (m *NvmeSubsystemIoQueueDefault) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemLinks nvme subsystem links
+// NvmeSubsystemInlineLinks nvme subsystem inline links
 //
-// swagger:model NvmeSubsystemLinks
-type NvmeSubsystemLinks struct {
+// swagger:model nvme_subsystem_inline__links
+type NvmeSubsystemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem links
-func (m *NvmeSubsystemLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline links
+func (m *NvmeSubsystemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -821,7 +1192,7 @@ func (m *NvmeSubsystemLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -838,8 +1209,8 @@ func (m *NvmeSubsystemLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem links based on the context it is used
-func (m *NvmeSubsystemLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline links based on the context it is used
+func (m *NvmeSubsystemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -852,7 +1223,7 @@ func (m *NvmeSubsystemLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NvmeSubsystemLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -867,7 +1238,7 @@ func (m *NvmeSubsystemLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -875,8 +1246,8 @@ func (m *NvmeSubsystemLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemLinks
+func (m *NvmeSubsystemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -884,34 +1255,34 @@ func (m *NvmeSubsystemLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemSubsystemMapsItems0 An NVMe namespace mapped to the NVMe subsystem.
+// NvmeSubsystemInlineSubsystemMapsInlineArrayItem An NVMe namespace mapped to the NVMe subsystem.
 //
-// swagger:model NvmeSubsystemSubsystemMapsItems0
-type NvmeSubsystemSubsystemMapsItems0 struct {
+// swagger:model nvme_subsystem_inline_subsystem_maps_inline_array_item
+type NvmeSubsystemInlineSubsystemMapsInlineArrayItem struct {
 
 	// links
-	Links *NvmeSubsystemSubsystemMapsItems0Links `json:"_links,omitempty"`
+	Links *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPIP is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00103050h
 	// Read Only: true
-	Anagrpid string `json:"anagrpid,omitempty"`
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// namespace
-	Namespace *NvmeSubsystemSubsystemMapsItems0Namespace `json:"namespace,omitempty"`
+	Namespace *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace `json:"namespace,omitempty"`
 
 	// The NVMe namespace identifier. This is an identifier used by an NVMe controller to provide access to the NVMe namespace.<br/>
 	// The format for an NVMe namespace identifier is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00000001h
 	// Read Only: true
-	Nsid string `json:"nsid,omitempty"`
+	Nsid *string `json:"nsid,omitempty"`
 }
 
-// Validate validates this nvme subsystem subsystem maps items0
-func (m *NvmeSubsystemSubsystemMapsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline subsystem maps inline array item
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -928,7 +1299,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -945,7 +1316,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0) validateNamespace(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) validateNamespace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Namespace) { // not required
 		return nil
 	}
@@ -962,8 +1333,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0) validateNamespace(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem subsystem maps items0 based on the context it is used
-func (m *NvmeSubsystemSubsystemMapsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline subsystem maps inline array item based on the context it is used
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -988,7 +1359,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1002,16 +1373,16 @@ func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateLinks(ctx context.Cont
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "anagrpid", "body", string(m.Anagrpid)); err != nil {
+	if err := validate.ReadOnly(ctx, "anagrpid", "body", m.Anagrpid); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateNamespace(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) contextValidateNamespace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Namespace != nil {
 		if err := m.Namespace.ContextValidate(ctx, formats); err != nil {
@@ -1025,9 +1396,9 @@ func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateNamespace(ctx context.
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nsid", "body", string(m.Nsid)); err != nil {
+	if err := validate.ReadOnly(ctx, "nsid", "body", m.Nsid); err != nil {
 		return err
 	}
 
@@ -1035,7 +1406,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0) contextValidateNsid(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1043,8 +1414,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemSubsystemMapsItems0
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineSubsystemMapsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1052,17 +1423,17 @@ func (m *NvmeSubsystemSubsystemMapsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemSubsystemMapsItems0Links nvme subsystem subsystem maps items0 links
+// NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks nvme subsystem inline subsystem maps inline array item inline links
 //
-// swagger:model NvmeSubsystemSubsystemMapsItems0Links
-type NvmeSubsystemSubsystemMapsItems0Links struct {
+// swagger:model nvme_subsystem_inline_subsystem_maps_inline_array_item_inline__links
+type NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem subsystem maps items0 links
-func (m *NvmeSubsystemSubsystemMapsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline subsystem maps inline array item inline links
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1075,7 +1446,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1092,8 +1463,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem subsystem maps items0 links based on the context it is used
-func (m *NvmeSubsystemSubsystemMapsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline subsystem maps inline array item inline links based on the context it is used
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1106,7 +1477,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1121,7 +1492,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1129,8 +1500,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0Links) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemSubsystemMapsItems0Links
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1138,29 +1509,29 @@ func (m *NvmeSubsystemSubsystemMapsItems0Links) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// NvmeSubsystemSubsystemMapsItems0Namespace An NVMe namespace mapped to the NVMe subsystem.
+// NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace An NVMe namespace mapped to the NVMe subsystem.
 //
-// swagger:model NvmeSubsystemSubsystemMapsItems0Namespace
-type NvmeSubsystemSubsystemMapsItems0Namespace struct {
+// swagger:model nvme_subsystem_inline_subsystem_maps_inline_array_item_inline_namespace
+type NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace struct {
 
 	// links
-	Links *NvmeSubsystemSubsystemMapsItems0NamespaceLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the NVMe namespace.
 	//
 	// Example: /vol/vol1/namespace1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the NVMe namespace.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme subsystem subsystem maps items0 namespace
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline subsystem maps inline array item inline namespace
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1173,7 +1544,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1190,8 +1561,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) validateLinks(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem subsystem maps items0 namespace based on the context it is used
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline subsystem maps inline array item inline namespace based on the context it is used
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1212,7 +1583,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1226,18 +1597,18 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) contextValidateLinks(ctx con
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "namespace"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "namespace"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "namespace"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "namespace"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1245,7 +1616,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) contextValidateUUID(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1253,8 +1624,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0Namespace) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemSubsystemMapsItems0Namespace
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1262,17 +1633,17 @@ func (m *NvmeSubsystemSubsystemMapsItems0Namespace) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// NvmeSubsystemSubsystemMapsItems0NamespaceLinks nvme subsystem subsystem maps items0 namespace links
+// NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks nvme subsystem inline subsystem maps inline array item inline namespace inline links
 //
-// swagger:model NvmeSubsystemSubsystemMapsItems0NamespaceLinks
-type NvmeSubsystemSubsystemMapsItems0NamespaceLinks struct {
+// swagger:model nvme_subsystem_inline_subsystem_maps_inline_array_item_inline_namespace_inline__links
+type NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem subsystem maps items0 namespace links
-func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline subsystem maps inline array item inline namespace inline links
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1285,7 +1656,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) Validate(formats strfmt
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1302,8 +1673,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) validateSelf(formats st
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem subsystem maps items0 namespace links based on the context it is used
-func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline subsystem maps inline array item inline namespace inline links based on the context it is used
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1316,7 +1687,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) ContextValidate(ctx con
 	return nil
 }
 
-func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1331,7 +1702,7 @@ func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) contextValidateSelf(ctx
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1339,8 +1710,8 @@ func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) MarshalBinary() ([]byte
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemSubsystemMapsItems0NamespaceLinks
+func (m *NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineSubsystemMapsInlineArrayItemInlineNamespaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1348,27 +1719,27 @@ func (m *NvmeSubsystemSubsystemMapsItems0NamespaceLinks) UnmarshalBinary(b []byt
 	return nil
 }
 
-// NvmeSubsystemSvm nvme subsystem svm
+// NvmeSubsystemInlineSvm nvme subsystem inline svm
 //
-// swagger:model NvmeSubsystemSvm
-type NvmeSubsystemSvm struct {
+// swagger:model nvme_subsystem_inline_svm
+type NvmeSubsystemInlineSvm struct {
 
 	// links
-	Links *NvmeSubsystemSvmLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nvme subsystem svm
-func (m *NvmeSubsystemSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline svm
+func (m *NvmeSubsystemInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1381,7 +1752,7 @@ func (m *NvmeSubsystemSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1398,8 +1769,8 @@ func (m *NvmeSubsystemSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem svm based on the context it is used
-func (m *NvmeSubsystemSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline svm based on the context it is used
+func (m *NvmeSubsystemInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1412,7 +1783,7 @@ func (m *NvmeSubsystemSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NvmeSubsystemSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1427,7 +1798,7 @@ func (m *NvmeSubsystemSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemSvm) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1435,8 +1806,8 @@ func (m *NvmeSubsystemSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemSvm) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemSvm
+func (m *NvmeSubsystemInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1444,17 +1815,17 @@ func (m *NvmeSubsystemSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemSvmLinks nvme subsystem svm links
+// NvmeSubsystemInlineSvmInlineLinks nvme subsystem inline svm inline links
 //
-// swagger:model NvmeSubsystemSvmLinks
-type NvmeSubsystemSvmLinks struct {
+// swagger:model nvme_subsystem_inline_svm_inline__links
+type NvmeSubsystemInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem svm links
-func (m *NvmeSubsystemSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem inline svm inline links
+func (m *NvmeSubsystemInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1467,7 +1838,7 @@ func (m *NvmeSubsystemSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1484,8 +1855,8 @@ func (m *NvmeSubsystemSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem svm links based on the context it is used
-func (m *NvmeSubsystemSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem inline svm inline links based on the context it is used
+func (m *NvmeSubsystemInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1498,7 +1869,7 @@ func (m *NvmeSubsystemSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NvmeSubsystemSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1513,7 +1884,7 @@ func (m *NvmeSubsystemSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1521,8 +1892,8 @@ func (m *NvmeSubsystemSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemSvmLinks
+func (m *NvmeSubsystemInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

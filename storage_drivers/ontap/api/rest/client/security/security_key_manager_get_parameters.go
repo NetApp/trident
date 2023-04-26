@@ -66,13 +66,13 @@ type SecurityKeyManagerGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Key manager UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SecurityKeyManagerGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the security key manager get params
-func (o *SecurityKeyManagerGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security key manager get params
+func (o *SecurityKeyManagerGetParams) WithFields(fields []string) *SecurityKeyManagerGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security key manager get params
-func (o *SecurityKeyManagerGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security key manager get params
+func (o *SecurityKeyManagerGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the security key manager get params
-func (o *SecurityKeyManagerGetParams) WithUUIDPathParameter(uuid string) *SecurityKeyManagerGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security key manager get params
+func (o *SecurityKeyManagerGetParams) WithUUID(uuid string) *SecurityKeyManagerGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security key manager get params
-func (o *SecurityKeyManagerGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security key manager get params
+func (o *SecurityKeyManagerGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SecurityKeyManagerGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SecurityKeyManagerGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SecurityKeyManagerGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamSecurityKeyManagerGet binds the parameter fields
 func (o *SecurityKeyManagerGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

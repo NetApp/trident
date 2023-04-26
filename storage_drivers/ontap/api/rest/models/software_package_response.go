@@ -20,13 +20,14 @@ import (
 type SoftwarePackageResponse struct {
 
 	// links
-	Links *SoftwarePackageResponseLinks `json:"_links,omitempty"`
+	Links *SoftwarePackageResponseInlineLinks `json:"_links,omitempty"`
 
-	// num records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Number of records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SoftwarePackage `json:"records,omitempty"`
+	// software package response inline records
+	SoftwarePackageResponseInlineRecords []*SoftwarePackage `json:"records,omitempty"`
 }
 
 // Validate validates this software package response
@@ -37,7 +38,7 @@ func (m *SoftwarePackageResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSoftwarePackageResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SoftwarePackageResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SoftwarePackageResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SoftwarePackageResponse) validateSoftwarePackageResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwarePackageResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SoftwarePackageResponseInlineRecords); i++ {
+		if swag.IsZero(m.SoftwarePackageResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SoftwarePackageResponseInlineRecords[i] != nil {
+			if err := m.SoftwarePackageResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SoftwarePackageResponse) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSoftwarePackageResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SoftwarePackageResponse) contextValidateLinks(ctx context.Context, form
 	return nil
 }
 
-func (m *SoftwarePackageResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwarePackageResponse) contextValidateSoftwarePackageResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SoftwarePackageResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SoftwarePackageResponseInlineRecords[i] != nil {
+			if err := m.SoftwarePackageResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SoftwarePackageResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwarePackageResponseLinks software package response links
+// SoftwarePackageResponseInlineLinks software package response inline links
 //
-// swagger:model SoftwarePackageResponseLinks
-type SoftwarePackageResponseLinks struct {
+// swagger:model software_package_response_inline__links
+type SoftwarePackageResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SoftwarePackageResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this software package response links
-func (m *SoftwarePackageResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this software package response inline links
+func (m *SoftwarePackageResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SoftwarePackageResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SoftwarePackageResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SoftwarePackageResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SoftwarePackageResponseLinks) validateNext(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SoftwarePackageResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SoftwarePackageResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SoftwarePackageResponseLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this software package response links based on the context it is used
-func (m *SoftwarePackageResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software package response inline links based on the context it is used
+func (m *SoftwarePackageResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SoftwarePackageResponseLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *SoftwarePackageResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwarePackageResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SoftwarePackageResponseLinks) contextValidateNext(ctx context.Context, 
 	return nil
 }
 
-func (m *SoftwarePackageResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwarePackageResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SoftwarePackageResponseLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwarePackageResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SoftwarePackageResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SoftwarePackageResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwarePackageResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SoftwarePackageResponseLinks
+func (m *SoftwarePackageResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SoftwarePackageResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

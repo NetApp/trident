@@ -68,13 +68,13 @@ type PublickeyModifyParams struct {
 
 	   User account name
 	*/
-	AccountNamePathParameter string
+	AccountName string
 
 	/* Index.
 
 	   Index number for the public key (where there are multiple keys for the same account).
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* Info.
 
@@ -86,7 +86,7 @@ type PublickeyModifyParams struct {
 
 	   Account owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,26 +141,26 @@ func (o *PublickeyModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAccountNamePathParameter adds the accountName to the publickey modify params
-func (o *PublickeyModifyParams) WithAccountNamePathParameter(accountName string) *PublickeyModifyParams {
-	o.SetAccountNamePathParameter(accountName)
+// WithAccountName adds the accountName to the publickey modify params
+func (o *PublickeyModifyParams) WithAccountName(accountName string) *PublickeyModifyParams {
+	o.SetAccountName(accountName)
 	return o
 }
 
-// SetAccountNamePathParameter adds the accountName to the publickey modify params
-func (o *PublickeyModifyParams) SetAccountNamePathParameter(accountName string) {
-	o.AccountNamePathParameter = accountName
+// SetAccountName adds the accountName to the publickey modify params
+func (o *PublickeyModifyParams) SetAccountName(accountName string) {
+	o.AccountName = accountName
 }
 
-// WithIndexPathParameter adds the index to the publickey modify params
-func (o *PublickeyModifyParams) WithIndexPathParameter(index int64) *PublickeyModifyParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the publickey modify params
+func (o *PublickeyModifyParams) WithIndex(index int64) *PublickeyModifyParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the publickey modify params
-func (o *PublickeyModifyParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the publickey modify params
+func (o *PublickeyModifyParams) SetIndex(index int64) {
+	o.Index = index
 }
 
 // WithInfo adds the info to the publickey modify params
@@ -174,15 +174,15 @@ func (o *PublickeyModifyParams) SetInfo(info *models.Publickey) {
 	o.Info = info
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the publickey modify params
-func (o *PublickeyModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *PublickeyModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the publickey modify params
+func (o *PublickeyModifyParams) WithOwnerUUID(ownerUUID string) *PublickeyModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the publickey modify params
-func (o *PublickeyModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the publickey modify params
+func (o *PublickeyModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -194,12 +194,12 @@ func (o *PublickeyModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param account.name
-	if err := r.SetPathParam("account.name", o.AccountNamePathParameter); err != nil {
+	if err := r.SetPathParam("account.name", o.AccountName); err != nil {
 		return err
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -209,7 +209,7 @@ func (o *PublickeyModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

@@ -11,11 +11,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	fake_storage "github.com/netapp/trident/storage/fake"
 	"github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
@@ -29,7 +29,7 @@ var (
 func init() {
 	testing.Init()
 	if *debug {
-		log.SetLevel(log.DebugLevel)
+		_ = InitLogLevel("debug")
 	}
 }
 

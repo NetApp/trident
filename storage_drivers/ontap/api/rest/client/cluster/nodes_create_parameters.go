@@ -68,7 +68,7 @@ type NodesCreateParams struct {
 
 	   Creates aggregates based on an optimal layout recommended by the system.
 	*/
-	CreateRecommendedAggregatesQueryParameter *bool
+	CreateRecommendedAggregates *bool
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type NodesCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,17 +106,17 @@ func (o *NodesCreateParams) WithDefaults() *NodesCreateParams {
 // All values with no default are reset to their zero value.
 func (o *NodesCreateParams) SetDefaults() {
 	var (
-		createRecommendedAggregatesQueryParameterDefault = bool(false)
+		createRecommendedAggregatesDefault = bool(false)
 
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := NodesCreateParams{
-		CreateRecommendedAggregatesQueryParameter: &createRecommendedAggregatesQueryParameterDefault,
-		ReturnRecordsQueryParameter:               &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter:               &returnTimeoutQueryParameterDefault,
+		CreateRecommendedAggregates: &createRecommendedAggregatesDefault,
+		ReturnRecords:               &returnRecordsDefault,
+		ReturnTimeout:               &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -158,15 +158,15 @@ func (o *NodesCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCreateRecommendedAggregatesQueryParameter adds the createRecommendedAggregates to the nodes create params
-func (o *NodesCreateParams) WithCreateRecommendedAggregatesQueryParameter(createRecommendedAggregates *bool) *NodesCreateParams {
-	o.SetCreateRecommendedAggregatesQueryParameter(createRecommendedAggregates)
+// WithCreateRecommendedAggregates adds the createRecommendedAggregates to the nodes create params
+func (o *NodesCreateParams) WithCreateRecommendedAggregates(createRecommendedAggregates *bool) *NodesCreateParams {
+	o.SetCreateRecommendedAggregates(createRecommendedAggregates)
 	return o
 }
 
-// SetCreateRecommendedAggregatesQueryParameter adds the createRecommendedAggregates to the nodes create params
-func (o *NodesCreateParams) SetCreateRecommendedAggregatesQueryParameter(createRecommendedAggregates *bool) {
-	o.CreateRecommendedAggregatesQueryParameter = createRecommendedAggregates
+// SetCreateRecommendedAggregates adds the createRecommendedAggregates to the nodes create params
+func (o *NodesCreateParams) SetCreateRecommendedAggregates(createRecommendedAggregates *bool) {
+	o.CreateRecommendedAggregates = createRecommendedAggregates
 }
 
 // WithInfo adds the info to the nodes create params
@@ -180,26 +180,26 @@ func (o *NodesCreateParams) SetInfo(info *models.Node) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nodes create params
-func (o *NodesCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NodesCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nodes create params
+func (o *NodesCreateParams) WithReturnRecords(returnRecords *bool) *NodesCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nodes create params
-func (o *NodesCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nodes create params
+func (o *NodesCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nodes create params
-func (o *NodesCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodesCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nodes create params
+func (o *NodesCreateParams) WithReturnTimeout(returnTimeout *int64) *NodesCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nodes create params
-func (o *NodesCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nodes create params
+func (o *NodesCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -210,13 +210,13 @@ func (o *NodesCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.CreateRecommendedAggregatesQueryParameter != nil {
+	if o.CreateRecommendedAggregates != nil {
 
 		// query param create_recommended_aggregates
 		var qrCreateRecommendedAggregates bool
 
-		if o.CreateRecommendedAggregatesQueryParameter != nil {
-			qrCreateRecommendedAggregates = *o.CreateRecommendedAggregatesQueryParameter
+		if o.CreateRecommendedAggregates != nil {
+			qrCreateRecommendedAggregates = *o.CreateRecommendedAggregates
 		}
 		qCreateRecommendedAggregates := swag.FormatBool(qrCreateRecommendedAggregates)
 		if qCreateRecommendedAggregates != "" {
@@ -232,13 +232,13 @@ func (o *NodesCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -249,13 +249,13 @@ func (o *NodesCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

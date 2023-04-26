@@ -14,24 +14,24 @@ import (
 )
 
 // EkmipServerConnectivity Provides the connectivity status for the given SVM on the given node to all EKMIP servers configured on all nodes of the cluster.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
 // swagger:model ekmip_server_connectivity
 type EkmipServerConnectivity struct {
 
 	// Code corresponding to the error message. Returns a 0 if a given SVM is able to communicate to the EKMIP servers of all of the nodes in the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message set when cluster-wide EKMIP server availability from the given SVM and node is false.
 	// Example: embedded KMIP server status unavailable on node.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// node
-	Node *EkmipServerConnectivityNode `json:"node,omitempty"`
+	Node *EkmipServerConnectivityInlineNode `json:"node,omitempty"`
 
 	// Set to true if the given SVM on the given node is able to communicate to all EKMIP servers configured on all nodes in the cluster.
-	Reachable bool `json:"reachable,omitempty"`
+	Reachable *bool `json:"reachable,omitempty"`
 }
 
 // Validate validates this ekmip server connectivity
@@ -111,25 +111,25 @@ func (m *EkmipServerConnectivity) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EkmipServerConnectivityNode ekmip server connectivity node
+// EkmipServerConnectivityInlineNode ekmip server connectivity inline node
 //
-// swagger:model EkmipServerConnectivityNode
-type EkmipServerConnectivityNode struct {
+// swagger:model ekmip_server_connectivity_inline_node
+type EkmipServerConnectivityInlineNode struct {
 
 	// links
-	Links *EkmipServerConnectivityNodeLinks `json:"_links,omitempty"`
+	Links *EkmipServerConnectivityInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ekmip server connectivity node
-func (m *EkmipServerConnectivityNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ekmip server connectivity inline node
+func (m *EkmipServerConnectivityInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -142,7 +142,7 @@ func (m *EkmipServerConnectivityNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EkmipServerConnectivityNode) validateLinks(formats strfmt.Registry) error {
+func (m *EkmipServerConnectivityInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -159,8 +159,8 @@ func (m *EkmipServerConnectivityNode) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this ekmip server connectivity node based on the context it is used
-func (m *EkmipServerConnectivityNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ekmip server connectivity inline node based on the context it is used
+func (m *EkmipServerConnectivityInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -173,7 +173,7 @@ func (m *EkmipServerConnectivityNode) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *EkmipServerConnectivityNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EkmipServerConnectivityInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -188,7 +188,7 @@ func (m *EkmipServerConnectivityNode) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *EkmipServerConnectivityNode) MarshalBinary() ([]byte, error) {
+func (m *EkmipServerConnectivityInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -196,8 +196,8 @@ func (m *EkmipServerConnectivityNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EkmipServerConnectivityNode) UnmarshalBinary(b []byte) error {
-	var res EkmipServerConnectivityNode
+func (m *EkmipServerConnectivityInlineNode) UnmarshalBinary(b []byte) error {
+	var res EkmipServerConnectivityInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -205,17 +205,17 @@ func (m *EkmipServerConnectivityNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EkmipServerConnectivityNodeLinks ekmip server connectivity node links
+// EkmipServerConnectivityInlineNodeInlineLinks ekmip server connectivity inline node inline links
 //
-// swagger:model EkmipServerConnectivityNodeLinks
-type EkmipServerConnectivityNodeLinks struct {
+// swagger:model ekmip_server_connectivity_inline_node_inline__links
+type EkmipServerConnectivityInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ekmip server connectivity node links
-func (m *EkmipServerConnectivityNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ekmip server connectivity inline node inline links
+func (m *EkmipServerConnectivityInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -228,7 +228,7 @@ func (m *EkmipServerConnectivityNodeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *EkmipServerConnectivityNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EkmipServerConnectivityInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -245,8 +245,8 @@ func (m *EkmipServerConnectivityNodeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this ekmip server connectivity node links based on the context it is used
-func (m *EkmipServerConnectivityNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ekmip server connectivity inline node inline links based on the context it is used
+func (m *EkmipServerConnectivityInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -259,7 +259,7 @@ func (m *EkmipServerConnectivityNodeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *EkmipServerConnectivityNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EkmipServerConnectivityInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -274,7 +274,7 @@ func (m *EkmipServerConnectivityNodeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *EkmipServerConnectivityNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *EkmipServerConnectivityInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -282,8 +282,8 @@ func (m *EkmipServerConnectivityNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EkmipServerConnectivityNodeLinks) UnmarshalBinary(b []byte) error {
-	var res EkmipServerConnectivityNodeLinks
+func (m *EkmipServerConnectivityInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EkmipServerConnectivityInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

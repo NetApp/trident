@@ -118,7 +118,12 @@ func NewStoragePoolCollectionGetDefault(code int) *StoragePoolCollectionGetDefau
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 10944513 | Unable to retrieve shared disk capability information. |
+| 10944514 | Unable to enable shared disk capability. |
+| 10944527 | Storage pools are not supported in MetroCluster configurations. |
+| 10944528 | Unable to retrieve MetroCluster configuration information. |
 | 11206662 | There is no storage pool matching the specified UUID or name. |
+| 11206667 | Storage pool feature is not enabled. |
 */
 type StoragePoolCollectionGetDefault struct {
 	_statusCode int

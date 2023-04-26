@@ -20,16 +20,20 @@ import (
 type SnapshotResponse struct {
 
 	// links
-	Links *SnapshotResponseLinks `json:"_links,omitempty"`
+	Links *SnapshotResponseInlineLinks `json:"_links,omitempty"`
+
+	// delta
+	Delta *SnapshotDelta `json:"delta,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
 	// Space reclaimed when the Snapshot copy is deleted, in bytes.
-	ReclaimableSpace int64 `json:"reclaimable_space,omitempty"`
+	ReclaimableSpace *int64 `json:"reclaimable_space,omitempty"`
 
-	// records
-	Records []*Snapshot `json:"records,omitempty"`
+	// snapshot response inline records
+	SnapshotResponseInlineRecords []*Snapshot `json:"records,omitempty"`
 }
 
 // Validate validates this snapshot response
@@ -40,7 +44,11 @@ func (m *SnapshotResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateDelta(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshotResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,18 +75,35 @@ func (m *SnapshotResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SnapshotResponse) validateDelta(formats strfmt.Registry) error {
+	if swag.IsZero(m.Delta) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	if m.Delta != nil {
+		if err := m.Delta.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("delta")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SnapshotResponse) validateSnapshotResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotResponseInlineRecords) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SnapshotResponseInlineRecords); i++ {
+		if swag.IsZero(m.SnapshotResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SnapshotResponseInlineRecords[i] != nil {
+			if err := m.SnapshotResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -99,7 +124,11 @@ func (m *SnapshotResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateDelta(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshotResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,12 +152,26 @@ func (m *SnapshotResponse) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnapshotResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotResponse) contextValidateDelta(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	if m.Delta != nil {
+		if err := m.Delta.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("delta")
+			}
+			return err
+		}
+	}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *SnapshotResponse) contextValidateSnapshotResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SnapshotResponseInlineRecords); i++ {
+
+		if m.SnapshotResponseInlineRecords[i] != nil {
+			if err := m.SnapshotResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -159,10 +202,10 @@ func (m *SnapshotResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotResponseLinks snapshot response links
+// SnapshotResponseInlineLinks snapshot response inline links
 //
-// swagger:model SnapshotResponseLinks
-type SnapshotResponseLinks struct {
+// swagger:model snapshot_response_inline__links
+type SnapshotResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -171,8 +214,8 @@ type SnapshotResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot response links
-func (m *SnapshotResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot response inline links
+func (m *SnapshotResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -189,7 +232,7 @@ func (m *SnapshotResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SnapshotResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -206,7 +249,7 @@ func (m *SnapshotResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -223,8 +266,8 @@ func (m *SnapshotResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot response links based on the context it is used
-func (m *SnapshotResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot response inline links based on the context it is used
+func (m *SnapshotResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -241,7 +284,7 @@ func (m *SnapshotResponseLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *SnapshotResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -255,7 +298,7 @@ func (m *SnapshotResponseLinks) contextValidateNext(ctx context.Context, formats
 	return nil
 }
 
-func (m *SnapshotResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -270,7 +313,7 @@ func (m *SnapshotResponseLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -278,8 +321,8 @@ func (m *SnapshotResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotResponseLinks
+func (m *SnapshotResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

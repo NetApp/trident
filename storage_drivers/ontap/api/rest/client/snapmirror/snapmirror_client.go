@@ -186,6 +186,19 @@ If not specified in POST, the following default property values are assigned:
 	 ```
 	 <br/>
 
+
+
+	Creating a SnapMirror policy of type "async" with two sets of retention values and retention periods
+	 ```
+	 POST "/api/snapmirror/policies" '{"name": "policy_ret", "svm": {"name": "vs1"}, "retention": [{"label": "weekly", "count": "2", "period": "P7D"}, {"label":"daily", "count":"7", "period": "PT3H"}]}'
+	 ```
+	 <br/>
+	 Creating a SnapMirror policy of type "async" with retention value as "inifnite"
+	 ```
+	 POST "/api/snapmirror/policies" '{"name": "policy_ret", "svm": {"name": "vs1"}, "retention": [{"label": "weekly", "count": "5", "period": "infinite"}]}'
+	 ```
+	 <br/>
+
 ### Learn more
 * [`DOC /snapmirror/policies`](#docs-snapmirror-snapmirror_policies)
 */

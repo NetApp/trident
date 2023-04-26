@@ -52,7 +52,12 @@ SvmMigrationCreateAccepted describes a response with status code 202, with defau
 Accepted
 */
 type SvmMigrationCreateAccepted struct {
-	Payload *models.JobLinkResponse
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
+	Payload *models.SvmMigrationCreate
 }
 
 // IsSuccess returns true when this svm migration create accepted response has a 2xx status code
@@ -88,13 +93,20 @@ func (o *SvmMigrationCreateAccepted) String() string {
 	return fmt.Sprintf("[POST /svm/migrations][%d] svmMigrationCreateAccepted  %+v", 202, o.Payload)
 }
 
-func (o *SvmMigrationCreateAccepted) GetPayload() *models.JobLinkResponse {
+func (o *SvmMigrationCreateAccepted) GetPayload() *models.SvmMigrationCreate {
 	return o.Payload
 }
 
 func (o *SvmMigrationCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.SvmMigrationCreate)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

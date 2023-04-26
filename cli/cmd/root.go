@@ -22,6 +22,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 
 	// Load all auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -83,9 +84,12 @@ var (
 	KubernetesCLI       string
 	TridentPodName      string
 	TridentPodNamespace string
+	KubeConfigPath      string
 	ExitCode            int
 
 	Debug                bool
+	useDebug             bool
+	LogLevel             string
 	Server               string
 	AutosupportCollector string
 	OutputFormat         string
@@ -94,21 +98,26 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	deleteOpts = metav1.DeleteOptions{}
 
-	ctx = context.TODO
+	ctx = context.Background
 )
+
+func init() {
+	RootCmd.PersistentFlags().StringVarP(&LogLevel, "log-level", "", "info",
+		"Log level (trace, debug, warn, info, error, fatal")
+	RootCmd.PersistentFlags().BoolVarP(&useDebug, "debug", "d", false, "Set the log level to debug")
+	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "",
+		"Address/port of Trident REST interface (127.0.0.1 or [::1] only)")
+	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "",
+		"Output format. One of json|yaml|name|wide|ps (default)")
+	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
+	RootCmd.PersistentFlags().StringVarP(&KubeConfigPath, "kubeconfig", "k", "", "Kubernetes config path")
+}
 
 var RootCmd = &cobra.Command{
 	SilenceUsage: true,
 	Use:          "tridentctl",
 	Short:        "A CLI tool for NetApp Trident",
 	Long:         `A CLI tool for managing the NetApp Trident external storage provisioner for Kubernetes`,
-}
-
-func init() {
-	RootCmd.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "Debug output")
-	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface (127.0.0.1 or [::1] only)")
-	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
-	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
 }
 
 func discoverOperatingMode(_ *cobra.Command) error {
@@ -219,6 +228,13 @@ func discoverJustOperatingMode(_ *cobra.Command) error {
 	return nil
 }
 
+func execKubernetesCLI(args ...string) *exec.Cmd {
+	if KubeConfigPath != "" {
+		args = append([]string{"--kubeconfig", KubeConfigPath}, args...)
+	}
+	return exec.Command(KubernetesCLI, args...)
+}
+
 func discoverKubernetesCLI() error {
 	// Try the OpenShift CLI first
 	_, err := exec.Command(CLIOpenshift, "version").Output()
@@ -245,7 +261,7 @@ func discoverKubernetesCLI() error {
 // getCurrentNamespace returns the default namespace from service account info
 func getCurrentNamespace() (string, error) {
 	// Get current namespace from service account info
-	cmd := exec.Command(KubernetesCLI, "get", "serviceaccount", "default", "-o=json")
+	cmd := execKubernetesCLI("get", "serviceaccount", "default", "-o=json")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -287,8 +303,7 @@ func discoverAutosupportCollector() {
 // getTridentPod returns the name of the Trident pod in the specified namespace
 func getTridentPod(namespace, appLabel string) (string, error) {
 	// Get 'trident' pod info
-	cmd := exec.Command(
-		KubernetesCLI,
+	cmd := execKubernetesCLI(
 		"get", "pod",
 		"-n", namespace,
 		"-l", appLabel,
@@ -325,8 +340,7 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 // getTridentOperatorPod returns the name and namespace of the Trident pod
 func getTridentOperatorPod(appLabel string) (string, string, error) {
 	// Get 'trident-operator' pod info
-	cmd := exec.Command(
-		KubernetesCLI,
+	cmd := execKubernetesCLI(
 		"get", "pod",
 		"--all-namespaces",
 		"-l", appLabel,
@@ -364,8 +378,7 @@ func getTridentOperatorPod(appLabel string) (string, string, error) {
 func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 	// Get 'trident' pod info
 	var sidecarNames []string
-	cmd := exec.Command(
-		KubernetesCLI,
+	cmd := execKubernetesCLI(
 		"get", "pod",
 		podName,
 		"-n", podNameSpace,
@@ -399,8 +412,7 @@ func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 
 func getTridentNode(nodeName, namespace string) (string, error) {
 	selector := fmt.Sprintf("--field-selector=spec.nodeName=%s", nodeName)
-	cmd := exec.Command(
-		KubernetesCLI,
+	cmd := execKubernetesCLI(
 		"get", "pod",
 		"-n", namespace,
 		"-l", TridentNodeLabel,
@@ -438,8 +450,7 @@ func getTridentNode(nodeName, namespace string) (string, error) {
 func listTridentNodes(namespace string) (map[string]string, error) {
 	// Get trident node pods info
 	tridentNodes := make(map[string]string)
-	cmd := exec.Command(
-		KubernetesCLI,
+	cmd := execKubernetesCLI(
 		"get", "pod",
 		"-n", namespace,
 		"-l", TridentNodeLabel,
@@ -498,12 +509,12 @@ func BaseAutosupportURL() string {
 func TunnelCommand(commandArgs []string) {
 	// Build tunnel command to exec command in container
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
-
 	// Build CLI command
 	cliCommand := []string{"tridentctl"}
 	if Debug {
 		cliCommand = append(cliCommand, "--debug")
 	}
+
 	if OutputFormat != "" {
 		cliCommand = append(cliCommand, []string{"--output", OutputFormat}...)
 	}
@@ -517,7 +528,7 @@ func TunnelCommand(commandArgs []string) {
 	}
 
 	// Invoke tridentctl inside the Trident pod
-	out, err := exec.Command(KubernetesCLI, execCommand...).CombinedOutput()
+	out, err := execKubernetesCLI(execCommand...).CombinedOutput()
 
 	SetExitCodeFromError(err)
 	if err != nil {
@@ -545,7 +556,7 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, []byte, error) {
 	// Invoke tridentctl inside the Trident pod and get Stdout and Stderr separately in two buffers
 	// Capture the Stdout for the command in outbuff which will later be unmarshalled and
 	// capture the Stderr for the command in os.Stderr
-	cmd := exec.Command(KubernetesCLI, execCommand...)
+	cmd := execKubernetesCLI(execCommand...)
 	var outbuff, stderrBuff bytes.Buffer
 	cmd.Stdout = &outbuff
 	cmd.Stderr = &stderrBuff
@@ -627,4 +638,16 @@ func kubeConfigPath() string {
 	}
 
 	return ""
+}
+
+func initCmdLogging() {
+	if useDebug {
+		LogLevel = "debug"
+	}
+
+	if err := InitLogLevel(LogLevel); err != nil {
+		Log().Fatalf("Could not initialize logging with level: %s.", LogLevel)
+	}
+
+	Debug = useDebug || IsLogLevelDebugOrHigher(LogLevel)
 }

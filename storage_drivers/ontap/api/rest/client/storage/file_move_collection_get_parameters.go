@@ -66,139 +66,139 @@ type FileMoveCollectionGetParams struct {
 
 	   Filter by cutover_time
 	*/
-	CutoverTimeQueryParameter *int64
+	CutoverTime *int64
 
 	/* DestinationPath.
 
 	   Filter by destination.path
 	*/
-	DestinationPathQueryParameter *string
+	DestinationPath *string
 
 	/* DestinationSvmName.
 
 	   Filter by destination.svm.name
 	*/
-	DestinationSVMNameQueryParameter *string
+	DestinationSvmName *string
 
 	/* DestinationSvmUUID.
 
 	   Filter by destination.svm.uuid
 	*/
-	DestinationSVMUUIDQueryParameter *string
+	DestinationSvmUUID *string
 
 	/* DestinationVolumeName.
 
 	   Filter by destination.volume.name
 	*/
-	DestinationVolumeNameQueryParameter *string
+	DestinationVolumeName *string
 
 	/* DestinationVolumeUUID.
 
 	   Filter by destination.volume.uuid
 	*/
-	DestinationVolumeUUIDQueryParameter *string
+	DestinationVolumeUUID *string
 
 	/* ElapsedTime.
 
 	   Filter by elapsed_time
 	*/
-	ElapsedTimeQueryParameter *int64
+	ElapsedTime *int64
 
 	/* FailureArgumentsCode.
 
 	   Filter by failure.arguments.code
 	*/
-	FailureArgumentsCodeQueryParameter *string
+	FailureArgumentsCode *string
 
 	/* FailureArgumentsMessage.
 
 	   Filter by failure.arguments.message
 	*/
-	FailureArgumentsMessageQueryParameter *string
+	FailureArgumentsMessage *string
 
 	/* FailureCode.
 
 	   Filter by failure.code
 	*/
-	FailureCodeQueryParameter *string
+	FailureCode *string
 
 	/* FailureMessage.
 
 	   Filter by failure.message
 	*/
-	FailureMessageQueryParameter *string
+	FailureMessage *string
 
 	/* FailureTarget.
 
 	   Filter by failure.target
 	*/
-	FailureTargetQueryParameter *string
+	FailureTarget *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* IsDestinationReady.
 
 	   Filter by is_destination_ready
 	*/
-	IsDestinationReadyQueryParameter *bool
+	IsDestinationReady *bool
 
 	/* IsFlexgroup.
 
 	   Filter by is_flexgroup
 	*/
-	IsFlexgroupQueryParameter *bool
+	IsFlexgroup *bool
 
 	/* IsSnapshotFenced.
 
 	   Filter by is_snapshot_fenced
 	*/
-	IsSnapshotFencedQueryParameter *bool
+	IsSnapshotFenced *bool
 
 	/* MaxCutoverTime.
 
 	   Filter by max_cutover_time
 	*/
-	MaxCutoverTimeQueryParameter *int64
+	MaxCutoverTime *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MaxThroughput.
 
 	   Filter by max_throughput
 	*/
-	MaxThroughputQueryParameter *int64
+	MaxThroughput *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -206,7 +206,7 @@ type FileMoveCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -214,91 +214,91 @@ type FileMoveCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScannerPercent.
 
 	   Filter by scanner.percent
 	*/
-	ScannerPercentQueryParameter *int64
+	ScannerPercent *int64
 
 	/* ScannerProgress.
 
 	   Filter by scanner.progress
 	*/
-	ScannerProgressQueryParameter *int64
+	ScannerProgress *int64
 
 	/* ScannerState.
 
 	   Filter by scanner.state
 	*/
-	ScannerStateQueryParameter *string
+	ScannerState *string
 
 	/* ScannerTotal.
 
 	   Filter by scanner.total
 	*/
-	ScannerTotalQueryParameter *int64
+	ScannerTotal *int64
 
 	/* SourcePath.
 
 	   Filter by source.path
 	*/
-	SourcePathQueryParameter *string
+	SourcePath *string
 
 	/* SourceSvmName.
 
 	   Filter by source.svm.name
 	*/
-	SourceSVMNameQueryParameter *string
+	SourceSvmName *string
 
 	/* SourceSvmUUID.
 
 	   Filter by source.svm.uuid
 	*/
-	SourceSVMUUIDQueryParameter *string
+	SourceSvmUUID *string
 
 	/* SourceVolumeName.
 
 	   Filter by source.volume.name
 	*/
-	SourceVolumeNameQueryParameter *string
+	SourceVolumeName *string
 
 	/* SourceVolumeUUID.
 
 	   Filter by source.volume.uuid
 	*/
-	SourceVolumeUUIDQueryParameter *string
+	SourceVolumeUUID *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -318,14 +318,14 @@ func (o *FileMoveCollectionGetParams) WithDefaults() *FileMoveCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *FileMoveCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FileMoveCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -367,433 +367,433 @@ func (o *FileMoveCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCutoverTimeQueryParameter adds the cutoverTime to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithCutoverTimeQueryParameter(cutoverTime *int64) *FileMoveCollectionGetParams {
-	o.SetCutoverTimeQueryParameter(cutoverTime)
+// WithCutoverTime adds the cutoverTime to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithCutoverTime(cutoverTime *int64) *FileMoveCollectionGetParams {
+	o.SetCutoverTime(cutoverTime)
 	return o
 }
 
-// SetCutoverTimeQueryParameter adds the cutoverTime to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetCutoverTimeQueryParameter(cutoverTime *int64) {
-	o.CutoverTimeQueryParameter = cutoverTime
+// SetCutoverTime adds the cutoverTime to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetCutoverTime(cutoverTime *int64) {
+	o.CutoverTime = cutoverTime
 }
 
-// WithDestinationPathQueryParameter adds the destinationPath to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithDestinationPathQueryParameter(destinationPath *string) *FileMoveCollectionGetParams {
-	o.SetDestinationPathQueryParameter(destinationPath)
+// WithDestinationPath adds the destinationPath to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithDestinationPath(destinationPath *string) *FileMoveCollectionGetParams {
+	o.SetDestinationPath(destinationPath)
 	return o
 }
 
-// SetDestinationPathQueryParameter adds the destinationPath to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetDestinationPathQueryParameter(destinationPath *string) {
-	o.DestinationPathQueryParameter = destinationPath
+// SetDestinationPath adds the destinationPath to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetDestinationPath(destinationPath *string) {
+	o.DestinationPath = destinationPath
 }
 
-// WithDestinationSVMNameQueryParameter adds the destinationSvmName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithDestinationSVMNameQueryParameter(destinationSvmName *string) *FileMoveCollectionGetParams {
-	o.SetDestinationSVMNameQueryParameter(destinationSvmName)
+// WithDestinationSvmName adds the destinationSvmName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithDestinationSvmName(destinationSvmName *string) *FileMoveCollectionGetParams {
+	o.SetDestinationSvmName(destinationSvmName)
 	return o
 }
 
-// SetDestinationSVMNameQueryParameter adds the destinationSvmName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetDestinationSVMNameQueryParameter(destinationSvmName *string) {
-	o.DestinationSVMNameQueryParameter = destinationSvmName
+// SetDestinationSvmName adds the destinationSvmName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetDestinationSvmName(destinationSvmName *string) {
+	o.DestinationSvmName = destinationSvmName
 }
 
-// WithDestinationSVMUUIDQueryParameter adds the destinationSvmUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithDestinationSVMUUIDQueryParameter(destinationSvmUUID *string) *FileMoveCollectionGetParams {
-	o.SetDestinationSVMUUIDQueryParameter(destinationSvmUUID)
+// WithDestinationSvmUUID adds the destinationSvmUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithDestinationSvmUUID(destinationSvmUUID *string) *FileMoveCollectionGetParams {
+	o.SetDestinationSvmUUID(destinationSvmUUID)
 	return o
 }
 
-// SetDestinationSVMUUIDQueryParameter adds the destinationSvmUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetDestinationSVMUUIDQueryParameter(destinationSvmUUID *string) {
-	o.DestinationSVMUUIDQueryParameter = destinationSvmUUID
+// SetDestinationSvmUUID adds the destinationSvmUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetDestinationSvmUUID(destinationSvmUUID *string) {
+	o.DestinationSvmUUID = destinationSvmUUID
 }
 
-// WithDestinationVolumeNameQueryParameter adds the destinationVolumeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithDestinationVolumeNameQueryParameter(destinationVolumeName *string) *FileMoveCollectionGetParams {
-	o.SetDestinationVolumeNameQueryParameter(destinationVolumeName)
+// WithDestinationVolumeName adds the destinationVolumeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithDestinationVolumeName(destinationVolumeName *string) *FileMoveCollectionGetParams {
+	o.SetDestinationVolumeName(destinationVolumeName)
 	return o
 }
 
-// SetDestinationVolumeNameQueryParameter adds the destinationVolumeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetDestinationVolumeNameQueryParameter(destinationVolumeName *string) {
-	o.DestinationVolumeNameQueryParameter = destinationVolumeName
+// SetDestinationVolumeName adds the destinationVolumeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetDestinationVolumeName(destinationVolumeName *string) {
+	o.DestinationVolumeName = destinationVolumeName
 }
 
-// WithDestinationVolumeUUIDQueryParameter adds the destinationVolumeUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithDestinationVolumeUUIDQueryParameter(destinationVolumeUUID *string) *FileMoveCollectionGetParams {
-	o.SetDestinationVolumeUUIDQueryParameter(destinationVolumeUUID)
+// WithDestinationVolumeUUID adds the destinationVolumeUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithDestinationVolumeUUID(destinationVolumeUUID *string) *FileMoveCollectionGetParams {
+	o.SetDestinationVolumeUUID(destinationVolumeUUID)
 	return o
 }
 
-// SetDestinationVolumeUUIDQueryParameter adds the destinationVolumeUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetDestinationVolumeUUIDQueryParameter(destinationVolumeUUID *string) {
-	o.DestinationVolumeUUIDQueryParameter = destinationVolumeUUID
+// SetDestinationVolumeUUID adds the destinationVolumeUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetDestinationVolumeUUID(destinationVolumeUUID *string) {
+	o.DestinationVolumeUUID = destinationVolumeUUID
 }
 
-// WithElapsedTimeQueryParameter adds the elapsedTime to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithElapsedTimeQueryParameter(elapsedTime *int64) *FileMoveCollectionGetParams {
-	o.SetElapsedTimeQueryParameter(elapsedTime)
+// WithElapsedTime adds the elapsedTime to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithElapsedTime(elapsedTime *int64) *FileMoveCollectionGetParams {
+	o.SetElapsedTime(elapsedTime)
 	return o
 }
 
-// SetElapsedTimeQueryParameter adds the elapsedTime to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetElapsedTimeQueryParameter(elapsedTime *int64) {
-	o.ElapsedTimeQueryParameter = elapsedTime
+// SetElapsedTime adds the elapsedTime to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetElapsedTime(elapsedTime *int64) {
+	o.ElapsedTime = elapsedTime
 }
 
-// WithFailureArgumentsCodeQueryParameter adds the failureArgumentsCode to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFailureArgumentsCodeQueryParameter(failureArgumentsCode *string) *FileMoveCollectionGetParams {
-	o.SetFailureArgumentsCodeQueryParameter(failureArgumentsCode)
+// WithFailureArgumentsCode adds the failureArgumentsCode to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithFailureArgumentsCode(failureArgumentsCode *string) *FileMoveCollectionGetParams {
+	o.SetFailureArgumentsCode(failureArgumentsCode)
 	return o
 }
 
-// SetFailureArgumentsCodeQueryParameter adds the failureArgumentsCode to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFailureArgumentsCodeQueryParameter(failureArgumentsCode *string) {
-	o.FailureArgumentsCodeQueryParameter = failureArgumentsCode
+// SetFailureArgumentsCode adds the failureArgumentsCode to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetFailureArgumentsCode(failureArgumentsCode *string) {
+	o.FailureArgumentsCode = failureArgumentsCode
 }
 
-// WithFailureArgumentsMessageQueryParameter adds the failureArgumentsMessage to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFailureArgumentsMessageQueryParameter(failureArgumentsMessage *string) *FileMoveCollectionGetParams {
-	o.SetFailureArgumentsMessageQueryParameter(failureArgumentsMessage)
+// WithFailureArgumentsMessage adds the failureArgumentsMessage to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithFailureArgumentsMessage(failureArgumentsMessage *string) *FileMoveCollectionGetParams {
+	o.SetFailureArgumentsMessage(failureArgumentsMessage)
 	return o
 }
 
-// SetFailureArgumentsMessageQueryParameter adds the failureArgumentsMessage to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFailureArgumentsMessageQueryParameter(failureArgumentsMessage *string) {
-	o.FailureArgumentsMessageQueryParameter = failureArgumentsMessage
+// SetFailureArgumentsMessage adds the failureArgumentsMessage to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetFailureArgumentsMessage(failureArgumentsMessage *string) {
+	o.FailureArgumentsMessage = failureArgumentsMessage
 }
 
-// WithFailureCodeQueryParameter adds the failureCode to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFailureCodeQueryParameter(failureCode *string) *FileMoveCollectionGetParams {
-	o.SetFailureCodeQueryParameter(failureCode)
+// WithFailureCode adds the failureCode to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithFailureCode(failureCode *string) *FileMoveCollectionGetParams {
+	o.SetFailureCode(failureCode)
 	return o
 }
 
-// SetFailureCodeQueryParameter adds the failureCode to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFailureCodeQueryParameter(failureCode *string) {
-	o.FailureCodeQueryParameter = failureCode
+// SetFailureCode adds the failureCode to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetFailureCode(failureCode *string) {
+	o.FailureCode = failureCode
 }
 
-// WithFailureMessageQueryParameter adds the failureMessage to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFailureMessageQueryParameter(failureMessage *string) *FileMoveCollectionGetParams {
-	o.SetFailureMessageQueryParameter(failureMessage)
+// WithFailureMessage adds the failureMessage to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithFailureMessage(failureMessage *string) *FileMoveCollectionGetParams {
+	o.SetFailureMessage(failureMessage)
 	return o
 }
 
-// SetFailureMessageQueryParameter adds the failureMessage to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFailureMessageQueryParameter(failureMessage *string) {
-	o.FailureMessageQueryParameter = failureMessage
+// SetFailureMessage adds the failureMessage to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetFailureMessage(failureMessage *string) {
+	o.FailureMessage = failureMessage
 }
 
-// WithFailureTargetQueryParameter adds the failureTarget to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFailureTargetQueryParameter(failureTarget *string) *FileMoveCollectionGetParams {
-	o.SetFailureTargetQueryParameter(failureTarget)
+// WithFailureTarget adds the failureTarget to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithFailureTarget(failureTarget *string) *FileMoveCollectionGetParams {
+	o.SetFailureTarget(failureTarget)
 	return o
 }
 
-// SetFailureTargetQueryParameter adds the failureTarget to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFailureTargetQueryParameter(failureTarget *string) {
-	o.FailureTargetQueryParameter = failureTarget
+// SetFailureTarget adds the failureTarget to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetFailureTarget(failureTarget *string) {
+	o.FailureTarget = failureTarget
 }
 
-// WithFieldsQueryParameter adds the fields to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithFieldsQueryParameter(fields []string) *FileMoveCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithFields(fields []string) *FileMoveCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexQueryParameter adds the index to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithIndexQueryParameter(index *int64) *FileMoveCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithIndex(index *int64) *FileMoveCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithIsDestinationReadyQueryParameter adds the isDestinationReady to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithIsDestinationReadyQueryParameter(isDestinationReady *bool) *FileMoveCollectionGetParams {
-	o.SetIsDestinationReadyQueryParameter(isDestinationReady)
+// WithIsDestinationReady adds the isDestinationReady to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithIsDestinationReady(isDestinationReady *bool) *FileMoveCollectionGetParams {
+	o.SetIsDestinationReady(isDestinationReady)
 	return o
 }
 
-// SetIsDestinationReadyQueryParameter adds the isDestinationReady to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetIsDestinationReadyQueryParameter(isDestinationReady *bool) {
-	o.IsDestinationReadyQueryParameter = isDestinationReady
+// SetIsDestinationReady adds the isDestinationReady to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetIsDestinationReady(isDestinationReady *bool) {
+	o.IsDestinationReady = isDestinationReady
 }
 
-// WithIsFlexgroupQueryParameter adds the isFlexgroup to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithIsFlexgroupQueryParameter(isFlexgroup *bool) *FileMoveCollectionGetParams {
-	o.SetIsFlexgroupQueryParameter(isFlexgroup)
+// WithIsFlexgroup adds the isFlexgroup to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithIsFlexgroup(isFlexgroup *bool) *FileMoveCollectionGetParams {
+	o.SetIsFlexgroup(isFlexgroup)
 	return o
 }
 
-// SetIsFlexgroupQueryParameter adds the isFlexgroup to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetIsFlexgroupQueryParameter(isFlexgroup *bool) {
-	o.IsFlexgroupQueryParameter = isFlexgroup
+// SetIsFlexgroup adds the isFlexgroup to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetIsFlexgroup(isFlexgroup *bool) {
+	o.IsFlexgroup = isFlexgroup
 }
 
-// WithIsSnapshotFencedQueryParameter adds the isSnapshotFenced to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithIsSnapshotFencedQueryParameter(isSnapshotFenced *bool) *FileMoveCollectionGetParams {
-	o.SetIsSnapshotFencedQueryParameter(isSnapshotFenced)
+// WithIsSnapshotFenced adds the isSnapshotFenced to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithIsSnapshotFenced(isSnapshotFenced *bool) *FileMoveCollectionGetParams {
+	o.SetIsSnapshotFenced(isSnapshotFenced)
 	return o
 }
 
-// SetIsSnapshotFencedQueryParameter adds the isSnapshotFenced to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetIsSnapshotFencedQueryParameter(isSnapshotFenced *bool) {
-	o.IsSnapshotFencedQueryParameter = isSnapshotFenced
+// SetIsSnapshotFenced adds the isSnapshotFenced to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetIsSnapshotFenced(isSnapshotFenced *bool) {
+	o.IsSnapshotFenced = isSnapshotFenced
 }
 
-// WithMaxCutoverTimeQueryParameter adds the maxCutoverTime to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithMaxCutoverTimeQueryParameter(maxCutoverTime *int64) *FileMoveCollectionGetParams {
-	o.SetMaxCutoverTimeQueryParameter(maxCutoverTime)
+// WithMaxCutoverTime adds the maxCutoverTime to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithMaxCutoverTime(maxCutoverTime *int64) *FileMoveCollectionGetParams {
+	o.SetMaxCutoverTime(maxCutoverTime)
 	return o
 }
 
-// SetMaxCutoverTimeQueryParameter adds the maxCutoverTime to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetMaxCutoverTimeQueryParameter(maxCutoverTime *int64) {
-	o.MaxCutoverTimeQueryParameter = maxCutoverTime
+// SetMaxCutoverTime adds the maxCutoverTime to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetMaxCutoverTime(maxCutoverTime *int64) {
+	o.MaxCutoverTime = maxCutoverTime
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FileMoveCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithMaxRecords(maxRecords *int64) *FileMoveCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMaxThroughputQueryParameter adds the maxThroughput to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithMaxThroughputQueryParameter(maxThroughput *int64) *FileMoveCollectionGetParams {
-	o.SetMaxThroughputQueryParameter(maxThroughput)
+// WithMaxThroughput adds the maxThroughput to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithMaxThroughput(maxThroughput *int64) *FileMoveCollectionGetParams {
+	o.SetMaxThroughput(maxThroughput)
 	return o
 }
 
-// SetMaxThroughputQueryParameter adds the maxThroughput to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetMaxThroughputQueryParameter(maxThroughput *int64) {
-	o.MaxThroughputQueryParameter = maxThroughput
+// SetMaxThroughput adds the maxThroughput to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetMaxThroughput(maxThroughput *int64) {
+	o.MaxThroughput = maxThroughput
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *FileMoveCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithNodeName(nodeName *string) *FileMoveCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *FileMoveCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithNodeUUID(nodeUUID *string) *FileMoveCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FileMoveCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithOrderBy(orderBy []string) *FileMoveCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileMoveCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithReturnRecords(returnRecords *bool) *FileMoveCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FileMoveCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FileMoveCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScannerPercentQueryParameter adds the scannerPercent to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithScannerPercentQueryParameter(scannerPercent *int64) *FileMoveCollectionGetParams {
-	o.SetScannerPercentQueryParameter(scannerPercent)
+// WithScannerPercent adds the scannerPercent to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithScannerPercent(scannerPercent *int64) *FileMoveCollectionGetParams {
+	o.SetScannerPercent(scannerPercent)
 	return o
 }
 
-// SetScannerPercentQueryParameter adds the scannerPercent to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetScannerPercentQueryParameter(scannerPercent *int64) {
-	o.ScannerPercentQueryParameter = scannerPercent
+// SetScannerPercent adds the scannerPercent to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetScannerPercent(scannerPercent *int64) {
+	o.ScannerPercent = scannerPercent
 }
 
-// WithScannerProgressQueryParameter adds the scannerProgress to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithScannerProgressQueryParameter(scannerProgress *int64) *FileMoveCollectionGetParams {
-	o.SetScannerProgressQueryParameter(scannerProgress)
+// WithScannerProgress adds the scannerProgress to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithScannerProgress(scannerProgress *int64) *FileMoveCollectionGetParams {
+	o.SetScannerProgress(scannerProgress)
 	return o
 }
 
-// SetScannerProgressQueryParameter adds the scannerProgress to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetScannerProgressQueryParameter(scannerProgress *int64) {
-	o.ScannerProgressQueryParameter = scannerProgress
+// SetScannerProgress adds the scannerProgress to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetScannerProgress(scannerProgress *int64) {
+	o.ScannerProgress = scannerProgress
 }
 
-// WithScannerStateQueryParameter adds the scannerState to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithScannerStateQueryParameter(scannerState *string) *FileMoveCollectionGetParams {
-	o.SetScannerStateQueryParameter(scannerState)
+// WithScannerState adds the scannerState to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithScannerState(scannerState *string) *FileMoveCollectionGetParams {
+	o.SetScannerState(scannerState)
 	return o
 }
 
-// SetScannerStateQueryParameter adds the scannerState to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetScannerStateQueryParameter(scannerState *string) {
-	o.ScannerStateQueryParameter = scannerState
+// SetScannerState adds the scannerState to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetScannerState(scannerState *string) {
+	o.ScannerState = scannerState
 }
 
-// WithScannerTotalQueryParameter adds the scannerTotal to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithScannerTotalQueryParameter(scannerTotal *int64) *FileMoveCollectionGetParams {
-	o.SetScannerTotalQueryParameter(scannerTotal)
+// WithScannerTotal adds the scannerTotal to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithScannerTotal(scannerTotal *int64) *FileMoveCollectionGetParams {
+	o.SetScannerTotal(scannerTotal)
 	return o
 }
 
-// SetScannerTotalQueryParameter adds the scannerTotal to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetScannerTotalQueryParameter(scannerTotal *int64) {
-	o.ScannerTotalQueryParameter = scannerTotal
+// SetScannerTotal adds the scannerTotal to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetScannerTotal(scannerTotal *int64) {
+	o.ScannerTotal = scannerTotal
 }
 
-// WithSourcePathQueryParameter adds the sourcePath to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSourcePathQueryParameter(sourcePath *string) *FileMoveCollectionGetParams {
-	o.SetSourcePathQueryParameter(sourcePath)
+// WithSourcePath adds the sourcePath to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSourcePath(sourcePath *string) *FileMoveCollectionGetParams {
+	o.SetSourcePath(sourcePath)
 	return o
 }
 
-// SetSourcePathQueryParameter adds the sourcePath to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSourcePathQueryParameter(sourcePath *string) {
-	o.SourcePathQueryParameter = sourcePath
+// SetSourcePath adds the sourcePath to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSourcePath(sourcePath *string) {
+	o.SourcePath = sourcePath
 }
 
-// WithSourceSVMNameQueryParameter adds the sourceSvmName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSourceSVMNameQueryParameter(sourceSvmName *string) *FileMoveCollectionGetParams {
-	o.SetSourceSVMNameQueryParameter(sourceSvmName)
+// WithSourceSvmName adds the sourceSvmName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSourceSvmName(sourceSvmName *string) *FileMoveCollectionGetParams {
+	o.SetSourceSvmName(sourceSvmName)
 	return o
 }
 
-// SetSourceSVMNameQueryParameter adds the sourceSvmName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSourceSVMNameQueryParameter(sourceSvmName *string) {
-	o.SourceSVMNameQueryParameter = sourceSvmName
+// SetSourceSvmName adds the sourceSvmName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSourceSvmName(sourceSvmName *string) {
+	o.SourceSvmName = sourceSvmName
 }
 
-// WithSourceSVMUUIDQueryParameter adds the sourceSvmUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSourceSVMUUIDQueryParameter(sourceSvmUUID *string) *FileMoveCollectionGetParams {
-	o.SetSourceSVMUUIDQueryParameter(sourceSvmUUID)
+// WithSourceSvmUUID adds the sourceSvmUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSourceSvmUUID(sourceSvmUUID *string) *FileMoveCollectionGetParams {
+	o.SetSourceSvmUUID(sourceSvmUUID)
 	return o
 }
 
-// SetSourceSVMUUIDQueryParameter adds the sourceSvmUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSourceSVMUUIDQueryParameter(sourceSvmUUID *string) {
-	o.SourceSVMUUIDQueryParameter = sourceSvmUUID
+// SetSourceSvmUUID adds the sourceSvmUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSourceSvmUUID(sourceSvmUUID *string) {
+	o.SourceSvmUUID = sourceSvmUUID
 }
 
-// WithSourceVolumeNameQueryParameter adds the sourceVolumeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSourceVolumeNameQueryParameter(sourceVolumeName *string) *FileMoveCollectionGetParams {
-	o.SetSourceVolumeNameQueryParameter(sourceVolumeName)
+// WithSourceVolumeName adds the sourceVolumeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSourceVolumeName(sourceVolumeName *string) *FileMoveCollectionGetParams {
+	o.SetSourceVolumeName(sourceVolumeName)
 	return o
 }
 
-// SetSourceVolumeNameQueryParameter adds the sourceVolumeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSourceVolumeNameQueryParameter(sourceVolumeName *string) {
-	o.SourceVolumeNameQueryParameter = sourceVolumeName
+// SetSourceVolumeName adds the sourceVolumeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSourceVolumeName(sourceVolumeName *string) {
+	o.SourceVolumeName = sourceVolumeName
 }
 
-// WithSourceVolumeUUIDQueryParameter adds the sourceVolumeUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSourceVolumeUUIDQueryParameter(sourceVolumeUUID *string) *FileMoveCollectionGetParams {
-	o.SetSourceVolumeUUIDQueryParameter(sourceVolumeUUID)
+// WithSourceVolumeUUID adds the sourceVolumeUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSourceVolumeUUID(sourceVolumeUUID *string) *FileMoveCollectionGetParams {
+	o.SetSourceVolumeUUID(sourceVolumeUUID)
 	return o
 }
 
-// SetSourceVolumeUUIDQueryParameter adds the sourceVolumeUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSourceVolumeUUIDQueryParameter(sourceVolumeUUID *string) {
-	o.SourceVolumeUUIDQueryParameter = sourceVolumeUUID
+// SetSourceVolumeUUID adds the sourceVolumeUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSourceVolumeUUID(sourceVolumeUUID *string) {
+	o.SourceVolumeUUID = sourceVolumeUUID
 }
 
-// WithSVMNameQueryParameter adds the svmName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *FileMoveCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSvmName(svmName *string) *FileMoveCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *FileMoveCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithSvmUUID(svmUUID *string) *FileMoveCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithUUIDQueryParameter(uuid *string) *FileMoveCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithUUID(uuid *string) *FileMoveCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *FileMoveCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithVolumeName(volumeName *string) *FileMoveCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the file move collection get params
-func (o *FileMoveCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *FileMoveCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the file move collection get params
+func (o *FileMoveCollectionGetParams) WithVolumeUUID(volumeUUID *string) *FileMoveCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the file move collection get params
-func (o *FileMoveCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the file move collection get params
+func (o *FileMoveCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -804,13 +804,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.CutoverTimeQueryParameter != nil {
+	if o.CutoverTime != nil {
 
 		// query param cutover_time
 		var qrCutoverTime int64
 
-		if o.CutoverTimeQueryParameter != nil {
-			qrCutoverTime = *o.CutoverTimeQueryParameter
+		if o.CutoverTime != nil {
+			qrCutoverTime = *o.CutoverTime
 		}
 		qCutoverTime := swag.FormatInt64(qrCutoverTime)
 		if qCutoverTime != "" {
@@ -821,13 +821,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.DestinationPathQueryParameter != nil {
+	if o.DestinationPath != nil {
 
 		// query param destination.path
 		var qrDestinationPath string
 
-		if o.DestinationPathQueryParameter != nil {
-			qrDestinationPath = *o.DestinationPathQueryParameter
+		if o.DestinationPath != nil {
+			qrDestinationPath = *o.DestinationPath
 		}
 		qDestinationPath := qrDestinationPath
 		if qDestinationPath != "" {
@@ -838,13 +838,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.DestinationSVMNameQueryParameter != nil {
+	if o.DestinationSvmName != nil {
 
 		// query param destination.svm.name
 		var qrDestinationSvmName string
 
-		if o.DestinationSVMNameQueryParameter != nil {
-			qrDestinationSvmName = *o.DestinationSVMNameQueryParameter
+		if o.DestinationSvmName != nil {
+			qrDestinationSvmName = *o.DestinationSvmName
 		}
 		qDestinationSvmName := qrDestinationSvmName
 		if qDestinationSvmName != "" {
@@ -855,13 +855,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.DestinationSVMUUIDQueryParameter != nil {
+	if o.DestinationSvmUUID != nil {
 
 		// query param destination.svm.uuid
 		var qrDestinationSvmUUID string
 
-		if o.DestinationSVMUUIDQueryParameter != nil {
-			qrDestinationSvmUUID = *o.DestinationSVMUUIDQueryParameter
+		if o.DestinationSvmUUID != nil {
+			qrDestinationSvmUUID = *o.DestinationSvmUUID
 		}
 		qDestinationSvmUUID := qrDestinationSvmUUID
 		if qDestinationSvmUUID != "" {
@@ -872,13 +872,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.DestinationVolumeNameQueryParameter != nil {
+	if o.DestinationVolumeName != nil {
 
 		// query param destination.volume.name
 		var qrDestinationVolumeName string
 
-		if o.DestinationVolumeNameQueryParameter != nil {
-			qrDestinationVolumeName = *o.DestinationVolumeNameQueryParameter
+		if o.DestinationVolumeName != nil {
+			qrDestinationVolumeName = *o.DestinationVolumeName
 		}
 		qDestinationVolumeName := qrDestinationVolumeName
 		if qDestinationVolumeName != "" {
@@ -889,13 +889,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.DestinationVolumeUUIDQueryParameter != nil {
+	if o.DestinationVolumeUUID != nil {
 
 		// query param destination.volume.uuid
 		var qrDestinationVolumeUUID string
 
-		if o.DestinationVolumeUUIDQueryParameter != nil {
-			qrDestinationVolumeUUID = *o.DestinationVolumeUUIDQueryParameter
+		if o.DestinationVolumeUUID != nil {
+			qrDestinationVolumeUUID = *o.DestinationVolumeUUID
 		}
 		qDestinationVolumeUUID := qrDestinationVolumeUUID
 		if qDestinationVolumeUUID != "" {
@@ -906,13 +906,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ElapsedTimeQueryParameter != nil {
+	if o.ElapsedTime != nil {
 
 		// query param elapsed_time
 		var qrElapsedTime int64
 
-		if o.ElapsedTimeQueryParameter != nil {
-			qrElapsedTime = *o.ElapsedTimeQueryParameter
+		if o.ElapsedTime != nil {
+			qrElapsedTime = *o.ElapsedTime
 		}
 		qElapsedTime := swag.FormatInt64(qrElapsedTime)
 		if qElapsedTime != "" {
@@ -923,13 +923,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FailureArgumentsCodeQueryParameter != nil {
+	if o.FailureArgumentsCode != nil {
 
 		// query param failure.arguments.code
 		var qrFailureArgumentsCode string
 
-		if o.FailureArgumentsCodeQueryParameter != nil {
-			qrFailureArgumentsCode = *o.FailureArgumentsCodeQueryParameter
+		if o.FailureArgumentsCode != nil {
+			qrFailureArgumentsCode = *o.FailureArgumentsCode
 		}
 		qFailureArgumentsCode := qrFailureArgumentsCode
 		if qFailureArgumentsCode != "" {
@@ -940,13 +940,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FailureArgumentsMessageQueryParameter != nil {
+	if o.FailureArgumentsMessage != nil {
 
 		// query param failure.arguments.message
 		var qrFailureArgumentsMessage string
 
-		if o.FailureArgumentsMessageQueryParameter != nil {
-			qrFailureArgumentsMessage = *o.FailureArgumentsMessageQueryParameter
+		if o.FailureArgumentsMessage != nil {
+			qrFailureArgumentsMessage = *o.FailureArgumentsMessage
 		}
 		qFailureArgumentsMessage := qrFailureArgumentsMessage
 		if qFailureArgumentsMessage != "" {
@@ -957,13 +957,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FailureCodeQueryParameter != nil {
+	if o.FailureCode != nil {
 
 		// query param failure.code
 		var qrFailureCode string
 
-		if o.FailureCodeQueryParameter != nil {
-			qrFailureCode = *o.FailureCodeQueryParameter
+		if o.FailureCode != nil {
+			qrFailureCode = *o.FailureCode
 		}
 		qFailureCode := qrFailureCode
 		if qFailureCode != "" {
@@ -974,13 +974,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FailureMessageQueryParameter != nil {
+	if o.FailureMessage != nil {
 
 		// query param failure.message
 		var qrFailureMessage string
 
-		if o.FailureMessageQueryParameter != nil {
-			qrFailureMessage = *o.FailureMessageQueryParameter
+		if o.FailureMessage != nil {
+			qrFailureMessage = *o.FailureMessage
 		}
 		qFailureMessage := qrFailureMessage
 		if qFailureMessage != "" {
@@ -991,13 +991,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FailureTargetQueryParameter != nil {
+	if o.FailureTarget != nil {
 
 		// query param failure.target
 		var qrFailureTarget string
 
-		if o.FailureTargetQueryParameter != nil {
-			qrFailureTarget = *o.FailureTargetQueryParameter
+		if o.FailureTarget != nil {
+			qrFailureTarget = *o.FailureTarget
 		}
 		qFailureTarget := qrFailureTarget
 		if qFailureTarget != "" {
@@ -1008,7 +1008,7 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1019,13 +1019,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -1036,13 +1036,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IsDestinationReadyQueryParameter != nil {
+	if o.IsDestinationReady != nil {
 
 		// query param is_destination_ready
 		var qrIsDestinationReady bool
 
-		if o.IsDestinationReadyQueryParameter != nil {
-			qrIsDestinationReady = *o.IsDestinationReadyQueryParameter
+		if o.IsDestinationReady != nil {
+			qrIsDestinationReady = *o.IsDestinationReady
 		}
 		qIsDestinationReady := swag.FormatBool(qrIsDestinationReady)
 		if qIsDestinationReady != "" {
@@ -1053,13 +1053,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IsFlexgroupQueryParameter != nil {
+	if o.IsFlexgroup != nil {
 
 		// query param is_flexgroup
 		var qrIsFlexgroup bool
 
-		if o.IsFlexgroupQueryParameter != nil {
-			qrIsFlexgroup = *o.IsFlexgroupQueryParameter
+		if o.IsFlexgroup != nil {
+			qrIsFlexgroup = *o.IsFlexgroup
 		}
 		qIsFlexgroup := swag.FormatBool(qrIsFlexgroup)
 		if qIsFlexgroup != "" {
@@ -1070,13 +1070,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IsSnapshotFencedQueryParameter != nil {
+	if o.IsSnapshotFenced != nil {
 
 		// query param is_snapshot_fenced
 		var qrIsSnapshotFenced bool
 
-		if o.IsSnapshotFencedQueryParameter != nil {
-			qrIsSnapshotFenced = *o.IsSnapshotFencedQueryParameter
+		if o.IsSnapshotFenced != nil {
+			qrIsSnapshotFenced = *o.IsSnapshotFenced
 		}
 		qIsSnapshotFenced := swag.FormatBool(qrIsSnapshotFenced)
 		if qIsSnapshotFenced != "" {
@@ -1087,13 +1087,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxCutoverTimeQueryParameter != nil {
+	if o.MaxCutoverTime != nil {
 
 		// query param max_cutover_time
 		var qrMaxCutoverTime int64
 
-		if o.MaxCutoverTimeQueryParameter != nil {
-			qrMaxCutoverTime = *o.MaxCutoverTimeQueryParameter
+		if o.MaxCutoverTime != nil {
+			qrMaxCutoverTime = *o.MaxCutoverTime
 		}
 		qMaxCutoverTime := swag.FormatInt64(qrMaxCutoverTime)
 		if qMaxCutoverTime != "" {
@@ -1104,13 +1104,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1121,13 +1121,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxThroughputQueryParameter != nil {
+	if o.MaxThroughput != nil {
 
 		// query param max_throughput
 		var qrMaxThroughput int64
 
-		if o.MaxThroughputQueryParameter != nil {
-			qrMaxThroughput = *o.MaxThroughputQueryParameter
+		if o.MaxThroughput != nil {
+			qrMaxThroughput = *o.MaxThroughput
 		}
 		qMaxThroughput := swag.FormatInt64(qrMaxThroughput)
 		if qMaxThroughput != "" {
@@ -1138,13 +1138,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -1155,13 +1155,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -1172,7 +1172,7 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1183,13 +1183,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1200,13 +1200,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1217,13 +1217,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ScannerPercentQueryParameter != nil {
+	if o.ScannerPercent != nil {
 
 		// query param scanner.percent
 		var qrScannerPercent int64
 
-		if o.ScannerPercentQueryParameter != nil {
-			qrScannerPercent = *o.ScannerPercentQueryParameter
+		if o.ScannerPercent != nil {
+			qrScannerPercent = *o.ScannerPercent
 		}
 		qScannerPercent := swag.FormatInt64(qrScannerPercent)
 		if qScannerPercent != "" {
@@ -1234,13 +1234,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ScannerProgressQueryParameter != nil {
+	if o.ScannerProgress != nil {
 
 		// query param scanner.progress
 		var qrScannerProgress int64
 
-		if o.ScannerProgressQueryParameter != nil {
-			qrScannerProgress = *o.ScannerProgressQueryParameter
+		if o.ScannerProgress != nil {
+			qrScannerProgress = *o.ScannerProgress
 		}
 		qScannerProgress := swag.FormatInt64(qrScannerProgress)
 		if qScannerProgress != "" {
@@ -1251,13 +1251,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ScannerStateQueryParameter != nil {
+	if o.ScannerState != nil {
 
 		// query param scanner.state
 		var qrScannerState string
 
-		if o.ScannerStateQueryParameter != nil {
-			qrScannerState = *o.ScannerStateQueryParameter
+		if o.ScannerState != nil {
+			qrScannerState = *o.ScannerState
 		}
 		qScannerState := qrScannerState
 		if qScannerState != "" {
@@ -1268,13 +1268,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ScannerTotalQueryParameter != nil {
+	if o.ScannerTotal != nil {
 
 		// query param scanner.total
 		var qrScannerTotal int64
 
-		if o.ScannerTotalQueryParameter != nil {
-			qrScannerTotal = *o.ScannerTotalQueryParameter
+		if o.ScannerTotal != nil {
+			qrScannerTotal = *o.ScannerTotal
 		}
 		qScannerTotal := swag.FormatInt64(qrScannerTotal)
 		if qScannerTotal != "" {
@@ -1285,13 +1285,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SourcePathQueryParameter != nil {
+	if o.SourcePath != nil {
 
 		// query param source.path
 		var qrSourcePath string
 
-		if o.SourcePathQueryParameter != nil {
-			qrSourcePath = *o.SourcePathQueryParameter
+		if o.SourcePath != nil {
+			qrSourcePath = *o.SourcePath
 		}
 		qSourcePath := qrSourcePath
 		if qSourcePath != "" {
@@ -1302,13 +1302,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SourceSVMNameQueryParameter != nil {
+	if o.SourceSvmName != nil {
 
 		// query param source.svm.name
 		var qrSourceSvmName string
 
-		if o.SourceSVMNameQueryParameter != nil {
-			qrSourceSvmName = *o.SourceSVMNameQueryParameter
+		if o.SourceSvmName != nil {
+			qrSourceSvmName = *o.SourceSvmName
 		}
 		qSourceSvmName := qrSourceSvmName
 		if qSourceSvmName != "" {
@@ -1319,13 +1319,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SourceSVMUUIDQueryParameter != nil {
+	if o.SourceSvmUUID != nil {
 
 		// query param source.svm.uuid
 		var qrSourceSvmUUID string
 
-		if o.SourceSVMUUIDQueryParameter != nil {
-			qrSourceSvmUUID = *o.SourceSVMUUIDQueryParameter
+		if o.SourceSvmUUID != nil {
+			qrSourceSvmUUID = *o.SourceSvmUUID
 		}
 		qSourceSvmUUID := qrSourceSvmUUID
 		if qSourceSvmUUID != "" {
@@ -1336,13 +1336,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SourceVolumeNameQueryParameter != nil {
+	if o.SourceVolumeName != nil {
 
 		// query param source.volume.name
 		var qrSourceVolumeName string
 
-		if o.SourceVolumeNameQueryParameter != nil {
-			qrSourceVolumeName = *o.SourceVolumeNameQueryParameter
+		if o.SourceVolumeName != nil {
+			qrSourceVolumeName = *o.SourceVolumeName
 		}
 		qSourceVolumeName := qrSourceVolumeName
 		if qSourceVolumeName != "" {
@@ -1353,13 +1353,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SourceVolumeUUIDQueryParameter != nil {
+	if o.SourceVolumeUUID != nil {
 
 		// query param source.volume.uuid
 		var qrSourceVolumeUUID string
 
-		if o.SourceVolumeUUIDQueryParameter != nil {
-			qrSourceVolumeUUID = *o.SourceVolumeUUIDQueryParameter
+		if o.SourceVolumeUUID != nil {
+			qrSourceVolumeUUID = *o.SourceVolumeUUID
 		}
 		qSourceVolumeUUID := qrSourceVolumeUUID
 		if qSourceVolumeUUID != "" {
@@ -1370,13 +1370,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1387,13 +1387,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1404,13 +1404,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1421,13 +1421,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -1438,13 +1438,13 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -1463,7 +1463,7 @@ func (o *FileMoveCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamFileMoveCollectionGet binds the parameter fields
 func (o *FileMoveCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1480,7 +1480,7 @@ func (o *FileMoveCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamFileMoveCollectionGet binds the parameter order_by
 func (o *FileMoveCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

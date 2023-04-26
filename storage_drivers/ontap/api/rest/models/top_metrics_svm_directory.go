@@ -21,29 +21,29 @@ import (
 type TopMetricsSvmDirectory struct {
 
 	// links
-	Links *TopMetricsSvmDirectoryLinks `json:"_links,omitempty"`
+	Links *TopMetricsSvmDirectoryInlineLinks `json:"_links,omitempty"`
 
 	// iops
-	Iops *TopMetricsSvmDirectoryIops `json:"iops,omitempty"`
+	Iops *TopMetricsSvmDirectoryInlineIops `json:"iops,omitempty"`
 
 	// Junction path of the file.
 	// Example: /fv
 	// Read Only: true
-	JunctionPath string `json:"junction-path,omitempty"`
+	JunctionPath *string `json:"junction-path,omitempty"`
 
 	// Path of the directory.
 	// Example: /vol/fv/dir_abc/dir_123/dir_20
 	// Read Only: true
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
-	Svm *TopMetricsSvmDirectorySvm `json:"svm,omitempty"`
+	Svm *TopMetricsSvmDirectoryInlineSvm `json:"svm,omitempty"`
 
 	// throughput
-	Throughput *TopMetricsSvmDirectoryThroughput `json:"throughput,omitempty"`
+	Throughput *TopMetricsSvmDirectoryInlineThroughput `json:"throughput,omitempty"`
 
 	// volume
-	Volume *TopMetricsSvmDirectoryVolume `json:"volume,omitempty"`
+	Volume *TopMetricsSvmDirectoryInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this top metrics svm directory
@@ -229,7 +229,7 @@ func (m *TopMetricsSvmDirectory) contextValidateIops(ctx context.Context, format
 
 func (m *TopMetricsSvmDirectory) contextValidateJunctionPath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "junction-path", "body", string(m.JunctionPath)); err != nil {
+	if err := validate.ReadOnly(ctx, "junction-path", "body", m.JunctionPath); err != nil {
 		return err
 	}
 
@@ -238,7 +238,7 @@ func (m *TopMetricsSvmDirectory) contextValidateJunctionPath(ctx context.Context
 
 func (m *TopMetricsSvmDirectory) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "path", "body", m.Path); err != nil {
 		return err
 	}
 
@@ -305,10 +305,10 @@ func (m *TopMetricsSvmDirectory) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectoryIops top metrics svm directory iops
+// TopMetricsSvmDirectoryInlineIops top metrics svm directory inline iops
 //
-// swagger:model TopMetricsSvmDirectoryIops
-type TopMetricsSvmDirectoryIops struct {
+// swagger:model top_metrics_svm_directory_inline_iops
+type TopMetricsSvmDirectoryInlineIops struct {
 
 	// error
 	Error *TopMetricValueErrorBounds `json:"error,omitempty"`
@@ -316,16 +316,16 @@ type TopMetricsSvmDirectoryIops struct {
 	// Average number of read operations per second.
 	// Example: 10
 	// Read Only: true
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Average number of write operations per second.
 	// Example: 5
 	// Read Only: true
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this top metrics svm directory iops
-func (m *TopMetricsSvmDirectoryIops) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline iops
+func (m *TopMetricsSvmDirectoryInlineIops) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -338,7 +338,7 @@ func (m *TopMetricsSvmDirectoryIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryIops) validateError(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineIops) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -355,8 +355,8 @@ func (m *TopMetricsSvmDirectoryIops) validateError(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory iops based on the context it is used
-func (m *TopMetricsSvmDirectoryIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline iops based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -377,7 +377,7 @@ func (m *TopMetricsSvmDirectoryIops) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryIops) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineIops) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -391,18 +391,18 @@ func (m *TopMetricsSvmDirectoryIops) contextValidateError(ctx context.Context, f
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryIops) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineIops) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"read", "body", int64(m.Read)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"read", "body", m.Read); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryIops) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineIops) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"write", "body", int64(m.Write)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"write", "body", m.Write); err != nil {
 		return err
 	}
 
@@ -410,7 +410,7 @@ func (m *TopMetricsSvmDirectoryIops) contextValidateWrite(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryIops) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -418,8 +418,8 @@ func (m *TopMetricsSvmDirectoryIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryIops) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectoryIops
+func (m *TopMetricsSvmDirectoryInlineIops) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -427,10 +427,10 @@ func (m *TopMetricsSvmDirectoryIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectoryLinks top metrics svm directory links
+// TopMetricsSvmDirectoryInlineLinks top metrics svm directory inline links
 //
-// swagger:model TopMetricsSvmDirectoryLinks
-type TopMetricsSvmDirectoryLinks struct {
+// swagger:model top_metrics_svm_directory_inline__links
+type TopMetricsSvmDirectoryInlineLinks struct {
 
 	// metadata
 	Metadata *Href `json:"metadata,omitempty"`
@@ -439,8 +439,8 @@ type TopMetricsSvmDirectoryLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics svm directory links
-func (m *TopMetricsSvmDirectoryLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline links
+func (m *TopMetricsSvmDirectoryInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMetadata(formats); err != nil {
@@ -457,7 +457,7 @@ func (m *TopMetricsSvmDirectoryLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryLinks) validateMetadata(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineLinks) validateMetadata(formats strfmt.Registry) error {
 	if swag.IsZero(m.Metadata) { // not required
 		return nil
 	}
@@ -474,7 +474,7 @@ func (m *TopMetricsSvmDirectoryLinks) validateMetadata(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -491,8 +491,8 @@ func (m *TopMetricsSvmDirectoryLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory links based on the context it is used
-func (m *TopMetricsSvmDirectoryLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline links based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMetadata(ctx, formats); err != nil {
@@ -509,7 +509,7 @@ func (m *TopMetricsSvmDirectoryLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryLinks) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineLinks) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Metadata != nil {
 		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
@@ -523,7 +523,7 @@ func (m *TopMetricsSvmDirectoryLinks) contextValidateMetadata(ctx context.Contex
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -538,7 +538,7 @@ func (m *TopMetricsSvmDirectoryLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -546,8 +546,8 @@ func (m *TopMetricsSvmDirectoryLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectoryLinks
+func (m *TopMetricsSvmDirectoryInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -555,27 +555,27 @@ func (m *TopMetricsSvmDirectoryLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectorySvm top metrics svm directory svm
+// TopMetricsSvmDirectoryInlineSvm top metrics svm directory inline svm
 //
-// swagger:model TopMetricsSvmDirectorySvm
-type TopMetricsSvmDirectorySvm struct {
+// swagger:model top_metrics_svm_directory_inline_svm
+type TopMetricsSvmDirectoryInlineSvm struct {
 
 	// links
-	Links *TopMetricsSvmDirectorySvmLinks `json:"_links,omitempty"`
+	Links *TopMetricsSvmDirectoryInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this top metrics svm directory svm
-func (m *TopMetricsSvmDirectorySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline svm
+func (m *TopMetricsSvmDirectoryInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -588,7 +588,7 @@ func (m *TopMetricsSvmDirectorySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmDirectorySvm) validateLinks(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -605,8 +605,8 @@ func (m *TopMetricsSvmDirectorySvm) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory svm based on the context it is used
-func (m *TopMetricsSvmDirectorySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline svm based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -619,7 +619,7 @@ func (m *TopMetricsSvmDirectorySvm) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *TopMetricsSvmDirectorySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -634,7 +634,7 @@ func (m *TopMetricsSvmDirectorySvm) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectorySvm) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -642,8 +642,8 @@ func (m *TopMetricsSvmDirectorySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectorySvm) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectorySvm
+func (m *TopMetricsSvmDirectoryInlineSvm) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -651,17 +651,17 @@ func (m *TopMetricsSvmDirectorySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectorySvmLinks top metrics svm directory svm links
+// TopMetricsSvmDirectoryInlineSvmInlineLinks top metrics svm directory inline svm inline links
 //
-// swagger:model TopMetricsSvmDirectorySvmLinks
-type TopMetricsSvmDirectorySvmLinks struct {
+// swagger:model top_metrics_svm_directory_inline_svm_inline__links
+type TopMetricsSvmDirectoryInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics svm directory svm links
-func (m *TopMetricsSvmDirectorySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline svm inline links
+func (m *TopMetricsSvmDirectoryInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -674,7 +674,7 @@ func (m *TopMetricsSvmDirectorySvmLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *TopMetricsSvmDirectorySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -691,8 +691,8 @@ func (m *TopMetricsSvmDirectorySvmLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory svm links based on the context it is used
-func (m *TopMetricsSvmDirectorySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline svm inline links based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -705,7 +705,7 @@ func (m *TopMetricsSvmDirectorySvmLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *TopMetricsSvmDirectorySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -720,7 +720,7 @@ func (m *TopMetricsSvmDirectorySvmLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectorySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -728,8 +728,8 @@ func (m *TopMetricsSvmDirectorySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectorySvmLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectorySvmLinks
+func (m *TopMetricsSvmDirectoryInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -737,10 +737,10 @@ func (m *TopMetricsSvmDirectorySvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectoryThroughput top metrics svm directory throughput
+// TopMetricsSvmDirectoryInlineThroughput top metrics svm directory inline throughput
 //
-// swagger:model TopMetricsSvmDirectoryThroughput
-type TopMetricsSvmDirectoryThroughput struct {
+// swagger:model top_metrics_svm_directory_inline_throughput
+type TopMetricsSvmDirectoryInlineThroughput struct {
 
 	// error
 	Error *TopMetricValueErrorBounds `json:"error,omitempty"`
@@ -748,16 +748,16 @@ type TopMetricsSvmDirectoryThroughput struct {
 	// Average number of read bytes received per second.
 	// Example: 3
 	// Read Only: true
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Average number of write bytes received per second.
 	// Example: 20
 	// Read Only: true
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this top metrics svm directory throughput
-func (m *TopMetricsSvmDirectoryThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline throughput
+func (m *TopMetricsSvmDirectoryInlineThroughput) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -770,7 +770,7 @@ func (m *TopMetricsSvmDirectoryThroughput) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryThroughput) validateError(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineThroughput) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -787,8 +787,8 @@ func (m *TopMetricsSvmDirectoryThroughput) validateError(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory throughput based on the context it is used
-func (m *TopMetricsSvmDirectoryThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline throughput based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -809,7 +809,7 @@ func (m *TopMetricsSvmDirectoryThroughput) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryThroughput) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineThroughput) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -823,18 +823,18 @@ func (m *TopMetricsSvmDirectoryThroughput) contextValidateError(ctx context.Cont
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryThroughput) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineThroughput) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "throughput"+"."+"read", "body", int64(m.Read)); err != nil {
+	if err := validate.ReadOnly(ctx, "throughput"+"."+"read", "body", m.Read); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryThroughput) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineThroughput) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "throughput"+"."+"write", "body", int64(m.Write)); err != nil {
+	if err := validate.ReadOnly(ctx, "throughput"+"."+"write", "body", m.Write); err != nil {
 		return err
 	}
 
@@ -842,7 +842,7 @@ func (m *TopMetricsSvmDirectoryThroughput) contextValidateWrite(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryThroughput) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -850,8 +850,8 @@ func (m *TopMetricsSvmDirectoryThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryThroughput) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectoryThroughput
+func (m *TopMetricsSvmDirectoryInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -859,25 +859,25 @@ func (m *TopMetricsSvmDirectoryThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectoryVolume top metrics svm directory volume
+// TopMetricsSvmDirectoryInlineVolume top metrics svm directory inline volume
 //
-// swagger:model TopMetricsSvmDirectoryVolume
-type TopMetricsSvmDirectoryVolume struct {
+// swagger:model top_metrics_svm_directory_inline_volume
+type TopMetricsSvmDirectoryInlineVolume struct {
 
 	// links
-	Links *TopMetricsSvmDirectoryVolumeLinks `json:"_links,omitempty"`
+	Links *TopMetricsSvmDirectoryInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this top metrics svm directory volume
-func (m *TopMetricsSvmDirectoryVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline volume
+func (m *TopMetricsSvmDirectoryInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -890,7 +890,7 @@ func (m *TopMetricsSvmDirectoryVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryVolume) validateLinks(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -907,8 +907,8 @@ func (m *TopMetricsSvmDirectoryVolume) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory volume based on the context it is used
-func (m *TopMetricsSvmDirectoryVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline volume based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -921,7 +921,7 @@ func (m *TopMetricsSvmDirectoryVolume) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -936,7 +936,7 @@ func (m *TopMetricsSvmDirectoryVolume) contextValidateLinks(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryVolume) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -944,8 +944,8 @@ func (m *TopMetricsSvmDirectoryVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryVolume) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectoryVolume
+func (m *TopMetricsSvmDirectoryInlineVolume) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -953,17 +953,17 @@ func (m *TopMetricsSvmDirectoryVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmDirectoryVolumeLinks top metrics svm directory volume links
+// TopMetricsSvmDirectoryInlineVolumeInlineLinks top metrics svm directory inline volume inline links
 //
-// swagger:model TopMetricsSvmDirectoryVolumeLinks
-type TopMetricsSvmDirectoryVolumeLinks struct {
+// swagger:model top_metrics_svm_directory_inline_volume_inline__links
+type TopMetricsSvmDirectoryInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics svm directory volume links
-func (m *TopMetricsSvmDirectoryVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm directory inline volume inline links
+func (m *TopMetricsSvmDirectoryInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -976,7 +976,7 @@ func (m *TopMetricsSvmDirectoryVolumeLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -993,8 +993,8 @@ func (m *TopMetricsSvmDirectoryVolumeLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this top metrics svm directory volume links based on the context it is used
-func (m *TopMetricsSvmDirectoryVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm directory inline volume inline links based on the context it is used
+func (m *TopMetricsSvmDirectoryInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1007,7 +1007,7 @@ func (m *TopMetricsSvmDirectoryVolumeLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *TopMetricsSvmDirectoryVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmDirectoryInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1022,7 +1022,7 @@ func (m *TopMetricsSvmDirectoryVolumeLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmDirectoryInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1030,8 +1030,8 @@ func (m *TopMetricsSvmDirectoryVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmDirectoryVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmDirectoryVolumeLinks
+func (m *TopMetricsSvmDirectoryInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmDirectoryInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

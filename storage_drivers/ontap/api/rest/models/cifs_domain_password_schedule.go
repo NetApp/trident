@@ -20,10 +20,10 @@ import (
 type CifsDomainPasswordSchedule struct {
 
 	// Schedule description.
-	ScheduleDescription string `json:"schedule_description,omitempty"`
+	ScheduleDescription *string `json:"schedule_description,omitempty"`
 
 	// Is password schedule enabled.
-	ScheduleEnabled bool `json:"schedule_enabled,omitempty"`
+	ScheduleEnabled *bool `json:"schedule_enabled,omitempty"`
 
 	// Last successful password change time.
 	// Format: date-time
@@ -32,15 +32,15 @@ type CifsDomainPasswordSchedule struct {
 	// Minutes within which schedule start can be randomized.
 	// Maximum: 180
 	// Minimum: 1
-	ScheduleRandomizedMinute int64 `json:"schedule_randomized_minute,omitempty"`
+	ScheduleRandomizedMinute *int64 `json:"schedule_randomized_minute,omitempty"`
 
 	// Warning message in case job is deleted.
-	ScheduleWarnMessage string `json:"schedule_warn_message,omitempty"`
+	ScheduleWarnMessage *string `json:"schedule_warn_message,omitempty"`
 
 	// Interval in weeks for password change schedule.
 	// Maximum: 52
 	// Minimum: 1
-	ScheduleWeeklyInterval int64 `json:"schedule_weekly_interval,omitempty"`
+	ScheduleWeeklyInterval *int64 `json:"schedule_weekly_interval,omitempty"`
 }
 
 // Validate validates this cifs domain password schedule
@@ -82,11 +82,11 @@ func (m *CifsDomainPasswordSchedule) validateScheduleRandomizedMinute(formats st
 		return nil
 	}
 
-	if err := validate.MinimumInt("schedule_randomized_minute", "body", m.ScheduleRandomizedMinute, 1, false); err != nil {
+	if err := validate.MinimumInt("schedule_randomized_minute", "body", *m.ScheduleRandomizedMinute, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("schedule_randomized_minute", "body", m.ScheduleRandomizedMinute, 180, false); err != nil {
+	if err := validate.MaximumInt("schedule_randomized_minute", "body", *m.ScheduleRandomizedMinute, 180, false); err != nil {
 		return err
 	}
 
@@ -98,11 +98,11 @@ func (m *CifsDomainPasswordSchedule) validateScheduleWeeklyInterval(formats strf
 		return nil
 	}
 
-	if err := validate.MinimumInt("schedule_weekly_interval", "body", m.ScheduleWeeklyInterval, 1, false); err != nil {
+	if err := validate.MinimumInt("schedule_weekly_interval", "body", *m.ScheduleWeeklyInterval, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("schedule_weekly_interval", "body", m.ScheduleWeeklyInterval, 52, false); err != nil {
+	if err := validate.MaximumInt("schedule_weekly_interval", "body", *m.ScheduleWeeklyInterval, 52, false); err != nil {
 		return err
 	}
 

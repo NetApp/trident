@@ -21,7 +21,7 @@ import (
 type HwAssist struct {
 
 	// status
-	Status *HwAssistStatusType `json:"status,omitempty"`
+	Status *HwAssistInlineStatus `json:"status,omitempty"`
 }
 
 // Validate validates this hw assist
@@ -101,23 +101,23 @@ func (m *HwAssist) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HwAssistStatusType hw assist status type
+// HwAssistInlineStatus hw assist inline status
 //
-// swagger:model HwAssistStatusType
-type HwAssistStatusType struct {
+// swagger:model hw_assist_inline_status
+type HwAssistInlineStatus struct {
 
 	// Indicates whether hardware assist is enabled on the node.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// local
-	Local *HwAssistStatusLocal `json:"local,omitempty"`
+	Local *HwAssistInlineStatusInlineLocal `json:"local,omitempty"`
 
 	// partner
-	Partner *HwAssistStatusPartner `json:"partner,omitempty"`
+	Partner *HwAssistInlineStatusInlinePartner `json:"partner,omitempty"`
 }
 
-// Validate validates this hw assist status type
-func (m *HwAssistStatusType) Validate(formats strfmt.Registry) error {
+// Validate validates this hw assist inline status
+func (m *HwAssistInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocal(formats); err != nil {
@@ -134,7 +134,7 @@ func (m *HwAssistStatusType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HwAssistStatusType) validateLocal(formats strfmt.Registry) error {
+func (m *HwAssistInlineStatus) validateLocal(formats strfmt.Registry) error {
 	if swag.IsZero(m.Local) { // not required
 		return nil
 	}
@@ -151,7 +151,7 @@ func (m *HwAssistStatusType) validateLocal(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *HwAssistStatusType) validatePartner(formats strfmt.Registry) error {
+func (m *HwAssistInlineStatus) validatePartner(formats strfmt.Registry) error {
 	if swag.IsZero(m.Partner) { // not required
 		return nil
 	}
@@ -168,8 +168,8 @@ func (m *HwAssistStatusType) validatePartner(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this hw assist status type based on the context it is used
-func (m *HwAssistStatusType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this hw assist inline status based on the context it is used
+func (m *HwAssistInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLocal(ctx, formats); err != nil {
@@ -186,7 +186,7 @@ func (m *HwAssistStatusType) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *HwAssistStatusType) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+func (m *HwAssistInlineStatus) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Local != nil {
 		if err := m.Local.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +200,7 @@ func (m *HwAssistStatusType) contextValidateLocal(ctx context.Context, formats s
 	return nil
 }
 
-func (m *HwAssistStatusType) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
+func (m *HwAssistInlineStatus) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Partner != nil {
 		if err := m.Partner.ContextValidate(ctx, formats); err != nil {
@@ -215,7 +215,7 @@ func (m *HwAssistStatusType) contextValidatePartner(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *HwAssistStatusType) MarshalBinary() ([]byte, error) {
+func (m *HwAssistInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -223,8 +223,8 @@ func (m *HwAssistStatusType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HwAssistStatusType) UnmarshalBinary(b []byte) error {
-	var res HwAssistStatusType
+func (m *HwAssistInlineStatus) UnmarshalBinary(b []byte) error {
+	var res HwAssistInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -232,24 +232,24 @@ func (m *HwAssistStatusType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HwAssistStatusLocal hw assist status local
+// HwAssistInlineStatusInlineLocal hw assist inline status inline local
 //
-// swagger:model HwAssistStatusLocal
-type HwAssistStatusLocal struct {
+// swagger:model hw_assist_inline_status_inline_local
+type HwAssistInlineStatusInlineLocal struct {
 
 	// The hardware assist IP address.
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// The hardware assist port.
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
 	// Enum: [active inactive]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this hw assist status local
-func (m *HwAssistStatusLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this hw assist inline status inline local
+func (m *HwAssistInlineStatusInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -262,7 +262,7 @@ func (m *HwAssistStatusLocal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var hwAssistStatusLocalTypeStatePropEnum []interface{}
+var hwAssistInlineStatusInlineLocalTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -270,61 +270,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		hwAssistStatusLocalTypeStatePropEnum = append(hwAssistStatusLocalTypeStatePropEnum, v)
+		hwAssistInlineStatusInlineLocalTypeStatePropEnum = append(hwAssistInlineStatusInlineLocalTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// HwAssistStatusLocal
-	// HwAssistStatusLocal
+	// hw_assist_inline_status_inline_local
+	// HwAssistInlineStatusInlineLocal
 	// state
 	// State
 	// active
 	// END DEBUGGING
-	// HwAssistStatusLocalStateActive captures enum value "active"
-	HwAssistStatusLocalStateActive string = "active"
+	// HwAssistInlineStatusInlineLocalStateActive captures enum value "active"
+	HwAssistInlineStatusInlineLocalStateActive string = "active"
 
 	// BEGIN DEBUGGING
-	// HwAssistStatusLocal
-	// HwAssistStatusLocal
+	// hw_assist_inline_status_inline_local
+	// HwAssistInlineStatusInlineLocal
 	// state
 	// State
 	// inactive
 	// END DEBUGGING
-	// HwAssistStatusLocalStateInactive captures enum value "inactive"
-	HwAssistStatusLocalStateInactive string = "inactive"
+	// HwAssistInlineStatusInlineLocalStateInactive captures enum value "inactive"
+	HwAssistInlineStatusInlineLocalStateInactive string = "inactive"
 )
 
 // prop value enum
-func (m *HwAssistStatusLocal) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, hwAssistStatusLocalTypeStatePropEnum, true); err != nil {
+func (m *HwAssistInlineStatusInlineLocal) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, hwAssistInlineStatusInlineLocalTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *HwAssistStatusLocal) validateState(formats strfmt.Registry) error {
+func (m *HwAssistInlineStatusInlineLocal) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("status"+"."+"local"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("status"+"."+"local"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this hw assist status local based on context it is used
-func (m *HwAssistStatusLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this hw assist inline status inline local based on context it is used
+func (m *HwAssistInlineStatusInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *HwAssistStatusLocal) MarshalBinary() ([]byte, error) {
+func (m *HwAssistInlineStatusInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -332,8 +332,8 @@ func (m *HwAssistStatusLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HwAssistStatusLocal) UnmarshalBinary(b []byte) error {
-	var res HwAssistStatusLocal
+func (m *HwAssistInlineStatusInlineLocal) UnmarshalBinary(b []byte) error {
+	var res HwAssistInlineStatusInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -341,24 +341,24 @@ func (m *HwAssistStatusLocal) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HwAssistStatusPartner hw assist status partner
+// HwAssistInlineStatusInlinePartner hw assist inline status inline partner
 //
-// swagger:model HwAssistStatusPartner
-type HwAssistStatusPartner struct {
+// swagger:model hw_assist_inline_status_inline_partner
+type HwAssistInlineStatusInlinePartner struct {
 
 	// The hardware assist IP address.
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// The hardware assist port.
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// The hardware assist monitor status.
 	// Enum: [active inactive]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this hw assist status partner
-func (m *HwAssistStatusPartner) Validate(formats strfmt.Registry) error {
+// Validate validates this hw assist inline status inline partner
+func (m *HwAssistInlineStatusInlinePartner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -371,7 +371,7 @@ func (m *HwAssistStatusPartner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var hwAssistStatusPartnerTypeStatePropEnum []interface{}
+var hwAssistInlineStatusInlinePartnerTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -379,61 +379,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		hwAssistStatusPartnerTypeStatePropEnum = append(hwAssistStatusPartnerTypeStatePropEnum, v)
+		hwAssistInlineStatusInlinePartnerTypeStatePropEnum = append(hwAssistInlineStatusInlinePartnerTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// HwAssistStatusPartner
-	// HwAssistStatusPartner
+	// hw_assist_inline_status_inline_partner
+	// HwAssistInlineStatusInlinePartner
 	// state
 	// State
 	// active
 	// END DEBUGGING
-	// HwAssistStatusPartnerStateActive captures enum value "active"
-	HwAssistStatusPartnerStateActive string = "active"
+	// HwAssistInlineStatusInlinePartnerStateActive captures enum value "active"
+	HwAssistInlineStatusInlinePartnerStateActive string = "active"
 
 	// BEGIN DEBUGGING
-	// HwAssistStatusPartner
-	// HwAssistStatusPartner
+	// hw_assist_inline_status_inline_partner
+	// HwAssistInlineStatusInlinePartner
 	// state
 	// State
 	// inactive
 	// END DEBUGGING
-	// HwAssistStatusPartnerStateInactive captures enum value "inactive"
-	HwAssistStatusPartnerStateInactive string = "inactive"
+	// HwAssistInlineStatusInlinePartnerStateInactive captures enum value "inactive"
+	HwAssistInlineStatusInlinePartnerStateInactive string = "inactive"
 )
 
 // prop value enum
-func (m *HwAssistStatusPartner) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, hwAssistStatusPartnerTypeStatePropEnum, true); err != nil {
+func (m *HwAssistInlineStatusInlinePartner) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, hwAssistInlineStatusInlinePartnerTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *HwAssistStatusPartner) validateState(formats strfmt.Registry) error {
+func (m *HwAssistInlineStatusInlinePartner) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("status"+"."+"partner"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("status"+"."+"partner"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this hw assist status partner based on context it is used
-func (m *HwAssistStatusPartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this hw assist inline status inline partner based on context it is used
+func (m *HwAssistInlineStatusInlinePartner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *HwAssistStatusPartner) MarshalBinary() ([]byte, error) {
+func (m *HwAssistInlineStatusInlinePartner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -441,8 +441,8 @@ func (m *HwAssistStatusPartner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *HwAssistStatusPartner) UnmarshalBinary(b []byte) error {
-	var res HwAssistStatusPartner
+func (m *HwAssistInlineStatusInlinePartner) UnmarshalBinary(b []byte) error {
+	var res HwAssistInlineStatusInlinePartner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

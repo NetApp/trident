@@ -62,617 +62,1199 @@ ConsistencyGroupCollectionGetParams contains all the parameters to send to the A
 */
 type ConsistencyGroupCollectionGetParams struct {
 
+	/* ApplicationComponentType.
+
+	   Filter by application.component_type
+	*/
+	ApplicationComponentType *string
+
+	/* ApplicationType.
+
+	   Filter by application.type
+	*/
+	ApplicationType *string
+
+	/* CloneGuaranteeType.
+
+	   Filter by clone.guarantee.type
+	*/
+	CloneGuaranteeType *string
+
+	/* CloneParentConsistencyGroupName.
+
+	   Filter by clone.parent_consistency_group.name
+	*/
+	CloneParentConsistencyGroupName *string
+
+	/* CloneParentConsistencyGroupUUID.
+
+	   Filter by clone.parent_consistency_group.uuid
+	*/
+	CloneParentConsistencyGroupUUID *string
+
+	/* CloneParentSnapshotName.
+
+	   Filter by clone.parent_snapshot.name
+	*/
+	CloneParentSnapshotName *string
+
+	/* CloneSplitInitiated.
+
+	   Filter by clone.split_initiated
+	*/
+	CloneSplitInitiated *bool
+
+	/* CloneVolumePrefix.
+
+	   Filter by clone.volume.prefix
+	*/
+	CloneVolumePrefix *string
+
+	/* CloneVolumeSuffix.
+
+	   Filter by clone.volume.suffix
+	*/
+	CloneVolumeSuffix *string
+
+	/* ConsistencyGroupsApplicationComponentType.
+
+	   Filter by consistency_groups.application.component_type
+	*/
+	ConsistencyGroupsApplicationComponentType *string
+
+	/* ConsistencyGroupsApplicationType.
+
+	   Filter by consistency_groups.application.type
+	*/
+	ConsistencyGroupsApplicationType *string
+
 	/* ConsistencyGroupsLunsComment.
 
 	   Filter by consistency_groups.luns.comment
 	*/
-	ConsistencyGroupsLunsCommentQueryParameter *string
+	ConsistencyGroupsLunsComment *string
 
 	/* ConsistencyGroupsLunsCreateTime.
 
 	   Filter by consistency_groups.luns.create_time
 	*/
-	ConsistencyGroupsLunsCreateTimeQueryParameter *string
+	ConsistencyGroupsLunsCreateTime *string
 
 	/* ConsistencyGroupsLunsEnabled.
 
 	   Filter by consistency_groups.luns.enabled
 	*/
-	ConsistencyGroupsLunsEnabledQueryParameter *bool
+	ConsistencyGroupsLunsEnabled *bool
 
 	/* ConsistencyGroupsLunsLunMapsIgroupComment.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.comment
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupComment *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupIgroupsName.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.igroups.name
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupIgroupsName *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupIgroupsUUID.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.igroups.uuid
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupIgroupsUUID *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupInitiatorsComment.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.initiators.comment
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupInitiatorsComment *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupInitiatorsName.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.initiators.name
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupInitiatorsName *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupName.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.name
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupNameQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupName *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupOsType.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.os_type
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupOsType *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupProtocol.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.protocol
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupProtocol *string
 
 	/* ConsistencyGroupsLunsLunMapsIgroupUUID.
 
 	   Filter by consistency_groups.luns.lun_maps.igroup.uuid
 	*/
-	ConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter *string
+	ConsistencyGroupsLunsLunMapsIgroupUUID *string
 
 	/* ConsistencyGroupsLunsLunMapsLogicalUnitNumber.
 
 	   Filter by consistency_groups.luns.lun_maps.logical_unit_number
 	*/
-	ConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter *int64
+	ConsistencyGroupsLunsLunMapsLogicalUnitNumber *int64
 
 	/* ConsistencyGroupsLunsName.
 
 	   Filter by consistency_groups.luns.name
 	*/
-	ConsistencyGroupsLunsNameQueryParameter *string
+	ConsistencyGroupsLunsName *string
 
 	/* ConsistencyGroupsLunsOsType.
 
 	   Filter by consistency_groups.luns.os_type
 	*/
-	ConsistencyGroupsLunsOsTypeQueryParameter *string
+	ConsistencyGroupsLunsOsType *string
 
 	/* ConsistencyGroupsLunsQosPolicyMaxThroughputIops.
 
 	   Filter by consistency_groups.luns.qos.policy.max_throughput_iops
 	*/
-	ConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter *int64
+	ConsistencyGroupsLunsQosPolicyMaxThroughputIops *int64
 
 	/* ConsistencyGroupsLunsQosPolicyMaxThroughputMbps.
 
 	   Filter by consistency_groups.luns.qos.policy.max_throughput_mbps
 	*/
-	ConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter *int64
+	ConsistencyGroupsLunsQosPolicyMaxThroughputMbps *int64
 
 	/* ConsistencyGroupsLunsQosPolicyMinThroughputIops.
 
 	   Filter by consistency_groups.luns.qos.policy.min_throughput_iops
 	*/
-	ConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter *int64
+	ConsistencyGroupsLunsQosPolicyMinThroughputIops *int64
 
 	/* ConsistencyGroupsLunsQosPolicyMinThroughputMbps.
 
 	   Filter by consistency_groups.luns.qos.policy.min_throughput_mbps
 	*/
-	ConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter *int64
+	ConsistencyGroupsLunsQosPolicyMinThroughputMbps *int64
 
 	/* ConsistencyGroupsLunsQosPolicyName.
 
 	   Filter by consistency_groups.luns.qos.policy.name
 	*/
-	ConsistencyGroupsLunsQosPolicyNameQueryParameter *string
+	ConsistencyGroupsLunsQosPolicyName *string
 
 	/* ConsistencyGroupsLunsQosPolicyUUID.
 
 	   Filter by consistency_groups.luns.qos.policy.uuid
 	*/
-	ConsistencyGroupsLunsQosPolicyUUIDQueryParameter *string
+	ConsistencyGroupsLunsQosPolicyUUID *string
 
 	/* ConsistencyGroupsLunsSerialNumber.
 
 	   Filter by consistency_groups.luns.serial_number
 	*/
-	ConsistencyGroupsLunsSerialNumberQueryParameter *string
+	ConsistencyGroupsLunsSerialNumber *string
 
 	/* ConsistencyGroupsLunsSpaceGuaranteeRequested.
 
 	   Filter by consistency_groups.luns.space.guarantee.requested
 	*/
-	ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter *bool
+	ConsistencyGroupsLunsSpaceGuaranteeRequested *bool
 
 	/* ConsistencyGroupsLunsSpaceGuaranteeReserved.
 
 	   Filter by consistency_groups.luns.space.guarantee.reserved
 	*/
-	ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter *bool
+	ConsistencyGroupsLunsSpaceGuaranteeReserved *bool
 
 	/* ConsistencyGroupsLunsSpaceSize.
 
 	   Filter by consistency_groups.luns.space.size
 	*/
-	ConsistencyGroupsLunsSpaceSizeQueryParameter *int64
+	ConsistencyGroupsLunsSpaceSize *int64
 
 	/* ConsistencyGroupsLunsSpaceUsed.
 
 	   Filter by consistency_groups.luns.space.used
 	*/
-	ConsistencyGroupsLunsSpaceUsedQueryParameter *int64
+	ConsistencyGroupsLunsSpaceUsed *int64
 
 	/* ConsistencyGroupsLunsUUID.
 
 	   Filter by consistency_groups.luns.uuid
 	*/
-	ConsistencyGroupsLunsUUIDQueryParameter *string
+	ConsistencyGroupsLunsUUID *string
 
 	/* ConsistencyGroupsName.
 
 	   Filter by consistency_groups.name
 	*/
-	ConsistencyGroupsNameQueryParameter *string
+	ConsistencyGroupsName *string
+
+	/* ConsistencyGroupsNamespacesAutoDelete.
+
+	   Filter by consistency_groups.namespaces.auto_delete
+	*/
+	ConsistencyGroupsNamespacesAutoDelete *bool
+
+	/* ConsistencyGroupsNamespacesComment.
+
+	   Filter by consistency_groups.namespaces.comment
+	*/
+	ConsistencyGroupsNamespacesComment *string
+
+	/* ConsistencyGroupsNamespacesCreateTime.
+
+	   Filter by consistency_groups.namespaces.create_time
+	*/
+	ConsistencyGroupsNamespacesCreateTime *string
+
+	/* ConsistencyGroupsNamespacesEnabled.
+
+	   Filter by consistency_groups.namespaces.enabled
+	*/
+	ConsistencyGroupsNamespacesEnabled *bool
+
+	/* ConsistencyGroupsNamespacesName.
+
+	   Filter by consistency_groups.namespaces.name
+	*/
+	ConsistencyGroupsNamespacesName *string
+
+	/* ConsistencyGroupsNamespacesOsType.
+
+	   Filter by consistency_groups.namespaces.os_type
+	*/
+	ConsistencyGroupsNamespacesOsType *string
+
+	/* ConsistencyGroupsNamespacesSpaceBlockSize.
+
+	   Filter by consistency_groups.namespaces.space.block_size
+	*/
+	ConsistencyGroupsNamespacesSpaceBlockSize *int64
+
+	/* ConsistencyGroupsNamespacesSpaceGuaranteeRequested.
+
+	   Filter by consistency_groups.namespaces.space.guarantee.requested
+	*/
+	ConsistencyGroupsNamespacesSpaceGuaranteeRequested *bool
+
+	/* ConsistencyGroupsNamespacesSpaceGuaranteeReserved.
+
+	   Filter by consistency_groups.namespaces.space.guarantee.reserved
+	*/
+	ConsistencyGroupsNamespacesSpaceGuaranteeReserved *bool
+
+	/* ConsistencyGroupsNamespacesSpaceSize.
+
+	   Filter by consistency_groups.namespaces.space.size
+	*/
+	ConsistencyGroupsNamespacesSpaceSize *int64
+
+	/* ConsistencyGroupsNamespacesSpaceUsed.
+
+	   Filter by consistency_groups.namespaces.space.used
+	*/
+	ConsistencyGroupsNamespacesSpaceUsed *int64
+
+	/* ConsistencyGroupsNamespacesStatusContainerState.
+
+	   Filter by consistency_groups.namespaces.status.container_state
+	*/
+	ConsistencyGroupsNamespacesStatusContainerState *string
+
+	/* ConsistencyGroupsNamespacesStatusMapped.
+
+	   Filter by consistency_groups.namespaces.status.mapped
+	*/
+	ConsistencyGroupsNamespacesStatusMapped *bool
+
+	/* ConsistencyGroupsNamespacesStatusReadOnly.
+
+	   Filter by consistency_groups.namespaces.status.read_only
+	*/
+	ConsistencyGroupsNamespacesStatusReadOnly *bool
+
+	/* ConsistencyGroupsNamespacesStatusState.
+
+	   Filter by consistency_groups.namespaces.status.state
+	*/
+	ConsistencyGroupsNamespacesStatusState *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapAnagrpid.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.anagrpid
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapAnagrpid *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapNsid.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.nsid
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapNsid *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemComment.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.comment
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemComment *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.nqn
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemName.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.name
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemName *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemOsType.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.os_type
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemOsType *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemUUID.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.uuid
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemUUID *string
+
+	/* ConsistencyGroupsNamespacesUUID.
+
+	   Filter by consistency_groups.namespaces.uuid
+	*/
+	ConsistencyGroupsNamespacesUUID *string
 
 	/* ConsistencyGroupsParentConsistencyGroupName.
 
 	   Filter by consistency_groups.parent_consistency_group.name
 	*/
-	ConsistencyGroupsParentConsistencyGroupNameQueryParameter *string
+	ConsistencyGroupsParentConsistencyGroupName *string
 
 	/* ConsistencyGroupsParentConsistencyGroupUUID.
 
 	   Filter by consistency_groups.parent_consistency_group.uuid
 	*/
-	ConsistencyGroupsParentConsistencyGroupUUIDQueryParameter *string
+	ConsistencyGroupsParentConsistencyGroupUUID *string
 
 	/* ConsistencyGroupsQosPolicyMaxThroughputIops.
 
 	   Filter by consistency_groups.qos.policy.max_throughput_iops
 	*/
-	ConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter *int64
+	ConsistencyGroupsQosPolicyMaxThroughputIops *int64
 
 	/* ConsistencyGroupsQosPolicyMaxThroughputMbps.
 
 	   Filter by consistency_groups.qos.policy.max_throughput_mbps
 	*/
-	ConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter *int64
+	ConsistencyGroupsQosPolicyMaxThroughputMbps *int64
 
 	/* ConsistencyGroupsQosPolicyMinThroughputIops.
 
 	   Filter by consistency_groups.qos.policy.min_throughput_iops
 	*/
-	ConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter *int64
+	ConsistencyGroupsQosPolicyMinThroughputIops *int64
 
 	/* ConsistencyGroupsQosPolicyMinThroughputMbps.
 
 	   Filter by consistency_groups.qos.policy.min_throughput_mbps
 	*/
-	ConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter *int64
+	ConsistencyGroupsQosPolicyMinThroughputMbps *int64
 
 	/* ConsistencyGroupsQosPolicyName.
 
 	   Filter by consistency_groups.qos.policy.name
 	*/
-	ConsistencyGroupsQosPolicyNameQueryParameter *string
+	ConsistencyGroupsQosPolicyName *string
 
 	/* ConsistencyGroupsQosPolicyUUID.
 
 	   Filter by consistency_groups.qos.policy.uuid
 	*/
-	ConsistencyGroupsQosPolicyUUIDQueryParameter *string
+	ConsistencyGroupsQosPolicyUUID *string
 
 	/* ConsistencyGroupsSnapshotPolicyName.
 
 	   Filter by consistency_groups.snapshot_policy.name
 	*/
-	ConsistencyGroupsSnapshotPolicyNameQueryParameter *string
+	ConsistencyGroupsSnapshotPolicyName *string
 
 	/* ConsistencyGroupsSnapshotPolicyUUID.
 
 	   Filter by consistency_groups.snapshot_policy.uuid
 	*/
-	ConsistencyGroupsSnapshotPolicyUUIDQueryParameter *string
+	ConsistencyGroupsSnapshotPolicyUUID *string
 
 	/* ConsistencyGroupsSpaceAvailable.
 
 	   Filter by consistency_groups.space.available
 	*/
-	ConsistencyGroupsSpaceAvailableQueryParameter *int64
+	ConsistencyGroupsSpaceAvailable *int64
 
 	/* ConsistencyGroupsSpaceSize.
 
 	   Filter by consistency_groups.space.size
 	*/
-	ConsistencyGroupsSpaceSizeQueryParameter *int64
+	ConsistencyGroupsSpaceSize *int64
 
 	/* ConsistencyGroupsSpaceUsed.
 
 	   Filter by consistency_groups.space.used
 	*/
-	ConsistencyGroupsSpaceUsedQueryParameter *int64
+	ConsistencyGroupsSpaceUsed *int64
 
 	/* ConsistencyGroupsSvmName.
 
 	   Filter by consistency_groups.svm.name
 	*/
-	ConsistencyGroupsSVMNameQueryParameter *string
+	ConsistencyGroupsSvmName *string
 
 	/* ConsistencyGroupsSvmUUID.
 
 	   Filter by consistency_groups.svm.uuid
 	*/
-	ConsistencyGroupsSVMUUIDQueryParameter *string
+	ConsistencyGroupsSvmUUID *string
 
 	/* ConsistencyGroupsTieringPolicy.
 
 	   Filter by consistency_groups.tiering.policy
 	*/
-	ConsistencyGroupsTieringPolicyQueryParameter *string
+	ConsistencyGroupsTieringPolicy *string
 
 	/* ConsistencyGroupsUUID.
 
 	   Filter by consistency_groups.uuid
 	*/
-	ConsistencyGroupsUUIDQueryParameter *string
+	ConsistencyGroupsUUID *string
 
 	/* ConsistencyGroupsVolumesComment.
 
 	   Filter by consistency_groups.volumes.comment
 	*/
-	ConsistencyGroupsVolumesCommentQueryParameter *string
+	ConsistencyGroupsVolumesComment *string
 
 	/* ConsistencyGroupsVolumesLanguage.
 
 	   Filter by consistency_groups.volumes.language
 	*/
-	ConsistencyGroupsVolumesLanguageQueryParameter *string
+	ConsistencyGroupsVolumesLanguage *string
 
 	/* ConsistencyGroupsVolumesName.
 
 	   Filter by consistency_groups.volumes.name
 	*/
-	ConsistencyGroupsVolumesNameQueryParameter *string
+	ConsistencyGroupsVolumesName *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.access_based_enumeration
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesAclsPermission.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.acls.permission
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesAclsPermission *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesAclsType.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.acls.type
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesAclsType *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.acls.user_or_group
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.allow_unencrypted_access
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesChangeNotify.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.change_notify
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesChangeNotify *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesComment.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.comment
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesComment *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.continuously_available
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesDirUmask.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.dir_umask
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesDirUmask *int64
+
+	/* ConsistencyGroupsVolumesNasCifsSharesEncryption.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.encryption
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesEncryption *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesFileUmask.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.file_umask
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesFileUmask *int64
+
+	/* ConsistencyGroupsVolumesNasCifsSharesHomeDirectory.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.home_directory
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesHomeDirectory *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesName.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.name
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesName *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesNamespaceCaching.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.namespace_caching
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesNamespaceCaching *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.no_strict_security
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesOfflineFiles.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.offline_files
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesOfflineFiles *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesOplocks.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.oplocks
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesOplocks *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesShowSnapshot.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.show_snapshot
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesShowSnapshot *bool
+
+	/* ConsistencyGroupsVolumesNasCifsSharesUnixSymlink.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.unix_symlink
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesUnixSymlink *string
+
+	/* ConsistencyGroupsVolumesNasCifsSharesVscanProfile.
+
+	   Filter by consistency_groups.volumes.nas.cifs.shares.vscan_profile
+	*/
+	ConsistencyGroupsVolumesNasCifsSharesVscanProfile *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyName.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.name
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyName *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.allow_device_creation
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation *bool
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.allow_suid
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid *bool
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.anonymous_user
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesChownMode.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.chown_mode
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesChownMode *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.clients.match
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesIndex.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.index
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesIndex *int64
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.ntfs_unix_security
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesProtocols.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.protocols
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesProtocols *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesRoRule.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.ro_rule
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesRoRule *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesRwRule.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.rw_rule
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesRwRule *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.rules.superuser
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser *string
+
+	/* ConsistencyGroupsVolumesNasExportPolicyUUID.
+
+	   Filter by consistency_groups.volumes.nas.export_policy.uuid
+	*/
+	ConsistencyGroupsVolumesNasExportPolicyUUID *string
+
+	/* ConsistencyGroupsVolumesNasGid.
+
+	   Filter by consistency_groups.volumes.nas.gid
+	*/
+	ConsistencyGroupsVolumesNasGid *int64
+
+	/* ConsistencyGroupsVolumesNasJunctionParentName.
+
+	   Filter by consistency_groups.volumes.nas.junction_parent.name
+	*/
+	ConsistencyGroupsVolumesNasJunctionParentName *string
+
+	/* ConsistencyGroupsVolumesNasJunctionParentUUID.
+
+	   Filter by consistency_groups.volumes.nas.junction_parent.uuid
+	*/
+	ConsistencyGroupsVolumesNasJunctionParentUUID *string
+
+	/* ConsistencyGroupsVolumesNasPath.
+
+	   Filter by consistency_groups.volumes.nas.path
+	*/
+	ConsistencyGroupsVolumesNasPath *string
+
+	/* ConsistencyGroupsVolumesNasSecurityStyle.
+
+	   Filter by consistency_groups.volumes.nas.security_style
+	*/
+	ConsistencyGroupsVolumesNasSecurityStyle *string
+
+	/* ConsistencyGroupsVolumesNasUID.
+
+	   Filter by consistency_groups.volumes.nas.uid
+	*/
+	ConsistencyGroupsVolumesNasUID *int64
+
+	/* ConsistencyGroupsVolumesNasUnixPermissions.
+
+	   Filter by consistency_groups.volumes.nas.unix_permissions
+	*/
+	ConsistencyGroupsVolumesNasUnixPermissions *int64
 
 	/* ConsistencyGroupsVolumesQosPolicyMaxThroughputIops.
 
 	   Filter by consistency_groups.volumes.qos.policy.max_throughput_iops
 	*/
-	ConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter *int64
+	ConsistencyGroupsVolumesQosPolicyMaxThroughputIops *int64
 
 	/* ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps.
 
 	   Filter by consistency_groups.volumes.qos.policy.max_throughput_mbps
 	*/
-	ConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter *int64
+	ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64
 
 	/* ConsistencyGroupsVolumesQosPolicyMinThroughputIops.
 
 	   Filter by consistency_groups.volumes.qos.policy.min_throughput_iops
 	*/
-	ConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter *int64
+	ConsistencyGroupsVolumesQosPolicyMinThroughputIops *int64
 
 	/* ConsistencyGroupsVolumesQosPolicyMinThroughputMbps.
 
 	   Filter by consistency_groups.volumes.qos.policy.min_throughput_mbps
 	*/
-	ConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter *int64
+	ConsistencyGroupsVolumesQosPolicyMinThroughputMbps *int64
 
 	/* ConsistencyGroupsVolumesQosPolicyName.
 
 	   Filter by consistency_groups.volumes.qos.policy.name
 	*/
-	ConsistencyGroupsVolumesQosPolicyNameQueryParameter *string
+	ConsistencyGroupsVolumesQosPolicyName *string
 
 	/* ConsistencyGroupsVolumesQosPolicyUUID.
 
 	   Filter by consistency_groups.volumes.qos.policy.uuid
 	*/
-	ConsistencyGroupsVolumesQosPolicyUUIDQueryParameter *string
+	ConsistencyGroupsVolumesQosPolicyUUID *string
 
 	/* ConsistencyGroupsVolumesSnapshotPolicyName.
 
 	   Filter by consistency_groups.volumes.snapshot_policy.name
 	*/
-	ConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter *string
+	ConsistencyGroupsVolumesSnapshotPolicyName *string
 
 	/* ConsistencyGroupsVolumesSnapshotPolicyUUID.
 
 	   Filter by consistency_groups.volumes.snapshot_policy.uuid
 	*/
-	ConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter *string
+	ConsistencyGroupsVolumesSnapshotPolicyUUID *string
 
 	/* ConsistencyGroupsVolumesSpaceAvailable.
 
 	   Filter by consistency_groups.volumes.space.available
 	*/
-	ConsistencyGroupsVolumesSpaceAvailableQueryParameter *int64
+	ConsistencyGroupsVolumesSpaceAvailable *int64
 
 	/* ConsistencyGroupsVolumesSpaceSize.
 
 	   Filter by consistency_groups.volumes.space.size
 	*/
-	ConsistencyGroupsVolumesSpaceSizeQueryParameter *int64
+	ConsistencyGroupsVolumesSpaceSize *int64
 
 	/* ConsistencyGroupsVolumesSpaceUsed.
 
 	   Filter by consistency_groups.volumes.space.used
 	*/
-	ConsistencyGroupsVolumesSpaceUsedQueryParameter *int64
+	ConsistencyGroupsVolumesSpaceUsed *int64
 
 	/* ConsistencyGroupsVolumesTieringPolicy.
 
 	   Filter by consistency_groups.volumes.tiering.policy
 	*/
-	ConsistencyGroupsVolumesTieringPolicyQueryParameter *string
+	ConsistencyGroupsVolumesTieringPolicy *string
 
 	/* ConsistencyGroupsVolumesUUID.
 
 	   Filter by consistency_groups.volumes.uuid
 	*/
-	ConsistencyGroupsVolumesUUIDQueryParameter *string
+	ConsistencyGroupsVolumesUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LunsComment.
 
 	   Filter by luns.comment
 	*/
-	LunsCommentQueryParameter *string
+	LunsComment *string
 
 	/* LunsCreateTime.
 
 	   Filter by luns.create_time
 	*/
-	LunsCreateTimeQueryParameter *string
+	LunsCreateTime *string
 
 	/* LunsEnabled.
 
 	   Filter by luns.enabled
 	*/
-	LunsEnabledQueryParameter *bool
+	LunsEnabled *bool
 
 	/* LunsLunMapsIgroupComment.
 
 	   Filter by luns.lun_maps.igroup.comment
 	*/
-	LunsLunMapsIgroupCommentQueryParameter *string
+	LunsLunMapsIgroupComment *string
 
 	/* LunsLunMapsIgroupIgroupsName.
 
 	   Filter by luns.lun_maps.igroup.igroups.name
 	*/
-	LunsLunMapsIgroupIgroupsNameQueryParameter *string
+	LunsLunMapsIgroupIgroupsName *string
 
 	/* LunsLunMapsIgroupIgroupsUUID.
 
 	   Filter by luns.lun_maps.igroup.igroups.uuid
 	*/
-	LunsLunMapsIgroupIgroupsUUIDQueryParameter *string
+	LunsLunMapsIgroupIgroupsUUID *string
 
 	/* LunsLunMapsIgroupInitiatorsComment.
 
 	   Filter by luns.lun_maps.igroup.initiators.comment
 	*/
-	LunsLunMapsIgroupInitiatorsCommentQueryParameter *string
+	LunsLunMapsIgroupInitiatorsComment *string
 
 	/* LunsLunMapsIgroupInitiatorsName.
 
 	   Filter by luns.lun_maps.igroup.initiators.name
 	*/
-	LunsLunMapsIgroupInitiatorsNameQueryParameter *string
+	LunsLunMapsIgroupInitiatorsName *string
 
 	/* LunsLunMapsIgroupName.
 
 	   Filter by luns.lun_maps.igroup.name
 	*/
-	LunsLunMapsIgroupNameQueryParameter *string
+	LunsLunMapsIgroupName *string
 
 	/* LunsLunMapsIgroupOsType.
 
 	   Filter by luns.lun_maps.igroup.os_type
 	*/
-	LunsLunMapsIgroupOsTypeQueryParameter *string
+	LunsLunMapsIgroupOsType *string
 
 	/* LunsLunMapsIgroupProtocol.
 
 	   Filter by luns.lun_maps.igroup.protocol
 	*/
-	LunsLunMapsIgroupProtocolQueryParameter *string
+	LunsLunMapsIgroupProtocol *string
 
 	/* LunsLunMapsIgroupUUID.
 
 	   Filter by luns.lun_maps.igroup.uuid
 	*/
-	LunsLunMapsIgroupUUIDQueryParameter *string
+	LunsLunMapsIgroupUUID *string
 
 	/* LunsLunMapsLogicalUnitNumber.
 
 	   Filter by luns.lun_maps.logical_unit_number
 	*/
-	LunsLunMapsLogicalUnitNumberQueryParameter *int64
+	LunsLunMapsLogicalUnitNumber *int64
 
 	/* LunsName.
 
 	   Filter by luns.name
 	*/
-	LunsNameQueryParameter *string
+	LunsName *string
 
 	/* LunsOsType.
 
 	   Filter by luns.os_type
 	*/
-	LunsOsTypeQueryParameter *string
+	LunsOsType *string
 
 	/* LunsQosPolicyMaxThroughputIops.
 
 	   Filter by luns.qos.policy.max_throughput_iops
 	*/
-	LunsQosPolicyMaxThroughputIopsQueryParameter *int64
+	LunsQosPolicyMaxThroughputIops *int64
 
 	/* LunsQosPolicyMaxThroughputMbps.
 
 	   Filter by luns.qos.policy.max_throughput_mbps
 	*/
-	LunsQosPolicyMaxThroughputMbpsQueryParameter *int64
+	LunsQosPolicyMaxThroughputMbps *int64
 
 	/* LunsQosPolicyMinThroughputIops.
 
 	   Filter by luns.qos.policy.min_throughput_iops
 	*/
-	LunsQosPolicyMinThroughputIopsQueryParameter *int64
+	LunsQosPolicyMinThroughputIops *int64
 
 	/* LunsQosPolicyMinThroughputMbps.
 
 	   Filter by luns.qos.policy.min_throughput_mbps
 	*/
-	LunsQosPolicyMinThroughputMbpsQueryParameter *int64
+	LunsQosPolicyMinThroughputMbps *int64
 
 	/* LunsQosPolicyName.
 
 	   Filter by luns.qos.policy.name
 	*/
-	LunsQosPolicyNameQueryParameter *string
+	LunsQosPolicyName *string
 
 	/* LunsQosPolicyUUID.
 
 	   Filter by luns.qos.policy.uuid
 	*/
-	LunsQosPolicyUUIDQueryParameter *string
+	LunsQosPolicyUUID *string
 
 	/* LunsSerialNumber.
 
 	   Filter by luns.serial_number
 	*/
-	LunsSerialNumberQueryParameter *string
+	LunsSerialNumber *string
 
 	/* LunsSpaceGuaranteeRequested.
 
 	   Filter by luns.space.guarantee.requested
 	*/
-	LunsSpaceGuaranteeRequestedQueryParameter *bool
+	LunsSpaceGuaranteeRequested *bool
 
 	/* LunsSpaceGuaranteeReserved.
 
 	   Filter by luns.space.guarantee.reserved
 	*/
-	LunsSpaceGuaranteeReservedQueryParameter *bool
+	LunsSpaceGuaranteeReserved *bool
 
 	/* LunsSpaceSize.
 
 	   Filter by luns.space.size
 	*/
-	LunsSpaceSizeQueryParameter *int64
+	LunsSpaceSize *int64
 
 	/* LunsSpaceUsed.
 
 	   Filter by luns.space.used
 	*/
-	LunsSpaceUsedQueryParameter *int64
+	LunsSpaceUsed *int64
 
 	/* LunsUUID.
 
 	   Filter by luns.uuid
 	*/
-	LunsUUIDQueryParameter *string
+	LunsUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
+
+	/* NamespacesAutoDelete.
+
+	   Filter by namespaces.auto_delete
+	*/
+	NamespacesAutoDelete *bool
+
+	/* NamespacesComment.
+
+	   Filter by namespaces.comment
+	*/
+	NamespacesComment *string
+
+	/* NamespacesCreateTime.
+
+	   Filter by namespaces.create_time
+	*/
+	NamespacesCreateTime *string
+
+	/* NamespacesEnabled.
+
+	   Filter by namespaces.enabled
+	*/
+	NamespacesEnabled *bool
+
+	/* NamespacesName.
+
+	   Filter by namespaces.name
+	*/
+	NamespacesName *string
+
+	/* NamespacesOsType.
+
+	   Filter by namespaces.os_type
+	*/
+	NamespacesOsType *string
+
+	/* NamespacesSpaceBlockSize.
+
+	   Filter by namespaces.space.block_size
+	*/
+	NamespacesSpaceBlockSize *int64
+
+	/* NamespacesSpaceGuaranteeRequested.
+
+	   Filter by namespaces.space.guarantee.requested
+	*/
+	NamespacesSpaceGuaranteeRequested *bool
+
+	/* NamespacesSpaceGuaranteeReserved.
+
+	   Filter by namespaces.space.guarantee.reserved
+	*/
+	NamespacesSpaceGuaranteeReserved *bool
+
+	/* NamespacesSpaceSize.
+
+	   Filter by namespaces.space.size
+	*/
+	NamespacesSpaceSize *int64
+
+	/* NamespacesSpaceUsed.
+
+	   Filter by namespaces.space.used
+	*/
+	NamespacesSpaceUsed *int64
+
+	/* NamespacesStatusContainerState.
+
+	   Filter by namespaces.status.container_state
+	*/
+	NamespacesStatusContainerState *string
+
+	/* NamespacesStatusMapped.
+
+	   Filter by namespaces.status.mapped
+	*/
+	NamespacesStatusMapped *bool
+
+	/* NamespacesStatusReadOnly.
+
+	   Filter by namespaces.status.read_only
+	*/
+	NamespacesStatusReadOnly *bool
+
+	/* NamespacesStatusState.
+
+	   Filter by namespaces.status.state
+	*/
+	NamespacesStatusState *string
+
+	/* NamespacesSubsystemMapAnagrpid.
+
+	   Filter by namespaces.subsystem_map.anagrpid
+	*/
+	NamespacesSubsystemMapAnagrpid *string
+
+	/* NamespacesSubsystemMapNsid.
+
+	   Filter by namespaces.subsystem_map.nsid
+	*/
+	NamespacesSubsystemMapNsid *string
+
+	/* NamespacesSubsystemMapSubsystemComment.
+
+	   Filter by namespaces.subsystem_map.subsystem.comment
+	*/
+	NamespacesSubsystemMapSubsystemComment *string
+
+	/* NamespacesSubsystemMapSubsystemHostsNqn.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.nqn
+	*/
+	NamespacesSubsystemMapSubsystemHostsNqn *string
+
+	/* NamespacesSubsystemMapSubsystemName.
+
+	   Filter by namespaces.subsystem_map.subsystem.name
+	*/
+	NamespacesSubsystemMapSubsystemName *string
+
+	/* NamespacesSubsystemMapSubsystemOsType.
+
+	   Filter by namespaces.subsystem_map.subsystem.os_type
+	*/
+	NamespacesSubsystemMapSubsystemOsType *string
+
+	/* NamespacesSubsystemMapSubsystemUUID.
+
+	   Filter by namespaces.subsystem_map.subsystem.uuid
+	*/
+	NamespacesSubsystemMapSubsystemUUID *string
+
+	/* NamespacesUUID.
+
+	   Filter by namespaces.uuid
+	*/
+	NamespacesUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ParentConsistencyGroupName.
 
 	   Filter by parent_consistency_group.name
 	*/
-	ParentConsistencyGroupNameQueryParameter *string
+	ParentConsistencyGroupName *string
 
 	/* ParentConsistencyGroupUUID.
 
 	   Filter by parent_consistency_group.uuid
 	*/
-	ParentConsistencyGroupUUIDQueryParameter *string
+	ParentConsistencyGroupUUID *string
 
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos.policy.max_throughput_iops
 	*/
-	QosPolicyMaxThroughputIopsQueryParameter *int64
+	QosPolicyMaxThroughputIops *int64
 
 	/* QosPolicyMaxThroughputMbps.
 
 	   Filter by qos.policy.max_throughput_mbps
 	*/
-	QosPolicyMaxThroughputMbpsQueryParameter *int64
+	QosPolicyMaxThroughputMbps *int64
 
 	/* QosPolicyMinThroughputIops.
 
 	   Filter by qos.policy.min_throughput_iops
 	*/
-	QosPolicyMinThroughputIopsQueryParameter *int64
+	QosPolicyMinThroughputIops *int64
 
 	/* QosPolicyMinThroughputMbps.
 
 	   Filter by qos.policy.min_throughput_mbps
 	*/
-	QosPolicyMinThroughputMbpsQueryParameter *int64
+	QosPolicyMinThroughputMbps *int64
 
 	/* QosPolicyName.
 
 	   Filter by qos.policy.name
 	*/
-	QosPolicyNameQueryParameter *string
+	QosPolicyName *string
 
 	/* QosPolicyUUID.
 
 	   Filter by qos.policy.uuid
 	*/
-	QosPolicyUUIDQueryParameter *string
+	QosPolicyUUID *string
 
 	/* Replicated.
 
 	   Filter by replicated
 	*/
-	ReplicatedQueryParameter *bool
+	Replicated *bool
 
 	/* ReplicationSource.
 
 	   Filter by replication_source
 	*/
-	ReplicationSourceQueryParameter *bool
+	ReplicationSource *bool
 
 	/* ReturnRecords.
 
@@ -680,7 +1262,7 @@ type ConsistencyGroupCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -688,157 +1270,397 @@ type ConsistencyGroupCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SnapshotPolicyName.
 
 	   Filter by snapshot_policy.name
 	*/
-	SnapshotPolicyNameQueryParameter *string
+	SnapshotPolicyName *string
 
 	/* SnapshotPolicyUUID.
 
 	   Filter by snapshot_policy.uuid
 	*/
-	SnapshotPolicyUUIDQueryParameter *string
+	SnapshotPolicyUUID *string
 
 	/* SpaceAvailable.
 
 	   Filter by space.available
 	*/
-	SpaceAvailableQueryParameter *int64
+	SpaceAvailable *int64
 
 	/* SpaceSize.
 
 	   Filter by space.size
 	*/
-	SpaceSizeQueryParameter *int64
+	SpaceSize *int64
 
 	/* SpaceUsed.
 
 	   Filter by space.used
 	*/
-	SpaceUsedQueryParameter *int64
+	SpaceUsed *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TieringPolicy.
 
 	   Filter by tiering.policy
 	*/
-	TieringPolicyQueryParameter *string
+	TieringPolicy *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VolumesComment.
 
 	   Filter by volumes.comment
 	*/
-	VolumesCommentQueryParameter *string
+	VolumesComment *string
 
 	/* VolumesLanguage.
 
 	   Filter by volumes.language
 	*/
-	VolumesLanguageQueryParameter *string
+	VolumesLanguage *string
 
 	/* VolumesName.
 
 	   Filter by volumes.name
 	*/
-	VolumesNameQueryParameter *string
+	VolumesName *string
+
+	/* VolumesNasCifsSharesAccessBasedEnumeration.
+
+	   Filter by volumes.nas.cifs.shares.access_based_enumeration
+	*/
+	VolumesNasCifsSharesAccessBasedEnumeration *bool
+
+	/* VolumesNasCifsSharesAclsPermission.
+
+	   Filter by volumes.nas.cifs.shares.acls.permission
+	*/
+	VolumesNasCifsSharesAclsPermission *string
+
+	/* VolumesNasCifsSharesAclsType.
+
+	   Filter by volumes.nas.cifs.shares.acls.type
+	*/
+	VolumesNasCifsSharesAclsType *string
+
+	/* VolumesNasCifsSharesAclsUserOrGroup.
+
+	   Filter by volumes.nas.cifs.shares.acls.user_or_group
+	*/
+	VolumesNasCifsSharesAclsUserOrGroup *string
+
+	/* VolumesNasCifsSharesAllowUnencryptedAccess.
+
+	   Filter by volumes.nas.cifs.shares.allow_unencrypted_access
+	*/
+	VolumesNasCifsSharesAllowUnencryptedAccess *bool
+
+	/* VolumesNasCifsSharesChangeNotify.
+
+	   Filter by volumes.nas.cifs.shares.change_notify
+	*/
+	VolumesNasCifsSharesChangeNotify *bool
+
+	/* VolumesNasCifsSharesComment.
+
+	   Filter by volumes.nas.cifs.shares.comment
+	*/
+	VolumesNasCifsSharesComment *string
+
+	/* VolumesNasCifsSharesContinuouslyAvailable.
+
+	   Filter by volumes.nas.cifs.shares.continuously_available
+	*/
+	VolumesNasCifsSharesContinuouslyAvailable *bool
+
+	/* VolumesNasCifsSharesDirUmask.
+
+	   Filter by volumes.nas.cifs.shares.dir_umask
+	*/
+	VolumesNasCifsSharesDirUmask *int64
+
+	/* VolumesNasCifsSharesEncryption.
+
+	   Filter by volumes.nas.cifs.shares.encryption
+	*/
+	VolumesNasCifsSharesEncryption *bool
+
+	/* VolumesNasCifsSharesFileUmask.
+
+	   Filter by volumes.nas.cifs.shares.file_umask
+	*/
+	VolumesNasCifsSharesFileUmask *int64
+
+	/* VolumesNasCifsSharesHomeDirectory.
+
+	   Filter by volumes.nas.cifs.shares.home_directory
+	*/
+	VolumesNasCifsSharesHomeDirectory *bool
+
+	/* VolumesNasCifsSharesName.
+
+	   Filter by volumes.nas.cifs.shares.name
+	*/
+	VolumesNasCifsSharesName *string
+
+	/* VolumesNasCifsSharesNamespaceCaching.
+
+	   Filter by volumes.nas.cifs.shares.namespace_caching
+	*/
+	VolumesNasCifsSharesNamespaceCaching *bool
+
+	/* VolumesNasCifsSharesNoStrictSecurity.
+
+	   Filter by volumes.nas.cifs.shares.no_strict_security
+	*/
+	VolumesNasCifsSharesNoStrictSecurity *bool
+
+	/* VolumesNasCifsSharesOfflineFiles.
+
+	   Filter by volumes.nas.cifs.shares.offline_files
+	*/
+	VolumesNasCifsSharesOfflineFiles *string
+
+	/* VolumesNasCifsSharesOplocks.
+
+	   Filter by volumes.nas.cifs.shares.oplocks
+	*/
+	VolumesNasCifsSharesOplocks *bool
+
+	/* VolumesNasCifsSharesShowSnapshot.
+
+	   Filter by volumes.nas.cifs.shares.show_snapshot
+	*/
+	VolumesNasCifsSharesShowSnapshot *bool
+
+	/* VolumesNasCifsSharesUnixSymlink.
+
+	   Filter by volumes.nas.cifs.shares.unix_symlink
+	*/
+	VolumesNasCifsSharesUnixSymlink *string
+
+	/* VolumesNasCifsSharesVscanProfile.
+
+	   Filter by volumes.nas.cifs.shares.vscan_profile
+	*/
+	VolumesNasCifsSharesVscanProfile *string
+
+	/* VolumesNasExportPolicyName.
+
+	   Filter by volumes.nas.export_policy.name
+	*/
+	VolumesNasExportPolicyName *string
+
+	/* VolumesNasExportPolicyRulesAllowDeviceCreation.
+
+	   Filter by volumes.nas.export_policy.rules.allow_device_creation
+	*/
+	VolumesNasExportPolicyRulesAllowDeviceCreation *bool
+
+	/* VolumesNasExportPolicyRulesAllowSuid.
+
+	   Filter by volumes.nas.export_policy.rules.allow_suid
+	*/
+	VolumesNasExportPolicyRulesAllowSuid *bool
+
+	/* VolumesNasExportPolicyRulesAnonymousUser.
+
+	   Filter by volumes.nas.export_policy.rules.anonymous_user
+	*/
+	VolumesNasExportPolicyRulesAnonymousUser *string
+
+	/* VolumesNasExportPolicyRulesChownMode.
+
+	   Filter by volumes.nas.export_policy.rules.chown_mode
+	*/
+	VolumesNasExportPolicyRulesChownMode *string
+
+	/* VolumesNasExportPolicyRulesClientsMatch.
+
+	   Filter by volumes.nas.export_policy.rules.clients.match
+	*/
+	VolumesNasExportPolicyRulesClientsMatch *string
+
+	/* VolumesNasExportPolicyRulesIndex.
+
+	   Filter by volumes.nas.export_policy.rules.index
+	*/
+	VolumesNasExportPolicyRulesIndex *int64
+
+	/* VolumesNasExportPolicyRulesNtfsUnixSecurity.
+
+	   Filter by volumes.nas.export_policy.rules.ntfs_unix_security
+	*/
+	VolumesNasExportPolicyRulesNtfsUnixSecurity *string
+
+	/* VolumesNasExportPolicyRulesProtocols.
+
+	   Filter by volumes.nas.export_policy.rules.protocols
+	*/
+	VolumesNasExportPolicyRulesProtocols *string
+
+	/* VolumesNasExportPolicyRulesRoRule.
+
+	   Filter by volumes.nas.export_policy.rules.ro_rule
+	*/
+	VolumesNasExportPolicyRulesRoRule *string
+
+	/* VolumesNasExportPolicyRulesRwRule.
+
+	   Filter by volumes.nas.export_policy.rules.rw_rule
+	*/
+	VolumesNasExportPolicyRulesRwRule *string
+
+	/* VolumesNasExportPolicyRulesSuperuser.
+
+	   Filter by volumes.nas.export_policy.rules.superuser
+	*/
+	VolumesNasExportPolicyRulesSuperuser *string
+
+	/* VolumesNasExportPolicyUUID.
+
+	   Filter by volumes.nas.export_policy.uuid
+	*/
+	VolumesNasExportPolicyUUID *string
+
+	/* VolumesNasGid.
+
+	   Filter by volumes.nas.gid
+	*/
+	VolumesNasGid *int64
+
+	/* VolumesNasJunctionParentName.
+
+	   Filter by volumes.nas.junction_parent.name
+	*/
+	VolumesNasJunctionParentName *string
+
+	/* VolumesNasJunctionParentUUID.
+
+	   Filter by volumes.nas.junction_parent.uuid
+	*/
+	VolumesNasJunctionParentUUID *string
+
+	/* VolumesNasPath.
+
+	   Filter by volumes.nas.path
+	*/
+	VolumesNasPath *string
+
+	/* VolumesNasSecurityStyle.
+
+	   Filter by volumes.nas.security_style
+	*/
+	VolumesNasSecurityStyle *string
+
+	/* VolumesNasUID.
+
+	   Filter by volumes.nas.uid
+	*/
+	VolumesNasUID *int64
+
+	/* VolumesNasUnixPermissions.
+
+	   Filter by volumes.nas.unix_permissions
+	*/
+	VolumesNasUnixPermissions *int64
 
 	/* VolumesQosPolicyMaxThroughputIops.
 
 	   Filter by volumes.qos.policy.max_throughput_iops
 	*/
-	VolumesQosPolicyMaxThroughputIopsQueryParameter *int64
+	VolumesQosPolicyMaxThroughputIops *int64
 
 	/* VolumesQosPolicyMaxThroughputMbps.
 
 	   Filter by volumes.qos.policy.max_throughput_mbps
 	*/
-	VolumesQosPolicyMaxThroughputMbpsQueryParameter *int64
+	VolumesQosPolicyMaxThroughputMbps *int64
 
 	/* VolumesQosPolicyMinThroughputIops.
 
 	   Filter by volumes.qos.policy.min_throughput_iops
 	*/
-	VolumesQosPolicyMinThroughputIopsQueryParameter *int64
+	VolumesQosPolicyMinThroughputIops *int64
 
 	/* VolumesQosPolicyMinThroughputMbps.
 
 	   Filter by volumes.qos.policy.min_throughput_mbps
 	*/
-	VolumesQosPolicyMinThroughputMbpsQueryParameter *int64
+	VolumesQosPolicyMinThroughputMbps *int64
 
 	/* VolumesQosPolicyName.
 
 	   Filter by volumes.qos.policy.name
 	*/
-	VolumesQosPolicyNameQueryParameter *string
+	VolumesQosPolicyName *string
 
 	/* VolumesQosPolicyUUID.
 
 	   Filter by volumes.qos.policy.uuid
 	*/
-	VolumesQosPolicyUUIDQueryParameter *string
+	VolumesQosPolicyUUID *string
 
 	/* VolumesSnapshotPolicyName.
 
 	   Filter by volumes.snapshot_policy.name
 	*/
-	VolumesSnapshotPolicyNameQueryParameter *string
+	VolumesSnapshotPolicyName *string
 
 	/* VolumesSnapshotPolicyUUID.
 
 	   Filter by volumes.snapshot_policy.uuid
 	*/
-	VolumesSnapshotPolicyUUIDQueryParameter *string
+	VolumesSnapshotPolicyUUID *string
 
 	/* VolumesSpaceAvailable.
 
 	   Filter by volumes.space.available
 	*/
-	VolumesSpaceAvailableQueryParameter *int64
+	VolumesSpaceAvailable *int64
 
 	/* VolumesSpaceSize.
 
 	   Filter by volumes.space.size
 	*/
-	VolumesSpaceSizeQueryParameter *int64
+	VolumesSpaceSize *int64
 
 	/* VolumesSpaceUsed.
 
 	   Filter by volumes.space.used
 	*/
-	VolumesSpaceUsedQueryParameter *int64
+	VolumesSpaceUsed *int64
 
 	/* VolumesTieringPolicy.
 
 	   Filter by volumes.tiering.policy
 	*/
-	VolumesTieringPolicyQueryParameter *string
+	VolumesTieringPolicy *string
 
 	/* VolumesUUID.
 
 	   Filter by volumes.uuid
 	*/
-	VolumesUUIDQueryParameter *string
+	VolumesUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -858,14 +1680,14 @@ func (o *ConsistencyGroupCollectionGetParams) WithDefaults() *ConsistencyGroupCo
 // All values with no default are reset to their zero value.
 func (o *ConsistencyGroupCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ConsistencyGroupCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -907,1423 +1729,2930 @@ func (o *ConsistencyGroupCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithConsistencyGroupsLunsCommentQueryParameter adds the consistencyGroupsLunsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsCommentQueryParameter(consistencyGroupsLunsComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsCommentQueryParameter(consistencyGroupsLunsComment)
+// WithApplicationComponentType adds the applicationComponentType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithApplicationComponentType(applicationComponentType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetApplicationComponentType(applicationComponentType)
 	return o
 }
 
-// SetConsistencyGroupsLunsCommentQueryParameter adds the consistencyGroupsLunsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsCommentQueryParameter(consistencyGroupsLunsComment *string) {
-	o.ConsistencyGroupsLunsCommentQueryParameter = consistencyGroupsLunsComment
+// SetApplicationComponentType adds the applicationComponentType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetApplicationComponentType(applicationComponentType *string) {
+	o.ApplicationComponentType = applicationComponentType
 }
 
-// WithConsistencyGroupsLunsCreateTimeQueryParameter adds the consistencyGroupsLunsCreateTime to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsCreateTimeQueryParameter(consistencyGroupsLunsCreateTime *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsCreateTimeQueryParameter(consistencyGroupsLunsCreateTime)
+// WithApplicationType adds the applicationType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithApplicationType(applicationType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetApplicationType(applicationType)
 	return o
 }
 
-// SetConsistencyGroupsLunsCreateTimeQueryParameter adds the consistencyGroupsLunsCreateTime to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsCreateTimeQueryParameter(consistencyGroupsLunsCreateTime *string) {
-	o.ConsistencyGroupsLunsCreateTimeQueryParameter = consistencyGroupsLunsCreateTime
+// SetApplicationType adds the applicationType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetApplicationType(applicationType *string) {
+	o.ApplicationType = applicationType
 }
 
-// WithConsistencyGroupsLunsEnabledQueryParameter adds the consistencyGroupsLunsEnabled to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsEnabledQueryParameter(consistencyGroupsLunsEnabled *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsEnabledQueryParameter(consistencyGroupsLunsEnabled)
+// WithCloneGuaranteeType adds the cloneGuaranteeType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneGuaranteeType(cloneGuaranteeType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneGuaranteeType(cloneGuaranteeType)
 	return o
 }
 
-// SetConsistencyGroupsLunsEnabledQueryParameter adds the consistencyGroupsLunsEnabled to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsEnabledQueryParameter(consistencyGroupsLunsEnabled *bool) {
-	o.ConsistencyGroupsLunsEnabledQueryParameter = consistencyGroupsLunsEnabled
+// SetCloneGuaranteeType adds the cloneGuaranteeType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneGuaranteeType(cloneGuaranteeType *string) {
+	o.CloneGuaranteeType = cloneGuaranteeType
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter adds the consistencyGroupsLunsLunMapsIgroupComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupComment)
+// WithCloneParentConsistencyGroupName adds the cloneParentConsistencyGroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneParentConsistencyGroupName(cloneParentConsistencyGroupName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneParentConsistencyGroupName(cloneParentConsistencyGroupName)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter adds the consistencyGroupsLunsLunMapsIgroupComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupComment *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter = consistencyGroupsLunsLunMapsIgroupComment
+// SetCloneParentConsistencyGroupName adds the cloneParentConsistencyGroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneParentConsistencyGroupName(cloneParentConsistencyGroupName *string) {
+	o.CloneParentConsistencyGroupName = cloneParentConsistencyGroupName
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupIgroupsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsName)
+// WithCloneParentConsistencyGroupUUID adds the cloneParentConsistencyGroupUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneParentConsistencyGroupUUID(cloneParentConsistencyGroupUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneParentConsistencyGroupUUID(cloneParentConsistencyGroupUUID)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupIgroupsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsName *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter = consistencyGroupsLunsLunMapsIgroupIgroupsName
+// SetCloneParentConsistencyGroupUUID adds the cloneParentConsistencyGroupUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneParentConsistencyGroupUUID(cloneParentConsistencyGroupUUID *string) {
+	o.CloneParentConsistencyGroupUUID = cloneParentConsistencyGroupUUID
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter adds the consistencyGroupsLunsLunMapsIgroupIgroupsUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsUUID)
+// WithCloneParentSnapshotName adds the cloneParentSnapshotName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneParentSnapshotName(cloneParentSnapshotName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneParentSnapshotName(cloneParentSnapshotName)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter adds the consistencyGroupsLunsLunMapsIgroupIgroupsUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter(consistencyGroupsLunsLunMapsIgroupIgroupsUUID *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter = consistencyGroupsLunsLunMapsIgroupIgroupsUUID
+// SetCloneParentSnapshotName adds the cloneParentSnapshotName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneParentSnapshotName(cloneParentSnapshotName *string) {
+	o.CloneParentSnapshotName = cloneParentSnapshotName
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter adds the consistencyGroupsLunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupInitiatorsComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupInitiatorsComment)
+// WithCloneSplitInitiated adds the cloneSplitInitiated to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneSplitInitiated(cloneSplitInitiated *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneSplitInitiated(cloneSplitInitiated)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter adds the consistencyGroupsLunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter(consistencyGroupsLunsLunMapsIgroupInitiatorsComment *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter = consistencyGroupsLunsLunMapsIgroupInitiatorsComment
+// SetCloneSplitInitiated adds the cloneSplitInitiated to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneSplitInitiated(cloneSplitInitiated *bool) {
+	o.CloneSplitInitiated = cloneSplitInitiated
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupInitiatorsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupInitiatorsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupInitiatorsName)
+// WithCloneVolumePrefix adds the cloneVolumePrefix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneVolumePrefix(cloneVolumePrefix *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneVolumePrefix(cloneVolumePrefix)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupInitiatorsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter(consistencyGroupsLunsLunMapsIgroupInitiatorsName *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter = consistencyGroupsLunsLunMapsIgroupInitiatorsName
+// SetCloneVolumePrefix adds the cloneVolumePrefix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneVolumePrefix(cloneVolumePrefix *string) {
+	o.CloneVolumePrefix = cloneVolumePrefix
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupNameQueryParameter(consistencyGroupsLunsLunMapsIgroupName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupNameQueryParameter(consistencyGroupsLunsLunMapsIgroupName)
+// WithCloneVolumeSuffix adds the cloneVolumeSuffix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithCloneVolumeSuffix(cloneVolumeSuffix *string) *ConsistencyGroupCollectionGetParams {
+	o.SetCloneVolumeSuffix(cloneVolumeSuffix)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupNameQueryParameter adds the consistencyGroupsLunsLunMapsIgroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupNameQueryParameter(consistencyGroupsLunsLunMapsIgroupName *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupNameQueryParameter = consistencyGroupsLunsLunMapsIgroupName
+// SetCloneVolumeSuffix adds the cloneVolumeSuffix to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetCloneVolumeSuffix(cloneVolumeSuffix *string) {
+	o.CloneVolumeSuffix = cloneVolumeSuffix
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter adds the consistencyGroupsLunsLunMapsIgroupOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter(consistencyGroupsLunsLunMapsIgroupOsType *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter(consistencyGroupsLunsLunMapsIgroupOsType)
+// WithConsistencyGroupsApplicationComponentType adds the consistencyGroupsApplicationComponentType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsApplicationComponentType(consistencyGroupsApplicationComponentType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsApplicationComponentType(consistencyGroupsApplicationComponentType)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter adds the consistencyGroupsLunsLunMapsIgroupOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter(consistencyGroupsLunsLunMapsIgroupOsType *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter = consistencyGroupsLunsLunMapsIgroupOsType
+// SetConsistencyGroupsApplicationComponentType adds the consistencyGroupsApplicationComponentType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsApplicationComponentType(consistencyGroupsApplicationComponentType *string) {
+	o.ConsistencyGroupsApplicationComponentType = consistencyGroupsApplicationComponentType
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter adds the consistencyGroupsLunsLunMapsIgroupProtocol to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter(consistencyGroupsLunsLunMapsIgroupProtocol *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter(consistencyGroupsLunsLunMapsIgroupProtocol)
+// WithConsistencyGroupsApplicationType adds the consistencyGroupsApplicationType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsApplicationType(consistencyGroupsApplicationType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsApplicationType(consistencyGroupsApplicationType)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter adds the consistencyGroupsLunsLunMapsIgroupProtocol to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter(consistencyGroupsLunsLunMapsIgroupProtocol *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter = consistencyGroupsLunsLunMapsIgroupProtocol
+// SetConsistencyGroupsApplicationType adds the consistencyGroupsApplicationType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsApplicationType(consistencyGroupsApplicationType *string) {
+	o.ConsistencyGroupsApplicationType = consistencyGroupsApplicationType
 }
 
-// WithConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter adds the consistencyGroupsLunsLunMapsIgroupUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter(consistencyGroupsLunsLunMapsIgroupUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter(consistencyGroupsLunsLunMapsIgroupUUID)
+// WithConsistencyGroupsLunsComment adds the consistencyGroupsLunsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsComment(consistencyGroupsLunsComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsComment(consistencyGroupsLunsComment)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter adds the consistencyGroupsLunsLunMapsIgroupUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter(consistencyGroupsLunsLunMapsIgroupUUID *string) {
-	o.ConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter = consistencyGroupsLunsLunMapsIgroupUUID
+// SetConsistencyGroupsLunsComment adds the consistencyGroupsLunsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsComment(consistencyGroupsLunsComment *string) {
+	o.ConsistencyGroupsLunsComment = consistencyGroupsLunsComment
 }
 
-// WithConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter adds the consistencyGroupsLunsLunMapsLogicalUnitNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter(consistencyGroupsLunsLunMapsLogicalUnitNumber *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter(consistencyGroupsLunsLunMapsLogicalUnitNumber)
+// WithConsistencyGroupsLunsCreateTime adds the consistencyGroupsLunsCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsCreateTime(consistencyGroupsLunsCreateTime *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsCreateTime(consistencyGroupsLunsCreateTime)
 	return o
 }
 
-// SetConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter adds the consistencyGroupsLunsLunMapsLogicalUnitNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter(consistencyGroupsLunsLunMapsLogicalUnitNumber *int64) {
-	o.ConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter = consistencyGroupsLunsLunMapsLogicalUnitNumber
+// SetConsistencyGroupsLunsCreateTime adds the consistencyGroupsLunsCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsCreateTime(consistencyGroupsLunsCreateTime *string) {
+	o.ConsistencyGroupsLunsCreateTime = consistencyGroupsLunsCreateTime
 }
 
-// WithConsistencyGroupsLunsNameQueryParameter adds the consistencyGroupsLunsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsNameQueryParameter(consistencyGroupsLunsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsNameQueryParameter(consistencyGroupsLunsName)
+// WithConsistencyGroupsLunsEnabled adds the consistencyGroupsLunsEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsEnabled(consistencyGroupsLunsEnabled *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsEnabled(consistencyGroupsLunsEnabled)
 	return o
 }
 
-// SetConsistencyGroupsLunsNameQueryParameter adds the consistencyGroupsLunsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsNameQueryParameter(consistencyGroupsLunsName *string) {
-	o.ConsistencyGroupsLunsNameQueryParameter = consistencyGroupsLunsName
+// SetConsistencyGroupsLunsEnabled adds the consistencyGroupsLunsEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsEnabled(consistencyGroupsLunsEnabled *bool) {
+	o.ConsistencyGroupsLunsEnabled = consistencyGroupsLunsEnabled
 }
 
-// WithConsistencyGroupsLunsOsTypeQueryParameter adds the consistencyGroupsLunsOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsOsTypeQueryParameter(consistencyGroupsLunsOsType *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsOsTypeQueryParameter(consistencyGroupsLunsOsType)
+// WithConsistencyGroupsLunsLunMapsIgroupComment adds the consistencyGroupsLunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupComment(consistencyGroupsLunsLunMapsIgroupComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupComment(consistencyGroupsLunsLunMapsIgroupComment)
 	return o
 }
 
-// SetConsistencyGroupsLunsOsTypeQueryParameter adds the consistencyGroupsLunsOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsOsTypeQueryParameter(consistencyGroupsLunsOsType *string) {
-	o.ConsistencyGroupsLunsOsTypeQueryParameter = consistencyGroupsLunsOsType
+// SetConsistencyGroupsLunsLunMapsIgroupComment adds the consistencyGroupsLunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupComment(consistencyGroupsLunsLunMapsIgroupComment *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupComment = consistencyGroupsLunsLunMapsIgroupComment
 }
 
-// WithConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter adds the consistencyGroupsLunsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsLunsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsLunsQosPolicyMaxThroughputIops)
+// WithConsistencyGroupsLunsLunMapsIgroupIgroupsName adds the consistencyGroupsLunsLunMapsIgroupIgroupsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupIgroupsName(consistencyGroupsLunsLunMapsIgroupIgroupsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupIgroupsName(consistencyGroupsLunsLunMapsIgroupIgroupsName)
 	return o
 }
 
-// SetConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter adds the consistencyGroupsLunsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsLunsQosPolicyMaxThroughputIops *int64) {
-	o.ConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter = consistencyGroupsLunsQosPolicyMaxThroughputIops
+// SetConsistencyGroupsLunsLunMapsIgroupIgroupsName adds the consistencyGroupsLunsLunMapsIgroupIgroupsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupIgroupsName(consistencyGroupsLunsLunMapsIgroupIgroupsName *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupIgroupsName = consistencyGroupsLunsLunMapsIgroupIgroupsName
 }
 
-// WithConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter adds the consistencyGroupsLunsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsLunsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsLunsQosPolicyMaxThroughputMbps)
+// WithConsistencyGroupsLunsLunMapsIgroupIgroupsUUID adds the consistencyGroupsLunsLunMapsIgroupIgroupsUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupIgroupsUUID(consistencyGroupsLunsLunMapsIgroupIgroupsUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupIgroupsUUID(consistencyGroupsLunsLunMapsIgroupIgroupsUUID)
 	return o
 }
 
-// SetConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter adds the consistencyGroupsLunsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsLunsQosPolicyMaxThroughputMbps *int64) {
-	o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter = consistencyGroupsLunsQosPolicyMaxThroughputMbps
+// SetConsistencyGroupsLunsLunMapsIgroupIgroupsUUID adds the consistencyGroupsLunsLunMapsIgroupIgroupsUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupIgroupsUUID(consistencyGroupsLunsLunMapsIgroupIgroupsUUID *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUID = consistencyGroupsLunsLunMapsIgroupIgroupsUUID
 }
 
-// WithConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter adds the consistencyGroupsLunsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsLunsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsLunsQosPolicyMinThroughputIops)
+// WithConsistencyGroupsLunsLunMapsIgroupInitiatorsComment adds the consistencyGroupsLunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupInitiatorsComment(consistencyGroupsLunsLunMapsIgroupInitiatorsComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupInitiatorsComment(consistencyGroupsLunsLunMapsIgroupInitiatorsComment)
 	return o
 }
 
-// SetConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter adds the consistencyGroupsLunsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsLunsQosPolicyMinThroughputIops *int64) {
-	o.ConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter = consistencyGroupsLunsQosPolicyMinThroughputIops
+// SetConsistencyGroupsLunsLunMapsIgroupInitiatorsComment adds the consistencyGroupsLunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupInitiatorsComment(consistencyGroupsLunsLunMapsIgroupInitiatorsComment *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsComment = consistencyGroupsLunsLunMapsIgroupInitiatorsComment
 }
 
-// WithConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter adds the consistencyGroupsLunsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsLunsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsLunsQosPolicyMinThroughputMbps)
+// WithConsistencyGroupsLunsLunMapsIgroupInitiatorsName adds the consistencyGroupsLunsLunMapsIgroupInitiatorsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupInitiatorsName(consistencyGroupsLunsLunMapsIgroupInitiatorsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupInitiatorsName(consistencyGroupsLunsLunMapsIgroupInitiatorsName)
 	return o
 }
 
-// SetConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter adds the consistencyGroupsLunsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsLunsQosPolicyMinThroughputMbps *int64) {
-	o.ConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter = consistencyGroupsLunsQosPolicyMinThroughputMbps
+// SetConsistencyGroupsLunsLunMapsIgroupInitiatorsName adds the consistencyGroupsLunsLunMapsIgroupInitiatorsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupInitiatorsName(consistencyGroupsLunsLunMapsIgroupInitiatorsName *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsName = consistencyGroupsLunsLunMapsIgroupInitiatorsName
 }
 
-// WithConsistencyGroupsLunsQosPolicyNameQueryParameter adds the consistencyGroupsLunsQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyNameQueryParameter(consistencyGroupsLunsQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsQosPolicyNameQueryParameter(consistencyGroupsLunsQosPolicyName)
+// WithConsistencyGroupsLunsLunMapsIgroupName adds the consistencyGroupsLunsLunMapsIgroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupName(consistencyGroupsLunsLunMapsIgroupName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupName(consistencyGroupsLunsLunMapsIgroupName)
 	return o
 }
 
-// SetConsistencyGroupsLunsQosPolicyNameQueryParameter adds the consistencyGroupsLunsQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyNameQueryParameter(consistencyGroupsLunsQosPolicyName *string) {
-	o.ConsistencyGroupsLunsQosPolicyNameQueryParameter = consistencyGroupsLunsQosPolicyName
+// SetConsistencyGroupsLunsLunMapsIgroupName adds the consistencyGroupsLunsLunMapsIgroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupName(consistencyGroupsLunsLunMapsIgroupName *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupName = consistencyGroupsLunsLunMapsIgroupName
 }
 
-// WithConsistencyGroupsLunsQosPolicyUUIDQueryParameter adds the consistencyGroupsLunsQosPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyUUIDQueryParameter(consistencyGroupsLunsQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsQosPolicyUUIDQueryParameter(consistencyGroupsLunsQosPolicyUUID)
+// WithConsistencyGroupsLunsLunMapsIgroupOsType adds the consistencyGroupsLunsLunMapsIgroupOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupOsType(consistencyGroupsLunsLunMapsIgroupOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupOsType(consistencyGroupsLunsLunMapsIgroupOsType)
 	return o
 }
 
-// SetConsistencyGroupsLunsQosPolicyUUIDQueryParameter adds the consistencyGroupsLunsQosPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyUUIDQueryParameter(consistencyGroupsLunsQosPolicyUUID *string) {
-	o.ConsistencyGroupsLunsQosPolicyUUIDQueryParameter = consistencyGroupsLunsQosPolicyUUID
+// SetConsistencyGroupsLunsLunMapsIgroupOsType adds the consistencyGroupsLunsLunMapsIgroupOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupOsType(consistencyGroupsLunsLunMapsIgroupOsType *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupOsType = consistencyGroupsLunsLunMapsIgroupOsType
 }
 
-// WithConsistencyGroupsLunsSerialNumberQueryParameter adds the consistencyGroupsLunsSerialNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSerialNumberQueryParameter(consistencyGroupsLunsSerialNumber *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsSerialNumberQueryParameter(consistencyGroupsLunsSerialNumber)
+// WithConsistencyGroupsLunsLunMapsIgroupProtocol adds the consistencyGroupsLunsLunMapsIgroupProtocol to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupProtocol(consistencyGroupsLunsLunMapsIgroupProtocol *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupProtocol(consistencyGroupsLunsLunMapsIgroupProtocol)
 	return o
 }
 
-// SetConsistencyGroupsLunsSerialNumberQueryParameter adds the consistencyGroupsLunsSerialNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSerialNumberQueryParameter(consistencyGroupsLunsSerialNumber *string) {
-	o.ConsistencyGroupsLunsSerialNumberQueryParameter = consistencyGroupsLunsSerialNumber
+// SetConsistencyGroupsLunsLunMapsIgroupProtocol adds the consistencyGroupsLunsLunMapsIgroupProtocol to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupProtocol(consistencyGroupsLunsLunMapsIgroupProtocol *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupProtocol = consistencyGroupsLunsLunMapsIgroupProtocol
 }
 
-// WithConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeRequested to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter(consistencyGroupsLunsSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter(consistencyGroupsLunsSpaceGuaranteeRequested)
+// WithConsistencyGroupsLunsLunMapsIgroupUUID adds the consistencyGroupsLunsLunMapsIgroupUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsIgroupUUID(consistencyGroupsLunsLunMapsIgroupUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsIgroupUUID(consistencyGroupsLunsLunMapsIgroupUUID)
 	return o
 }
 
-// SetConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeRequested to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter(consistencyGroupsLunsSpaceGuaranteeRequested *bool) {
-	o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter = consistencyGroupsLunsSpaceGuaranteeRequested
+// SetConsistencyGroupsLunsLunMapsIgroupUUID adds the consistencyGroupsLunsLunMapsIgroupUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsIgroupUUID(consistencyGroupsLunsLunMapsIgroupUUID *string) {
+	o.ConsistencyGroupsLunsLunMapsIgroupUUID = consistencyGroupsLunsLunMapsIgroupUUID
 }
 
-// WithConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeReserved to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter(consistencyGroupsLunsSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter(consistencyGroupsLunsSpaceGuaranteeReserved)
+// WithConsistencyGroupsLunsLunMapsLogicalUnitNumber adds the consistencyGroupsLunsLunMapsLogicalUnitNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsLunMapsLogicalUnitNumber(consistencyGroupsLunsLunMapsLogicalUnitNumber *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsLunMapsLogicalUnitNumber(consistencyGroupsLunsLunMapsLogicalUnitNumber)
 	return o
 }
 
-// SetConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter adds the consistencyGroupsLunsSpaceGuaranteeReserved to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter(consistencyGroupsLunsSpaceGuaranteeReserved *bool) {
-	o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter = consistencyGroupsLunsSpaceGuaranteeReserved
+// SetConsistencyGroupsLunsLunMapsLogicalUnitNumber adds the consistencyGroupsLunsLunMapsLogicalUnitNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsLunMapsLogicalUnitNumber(consistencyGroupsLunsLunMapsLogicalUnitNumber *int64) {
+	o.ConsistencyGroupsLunsLunMapsLogicalUnitNumber = consistencyGroupsLunsLunMapsLogicalUnitNumber
 }
 
-// WithConsistencyGroupsLunsSpaceSizeQueryParameter adds the consistencyGroupsLunsSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceSizeQueryParameter(consistencyGroupsLunsSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsSpaceSizeQueryParameter(consistencyGroupsLunsSpaceSize)
+// WithConsistencyGroupsLunsName adds the consistencyGroupsLunsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsName(consistencyGroupsLunsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsName(consistencyGroupsLunsName)
 	return o
 }
 
-// SetConsistencyGroupsLunsSpaceSizeQueryParameter adds the consistencyGroupsLunsSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceSizeQueryParameter(consistencyGroupsLunsSpaceSize *int64) {
-	o.ConsistencyGroupsLunsSpaceSizeQueryParameter = consistencyGroupsLunsSpaceSize
+// SetConsistencyGroupsLunsName adds the consistencyGroupsLunsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsName(consistencyGroupsLunsName *string) {
+	o.ConsistencyGroupsLunsName = consistencyGroupsLunsName
 }
 
-// WithConsistencyGroupsLunsSpaceUsedQueryParameter adds the consistencyGroupsLunsSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceUsedQueryParameter(consistencyGroupsLunsSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsSpaceUsedQueryParameter(consistencyGroupsLunsSpaceUsed)
+// WithConsistencyGroupsLunsOsType adds the consistencyGroupsLunsOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsOsType(consistencyGroupsLunsOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsOsType(consistencyGroupsLunsOsType)
 	return o
 }
 
-// SetConsistencyGroupsLunsSpaceUsedQueryParameter adds the consistencyGroupsLunsSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceUsedQueryParameter(consistencyGroupsLunsSpaceUsed *int64) {
-	o.ConsistencyGroupsLunsSpaceUsedQueryParameter = consistencyGroupsLunsSpaceUsed
+// SetConsistencyGroupsLunsOsType adds the consistencyGroupsLunsOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsOsType(consistencyGroupsLunsOsType *string) {
+	o.ConsistencyGroupsLunsOsType = consistencyGroupsLunsOsType
 }
 
-// WithConsistencyGroupsLunsUUIDQueryParameter adds the consistencyGroupsLunsUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsUUIDQueryParameter(consistencyGroupsLunsUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsLunsUUIDQueryParameter(consistencyGroupsLunsUUID)
+// WithConsistencyGroupsLunsQosPolicyMaxThroughputIops adds the consistencyGroupsLunsQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMaxThroughputIops(consistencyGroupsLunsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsQosPolicyMaxThroughputIops(consistencyGroupsLunsQosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetConsistencyGroupsLunsUUIDQueryParameter adds the consistencyGroupsLunsUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsUUIDQueryParameter(consistencyGroupsLunsUUID *string) {
-	o.ConsistencyGroupsLunsUUIDQueryParameter = consistencyGroupsLunsUUID
+// SetConsistencyGroupsLunsQosPolicyMaxThroughputIops adds the consistencyGroupsLunsQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMaxThroughputIops(consistencyGroupsLunsQosPolicyMaxThroughputIops *int64) {
+	o.ConsistencyGroupsLunsQosPolicyMaxThroughputIops = consistencyGroupsLunsQosPolicyMaxThroughputIops
 }
 
-// WithConsistencyGroupsNameQueryParameter adds the consistencyGroupsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNameQueryParameter(consistencyGroupsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsNameQueryParameter(consistencyGroupsName)
+// WithConsistencyGroupsLunsQosPolicyMaxThroughputMbps adds the consistencyGroupsLunsQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMaxThroughputMbps(consistencyGroupsLunsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsQosPolicyMaxThroughputMbps(consistencyGroupsLunsQosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetConsistencyGroupsNameQueryParameter adds the consistencyGroupsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNameQueryParameter(consistencyGroupsName *string) {
-	o.ConsistencyGroupsNameQueryParameter = consistencyGroupsName
+// SetConsistencyGroupsLunsQosPolicyMaxThroughputMbps adds the consistencyGroupsLunsQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMaxThroughputMbps(consistencyGroupsLunsQosPolicyMaxThroughputMbps *int64) {
+	o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbps = consistencyGroupsLunsQosPolicyMaxThroughputMbps
 }
 
-// WithConsistencyGroupsParentConsistencyGroupNameQueryParameter adds the consistencyGroupsParentConsistencyGroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsParentConsistencyGroupNameQueryParameter(consistencyGroupsParentConsistencyGroupName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsParentConsistencyGroupNameQueryParameter(consistencyGroupsParentConsistencyGroupName)
+// WithConsistencyGroupsLunsQosPolicyMinThroughputIops adds the consistencyGroupsLunsQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMinThroughputIops(consistencyGroupsLunsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsQosPolicyMinThroughputIops(consistencyGroupsLunsQosPolicyMinThroughputIops)
 	return o
 }
 
-// SetConsistencyGroupsParentConsistencyGroupNameQueryParameter adds the consistencyGroupsParentConsistencyGroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsParentConsistencyGroupNameQueryParameter(consistencyGroupsParentConsistencyGroupName *string) {
-	o.ConsistencyGroupsParentConsistencyGroupNameQueryParameter = consistencyGroupsParentConsistencyGroupName
+// SetConsistencyGroupsLunsQosPolicyMinThroughputIops adds the consistencyGroupsLunsQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMinThroughputIops(consistencyGroupsLunsQosPolicyMinThroughputIops *int64) {
+	o.ConsistencyGroupsLunsQosPolicyMinThroughputIops = consistencyGroupsLunsQosPolicyMinThroughputIops
 }
 
-// WithConsistencyGroupsParentConsistencyGroupUUIDQueryParameter adds the consistencyGroupsParentConsistencyGroupUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsParentConsistencyGroupUUIDQueryParameter(consistencyGroupsParentConsistencyGroupUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsParentConsistencyGroupUUIDQueryParameter(consistencyGroupsParentConsistencyGroupUUID)
+// WithConsistencyGroupsLunsQosPolicyMinThroughputMbps adds the consistencyGroupsLunsQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyMinThroughputMbps(consistencyGroupsLunsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsQosPolicyMinThroughputMbps(consistencyGroupsLunsQosPolicyMinThroughputMbps)
 	return o
 }
 
-// SetConsistencyGroupsParentConsistencyGroupUUIDQueryParameter adds the consistencyGroupsParentConsistencyGroupUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsParentConsistencyGroupUUIDQueryParameter(consistencyGroupsParentConsistencyGroupUUID *string) {
-	o.ConsistencyGroupsParentConsistencyGroupUUIDQueryParameter = consistencyGroupsParentConsistencyGroupUUID
+// SetConsistencyGroupsLunsQosPolicyMinThroughputMbps adds the consistencyGroupsLunsQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyMinThroughputMbps(consistencyGroupsLunsQosPolicyMinThroughputMbps *int64) {
+	o.ConsistencyGroupsLunsQosPolicyMinThroughputMbps = consistencyGroupsLunsQosPolicyMinThroughputMbps
 }
 
-// WithConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter adds the consistencyGroupsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsQosPolicyMaxThroughputIops)
+// WithConsistencyGroupsLunsQosPolicyName adds the consistencyGroupsLunsQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyName(consistencyGroupsLunsQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsQosPolicyName(consistencyGroupsLunsQosPolicyName)
 	return o
 }
 
-// SetConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter adds the consistencyGroupsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsQosPolicyMaxThroughputIops *int64) {
-	o.ConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter = consistencyGroupsQosPolicyMaxThroughputIops
+// SetConsistencyGroupsLunsQosPolicyName adds the consistencyGroupsLunsQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyName(consistencyGroupsLunsQosPolicyName *string) {
+	o.ConsistencyGroupsLunsQosPolicyName = consistencyGroupsLunsQosPolicyName
 }
 
-// WithConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter adds the consistencyGroupsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsQosPolicyMaxThroughputMbps)
+// WithConsistencyGroupsLunsQosPolicyUUID adds the consistencyGroupsLunsQosPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsQosPolicyUUID(consistencyGroupsLunsQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsQosPolicyUUID(consistencyGroupsLunsQosPolicyUUID)
 	return o
 }
 
-// SetConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter adds the consistencyGroupsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsQosPolicyMaxThroughputMbps *int64) {
-	o.ConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter = consistencyGroupsQosPolicyMaxThroughputMbps
+// SetConsistencyGroupsLunsQosPolicyUUID adds the consistencyGroupsLunsQosPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsQosPolicyUUID(consistencyGroupsLunsQosPolicyUUID *string) {
+	o.ConsistencyGroupsLunsQosPolicyUUID = consistencyGroupsLunsQosPolicyUUID
 }
 
-// WithConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter adds the consistencyGroupsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsQosPolicyMinThroughputIops)
+// WithConsistencyGroupsLunsSerialNumber adds the consistencyGroupsLunsSerialNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSerialNumber(consistencyGroupsLunsSerialNumber *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSerialNumber(consistencyGroupsLunsSerialNumber)
 	return o
 }
 
-// SetConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter adds the consistencyGroupsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsQosPolicyMinThroughputIops *int64) {
-	o.ConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter = consistencyGroupsQosPolicyMinThroughputIops
+// SetConsistencyGroupsLunsSerialNumber adds the consistencyGroupsLunsSerialNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSerialNumber(consistencyGroupsLunsSerialNumber *string) {
+	o.ConsistencyGroupsLunsSerialNumber = consistencyGroupsLunsSerialNumber
 }
 
-// WithConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter adds the consistencyGroupsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsQosPolicyMinThroughputMbps)
+// WithConsistencyGroupsLunsSpaceGuaranteeRequested adds the consistencyGroupsLunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceGuaranteeRequested(consistencyGroupsLunsSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSpaceGuaranteeRequested(consistencyGroupsLunsSpaceGuaranteeRequested)
 	return o
 }
 
-// SetConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter adds the consistencyGroupsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsQosPolicyMinThroughputMbps *int64) {
-	o.ConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter = consistencyGroupsQosPolicyMinThroughputMbps
+// SetConsistencyGroupsLunsSpaceGuaranteeRequested adds the consistencyGroupsLunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceGuaranteeRequested(consistencyGroupsLunsSpaceGuaranteeRequested *bool) {
+	o.ConsistencyGroupsLunsSpaceGuaranteeRequested = consistencyGroupsLunsSpaceGuaranteeRequested
 }
 
-// WithConsistencyGroupsQosPolicyNameQueryParameter adds the consistencyGroupsQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyNameQueryParameter(consistencyGroupsQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyNameQueryParameter(consistencyGroupsQosPolicyName)
+// WithConsistencyGroupsLunsSpaceGuaranteeReserved adds the consistencyGroupsLunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceGuaranteeReserved(consistencyGroupsLunsSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSpaceGuaranteeReserved(consistencyGroupsLunsSpaceGuaranteeReserved)
 	return o
 }
 
-// SetConsistencyGroupsQosPolicyNameQueryParameter adds the consistencyGroupsQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyNameQueryParameter(consistencyGroupsQosPolicyName *string) {
-	o.ConsistencyGroupsQosPolicyNameQueryParameter = consistencyGroupsQosPolicyName
+// SetConsistencyGroupsLunsSpaceGuaranteeReserved adds the consistencyGroupsLunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceGuaranteeReserved(consistencyGroupsLunsSpaceGuaranteeReserved *bool) {
+	o.ConsistencyGroupsLunsSpaceGuaranteeReserved = consistencyGroupsLunsSpaceGuaranteeReserved
 }
 
-// WithConsistencyGroupsQosPolicyUUIDQueryParameter adds the consistencyGroupsQosPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyUUIDQueryParameter(consistencyGroupsQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsQosPolicyUUIDQueryParameter(consistencyGroupsQosPolicyUUID)
+// WithConsistencyGroupsLunsSpaceSize adds the consistencyGroupsLunsSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceSize(consistencyGroupsLunsSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSpaceSize(consistencyGroupsLunsSpaceSize)
 	return o
 }
 
-// SetConsistencyGroupsQosPolicyUUIDQueryParameter adds the consistencyGroupsQosPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyUUIDQueryParameter(consistencyGroupsQosPolicyUUID *string) {
-	o.ConsistencyGroupsQosPolicyUUIDQueryParameter = consistencyGroupsQosPolicyUUID
+// SetConsistencyGroupsLunsSpaceSize adds the consistencyGroupsLunsSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceSize(consistencyGroupsLunsSpaceSize *int64) {
+	o.ConsistencyGroupsLunsSpaceSize = consistencyGroupsLunsSpaceSize
 }
 
-// WithConsistencyGroupsSnapshotPolicyNameQueryParameter adds the consistencyGroupsSnapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSnapshotPolicyNameQueryParameter(consistencyGroupsSnapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSnapshotPolicyNameQueryParameter(consistencyGroupsSnapshotPolicyName)
+// WithConsistencyGroupsLunsSpaceUsed adds the consistencyGroupsLunsSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsSpaceUsed(consistencyGroupsLunsSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsSpaceUsed(consistencyGroupsLunsSpaceUsed)
 	return o
 }
 
-// SetConsistencyGroupsSnapshotPolicyNameQueryParameter adds the consistencyGroupsSnapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSnapshotPolicyNameQueryParameter(consistencyGroupsSnapshotPolicyName *string) {
-	o.ConsistencyGroupsSnapshotPolicyNameQueryParameter = consistencyGroupsSnapshotPolicyName
+// SetConsistencyGroupsLunsSpaceUsed adds the consistencyGroupsLunsSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsSpaceUsed(consistencyGroupsLunsSpaceUsed *int64) {
+	o.ConsistencyGroupsLunsSpaceUsed = consistencyGroupsLunsSpaceUsed
 }
 
-// WithConsistencyGroupsSnapshotPolicyUUIDQueryParameter adds the consistencyGroupsSnapshotPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSnapshotPolicyUUIDQueryParameter(consistencyGroupsSnapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSnapshotPolicyUUIDQueryParameter(consistencyGroupsSnapshotPolicyUUID)
+// WithConsistencyGroupsLunsUUID adds the consistencyGroupsLunsUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsUUID(consistencyGroupsLunsUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsUUID(consistencyGroupsLunsUUID)
 	return o
 }
 
-// SetConsistencyGroupsSnapshotPolicyUUIDQueryParameter adds the consistencyGroupsSnapshotPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSnapshotPolicyUUIDQueryParameter(consistencyGroupsSnapshotPolicyUUID *string) {
-	o.ConsistencyGroupsSnapshotPolicyUUIDQueryParameter = consistencyGroupsSnapshotPolicyUUID
+// SetConsistencyGroupsLunsUUID adds the consistencyGroupsLunsUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsUUID(consistencyGroupsLunsUUID *string) {
+	o.ConsistencyGroupsLunsUUID = consistencyGroupsLunsUUID
 }
 
-// WithConsistencyGroupsSpaceAvailableQueryParameter adds the consistencyGroupsSpaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSpaceAvailableQueryParameter(consistencyGroupsSpaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSpaceAvailableQueryParameter(consistencyGroupsSpaceAvailable)
+// WithConsistencyGroupsName adds the consistencyGroupsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsName(consistencyGroupsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsName(consistencyGroupsName)
 	return o
 }
 
-// SetConsistencyGroupsSpaceAvailableQueryParameter adds the consistencyGroupsSpaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSpaceAvailableQueryParameter(consistencyGroupsSpaceAvailable *int64) {
-	o.ConsistencyGroupsSpaceAvailableQueryParameter = consistencyGroupsSpaceAvailable
+// SetConsistencyGroupsName adds the consistencyGroupsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsName(consistencyGroupsName *string) {
+	o.ConsistencyGroupsName = consistencyGroupsName
 }
 
-// WithConsistencyGroupsSpaceSizeQueryParameter adds the consistencyGroupsSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSpaceSizeQueryParameter(consistencyGroupsSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSpaceSizeQueryParameter(consistencyGroupsSpaceSize)
+// WithConsistencyGroupsNamespacesAutoDelete adds the consistencyGroupsNamespacesAutoDelete to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesAutoDelete(consistencyGroupsNamespacesAutoDelete *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesAutoDelete(consistencyGroupsNamespacesAutoDelete)
 	return o
 }
 
-// SetConsistencyGroupsSpaceSizeQueryParameter adds the consistencyGroupsSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSpaceSizeQueryParameter(consistencyGroupsSpaceSize *int64) {
-	o.ConsistencyGroupsSpaceSizeQueryParameter = consistencyGroupsSpaceSize
+// SetConsistencyGroupsNamespacesAutoDelete adds the consistencyGroupsNamespacesAutoDelete to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesAutoDelete(consistencyGroupsNamespacesAutoDelete *bool) {
+	o.ConsistencyGroupsNamespacesAutoDelete = consistencyGroupsNamespacesAutoDelete
 }
 
-// WithConsistencyGroupsSpaceUsedQueryParameter adds the consistencyGroupsSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSpaceUsedQueryParameter(consistencyGroupsSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSpaceUsedQueryParameter(consistencyGroupsSpaceUsed)
+// WithConsistencyGroupsNamespacesComment adds the consistencyGroupsNamespacesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesComment(consistencyGroupsNamespacesComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesComment(consistencyGroupsNamespacesComment)
 	return o
 }
 
-// SetConsistencyGroupsSpaceUsedQueryParameter adds the consistencyGroupsSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSpaceUsedQueryParameter(consistencyGroupsSpaceUsed *int64) {
-	o.ConsistencyGroupsSpaceUsedQueryParameter = consistencyGroupsSpaceUsed
+// SetConsistencyGroupsNamespacesComment adds the consistencyGroupsNamespacesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesComment(consistencyGroupsNamespacesComment *string) {
+	o.ConsistencyGroupsNamespacesComment = consistencyGroupsNamespacesComment
 }
 
-// WithConsistencyGroupsSVMNameQueryParameter adds the consistencyGroupsSvmName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSVMNameQueryParameter(consistencyGroupsSvmName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSVMNameQueryParameter(consistencyGroupsSvmName)
+// WithConsistencyGroupsNamespacesCreateTime adds the consistencyGroupsNamespacesCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesCreateTime(consistencyGroupsNamespacesCreateTime *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesCreateTime(consistencyGroupsNamespacesCreateTime)
 	return o
 }
 
-// SetConsistencyGroupsSVMNameQueryParameter adds the consistencyGroupsSvmName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSVMNameQueryParameter(consistencyGroupsSvmName *string) {
-	o.ConsistencyGroupsSVMNameQueryParameter = consistencyGroupsSvmName
+// SetConsistencyGroupsNamespacesCreateTime adds the consistencyGroupsNamespacesCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesCreateTime(consistencyGroupsNamespacesCreateTime *string) {
+	o.ConsistencyGroupsNamespacesCreateTime = consistencyGroupsNamespacesCreateTime
 }
 
-// WithConsistencyGroupsSVMUUIDQueryParameter adds the consistencyGroupsSvmUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSVMUUIDQueryParameter(consistencyGroupsSvmUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsSVMUUIDQueryParameter(consistencyGroupsSvmUUID)
+// WithConsistencyGroupsNamespacesEnabled adds the consistencyGroupsNamespacesEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesEnabled(consistencyGroupsNamespacesEnabled *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesEnabled(consistencyGroupsNamespacesEnabled)
 	return o
 }
 
-// SetConsistencyGroupsSVMUUIDQueryParameter adds the consistencyGroupsSvmUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSVMUUIDQueryParameter(consistencyGroupsSvmUUID *string) {
-	o.ConsistencyGroupsSVMUUIDQueryParameter = consistencyGroupsSvmUUID
+// SetConsistencyGroupsNamespacesEnabled adds the consistencyGroupsNamespacesEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesEnabled(consistencyGroupsNamespacesEnabled *bool) {
+	o.ConsistencyGroupsNamespacesEnabled = consistencyGroupsNamespacesEnabled
 }
 
-// WithConsistencyGroupsTieringPolicyQueryParameter adds the consistencyGroupsTieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsTieringPolicyQueryParameter(consistencyGroupsTieringPolicy *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsTieringPolicyQueryParameter(consistencyGroupsTieringPolicy)
+// WithConsistencyGroupsNamespacesName adds the consistencyGroupsNamespacesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesName(consistencyGroupsNamespacesName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesName(consistencyGroupsNamespacesName)
 	return o
 }
 
-// SetConsistencyGroupsTieringPolicyQueryParameter adds the consistencyGroupsTieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsTieringPolicyQueryParameter(consistencyGroupsTieringPolicy *string) {
-	o.ConsistencyGroupsTieringPolicyQueryParameter = consistencyGroupsTieringPolicy
+// SetConsistencyGroupsNamespacesName adds the consistencyGroupsNamespacesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesName(consistencyGroupsNamespacesName *string) {
+	o.ConsistencyGroupsNamespacesName = consistencyGroupsNamespacesName
 }
 
-// WithConsistencyGroupsUUIDQueryParameter adds the consistencyGroupsUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsUUIDQueryParameter(consistencyGroupsUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsUUIDQueryParameter(consistencyGroupsUUID)
+// WithConsistencyGroupsNamespacesOsType adds the consistencyGroupsNamespacesOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesOsType(consistencyGroupsNamespacesOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesOsType(consistencyGroupsNamespacesOsType)
 	return o
 }
 
-// SetConsistencyGroupsUUIDQueryParameter adds the consistencyGroupsUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsUUIDQueryParameter(consistencyGroupsUUID *string) {
-	o.ConsistencyGroupsUUIDQueryParameter = consistencyGroupsUUID
+// SetConsistencyGroupsNamespacesOsType adds the consistencyGroupsNamespacesOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesOsType(consistencyGroupsNamespacesOsType *string) {
+	o.ConsistencyGroupsNamespacesOsType = consistencyGroupsNamespacesOsType
 }
 
-// WithConsistencyGroupsVolumesCommentQueryParameter adds the consistencyGroupsVolumesComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesCommentQueryParameter(consistencyGroupsVolumesComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesCommentQueryParameter(consistencyGroupsVolumesComment)
+// WithConsistencyGroupsNamespacesSpaceBlockSize adds the consistencyGroupsNamespacesSpaceBlockSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSpaceBlockSize(consistencyGroupsNamespacesSpaceBlockSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSpaceBlockSize(consistencyGroupsNamespacesSpaceBlockSize)
 	return o
 }
 
-// SetConsistencyGroupsVolumesCommentQueryParameter adds the consistencyGroupsVolumesComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesCommentQueryParameter(consistencyGroupsVolumesComment *string) {
-	o.ConsistencyGroupsVolumesCommentQueryParameter = consistencyGroupsVolumesComment
+// SetConsistencyGroupsNamespacesSpaceBlockSize adds the consistencyGroupsNamespacesSpaceBlockSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSpaceBlockSize(consistencyGroupsNamespacesSpaceBlockSize *int64) {
+	o.ConsistencyGroupsNamespacesSpaceBlockSize = consistencyGroupsNamespacesSpaceBlockSize
 }
 
-// WithConsistencyGroupsVolumesLanguageQueryParameter adds the consistencyGroupsVolumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesLanguageQueryParameter(consistencyGroupsVolumesLanguage *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesLanguageQueryParameter(consistencyGroupsVolumesLanguage)
+// WithConsistencyGroupsNamespacesSpaceGuaranteeRequested adds the consistencyGroupsNamespacesSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSpaceGuaranteeRequested(consistencyGroupsNamespacesSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSpaceGuaranteeRequested(consistencyGroupsNamespacesSpaceGuaranteeRequested)
 	return o
 }
 
-// SetConsistencyGroupsVolumesLanguageQueryParameter adds the consistencyGroupsVolumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesLanguageQueryParameter(consistencyGroupsVolumesLanguage *string) {
-	o.ConsistencyGroupsVolumesLanguageQueryParameter = consistencyGroupsVolumesLanguage
+// SetConsistencyGroupsNamespacesSpaceGuaranteeRequested adds the consistencyGroupsNamespacesSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSpaceGuaranteeRequested(consistencyGroupsNamespacesSpaceGuaranteeRequested *bool) {
+	o.ConsistencyGroupsNamespacesSpaceGuaranteeRequested = consistencyGroupsNamespacesSpaceGuaranteeRequested
 }
 
-// WithConsistencyGroupsVolumesNameQueryParameter adds the consistencyGroupsVolumesName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNameQueryParameter(consistencyGroupsVolumesName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesNameQueryParameter(consistencyGroupsVolumesName)
+// WithConsistencyGroupsNamespacesSpaceGuaranteeReserved adds the consistencyGroupsNamespacesSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSpaceGuaranteeReserved(consistencyGroupsNamespacesSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSpaceGuaranteeReserved(consistencyGroupsNamespacesSpaceGuaranteeReserved)
 	return o
 }
 
-// SetConsistencyGroupsVolumesNameQueryParameter adds the consistencyGroupsVolumesName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNameQueryParameter(consistencyGroupsVolumesName *string) {
-	o.ConsistencyGroupsVolumesNameQueryParameter = consistencyGroupsVolumesName
+// SetConsistencyGroupsNamespacesSpaceGuaranteeReserved adds the consistencyGroupsNamespacesSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSpaceGuaranteeReserved(consistencyGroupsNamespacesSpaceGuaranteeReserved *bool) {
+	o.ConsistencyGroupsNamespacesSpaceGuaranteeReserved = consistencyGroupsNamespacesSpaceGuaranteeReserved
 }
 
-// WithConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter adds the consistencyGroupsVolumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsVolumesQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsVolumesQosPolicyMaxThroughputIops)
+// WithConsistencyGroupsNamespacesSpaceSize adds the consistencyGroupsNamespacesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSpaceSize(consistencyGroupsNamespacesSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSpaceSize(consistencyGroupsNamespacesSpaceSize)
 	return o
 }
 
-// SetConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter adds the consistencyGroupsVolumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter(consistencyGroupsVolumesQosPolicyMaxThroughputIops *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter = consistencyGroupsVolumesQosPolicyMaxThroughputIops
+// SetConsistencyGroupsNamespacesSpaceSize adds the consistencyGroupsNamespacesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSpaceSize(consistencyGroupsNamespacesSpaceSize *int64) {
+	o.ConsistencyGroupsNamespacesSpaceSize = consistencyGroupsNamespacesSpaceSize
 }
 
-// WithConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter adds the consistencyGroupsVolumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsVolumesQosPolicyMaxThroughputMbps)
+// WithConsistencyGroupsNamespacesSpaceUsed adds the consistencyGroupsNamespacesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSpaceUsed(consistencyGroupsNamespacesSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSpaceUsed(consistencyGroupsNamespacesSpaceUsed)
 	return o
 }
 
-// SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter adds the consistencyGroupsVolumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter(consistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter = consistencyGroupsVolumesQosPolicyMaxThroughputMbps
+// SetConsistencyGroupsNamespacesSpaceUsed adds the consistencyGroupsNamespacesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSpaceUsed(consistencyGroupsNamespacesSpaceUsed *int64) {
+	o.ConsistencyGroupsNamespacesSpaceUsed = consistencyGroupsNamespacesSpaceUsed
 }
 
-// WithConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter adds the consistencyGroupsVolumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsVolumesQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsVolumesQosPolicyMinThroughputIops)
+// WithConsistencyGroupsNamespacesStatusContainerState adds the consistencyGroupsNamespacesStatusContainerState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesStatusContainerState(consistencyGroupsNamespacesStatusContainerState *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesStatusContainerState(consistencyGroupsNamespacesStatusContainerState)
 	return o
 }
 
-// SetConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter adds the consistencyGroupsVolumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter(consistencyGroupsVolumesQosPolicyMinThroughputIops *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter = consistencyGroupsVolumesQosPolicyMinThroughputIops
+// SetConsistencyGroupsNamespacesStatusContainerState adds the consistencyGroupsNamespacesStatusContainerState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesStatusContainerState(consistencyGroupsNamespacesStatusContainerState *string) {
+	o.ConsistencyGroupsNamespacesStatusContainerState = consistencyGroupsNamespacesStatusContainerState
 }
 
-// WithConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter adds the consistencyGroupsVolumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsVolumesQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsVolumesQosPolicyMinThroughputMbps)
+// WithConsistencyGroupsNamespacesStatusMapped adds the consistencyGroupsNamespacesStatusMapped to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesStatusMapped(consistencyGroupsNamespacesStatusMapped *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesStatusMapped(consistencyGroupsNamespacesStatusMapped)
 	return o
 }
 
-// SetConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter adds the consistencyGroupsVolumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter(consistencyGroupsVolumesQosPolicyMinThroughputMbps *int64) {
-	o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter = consistencyGroupsVolumesQosPolicyMinThroughputMbps
+// SetConsistencyGroupsNamespacesStatusMapped adds the consistencyGroupsNamespacesStatusMapped to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesStatusMapped(consistencyGroupsNamespacesStatusMapped *bool) {
+	o.ConsistencyGroupsNamespacesStatusMapped = consistencyGroupsNamespacesStatusMapped
 }
 
-// WithConsistencyGroupsVolumesQosPolicyNameQueryParameter adds the consistencyGroupsVolumesQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyNameQueryParameter(consistencyGroupsVolumesQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyNameQueryParameter(consistencyGroupsVolumesQosPolicyName)
+// WithConsistencyGroupsNamespacesStatusReadOnly adds the consistencyGroupsNamespacesStatusReadOnly to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesStatusReadOnly(consistencyGroupsNamespacesStatusReadOnly *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesStatusReadOnly(consistencyGroupsNamespacesStatusReadOnly)
 	return o
 }
 
-// SetConsistencyGroupsVolumesQosPolicyNameQueryParameter adds the consistencyGroupsVolumesQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyNameQueryParameter(consistencyGroupsVolumesQosPolicyName *string) {
-	o.ConsistencyGroupsVolumesQosPolicyNameQueryParameter = consistencyGroupsVolumesQosPolicyName
+// SetConsistencyGroupsNamespacesStatusReadOnly adds the consistencyGroupsNamespacesStatusReadOnly to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesStatusReadOnly(consistencyGroupsNamespacesStatusReadOnly *bool) {
+	o.ConsistencyGroupsNamespacesStatusReadOnly = consistencyGroupsNamespacesStatusReadOnly
 }
 
-// WithConsistencyGroupsVolumesQosPolicyUUIDQueryParameter adds the consistencyGroupsVolumesQosPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyUUIDQueryParameter(consistencyGroupsVolumesQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesQosPolicyUUIDQueryParameter(consistencyGroupsVolumesQosPolicyUUID)
+// WithConsistencyGroupsNamespacesStatusState adds the consistencyGroupsNamespacesStatusState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesStatusState(consistencyGroupsNamespacesStatusState *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesStatusState(consistencyGroupsNamespacesStatusState)
 	return o
 }
 
-// SetConsistencyGroupsVolumesQosPolicyUUIDQueryParameter adds the consistencyGroupsVolumesQosPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyUUIDQueryParameter(consistencyGroupsVolumesQosPolicyUUID *string) {
-	o.ConsistencyGroupsVolumesQosPolicyUUIDQueryParameter = consistencyGroupsVolumesQosPolicyUUID
+// SetConsistencyGroupsNamespacesStatusState adds the consistencyGroupsNamespacesStatusState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesStatusState(consistencyGroupsNamespacesStatusState *string) {
+	o.ConsistencyGroupsNamespacesStatusState = consistencyGroupsNamespacesStatusState
 }
 
-// WithConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter adds the consistencyGroupsVolumesSnapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter(consistencyGroupsVolumesSnapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter(consistencyGroupsVolumesSnapshotPolicyName)
+// WithConsistencyGroupsNamespacesSubsystemMapAnagrpid adds the consistencyGroupsNamespacesSubsystemMapAnagrpid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapAnagrpid(consistencyGroupsNamespacesSubsystemMapAnagrpid *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapAnagrpid(consistencyGroupsNamespacesSubsystemMapAnagrpid)
 	return o
 }
 
-// SetConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter adds the consistencyGroupsVolumesSnapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter(consistencyGroupsVolumesSnapshotPolicyName *string) {
-	o.ConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter = consistencyGroupsVolumesSnapshotPolicyName
+// SetConsistencyGroupsNamespacesSubsystemMapAnagrpid adds the consistencyGroupsNamespacesSubsystemMapAnagrpid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapAnagrpid(consistencyGroupsNamespacesSubsystemMapAnagrpid *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapAnagrpid = consistencyGroupsNamespacesSubsystemMapAnagrpid
 }
 
-// WithConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter adds the consistencyGroupsVolumesSnapshotPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter(consistencyGroupsVolumesSnapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter(consistencyGroupsVolumesSnapshotPolicyUUID)
+// WithConsistencyGroupsNamespacesSubsystemMapNsid adds the consistencyGroupsNamespacesSubsystemMapNsid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapNsid(consistencyGroupsNamespacesSubsystemMapNsid *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapNsid(consistencyGroupsNamespacesSubsystemMapNsid)
 	return o
 }
 
-// SetConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter adds the consistencyGroupsVolumesSnapshotPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter(consistencyGroupsVolumesSnapshotPolicyUUID *string) {
-	o.ConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter = consistencyGroupsVolumesSnapshotPolicyUUID
+// SetConsistencyGroupsNamespacesSubsystemMapNsid adds the consistencyGroupsNamespacesSubsystemMapNsid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapNsid(consistencyGroupsNamespacesSubsystemMapNsid *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapNsid = consistencyGroupsNamespacesSubsystemMapNsid
 }
 
-// WithConsistencyGroupsVolumesSpaceAvailableQueryParameter adds the consistencyGroupsVolumesSpaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSpaceAvailableQueryParameter(consistencyGroupsVolumesSpaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesSpaceAvailableQueryParameter(consistencyGroupsVolumesSpaceAvailable)
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemComment adds the consistencyGroupsNamespacesSubsystemMapSubsystemComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemComment(consistencyGroupsNamespacesSubsystemMapSubsystemComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemComment(consistencyGroupsNamespacesSubsystemMapSubsystemComment)
 	return o
 }
 
-// SetConsistencyGroupsVolumesSpaceAvailableQueryParameter adds the consistencyGroupsVolumesSpaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSpaceAvailableQueryParameter(consistencyGroupsVolumesSpaceAvailable *int64) {
-	o.ConsistencyGroupsVolumesSpaceAvailableQueryParameter = consistencyGroupsVolumesSpaceAvailable
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemComment adds the consistencyGroupsNamespacesSubsystemMapSubsystemComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemComment(consistencyGroupsNamespacesSubsystemMapSubsystemComment *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemComment = consistencyGroupsNamespacesSubsystemMapSubsystemComment
 }
 
-// WithConsistencyGroupsVolumesSpaceSizeQueryParameter adds the consistencyGroupsVolumesSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSpaceSizeQueryParameter(consistencyGroupsVolumesSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesSpaceSizeQueryParameter(consistencyGroupsVolumesSpaceSize)
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn(consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn(consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn)
 	return o
 }
 
-// SetConsistencyGroupsVolumesSpaceSizeQueryParameter adds the consistencyGroupsVolumesSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSpaceSizeQueryParameter(consistencyGroupsVolumesSpaceSize *int64) {
-	o.ConsistencyGroupsVolumesSpaceSizeQueryParameter = consistencyGroupsVolumesSpaceSize
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn(consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn = consistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn
 }
 
-// WithConsistencyGroupsVolumesSpaceUsedQueryParameter adds the consistencyGroupsVolumesSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSpaceUsedQueryParameter(consistencyGroupsVolumesSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesSpaceUsedQueryParameter(consistencyGroupsVolumesSpaceUsed)
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemName adds the consistencyGroupsNamespacesSubsystemMapSubsystemName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemName(consistencyGroupsNamespacesSubsystemMapSubsystemName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemName(consistencyGroupsNamespacesSubsystemMapSubsystemName)
 	return o
 }
 
-// SetConsistencyGroupsVolumesSpaceUsedQueryParameter adds the consistencyGroupsVolumesSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSpaceUsedQueryParameter(consistencyGroupsVolumesSpaceUsed *int64) {
-	o.ConsistencyGroupsVolumesSpaceUsedQueryParameter = consistencyGroupsVolumesSpaceUsed
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemName adds the consistencyGroupsNamespacesSubsystemMapSubsystemName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemName(consistencyGroupsNamespacesSubsystemMapSubsystemName *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemName = consistencyGroupsNamespacesSubsystemMapSubsystemName
 }
 
-// WithConsistencyGroupsVolumesTieringPolicyQueryParameter adds the consistencyGroupsVolumesTieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesTieringPolicyQueryParameter(consistencyGroupsVolumesTieringPolicy *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesTieringPolicyQueryParameter(consistencyGroupsVolumesTieringPolicy)
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemOsType adds the consistencyGroupsNamespacesSubsystemMapSubsystemOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemOsType(consistencyGroupsNamespacesSubsystemMapSubsystemOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemOsType(consistencyGroupsNamespacesSubsystemMapSubsystemOsType)
 	return o
 }
 
-// SetConsistencyGroupsVolumesTieringPolicyQueryParameter adds the consistencyGroupsVolumesTieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesTieringPolicyQueryParameter(consistencyGroupsVolumesTieringPolicy *string) {
-	o.ConsistencyGroupsVolumesTieringPolicyQueryParameter = consistencyGroupsVolumesTieringPolicy
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemOsType adds the consistencyGroupsNamespacesSubsystemMapSubsystemOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemOsType(consistencyGroupsNamespacesSubsystemMapSubsystemOsType *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemOsType = consistencyGroupsNamespacesSubsystemMapSubsystemOsType
 }
 
-// WithConsistencyGroupsVolumesUUIDQueryParameter adds the consistencyGroupsVolumesUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesUUIDQueryParameter(consistencyGroupsVolumesUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetConsistencyGroupsVolumesUUIDQueryParameter(consistencyGroupsVolumesUUID)
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemUUID adds the consistencyGroupsNamespacesSubsystemMapSubsystemUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemUUID(consistencyGroupsNamespacesSubsystemMapSubsystemUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemUUID(consistencyGroupsNamespacesSubsystemMapSubsystemUUID)
 	return o
 }
 
-// SetConsistencyGroupsVolumesUUIDQueryParameter adds the consistencyGroupsVolumesUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesUUIDQueryParameter(consistencyGroupsVolumesUUID *string) {
-	o.ConsistencyGroupsVolumesUUIDQueryParameter = consistencyGroupsVolumesUUID
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemUUID adds the consistencyGroupsNamespacesSubsystemMapSubsystemUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemUUID(consistencyGroupsNamespacesSubsystemMapSubsystemUUID *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemUUID = consistencyGroupsNamespacesSubsystemMapSubsystemUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithFieldsQueryParameter(fields []string) *ConsistencyGroupCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithConsistencyGroupsNamespacesUUID adds the consistencyGroupsNamespacesUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsNamespacesUUID(consistencyGroupsNamespacesUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsNamespacesUUID(consistencyGroupsNamespacesUUID)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetConsistencyGroupsNamespacesUUID adds the consistencyGroupsNamespacesUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsNamespacesUUID(consistencyGroupsNamespacesUUID *string) {
+	o.ConsistencyGroupsNamespacesUUID = consistencyGroupsNamespacesUUID
 }
 
-// WithLunsCommentQueryParameter adds the lunsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsCommentQueryParameter(lunsComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsCommentQueryParameter(lunsComment)
+// WithConsistencyGroupsParentConsistencyGroupName adds the consistencyGroupsParentConsistencyGroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsParentConsistencyGroupName(consistencyGroupsParentConsistencyGroupName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsParentConsistencyGroupName(consistencyGroupsParentConsistencyGroupName)
 	return o
 }
 
-// SetLunsCommentQueryParameter adds the lunsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsCommentQueryParameter(lunsComment *string) {
-	o.LunsCommentQueryParameter = lunsComment
+// SetConsistencyGroupsParentConsistencyGroupName adds the consistencyGroupsParentConsistencyGroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsParentConsistencyGroupName(consistencyGroupsParentConsistencyGroupName *string) {
+	o.ConsistencyGroupsParentConsistencyGroupName = consistencyGroupsParentConsistencyGroupName
 }
 
-// WithLunsCreateTimeQueryParameter adds the lunsCreateTime to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsCreateTimeQueryParameter(lunsCreateTime *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsCreateTimeQueryParameter(lunsCreateTime)
+// WithConsistencyGroupsParentConsistencyGroupUUID adds the consistencyGroupsParentConsistencyGroupUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsParentConsistencyGroupUUID(consistencyGroupsParentConsistencyGroupUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsParentConsistencyGroupUUID(consistencyGroupsParentConsistencyGroupUUID)
 	return o
 }
 
-// SetLunsCreateTimeQueryParameter adds the lunsCreateTime to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsCreateTimeQueryParameter(lunsCreateTime *string) {
-	o.LunsCreateTimeQueryParameter = lunsCreateTime
+// SetConsistencyGroupsParentConsistencyGroupUUID adds the consistencyGroupsParentConsistencyGroupUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsParentConsistencyGroupUUID(consistencyGroupsParentConsistencyGroupUUID *string) {
+	o.ConsistencyGroupsParentConsistencyGroupUUID = consistencyGroupsParentConsistencyGroupUUID
 }
 
-// WithLunsEnabledQueryParameter adds the lunsEnabled to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsEnabledQueryParameter(lunsEnabled *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsEnabledQueryParameter(lunsEnabled)
+// WithConsistencyGroupsQosPolicyMaxThroughputIops adds the consistencyGroupsQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMaxThroughputIops(consistencyGroupsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsQosPolicyMaxThroughputIops(consistencyGroupsQosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetLunsEnabledQueryParameter adds the lunsEnabled to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsEnabledQueryParameter(lunsEnabled *bool) {
-	o.LunsEnabledQueryParameter = lunsEnabled
+// SetConsistencyGroupsQosPolicyMaxThroughputIops adds the consistencyGroupsQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMaxThroughputIops(consistencyGroupsQosPolicyMaxThroughputIops *int64) {
+	o.ConsistencyGroupsQosPolicyMaxThroughputIops = consistencyGroupsQosPolicyMaxThroughputIops
 }
 
-// WithLunsLunMapsIgroupCommentQueryParameter adds the lunsLunMapsIgroupComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupCommentQueryParameter(lunsLunMapsIgroupComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupCommentQueryParameter(lunsLunMapsIgroupComment)
+// WithConsistencyGroupsQosPolicyMaxThroughputMbps adds the consistencyGroupsQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMaxThroughputMbps(consistencyGroupsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsQosPolicyMaxThroughputMbps(consistencyGroupsQosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetLunsLunMapsIgroupCommentQueryParameter adds the lunsLunMapsIgroupComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupCommentQueryParameter(lunsLunMapsIgroupComment *string) {
-	o.LunsLunMapsIgroupCommentQueryParameter = lunsLunMapsIgroupComment
+// SetConsistencyGroupsQosPolicyMaxThroughputMbps adds the consistencyGroupsQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMaxThroughputMbps(consistencyGroupsQosPolicyMaxThroughputMbps *int64) {
+	o.ConsistencyGroupsQosPolicyMaxThroughputMbps = consistencyGroupsQosPolicyMaxThroughputMbps
 }
 
-// WithLunsLunMapsIgroupIgroupsNameQueryParameter adds the lunsLunMapsIgroupIgroupsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupIgroupsNameQueryParameter(lunsLunMapsIgroupIgroupsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupIgroupsNameQueryParameter(lunsLunMapsIgroupIgroupsName)
+// WithConsistencyGroupsQosPolicyMinThroughputIops adds the consistencyGroupsQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMinThroughputIops(consistencyGroupsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsQosPolicyMinThroughputIops(consistencyGroupsQosPolicyMinThroughputIops)
 	return o
 }
 
-// SetLunsLunMapsIgroupIgroupsNameQueryParameter adds the lunsLunMapsIgroupIgroupsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupIgroupsNameQueryParameter(lunsLunMapsIgroupIgroupsName *string) {
-	o.LunsLunMapsIgroupIgroupsNameQueryParameter = lunsLunMapsIgroupIgroupsName
+// SetConsistencyGroupsQosPolicyMinThroughputIops adds the consistencyGroupsQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMinThroughputIops(consistencyGroupsQosPolicyMinThroughputIops *int64) {
+	o.ConsistencyGroupsQosPolicyMinThroughputIops = consistencyGroupsQosPolicyMinThroughputIops
 }
 
-// WithLunsLunMapsIgroupIgroupsUUIDQueryParameter adds the lunsLunMapsIgroupIgroupsUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupIgroupsUUIDQueryParameter(lunsLunMapsIgroupIgroupsUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupIgroupsUUIDQueryParameter(lunsLunMapsIgroupIgroupsUUID)
+// WithConsistencyGroupsQosPolicyMinThroughputMbps adds the consistencyGroupsQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyMinThroughputMbps(consistencyGroupsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsQosPolicyMinThroughputMbps(consistencyGroupsQosPolicyMinThroughputMbps)
 	return o
 }
 
-// SetLunsLunMapsIgroupIgroupsUUIDQueryParameter adds the lunsLunMapsIgroupIgroupsUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupIgroupsUUIDQueryParameter(lunsLunMapsIgroupIgroupsUUID *string) {
-	o.LunsLunMapsIgroupIgroupsUUIDQueryParameter = lunsLunMapsIgroupIgroupsUUID
+// SetConsistencyGroupsQosPolicyMinThroughputMbps adds the consistencyGroupsQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyMinThroughputMbps(consistencyGroupsQosPolicyMinThroughputMbps *int64) {
+	o.ConsistencyGroupsQosPolicyMinThroughputMbps = consistencyGroupsQosPolicyMinThroughputMbps
 }
 
-// WithLunsLunMapsIgroupInitiatorsCommentQueryParameter adds the lunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupInitiatorsCommentQueryParameter(lunsLunMapsIgroupInitiatorsComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupInitiatorsCommentQueryParameter(lunsLunMapsIgroupInitiatorsComment)
+// WithConsistencyGroupsQosPolicyName adds the consistencyGroupsQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyName(consistencyGroupsQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsQosPolicyName(consistencyGroupsQosPolicyName)
 	return o
 }
 
-// SetLunsLunMapsIgroupInitiatorsCommentQueryParameter adds the lunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupInitiatorsCommentQueryParameter(lunsLunMapsIgroupInitiatorsComment *string) {
-	o.LunsLunMapsIgroupInitiatorsCommentQueryParameter = lunsLunMapsIgroupInitiatorsComment
+// SetConsistencyGroupsQosPolicyName adds the consistencyGroupsQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyName(consistencyGroupsQosPolicyName *string) {
+	o.ConsistencyGroupsQosPolicyName = consistencyGroupsQosPolicyName
 }
 
-// WithLunsLunMapsIgroupInitiatorsNameQueryParameter adds the lunsLunMapsIgroupInitiatorsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupInitiatorsNameQueryParameter(lunsLunMapsIgroupInitiatorsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupInitiatorsNameQueryParameter(lunsLunMapsIgroupInitiatorsName)
+// WithConsistencyGroupsQosPolicyUUID adds the consistencyGroupsQosPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsQosPolicyUUID(consistencyGroupsQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsQosPolicyUUID(consistencyGroupsQosPolicyUUID)
 	return o
 }
 
-// SetLunsLunMapsIgroupInitiatorsNameQueryParameter adds the lunsLunMapsIgroupInitiatorsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupInitiatorsNameQueryParameter(lunsLunMapsIgroupInitiatorsName *string) {
-	o.LunsLunMapsIgroupInitiatorsNameQueryParameter = lunsLunMapsIgroupInitiatorsName
+// SetConsistencyGroupsQosPolicyUUID adds the consistencyGroupsQosPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsQosPolicyUUID(consistencyGroupsQosPolicyUUID *string) {
+	o.ConsistencyGroupsQosPolicyUUID = consistencyGroupsQosPolicyUUID
 }
 
-// WithLunsLunMapsIgroupNameQueryParameter adds the lunsLunMapsIgroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupNameQueryParameter(lunsLunMapsIgroupName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupNameQueryParameter(lunsLunMapsIgroupName)
+// WithConsistencyGroupsSnapshotPolicyName adds the consistencyGroupsSnapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSnapshotPolicyName(consistencyGroupsSnapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSnapshotPolicyName(consistencyGroupsSnapshotPolicyName)
 	return o
 }
 
-// SetLunsLunMapsIgroupNameQueryParameter adds the lunsLunMapsIgroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupNameQueryParameter(lunsLunMapsIgroupName *string) {
-	o.LunsLunMapsIgroupNameQueryParameter = lunsLunMapsIgroupName
+// SetConsistencyGroupsSnapshotPolicyName adds the consistencyGroupsSnapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSnapshotPolicyName(consistencyGroupsSnapshotPolicyName *string) {
+	o.ConsistencyGroupsSnapshotPolicyName = consistencyGroupsSnapshotPolicyName
 }
 
-// WithLunsLunMapsIgroupOsTypeQueryParameter adds the lunsLunMapsIgroupOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupOsTypeQueryParameter(lunsLunMapsIgroupOsType *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupOsTypeQueryParameter(lunsLunMapsIgroupOsType)
+// WithConsistencyGroupsSnapshotPolicyUUID adds the consistencyGroupsSnapshotPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSnapshotPolicyUUID(consistencyGroupsSnapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSnapshotPolicyUUID(consistencyGroupsSnapshotPolicyUUID)
 	return o
 }
 
-// SetLunsLunMapsIgroupOsTypeQueryParameter adds the lunsLunMapsIgroupOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupOsTypeQueryParameter(lunsLunMapsIgroupOsType *string) {
-	o.LunsLunMapsIgroupOsTypeQueryParameter = lunsLunMapsIgroupOsType
+// SetConsistencyGroupsSnapshotPolicyUUID adds the consistencyGroupsSnapshotPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSnapshotPolicyUUID(consistencyGroupsSnapshotPolicyUUID *string) {
+	o.ConsistencyGroupsSnapshotPolicyUUID = consistencyGroupsSnapshotPolicyUUID
 }
 
-// WithLunsLunMapsIgroupProtocolQueryParameter adds the lunsLunMapsIgroupProtocol to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupProtocolQueryParameter(lunsLunMapsIgroupProtocol *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupProtocolQueryParameter(lunsLunMapsIgroupProtocol)
+// WithConsistencyGroupsSpaceAvailable adds the consistencyGroupsSpaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSpaceAvailable(consistencyGroupsSpaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSpaceAvailable(consistencyGroupsSpaceAvailable)
 	return o
 }
 
-// SetLunsLunMapsIgroupProtocolQueryParameter adds the lunsLunMapsIgroupProtocol to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupProtocolQueryParameter(lunsLunMapsIgroupProtocol *string) {
-	o.LunsLunMapsIgroupProtocolQueryParameter = lunsLunMapsIgroupProtocol
+// SetConsistencyGroupsSpaceAvailable adds the consistencyGroupsSpaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSpaceAvailable(consistencyGroupsSpaceAvailable *int64) {
+	o.ConsistencyGroupsSpaceAvailable = consistencyGroupsSpaceAvailable
 }
 
-// WithLunsLunMapsIgroupUUIDQueryParameter adds the lunsLunMapsIgroupUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupUUIDQueryParameter(lunsLunMapsIgroupUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsIgroupUUIDQueryParameter(lunsLunMapsIgroupUUID)
+// WithConsistencyGroupsSpaceSize adds the consistencyGroupsSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSpaceSize(consistencyGroupsSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSpaceSize(consistencyGroupsSpaceSize)
 	return o
 }
 
-// SetLunsLunMapsIgroupUUIDQueryParameter adds the lunsLunMapsIgroupUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupUUIDQueryParameter(lunsLunMapsIgroupUUID *string) {
-	o.LunsLunMapsIgroupUUIDQueryParameter = lunsLunMapsIgroupUUID
+// SetConsistencyGroupsSpaceSize adds the consistencyGroupsSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSpaceSize(consistencyGroupsSpaceSize *int64) {
+	o.ConsistencyGroupsSpaceSize = consistencyGroupsSpaceSize
 }
 
-// WithLunsLunMapsLogicalUnitNumberQueryParameter adds the lunsLunMapsLogicalUnitNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsLogicalUnitNumberQueryParameter(lunsLunMapsLogicalUnitNumber *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsLunMapsLogicalUnitNumberQueryParameter(lunsLunMapsLogicalUnitNumber)
+// WithConsistencyGroupsSpaceUsed adds the consistencyGroupsSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSpaceUsed(consistencyGroupsSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSpaceUsed(consistencyGroupsSpaceUsed)
 	return o
 }
 
-// SetLunsLunMapsLogicalUnitNumberQueryParameter adds the lunsLunMapsLogicalUnitNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsLogicalUnitNumberQueryParameter(lunsLunMapsLogicalUnitNumber *int64) {
-	o.LunsLunMapsLogicalUnitNumberQueryParameter = lunsLunMapsLogicalUnitNumber
+// SetConsistencyGroupsSpaceUsed adds the consistencyGroupsSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSpaceUsed(consistencyGroupsSpaceUsed *int64) {
+	o.ConsistencyGroupsSpaceUsed = consistencyGroupsSpaceUsed
 }
 
-// WithLunsNameQueryParameter adds the lunsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsNameQueryParameter(lunsName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsNameQueryParameter(lunsName)
+// WithConsistencyGroupsSvmName adds the consistencyGroupsSvmName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSvmName(consistencyGroupsSvmName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSvmName(consistencyGroupsSvmName)
 	return o
 }
 
-// SetLunsNameQueryParameter adds the lunsName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsNameQueryParameter(lunsName *string) {
-	o.LunsNameQueryParameter = lunsName
+// SetConsistencyGroupsSvmName adds the consistencyGroupsSvmName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSvmName(consistencyGroupsSvmName *string) {
+	o.ConsistencyGroupsSvmName = consistencyGroupsSvmName
 }
 
-// WithLunsOsTypeQueryParameter adds the lunsOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsOsTypeQueryParameter(lunsOsType *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsOsTypeQueryParameter(lunsOsType)
+// WithConsistencyGroupsSvmUUID adds the consistencyGroupsSvmUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsSvmUUID(consistencyGroupsSvmUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsSvmUUID(consistencyGroupsSvmUUID)
 	return o
 }
 
-// SetLunsOsTypeQueryParameter adds the lunsOsType to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsOsTypeQueryParameter(lunsOsType *string) {
-	o.LunsOsTypeQueryParameter = lunsOsType
+// SetConsistencyGroupsSvmUUID adds the consistencyGroupsSvmUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsSvmUUID(consistencyGroupsSvmUUID *string) {
+	o.ConsistencyGroupsSvmUUID = consistencyGroupsSvmUUID
 }
 
-// WithLunsQosPolicyMaxThroughputIopsQueryParameter adds the lunsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMaxThroughputIopsQueryParameter(lunsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsQosPolicyMaxThroughputIopsQueryParameter(lunsQosPolicyMaxThroughputIops)
+// WithConsistencyGroupsTieringPolicy adds the consistencyGroupsTieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsTieringPolicy(consistencyGroupsTieringPolicy *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsTieringPolicy(consistencyGroupsTieringPolicy)
 	return o
 }
 
-// SetLunsQosPolicyMaxThroughputIopsQueryParameter adds the lunsQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMaxThroughputIopsQueryParameter(lunsQosPolicyMaxThroughputIops *int64) {
-	o.LunsQosPolicyMaxThroughputIopsQueryParameter = lunsQosPolicyMaxThroughputIops
+// SetConsistencyGroupsTieringPolicy adds the consistencyGroupsTieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsTieringPolicy(consistencyGroupsTieringPolicy *string) {
+	o.ConsistencyGroupsTieringPolicy = consistencyGroupsTieringPolicy
 }
 
-// WithLunsQosPolicyMaxThroughputMbpsQueryParameter adds the lunsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMaxThroughputMbpsQueryParameter(lunsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsQosPolicyMaxThroughputMbpsQueryParameter(lunsQosPolicyMaxThroughputMbps)
+// WithConsistencyGroupsUUID adds the consistencyGroupsUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsUUID(consistencyGroupsUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsUUID(consistencyGroupsUUID)
 	return o
 }
 
-// SetLunsQosPolicyMaxThroughputMbpsQueryParameter adds the lunsQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMaxThroughputMbpsQueryParameter(lunsQosPolicyMaxThroughputMbps *int64) {
-	o.LunsQosPolicyMaxThroughputMbpsQueryParameter = lunsQosPolicyMaxThroughputMbps
+// SetConsistencyGroupsUUID adds the consistencyGroupsUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsUUID(consistencyGroupsUUID *string) {
+	o.ConsistencyGroupsUUID = consistencyGroupsUUID
 }
 
-// WithLunsQosPolicyMinThroughputIopsQueryParameter adds the lunsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMinThroughputIopsQueryParameter(lunsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsQosPolicyMinThroughputIopsQueryParameter(lunsQosPolicyMinThroughputIops)
+// WithConsistencyGroupsVolumesComment adds the consistencyGroupsVolumesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesComment(consistencyGroupsVolumesComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesComment(consistencyGroupsVolumesComment)
 	return o
 }
 
-// SetLunsQosPolicyMinThroughputIopsQueryParameter adds the lunsQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMinThroughputIopsQueryParameter(lunsQosPolicyMinThroughputIops *int64) {
-	o.LunsQosPolicyMinThroughputIopsQueryParameter = lunsQosPolicyMinThroughputIops
+// SetConsistencyGroupsVolumesComment adds the consistencyGroupsVolumesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesComment(consistencyGroupsVolumesComment *string) {
+	o.ConsistencyGroupsVolumesComment = consistencyGroupsVolumesComment
 }
 
-// WithLunsQosPolicyMinThroughputMbpsQueryParameter adds the lunsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMinThroughputMbpsQueryParameter(lunsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsQosPolicyMinThroughputMbpsQueryParameter(lunsQosPolicyMinThroughputMbps)
+// WithConsistencyGroupsVolumesLanguage adds the consistencyGroupsVolumesLanguage to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesLanguage(consistencyGroupsVolumesLanguage *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesLanguage(consistencyGroupsVolumesLanguage)
 	return o
 }
 
-// SetLunsQosPolicyMinThroughputMbpsQueryParameter adds the lunsQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMinThroughputMbpsQueryParameter(lunsQosPolicyMinThroughputMbps *int64) {
-	o.LunsQosPolicyMinThroughputMbpsQueryParameter = lunsQosPolicyMinThroughputMbps
+// SetConsistencyGroupsVolumesLanguage adds the consistencyGroupsVolumesLanguage to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesLanguage(consistencyGroupsVolumesLanguage *string) {
+	o.ConsistencyGroupsVolumesLanguage = consistencyGroupsVolumesLanguage
 }
 
-// WithLunsQosPolicyNameQueryParameter adds the lunsQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyNameQueryParameter(lunsQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsQosPolicyNameQueryParameter(lunsQosPolicyName)
+// WithConsistencyGroupsVolumesName adds the consistencyGroupsVolumesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesName(consistencyGroupsVolumesName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesName(consistencyGroupsVolumesName)
 	return o
 }
 
-// SetLunsQosPolicyNameQueryParameter adds the lunsQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyNameQueryParameter(lunsQosPolicyName *string) {
-	o.LunsQosPolicyNameQueryParameter = lunsQosPolicyName
+// SetConsistencyGroupsVolumesName adds the consistencyGroupsVolumesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesName(consistencyGroupsVolumesName *string) {
+	o.ConsistencyGroupsVolumesName = consistencyGroupsVolumesName
 }
 
-// WithLunsQosPolicyUUIDQueryParameter adds the lunsQosPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyUUIDQueryParameter(lunsQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsQosPolicyUUIDQueryParameter(lunsQosPolicyUUID)
+// WithConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration adds the consistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration(consistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration(consistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration)
 	return o
 }
 
-// SetLunsQosPolicyUUIDQueryParameter adds the lunsQosPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyUUIDQueryParameter(lunsQosPolicyUUID *string) {
-	o.LunsQosPolicyUUIDQueryParameter = lunsQosPolicyUUID
+// SetConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration adds the consistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration(consistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration = consistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration
 }
 
-// WithLunsSerialNumberQueryParameter adds the lunsSerialNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsSerialNumberQueryParameter(lunsSerialNumber *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsSerialNumberQueryParameter(lunsSerialNumber)
+// WithConsistencyGroupsVolumesNasCifsSharesAclsPermission adds the consistencyGroupsVolumesNasCifsSharesAclsPermission to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesAclsPermission(consistencyGroupsVolumesNasCifsSharesAclsPermission *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesAclsPermission(consistencyGroupsVolumesNasCifsSharesAclsPermission)
 	return o
 }
 
-// SetLunsSerialNumberQueryParameter adds the lunsSerialNumber to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsSerialNumberQueryParameter(lunsSerialNumber *string) {
-	o.LunsSerialNumberQueryParameter = lunsSerialNumber
+// SetConsistencyGroupsVolumesNasCifsSharesAclsPermission adds the consistencyGroupsVolumesNasCifsSharesAclsPermission to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAclsPermission(consistencyGroupsVolumesNasCifsSharesAclsPermission *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesAclsPermission = consistencyGroupsVolumesNasCifsSharesAclsPermission
 }
 
-// WithLunsSpaceGuaranteeRequestedQueryParameter adds the lunsSpaceGuaranteeRequested to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceGuaranteeRequestedQueryParameter(lunsSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsSpaceGuaranteeRequestedQueryParameter(lunsSpaceGuaranteeRequested)
+// WithConsistencyGroupsVolumesNasCifsSharesAclsType adds the consistencyGroupsVolumesNasCifsSharesAclsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesAclsType(consistencyGroupsVolumesNasCifsSharesAclsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesAclsType(consistencyGroupsVolumesNasCifsSharesAclsType)
 	return o
 }
 
-// SetLunsSpaceGuaranteeRequestedQueryParameter adds the lunsSpaceGuaranteeRequested to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceGuaranteeRequestedQueryParameter(lunsSpaceGuaranteeRequested *bool) {
-	o.LunsSpaceGuaranteeRequestedQueryParameter = lunsSpaceGuaranteeRequested
+// SetConsistencyGroupsVolumesNasCifsSharesAclsType adds the consistencyGroupsVolumesNasCifsSharesAclsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAclsType(consistencyGroupsVolumesNasCifsSharesAclsType *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesAclsType = consistencyGroupsVolumesNasCifsSharesAclsType
 }
 
-// WithLunsSpaceGuaranteeReservedQueryParameter adds the lunsSpaceGuaranteeReserved to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceGuaranteeReservedQueryParameter(lunsSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsSpaceGuaranteeReservedQueryParameter(lunsSpaceGuaranteeReserved)
+// WithConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup adds the consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup(consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup(consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup)
 	return o
 }
 
-// SetLunsSpaceGuaranteeReservedQueryParameter adds the lunsSpaceGuaranteeReserved to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceGuaranteeReservedQueryParameter(lunsSpaceGuaranteeReserved *bool) {
-	o.LunsSpaceGuaranteeReservedQueryParameter = lunsSpaceGuaranteeReserved
+// SetConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup adds the consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup(consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup = consistencyGroupsVolumesNasCifsSharesAclsUserOrGroup
 }
 
-// WithLunsSpaceSizeQueryParameter adds the lunsSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceSizeQueryParameter(lunsSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsSpaceSizeQueryParameter(lunsSpaceSize)
+// WithConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess adds the consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess(consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess(consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess)
 	return o
 }
 
-// SetLunsSpaceSizeQueryParameter adds the lunsSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceSizeQueryParameter(lunsSpaceSize *int64) {
-	o.LunsSpaceSizeQueryParameter = lunsSpaceSize
+// SetConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess adds the consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess(consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess = consistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess
 }
 
-// WithLunsSpaceUsedQueryParameter adds the lunsSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceUsedQueryParameter(lunsSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsSpaceUsedQueryParameter(lunsSpaceUsed)
+// WithConsistencyGroupsVolumesNasCifsSharesChangeNotify adds the consistencyGroupsVolumesNasCifsSharesChangeNotify to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesChangeNotify(consistencyGroupsVolumesNasCifsSharesChangeNotify *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesChangeNotify(consistencyGroupsVolumesNasCifsSharesChangeNotify)
 	return o
 }
 
-// SetLunsSpaceUsedQueryParameter adds the lunsSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceUsedQueryParameter(lunsSpaceUsed *int64) {
-	o.LunsSpaceUsedQueryParameter = lunsSpaceUsed
+// SetConsistencyGroupsVolumesNasCifsSharesChangeNotify adds the consistencyGroupsVolumesNasCifsSharesChangeNotify to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesChangeNotify(consistencyGroupsVolumesNasCifsSharesChangeNotify *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesChangeNotify = consistencyGroupsVolumesNasCifsSharesChangeNotify
 }
 
-// WithLunsUUIDQueryParameter adds the lunsUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithLunsUUIDQueryParameter(lunsUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetLunsUUIDQueryParameter(lunsUUID)
+// WithConsistencyGroupsVolumesNasCifsSharesComment adds the consistencyGroupsVolumesNasCifsSharesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesComment(consistencyGroupsVolumesNasCifsSharesComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesComment(consistencyGroupsVolumesNasCifsSharesComment)
 	return o
 }
 
-// SetLunsUUIDQueryParameter adds the lunsUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetLunsUUIDQueryParameter(lunsUUID *string) {
-	o.LunsUUIDQueryParameter = lunsUUID
+// SetConsistencyGroupsVolumesNasCifsSharesComment adds the consistencyGroupsVolumesNasCifsSharesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesComment(consistencyGroupsVolumesNasCifsSharesComment *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesComment = consistencyGroupsVolumesNasCifsSharesComment
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable adds the consistencyGroupsVolumesNasCifsSharesContinuouslyAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable(consistencyGroupsVolumesNasCifsSharesContinuouslyAvailable *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable(consistencyGroupsVolumesNasCifsSharesContinuouslyAvailable)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable adds the consistencyGroupsVolumesNasCifsSharesContinuouslyAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable(consistencyGroupsVolumesNasCifsSharesContinuouslyAvailable *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable = consistencyGroupsVolumesNasCifsSharesContinuouslyAvailable
 }
 
-// WithNameQueryParameter adds the name to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithNameQueryParameter(name *string) *ConsistencyGroupCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithConsistencyGroupsVolumesNasCifsSharesDirUmask adds the consistencyGroupsVolumesNasCifsSharesDirUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesDirUmask(consistencyGroupsVolumesNasCifsSharesDirUmask *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesDirUmask(consistencyGroupsVolumesNasCifsSharesDirUmask)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetConsistencyGroupsVolumesNasCifsSharesDirUmask adds the consistencyGroupsVolumesNasCifsSharesDirUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesDirUmask(consistencyGroupsVolumesNasCifsSharesDirUmask *int64) {
+	o.ConsistencyGroupsVolumesNasCifsSharesDirUmask = consistencyGroupsVolumesNasCifsSharesDirUmask
 }
 
-// WithOrderByQueryParameter adds the orderBy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ConsistencyGroupCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithConsistencyGroupsVolumesNasCifsSharesEncryption adds the consistencyGroupsVolumesNasCifsSharesEncryption to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesEncryption(consistencyGroupsVolumesNasCifsSharesEncryption *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesEncryption(consistencyGroupsVolumesNasCifsSharesEncryption)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetConsistencyGroupsVolumesNasCifsSharesEncryption adds the consistencyGroupsVolumesNasCifsSharesEncryption to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesEncryption(consistencyGroupsVolumesNasCifsSharesEncryption *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesEncryption = consistencyGroupsVolumesNasCifsSharesEncryption
 }
 
-// WithParentConsistencyGroupNameQueryParameter adds the parentConsistencyGroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithParentConsistencyGroupNameQueryParameter(parentConsistencyGroupName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetParentConsistencyGroupNameQueryParameter(parentConsistencyGroupName)
+// WithConsistencyGroupsVolumesNasCifsSharesFileUmask adds the consistencyGroupsVolumesNasCifsSharesFileUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesFileUmask(consistencyGroupsVolumesNasCifsSharesFileUmask *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesFileUmask(consistencyGroupsVolumesNasCifsSharesFileUmask)
 	return o
 }
 
-// SetParentConsistencyGroupNameQueryParameter adds the parentConsistencyGroupName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetParentConsistencyGroupNameQueryParameter(parentConsistencyGroupName *string) {
-	o.ParentConsistencyGroupNameQueryParameter = parentConsistencyGroupName
+// SetConsistencyGroupsVolumesNasCifsSharesFileUmask adds the consistencyGroupsVolumesNasCifsSharesFileUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesFileUmask(consistencyGroupsVolumesNasCifsSharesFileUmask *int64) {
+	o.ConsistencyGroupsVolumesNasCifsSharesFileUmask = consistencyGroupsVolumesNasCifsSharesFileUmask
 }
 
-// WithParentConsistencyGroupUUIDQueryParameter adds the parentConsistencyGroupUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithParentConsistencyGroupUUIDQueryParameter(parentConsistencyGroupUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetParentConsistencyGroupUUIDQueryParameter(parentConsistencyGroupUUID)
+// WithConsistencyGroupsVolumesNasCifsSharesHomeDirectory adds the consistencyGroupsVolumesNasCifsSharesHomeDirectory to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesHomeDirectory(consistencyGroupsVolumesNasCifsSharesHomeDirectory *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesHomeDirectory(consistencyGroupsVolumesNasCifsSharesHomeDirectory)
 	return o
 }
 
-// SetParentConsistencyGroupUUIDQueryParameter adds the parentConsistencyGroupUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetParentConsistencyGroupUUIDQueryParameter(parentConsistencyGroupUUID *string) {
-	o.ParentConsistencyGroupUUIDQueryParameter = parentConsistencyGroupUUID
+// SetConsistencyGroupsVolumesNasCifsSharesHomeDirectory adds the consistencyGroupsVolumesNasCifsSharesHomeDirectory to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesHomeDirectory(consistencyGroupsVolumesNasCifsSharesHomeDirectory *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesHomeDirectory = consistencyGroupsVolumesNasCifsSharesHomeDirectory
 }
 
-// WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops)
+// WithConsistencyGroupsVolumesNasCifsSharesName adds the consistencyGroupsVolumesNasCifsSharesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesName(consistencyGroupsVolumesNasCifsSharesName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesName(consistencyGroupsVolumesNasCifsSharesName)
 	return o
 }
 
-// SetQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) {
-	o.QosPolicyMaxThroughputIopsQueryParameter = qosPolicyMaxThroughputIops
+// SetConsistencyGroupsVolumesNasCifsSharesName adds the consistencyGroupsVolumesNasCifsSharesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesName(consistencyGroupsVolumesNasCifsSharesName *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesName = consistencyGroupsVolumesNasCifsSharesName
 }
 
-// WithQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps)
+// WithConsistencyGroupsVolumesNasCifsSharesNamespaceCaching adds the consistencyGroupsVolumesNasCifsSharesNamespaceCaching to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesNamespaceCaching(consistencyGroupsVolumesNasCifsSharesNamespaceCaching *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesNamespaceCaching(consistencyGroupsVolumesNasCifsSharesNamespaceCaching)
 	return o
 }
 
-// SetQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) {
-	o.QosPolicyMaxThroughputMbpsQueryParameter = qosPolicyMaxThroughputMbps
+// SetConsistencyGroupsVolumesNasCifsSharesNamespaceCaching adds the consistencyGroupsVolumesNasCifsSharesNamespaceCaching to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesNamespaceCaching(consistencyGroupsVolumesNasCifsSharesNamespaceCaching *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesNamespaceCaching = consistencyGroupsVolumesNasCifsSharesNamespaceCaching
 }
 
-// WithQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops)
+// WithConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity adds the consistencyGroupsVolumesNasCifsSharesNoStrictSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity(consistencyGroupsVolumesNasCifsSharesNoStrictSecurity *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity(consistencyGroupsVolumesNasCifsSharesNoStrictSecurity)
 	return o
 }
 
-// SetQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) {
-	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
+// SetConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity adds the consistencyGroupsVolumesNasCifsSharesNoStrictSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity(consistencyGroupsVolumesNasCifsSharesNoStrictSecurity *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity = consistencyGroupsVolumesNasCifsSharesNoStrictSecurity
 }
 
-// WithQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps)
+// WithConsistencyGroupsVolumesNasCifsSharesOfflineFiles adds the consistencyGroupsVolumesNasCifsSharesOfflineFiles to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesOfflineFiles(consistencyGroupsVolumesNasCifsSharesOfflineFiles *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesOfflineFiles(consistencyGroupsVolumesNasCifsSharesOfflineFiles)
 	return o
 }
 
-// SetQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) {
-	o.QosPolicyMinThroughputMbpsQueryParameter = qosPolicyMinThroughputMbps
+// SetConsistencyGroupsVolumesNasCifsSharesOfflineFiles adds the consistencyGroupsVolumesNasCifsSharesOfflineFiles to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesOfflineFiles(consistencyGroupsVolumesNasCifsSharesOfflineFiles *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesOfflineFiles = consistencyGroupsVolumesNasCifsSharesOfflineFiles
 }
 
-// WithQosPolicyNameQueryParameter adds the qosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+// WithConsistencyGroupsVolumesNasCifsSharesOplocks adds the consistencyGroupsVolumesNasCifsSharesOplocks to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesOplocks(consistencyGroupsVolumesNasCifsSharesOplocks *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesOplocks(consistencyGroupsVolumesNasCifsSharesOplocks)
 	return o
 }
 
-// SetQosPolicyNameQueryParameter adds the qosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
-	o.QosPolicyNameQueryParameter = qosPolicyName
+// SetConsistencyGroupsVolumesNasCifsSharesOplocks adds the consistencyGroupsVolumesNasCifsSharesOplocks to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesOplocks(consistencyGroupsVolumesNasCifsSharesOplocks *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesOplocks = consistencyGroupsVolumesNasCifsSharesOplocks
 }
 
-// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+// WithConsistencyGroupsVolumesNasCifsSharesShowSnapshot adds the consistencyGroupsVolumesNasCifsSharesShowSnapshot to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesShowSnapshot(consistencyGroupsVolumesNasCifsSharesShowSnapshot *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesShowSnapshot(consistencyGroupsVolumesNasCifsSharesShowSnapshot)
 	return o
 }
 
-// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
-	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+// SetConsistencyGroupsVolumesNasCifsSharesShowSnapshot adds the consistencyGroupsVolumesNasCifsSharesShowSnapshot to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesShowSnapshot(consistencyGroupsVolumesNasCifsSharesShowSnapshot *bool) {
+	o.ConsistencyGroupsVolumesNasCifsSharesShowSnapshot = consistencyGroupsVolumesNasCifsSharesShowSnapshot
 }
 
-// WithReplicatedQueryParameter adds the replicated to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithReplicatedQueryParameter(replicated *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetReplicatedQueryParameter(replicated)
+// WithConsistencyGroupsVolumesNasCifsSharesUnixSymlink adds the consistencyGroupsVolumesNasCifsSharesUnixSymlink to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesUnixSymlink(consistencyGroupsVolumesNasCifsSharesUnixSymlink *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesUnixSymlink(consistencyGroupsVolumesNasCifsSharesUnixSymlink)
 	return o
 }
 
-// SetReplicatedQueryParameter adds the replicated to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetReplicatedQueryParameter(replicated *bool) {
-	o.ReplicatedQueryParameter = replicated
+// SetConsistencyGroupsVolumesNasCifsSharesUnixSymlink adds the consistencyGroupsVolumesNasCifsSharesUnixSymlink to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesUnixSymlink(consistencyGroupsVolumesNasCifsSharesUnixSymlink *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesUnixSymlink = consistencyGroupsVolumesNasCifsSharesUnixSymlink
 }
 
-// WithReplicationSourceQueryParameter adds the replicationSource to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithReplicationSourceQueryParameter(replicationSource *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetReplicationSourceQueryParameter(replicationSource)
+// WithConsistencyGroupsVolumesNasCifsSharesVscanProfile adds the consistencyGroupsVolumesNasCifsSharesVscanProfile to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasCifsSharesVscanProfile(consistencyGroupsVolumesNasCifsSharesVscanProfile *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasCifsSharesVscanProfile(consistencyGroupsVolumesNasCifsSharesVscanProfile)
 	return o
 }
 
-// SetReplicationSourceQueryParameter adds the replicationSource to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetReplicationSourceQueryParameter(replicationSource *bool) {
-	o.ReplicationSourceQueryParameter = replicationSource
+// SetConsistencyGroupsVolumesNasCifsSharesVscanProfile adds the consistencyGroupsVolumesNasCifsSharesVscanProfile to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasCifsSharesVscanProfile(consistencyGroupsVolumesNasCifsSharesVscanProfile *string) {
+	o.ConsistencyGroupsVolumesNasCifsSharesVscanProfile = consistencyGroupsVolumesNasCifsSharesVscanProfile
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ConsistencyGroupCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithConsistencyGroupsVolumesNasExportPolicyName adds the consistencyGroupsVolumesNasExportPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyName(consistencyGroupsVolumesNasExportPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyName(consistencyGroupsVolumesNasExportPolicyName)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetConsistencyGroupsVolumesNasExportPolicyName adds the consistencyGroupsVolumesNasExportPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyName(consistencyGroupsVolumesNasExportPolicyName *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyName = consistencyGroupsVolumesNasExportPolicyName
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation adds the consistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation(consistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation(consistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation adds the consistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation(consistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation *bool) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation = consistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation
 }
 
-// WithSnapshotPolicyNameQueryParameter adds the snapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSnapshotPolicyNameQueryParameter(snapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetSnapshotPolicyNameQueryParameter(snapshotPolicyName)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid adds the consistencyGroupsVolumesNasExportPolicyRulesAllowSuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid(consistencyGroupsVolumesNasExportPolicyRulesAllowSuid *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid(consistencyGroupsVolumesNasExportPolicyRulesAllowSuid)
 	return o
 }
 
-// SetSnapshotPolicyNameQueryParameter adds the snapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSnapshotPolicyNameQueryParameter(snapshotPolicyName *string) {
-	o.SnapshotPolicyNameQueryParameter = snapshotPolicyName
+// SetConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid adds the consistencyGroupsVolumesNasExportPolicyRulesAllowSuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid(consistencyGroupsVolumesNasExportPolicyRulesAllowSuid *bool) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid = consistencyGroupsVolumesNasExportPolicyRulesAllowSuid
 }
 
-// WithSnapshotPolicyUUIDQueryParameter adds the snapshotPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSnapshotPolicyUUIDQueryParameter(snapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetSnapshotPolicyUUIDQueryParameter(snapshotPolicyUUID)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser adds the consistencyGroupsVolumesNasExportPolicyRulesAnonymousUser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser(consistencyGroupsVolumesNasExportPolicyRulesAnonymousUser *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser(consistencyGroupsVolumesNasExportPolicyRulesAnonymousUser)
 	return o
 }
 
-// SetSnapshotPolicyUUIDQueryParameter adds the snapshotPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSnapshotPolicyUUIDQueryParameter(snapshotPolicyUUID *string) {
-	o.SnapshotPolicyUUIDQueryParameter = snapshotPolicyUUID
+// SetConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser adds the consistencyGroupsVolumesNasExportPolicyRulesAnonymousUser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser(consistencyGroupsVolumesNasExportPolicyRulesAnonymousUser *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser = consistencyGroupsVolumesNasExportPolicyRulesAnonymousUser
 }
 
-// WithSpaceAvailableQueryParameter adds the spaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSpaceAvailableQueryParameter(spaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetSpaceAvailableQueryParameter(spaceAvailable)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesChownMode adds the consistencyGroupsVolumesNasExportPolicyRulesChownMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesChownMode(consistencyGroupsVolumesNasExportPolicyRulesChownMode *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesChownMode(consistencyGroupsVolumesNasExportPolicyRulesChownMode)
 	return o
 }
 
-// SetSpaceAvailableQueryParameter adds the spaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSpaceAvailableQueryParameter(spaceAvailable *int64) {
-	o.SpaceAvailableQueryParameter = spaceAvailable
+// SetConsistencyGroupsVolumesNasExportPolicyRulesChownMode adds the consistencyGroupsVolumesNasExportPolicyRulesChownMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesChownMode(consistencyGroupsVolumesNasExportPolicyRulesChownMode *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesChownMode = consistencyGroupsVolumesNasExportPolicyRulesChownMode
 }
 
-// WithSpaceSizeQueryParameter adds the spaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSpaceSizeQueryParameter(spaceSize *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetSpaceSizeQueryParameter(spaceSize)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch adds the consistencyGroupsVolumesNasExportPolicyRulesClientsMatch to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch(consistencyGroupsVolumesNasExportPolicyRulesClientsMatch *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch(consistencyGroupsVolumesNasExportPolicyRulesClientsMatch)
 	return o
 }
 
-// SetSpaceSizeQueryParameter adds the spaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSpaceSizeQueryParameter(spaceSize *int64) {
-	o.SpaceSizeQueryParameter = spaceSize
+// SetConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch adds the consistencyGroupsVolumesNasExportPolicyRulesClientsMatch to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch(consistencyGroupsVolumesNasExportPolicyRulesClientsMatch *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch = consistencyGroupsVolumesNasExportPolicyRulesClientsMatch
 }
 
-// WithSpaceUsedQueryParameter adds the spaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSpaceUsedQueryParameter(spaceUsed *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetSpaceUsedQueryParameter(spaceUsed)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesIndex adds the consistencyGroupsVolumesNasExportPolicyRulesIndex to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesIndex(consistencyGroupsVolumesNasExportPolicyRulesIndex *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesIndex(consistencyGroupsVolumesNasExportPolicyRulesIndex)
 	return o
 }
 
-// SetSpaceUsedQueryParameter adds the spaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSpaceUsedQueryParameter(spaceUsed *int64) {
-	o.SpaceUsedQueryParameter = spaceUsed
+// SetConsistencyGroupsVolumesNasExportPolicyRulesIndex adds the consistencyGroupsVolumesNasExportPolicyRulesIndex to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesIndex(consistencyGroupsVolumesNasExportPolicyRulesIndex *int64) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesIndex = consistencyGroupsVolumesNasExportPolicyRulesIndex
 }
 
-// WithSVMNameQueryParameter adds the svmName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity adds the consistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity(consistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity(consistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity adds the consistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity(consistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity = consistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesProtocols adds the consistencyGroupsVolumesNasExportPolicyRulesProtocols to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesProtocols(consistencyGroupsVolumesNasExportPolicyRulesProtocols *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesProtocols(consistencyGroupsVolumesNasExportPolicyRulesProtocols)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetConsistencyGroupsVolumesNasExportPolicyRulesProtocols adds the consistencyGroupsVolumesNasExportPolicyRulesProtocols to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesProtocols(consistencyGroupsVolumesNasExportPolicyRulesProtocols *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesProtocols = consistencyGroupsVolumesNasExportPolicyRulesProtocols
 }
 
-// WithTieringPolicyQueryParameter adds the tieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithTieringPolicyQueryParameter(tieringPolicy *string) *ConsistencyGroupCollectionGetParams {
-	o.SetTieringPolicyQueryParameter(tieringPolicy)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesRoRule adds the consistencyGroupsVolumesNasExportPolicyRulesRoRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesRoRule(consistencyGroupsVolumesNasExportPolicyRulesRoRule *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesRoRule(consistencyGroupsVolumesNasExportPolicyRulesRoRule)
 	return o
 }
 
-// SetTieringPolicyQueryParameter adds the tieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetTieringPolicyQueryParameter(tieringPolicy *string) {
-	o.TieringPolicyQueryParameter = tieringPolicy
+// SetConsistencyGroupsVolumesNasExportPolicyRulesRoRule adds the consistencyGroupsVolumesNasExportPolicyRulesRoRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesRoRule(consistencyGroupsVolumesNasExportPolicyRulesRoRule *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesRoRule = consistencyGroupsVolumesNasExportPolicyRulesRoRule
 }
 
-// WithUUIDQueryParameter adds the uuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ConsistencyGroupCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesRwRule adds the consistencyGroupsVolumesNasExportPolicyRulesRwRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesRwRule(consistencyGroupsVolumesNasExportPolicyRulesRwRule *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesRwRule(consistencyGroupsVolumesNasExportPolicyRulesRwRule)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetConsistencyGroupsVolumesNasExportPolicyRulesRwRule adds the consistencyGroupsVolumesNasExportPolicyRulesRwRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesRwRule(consistencyGroupsVolumesNasExportPolicyRulesRwRule *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesRwRule = consistencyGroupsVolumesNasExportPolicyRulesRwRule
 }
 
-// WithVolumesCommentQueryParameter adds the volumesComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesCommentQueryParameter(volumesComment *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesCommentQueryParameter(volumesComment)
+// WithConsistencyGroupsVolumesNasExportPolicyRulesSuperuser adds the consistencyGroupsVolumesNasExportPolicyRulesSuperuser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyRulesSuperuser(consistencyGroupsVolumesNasExportPolicyRulesSuperuser *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyRulesSuperuser(consistencyGroupsVolumesNasExportPolicyRulesSuperuser)
 	return o
 }
 
-// SetVolumesCommentQueryParameter adds the volumesComment to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesCommentQueryParameter(volumesComment *string) {
-	o.VolumesCommentQueryParameter = volumesComment
+// SetConsistencyGroupsVolumesNasExportPolicyRulesSuperuser adds the consistencyGroupsVolumesNasExportPolicyRulesSuperuser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyRulesSuperuser(consistencyGroupsVolumesNasExportPolicyRulesSuperuser *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser = consistencyGroupsVolumesNasExportPolicyRulesSuperuser
 }
 
-// WithVolumesLanguageQueryParameter adds the volumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesLanguageQueryParameter(volumesLanguage *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesLanguageQueryParameter(volumesLanguage)
+// WithConsistencyGroupsVolumesNasExportPolicyUUID adds the consistencyGroupsVolumesNasExportPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasExportPolicyUUID(consistencyGroupsVolumesNasExportPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasExportPolicyUUID(consistencyGroupsVolumesNasExportPolicyUUID)
 	return o
 }
 
-// SetVolumesLanguageQueryParameter adds the volumesLanguage to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesLanguageQueryParameter(volumesLanguage *string) {
-	o.VolumesLanguageQueryParameter = volumesLanguage
+// SetConsistencyGroupsVolumesNasExportPolicyUUID adds the consistencyGroupsVolumesNasExportPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasExportPolicyUUID(consistencyGroupsVolumesNasExportPolicyUUID *string) {
+	o.ConsistencyGroupsVolumesNasExportPolicyUUID = consistencyGroupsVolumesNasExportPolicyUUID
 }
 
-// WithVolumesNameQueryParameter adds the volumesName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesNameQueryParameter(volumesName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesNameQueryParameter(volumesName)
+// WithConsistencyGroupsVolumesNasGid adds the consistencyGroupsVolumesNasGid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasGid(consistencyGroupsVolumesNasGid *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasGid(consistencyGroupsVolumesNasGid)
 	return o
 }
 
-// SetVolumesNameQueryParameter adds the volumesName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesNameQueryParameter(volumesName *string) {
-	o.VolumesNameQueryParameter = volumesName
+// SetConsistencyGroupsVolumesNasGid adds the consistencyGroupsVolumesNasGid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasGid(consistencyGroupsVolumesNasGid *int64) {
+	o.ConsistencyGroupsVolumesNasGid = consistencyGroupsVolumesNasGid
 }
 
-// WithVolumesQosPolicyMaxThroughputIopsQueryParameter adds the volumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMaxThroughputIopsQueryParameter(volumesQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMaxThroughputIopsQueryParameter(volumesQosPolicyMaxThroughputIops)
+// WithConsistencyGroupsVolumesNasJunctionParentName adds the consistencyGroupsVolumesNasJunctionParentName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasJunctionParentName(consistencyGroupsVolumesNasJunctionParentName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasJunctionParentName(consistencyGroupsVolumesNasJunctionParentName)
 	return o
 }
 
-// SetVolumesQosPolicyMaxThroughputIopsQueryParameter adds the volumesQosPolicyMaxThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMaxThroughputIopsQueryParameter(volumesQosPolicyMaxThroughputIops *int64) {
-	o.VolumesQosPolicyMaxThroughputIopsQueryParameter = volumesQosPolicyMaxThroughputIops
+// SetConsistencyGroupsVolumesNasJunctionParentName adds the consistencyGroupsVolumesNasJunctionParentName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasJunctionParentName(consistencyGroupsVolumesNasJunctionParentName *string) {
+	o.ConsistencyGroupsVolumesNasJunctionParentName = consistencyGroupsVolumesNasJunctionParentName
 }
 
-// WithVolumesQosPolicyMaxThroughputMbpsQueryParameter adds the volumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMaxThroughputMbpsQueryParameter(volumesQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMaxThroughputMbpsQueryParameter(volumesQosPolicyMaxThroughputMbps)
+// WithConsistencyGroupsVolumesNasJunctionParentUUID adds the consistencyGroupsVolumesNasJunctionParentUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasJunctionParentUUID(consistencyGroupsVolumesNasJunctionParentUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasJunctionParentUUID(consistencyGroupsVolumesNasJunctionParentUUID)
 	return o
 }
 
-// SetVolumesQosPolicyMaxThroughputMbpsQueryParameter adds the volumesQosPolicyMaxThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMaxThroughputMbpsQueryParameter(volumesQosPolicyMaxThroughputMbps *int64) {
-	o.VolumesQosPolicyMaxThroughputMbpsQueryParameter = volumesQosPolicyMaxThroughputMbps
+// SetConsistencyGroupsVolumesNasJunctionParentUUID adds the consistencyGroupsVolumesNasJunctionParentUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasJunctionParentUUID(consistencyGroupsVolumesNasJunctionParentUUID *string) {
+	o.ConsistencyGroupsVolumesNasJunctionParentUUID = consistencyGroupsVolumesNasJunctionParentUUID
 }
 
-// WithVolumesQosPolicyMinThroughputIopsQueryParameter adds the volumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMinThroughputIopsQueryParameter(volumesQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMinThroughputIopsQueryParameter(volumesQosPolicyMinThroughputIops)
+// WithConsistencyGroupsVolumesNasPath adds the consistencyGroupsVolumesNasPath to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasPath(consistencyGroupsVolumesNasPath *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasPath(consistencyGroupsVolumesNasPath)
 	return o
 }
 
-// SetVolumesQosPolicyMinThroughputIopsQueryParameter adds the volumesQosPolicyMinThroughputIops to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMinThroughputIopsQueryParameter(volumesQosPolicyMinThroughputIops *int64) {
-	o.VolumesQosPolicyMinThroughputIopsQueryParameter = volumesQosPolicyMinThroughputIops
+// SetConsistencyGroupsVolumesNasPath adds the consistencyGroupsVolumesNasPath to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasPath(consistencyGroupsVolumesNasPath *string) {
+	o.ConsistencyGroupsVolumesNasPath = consistencyGroupsVolumesNasPath
 }
 
-// WithVolumesQosPolicyMinThroughputMbpsQueryParameter adds the volumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMinThroughputMbpsQueryParameter(volumesQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyMinThroughputMbpsQueryParameter(volumesQosPolicyMinThroughputMbps)
+// WithConsistencyGroupsVolumesNasSecurityStyle adds the consistencyGroupsVolumesNasSecurityStyle to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasSecurityStyle(consistencyGroupsVolumesNasSecurityStyle *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasSecurityStyle(consistencyGroupsVolumesNasSecurityStyle)
 	return o
 }
 
-// SetVolumesQosPolicyMinThroughputMbpsQueryParameter adds the volumesQosPolicyMinThroughputMbps to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMinThroughputMbpsQueryParameter(volumesQosPolicyMinThroughputMbps *int64) {
-	o.VolumesQosPolicyMinThroughputMbpsQueryParameter = volumesQosPolicyMinThroughputMbps
+// SetConsistencyGroupsVolumesNasSecurityStyle adds the consistencyGroupsVolumesNasSecurityStyle to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasSecurityStyle(consistencyGroupsVolumesNasSecurityStyle *string) {
+	o.ConsistencyGroupsVolumesNasSecurityStyle = consistencyGroupsVolumesNasSecurityStyle
 }
 
-// WithVolumesQosPolicyNameQueryParameter adds the volumesQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyNameQueryParameter(volumesQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyNameQueryParameter(volumesQosPolicyName)
+// WithConsistencyGroupsVolumesNasUID adds the consistencyGroupsVolumesNasUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasUID(consistencyGroupsVolumesNasUID *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasUID(consistencyGroupsVolumesNasUID)
 	return o
 }
 
-// SetVolumesQosPolicyNameQueryParameter adds the volumesQosPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyNameQueryParameter(volumesQosPolicyName *string) {
-	o.VolumesQosPolicyNameQueryParameter = volumesQosPolicyName
+// SetConsistencyGroupsVolumesNasUID adds the consistencyGroupsVolumesNasUid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasUID(consistencyGroupsVolumesNasUID *int64) {
+	o.ConsistencyGroupsVolumesNasUID = consistencyGroupsVolumesNasUID
 }
 
-// WithVolumesQosPolicyUUIDQueryParameter adds the volumesQosPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyUUIDQueryParameter(volumesQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesQosPolicyUUIDQueryParameter(volumesQosPolicyUUID)
+// WithConsistencyGroupsVolumesNasUnixPermissions adds the consistencyGroupsVolumesNasUnixPermissions to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesNasUnixPermissions(consistencyGroupsVolumesNasUnixPermissions *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesNasUnixPermissions(consistencyGroupsVolumesNasUnixPermissions)
 	return o
 }
 
-// SetVolumesQosPolicyUUIDQueryParameter adds the volumesQosPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyUUIDQueryParameter(volumesQosPolicyUUID *string) {
-	o.VolumesQosPolicyUUIDQueryParameter = volumesQosPolicyUUID
+// SetConsistencyGroupsVolumesNasUnixPermissions adds the consistencyGroupsVolumesNasUnixPermissions to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesNasUnixPermissions(consistencyGroupsVolumesNasUnixPermissions *int64) {
+	o.ConsistencyGroupsVolumesNasUnixPermissions = consistencyGroupsVolumesNasUnixPermissions
 }
 
-// WithVolumesSnapshotPolicyNameQueryParameter adds the volumesSnapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesSnapshotPolicyNameQueryParameter(volumesSnapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesSnapshotPolicyNameQueryParameter(volumesSnapshotPolicyName)
+// WithConsistencyGroupsVolumesQosPolicyMaxThroughputIops adds the consistencyGroupsVolumesQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMaxThroughputIops(consistencyGroupsVolumesQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesQosPolicyMaxThroughputIops(consistencyGroupsVolumesQosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetVolumesSnapshotPolicyNameQueryParameter adds the volumesSnapshotPolicyName to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesSnapshotPolicyNameQueryParameter(volumesSnapshotPolicyName *string) {
-	o.VolumesSnapshotPolicyNameQueryParameter = volumesSnapshotPolicyName
+// SetConsistencyGroupsVolumesQosPolicyMaxThroughputIops adds the consistencyGroupsVolumesQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMaxThroughputIops(consistencyGroupsVolumesQosPolicyMaxThroughputIops *int64) {
+	o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops = consistencyGroupsVolumesQosPolicyMaxThroughputIops
 }
 
-// WithVolumesSnapshotPolicyUUIDQueryParameter adds the volumesSnapshotPolicyUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesSnapshotPolicyUUIDQueryParameter(volumesSnapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesSnapshotPolicyUUIDQueryParameter(volumesSnapshotPolicyUUID)
+// WithConsistencyGroupsVolumesQosPolicyMaxThroughputMbps adds the consistencyGroupsVolumesQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMaxThroughputMbps(consistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbps(consistencyGroupsVolumesQosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetVolumesSnapshotPolicyUUIDQueryParameter adds the volumesSnapshotPolicyUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesSnapshotPolicyUUIDQueryParameter(volumesSnapshotPolicyUUID *string) {
-	o.VolumesSnapshotPolicyUUIDQueryParameter = volumesSnapshotPolicyUUID
+// SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbps adds the consistencyGroupsVolumesQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMaxThroughputMbps(consistencyGroupsVolumesQosPolicyMaxThroughputMbps *int64) {
+	o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps = consistencyGroupsVolumesQosPolicyMaxThroughputMbps
 }
 
-// WithVolumesSpaceAvailableQueryParameter adds the volumesSpaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesSpaceAvailableQueryParameter(volumesSpaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesSpaceAvailableQueryParameter(volumesSpaceAvailable)
+// WithConsistencyGroupsVolumesQosPolicyMinThroughputIops adds the consistencyGroupsVolumesQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMinThroughputIops(consistencyGroupsVolumesQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesQosPolicyMinThroughputIops(consistencyGroupsVolumesQosPolicyMinThroughputIops)
 	return o
 }
 
-// SetVolumesSpaceAvailableQueryParameter adds the volumesSpaceAvailable to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesSpaceAvailableQueryParameter(volumesSpaceAvailable *int64) {
-	o.VolumesSpaceAvailableQueryParameter = volumesSpaceAvailable
+// SetConsistencyGroupsVolumesQosPolicyMinThroughputIops adds the consistencyGroupsVolumesQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMinThroughputIops(consistencyGroupsVolumesQosPolicyMinThroughputIops *int64) {
+	o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops = consistencyGroupsVolumesQosPolicyMinThroughputIops
 }
 
-// WithVolumesSpaceSizeQueryParameter adds the volumesSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesSpaceSizeQueryParameter(volumesSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesSpaceSizeQueryParameter(volumesSpaceSize)
+// WithConsistencyGroupsVolumesQosPolicyMinThroughputMbps adds the consistencyGroupsVolumesQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyMinThroughputMbps(consistencyGroupsVolumesQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesQosPolicyMinThroughputMbps(consistencyGroupsVolumesQosPolicyMinThroughputMbps)
 	return o
 }
 
-// SetVolumesSpaceSizeQueryParameter adds the volumesSpaceSize to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesSpaceSizeQueryParameter(volumesSpaceSize *int64) {
-	o.VolumesSpaceSizeQueryParameter = volumesSpaceSize
+// SetConsistencyGroupsVolumesQosPolicyMinThroughputMbps adds the consistencyGroupsVolumesQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyMinThroughputMbps(consistencyGroupsVolumesQosPolicyMinThroughputMbps *int64) {
+	o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps = consistencyGroupsVolumesQosPolicyMinThroughputMbps
 }
 
-// WithVolumesSpaceUsedQueryParameter adds the volumesSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesSpaceUsedQueryParameter(volumesSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesSpaceUsedQueryParameter(volumesSpaceUsed)
+// WithConsistencyGroupsVolumesQosPolicyName adds the consistencyGroupsVolumesQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyName(consistencyGroupsVolumesQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesQosPolicyName(consistencyGroupsVolumesQosPolicyName)
 	return o
 }
 
-// SetVolumesSpaceUsedQueryParameter adds the volumesSpaceUsed to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesSpaceUsedQueryParameter(volumesSpaceUsed *int64) {
-	o.VolumesSpaceUsedQueryParameter = volumesSpaceUsed
+// SetConsistencyGroupsVolumesQosPolicyName adds the consistencyGroupsVolumesQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyName(consistencyGroupsVolumesQosPolicyName *string) {
+	o.ConsistencyGroupsVolumesQosPolicyName = consistencyGroupsVolumesQosPolicyName
 }
 
-// WithVolumesTieringPolicyQueryParameter adds the volumesTieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesTieringPolicyQueryParameter(volumesTieringPolicy *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesTieringPolicyQueryParameter(volumesTieringPolicy)
+// WithConsistencyGroupsVolumesQosPolicyUUID adds the consistencyGroupsVolumesQosPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesQosPolicyUUID(consistencyGroupsVolumesQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesQosPolicyUUID(consistencyGroupsVolumesQosPolicyUUID)
 	return o
 }
 
-// SetVolumesTieringPolicyQueryParameter adds the volumesTieringPolicy to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesTieringPolicyQueryParameter(volumesTieringPolicy *string) {
-	o.VolumesTieringPolicyQueryParameter = volumesTieringPolicy
+// SetConsistencyGroupsVolumesQosPolicyUUID adds the consistencyGroupsVolumesQosPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesQosPolicyUUID(consistencyGroupsVolumesQosPolicyUUID *string) {
+	o.ConsistencyGroupsVolumesQosPolicyUUID = consistencyGroupsVolumesQosPolicyUUID
 }
 
-// WithVolumesUUIDQueryParameter adds the volumesUUID to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) WithVolumesUUIDQueryParameter(volumesUUID *string) *ConsistencyGroupCollectionGetParams {
-	o.SetVolumesUUIDQueryParameter(volumesUUID)
+// WithConsistencyGroupsVolumesSnapshotPolicyName adds the consistencyGroupsVolumesSnapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSnapshotPolicyName(consistencyGroupsVolumesSnapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesSnapshotPolicyName(consistencyGroupsVolumesSnapshotPolicyName)
 	return o
 }
 
-// SetVolumesUUIDQueryParameter adds the volumesUuid to the consistency group collection get params
-func (o *ConsistencyGroupCollectionGetParams) SetVolumesUUIDQueryParameter(volumesUUID *string) {
-	o.VolumesUUIDQueryParameter = volumesUUID
+// SetConsistencyGroupsVolumesSnapshotPolicyName adds the consistencyGroupsVolumesSnapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSnapshotPolicyName(consistencyGroupsVolumesSnapshotPolicyName *string) {
+	o.ConsistencyGroupsVolumesSnapshotPolicyName = consistencyGroupsVolumesSnapshotPolicyName
+}
+
+// WithConsistencyGroupsVolumesSnapshotPolicyUUID adds the consistencyGroupsVolumesSnapshotPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSnapshotPolicyUUID(consistencyGroupsVolumesSnapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesSnapshotPolicyUUID(consistencyGroupsVolumesSnapshotPolicyUUID)
+	return o
+}
+
+// SetConsistencyGroupsVolumesSnapshotPolicyUUID adds the consistencyGroupsVolumesSnapshotPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSnapshotPolicyUUID(consistencyGroupsVolumesSnapshotPolicyUUID *string) {
+	o.ConsistencyGroupsVolumesSnapshotPolicyUUID = consistencyGroupsVolumesSnapshotPolicyUUID
+}
+
+// WithConsistencyGroupsVolumesSpaceAvailable adds the consistencyGroupsVolumesSpaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSpaceAvailable(consistencyGroupsVolumesSpaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesSpaceAvailable(consistencyGroupsVolumesSpaceAvailable)
+	return o
+}
+
+// SetConsistencyGroupsVolumesSpaceAvailable adds the consistencyGroupsVolumesSpaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSpaceAvailable(consistencyGroupsVolumesSpaceAvailable *int64) {
+	o.ConsistencyGroupsVolumesSpaceAvailable = consistencyGroupsVolumesSpaceAvailable
+}
+
+// WithConsistencyGroupsVolumesSpaceSize adds the consistencyGroupsVolumesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSpaceSize(consistencyGroupsVolumesSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesSpaceSize(consistencyGroupsVolumesSpaceSize)
+	return o
+}
+
+// SetConsistencyGroupsVolumesSpaceSize adds the consistencyGroupsVolumesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSpaceSize(consistencyGroupsVolumesSpaceSize *int64) {
+	o.ConsistencyGroupsVolumesSpaceSize = consistencyGroupsVolumesSpaceSize
+}
+
+// WithConsistencyGroupsVolumesSpaceUsed adds the consistencyGroupsVolumesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesSpaceUsed(consistencyGroupsVolumesSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesSpaceUsed(consistencyGroupsVolumesSpaceUsed)
+	return o
+}
+
+// SetConsistencyGroupsVolumesSpaceUsed adds the consistencyGroupsVolumesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesSpaceUsed(consistencyGroupsVolumesSpaceUsed *int64) {
+	o.ConsistencyGroupsVolumesSpaceUsed = consistencyGroupsVolumesSpaceUsed
+}
+
+// WithConsistencyGroupsVolumesTieringPolicy adds the consistencyGroupsVolumesTieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesTieringPolicy(consistencyGroupsVolumesTieringPolicy *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesTieringPolicy(consistencyGroupsVolumesTieringPolicy)
+	return o
+}
+
+// SetConsistencyGroupsVolumesTieringPolicy adds the consistencyGroupsVolumesTieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesTieringPolicy(consistencyGroupsVolumesTieringPolicy *string) {
+	o.ConsistencyGroupsVolumesTieringPolicy = consistencyGroupsVolumesTieringPolicy
+}
+
+// WithConsistencyGroupsVolumesUUID adds the consistencyGroupsVolumesUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsVolumesUUID(consistencyGroupsVolumesUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsVolumesUUID(consistencyGroupsVolumesUUID)
+	return o
+}
+
+// SetConsistencyGroupsVolumesUUID adds the consistencyGroupsVolumesUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsVolumesUUID(consistencyGroupsVolumesUUID *string) {
+	o.ConsistencyGroupsVolumesUUID = consistencyGroupsVolumesUUID
+}
+
+// WithFields adds the fields to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithFields(fields []string) *ConsistencyGroupCollectionGetParams {
+	o.SetFields(fields)
+	return o
+}
+
+// SetFields adds the fields to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
+}
+
+// WithLunsComment adds the lunsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsComment(lunsComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsComment(lunsComment)
+	return o
+}
+
+// SetLunsComment adds the lunsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsComment(lunsComment *string) {
+	o.LunsComment = lunsComment
+}
+
+// WithLunsCreateTime adds the lunsCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsCreateTime(lunsCreateTime *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsCreateTime(lunsCreateTime)
+	return o
+}
+
+// SetLunsCreateTime adds the lunsCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsCreateTime(lunsCreateTime *string) {
+	o.LunsCreateTime = lunsCreateTime
+}
+
+// WithLunsEnabled adds the lunsEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsEnabled(lunsEnabled *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsEnabled(lunsEnabled)
+	return o
+}
+
+// SetLunsEnabled adds the lunsEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsEnabled(lunsEnabled *bool) {
+	o.LunsEnabled = lunsEnabled
+}
+
+// WithLunsLunMapsIgroupComment adds the lunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupComment(lunsLunMapsIgroupComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupComment(lunsLunMapsIgroupComment)
+	return o
+}
+
+// SetLunsLunMapsIgroupComment adds the lunsLunMapsIgroupComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupComment(lunsLunMapsIgroupComment *string) {
+	o.LunsLunMapsIgroupComment = lunsLunMapsIgroupComment
+}
+
+// WithLunsLunMapsIgroupIgroupsName adds the lunsLunMapsIgroupIgroupsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupIgroupsName(lunsLunMapsIgroupIgroupsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupIgroupsName(lunsLunMapsIgroupIgroupsName)
+	return o
+}
+
+// SetLunsLunMapsIgroupIgroupsName adds the lunsLunMapsIgroupIgroupsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupIgroupsName(lunsLunMapsIgroupIgroupsName *string) {
+	o.LunsLunMapsIgroupIgroupsName = lunsLunMapsIgroupIgroupsName
+}
+
+// WithLunsLunMapsIgroupIgroupsUUID adds the lunsLunMapsIgroupIgroupsUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupIgroupsUUID(lunsLunMapsIgroupIgroupsUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupIgroupsUUID(lunsLunMapsIgroupIgroupsUUID)
+	return o
+}
+
+// SetLunsLunMapsIgroupIgroupsUUID adds the lunsLunMapsIgroupIgroupsUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupIgroupsUUID(lunsLunMapsIgroupIgroupsUUID *string) {
+	o.LunsLunMapsIgroupIgroupsUUID = lunsLunMapsIgroupIgroupsUUID
+}
+
+// WithLunsLunMapsIgroupInitiatorsComment adds the lunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupInitiatorsComment(lunsLunMapsIgroupInitiatorsComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupInitiatorsComment(lunsLunMapsIgroupInitiatorsComment)
+	return o
+}
+
+// SetLunsLunMapsIgroupInitiatorsComment adds the lunsLunMapsIgroupInitiatorsComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupInitiatorsComment(lunsLunMapsIgroupInitiatorsComment *string) {
+	o.LunsLunMapsIgroupInitiatorsComment = lunsLunMapsIgroupInitiatorsComment
+}
+
+// WithLunsLunMapsIgroupInitiatorsName adds the lunsLunMapsIgroupInitiatorsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupInitiatorsName(lunsLunMapsIgroupInitiatorsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupInitiatorsName(lunsLunMapsIgroupInitiatorsName)
+	return o
+}
+
+// SetLunsLunMapsIgroupInitiatorsName adds the lunsLunMapsIgroupInitiatorsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupInitiatorsName(lunsLunMapsIgroupInitiatorsName *string) {
+	o.LunsLunMapsIgroupInitiatorsName = lunsLunMapsIgroupInitiatorsName
+}
+
+// WithLunsLunMapsIgroupName adds the lunsLunMapsIgroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupName(lunsLunMapsIgroupName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupName(lunsLunMapsIgroupName)
+	return o
+}
+
+// SetLunsLunMapsIgroupName adds the lunsLunMapsIgroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupName(lunsLunMapsIgroupName *string) {
+	o.LunsLunMapsIgroupName = lunsLunMapsIgroupName
+}
+
+// WithLunsLunMapsIgroupOsType adds the lunsLunMapsIgroupOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupOsType(lunsLunMapsIgroupOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupOsType(lunsLunMapsIgroupOsType)
+	return o
+}
+
+// SetLunsLunMapsIgroupOsType adds the lunsLunMapsIgroupOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupOsType(lunsLunMapsIgroupOsType *string) {
+	o.LunsLunMapsIgroupOsType = lunsLunMapsIgroupOsType
+}
+
+// WithLunsLunMapsIgroupProtocol adds the lunsLunMapsIgroupProtocol to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupProtocol(lunsLunMapsIgroupProtocol *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupProtocol(lunsLunMapsIgroupProtocol)
+	return o
+}
+
+// SetLunsLunMapsIgroupProtocol adds the lunsLunMapsIgroupProtocol to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupProtocol(lunsLunMapsIgroupProtocol *string) {
+	o.LunsLunMapsIgroupProtocol = lunsLunMapsIgroupProtocol
+}
+
+// WithLunsLunMapsIgroupUUID adds the lunsLunMapsIgroupUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsIgroupUUID(lunsLunMapsIgroupUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsIgroupUUID(lunsLunMapsIgroupUUID)
+	return o
+}
+
+// SetLunsLunMapsIgroupUUID adds the lunsLunMapsIgroupUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsIgroupUUID(lunsLunMapsIgroupUUID *string) {
+	o.LunsLunMapsIgroupUUID = lunsLunMapsIgroupUUID
+}
+
+// WithLunsLunMapsLogicalUnitNumber adds the lunsLunMapsLogicalUnitNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsLunMapsLogicalUnitNumber(lunsLunMapsLogicalUnitNumber *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsLunMapsLogicalUnitNumber(lunsLunMapsLogicalUnitNumber)
+	return o
+}
+
+// SetLunsLunMapsLogicalUnitNumber adds the lunsLunMapsLogicalUnitNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsLunMapsLogicalUnitNumber(lunsLunMapsLogicalUnitNumber *int64) {
+	o.LunsLunMapsLogicalUnitNumber = lunsLunMapsLogicalUnitNumber
+}
+
+// WithLunsName adds the lunsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsName(lunsName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsName(lunsName)
+	return o
+}
+
+// SetLunsName adds the lunsName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsName(lunsName *string) {
+	o.LunsName = lunsName
+}
+
+// WithLunsOsType adds the lunsOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsOsType(lunsOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsOsType(lunsOsType)
+	return o
+}
+
+// SetLunsOsType adds the lunsOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsOsType(lunsOsType *string) {
+	o.LunsOsType = lunsOsType
+}
+
+// WithLunsQosPolicyMaxThroughputIops adds the lunsQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMaxThroughputIops(lunsQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsQosPolicyMaxThroughputIops(lunsQosPolicyMaxThroughputIops)
+	return o
+}
+
+// SetLunsQosPolicyMaxThroughputIops adds the lunsQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMaxThroughputIops(lunsQosPolicyMaxThroughputIops *int64) {
+	o.LunsQosPolicyMaxThroughputIops = lunsQosPolicyMaxThroughputIops
+}
+
+// WithLunsQosPolicyMaxThroughputMbps adds the lunsQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMaxThroughputMbps(lunsQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsQosPolicyMaxThroughputMbps(lunsQosPolicyMaxThroughputMbps)
+	return o
+}
+
+// SetLunsQosPolicyMaxThroughputMbps adds the lunsQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMaxThroughputMbps(lunsQosPolicyMaxThroughputMbps *int64) {
+	o.LunsQosPolicyMaxThroughputMbps = lunsQosPolicyMaxThroughputMbps
+}
+
+// WithLunsQosPolicyMinThroughputIops adds the lunsQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMinThroughputIops(lunsQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsQosPolicyMinThroughputIops(lunsQosPolicyMinThroughputIops)
+	return o
+}
+
+// SetLunsQosPolicyMinThroughputIops adds the lunsQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMinThroughputIops(lunsQosPolicyMinThroughputIops *int64) {
+	o.LunsQosPolicyMinThroughputIops = lunsQosPolicyMinThroughputIops
+}
+
+// WithLunsQosPolicyMinThroughputMbps adds the lunsQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyMinThroughputMbps(lunsQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsQosPolicyMinThroughputMbps(lunsQosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetLunsQosPolicyMinThroughputMbps adds the lunsQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyMinThroughputMbps(lunsQosPolicyMinThroughputMbps *int64) {
+	o.LunsQosPolicyMinThroughputMbps = lunsQosPolicyMinThroughputMbps
+}
+
+// WithLunsQosPolicyName adds the lunsQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyName(lunsQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsQosPolicyName(lunsQosPolicyName)
+	return o
+}
+
+// SetLunsQosPolicyName adds the lunsQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyName(lunsQosPolicyName *string) {
+	o.LunsQosPolicyName = lunsQosPolicyName
+}
+
+// WithLunsQosPolicyUUID adds the lunsQosPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsQosPolicyUUID(lunsQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsQosPolicyUUID(lunsQosPolicyUUID)
+	return o
+}
+
+// SetLunsQosPolicyUUID adds the lunsQosPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsQosPolicyUUID(lunsQosPolicyUUID *string) {
+	o.LunsQosPolicyUUID = lunsQosPolicyUUID
+}
+
+// WithLunsSerialNumber adds the lunsSerialNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSerialNumber(lunsSerialNumber *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSerialNumber(lunsSerialNumber)
+	return o
+}
+
+// SetLunsSerialNumber adds the lunsSerialNumber to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSerialNumber(lunsSerialNumber *string) {
+	o.LunsSerialNumber = lunsSerialNumber
+}
+
+// WithLunsSpaceGuaranteeRequested adds the lunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceGuaranteeRequested(lunsSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSpaceGuaranteeRequested(lunsSpaceGuaranteeRequested)
+	return o
+}
+
+// SetLunsSpaceGuaranteeRequested adds the lunsSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceGuaranteeRequested(lunsSpaceGuaranteeRequested *bool) {
+	o.LunsSpaceGuaranteeRequested = lunsSpaceGuaranteeRequested
+}
+
+// WithLunsSpaceGuaranteeReserved adds the lunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceGuaranteeReserved(lunsSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSpaceGuaranteeReserved(lunsSpaceGuaranteeReserved)
+	return o
+}
+
+// SetLunsSpaceGuaranteeReserved adds the lunsSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceGuaranteeReserved(lunsSpaceGuaranteeReserved *bool) {
+	o.LunsSpaceGuaranteeReserved = lunsSpaceGuaranteeReserved
+}
+
+// WithLunsSpaceSize adds the lunsSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceSize(lunsSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSpaceSize(lunsSpaceSize)
+	return o
+}
+
+// SetLunsSpaceSize adds the lunsSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceSize(lunsSpaceSize *int64) {
+	o.LunsSpaceSize = lunsSpaceSize
+}
+
+// WithLunsSpaceUsed adds the lunsSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsSpaceUsed(lunsSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsSpaceUsed(lunsSpaceUsed)
+	return o
+}
+
+// SetLunsSpaceUsed adds the lunsSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsSpaceUsed(lunsSpaceUsed *int64) {
+	o.LunsSpaceUsed = lunsSpaceUsed
+}
+
+// WithLunsUUID adds the lunsUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsUUID(lunsUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsUUID(lunsUUID)
+	return o
+}
+
+// SetLunsUUID adds the lunsUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsUUID(lunsUUID *string) {
+	o.LunsUUID = lunsUUID
+}
+
+// WithMaxRecords adds the maxRecords to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithMaxRecords(maxRecords *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
+	return o
+}
+
+// SetMaxRecords adds the maxRecords to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
+}
+
+// WithName adds the name to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithName(name *string) *ConsistencyGroupCollectionGetParams {
+	o.SetName(name)
+	return o
+}
+
+// SetName adds the name to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetName(name *string) {
+	o.Name = name
+}
+
+// WithNamespacesAutoDelete adds the namespacesAutoDelete to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesAutoDelete(namespacesAutoDelete *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesAutoDelete(namespacesAutoDelete)
+	return o
+}
+
+// SetNamespacesAutoDelete adds the namespacesAutoDelete to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesAutoDelete(namespacesAutoDelete *bool) {
+	o.NamespacesAutoDelete = namespacesAutoDelete
+}
+
+// WithNamespacesComment adds the namespacesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesComment(namespacesComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesComment(namespacesComment)
+	return o
+}
+
+// SetNamespacesComment adds the namespacesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesComment(namespacesComment *string) {
+	o.NamespacesComment = namespacesComment
+}
+
+// WithNamespacesCreateTime adds the namespacesCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesCreateTime(namespacesCreateTime *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesCreateTime(namespacesCreateTime)
+	return o
+}
+
+// SetNamespacesCreateTime adds the namespacesCreateTime to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesCreateTime(namespacesCreateTime *string) {
+	o.NamespacesCreateTime = namespacesCreateTime
+}
+
+// WithNamespacesEnabled adds the namespacesEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesEnabled(namespacesEnabled *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesEnabled(namespacesEnabled)
+	return o
+}
+
+// SetNamespacesEnabled adds the namespacesEnabled to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesEnabled(namespacesEnabled *bool) {
+	o.NamespacesEnabled = namespacesEnabled
+}
+
+// WithNamespacesName adds the namespacesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesName(namespacesName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesName(namespacesName)
+	return o
+}
+
+// SetNamespacesName adds the namespacesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesName(namespacesName *string) {
+	o.NamespacesName = namespacesName
+}
+
+// WithNamespacesOsType adds the namespacesOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesOsType(namespacesOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesOsType(namespacesOsType)
+	return o
+}
+
+// SetNamespacesOsType adds the namespacesOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesOsType(namespacesOsType *string) {
+	o.NamespacesOsType = namespacesOsType
+}
+
+// WithNamespacesSpaceBlockSize adds the namespacesSpaceBlockSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSpaceBlockSize(namespacesSpaceBlockSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSpaceBlockSize(namespacesSpaceBlockSize)
+	return o
+}
+
+// SetNamespacesSpaceBlockSize adds the namespacesSpaceBlockSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSpaceBlockSize(namespacesSpaceBlockSize *int64) {
+	o.NamespacesSpaceBlockSize = namespacesSpaceBlockSize
+}
+
+// WithNamespacesSpaceGuaranteeRequested adds the namespacesSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSpaceGuaranteeRequested(namespacesSpaceGuaranteeRequested *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSpaceGuaranteeRequested(namespacesSpaceGuaranteeRequested)
+	return o
+}
+
+// SetNamespacesSpaceGuaranteeRequested adds the namespacesSpaceGuaranteeRequested to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSpaceGuaranteeRequested(namespacesSpaceGuaranteeRequested *bool) {
+	o.NamespacesSpaceGuaranteeRequested = namespacesSpaceGuaranteeRequested
+}
+
+// WithNamespacesSpaceGuaranteeReserved adds the namespacesSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSpaceGuaranteeReserved(namespacesSpaceGuaranteeReserved *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSpaceGuaranteeReserved(namespacesSpaceGuaranteeReserved)
+	return o
+}
+
+// SetNamespacesSpaceGuaranteeReserved adds the namespacesSpaceGuaranteeReserved to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSpaceGuaranteeReserved(namespacesSpaceGuaranteeReserved *bool) {
+	o.NamespacesSpaceGuaranteeReserved = namespacesSpaceGuaranteeReserved
+}
+
+// WithNamespacesSpaceSize adds the namespacesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSpaceSize(namespacesSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSpaceSize(namespacesSpaceSize)
+	return o
+}
+
+// SetNamespacesSpaceSize adds the namespacesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSpaceSize(namespacesSpaceSize *int64) {
+	o.NamespacesSpaceSize = namespacesSpaceSize
+}
+
+// WithNamespacesSpaceUsed adds the namespacesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSpaceUsed(namespacesSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSpaceUsed(namespacesSpaceUsed)
+	return o
+}
+
+// SetNamespacesSpaceUsed adds the namespacesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSpaceUsed(namespacesSpaceUsed *int64) {
+	o.NamespacesSpaceUsed = namespacesSpaceUsed
+}
+
+// WithNamespacesStatusContainerState adds the namespacesStatusContainerState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesStatusContainerState(namespacesStatusContainerState *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesStatusContainerState(namespacesStatusContainerState)
+	return o
+}
+
+// SetNamespacesStatusContainerState adds the namespacesStatusContainerState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesStatusContainerState(namespacesStatusContainerState *string) {
+	o.NamespacesStatusContainerState = namespacesStatusContainerState
+}
+
+// WithNamespacesStatusMapped adds the namespacesStatusMapped to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesStatusMapped(namespacesStatusMapped *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesStatusMapped(namespacesStatusMapped)
+	return o
+}
+
+// SetNamespacesStatusMapped adds the namespacesStatusMapped to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesStatusMapped(namespacesStatusMapped *bool) {
+	o.NamespacesStatusMapped = namespacesStatusMapped
+}
+
+// WithNamespacesStatusReadOnly adds the namespacesStatusReadOnly to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesStatusReadOnly(namespacesStatusReadOnly *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesStatusReadOnly(namespacesStatusReadOnly)
+	return o
+}
+
+// SetNamespacesStatusReadOnly adds the namespacesStatusReadOnly to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesStatusReadOnly(namespacesStatusReadOnly *bool) {
+	o.NamespacesStatusReadOnly = namespacesStatusReadOnly
+}
+
+// WithNamespacesStatusState adds the namespacesStatusState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesStatusState(namespacesStatusState *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesStatusState(namespacesStatusState)
+	return o
+}
+
+// SetNamespacesStatusState adds the namespacesStatusState to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesStatusState(namespacesStatusState *string) {
+	o.NamespacesStatusState = namespacesStatusState
+}
+
+// WithNamespacesSubsystemMapAnagrpid adds the namespacesSubsystemMapAnagrpid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapAnagrpid(namespacesSubsystemMapAnagrpid *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapAnagrpid(namespacesSubsystemMapAnagrpid)
+	return o
+}
+
+// SetNamespacesSubsystemMapAnagrpid adds the namespacesSubsystemMapAnagrpid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapAnagrpid(namespacesSubsystemMapAnagrpid *string) {
+	o.NamespacesSubsystemMapAnagrpid = namespacesSubsystemMapAnagrpid
+}
+
+// WithNamespacesSubsystemMapNsid adds the namespacesSubsystemMapNsid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapNsid(namespacesSubsystemMapNsid *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapNsid(namespacesSubsystemMapNsid)
+	return o
+}
+
+// SetNamespacesSubsystemMapNsid adds the namespacesSubsystemMapNsid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapNsid(namespacesSubsystemMapNsid *string) {
+	o.NamespacesSubsystemMapNsid = namespacesSubsystemMapNsid
+}
+
+// WithNamespacesSubsystemMapSubsystemComment adds the namespacesSubsystemMapSubsystemComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemComment(namespacesSubsystemMapSubsystemComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemComment(namespacesSubsystemMapSubsystemComment)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemComment adds the namespacesSubsystemMapSubsystemComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemComment(namespacesSubsystemMapSubsystemComment *string) {
+	o.NamespacesSubsystemMapSubsystemComment = namespacesSubsystemMapSubsystemComment
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsNqn adds the namespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemHostsNqn(namespacesSubsystemMapSubsystemHostsNqn *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsNqn(namespacesSubsystemMapSubsystemHostsNqn)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsNqn adds the namespacesSubsystemMapSubsystemHostsNqn to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemHostsNqn(namespacesSubsystemMapSubsystemHostsNqn *string) {
+	o.NamespacesSubsystemMapSubsystemHostsNqn = namespacesSubsystemMapSubsystemHostsNqn
+}
+
+// WithNamespacesSubsystemMapSubsystemName adds the namespacesSubsystemMapSubsystemName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemName(namespacesSubsystemMapSubsystemName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemName(namespacesSubsystemMapSubsystemName)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemName adds the namespacesSubsystemMapSubsystemName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemName(namespacesSubsystemMapSubsystemName *string) {
+	o.NamespacesSubsystemMapSubsystemName = namespacesSubsystemMapSubsystemName
+}
+
+// WithNamespacesSubsystemMapSubsystemOsType adds the namespacesSubsystemMapSubsystemOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemOsType(namespacesSubsystemMapSubsystemOsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemOsType(namespacesSubsystemMapSubsystemOsType)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemOsType adds the namespacesSubsystemMapSubsystemOsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemOsType(namespacesSubsystemMapSubsystemOsType *string) {
+	o.NamespacesSubsystemMapSubsystemOsType = namespacesSubsystemMapSubsystemOsType
+}
+
+// WithNamespacesSubsystemMapSubsystemUUID adds the namespacesSubsystemMapSubsystemUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesSubsystemMapSubsystemUUID(namespacesSubsystemMapSubsystemUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesSubsystemMapSubsystemUUID(namespacesSubsystemMapSubsystemUUID)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemUUID adds the namespacesSubsystemMapSubsystemUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesSubsystemMapSubsystemUUID(namespacesSubsystemMapSubsystemUUID *string) {
+	o.NamespacesSubsystemMapSubsystemUUID = namespacesSubsystemMapSubsystemUUID
+}
+
+// WithNamespacesUUID adds the namespacesUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithNamespacesUUID(namespacesUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetNamespacesUUID(namespacesUUID)
+	return o
+}
+
+// SetNamespacesUUID adds the namespacesUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetNamespacesUUID(namespacesUUID *string) {
+	o.NamespacesUUID = namespacesUUID
+}
+
+// WithOrderBy adds the orderBy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithOrderBy(orderBy []string) *ConsistencyGroupCollectionGetParams {
+	o.SetOrderBy(orderBy)
+	return o
+}
+
+// SetOrderBy adds the orderBy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
+}
+
+// WithParentConsistencyGroupName adds the parentConsistencyGroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithParentConsistencyGroupName(parentConsistencyGroupName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetParentConsistencyGroupName(parentConsistencyGroupName)
+	return o
+}
+
+// SetParentConsistencyGroupName adds the parentConsistencyGroupName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetParentConsistencyGroupName(parentConsistencyGroupName *string) {
+	o.ParentConsistencyGroupName = parentConsistencyGroupName
+}
+
+// WithParentConsistencyGroupUUID adds the parentConsistencyGroupUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithParentConsistencyGroupUUID(parentConsistencyGroupUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetParentConsistencyGroupUUID(parentConsistencyGroupUUID)
+	return o
+}
+
+// SetParentConsistencyGroupUUID adds the parentConsistencyGroupUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetParentConsistencyGroupUUID(parentConsistencyGroupUUID *string) {
+	o.ParentConsistencyGroupUUID = parentConsistencyGroupUUID
+}
+
+// WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
+	return o
+}
+
+// SetQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) {
+	o.QosPolicyMaxThroughputIops = qosPolicyMaxThroughputIops
+}
+
+// WithQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps)
+	return o
+}
+
+// SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
+	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops)
+	return o
+}
+
+// SetQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) {
+	o.QosPolicyMinThroughputIops = qosPolicyMinThroughputIops
+}
+
+// WithQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) {
+	o.QosPolicyMinThroughputMbps = qosPolicyMinThroughputMbps
+}
+
+// WithQosPolicyName adds the qosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetQosPolicyName(qosPolicyName)
+	return o
+}
+
+// SetQosPolicyName adds the qosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyName(qosPolicyName *string) {
+	o.QosPolicyName = qosPolicyName
+}
+
+// WithQosPolicyUUID adds the qosPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetQosPolicyUUID(qosPolicyUUID)
+	return o
+}
+
+// SetQosPolicyUUID adds the qosPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
+	o.QosPolicyUUID = qosPolicyUUID
+}
+
+// WithReplicated adds the replicated to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReplicated(replicated *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetReplicated(replicated)
+	return o
+}
+
+// SetReplicated adds the replicated to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReplicated(replicated *bool) {
+	o.Replicated = replicated
+}
+
+// WithReplicationSource adds the replicationSource to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReplicationSource(replicationSource *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetReplicationSource(replicationSource)
+	return o
+}
+
+// SetReplicationSource adds the replicationSource to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReplicationSource(replicationSource *bool) {
+	o.ReplicationSource = replicationSource
+}
+
+// WithReturnRecords adds the returnRecords to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReturnRecords(returnRecords *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
+	return o
+}
+
+// SetReturnRecords adds the returnRecords to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
+}
+
+// WithReturnTimeout adds the returnTimeout to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
+// WithSnapshotPolicyName adds the snapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnapshotPolicyName(snapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnapshotPolicyName(snapshotPolicyName)
+	return o
+}
+
+// SetSnapshotPolicyName adds the snapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnapshotPolicyName(snapshotPolicyName *string) {
+	o.SnapshotPolicyName = snapshotPolicyName
+}
+
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
+	return o
+}
+
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID *string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
+}
+
+// WithSpaceAvailable adds the spaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSpaceAvailable(spaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetSpaceAvailable(spaceAvailable)
+	return o
+}
+
+// SetSpaceAvailable adds the spaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSpaceAvailable(spaceAvailable *int64) {
+	o.SpaceAvailable = spaceAvailable
+}
+
+// WithSpaceSize adds the spaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSpaceSize(spaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetSpaceSize(spaceSize)
+	return o
+}
+
+// SetSpaceSize adds the spaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSpaceSize(spaceSize *int64) {
+	o.SpaceSize = spaceSize
+}
+
+// WithSpaceUsed adds the spaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSpaceUsed(spaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetSpaceUsed(spaceUsed)
+	return o
+}
+
+// SetSpaceUsed adds the spaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSpaceUsed(spaceUsed *int64) {
+	o.SpaceUsed = spaceUsed
+}
+
+// WithSvmName adds the svmName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSvmName(svmName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSvmName(svmName)
+	return o
+}
+
+// SetSvmName adds the svmName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
+// WithSvmUUID adds the svmUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithSvmUUID(svmUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
+}
+
+// WithTieringPolicy adds the tieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithTieringPolicy(tieringPolicy *string) *ConsistencyGroupCollectionGetParams {
+	o.SetTieringPolicy(tieringPolicy)
+	return o
+}
+
+// SetTieringPolicy adds the tieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetTieringPolicy(tieringPolicy *string) {
+	o.TieringPolicy = tieringPolicy
+}
+
+// WithUUID adds the uuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithUUID(uuid *string) *ConsistencyGroupCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
+// WithVolumesComment adds the volumesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesComment(volumesComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesComment(volumesComment)
+	return o
+}
+
+// SetVolumesComment adds the volumesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesComment(volumesComment *string) {
+	o.VolumesComment = volumesComment
+}
+
+// WithVolumesLanguage adds the volumesLanguage to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesLanguage(volumesLanguage *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesLanguage(volumesLanguage)
+	return o
+}
+
+// SetVolumesLanguage adds the volumesLanguage to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesLanguage(volumesLanguage *string) {
+	o.VolumesLanguage = volumesLanguage
+}
+
+// WithVolumesName adds the volumesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesName(volumesName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesName(volumesName)
+	return o
+}
+
+// SetVolumesName adds the volumesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesName(volumesName *string) {
+	o.VolumesName = volumesName
+}
+
+// WithVolumesNasCifsSharesAccessBasedEnumeration adds the volumesNasCifsSharesAccessBasedEnumeration to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAccessBasedEnumeration(volumesNasCifsSharesAccessBasedEnumeration *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesAccessBasedEnumeration(volumesNasCifsSharesAccessBasedEnumeration)
+	return o
+}
+
+// SetVolumesNasCifsSharesAccessBasedEnumeration adds the volumesNasCifsSharesAccessBasedEnumeration to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAccessBasedEnumeration(volumesNasCifsSharesAccessBasedEnumeration *bool) {
+	o.VolumesNasCifsSharesAccessBasedEnumeration = volumesNasCifsSharesAccessBasedEnumeration
+}
+
+// WithVolumesNasCifsSharesAclsPermission adds the volumesNasCifsSharesAclsPermission to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAclsPermission(volumesNasCifsSharesAclsPermission *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesAclsPermission(volumesNasCifsSharesAclsPermission)
+	return o
+}
+
+// SetVolumesNasCifsSharesAclsPermission adds the volumesNasCifsSharesAclsPermission to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAclsPermission(volumesNasCifsSharesAclsPermission *string) {
+	o.VolumesNasCifsSharesAclsPermission = volumesNasCifsSharesAclsPermission
+}
+
+// WithVolumesNasCifsSharesAclsType adds the volumesNasCifsSharesAclsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAclsType(volumesNasCifsSharesAclsType *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesAclsType(volumesNasCifsSharesAclsType)
+	return o
+}
+
+// SetVolumesNasCifsSharesAclsType adds the volumesNasCifsSharesAclsType to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAclsType(volumesNasCifsSharesAclsType *string) {
+	o.VolumesNasCifsSharesAclsType = volumesNasCifsSharesAclsType
+}
+
+// WithVolumesNasCifsSharesAclsUserOrGroup adds the volumesNasCifsSharesAclsUserOrGroup to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAclsUserOrGroup(volumesNasCifsSharesAclsUserOrGroup *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesAclsUserOrGroup(volumesNasCifsSharesAclsUserOrGroup)
+	return o
+}
+
+// SetVolumesNasCifsSharesAclsUserOrGroup adds the volumesNasCifsSharesAclsUserOrGroup to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAclsUserOrGroup(volumesNasCifsSharesAclsUserOrGroup *string) {
+	o.VolumesNasCifsSharesAclsUserOrGroup = volumesNasCifsSharesAclsUserOrGroup
+}
+
+// WithVolumesNasCifsSharesAllowUnencryptedAccess adds the volumesNasCifsSharesAllowUnencryptedAccess to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesAllowUnencryptedAccess(volumesNasCifsSharesAllowUnencryptedAccess *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesAllowUnencryptedAccess(volumesNasCifsSharesAllowUnencryptedAccess)
+	return o
+}
+
+// SetVolumesNasCifsSharesAllowUnencryptedAccess adds the volumesNasCifsSharesAllowUnencryptedAccess to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesAllowUnencryptedAccess(volumesNasCifsSharesAllowUnencryptedAccess *bool) {
+	o.VolumesNasCifsSharesAllowUnencryptedAccess = volumesNasCifsSharesAllowUnencryptedAccess
+}
+
+// WithVolumesNasCifsSharesChangeNotify adds the volumesNasCifsSharesChangeNotify to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesChangeNotify(volumesNasCifsSharesChangeNotify *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesChangeNotify(volumesNasCifsSharesChangeNotify)
+	return o
+}
+
+// SetVolumesNasCifsSharesChangeNotify adds the volumesNasCifsSharesChangeNotify to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesChangeNotify(volumesNasCifsSharesChangeNotify *bool) {
+	o.VolumesNasCifsSharesChangeNotify = volumesNasCifsSharesChangeNotify
+}
+
+// WithVolumesNasCifsSharesComment adds the volumesNasCifsSharesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesComment(volumesNasCifsSharesComment *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesComment(volumesNasCifsSharesComment)
+	return o
+}
+
+// SetVolumesNasCifsSharesComment adds the volumesNasCifsSharesComment to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesComment(volumesNasCifsSharesComment *string) {
+	o.VolumesNasCifsSharesComment = volumesNasCifsSharesComment
+}
+
+// WithVolumesNasCifsSharesContinuouslyAvailable adds the volumesNasCifsSharesContinuouslyAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesContinuouslyAvailable(volumesNasCifsSharesContinuouslyAvailable *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesContinuouslyAvailable(volumesNasCifsSharesContinuouslyAvailable)
+	return o
+}
+
+// SetVolumesNasCifsSharesContinuouslyAvailable adds the volumesNasCifsSharesContinuouslyAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesContinuouslyAvailable(volumesNasCifsSharesContinuouslyAvailable *bool) {
+	o.VolumesNasCifsSharesContinuouslyAvailable = volumesNasCifsSharesContinuouslyAvailable
+}
+
+// WithVolumesNasCifsSharesDirUmask adds the volumesNasCifsSharesDirUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesDirUmask(volumesNasCifsSharesDirUmask *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesDirUmask(volumesNasCifsSharesDirUmask)
+	return o
+}
+
+// SetVolumesNasCifsSharesDirUmask adds the volumesNasCifsSharesDirUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesDirUmask(volumesNasCifsSharesDirUmask *int64) {
+	o.VolumesNasCifsSharesDirUmask = volumesNasCifsSharesDirUmask
+}
+
+// WithVolumesNasCifsSharesEncryption adds the volumesNasCifsSharesEncryption to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesEncryption(volumesNasCifsSharesEncryption *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesEncryption(volumesNasCifsSharesEncryption)
+	return o
+}
+
+// SetVolumesNasCifsSharesEncryption adds the volumesNasCifsSharesEncryption to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesEncryption(volumesNasCifsSharesEncryption *bool) {
+	o.VolumesNasCifsSharesEncryption = volumesNasCifsSharesEncryption
+}
+
+// WithVolumesNasCifsSharesFileUmask adds the volumesNasCifsSharesFileUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesFileUmask(volumesNasCifsSharesFileUmask *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesFileUmask(volumesNasCifsSharesFileUmask)
+	return o
+}
+
+// SetVolumesNasCifsSharesFileUmask adds the volumesNasCifsSharesFileUmask to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesFileUmask(volumesNasCifsSharesFileUmask *int64) {
+	o.VolumesNasCifsSharesFileUmask = volumesNasCifsSharesFileUmask
+}
+
+// WithVolumesNasCifsSharesHomeDirectory adds the volumesNasCifsSharesHomeDirectory to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesHomeDirectory(volumesNasCifsSharesHomeDirectory *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesHomeDirectory(volumesNasCifsSharesHomeDirectory)
+	return o
+}
+
+// SetVolumesNasCifsSharesHomeDirectory adds the volumesNasCifsSharesHomeDirectory to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesHomeDirectory(volumesNasCifsSharesHomeDirectory *bool) {
+	o.VolumesNasCifsSharesHomeDirectory = volumesNasCifsSharesHomeDirectory
+}
+
+// WithVolumesNasCifsSharesName adds the volumesNasCifsSharesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesName(volumesNasCifsSharesName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesName(volumesNasCifsSharesName)
+	return o
+}
+
+// SetVolumesNasCifsSharesName adds the volumesNasCifsSharesName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesName(volumesNasCifsSharesName *string) {
+	o.VolumesNasCifsSharesName = volumesNasCifsSharesName
+}
+
+// WithVolumesNasCifsSharesNamespaceCaching adds the volumesNasCifsSharesNamespaceCaching to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesNamespaceCaching(volumesNasCifsSharesNamespaceCaching *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesNamespaceCaching(volumesNasCifsSharesNamespaceCaching)
+	return o
+}
+
+// SetVolumesNasCifsSharesNamespaceCaching adds the volumesNasCifsSharesNamespaceCaching to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesNamespaceCaching(volumesNasCifsSharesNamespaceCaching *bool) {
+	o.VolumesNasCifsSharesNamespaceCaching = volumesNasCifsSharesNamespaceCaching
+}
+
+// WithVolumesNasCifsSharesNoStrictSecurity adds the volumesNasCifsSharesNoStrictSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesNoStrictSecurity(volumesNasCifsSharesNoStrictSecurity *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesNoStrictSecurity(volumesNasCifsSharesNoStrictSecurity)
+	return o
+}
+
+// SetVolumesNasCifsSharesNoStrictSecurity adds the volumesNasCifsSharesNoStrictSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesNoStrictSecurity(volumesNasCifsSharesNoStrictSecurity *bool) {
+	o.VolumesNasCifsSharesNoStrictSecurity = volumesNasCifsSharesNoStrictSecurity
+}
+
+// WithVolumesNasCifsSharesOfflineFiles adds the volumesNasCifsSharesOfflineFiles to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesOfflineFiles(volumesNasCifsSharesOfflineFiles *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesOfflineFiles(volumesNasCifsSharesOfflineFiles)
+	return o
+}
+
+// SetVolumesNasCifsSharesOfflineFiles adds the volumesNasCifsSharesOfflineFiles to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesOfflineFiles(volumesNasCifsSharesOfflineFiles *string) {
+	o.VolumesNasCifsSharesOfflineFiles = volumesNasCifsSharesOfflineFiles
+}
+
+// WithVolumesNasCifsSharesOplocks adds the volumesNasCifsSharesOplocks to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesOplocks(volumesNasCifsSharesOplocks *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesOplocks(volumesNasCifsSharesOplocks)
+	return o
+}
+
+// SetVolumesNasCifsSharesOplocks adds the volumesNasCifsSharesOplocks to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesOplocks(volumesNasCifsSharesOplocks *bool) {
+	o.VolumesNasCifsSharesOplocks = volumesNasCifsSharesOplocks
+}
+
+// WithVolumesNasCifsSharesShowSnapshot adds the volumesNasCifsSharesShowSnapshot to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesShowSnapshot(volumesNasCifsSharesShowSnapshot *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesShowSnapshot(volumesNasCifsSharesShowSnapshot)
+	return o
+}
+
+// SetVolumesNasCifsSharesShowSnapshot adds the volumesNasCifsSharesShowSnapshot to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesShowSnapshot(volumesNasCifsSharesShowSnapshot *bool) {
+	o.VolumesNasCifsSharesShowSnapshot = volumesNasCifsSharesShowSnapshot
+}
+
+// WithVolumesNasCifsSharesUnixSymlink adds the volumesNasCifsSharesUnixSymlink to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesUnixSymlink(volumesNasCifsSharesUnixSymlink *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesUnixSymlink(volumesNasCifsSharesUnixSymlink)
+	return o
+}
+
+// SetVolumesNasCifsSharesUnixSymlink adds the volumesNasCifsSharesUnixSymlink to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesUnixSymlink(volumesNasCifsSharesUnixSymlink *string) {
+	o.VolumesNasCifsSharesUnixSymlink = volumesNasCifsSharesUnixSymlink
+}
+
+// WithVolumesNasCifsSharesVscanProfile adds the volumesNasCifsSharesVscanProfile to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasCifsSharesVscanProfile(volumesNasCifsSharesVscanProfile *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasCifsSharesVscanProfile(volumesNasCifsSharesVscanProfile)
+	return o
+}
+
+// SetVolumesNasCifsSharesVscanProfile adds the volumesNasCifsSharesVscanProfile to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasCifsSharesVscanProfile(volumesNasCifsSharesVscanProfile *string) {
+	o.VolumesNasCifsSharesVscanProfile = volumesNasCifsSharesVscanProfile
+}
+
+// WithVolumesNasExportPolicyName adds the volumesNasExportPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyName(volumesNasExportPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyName(volumesNasExportPolicyName)
+	return o
+}
+
+// SetVolumesNasExportPolicyName adds the volumesNasExportPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyName(volumesNasExportPolicyName *string) {
+	o.VolumesNasExportPolicyName = volumesNasExportPolicyName
+}
+
+// WithVolumesNasExportPolicyRulesAllowDeviceCreation adds the volumesNasExportPolicyRulesAllowDeviceCreation to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesAllowDeviceCreation(volumesNasExportPolicyRulesAllowDeviceCreation *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesAllowDeviceCreation(volumesNasExportPolicyRulesAllowDeviceCreation)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesAllowDeviceCreation adds the volumesNasExportPolicyRulesAllowDeviceCreation to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesAllowDeviceCreation(volumesNasExportPolicyRulesAllowDeviceCreation *bool) {
+	o.VolumesNasExportPolicyRulesAllowDeviceCreation = volumesNasExportPolicyRulesAllowDeviceCreation
+}
+
+// WithVolumesNasExportPolicyRulesAllowSuid adds the volumesNasExportPolicyRulesAllowSuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesAllowSuid(volumesNasExportPolicyRulesAllowSuid *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesAllowSuid(volumesNasExportPolicyRulesAllowSuid)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesAllowSuid adds the volumesNasExportPolicyRulesAllowSuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesAllowSuid(volumesNasExportPolicyRulesAllowSuid *bool) {
+	o.VolumesNasExportPolicyRulesAllowSuid = volumesNasExportPolicyRulesAllowSuid
+}
+
+// WithVolumesNasExportPolicyRulesAnonymousUser adds the volumesNasExportPolicyRulesAnonymousUser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesAnonymousUser(volumesNasExportPolicyRulesAnonymousUser *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesAnonymousUser(volumesNasExportPolicyRulesAnonymousUser)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesAnonymousUser adds the volumesNasExportPolicyRulesAnonymousUser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesAnonymousUser(volumesNasExportPolicyRulesAnonymousUser *string) {
+	o.VolumesNasExportPolicyRulesAnonymousUser = volumesNasExportPolicyRulesAnonymousUser
+}
+
+// WithVolumesNasExportPolicyRulesChownMode adds the volumesNasExportPolicyRulesChownMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesChownMode(volumesNasExportPolicyRulesChownMode *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesChownMode(volumesNasExportPolicyRulesChownMode)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesChownMode adds the volumesNasExportPolicyRulesChownMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesChownMode(volumesNasExportPolicyRulesChownMode *string) {
+	o.VolumesNasExportPolicyRulesChownMode = volumesNasExportPolicyRulesChownMode
+}
+
+// WithVolumesNasExportPolicyRulesClientsMatch adds the volumesNasExportPolicyRulesClientsMatch to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesClientsMatch(volumesNasExportPolicyRulesClientsMatch *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesClientsMatch(volumesNasExportPolicyRulesClientsMatch)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesClientsMatch adds the volumesNasExportPolicyRulesClientsMatch to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesClientsMatch(volumesNasExportPolicyRulesClientsMatch *string) {
+	o.VolumesNasExportPolicyRulesClientsMatch = volumesNasExportPolicyRulesClientsMatch
+}
+
+// WithVolumesNasExportPolicyRulesIndex adds the volumesNasExportPolicyRulesIndex to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesIndex(volumesNasExportPolicyRulesIndex *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesIndex(volumesNasExportPolicyRulesIndex)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesIndex adds the volumesNasExportPolicyRulesIndex to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesIndex(volumesNasExportPolicyRulesIndex *int64) {
+	o.VolumesNasExportPolicyRulesIndex = volumesNasExportPolicyRulesIndex
+}
+
+// WithVolumesNasExportPolicyRulesNtfsUnixSecurity adds the volumesNasExportPolicyRulesNtfsUnixSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesNtfsUnixSecurity(volumesNasExportPolicyRulesNtfsUnixSecurity *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesNtfsUnixSecurity(volumesNasExportPolicyRulesNtfsUnixSecurity)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesNtfsUnixSecurity adds the volumesNasExportPolicyRulesNtfsUnixSecurity to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesNtfsUnixSecurity(volumesNasExportPolicyRulesNtfsUnixSecurity *string) {
+	o.VolumesNasExportPolicyRulesNtfsUnixSecurity = volumesNasExportPolicyRulesNtfsUnixSecurity
+}
+
+// WithVolumesNasExportPolicyRulesProtocols adds the volumesNasExportPolicyRulesProtocols to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesProtocols(volumesNasExportPolicyRulesProtocols *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesProtocols(volumesNasExportPolicyRulesProtocols)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesProtocols adds the volumesNasExportPolicyRulesProtocols to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesProtocols(volumesNasExportPolicyRulesProtocols *string) {
+	o.VolumesNasExportPolicyRulesProtocols = volumesNasExportPolicyRulesProtocols
+}
+
+// WithVolumesNasExportPolicyRulesRoRule adds the volumesNasExportPolicyRulesRoRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesRoRule(volumesNasExportPolicyRulesRoRule *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesRoRule(volumesNasExportPolicyRulesRoRule)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesRoRule adds the volumesNasExportPolicyRulesRoRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesRoRule(volumesNasExportPolicyRulesRoRule *string) {
+	o.VolumesNasExportPolicyRulesRoRule = volumesNasExportPolicyRulesRoRule
+}
+
+// WithVolumesNasExportPolicyRulesRwRule adds the volumesNasExportPolicyRulesRwRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesRwRule(volumesNasExportPolicyRulesRwRule *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesRwRule(volumesNasExportPolicyRulesRwRule)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesRwRule adds the volumesNasExportPolicyRulesRwRule to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesRwRule(volumesNasExportPolicyRulesRwRule *string) {
+	o.VolumesNasExportPolicyRulesRwRule = volumesNasExportPolicyRulesRwRule
+}
+
+// WithVolumesNasExportPolicyRulesSuperuser adds the volumesNasExportPolicyRulesSuperuser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyRulesSuperuser(volumesNasExportPolicyRulesSuperuser *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyRulesSuperuser(volumesNasExportPolicyRulesSuperuser)
+	return o
+}
+
+// SetVolumesNasExportPolicyRulesSuperuser adds the volumesNasExportPolicyRulesSuperuser to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyRulesSuperuser(volumesNasExportPolicyRulesSuperuser *string) {
+	o.VolumesNasExportPolicyRulesSuperuser = volumesNasExportPolicyRulesSuperuser
+}
+
+// WithVolumesNasExportPolicyUUID adds the volumesNasExportPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasExportPolicyUUID(volumesNasExportPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasExportPolicyUUID(volumesNasExportPolicyUUID)
+	return o
+}
+
+// SetVolumesNasExportPolicyUUID adds the volumesNasExportPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasExportPolicyUUID(volumesNasExportPolicyUUID *string) {
+	o.VolumesNasExportPolicyUUID = volumesNasExportPolicyUUID
+}
+
+// WithVolumesNasGid adds the volumesNasGid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasGid(volumesNasGid *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasGid(volumesNasGid)
+	return o
+}
+
+// SetVolumesNasGid adds the volumesNasGid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasGid(volumesNasGid *int64) {
+	o.VolumesNasGid = volumesNasGid
+}
+
+// WithVolumesNasJunctionParentName adds the volumesNasJunctionParentName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasJunctionParentName(volumesNasJunctionParentName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasJunctionParentName(volumesNasJunctionParentName)
+	return o
+}
+
+// SetVolumesNasJunctionParentName adds the volumesNasJunctionParentName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasJunctionParentName(volumesNasJunctionParentName *string) {
+	o.VolumesNasJunctionParentName = volumesNasJunctionParentName
+}
+
+// WithVolumesNasJunctionParentUUID adds the volumesNasJunctionParentUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasJunctionParentUUID(volumesNasJunctionParentUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasJunctionParentUUID(volumesNasJunctionParentUUID)
+	return o
+}
+
+// SetVolumesNasJunctionParentUUID adds the volumesNasJunctionParentUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasJunctionParentUUID(volumesNasJunctionParentUUID *string) {
+	o.VolumesNasJunctionParentUUID = volumesNasJunctionParentUUID
+}
+
+// WithVolumesNasPath adds the volumesNasPath to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasPath(volumesNasPath *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasPath(volumesNasPath)
+	return o
+}
+
+// SetVolumesNasPath adds the volumesNasPath to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasPath(volumesNasPath *string) {
+	o.VolumesNasPath = volumesNasPath
+}
+
+// WithVolumesNasSecurityStyle adds the volumesNasSecurityStyle to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasSecurityStyle(volumesNasSecurityStyle *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasSecurityStyle(volumesNasSecurityStyle)
+	return o
+}
+
+// SetVolumesNasSecurityStyle adds the volumesNasSecurityStyle to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasSecurityStyle(volumesNasSecurityStyle *string) {
+	o.VolumesNasSecurityStyle = volumesNasSecurityStyle
+}
+
+// WithVolumesNasUID adds the volumesNasUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasUID(volumesNasUID *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasUID(volumesNasUID)
+	return o
+}
+
+// SetVolumesNasUID adds the volumesNasUid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasUID(volumesNasUID *int64) {
+	o.VolumesNasUID = volumesNasUID
+}
+
+// WithVolumesNasUnixPermissions adds the volumesNasUnixPermissions to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesNasUnixPermissions(volumesNasUnixPermissions *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesNasUnixPermissions(volumesNasUnixPermissions)
+	return o
+}
+
+// SetVolumesNasUnixPermissions adds the volumesNasUnixPermissions to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesNasUnixPermissions(volumesNasUnixPermissions *int64) {
+	o.VolumesNasUnixPermissions = volumesNasUnixPermissions
+}
+
+// WithVolumesQosPolicyMaxThroughputIops adds the volumesQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMaxThroughputIops(volumesQosPolicyMaxThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesQosPolicyMaxThroughputIops(volumesQosPolicyMaxThroughputIops)
+	return o
+}
+
+// SetVolumesQosPolicyMaxThroughputIops adds the volumesQosPolicyMaxThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMaxThroughputIops(volumesQosPolicyMaxThroughputIops *int64) {
+	o.VolumesQosPolicyMaxThroughputIops = volumesQosPolicyMaxThroughputIops
+}
+
+// WithVolumesQosPolicyMaxThroughputMbps adds the volumesQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMaxThroughputMbps(volumesQosPolicyMaxThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesQosPolicyMaxThroughputMbps(volumesQosPolicyMaxThroughputMbps)
+	return o
+}
+
+// SetVolumesQosPolicyMaxThroughputMbps adds the volumesQosPolicyMaxThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMaxThroughputMbps(volumesQosPolicyMaxThroughputMbps *int64) {
+	o.VolumesQosPolicyMaxThroughputMbps = volumesQosPolicyMaxThroughputMbps
+}
+
+// WithVolumesQosPolicyMinThroughputIops adds the volumesQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMinThroughputIops(volumesQosPolicyMinThroughputIops *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesQosPolicyMinThroughputIops(volumesQosPolicyMinThroughputIops)
+	return o
+}
+
+// SetVolumesQosPolicyMinThroughputIops adds the volumesQosPolicyMinThroughputIops to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMinThroughputIops(volumesQosPolicyMinThroughputIops *int64) {
+	o.VolumesQosPolicyMinThroughputIops = volumesQosPolicyMinThroughputIops
+}
+
+// WithVolumesQosPolicyMinThroughputMbps adds the volumesQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyMinThroughputMbps(volumesQosPolicyMinThroughputMbps *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesQosPolicyMinThroughputMbps(volumesQosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetVolumesQosPolicyMinThroughputMbps adds the volumesQosPolicyMinThroughputMbps to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyMinThroughputMbps(volumesQosPolicyMinThroughputMbps *int64) {
+	o.VolumesQosPolicyMinThroughputMbps = volumesQosPolicyMinThroughputMbps
+}
+
+// WithVolumesQosPolicyName adds the volumesQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyName(volumesQosPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesQosPolicyName(volumesQosPolicyName)
+	return o
+}
+
+// SetVolumesQosPolicyName adds the volumesQosPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyName(volumesQosPolicyName *string) {
+	o.VolumesQosPolicyName = volumesQosPolicyName
+}
+
+// WithVolumesQosPolicyUUID adds the volumesQosPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesQosPolicyUUID(volumesQosPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesQosPolicyUUID(volumesQosPolicyUUID)
+	return o
+}
+
+// SetVolumesQosPolicyUUID adds the volumesQosPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesQosPolicyUUID(volumesQosPolicyUUID *string) {
+	o.VolumesQosPolicyUUID = volumesQosPolicyUUID
+}
+
+// WithVolumesSnapshotPolicyName adds the volumesSnapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesSnapshotPolicyName(volumesSnapshotPolicyName *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesSnapshotPolicyName(volumesSnapshotPolicyName)
+	return o
+}
+
+// SetVolumesSnapshotPolicyName adds the volumesSnapshotPolicyName to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesSnapshotPolicyName(volumesSnapshotPolicyName *string) {
+	o.VolumesSnapshotPolicyName = volumesSnapshotPolicyName
+}
+
+// WithVolumesSnapshotPolicyUUID adds the volumesSnapshotPolicyUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesSnapshotPolicyUUID(volumesSnapshotPolicyUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesSnapshotPolicyUUID(volumesSnapshotPolicyUUID)
+	return o
+}
+
+// SetVolumesSnapshotPolicyUUID adds the volumesSnapshotPolicyUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesSnapshotPolicyUUID(volumesSnapshotPolicyUUID *string) {
+	o.VolumesSnapshotPolicyUUID = volumesSnapshotPolicyUUID
+}
+
+// WithVolumesSpaceAvailable adds the volumesSpaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesSpaceAvailable(volumesSpaceAvailable *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesSpaceAvailable(volumesSpaceAvailable)
+	return o
+}
+
+// SetVolumesSpaceAvailable adds the volumesSpaceAvailable to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesSpaceAvailable(volumesSpaceAvailable *int64) {
+	o.VolumesSpaceAvailable = volumesSpaceAvailable
+}
+
+// WithVolumesSpaceSize adds the volumesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesSpaceSize(volumesSpaceSize *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesSpaceSize(volumesSpaceSize)
+	return o
+}
+
+// SetVolumesSpaceSize adds the volumesSpaceSize to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesSpaceSize(volumesSpaceSize *int64) {
+	o.VolumesSpaceSize = volumesSpaceSize
+}
+
+// WithVolumesSpaceUsed adds the volumesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesSpaceUsed(volumesSpaceUsed *int64) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesSpaceUsed(volumesSpaceUsed)
+	return o
+}
+
+// SetVolumesSpaceUsed adds the volumesSpaceUsed to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesSpaceUsed(volumesSpaceUsed *int64) {
+	o.VolumesSpaceUsed = volumesSpaceUsed
+}
+
+// WithVolumesTieringPolicy adds the volumesTieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesTieringPolicy(volumesTieringPolicy *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesTieringPolicy(volumesTieringPolicy)
+	return o
+}
+
+// SetVolumesTieringPolicy adds the volumesTieringPolicy to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesTieringPolicy(volumesTieringPolicy *string) {
+	o.VolumesTieringPolicy = volumesTieringPolicy
+}
+
+// WithVolumesUUID adds the volumesUUID to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithVolumesUUID(volumesUUID *string) *ConsistencyGroupCollectionGetParams {
+	o.SetVolumesUUID(volumesUUID)
+	return o
+}
+
+// SetVolumesUUID adds the volumesUuid to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetVolumesUUID(volumesUUID *string) {
+	o.VolumesUUID = volumesUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -2334,13 +4663,200 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.ConsistencyGroupsLunsCommentQueryParameter != nil {
+	if o.ApplicationComponentType != nil {
+
+		// query param application.component_type
+		var qrApplicationComponentType string
+
+		if o.ApplicationComponentType != nil {
+			qrApplicationComponentType = *o.ApplicationComponentType
+		}
+		qApplicationComponentType := qrApplicationComponentType
+		if qApplicationComponentType != "" {
+
+			if err := r.SetQueryParam("application.component_type", qApplicationComponentType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ApplicationType != nil {
+
+		// query param application.type
+		var qrApplicationType string
+
+		if o.ApplicationType != nil {
+			qrApplicationType = *o.ApplicationType
+		}
+		qApplicationType := qrApplicationType
+		if qApplicationType != "" {
+
+			if err := r.SetQueryParam("application.type", qApplicationType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneGuaranteeType != nil {
+
+		// query param clone.guarantee.type
+		var qrCloneGuaranteeType string
+
+		if o.CloneGuaranteeType != nil {
+			qrCloneGuaranteeType = *o.CloneGuaranteeType
+		}
+		qCloneGuaranteeType := qrCloneGuaranteeType
+		if qCloneGuaranteeType != "" {
+
+			if err := r.SetQueryParam("clone.guarantee.type", qCloneGuaranteeType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneParentConsistencyGroupName != nil {
+
+		// query param clone.parent_consistency_group.name
+		var qrCloneParentConsistencyGroupName string
+
+		if o.CloneParentConsistencyGroupName != nil {
+			qrCloneParentConsistencyGroupName = *o.CloneParentConsistencyGroupName
+		}
+		qCloneParentConsistencyGroupName := qrCloneParentConsistencyGroupName
+		if qCloneParentConsistencyGroupName != "" {
+
+			if err := r.SetQueryParam("clone.parent_consistency_group.name", qCloneParentConsistencyGroupName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneParentConsistencyGroupUUID != nil {
+
+		// query param clone.parent_consistency_group.uuid
+		var qrCloneParentConsistencyGroupUUID string
+
+		if o.CloneParentConsistencyGroupUUID != nil {
+			qrCloneParentConsistencyGroupUUID = *o.CloneParentConsistencyGroupUUID
+		}
+		qCloneParentConsistencyGroupUUID := qrCloneParentConsistencyGroupUUID
+		if qCloneParentConsistencyGroupUUID != "" {
+
+			if err := r.SetQueryParam("clone.parent_consistency_group.uuid", qCloneParentConsistencyGroupUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneParentSnapshotName != nil {
+
+		// query param clone.parent_snapshot.name
+		var qrCloneParentSnapshotName string
+
+		if o.CloneParentSnapshotName != nil {
+			qrCloneParentSnapshotName = *o.CloneParentSnapshotName
+		}
+		qCloneParentSnapshotName := qrCloneParentSnapshotName
+		if qCloneParentSnapshotName != "" {
+
+			if err := r.SetQueryParam("clone.parent_snapshot.name", qCloneParentSnapshotName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneSplitInitiated != nil {
+
+		// query param clone.split_initiated
+		var qrCloneSplitInitiated bool
+
+		if o.CloneSplitInitiated != nil {
+			qrCloneSplitInitiated = *o.CloneSplitInitiated
+		}
+		qCloneSplitInitiated := swag.FormatBool(qrCloneSplitInitiated)
+		if qCloneSplitInitiated != "" {
+
+			if err := r.SetQueryParam("clone.split_initiated", qCloneSplitInitiated); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneVolumePrefix != nil {
+
+		// query param clone.volume.prefix
+		var qrCloneVolumePrefix string
+
+		if o.CloneVolumePrefix != nil {
+			qrCloneVolumePrefix = *o.CloneVolumePrefix
+		}
+		qCloneVolumePrefix := qrCloneVolumePrefix
+		if qCloneVolumePrefix != "" {
+
+			if err := r.SetQueryParam("clone.volume.prefix", qCloneVolumePrefix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneVolumeSuffix != nil {
+
+		// query param clone.volume.suffix
+		var qrCloneVolumeSuffix string
+
+		if o.CloneVolumeSuffix != nil {
+			qrCloneVolumeSuffix = *o.CloneVolumeSuffix
+		}
+		qCloneVolumeSuffix := qrCloneVolumeSuffix
+		if qCloneVolumeSuffix != "" {
+
+			if err := r.SetQueryParam("clone.volume.suffix", qCloneVolumeSuffix); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsApplicationComponentType != nil {
+
+		// query param consistency_groups.application.component_type
+		var qrConsistencyGroupsApplicationComponentType string
+
+		if o.ConsistencyGroupsApplicationComponentType != nil {
+			qrConsistencyGroupsApplicationComponentType = *o.ConsistencyGroupsApplicationComponentType
+		}
+		qConsistencyGroupsApplicationComponentType := qrConsistencyGroupsApplicationComponentType
+		if qConsistencyGroupsApplicationComponentType != "" {
+
+			if err := r.SetQueryParam("consistency_groups.application.component_type", qConsistencyGroupsApplicationComponentType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsApplicationType != nil {
+
+		// query param consistency_groups.application.type
+		var qrConsistencyGroupsApplicationType string
+
+		if o.ConsistencyGroupsApplicationType != nil {
+			qrConsistencyGroupsApplicationType = *o.ConsistencyGroupsApplicationType
+		}
+		qConsistencyGroupsApplicationType := qrConsistencyGroupsApplicationType
+		if qConsistencyGroupsApplicationType != "" {
+
+			if err := r.SetQueryParam("consistency_groups.application.type", qConsistencyGroupsApplicationType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsComment != nil {
 
 		// query param consistency_groups.luns.comment
 		var qrConsistencyGroupsLunsComment string
 
-		if o.ConsistencyGroupsLunsCommentQueryParameter != nil {
-			qrConsistencyGroupsLunsComment = *o.ConsistencyGroupsLunsCommentQueryParameter
+		if o.ConsistencyGroupsLunsComment != nil {
+			qrConsistencyGroupsLunsComment = *o.ConsistencyGroupsLunsComment
 		}
 		qConsistencyGroupsLunsComment := qrConsistencyGroupsLunsComment
 		if qConsistencyGroupsLunsComment != "" {
@@ -2351,13 +4867,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsCreateTimeQueryParameter != nil {
+	if o.ConsistencyGroupsLunsCreateTime != nil {
 
 		// query param consistency_groups.luns.create_time
 		var qrConsistencyGroupsLunsCreateTime string
 
-		if o.ConsistencyGroupsLunsCreateTimeQueryParameter != nil {
-			qrConsistencyGroupsLunsCreateTime = *o.ConsistencyGroupsLunsCreateTimeQueryParameter
+		if o.ConsistencyGroupsLunsCreateTime != nil {
+			qrConsistencyGroupsLunsCreateTime = *o.ConsistencyGroupsLunsCreateTime
 		}
 		qConsistencyGroupsLunsCreateTime := qrConsistencyGroupsLunsCreateTime
 		if qConsistencyGroupsLunsCreateTime != "" {
@@ -2368,13 +4884,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsEnabledQueryParameter != nil {
+	if o.ConsistencyGroupsLunsEnabled != nil {
 
 		// query param consistency_groups.luns.enabled
 		var qrConsistencyGroupsLunsEnabled bool
 
-		if o.ConsistencyGroupsLunsEnabledQueryParameter != nil {
-			qrConsistencyGroupsLunsEnabled = *o.ConsistencyGroupsLunsEnabledQueryParameter
+		if o.ConsistencyGroupsLunsEnabled != nil {
+			qrConsistencyGroupsLunsEnabled = *o.ConsistencyGroupsLunsEnabled
 		}
 		qConsistencyGroupsLunsEnabled := swag.FormatBool(qrConsistencyGroupsLunsEnabled)
 		if qConsistencyGroupsLunsEnabled != "" {
@@ -2385,13 +4901,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupComment != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.comment
 		var qrConsistencyGroupsLunsLunMapsIgroupComment string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupComment = *o.ConsistencyGroupsLunsLunMapsIgroupCommentQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupComment != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupComment = *o.ConsistencyGroupsLunsLunMapsIgroupComment
 		}
 		qConsistencyGroupsLunsLunMapsIgroupComment := qrConsistencyGroupsLunsLunMapsIgroupComment
 		if qConsistencyGroupsLunsLunMapsIgroupComment != "" {
@@ -2402,13 +4918,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsName != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.igroups.name
 		var qrConsistencyGroupsLunsLunMapsIgroupIgroupsName string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupIgroupsName = *o.ConsistencyGroupsLunsLunMapsIgroupIgroupsNameQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsName != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupIgroupsName = *o.ConsistencyGroupsLunsLunMapsIgroupIgroupsName
 		}
 		qConsistencyGroupsLunsLunMapsIgroupIgroupsName := qrConsistencyGroupsLunsLunMapsIgroupIgroupsName
 		if qConsistencyGroupsLunsLunMapsIgroupIgroupsName != "" {
@@ -2419,13 +4935,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUID != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.igroups.uuid
 		var qrConsistencyGroupsLunsLunMapsIgroupIgroupsUUID string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupIgroupsUUID = *o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUIDQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUID != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupIgroupsUUID = *o.ConsistencyGroupsLunsLunMapsIgroupIgroupsUUID
 		}
 		qConsistencyGroupsLunsLunMapsIgroupIgroupsUUID := qrConsistencyGroupsLunsLunMapsIgroupIgroupsUUID
 		if qConsistencyGroupsLunsLunMapsIgroupIgroupsUUID != "" {
@@ -2436,13 +4952,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsComment != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.initiators.comment
 		var qrConsistencyGroupsLunsLunMapsIgroupInitiatorsComment string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupInitiatorsComment = *o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsCommentQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsComment != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupInitiatorsComment = *o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsComment
 		}
 		qConsistencyGroupsLunsLunMapsIgroupInitiatorsComment := qrConsistencyGroupsLunsLunMapsIgroupInitiatorsComment
 		if qConsistencyGroupsLunsLunMapsIgroupInitiatorsComment != "" {
@@ -2453,13 +4969,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsName != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.initiators.name
 		var qrConsistencyGroupsLunsLunMapsIgroupInitiatorsName string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupInitiatorsName = *o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsNameQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsName != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupInitiatorsName = *o.ConsistencyGroupsLunsLunMapsIgroupInitiatorsName
 		}
 		qConsistencyGroupsLunsLunMapsIgroupInitiatorsName := qrConsistencyGroupsLunsLunMapsIgroupInitiatorsName
 		if qConsistencyGroupsLunsLunMapsIgroupInitiatorsName != "" {
@@ -2470,13 +4986,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupNameQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupName != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.name
 		var qrConsistencyGroupsLunsLunMapsIgroupName string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupNameQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupName = *o.ConsistencyGroupsLunsLunMapsIgroupNameQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupName != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupName = *o.ConsistencyGroupsLunsLunMapsIgroupName
 		}
 		qConsistencyGroupsLunsLunMapsIgroupName := qrConsistencyGroupsLunsLunMapsIgroupName
 		if qConsistencyGroupsLunsLunMapsIgroupName != "" {
@@ -2487,13 +5003,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupOsType != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.os_type
 		var qrConsistencyGroupsLunsLunMapsIgroupOsType string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupOsType = *o.ConsistencyGroupsLunsLunMapsIgroupOsTypeQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupOsType != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupOsType = *o.ConsistencyGroupsLunsLunMapsIgroupOsType
 		}
 		qConsistencyGroupsLunsLunMapsIgroupOsType := qrConsistencyGroupsLunsLunMapsIgroupOsType
 		if qConsistencyGroupsLunsLunMapsIgroupOsType != "" {
@@ -2504,13 +5020,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupProtocol != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.protocol
 		var qrConsistencyGroupsLunsLunMapsIgroupProtocol string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupProtocol = *o.ConsistencyGroupsLunsLunMapsIgroupProtocolQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupProtocol != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupProtocol = *o.ConsistencyGroupsLunsLunMapsIgroupProtocol
 		}
 		qConsistencyGroupsLunsLunMapsIgroupProtocol := qrConsistencyGroupsLunsLunMapsIgroupProtocol
 		if qConsistencyGroupsLunsLunMapsIgroupProtocol != "" {
@@ -2521,13 +5037,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsIgroupUUID != nil {
 
 		// query param consistency_groups.luns.lun_maps.igroup.uuid
 		var qrConsistencyGroupsLunsLunMapsIgroupUUID string
 
-		if o.ConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsIgroupUUID = *o.ConsistencyGroupsLunsLunMapsIgroupUUIDQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsIgroupUUID != nil {
+			qrConsistencyGroupsLunsLunMapsIgroupUUID = *o.ConsistencyGroupsLunsLunMapsIgroupUUID
 		}
 		qConsistencyGroupsLunsLunMapsIgroupUUID := qrConsistencyGroupsLunsLunMapsIgroupUUID
 		if qConsistencyGroupsLunsLunMapsIgroupUUID != "" {
@@ -2538,13 +5054,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter != nil {
+	if o.ConsistencyGroupsLunsLunMapsLogicalUnitNumber != nil {
 
 		// query param consistency_groups.luns.lun_maps.logical_unit_number
 		var qrConsistencyGroupsLunsLunMapsLogicalUnitNumber int64
 
-		if o.ConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter != nil {
-			qrConsistencyGroupsLunsLunMapsLogicalUnitNumber = *o.ConsistencyGroupsLunsLunMapsLogicalUnitNumberQueryParameter
+		if o.ConsistencyGroupsLunsLunMapsLogicalUnitNumber != nil {
+			qrConsistencyGroupsLunsLunMapsLogicalUnitNumber = *o.ConsistencyGroupsLunsLunMapsLogicalUnitNumber
 		}
 		qConsistencyGroupsLunsLunMapsLogicalUnitNumber := swag.FormatInt64(qrConsistencyGroupsLunsLunMapsLogicalUnitNumber)
 		if qConsistencyGroupsLunsLunMapsLogicalUnitNumber != "" {
@@ -2555,13 +5071,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsNameQueryParameter != nil {
+	if o.ConsistencyGroupsLunsName != nil {
 
 		// query param consistency_groups.luns.name
 		var qrConsistencyGroupsLunsName string
 
-		if o.ConsistencyGroupsLunsNameQueryParameter != nil {
-			qrConsistencyGroupsLunsName = *o.ConsistencyGroupsLunsNameQueryParameter
+		if o.ConsistencyGroupsLunsName != nil {
+			qrConsistencyGroupsLunsName = *o.ConsistencyGroupsLunsName
 		}
 		qConsistencyGroupsLunsName := qrConsistencyGroupsLunsName
 		if qConsistencyGroupsLunsName != "" {
@@ -2572,13 +5088,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsOsTypeQueryParameter != nil {
+	if o.ConsistencyGroupsLunsOsType != nil {
 
 		// query param consistency_groups.luns.os_type
 		var qrConsistencyGroupsLunsOsType string
 
-		if o.ConsistencyGroupsLunsOsTypeQueryParameter != nil {
-			qrConsistencyGroupsLunsOsType = *o.ConsistencyGroupsLunsOsTypeQueryParameter
+		if o.ConsistencyGroupsLunsOsType != nil {
+			qrConsistencyGroupsLunsOsType = *o.ConsistencyGroupsLunsOsType
 		}
 		qConsistencyGroupsLunsOsType := qrConsistencyGroupsLunsOsType
 		if qConsistencyGroupsLunsOsType != "" {
@@ -2589,13 +5105,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.ConsistencyGroupsLunsQosPolicyMaxThroughputIops != nil {
 
 		// query param consistency_groups.luns.qos.policy.max_throughput_iops
 		var qrConsistencyGroupsLunsQosPolicyMaxThroughputIops int64
 
-		if o.ConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrConsistencyGroupsLunsQosPolicyMaxThroughputIops = *o.ConsistencyGroupsLunsQosPolicyMaxThroughputIopsQueryParameter
+		if o.ConsistencyGroupsLunsQosPolicyMaxThroughputIops != nil {
+			qrConsistencyGroupsLunsQosPolicyMaxThroughputIops = *o.ConsistencyGroupsLunsQosPolicyMaxThroughputIops
 		}
 		qConsistencyGroupsLunsQosPolicyMaxThroughputIops := swag.FormatInt64(qrConsistencyGroupsLunsQosPolicyMaxThroughputIops)
 		if qConsistencyGroupsLunsQosPolicyMaxThroughputIops != "" {
@@ -2606,13 +5122,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbps != nil {
 
 		// query param consistency_groups.luns.qos.policy.max_throughput_mbps
 		var qrConsistencyGroupsLunsQosPolicyMaxThroughputMbps int64
 
-		if o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrConsistencyGroupsLunsQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbpsQueryParameter
+		if o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbps != nil {
+			qrConsistencyGroupsLunsQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsLunsQosPolicyMaxThroughputMbps
 		}
 		qConsistencyGroupsLunsQosPolicyMaxThroughputMbps := swag.FormatInt64(qrConsistencyGroupsLunsQosPolicyMaxThroughputMbps)
 		if qConsistencyGroupsLunsQosPolicyMaxThroughputMbps != "" {
@@ -2623,13 +5139,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.ConsistencyGroupsLunsQosPolicyMinThroughputIops != nil {
 
 		// query param consistency_groups.luns.qos.policy.min_throughput_iops
 		var qrConsistencyGroupsLunsQosPolicyMinThroughputIops int64
 
-		if o.ConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter != nil {
-			qrConsistencyGroupsLunsQosPolicyMinThroughputIops = *o.ConsistencyGroupsLunsQosPolicyMinThroughputIopsQueryParameter
+		if o.ConsistencyGroupsLunsQosPolicyMinThroughputIops != nil {
+			qrConsistencyGroupsLunsQosPolicyMinThroughputIops = *o.ConsistencyGroupsLunsQosPolicyMinThroughputIops
 		}
 		qConsistencyGroupsLunsQosPolicyMinThroughputIops := swag.FormatInt64(qrConsistencyGroupsLunsQosPolicyMinThroughputIops)
 		if qConsistencyGroupsLunsQosPolicyMinThroughputIops != "" {
@@ -2640,13 +5156,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.ConsistencyGroupsLunsQosPolicyMinThroughputMbps != nil {
 
 		// query param consistency_groups.luns.qos.policy.min_throughput_mbps
 		var qrConsistencyGroupsLunsQosPolicyMinThroughputMbps int64
 
-		if o.ConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrConsistencyGroupsLunsQosPolicyMinThroughputMbps = *o.ConsistencyGroupsLunsQosPolicyMinThroughputMbpsQueryParameter
+		if o.ConsistencyGroupsLunsQosPolicyMinThroughputMbps != nil {
+			qrConsistencyGroupsLunsQosPolicyMinThroughputMbps = *o.ConsistencyGroupsLunsQosPolicyMinThroughputMbps
 		}
 		qConsistencyGroupsLunsQosPolicyMinThroughputMbps := swag.FormatInt64(qrConsistencyGroupsLunsQosPolicyMinThroughputMbps)
 		if qConsistencyGroupsLunsQosPolicyMinThroughputMbps != "" {
@@ -2657,13 +5173,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsQosPolicyNameQueryParameter != nil {
+	if o.ConsistencyGroupsLunsQosPolicyName != nil {
 
 		// query param consistency_groups.luns.qos.policy.name
 		var qrConsistencyGroupsLunsQosPolicyName string
 
-		if o.ConsistencyGroupsLunsQosPolicyNameQueryParameter != nil {
-			qrConsistencyGroupsLunsQosPolicyName = *o.ConsistencyGroupsLunsQosPolicyNameQueryParameter
+		if o.ConsistencyGroupsLunsQosPolicyName != nil {
+			qrConsistencyGroupsLunsQosPolicyName = *o.ConsistencyGroupsLunsQosPolicyName
 		}
 		qConsistencyGroupsLunsQosPolicyName := qrConsistencyGroupsLunsQosPolicyName
 		if qConsistencyGroupsLunsQosPolicyName != "" {
@@ -2674,13 +5190,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsQosPolicyUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsLunsQosPolicyUUID != nil {
 
 		// query param consistency_groups.luns.qos.policy.uuid
 		var qrConsistencyGroupsLunsQosPolicyUUID string
 
-		if o.ConsistencyGroupsLunsQosPolicyUUIDQueryParameter != nil {
-			qrConsistencyGroupsLunsQosPolicyUUID = *o.ConsistencyGroupsLunsQosPolicyUUIDQueryParameter
+		if o.ConsistencyGroupsLunsQosPolicyUUID != nil {
+			qrConsistencyGroupsLunsQosPolicyUUID = *o.ConsistencyGroupsLunsQosPolicyUUID
 		}
 		qConsistencyGroupsLunsQosPolicyUUID := qrConsistencyGroupsLunsQosPolicyUUID
 		if qConsistencyGroupsLunsQosPolicyUUID != "" {
@@ -2691,13 +5207,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsSerialNumberQueryParameter != nil {
+	if o.ConsistencyGroupsLunsSerialNumber != nil {
 
 		// query param consistency_groups.luns.serial_number
 		var qrConsistencyGroupsLunsSerialNumber string
 
-		if o.ConsistencyGroupsLunsSerialNumberQueryParameter != nil {
-			qrConsistencyGroupsLunsSerialNumber = *o.ConsistencyGroupsLunsSerialNumberQueryParameter
+		if o.ConsistencyGroupsLunsSerialNumber != nil {
+			qrConsistencyGroupsLunsSerialNumber = *o.ConsistencyGroupsLunsSerialNumber
 		}
 		qConsistencyGroupsLunsSerialNumber := qrConsistencyGroupsLunsSerialNumber
 		if qConsistencyGroupsLunsSerialNumber != "" {
@@ -2708,13 +5224,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter != nil {
+	if o.ConsistencyGroupsLunsSpaceGuaranteeRequested != nil {
 
 		// query param consistency_groups.luns.space.guarantee.requested
 		var qrConsistencyGroupsLunsSpaceGuaranteeRequested bool
 
-		if o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter != nil {
-			qrConsistencyGroupsLunsSpaceGuaranteeRequested = *o.ConsistencyGroupsLunsSpaceGuaranteeRequestedQueryParameter
+		if o.ConsistencyGroupsLunsSpaceGuaranteeRequested != nil {
+			qrConsistencyGroupsLunsSpaceGuaranteeRequested = *o.ConsistencyGroupsLunsSpaceGuaranteeRequested
 		}
 		qConsistencyGroupsLunsSpaceGuaranteeRequested := swag.FormatBool(qrConsistencyGroupsLunsSpaceGuaranteeRequested)
 		if qConsistencyGroupsLunsSpaceGuaranteeRequested != "" {
@@ -2725,13 +5241,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter != nil {
+	if o.ConsistencyGroupsLunsSpaceGuaranteeReserved != nil {
 
 		// query param consistency_groups.luns.space.guarantee.reserved
 		var qrConsistencyGroupsLunsSpaceGuaranteeReserved bool
 
-		if o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter != nil {
-			qrConsistencyGroupsLunsSpaceGuaranteeReserved = *o.ConsistencyGroupsLunsSpaceGuaranteeReservedQueryParameter
+		if o.ConsistencyGroupsLunsSpaceGuaranteeReserved != nil {
+			qrConsistencyGroupsLunsSpaceGuaranteeReserved = *o.ConsistencyGroupsLunsSpaceGuaranteeReserved
 		}
 		qConsistencyGroupsLunsSpaceGuaranteeReserved := swag.FormatBool(qrConsistencyGroupsLunsSpaceGuaranteeReserved)
 		if qConsistencyGroupsLunsSpaceGuaranteeReserved != "" {
@@ -2742,13 +5258,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsSpaceSizeQueryParameter != nil {
+	if o.ConsistencyGroupsLunsSpaceSize != nil {
 
 		// query param consistency_groups.luns.space.size
 		var qrConsistencyGroupsLunsSpaceSize int64
 
-		if o.ConsistencyGroupsLunsSpaceSizeQueryParameter != nil {
-			qrConsistencyGroupsLunsSpaceSize = *o.ConsistencyGroupsLunsSpaceSizeQueryParameter
+		if o.ConsistencyGroupsLunsSpaceSize != nil {
+			qrConsistencyGroupsLunsSpaceSize = *o.ConsistencyGroupsLunsSpaceSize
 		}
 		qConsistencyGroupsLunsSpaceSize := swag.FormatInt64(qrConsistencyGroupsLunsSpaceSize)
 		if qConsistencyGroupsLunsSpaceSize != "" {
@@ -2759,13 +5275,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsSpaceUsedQueryParameter != nil {
+	if o.ConsistencyGroupsLunsSpaceUsed != nil {
 
 		// query param consistency_groups.luns.space.used
 		var qrConsistencyGroupsLunsSpaceUsed int64
 
-		if o.ConsistencyGroupsLunsSpaceUsedQueryParameter != nil {
-			qrConsistencyGroupsLunsSpaceUsed = *o.ConsistencyGroupsLunsSpaceUsedQueryParameter
+		if o.ConsistencyGroupsLunsSpaceUsed != nil {
+			qrConsistencyGroupsLunsSpaceUsed = *o.ConsistencyGroupsLunsSpaceUsed
 		}
 		qConsistencyGroupsLunsSpaceUsed := swag.FormatInt64(qrConsistencyGroupsLunsSpaceUsed)
 		if qConsistencyGroupsLunsSpaceUsed != "" {
@@ -2776,13 +5292,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsLunsUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsLunsUUID != nil {
 
 		// query param consistency_groups.luns.uuid
 		var qrConsistencyGroupsLunsUUID string
 
-		if o.ConsistencyGroupsLunsUUIDQueryParameter != nil {
-			qrConsistencyGroupsLunsUUID = *o.ConsistencyGroupsLunsUUIDQueryParameter
+		if o.ConsistencyGroupsLunsUUID != nil {
+			qrConsistencyGroupsLunsUUID = *o.ConsistencyGroupsLunsUUID
 		}
 		qConsistencyGroupsLunsUUID := qrConsistencyGroupsLunsUUID
 		if qConsistencyGroupsLunsUUID != "" {
@@ -2793,13 +5309,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsNameQueryParameter != nil {
+	if o.ConsistencyGroupsName != nil {
 
 		// query param consistency_groups.name
 		var qrConsistencyGroupsName string
 
-		if o.ConsistencyGroupsNameQueryParameter != nil {
-			qrConsistencyGroupsName = *o.ConsistencyGroupsNameQueryParameter
+		if o.ConsistencyGroupsName != nil {
+			qrConsistencyGroupsName = *o.ConsistencyGroupsName
 		}
 		qConsistencyGroupsName := qrConsistencyGroupsName
 		if qConsistencyGroupsName != "" {
@@ -2810,13 +5326,404 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsParentConsistencyGroupNameQueryParameter != nil {
+	if o.ConsistencyGroupsNamespacesAutoDelete != nil {
+
+		// query param consistency_groups.namespaces.auto_delete
+		var qrConsistencyGroupsNamespacesAutoDelete bool
+
+		if o.ConsistencyGroupsNamespacesAutoDelete != nil {
+			qrConsistencyGroupsNamespacesAutoDelete = *o.ConsistencyGroupsNamespacesAutoDelete
+		}
+		qConsistencyGroupsNamespacesAutoDelete := swag.FormatBool(qrConsistencyGroupsNamespacesAutoDelete)
+		if qConsistencyGroupsNamespacesAutoDelete != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.auto_delete", qConsistencyGroupsNamespacesAutoDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesComment != nil {
+
+		// query param consistency_groups.namespaces.comment
+		var qrConsistencyGroupsNamespacesComment string
+
+		if o.ConsistencyGroupsNamespacesComment != nil {
+			qrConsistencyGroupsNamespacesComment = *o.ConsistencyGroupsNamespacesComment
+		}
+		qConsistencyGroupsNamespacesComment := qrConsistencyGroupsNamespacesComment
+		if qConsistencyGroupsNamespacesComment != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.comment", qConsistencyGroupsNamespacesComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesCreateTime != nil {
+
+		// query param consistency_groups.namespaces.create_time
+		var qrConsistencyGroupsNamespacesCreateTime string
+
+		if o.ConsistencyGroupsNamespacesCreateTime != nil {
+			qrConsistencyGroupsNamespacesCreateTime = *o.ConsistencyGroupsNamespacesCreateTime
+		}
+		qConsistencyGroupsNamespacesCreateTime := qrConsistencyGroupsNamespacesCreateTime
+		if qConsistencyGroupsNamespacesCreateTime != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.create_time", qConsistencyGroupsNamespacesCreateTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesEnabled != nil {
+
+		// query param consistency_groups.namespaces.enabled
+		var qrConsistencyGroupsNamespacesEnabled bool
+
+		if o.ConsistencyGroupsNamespacesEnabled != nil {
+			qrConsistencyGroupsNamespacesEnabled = *o.ConsistencyGroupsNamespacesEnabled
+		}
+		qConsistencyGroupsNamespacesEnabled := swag.FormatBool(qrConsistencyGroupsNamespacesEnabled)
+		if qConsistencyGroupsNamespacesEnabled != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.enabled", qConsistencyGroupsNamespacesEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesName != nil {
+
+		// query param consistency_groups.namespaces.name
+		var qrConsistencyGroupsNamespacesName string
+
+		if o.ConsistencyGroupsNamespacesName != nil {
+			qrConsistencyGroupsNamespacesName = *o.ConsistencyGroupsNamespacesName
+		}
+		qConsistencyGroupsNamespacesName := qrConsistencyGroupsNamespacesName
+		if qConsistencyGroupsNamespacesName != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.name", qConsistencyGroupsNamespacesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesOsType != nil {
+
+		// query param consistency_groups.namespaces.os_type
+		var qrConsistencyGroupsNamespacesOsType string
+
+		if o.ConsistencyGroupsNamespacesOsType != nil {
+			qrConsistencyGroupsNamespacesOsType = *o.ConsistencyGroupsNamespacesOsType
+		}
+		qConsistencyGroupsNamespacesOsType := qrConsistencyGroupsNamespacesOsType
+		if qConsistencyGroupsNamespacesOsType != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.os_type", qConsistencyGroupsNamespacesOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceBlockSize != nil {
+
+		// query param consistency_groups.namespaces.space.block_size
+		var qrConsistencyGroupsNamespacesSpaceBlockSize int64
+
+		if o.ConsistencyGroupsNamespacesSpaceBlockSize != nil {
+			qrConsistencyGroupsNamespacesSpaceBlockSize = *o.ConsistencyGroupsNamespacesSpaceBlockSize
+		}
+		qConsistencyGroupsNamespacesSpaceBlockSize := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceBlockSize)
+		if qConsistencyGroupsNamespacesSpaceBlockSize != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.block_size", qConsistencyGroupsNamespacesSpaceBlockSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceGuaranteeRequested != nil {
+
+		// query param consistency_groups.namespaces.space.guarantee.requested
+		var qrConsistencyGroupsNamespacesSpaceGuaranteeRequested bool
+
+		if o.ConsistencyGroupsNamespacesSpaceGuaranteeRequested != nil {
+			qrConsistencyGroupsNamespacesSpaceGuaranteeRequested = *o.ConsistencyGroupsNamespacesSpaceGuaranteeRequested
+		}
+		qConsistencyGroupsNamespacesSpaceGuaranteeRequested := swag.FormatBool(qrConsistencyGroupsNamespacesSpaceGuaranteeRequested)
+		if qConsistencyGroupsNamespacesSpaceGuaranteeRequested != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.guarantee.requested", qConsistencyGroupsNamespacesSpaceGuaranteeRequested); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceGuaranteeReserved != nil {
+
+		// query param consistency_groups.namespaces.space.guarantee.reserved
+		var qrConsistencyGroupsNamespacesSpaceGuaranteeReserved bool
+
+		if o.ConsistencyGroupsNamespacesSpaceGuaranteeReserved != nil {
+			qrConsistencyGroupsNamespacesSpaceGuaranteeReserved = *o.ConsistencyGroupsNamespacesSpaceGuaranteeReserved
+		}
+		qConsistencyGroupsNamespacesSpaceGuaranteeReserved := swag.FormatBool(qrConsistencyGroupsNamespacesSpaceGuaranteeReserved)
+		if qConsistencyGroupsNamespacesSpaceGuaranteeReserved != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.guarantee.reserved", qConsistencyGroupsNamespacesSpaceGuaranteeReserved); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSize != nil {
+
+		// query param consistency_groups.namespaces.space.size
+		var qrConsistencyGroupsNamespacesSpaceSize int64
+
+		if o.ConsistencyGroupsNamespacesSpaceSize != nil {
+			qrConsistencyGroupsNamespacesSpaceSize = *o.ConsistencyGroupsNamespacesSpaceSize
+		}
+		qConsistencyGroupsNamespacesSpaceSize := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceSize)
+		if qConsistencyGroupsNamespacesSpaceSize != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.size", qConsistencyGroupsNamespacesSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceUsed != nil {
+
+		// query param consistency_groups.namespaces.space.used
+		var qrConsistencyGroupsNamespacesSpaceUsed int64
+
+		if o.ConsistencyGroupsNamespacesSpaceUsed != nil {
+			qrConsistencyGroupsNamespacesSpaceUsed = *o.ConsistencyGroupsNamespacesSpaceUsed
+		}
+		qConsistencyGroupsNamespacesSpaceUsed := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceUsed)
+		if qConsistencyGroupsNamespacesSpaceUsed != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.used", qConsistencyGroupsNamespacesSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesStatusContainerState != nil {
+
+		// query param consistency_groups.namespaces.status.container_state
+		var qrConsistencyGroupsNamespacesStatusContainerState string
+
+		if o.ConsistencyGroupsNamespacesStatusContainerState != nil {
+			qrConsistencyGroupsNamespacesStatusContainerState = *o.ConsistencyGroupsNamespacesStatusContainerState
+		}
+		qConsistencyGroupsNamespacesStatusContainerState := qrConsistencyGroupsNamespacesStatusContainerState
+		if qConsistencyGroupsNamespacesStatusContainerState != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.status.container_state", qConsistencyGroupsNamespacesStatusContainerState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesStatusMapped != nil {
+
+		// query param consistency_groups.namespaces.status.mapped
+		var qrConsistencyGroupsNamespacesStatusMapped bool
+
+		if o.ConsistencyGroupsNamespacesStatusMapped != nil {
+			qrConsistencyGroupsNamespacesStatusMapped = *o.ConsistencyGroupsNamespacesStatusMapped
+		}
+		qConsistencyGroupsNamespacesStatusMapped := swag.FormatBool(qrConsistencyGroupsNamespacesStatusMapped)
+		if qConsistencyGroupsNamespacesStatusMapped != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.status.mapped", qConsistencyGroupsNamespacesStatusMapped); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesStatusReadOnly != nil {
+
+		// query param consistency_groups.namespaces.status.read_only
+		var qrConsistencyGroupsNamespacesStatusReadOnly bool
+
+		if o.ConsistencyGroupsNamespacesStatusReadOnly != nil {
+			qrConsistencyGroupsNamespacesStatusReadOnly = *o.ConsistencyGroupsNamespacesStatusReadOnly
+		}
+		qConsistencyGroupsNamespacesStatusReadOnly := swag.FormatBool(qrConsistencyGroupsNamespacesStatusReadOnly)
+		if qConsistencyGroupsNamespacesStatusReadOnly != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.status.read_only", qConsistencyGroupsNamespacesStatusReadOnly); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesStatusState != nil {
+
+		// query param consistency_groups.namespaces.status.state
+		var qrConsistencyGroupsNamespacesStatusState string
+
+		if o.ConsistencyGroupsNamespacesStatusState != nil {
+			qrConsistencyGroupsNamespacesStatusState = *o.ConsistencyGroupsNamespacesStatusState
+		}
+		qConsistencyGroupsNamespacesStatusState := qrConsistencyGroupsNamespacesStatusState
+		if qConsistencyGroupsNamespacesStatusState != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.status.state", qConsistencyGroupsNamespacesStatusState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapAnagrpid != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.anagrpid
+		var qrConsistencyGroupsNamespacesSubsystemMapAnagrpid string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapAnagrpid != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapAnagrpid = *o.ConsistencyGroupsNamespacesSubsystemMapAnagrpid
+		}
+		qConsistencyGroupsNamespacesSubsystemMapAnagrpid := qrConsistencyGroupsNamespacesSubsystemMapAnagrpid
+		if qConsistencyGroupsNamespacesSubsystemMapAnagrpid != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.anagrpid", qConsistencyGroupsNamespacesSubsystemMapAnagrpid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapNsid != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.nsid
+		var qrConsistencyGroupsNamespacesSubsystemMapNsid string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapNsid != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapNsid = *o.ConsistencyGroupsNamespacesSubsystemMapNsid
+		}
+		qConsistencyGroupsNamespacesSubsystemMapNsid := qrConsistencyGroupsNamespacesSubsystemMapNsid
+		if qConsistencyGroupsNamespacesSubsystemMapNsid != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.nsid", qConsistencyGroupsNamespacesSubsystemMapNsid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemComment != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.comment
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemComment string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemComment != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemComment = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemComment
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemComment := qrConsistencyGroupsNamespacesSubsystemMapSubsystemComment
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemComment != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.comment", qConsistencyGroupsNamespacesSubsystemMapSubsystemComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.nqn
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.nqn", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsNqn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemName != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.name
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemName string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemName != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemName = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemName
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemName := qrConsistencyGroupsNamespacesSubsystemMapSubsystemName
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemName != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.name", qConsistencyGroupsNamespacesSubsystemMapSubsystemName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemOsType != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.os_type
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemOsType string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemOsType != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemOsType = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemOsType
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemOsType := qrConsistencyGroupsNamespacesSubsystemMapSubsystemOsType
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemOsType != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.os_type", qConsistencyGroupsNamespacesSubsystemMapSubsystemOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemUUID != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.uuid
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemUUID string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemUUID != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemUUID = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemUUID
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemUUID := qrConsistencyGroupsNamespacesSubsystemMapSubsystemUUID
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemUUID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.uuid", qConsistencyGroupsNamespacesSubsystemMapSubsystemUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesUUID != nil {
+
+		// query param consistency_groups.namespaces.uuid
+		var qrConsistencyGroupsNamespacesUUID string
+
+		if o.ConsistencyGroupsNamespacesUUID != nil {
+			qrConsistencyGroupsNamespacesUUID = *o.ConsistencyGroupsNamespacesUUID
+		}
+		qConsistencyGroupsNamespacesUUID := qrConsistencyGroupsNamespacesUUID
+		if qConsistencyGroupsNamespacesUUID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.uuid", qConsistencyGroupsNamespacesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsParentConsistencyGroupName != nil {
 
 		// query param consistency_groups.parent_consistency_group.name
 		var qrConsistencyGroupsParentConsistencyGroupName string
 
-		if o.ConsistencyGroupsParentConsistencyGroupNameQueryParameter != nil {
-			qrConsistencyGroupsParentConsistencyGroupName = *o.ConsistencyGroupsParentConsistencyGroupNameQueryParameter
+		if o.ConsistencyGroupsParentConsistencyGroupName != nil {
+			qrConsistencyGroupsParentConsistencyGroupName = *o.ConsistencyGroupsParentConsistencyGroupName
 		}
 		qConsistencyGroupsParentConsistencyGroupName := qrConsistencyGroupsParentConsistencyGroupName
 		if qConsistencyGroupsParentConsistencyGroupName != "" {
@@ -2827,13 +5734,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsParentConsistencyGroupUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsParentConsistencyGroupUUID != nil {
 
 		// query param consistency_groups.parent_consistency_group.uuid
 		var qrConsistencyGroupsParentConsistencyGroupUUID string
 
-		if o.ConsistencyGroupsParentConsistencyGroupUUIDQueryParameter != nil {
-			qrConsistencyGroupsParentConsistencyGroupUUID = *o.ConsistencyGroupsParentConsistencyGroupUUIDQueryParameter
+		if o.ConsistencyGroupsParentConsistencyGroupUUID != nil {
+			qrConsistencyGroupsParentConsistencyGroupUUID = *o.ConsistencyGroupsParentConsistencyGroupUUID
 		}
 		qConsistencyGroupsParentConsistencyGroupUUID := qrConsistencyGroupsParentConsistencyGroupUUID
 		if qConsistencyGroupsParentConsistencyGroupUUID != "" {
@@ -2844,13 +5751,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.ConsistencyGroupsQosPolicyMaxThroughputIops != nil {
 
 		// query param consistency_groups.qos.policy.max_throughput_iops
 		var qrConsistencyGroupsQosPolicyMaxThroughputIops int64
 
-		if o.ConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrConsistencyGroupsQosPolicyMaxThroughputIops = *o.ConsistencyGroupsQosPolicyMaxThroughputIopsQueryParameter
+		if o.ConsistencyGroupsQosPolicyMaxThroughputIops != nil {
+			qrConsistencyGroupsQosPolicyMaxThroughputIops = *o.ConsistencyGroupsQosPolicyMaxThroughputIops
 		}
 		qConsistencyGroupsQosPolicyMaxThroughputIops := swag.FormatInt64(qrConsistencyGroupsQosPolicyMaxThroughputIops)
 		if qConsistencyGroupsQosPolicyMaxThroughputIops != "" {
@@ -2861,13 +5768,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.ConsistencyGroupsQosPolicyMaxThroughputMbps != nil {
 
 		// query param consistency_groups.qos.policy.max_throughput_mbps
 		var qrConsistencyGroupsQosPolicyMaxThroughputMbps int64
 
-		if o.ConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrConsistencyGroupsQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsQosPolicyMaxThroughputMbpsQueryParameter
+		if o.ConsistencyGroupsQosPolicyMaxThroughputMbps != nil {
+			qrConsistencyGroupsQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsQosPolicyMaxThroughputMbps
 		}
 		qConsistencyGroupsQosPolicyMaxThroughputMbps := swag.FormatInt64(qrConsistencyGroupsQosPolicyMaxThroughputMbps)
 		if qConsistencyGroupsQosPolicyMaxThroughputMbps != "" {
@@ -2878,13 +5785,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.ConsistencyGroupsQosPolicyMinThroughputIops != nil {
 
 		// query param consistency_groups.qos.policy.min_throughput_iops
 		var qrConsistencyGroupsQosPolicyMinThroughputIops int64
 
-		if o.ConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter != nil {
-			qrConsistencyGroupsQosPolicyMinThroughputIops = *o.ConsistencyGroupsQosPolicyMinThroughputIopsQueryParameter
+		if o.ConsistencyGroupsQosPolicyMinThroughputIops != nil {
+			qrConsistencyGroupsQosPolicyMinThroughputIops = *o.ConsistencyGroupsQosPolicyMinThroughputIops
 		}
 		qConsistencyGroupsQosPolicyMinThroughputIops := swag.FormatInt64(qrConsistencyGroupsQosPolicyMinThroughputIops)
 		if qConsistencyGroupsQosPolicyMinThroughputIops != "" {
@@ -2895,13 +5802,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.ConsistencyGroupsQosPolicyMinThroughputMbps != nil {
 
 		// query param consistency_groups.qos.policy.min_throughput_mbps
 		var qrConsistencyGroupsQosPolicyMinThroughputMbps int64
 
-		if o.ConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrConsistencyGroupsQosPolicyMinThroughputMbps = *o.ConsistencyGroupsQosPolicyMinThroughputMbpsQueryParameter
+		if o.ConsistencyGroupsQosPolicyMinThroughputMbps != nil {
+			qrConsistencyGroupsQosPolicyMinThroughputMbps = *o.ConsistencyGroupsQosPolicyMinThroughputMbps
 		}
 		qConsistencyGroupsQosPolicyMinThroughputMbps := swag.FormatInt64(qrConsistencyGroupsQosPolicyMinThroughputMbps)
 		if qConsistencyGroupsQosPolicyMinThroughputMbps != "" {
@@ -2912,13 +5819,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsQosPolicyNameQueryParameter != nil {
+	if o.ConsistencyGroupsQosPolicyName != nil {
 
 		// query param consistency_groups.qos.policy.name
 		var qrConsistencyGroupsQosPolicyName string
 
-		if o.ConsistencyGroupsQosPolicyNameQueryParameter != nil {
-			qrConsistencyGroupsQosPolicyName = *o.ConsistencyGroupsQosPolicyNameQueryParameter
+		if o.ConsistencyGroupsQosPolicyName != nil {
+			qrConsistencyGroupsQosPolicyName = *o.ConsistencyGroupsQosPolicyName
 		}
 		qConsistencyGroupsQosPolicyName := qrConsistencyGroupsQosPolicyName
 		if qConsistencyGroupsQosPolicyName != "" {
@@ -2929,13 +5836,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsQosPolicyUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsQosPolicyUUID != nil {
 
 		// query param consistency_groups.qos.policy.uuid
 		var qrConsistencyGroupsQosPolicyUUID string
 
-		if o.ConsistencyGroupsQosPolicyUUIDQueryParameter != nil {
-			qrConsistencyGroupsQosPolicyUUID = *o.ConsistencyGroupsQosPolicyUUIDQueryParameter
+		if o.ConsistencyGroupsQosPolicyUUID != nil {
+			qrConsistencyGroupsQosPolicyUUID = *o.ConsistencyGroupsQosPolicyUUID
 		}
 		qConsistencyGroupsQosPolicyUUID := qrConsistencyGroupsQosPolicyUUID
 		if qConsistencyGroupsQosPolicyUUID != "" {
@@ -2946,13 +5853,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSnapshotPolicyNameQueryParameter != nil {
+	if o.ConsistencyGroupsSnapshotPolicyName != nil {
 
 		// query param consistency_groups.snapshot_policy.name
 		var qrConsistencyGroupsSnapshotPolicyName string
 
-		if o.ConsistencyGroupsSnapshotPolicyNameQueryParameter != nil {
-			qrConsistencyGroupsSnapshotPolicyName = *o.ConsistencyGroupsSnapshotPolicyNameQueryParameter
+		if o.ConsistencyGroupsSnapshotPolicyName != nil {
+			qrConsistencyGroupsSnapshotPolicyName = *o.ConsistencyGroupsSnapshotPolicyName
 		}
 		qConsistencyGroupsSnapshotPolicyName := qrConsistencyGroupsSnapshotPolicyName
 		if qConsistencyGroupsSnapshotPolicyName != "" {
@@ -2963,13 +5870,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSnapshotPolicyUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsSnapshotPolicyUUID != nil {
 
 		// query param consistency_groups.snapshot_policy.uuid
 		var qrConsistencyGroupsSnapshotPolicyUUID string
 
-		if o.ConsistencyGroupsSnapshotPolicyUUIDQueryParameter != nil {
-			qrConsistencyGroupsSnapshotPolicyUUID = *o.ConsistencyGroupsSnapshotPolicyUUIDQueryParameter
+		if o.ConsistencyGroupsSnapshotPolicyUUID != nil {
+			qrConsistencyGroupsSnapshotPolicyUUID = *o.ConsistencyGroupsSnapshotPolicyUUID
 		}
 		qConsistencyGroupsSnapshotPolicyUUID := qrConsistencyGroupsSnapshotPolicyUUID
 		if qConsistencyGroupsSnapshotPolicyUUID != "" {
@@ -2980,13 +5887,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSpaceAvailableQueryParameter != nil {
+	if o.ConsistencyGroupsSpaceAvailable != nil {
 
 		// query param consistency_groups.space.available
 		var qrConsistencyGroupsSpaceAvailable int64
 
-		if o.ConsistencyGroupsSpaceAvailableQueryParameter != nil {
-			qrConsistencyGroupsSpaceAvailable = *o.ConsistencyGroupsSpaceAvailableQueryParameter
+		if o.ConsistencyGroupsSpaceAvailable != nil {
+			qrConsistencyGroupsSpaceAvailable = *o.ConsistencyGroupsSpaceAvailable
 		}
 		qConsistencyGroupsSpaceAvailable := swag.FormatInt64(qrConsistencyGroupsSpaceAvailable)
 		if qConsistencyGroupsSpaceAvailable != "" {
@@ -2997,13 +5904,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSpaceSizeQueryParameter != nil {
+	if o.ConsistencyGroupsSpaceSize != nil {
 
 		// query param consistency_groups.space.size
 		var qrConsistencyGroupsSpaceSize int64
 
-		if o.ConsistencyGroupsSpaceSizeQueryParameter != nil {
-			qrConsistencyGroupsSpaceSize = *o.ConsistencyGroupsSpaceSizeQueryParameter
+		if o.ConsistencyGroupsSpaceSize != nil {
+			qrConsistencyGroupsSpaceSize = *o.ConsistencyGroupsSpaceSize
 		}
 		qConsistencyGroupsSpaceSize := swag.FormatInt64(qrConsistencyGroupsSpaceSize)
 		if qConsistencyGroupsSpaceSize != "" {
@@ -3014,13 +5921,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSpaceUsedQueryParameter != nil {
+	if o.ConsistencyGroupsSpaceUsed != nil {
 
 		// query param consistency_groups.space.used
 		var qrConsistencyGroupsSpaceUsed int64
 
-		if o.ConsistencyGroupsSpaceUsedQueryParameter != nil {
-			qrConsistencyGroupsSpaceUsed = *o.ConsistencyGroupsSpaceUsedQueryParameter
+		if o.ConsistencyGroupsSpaceUsed != nil {
+			qrConsistencyGroupsSpaceUsed = *o.ConsistencyGroupsSpaceUsed
 		}
 		qConsistencyGroupsSpaceUsed := swag.FormatInt64(qrConsistencyGroupsSpaceUsed)
 		if qConsistencyGroupsSpaceUsed != "" {
@@ -3031,13 +5938,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSVMNameQueryParameter != nil {
+	if o.ConsistencyGroupsSvmName != nil {
 
 		// query param consistency_groups.svm.name
 		var qrConsistencyGroupsSvmName string
 
-		if o.ConsistencyGroupsSVMNameQueryParameter != nil {
-			qrConsistencyGroupsSvmName = *o.ConsistencyGroupsSVMNameQueryParameter
+		if o.ConsistencyGroupsSvmName != nil {
+			qrConsistencyGroupsSvmName = *o.ConsistencyGroupsSvmName
 		}
 		qConsistencyGroupsSvmName := qrConsistencyGroupsSvmName
 		if qConsistencyGroupsSvmName != "" {
@@ -3048,13 +5955,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsSVMUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsSvmUUID != nil {
 
 		// query param consistency_groups.svm.uuid
 		var qrConsistencyGroupsSvmUUID string
 
-		if o.ConsistencyGroupsSVMUUIDQueryParameter != nil {
-			qrConsistencyGroupsSvmUUID = *o.ConsistencyGroupsSVMUUIDQueryParameter
+		if o.ConsistencyGroupsSvmUUID != nil {
+			qrConsistencyGroupsSvmUUID = *o.ConsistencyGroupsSvmUUID
 		}
 		qConsistencyGroupsSvmUUID := qrConsistencyGroupsSvmUUID
 		if qConsistencyGroupsSvmUUID != "" {
@@ -3065,13 +5972,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsTieringPolicyQueryParameter != nil {
+	if o.ConsistencyGroupsTieringPolicy != nil {
 
 		// query param consistency_groups.tiering.policy
 		var qrConsistencyGroupsTieringPolicy string
 
-		if o.ConsistencyGroupsTieringPolicyQueryParameter != nil {
-			qrConsistencyGroupsTieringPolicy = *o.ConsistencyGroupsTieringPolicyQueryParameter
+		if o.ConsistencyGroupsTieringPolicy != nil {
+			qrConsistencyGroupsTieringPolicy = *o.ConsistencyGroupsTieringPolicy
 		}
 		qConsistencyGroupsTieringPolicy := qrConsistencyGroupsTieringPolicy
 		if qConsistencyGroupsTieringPolicy != "" {
@@ -3082,13 +5989,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsUUID != nil {
 
 		// query param consistency_groups.uuid
 		var qrConsistencyGroupsUUID string
 
-		if o.ConsistencyGroupsUUIDQueryParameter != nil {
-			qrConsistencyGroupsUUID = *o.ConsistencyGroupsUUIDQueryParameter
+		if o.ConsistencyGroupsUUID != nil {
+			qrConsistencyGroupsUUID = *o.ConsistencyGroupsUUID
 		}
 		qConsistencyGroupsUUID := qrConsistencyGroupsUUID
 		if qConsistencyGroupsUUID != "" {
@@ -3099,13 +6006,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesCommentQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesComment != nil {
 
 		// query param consistency_groups.volumes.comment
 		var qrConsistencyGroupsVolumesComment string
 
-		if o.ConsistencyGroupsVolumesCommentQueryParameter != nil {
-			qrConsistencyGroupsVolumesComment = *o.ConsistencyGroupsVolumesCommentQueryParameter
+		if o.ConsistencyGroupsVolumesComment != nil {
+			qrConsistencyGroupsVolumesComment = *o.ConsistencyGroupsVolumesComment
 		}
 		qConsistencyGroupsVolumesComment := qrConsistencyGroupsVolumesComment
 		if qConsistencyGroupsVolumesComment != "" {
@@ -3116,13 +6023,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesLanguageQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesLanguage != nil {
 
 		// query param consistency_groups.volumes.language
 		var qrConsistencyGroupsVolumesLanguage string
 
-		if o.ConsistencyGroupsVolumesLanguageQueryParameter != nil {
-			qrConsistencyGroupsVolumesLanguage = *o.ConsistencyGroupsVolumesLanguageQueryParameter
+		if o.ConsistencyGroupsVolumesLanguage != nil {
+			qrConsistencyGroupsVolumesLanguage = *o.ConsistencyGroupsVolumesLanguage
 		}
 		qConsistencyGroupsVolumesLanguage := qrConsistencyGroupsVolumesLanguage
 		if qConsistencyGroupsVolumesLanguage != "" {
@@ -3133,13 +6040,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesNameQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesName != nil {
 
 		// query param consistency_groups.volumes.name
 		var qrConsistencyGroupsVolumesName string
 
-		if o.ConsistencyGroupsVolumesNameQueryParameter != nil {
-			qrConsistencyGroupsVolumesName = *o.ConsistencyGroupsVolumesNameQueryParameter
+		if o.ConsistencyGroupsVolumesName != nil {
+			qrConsistencyGroupsVolumesName = *o.ConsistencyGroupsVolumesName
 		}
 		qConsistencyGroupsVolumesName := qrConsistencyGroupsVolumesName
 		if qConsistencyGroupsVolumesName != "" {
@@ -3150,13 +6057,693 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.access_based_enumeration
+		var qrConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration = *o.ConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration
+		}
+		qConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration)
+		if qConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.access_based_enumeration", qConsistencyGroupsVolumesNasCifsSharesAccessBasedEnumeration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesAclsPermission != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.acls.permission
+		var qrConsistencyGroupsVolumesNasCifsSharesAclsPermission string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesAclsPermission != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesAclsPermission = *o.ConsistencyGroupsVolumesNasCifsSharesAclsPermission
+		}
+		qConsistencyGroupsVolumesNasCifsSharesAclsPermission := qrConsistencyGroupsVolumesNasCifsSharesAclsPermission
+		if qConsistencyGroupsVolumesNasCifsSharesAclsPermission != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.acls.permission", qConsistencyGroupsVolumesNasCifsSharesAclsPermission); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesAclsType != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.acls.type
+		var qrConsistencyGroupsVolumesNasCifsSharesAclsType string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesAclsType != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesAclsType = *o.ConsistencyGroupsVolumesNasCifsSharesAclsType
+		}
+		qConsistencyGroupsVolumesNasCifsSharesAclsType := qrConsistencyGroupsVolumesNasCifsSharesAclsType
+		if qConsistencyGroupsVolumesNasCifsSharesAclsType != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.acls.type", qConsistencyGroupsVolumesNasCifsSharesAclsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.acls.user_or_group
+		var qrConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup = *o.ConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup
+		}
+		qConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup := qrConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup
+		if qConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.acls.user_or_group", qConsistencyGroupsVolumesNasCifsSharesAclsUserOrGroup); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.allow_unencrypted_access
+		var qrConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess = *o.ConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess
+		}
+		qConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess)
+		if qConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.allow_unencrypted_access", qConsistencyGroupsVolumesNasCifsSharesAllowUnencryptedAccess); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesChangeNotify != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.change_notify
+		var qrConsistencyGroupsVolumesNasCifsSharesChangeNotify bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesChangeNotify != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesChangeNotify = *o.ConsistencyGroupsVolumesNasCifsSharesChangeNotify
+		}
+		qConsistencyGroupsVolumesNasCifsSharesChangeNotify := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesChangeNotify)
+		if qConsistencyGroupsVolumesNasCifsSharesChangeNotify != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.change_notify", qConsistencyGroupsVolumesNasCifsSharesChangeNotify); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesComment != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.comment
+		var qrConsistencyGroupsVolumesNasCifsSharesComment string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesComment != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesComment = *o.ConsistencyGroupsVolumesNasCifsSharesComment
+		}
+		qConsistencyGroupsVolumesNasCifsSharesComment := qrConsistencyGroupsVolumesNasCifsSharesComment
+		if qConsistencyGroupsVolumesNasCifsSharesComment != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.comment", qConsistencyGroupsVolumesNasCifsSharesComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.continuously_available
+		var qrConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable = *o.ConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable
+		}
+		qConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable)
+		if qConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.continuously_available", qConsistencyGroupsVolumesNasCifsSharesContinuouslyAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesDirUmask != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.dir_umask
+		var qrConsistencyGroupsVolumesNasCifsSharesDirUmask int64
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesDirUmask != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesDirUmask = *o.ConsistencyGroupsVolumesNasCifsSharesDirUmask
+		}
+		qConsistencyGroupsVolumesNasCifsSharesDirUmask := swag.FormatInt64(qrConsistencyGroupsVolumesNasCifsSharesDirUmask)
+		if qConsistencyGroupsVolumesNasCifsSharesDirUmask != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.dir_umask", qConsistencyGroupsVolumesNasCifsSharesDirUmask); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesEncryption != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.encryption
+		var qrConsistencyGroupsVolumesNasCifsSharesEncryption bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesEncryption != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesEncryption = *o.ConsistencyGroupsVolumesNasCifsSharesEncryption
+		}
+		qConsistencyGroupsVolumesNasCifsSharesEncryption := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesEncryption)
+		if qConsistencyGroupsVolumesNasCifsSharesEncryption != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.encryption", qConsistencyGroupsVolumesNasCifsSharesEncryption); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesFileUmask != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.file_umask
+		var qrConsistencyGroupsVolumesNasCifsSharesFileUmask int64
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesFileUmask != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesFileUmask = *o.ConsistencyGroupsVolumesNasCifsSharesFileUmask
+		}
+		qConsistencyGroupsVolumesNasCifsSharesFileUmask := swag.FormatInt64(qrConsistencyGroupsVolumesNasCifsSharesFileUmask)
+		if qConsistencyGroupsVolumesNasCifsSharesFileUmask != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.file_umask", qConsistencyGroupsVolumesNasCifsSharesFileUmask); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesHomeDirectory != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.home_directory
+		var qrConsistencyGroupsVolumesNasCifsSharesHomeDirectory bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesHomeDirectory != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesHomeDirectory = *o.ConsistencyGroupsVolumesNasCifsSharesHomeDirectory
+		}
+		qConsistencyGroupsVolumesNasCifsSharesHomeDirectory := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesHomeDirectory)
+		if qConsistencyGroupsVolumesNasCifsSharesHomeDirectory != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.home_directory", qConsistencyGroupsVolumesNasCifsSharesHomeDirectory); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesName != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.name
+		var qrConsistencyGroupsVolumesNasCifsSharesName string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesName != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesName = *o.ConsistencyGroupsVolumesNasCifsSharesName
+		}
+		qConsistencyGroupsVolumesNasCifsSharesName := qrConsistencyGroupsVolumesNasCifsSharesName
+		if qConsistencyGroupsVolumesNasCifsSharesName != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.name", qConsistencyGroupsVolumesNasCifsSharesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesNamespaceCaching != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.namespace_caching
+		var qrConsistencyGroupsVolumesNasCifsSharesNamespaceCaching bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesNamespaceCaching != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesNamespaceCaching = *o.ConsistencyGroupsVolumesNasCifsSharesNamespaceCaching
+		}
+		qConsistencyGroupsVolumesNasCifsSharesNamespaceCaching := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesNamespaceCaching)
+		if qConsistencyGroupsVolumesNasCifsSharesNamespaceCaching != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.namespace_caching", qConsistencyGroupsVolumesNasCifsSharesNamespaceCaching); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.no_strict_security
+		var qrConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity = *o.ConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity
+		}
+		qConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity)
+		if qConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.no_strict_security", qConsistencyGroupsVolumesNasCifsSharesNoStrictSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesOfflineFiles != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.offline_files
+		var qrConsistencyGroupsVolumesNasCifsSharesOfflineFiles string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesOfflineFiles != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesOfflineFiles = *o.ConsistencyGroupsVolumesNasCifsSharesOfflineFiles
+		}
+		qConsistencyGroupsVolumesNasCifsSharesOfflineFiles := qrConsistencyGroupsVolumesNasCifsSharesOfflineFiles
+		if qConsistencyGroupsVolumesNasCifsSharesOfflineFiles != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.offline_files", qConsistencyGroupsVolumesNasCifsSharesOfflineFiles); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesOplocks != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.oplocks
+		var qrConsistencyGroupsVolumesNasCifsSharesOplocks bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesOplocks != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesOplocks = *o.ConsistencyGroupsVolumesNasCifsSharesOplocks
+		}
+		qConsistencyGroupsVolumesNasCifsSharesOplocks := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesOplocks)
+		if qConsistencyGroupsVolumesNasCifsSharesOplocks != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.oplocks", qConsistencyGroupsVolumesNasCifsSharesOplocks); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesShowSnapshot != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.show_snapshot
+		var qrConsistencyGroupsVolumesNasCifsSharesShowSnapshot bool
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesShowSnapshot != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesShowSnapshot = *o.ConsistencyGroupsVolumesNasCifsSharesShowSnapshot
+		}
+		qConsistencyGroupsVolumesNasCifsSharesShowSnapshot := swag.FormatBool(qrConsistencyGroupsVolumesNasCifsSharesShowSnapshot)
+		if qConsistencyGroupsVolumesNasCifsSharesShowSnapshot != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.show_snapshot", qConsistencyGroupsVolumesNasCifsSharesShowSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesUnixSymlink != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.unix_symlink
+		var qrConsistencyGroupsVolumesNasCifsSharesUnixSymlink string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesUnixSymlink != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesUnixSymlink = *o.ConsistencyGroupsVolumesNasCifsSharesUnixSymlink
+		}
+		qConsistencyGroupsVolumesNasCifsSharesUnixSymlink := qrConsistencyGroupsVolumesNasCifsSharesUnixSymlink
+		if qConsistencyGroupsVolumesNasCifsSharesUnixSymlink != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.unix_symlink", qConsistencyGroupsVolumesNasCifsSharesUnixSymlink); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasCifsSharesVscanProfile != nil {
+
+		// query param consistency_groups.volumes.nas.cifs.shares.vscan_profile
+		var qrConsistencyGroupsVolumesNasCifsSharesVscanProfile string
+
+		if o.ConsistencyGroupsVolumesNasCifsSharesVscanProfile != nil {
+			qrConsistencyGroupsVolumesNasCifsSharesVscanProfile = *o.ConsistencyGroupsVolumesNasCifsSharesVscanProfile
+		}
+		qConsistencyGroupsVolumesNasCifsSharesVscanProfile := qrConsistencyGroupsVolumesNasCifsSharesVscanProfile
+		if qConsistencyGroupsVolumesNasCifsSharesVscanProfile != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.cifs.shares.vscan_profile", qConsistencyGroupsVolumesNasCifsSharesVscanProfile); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyName != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.name
+		var qrConsistencyGroupsVolumesNasExportPolicyName string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyName != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyName = *o.ConsistencyGroupsVolumesNasExportPolicyName
+		}
+		qConsistencyGroupsVolumesNasExportPolicyName := qrConsistencyGroupsVolumesNasExportPolicyName
+		if qConsistencyGroupsVolumesNasExportPolicyName != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.name", qConsistencyGroupsVolumesNasExportPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.allow_device_creation
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation bool
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation = *o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation := swag.FormatBool(qrConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation)
+		if qConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.allow_device_creation", qConsistencyGroupsVolumesNasExportPolicyRulesAllowDeviceCreation); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.allow_suid
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid bool
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid = *o.ConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid := swag.FormatBool(qrConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid)
+		if qConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.allow_suid", qConsistencyGroupsVolumesNasExportPolicyRulesAllowSuid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.anonymous_user
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser = *o.ConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser := qrConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser
+		if qConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.anonymous_user", qConsistencyGroupsVolumesNasExportPolicyRulesAnonymousUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesChownMode != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.chown_mode
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesChownMode string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesChownMode != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesChownMode = *o.ConsistencyGroupsVolumesNasExportPolicyRulesChownMode
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesChownMode := qrConsistencyGroupsVolumesNasExportPolicyRulesChownMode
+		if qConsistencyGroupsVolumesNasExportPolicyRulesChownMode != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.chown_mode", qConsistencyGroupsVolumesNasExportPolicyRulesChownMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.clients.match
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch = *o.ConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch := qrConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch
+		if qConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.clients.match", qConsistencyGroupsVolumesNasExportPolicyRulesClientsMatch); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesIndex != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.index
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesIndex int64
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesIndex != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesIndex = *o.ConsistencyGroupsVolumesNasExportPolicyRulesIndex
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesIndex := swag.FormatInt64(qrConsistencyGroupsVolumesNasExportPolicyRulesIndex)
+		if qConsistencyGroupsVolumesNasExportPolicyRulesIndex != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.index", qConsistencyGroupsVolumesNasExportPolicyRulesIndex); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.ntfs_unix_security
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity = *o.ConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity := qrConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity
+		if qConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.ntfs_unix_security", qConsistencyGroupsVolumesNasExportPolicyRulesNtfsUnixSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesProtocols != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.protocols
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesProtocols string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesProtocols != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesProtocols = *o.ConsistencyGroupsVolumesNasExportPolicyRulesProtocols
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesProtocols := qrConsistencyGroupsVolumesNasExportPolicyRulesProtocols
+		if qConsistencyGroupsVolumesNasExportPolicyRulesProtocols != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.protocols", qConsistencyGroupsVolumesNasExportPolicyRulesProtocols); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesRoRule != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.ro_rule
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesRoRule string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesRoRule != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesRoRule = *o.ConsistencyGroupsVolumesNasExportPolicyRulesRoRule
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesRoRule := qrConsistencyGroupsVolumesNasExportPolicyRulesRoRule
+		if qConsistencyGroupsVolumesNasExportPolicyRulesRoRule != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.ro_rule", qConsistencyGroupsVolumesNasExportPolicyRulesRoRule); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesRwRule != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.rw_rule
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesRwRule string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesRwRule != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesRwRule = *o.ConsistencyGroupsVolumesNasExportPolicyRulesRwRule
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesRwRule := qrConsistencyGroupsVolumesNasExportPolicyRulesRwRule
+		if qConsistencyGroupsVolumesNasExportPolicyRulesRwRule != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.rw_rule", qConsistencyGroupsVolumesNasExportPolicyRulesRwRule); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.rules.superuser
+		var qrConsistencyGroupsVolumesNasExportPolicyRulesSuperuser string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyRulesSuperuser = *o.ConsistencyGroupsVolumesNasExportPolicyRulesSuperuser
+		}
+		qConsistencyGroupsVolumesNasExportPolicyRulesSuperuser := qrConsistencyGroupsVolumesNasExportPolicyRulesSuperuser
+		if qConsistencyGroupsVolumesNasExportPolicyRulesSuperuser != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.rules.superuser", qConsistencyGroupsVolumesNasExportPolicyRulesSuperuser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasExportPolicyUUID != nil {
+
+		// query param consistency_groups.volumes.nas.export_policy.uuid
+		var qrConsistencyGroupsVolumesNasExportPolicyUUID string
+
+		if o.ConsistencyGroupsVolumesNasExportPolicyUUID != nil {
+			qrConsistencyGroupsVolumesNasExportPolicyUUID = *o.ConsistencyGroupsVolumesNasExportPolicyUUID
+		}
+		qConsistencyGroupsVolumesNasExportPolicyUUID := qrConsistencyGroupsVolumesNasExportPolicyUUID
+		if qConsistencyGroupsVolumesNasExportPolicyUUID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.export_policy.uuid", qConsistencyGroupsVolumesNasExportPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasGid != nil {
+
+		// query param consistency_groups.volumes.nas.gid
+		var qrConsistencyGroupsVolumesNasGid int64
+
+		if o.ConsistencyGroupsVolumesNasGid != nil {
+			qrConsistencyGroupsVolumesNasGid = *o.ConsistencyGroupsVolumesNasGid
+		}
+		qConsistencyGroupsVolumesNasGid := swag.FormatInt64(qrConsistencyGroupsVolumesNasGid)
+		if qConsistencyGroupsVolumesNasGid != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.gid", qConsistencyGroupsVolumesNasGid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasJunctionParentName != nil {
+
+		// query param consistency_groups.volumes.nas.junction_parent.name
+		var qrConsistencyGroupsVolumesNasJunctionParentName string
+
+		if o.ConsistencyGroupsVolumesNasJunctionParentName != nil {
+			qrConsistencyGroupsVolumesNasJunctionParentName = *o.ConsistencyGroupsVolumesNasJunctionParentName
+		}
+		qConsistencyGroupsVolumesNasJunctionParentName := qrConsistencyGroupsVolumesNasJunctionParentName
+		if qConsistencyGroupsVolumesNasJunctionParentName != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.junction_parent.name", qConsistencyGroupsVolumesNasJunctionParentName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasJunctionParentUUID != nil {
+
+		// query param consistency_groups.volumes.nas.junction_parent.uuid
+		var qrConsistencyGroupsVolumesNasJunctionParentUUID string
+
+		if o.ConsistencyGroupsVolumesNasJunctionParentUUID != nil {
+			qrConsistencyGroupsVolumesNasJunctionParentUUID = *o.ConsistencyGroupsVolumesNasJunctionParentUUID
+		}
+		qConsistencyGroupsVolumesNasJunctionParentUUID := qrConsistencyGroupsVolumesNasJunctionParentUUID
+		if qConsistencyGroupsVolumesNasJunctionParentUUID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.junction_parent.uuid", qConsistencyGroupsVolumesNasJunctionParentUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasPath != nil {
+
+		// query param consistency_groups.volumes.nas.path
+		var qrConsistencyGroupsVolumesNasPath string
+
+		if o.ConsistencyGroupsVolumesNasPath != nil {
+			qrConsistencyGroupsVolumesNasPath = *o.ConsistencyGroupsVolumesNasPath
+		}
+		qConsistencyGroupsVolumesNasPath := qrConsistencyGroupsVolumesNasPath
+		if qConsistencyGroupsVolumesNasPath != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.path", qConsistencyGroupsVolumesNasPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasSecurityStyle != nil {
+
+		// query param consistency_groups.volumes.nas.security_style
+		var qrConsistencyGroupsVolumesNasSecurityStyle string
+
+		if o.ConsistencyGroupsVolumesNasSecurityStyle != nil {
+			qrConsistencyGroupsVolumesNasSecurityStyle = *o.ConsistencyGroupsVolumesNasSecurityStyle
+		}
+		qConsistencyGroupsVolumesNasSecurityStyle := qrConsistencyGroupsVolumesNasSecurityStyle
+		if qConsistencyGroupsVolumesNasSecurityStyle != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.security_style", qConsistencyGroupsVolumesNasSecurityStyle); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasUID != nil {
+
+		// query param consistency_groups.volumes.nas.uid
+		var qrConsistencyGroupsVolumesNasUID int64
+
+		if o.ConsistencyGroupsVolumesNasUID != nil {
+			qrConsistencyGroupsVolumesNasUID = *o.ConsistencyGroupsVolumesNasUID
+		}
+		qConsistencyGroupsVolumesNasUID := swag.FormatInt64(qrConsistencyGroupsVolumesNasUID)
+		if qConsistencyGroupsVolumesNasUID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.uid", qConsistencyGroupsVolumesNasUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesNasUnixPermissions != nil {
+
+		// query param consistency_groups.volumes.nas.unix_permissions
+		var qrConsistencyGroupsVolumesNasUnixPermissions int64
+
+		if o.ConsistencyGroupsVolumesNasUnixPermissions != nil {
+			qrConsistencyGroupsVolumesNasUnixPermissions = *o.ConsistencyGroupsVolumesNasUnixPermissions
+		}
+		qConsistencyGroupsVolumesNasUnixPermissions := swag.FormatInt64(qrConsistencyGroupsVolumesNasUnixPermissions)
+		if qConsistencyGroupsVolumesNasUnixPermissions != "" {
+
+			if err := r.SetQueryParam("consistency_groups.volumes.nas.unix_permissions", qConsistencyGroupsVolumesNasUnixPermissions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops != nil {
 
 		// query param consistency_groups.volumes.qos.policy.max_throughput_iops
 		var qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops int64
 
-		if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops = *o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIopsQueryParameter
+		if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops != nil {
+			qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops = *o.ConsistencyGroupsVolumesQosPolicyMaxThroughputIops
 		}
 		qConsistencyGroupsVolumesQosPolicyMaxThroughputIops := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMaxThroughputIops)
 		if qConsistencyGroupsVolumesQosPolicyMaxThroughputIops != "" {
@@ -3167,13 +6754,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps != nil {
 
 		// query param consistency_groups.volumes.qos.policy.max_throughput_mbps
 		var qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps int64
 
-		if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbpsQueryParameter
+		if o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps != nil {
+			qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps = *o.ConsistencyGroupsVolumesQosPolicyMaxThroughputMbps
 		}
 		qConsistencyGroupsVolumesQosPolicyMaxThroughputMbps := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMaxThroughputMbps)
 		if qConsistencyGroupsVolumesQosPolicyMaxThroughputMbps != "" {
@@ -3184,13 +6771,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops != nil {
 
 		// query param consistency_groups.volumes.qos.policy.min_throughput_iops
 		var qrConsistencyGroupsVolumesQosPolicyMinThroughputIops int64
 
-		if o.ConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter != nil {
-			qrConsistencyGroupsVolumesQosPolicyMinThroughputIops = *o.ConsistencyGroupsVolumesQosPolicyMinThroughputIopsQueryParameter
+		if o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops != nil {
+			qrConsistencyGroupsVolumesQosPolicyMinThroughputIops = *o.ConsistencyGroupsVolumesQosPolicyMinThroughputIops
 		}
 		qConsistencyGroupsVolumesQosPolicyMinThroughputIops := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMinThroughputIops)
 		if qConsistencyGroupsVolumesQosPolicyMinThroughputIops != "" {
@@ -3201,13 +6788,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps != nil {
 
 		// query param consistency_groups.volumes.qos.policy.min_throughput_mbps
 		var qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps int64
 
-		if o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps = *o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbpsQueryParameter
+		if o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps != nil {
+			qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps = *o.ConsistencyGroupsVolumesQosPolicyMinThroughputMbps
 		}
 		qConsistencyGroupsVolumesQosPolicyMinThroughputMbps := swag.FormatInt64(qrConsistencyGroupsVolumesQosPolicyMinThroughputMbps)
 		if qConsistencyGroupsVolumesQosPolicyMinThroughputMbps != "" {
@@ -3218,13 +6805,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesQosPolicyNameQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesQosPolicyName != nil {
 
 		// query param consistency_groups.volumes.qos.policy.name
 		var qrConsistencyGroupsVolumesQosPolicyName string
 
-		if o.ConsistencyGroupsVolumesQosPolicyNameQueryParameter != nil {
-			qrConsistencyGroupsVolumesQosPolicyName = *o.ConsistencyGroupsVolumesQosPolicyNameQueryParameter
+		if o.ConsistencyGroupsVolumesQosPolicyName != nil {
+			qrConsistencyGroupsVolumesQosPolicyName = *o.ConsistencyGroupsVolumesQosPolicyName
 		}
 		qConsistencyGroupsVolumesQosPolicyName := qrConsistencyGroupsVolumesQosPolicyName
 		if qConsistencyGroupsVolumesQosPolicyName != "" {
@@ -3235,13 +6822,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesQosPolicyUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesQosPolicyUUID != nil {
 
 		// query param consistency_groups.volumes.qos.policy.uuid
 		var qrConsistencyGroupsVolumesQosPolicyUUID string
 
-		if o.ConsistencyGroupsVolumesQosPolicyUUIDQueryParameter != nil {
-			qrConsistencyGroupsVolumesQosPolicyUUID = *o.ConsistencyGroupsVolumesQosPolicyUUIDQueryParameter
+		if o.ConsistencyGroupsVolumesQosPolicyUUID != nil {
+			qrConsistencyGroupsVolumesQosPolicyUUID = *o.ConsistencyGroupsVolumesQosPolicyUUID
 		}
 		qConsistencyGroupsVolumesQosPolicyUUID := qrConsistencyGroupsVolumesQosPolicyUUID
 		if qConsistencyGroupsVolumesQosPolicyUUID != "" {
@@ -3252,13 +6839,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesSnapshotPolicyName != nil {
 
 		// query param consistency_groups.volumes.snapshot_policy.name
 		var qrConsistencyGroupsVolumesSnapshotPolicyName string
 
-		if o.ConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter != nil {
-			qrConsistencyGroupsVolumesSnapshotPolicyName = *o.ConsistencyGroupsVolumesSnapshotPolicyNameQueryParameter
+		if o.ConsistencyGroupsVolumesSnapshotPolicyName != nil {
+			qrConsistencyGroupsVolumesSnapshotPolicyName = *o.ConsistencyGroupsVolumesSnapshotPolicyName
 		}
 		qConsistencyGroupsVolumesSnapshotPolicyName := qrConsistencyGroupsVolumesSnapshotPolicyName
 		if qConsistencyGroupsVolumesSnapshotPolicyName != "" {
@@ -3269,13 +6856,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesSnapshotPolicyUUID != nil {
 
 		// query param consistency_groups.volumes.snapshot_policy.uuid
 		var qrConsistencyGroupsVolumesSnapshotPolicyUUID string
 
-		if o.ConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter != nil {
-			qrConsistencyGroupsVolumesSnapshotPolicyUUID = *o.ConsistencyGroupsVolumesSnapshotPolicyUUIDQueryParameter
+		if o.ConsistencyGroupsVolumesSnapshotPolicyUUID != nil {
+			qrConsistencyGroupsVolumesSnapshotPolicyUUID = *o.ConsistencyGroupsVolumesSnapshotPolicyUUID
 		}
 		qConsistencyGroupsVolumesSnapshotPolicyUUID := qrConsistencyGroupsVolumesSnapshotPolicyUUID
 		if qConsistencyGroupsVolumesSnapshotPolicyUUID != "" {
@@ -3286,13 +6873,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesSpaceAvailableQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesSpaceAvailable != nil {
 
 		// query param consistency_groups.volumes.space.available
 		var qrConsistencyGroupsVolumesSpaceAvailable int64
 
-		if o.ConsistencyGroupsVolumesSpaceAvailableQueryParameter != nil {
-			qrConsistencyGroupsVolumesSpaceAvailable = *o.ConsistencyGroupsVolumesSpaceAvailableQueryParameter
+		if o.ConsistencyGroupsVolumesSpaceAvailable != nil {
+			qrConsistencyGroupsVolumesSpaceAvailable = *o.ConsistencyGroupsVolumesSpaceAvailable
 		}
 		qConsistencyGroupsVolumesSpaceAvailable := swag.FormatInt64(qrConsistencyGroupsVolumesSpaceAvailable)
 		if qConsistencyGroupsVolumesSpaceAvailable != "" {
@@ -3303,13 +6890,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesSpaceSizeQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesSpaceSize != nil {
 
 		// query param consistency_groups.volumes.space.size
 		var qrConsistencyGroupsVolumesSpaceSize int64
 
-		if o.ConsistencyGroupsVolumesSpaceSizeQueryParameter != nil {
-			qrConsistencyGroupsVolumesSpaceSize = *o.ConsistencyGroupsVolumesSpaceSizeQueryParameter
+		if o.ConsistencyGroupsVolumesSpaceSize != nil {
+			qrConsistencyGroupsVolumesSpaceSize = *o.ConsistencyGroupsVolumesSpaceSize
 		}
 		qConsistencyGroupsVolumesSpaceSize := swag.FormatInt64(qrConsistencyGroupsVolumesSpaceSize)
 		if qConsistencyGroupsVolumesSpaceSize != "" {
@@ -3320,13 +6907,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesSpaceUsedQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesSpaceUsed != nil {
 
 		// query param consistency_groups.volumes.space.used
 		var qrConsistencyGroupsVolumesSpaceUsed int64
 
-		if o.ConsistencyGroupsVolumesSpaceUsedQueryParameter != nil {
-			qrConsistencyGroupsVolumesSpaceUsed = *o.ConsistencyGroupsVolumesSpaceUsedQueryParameter
+		if o.ConsistencyGroupsVolumesSpaceUsed != nil {
+			qrConsistencyGroupsVolumesSpaceUsed = *o.ConsistencyGroupsVolumesSpaceUsed
 		}
 		qConsistencyGroupsVolumesSpaceUsed := swag.FormatInt64(qrConsistencyGroupsVolumesSpaceUsed)
 		if qConsistencyGroupsVolumesSpaceUsed != "" {
@@ -3337,13 +6924,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesTieringPolicyQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesTieringPolicy != nil {
 
 		// query param consistency_groups.volumes.tiering.policy
 		var qrConsistencyGroupsVolumesTieringPolicy string
 
-		if o.ConsistencyGroupsVolumesTieringPolicyQueryParameter != nil {
-			qrConsistencyGroupsVolumesTieringPolicy = *o.ConsistencyGroupsVolumesTieringPolicyQueryParameter
+		if o.ConsistencyGroupsVolumesTieringPolicy != nil {
+			qrConsistencyGroupsVolumesTieringPolicy = *o.ConsistencyGroupsVolumesTieringPolicy
 		}
 		qConsistencyGroupsVolumesTieringPolicy := qrConsistencyGroupsVolumesTieringPolicy
 		if qConsistencyGroupsVolumesTieringPolicy != "" {
@@ -3354,13 +6941,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ConsistencyGroupsVolumesUUIDQueryParameter != nil {
+	if o.ConsistencyGroupsVolumesUUID != nil {
 
 		// query param consistency_groups.volumes.uuid
 		var qrConsistencyGroupsVolumesUUID string
 
-		if o.ConsistencyGroupsVolumesUUIDQueryParameter != nil {
-			qrConsistencyGroupsVolumesUUID = *o.ConsistencyGroupsVolumesUUIDQueryParameter
+		if o.ConsistencyGroupsVolumesUUID != nil {
+			qrConsistencyGroupsVolumesUUID = *o.ConsistencyGroupsVolumesUUID
 		}
 		qConsistencyGroupsVolumesUUID := qrConsistencyGroupsVolumesUUID
 		if qConsistencyGroupsVolumesUUID != "" {
@@ -3371,7 +6958,7 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -3382,13 +6969,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsCommentQueryParameter != nil {
+	if o.LunsComment != nil {
 
 		// query param luns.comment
 		var qrLunsComment string
 
-		if o.LunsCommentQueryParameter != nil {
-			qrLunsComment = *o.LunsCommentQueryParameter
+		if o.LunsComment != nil {
+			qrLunsComment = *o.LunsComment
 		}
 		qLunsComment := qrLunsComment
 		if qLunsComment != "" {
@@ -3399,13 +6986,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsCreateTimeQueryParameter != nil {
+	if o.LunsCreateTime != nil {
 
 		// query param luns.create_time
 		var qrLunsCreateTime string
 
-		if o.LunsCreateTimeQueryParameter != nil {
-			qrLunsCreateTime = *o.LunsCreateTimeQueryParameter
+		if o.LunsCreateTime != nil {
+			qrLunsCreateTime = *o.LunsCreateTime
 		}
 		qLunsCreateTime := qrLunsCreateTime
 		if qLunsCreateTime != "" {
@@ -3416,13 +7003,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsEnabledQueryParameter != nil {
+	if o.LunsEnabled != nil {
 
 		// query param luns.enabled
 		var qrLunsEnabled bool
 
-		if o.LunsEnabledQueryParameter != nil {
-			qrLunsEnabled = *o.LunsEnabledQueryParameter
+		if o.LunsEnabled != nil {
+			qrLunsEnabled = *o.LunsEnabled
 		}
 		qLunsEnabled := swag.FormatBool(qrLunsEnabled)
 		if qLunsEnabled != "" {
@@ -3433,13 +7020,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupCommentQueryParameter != nil {
+	if o.LunsLunMapsIgroupComment != nil {
 
 		// query param luns.lun_maps.igroup.comment
 		var qrLunsLunMapsIgroupComment string
 
-		if o.LunsLunMapsIgroupCommentQueryParameter != nil {
-			qrLunsLunMapsIgroupComment = *o.LunsLunMapsIgroupCommentQueryParameter
+		if o.LunsLunMapsIgroupComment != nil {
+			qrLunsLunMapsIgroupComment = *o.LunsLunMapsIgroupComment
 		}
 		qLunsLunMapsIgroupComment := qrLunsLunMapsIgroupComment
 		if qLunsLunMapsIgroupComment != "" {
@@ -3450,13 +7037,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupIgroupsNameQueryParameter != nil {
+	if o.LunsLunMapsIgroupIgroupsName != nil {
 
 		// query param luns.lun_maps.igroup.igroups.name
 		var qrLunsLunMapsIgroupIgroupsName string
 
-		if o.LunsLunMapsIgroupIgroupsNameQueryParameter != nil {
-			qrLunsLunMapsIgroupIgroupsName = *o.LunsLunMapsIgroupIgroupsNameQueryParameter
+		if o.LunsLunMapsIgroupIgroupsName != nil {
+			qrLunsLunMapsIgroupIgroupsName = *o.LunsLunMapsIgroupIgroupsName
 		}
 		qLunsLunMapsIgroupIgroupsName := qrLunsLunMapsIgroupIgroupsName
 		if qLunsLunMapsIgroupIgroupsName != "" {
@@ -3467,13 +7054,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupIgroupsUUIDQueryParameter != nil {
+	if o.LunsLunMapsIgroupIgroupsUUID != nil {
 
 		// query param luns.lun_maps.igroup.igroups.uuid
 		var qrLunsLunMapsIgroupIgroupsUUID string
 
-		if o.LunsLunMapsIgroupIgroupsUUIDQueryParameter != nil {
-			qrLunsLunMapsIgroupIgroupsUUID = *o.LunsLunMapsIgroupIgroupsUUIDQueryParameter
+		if o.LunsLunMapsIgroupIgroupsUUID != nil {
+			qrLunsLunMapsIgroupIgroupsUUID = *o.LunsLunMapsIgroupIgroupsUUID
 		}
 		qLunsLunMapsIgroupIgroupsUUID := qrLunsLunMapsIgroupIgroupsUUID
 		if qLunsLunMapsIgroupIgroupsUUID != "" {
@@ -3484,13 +7071,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupInitiatorsCommentQueryParameter != nil {
+	if o.LunsLunMapsIgroupInitiatorsComment != nil {
 
 		// query param luns.lun_maps.igroup.initiators.comment
 		var qrLunsLunMapsIgroupInitiatorsComment string
 
-		if o.LunsLunMapsIgroupInitiatorsCommentQueryParameter != nil {
-			qrLunsLunMapsIgroupInitiatorsComment = *o.LunsLunMapsIgroupInitiatorsCommentQueryParameter
+		if o.LunsLunMapsIgroupInitiatorsComment != nil {
+			qrLunsLunMapsIgroupInitiatorsComment = *o.LunsLunMapsIgroupInitiatorsComment
 		}
 		qLunsLunMapsIgroupInitiatorsComment := qrLunsLunMapsIgroupInitiatorsComment
 		if qLunsLunMapsIgroupInitiatorsComment != "" {
@@ -3501,13 +7088,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupInitiatorsNameQueryParameter != nil {
+	if o.LunsLunMapsIgroupInitiatorsName != nil {
 
 		// query param luns.lun_maps.igroup.initiators.name
 		var qrLunsLunMapsIgroupInitiatorsName string
 
-		if o.LunsLunMapsIgroupInitiatorsNameQueryParameter != nil {
-			qrLunsLunMapsIgroupInitiatorsName = *o.LunsLunMapsIgroupInitiatorsNameQueryParameter
+		if o.LunsLunMapsIgroupInitiatorsName != nil {
+			qrLunsLunMapsIgroupInitiatorsName = *o.LunsLunMapsIgroupInitiatorsName
 		}
 		qLunsLunMapsIgroupInitiatorsName := qrLunsLunMapsIgroupInitiatorsName
 		if qLunsLunMapsIgroupInitiatorsName != "" {
@@ -3518,13 +7105,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupNameQueryParameter != nil {
+	if o.LunsLunMapsIgroupName != nil {
 
 		// query param luns.lun_maps.igroup.name
 		var qrLunsLunMapsIgroupName string
 
-		if o.LunsLunMapsIgroupNameQueryParameter != nil {
-			qrLunsLunMapsIgroupName = *o.LunsLunMapsIgroupNameQueryParameter
+		if o.LunsLunMapsIgroupName != nil {
+			qrLunsLunMapsIgroupName = *o.LunsLunMapsIgroupName
 		}
 		qLunsLunMapsIgroupName := qrLunsLunMapsIgroupName
 		if qLunsLunMapsIgroupName != "" {
@@ -3535,13 +7122,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupOsTypeQueryParameter != nil {
+	if o.LunsLunMapsIgroupOsType != nil {
 
 		// query param luns.lun_maps.igroup.os_type
 		var qrLunsLunMapsIgroupOsType string
 
-		if o.LunsLunMapsIgroupOsTypeQueryParameter != nil {
-			qrLunsLunMapsIgroupOsType = *o.LunsLunMapsIgroupOsTypeQueryParameter
+		if o.LunsLunMapsIgroupOsType != nil {
+			qrLunsLunMapsIgroupOsType = *o.LunsLunMapsIgroupOsType
 		}
 		qLunsLunMapsIgroupOsType := qrLunsLunMapsIgroupOsType
 		if qLunsLunMapsIgroupOsType != "" {
@@ -3552,13 +7139,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupProtocolQueryParameter != nil {
+	if o.LunsLunMapsIgroupProtocol != nil {
 
 		// query param luns.lun_maps.igroup.protocol
 		var qrLunsLunMapsIgroupProtocol string
 
-		if o.LunsLunMapsIgroupProtocolQueryParameter != nil {
-			qrLunsLunMapsIgroupProtocol = *o.LunsLunMapsIgroupProtocolQueryParameter
+		if o.LunsLunMapsIgroupProtocol != nil {
+			qrLunsLunMapsIgroupProtocol = *o.LunsLunMapsIgroupProtocol
 		}
 		qLunsLunMapsIgroupProtocol := qrLunsLunMapsIgroupProtocol
 		if qLunsLunMapsIgroupProtocol != "" {
@@ -3569,13 +7156,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsIgroupUUIDQueryParameter != nil {
+	if o.LunsLunMapsIgroupUUID != nil {
 
 		// query param luns.lun_maps.igroup.uuid
 		var qrLunsLunMapsIgroupUUID string
 
-		if o.LunsLunMapsIgroupUUIDQueryParameter != nil {
-			qrLunsLunMapsIgroupUUID = *o.LunsLunMapsIgroupUUIDQueryParameter
+		if o.LunsLunMapsIgroupUUID != nil {
+			qrLunsLunMapsIgroupUUID = *o.LunsLunMapsIgroupUUID
 		}
 		qLunsLunMapsIgroupUUID := qrLunsLunMapsIgroupUUID
 		if qLunsLunMapsIgroupUUID != "" {
@@ -3586,13 +7173,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsLunMapsLogicalUnitNumberQueryParameter != nil {
+	if o.LunsLunMapsLogicalUnitNumber != nil {
 
 		// query param luns.lun_maps.logical_unit_number
 		var qrLunsLunMapsLogicalUnitNumber int64
 
-		if o.LunsLunMapsLogicalUnitNumberQueryParameter != nil {
-			qrLunsLunMapsLogicalUnitNumber = *o.LunsLunMapsLogicalUnitNumberQueryParameter
+		if o.LunsLunMapsLogicalUnitNumber != nil {
+			qrLunsLunMapsLogicalUnitNumber = *o.LunsLunMapsLogicalUnitNumber
 		}
 		qLunsLunMapsLogicalUnitNumber := swag.FormatInt64(qrLunsLunMapsLogicalUnitNumber)
 		if qLunsLunMapsLogicalUnitNumber != "" {
@@ -3603,13 +7190,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsNameQueryParameter != nil {
+	if o.LunsName != nil {
 
 		// query param luns.name
 		var qrLunsName string
 
-		if o.LunsNameQueryParameter != nil {
-			qrLunsName = *o.LunsNameQueryParameter
+		if o.LunsName != nil {
+			qrLunsName = *o.LunsName
 		}
 		qLunsName := qrLunsName
 		if qLunsName != "" {
@@ -3620,13 +7207,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsOsTypeQueryParameter != nil {
+	if o.LunsOsType != nil {
 
 		// query param luns.os_type
 		var qrLunsOsType string
 
-		if o.LunsOsTypeQueryParameter != nil {
-			qrLunsOsType = *o.LunsOsTypeQueryParameter
+		if o.LunsOsType != nil {
+			qrLunsOsType = *o.LunsOsType
 		}
 		qLunsOsType := qrLunsOsType
 		if qLunsOsType != "" {
@@ -3637,13 +7224,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsQosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.LunsQosPolicyMaxThroughputIops != nil {
 
 		// query param luns.qos.policy.max_throughput_iops
 		var qrLunsQosPolicyMaxThroughputIops int64
 
-		if o.LunsQosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrLunsQosPolicyMaxThroughputIops = *o.LunsQosPolicyMaxThroughputIopsQueryParameter
+		if o.LunsQosPolicyMaxThroughputIops != nil {
+			qrLunsQosPolicyMaxThroughputIops = *o.LunsQosPolicyMaxThroughputIops
 		}
 		qLunsQosPolicyMaxThroughputIops := swag.FormatInt64(qrLunsQosPolicyMaxThroughputIops)
 		if qLunsQosPolicyMaxThroughputIops != "" {
@@ -3654,13 +7241,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsQosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.LunsQosPolicyMaxThroughputMbps != nil {
 
 		// query param luns.qos.policy.max_throughput_mbps
 		var qrLunsQosPolicyMaxThroughputMbps int64
 
-		if o.LunsQosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrLunsQosPolicyMaxThroughputMbps = *o.LunsQosPolicyMaxThroughputMbpsQueryParameter
+		if o.LunsQosPolicyMaxThroughputMbps != nil {
+			qrLunsQosPolicyMaxThroughputMbps = *o.LunsQosPolicyMaxThroughputMbps
 		}
 		qLunsQosPolicyMaxThroughputMbps := swag.FormatInt64(qrLunsQosPolicyMaxThroughputMbps)
 		if qLunsQosPolicyMaxThroughputMbps != "" {
@@ -3671,13 +7258,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsQosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.LunsQosPolicyMinThroughputIops != nil {
 
 		// query param luns.qos.policy.min_throughput_iops
 		var qrLunsQosPolicyMinThroughputIops int64
 
-		if o.LunsQosPolicyMinThroughputIopsQueryParameter != nil {
-			qrLunsQosPolicyMinThroughputIops = *o.LunsQosPolicyMinThroughputIopsQueryParameter
+		if o.LunsQosPolicyMinThroughputIops != nil {
+			qrLunsQosPolicyMinThroughputIops = *o.LunsQosPolicyMinThroughputIops
 		}
 		qLunsQosPolicyMinThroughputIops := swag.FormatInt64(qrLunsQosPolicyMinThroughputIops)
 		if qLunsQosPolicyMinThroughputIops != "" {
@@ -3688,13 +7275,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsQosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.LunsQosPolicyMinThroughputMbps != nil {
 
 		// query param luns.qos.policy.min_throughput_mbps
 		var qrLunsQosPolicyMinThroughputMbps int64
 
-		if o.LunsQosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrLunsQosPolicyMinThroughputMbps = *o.LunsQosPolicyMinThroughputMbpsQueryParameter
+		if o.LunsQosPolicyMinThroughputMbps != nil {
+			qrLunsQosPolicyMinThroughputMbps = *o.LunsQosPolicyMinThroughputMbps
 		}
 		qLunsQosPolicyMinThroughputMbps := swag.FormatInt64(qrLunsQosPolicyMinThroughputMbps)
 		if qLunsQosPolicyMinThroughputMbps != "" {
@@ -3705,13 +7292,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsQosPolicyNameQueryParameter != nil {
+	if o.LunsQosPolicyName != nil {
 
 		// query param luns.qos.policy.name
 		var qrLunsQosPolicyName string
 
-		if o.LunsQosPolicyNameQueryParameter != nil {
-			qrLunsQosPolicyName = *o.LunsQosPolicyNameQueryParameter
+		if o.LunsQosPolicyName != nil {
+			qrLunsQosPolicyName = *o.LunsQosPolicyName
 		}
 		qLunsQosPolicyName := qrLunsQosPolicyName
 		if qLunsQosPolicyName != "" {
@@ -3722,13 +7309,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsQosPolicyUUIDQueryParameter != nil {
+	if o.LunsQosPolicyUUID != nil {
 
 		// query param luns.qos.policy.uuid
 		var qrLunsQosPolicyUUID string
 
-		if o.LunsQosPolicyUUIDQueryParameter != nil {
-			qrLunsQosPolicyUUID = *o.LunsQosPolicyUUIDQueryParameter
+		if o.LunsQosPolicyUUID != nil {
+			qrLunsQosPolicyUUID = *o.LunsQosPolicyUUID
 		}
 		qLunsQosPolicyUUID := qrLunsQosPolicyUUID
 		if qLunsQosPolicyUUID != "" {
@@ -3739,13 +7326,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsSerialNumberQueryParameter != nil {
+	if o.LunsSerialNumber != nil {
 
 		// query param luns.serial_number
 		var qrLunsSerialNumber string
 
-		if o.LunsSerialNumberQueryParameter != nil {
-			qrLunsSerialNumber = *o.LunsSerialNumberQueryParameter
+		if o.LunsSerialNumber != nil {
+			qrLunsSerialNumber = *o.LunsSerialNumber
 		}
 		qLunsSerialNumber := qrLunsSerialNumber
 		if qLunsSerialNumber != "" {
@@ -3756,13 +7343,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsSpaceGuaranteeRequestedQueryParameter != nil {
+	if o.LunsSpaceGuaranteeRequested != nil {
 
 		// query param luns.space.guarantee.requested
 		var qrLunsSpaceGuaranteeRequested bool
 
-		if o.LunsSpaceGuaranteeRequestedQueryParameter != nil {
-			qrLunsSpaceGuaranteeRequested = *o.LunsSpaceGuaranteeRequestedQueryParameter
+		if o.LunsSpaceGuaranteeRequested != nil {
+			qrLunsSpaceGuaranteeRequested = *o.LunsSpaceGuaranteeRequested
 		}
 		qLunsSpaceGuaranteeRequested := swag.FormatBool(qrLunsSpaceGuaranteeRequested)
 		if qLunsSpaceGuaranteeRequested != "" {
@@ -3773,13 +7360,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsSpaceGuaranteeReservedQueryParameter != nil {
+	if o.LunsSpaceGuaranteeReserved != nil {
 
 		// query param luns.space.guarantee.reserved
 		var qrLunsSpaceGuaranteeReserved bool
 
-		if o.LunsSpaceGuaranteeReservedQueryParameter != nil {
-			qrLunsSpaceGuaranteeReserved = *o.LunsSpaceGuaranteeReservedQueryParameter
+		if o.LunsSpaceGuaranteeReserved != nil {
+			qrLunsSpaceGuaranteeReserved = *o.LunsSpaceGuaranteeReserved
 		}
 		qLunsSpaceGuaranteeReserved := swag.FormatBool(qrLunsSpaceGuaranteeReserved)
 		if qLunsSpaceGuaranteeReserved != "" {
@@ -3790,13 +7377,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsSpaceSizeQueryParameter != nil {
+	if o.LunsSpaceSize != nil {
 
 		// query param luns.space.size
 		var qrLunsSpaceSize int64
 
-		if o.LunsSpaceSizeQueryParameter != nil {
-			qrLunsSpaceSize = *o.LunsSpaceSizeQueryParameter
+		if o.LunsSpaceSize != nil {
+			qrLunsSpaceSize = *o.LunsSpaceSize
 		}
 		qLunsSpaceSize := swag.FormatInt64(qrLunsSpaceSize)
 		if qLunsSpaceSize != "" {
@@ -3807,13 +7394,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsSpaceUsedQueryParameter != nil {
+	if o.LunsSpaceUsed != nil {
 
 		// query param luns.space.used
 		var qrLunsSpaceUsed int64
 
-		if o.LunsSpaceUsedQueryParameter != nil {
-			qrLunsSpaceUsed = *o.LunsSpaceUsedQueryParameter
+		if o.LunsSpaceUsed != nil {
+			qrLunsSpaceUsed = *o.LunsSpaceUsed
 		}
 		qLunsSpaceUsed := swag.FormatInt64(qrLunsSpaceUsed)
 		if qLunsSpaceUsed != "" {
@@ -3824,13 +7411,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LunsUUIDQueryParameter != nil {
+	if o.LunsUUID != nil {
 
 		// query param luns.uuid
 		var qrLunsUUID string
 
-		if o.LunsUUIDQueryParameter != nil {
-			qrLunsUUID = *o.LunsUUIDQueryParameter
+		if o.LunsUUID != nil {
+			qrLunsUUID = *o.LunsUUID
 		}
 		qLunsUUID := qrLunsUUID
 		if qLunsUUID != "" {
@@ -3841,13 +7428,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -3858,13 +7445,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -3875,7 +7462,398 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.NamespacesAutoDelete != nil {
+
+		// query param namespaces.auto_delete
+		var qrNamespacesAutoDelete bool
+
+		if o.NamespacesAutoDelete != nil {
+			qrNamespacesAutoDelete = *o.NamespacesAutoDelete
+		}
+		qNamespacesAutoDelete := swag.FormatBool(qrNamespacesAutoDelete)
+		if qNamespacesAutoDelete != "" {
+
+			if err := r.SetQueryParam("namespaces.auto_delete", qNamespacesAutoDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesComment != nil {
+
+		// query param namespaces.comment
+		var qrNamespacesComment string
+
+		if o.NamespacesComment != nil {
+			qrNamespacesComment = *o.NamespacesComment
+		}
+		qNamespacesComment := qrNamespacesComment
+		if qNamespacesComment != "" {
+
+			if err := r.SetQueryParam("namespaces.comment", qNamespacesComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesCreateTime != nil {
+
+		// query param namespaces.create_time
+		var qrNamespacesCreateTime string
+
+		if o.NamespacesCreateTime != nil {
+			qrNamespacesCreateTime = *o.NamespacesCreateTime
+		}
+		qNamespacesCreateTime := qrNamespacesCreateTime
+		if qNamespacesCreateTime != "" {
+
+			if err := r.SetQueryParam("namespaces.create_time", qNamespacesCreateTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesEnabled != nil {
+
+		// query param namespaces.enabled
+		var qrNamespacesEnabled bool
+
+		if o.NamespacesEnabled != nil {
+			qrNamespacesEnabled = *o.NamespacesEnabled
+		}
+		qNamespacesEnabled := swag.FormatBool(qrNamespacesEnabled)
+		if qNamespacesEnabled != "" {
+
+			if err := r.SetQueryParam("namespaces.enabled", qNamespacesEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesName != nil {
+
+		// query param namespaces.name
+		var qrNamespacesName string
+
+		if o.NamespacesName != nil {
+			qrNamespacesName = *o.NamespacesName
+		}
+		qNamespacesName := qrNamespacesName
+		if qNamespacesName != "" {
+
+			if err := r.SetQueryParam("namespaces.name", qNamespacesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesOsType != nil {
+
+		// query param namespaces.os_type
+		var qrNamespacesOsType string
+
+		if o.NamespacesOsType != nil {
+			qrNamespacesOsType = *o.NamespacesOsType
+		}
+		qNamespacesOsType := qrNamespacesOsType
+		if qNamespacesOsType != "" {
+
+			if err := r.SetQueryParam("namespaces.os_type", qNamespacesOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceBlockSize != nil {
+
+		// query param namespaces.space.block_size
+		var qrNamespacesSpaceBlockSize int64
+
+		if o.NamespacesSpaceBlockSize != nil {
+			qrNamespacesSpaceBlockSize = *o.NamespacesSpaceBlockSize
+		}
+		qNamespacesSpaceBlockSize := swag.FormatInt64(qrNamespacesSpaceBlockSize)
+		if qNamespacesSpaceBlockSize != "" {
+
+			if err := r.SetQueryParam("namespaces.space.block_size", qNamespacesSpaceBlockSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceGuaranteeRequested != nil {
+
+		// query param namespaces.space.guarantee.requested
+		var qrNamespacesSpaceGuaranteeRequested bool
+
+		if o.NamespacesSpaceGuaranteeRequested != nil {
+			qrNamespacesSpaceGuaranteeRequested = *o.NamespacesSpaceGuaranteeRequested
+		}
+		qNamespacesSpaceGuaranteeRequested := swag.FormatBool(qrNamespacesSpaceGuaranteeRequested)
+		if qNamespacesSpaceGuaranteeRequested != "" {
+
+			if err := r.SetQueryParam("namespaces.space.guarantee.requested", qNamespacesSpaceGuaranteeRequested); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceGuaranteeReserved != nil {
+
+		// query param namespaces.space.guarantee.reserved
+		var qrNamespacesSpaceGuaranteeReserved bool
+
+		if o.NamespacesSpaceGuaranteeReserved != nil {
+			qrNamespacesSpaceGuaranteeReserved = *o.NamespacesSpaceGuaranteeReserved
+		}
+		qNamespacesSpaceGuaranteeReserved := swag.FormatBool(qrNamespacesSpaceGuaranteeReserved)
+		if qNamespacesSpaceGuaranteeReserved != "" {
+
+			if err := r.SetQueryParam("namespaces.space.guarantee.reserved", qNamespacesSpaceGuaranteeReserved); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSize != nil {
+
+		// query param namespaces.space.size
+		var qrNamespacesSpaceSize int64
+
+		if o.NamespacesSpaceSize != nil {
+			qrNamespacesSpaceSize = *o.NamespacesSpaceSize
+		}
+		qNamespacesSpaceSize := swag.FormatInt64(qrNamespacesSpaceSize)
+		if qNamespacesSpaceSize != "" {
+
+			if err := r.SetQueryParam("namespaces.space.size", qNamespacesSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceUsed != nil {
+
+		// query param namespaces.space.used
+		var qrNamespacesSpaceUsed int64
+
+		if o.NamespacesSpaceUsed != nil {
+			qrNamespacesSpaceUsed = *o.NamespacesSpaceUsed
+		}
+		qNamespacesSpaceUsed := swag.FormatInt64(qrNamespacesSpaceUsed)
+		if qNamespacesSpaceUsed != "" {
+
+			if err := r.SetQueryParam("namespaces.space.used", qNamespacesSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesStatusContainerState != nil {
+
+		// query param namespaces.status.container_state
+		var qrNamespacesStatusContainerState string
+
+		if o.NamespacesStatusContainerState != nil {
+			qrNamespacesStatusContainerState = *o.NamespacesStatusContainerState
+		}
+		qNamespacesStatusContainerState := qrNamespacesStatusContainerState
+		if qNamespacesStatusContainerState != "" {
+
+			if err := r.SetQueryParam("namespaces.status.container_state", qNamespacesStatusContainerState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesStatusMapped != nil {
+
+		// query param namespaces.status.mapped
+		var qrNamespacesStatusMapped bool
+
+		if o.NamespacesStatusMapped != nil {
+			qrNamespacesStatusMapped = *o.NamespacesStatusMapped
+		}
+		qNamespacesStatusMapped := swag.FormatBool(qrNamespacesStatusMapped)
+		if qNamespacesStatusMapped != "" {
+
+			if err := r.SetQueryParam("namespaces.status.mapped", qNamespacesStatusMapped); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesStatusReadOnly != nil {
+
+		// query param namespaces.status.read_only
+		var qrNamespacesStatusReadOnly bool
+
+		if o.NamespacesStatusReadOnly != nil {
+			qrNamespacesStatusReadOnly = *o.NamespacesStatusReadOnly
+		}
+		qNamespacesStatusReadOnly := swag.FormatBool(qrNamespacesStatusReadOnly)
+		if qNamespacesStatusReadOnly != "" {
+
+			if err := r.SetQueryParam("namespaces.status.read_only", qNamespacesStatusReadOnly); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesStatusState != nil {
+
+		// query param namespaces.status.state
+		var qrNamespacesStatusState string
+
+		if o.NamespacesStatusState != nil {
+			qrNamespacesStatusState = *o.NamespacesStatusState
+		}
+		qNamespacesStatusState := qrNamespacesStatusState
+		if qNamespacesStatusState != "" {
+
+			if err := r.SetQueryParam("namespaces.status.state", qNamespacesStatusState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapAnagrpid != nil {
+
+		// query param namespaces.subsystem_map.anagrpid
+		var qrNamespacesSubsystemMapAnagrpid string
+
+		if o.NamespacesSubsystemMapAnagrpid != nil {
+			qrNamespacesSubsystemMapAnagrpid = *o.NamespacesSubsystemMapAnagrpid
+		}
+		qNamespacesSubsystemMapAnagrpid := qrNamespacesSubsystemMapAnagrpid
+		if qNamespacesSubsystemMapAnagrpid != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.anagrpid", qNamespacesSubsystemMapAnagrpid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapNsid != nil {
+
+		// query param namespaces.subsystem_map.nsid
+		var qrNamespacesSubsystemMapNsid string
+
+		if o.NamespacesSubsystemMapNsid != nil {
+			qrNamespacesSubsystemMapNsid = *o.NamespacesSubsystemMapNsid
+		}
+		qNamespacesSubsystemMapNsid := qrNamespacesSubsystemMapNsid
+		if qNamespacesSubsystemMapNsid != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.nsid", qNamespacesSubsystemMapNsid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemComment != nil {
+
+		// query param namespaces.subsystem_map.subsystem.comment
+		var qrNamespacesSubsystemMapSubsystemComment string
+
+		if o.NamespacesSubsystemMapSubsystemComment != nil {
+			qrNamespacesSubsystemMapSubsystemComment = *o.NamespacesSubsystemMapSubsystemComment
+		}
+		qNamespacesSubsystemMapSubsystemComment := qrNamespacesSubsystemMapSubsystemComment
+		if qNamespacesSubsystemMapSubsystemComment != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.comment", qNamespacesSubsystemMapSubsystemComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsNqn != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.nqn
+		var qrNamespacesSubsystemMapSubsystemHostsNqn string
+
+		if o.NamespacesSubsystemMapSubsystemHostsNqn != nil {
+			qrNamespacesSubsystemMapSubsystemHostsNqn = *o.NamespacesSubsystemMapSubsystemHostsNqn
+		}
+		qNamespacesSubsystemMapSubsystemHostsNqn := qrNamespacesSubsystemMapSubsystemHostsNqn
+		if qNamespacesSubsystemMapSubsystemHostsNqn != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.nqn", qNamespacesSubsystemMapSubsystemHostsNqn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemName != nil {
+
+		// query param namespaces.subsystem_map.subsystem.name
+		var qrNamespacesSubsystemMapSubsystemName string
+
+		if o.NamespacesSubsystemMapSubsystemName != nil {
+			qrNamespacesSubsystemMapSubsystemName = *o.NamespacesSubsystemMapSubsystemName
+		}
+		qNamespacesSubsystemMapSubsystemName := qrNamespacesSubsystemMapSubsystemName
+		if qNamespacesSubsystemMapSubsystemName != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.name", qNamespacesSubsystemMapSubsystemName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemOsType != nil {
+
+		// query param namespaces.subsystem_map.subsystem.os_type
+		var qrNamespacesSubsystemMapSubsystemOsType string
+
+		if o.NamespacesSubsystemMapSubsystemOsType != nil {
+			qrNamespacesSubsystemMapSubsystemOsType = *o.NamespacesSubsystemMapSubsystemOsType
+		}
+		qNamespacesSubsystemMapSubsystemOsType := qrNamespacesSubsystemMapSubsystemOsType
+		if qNamespacesSubsystemMapSubsystemOsType != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.os_type", qNamespacesSubsystemMapSubsystemOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemUUID != nil {
+
+		// query param namespaces.subsystem_map.subsystem.uuid
+		var qrNamespacesSubsystemMapSubsystemUUID string
+
+		if o.NamespacesSubsystemMapSubsystemUUID != nil {
+			qrNamespacesSubsystemMapSubsystemUUID = *o.NamespacesSubsystemMapSubsystemUUID
+		}
+		qNamespacesSubsystemMapSubsystemUUID := qrNamespacesSubsystemMapSubsystemUUID
+		if qNamespacesSubsystemMapSubsystemUUID != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.uuid", qNamespacesSubsystemMapSubsystemUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesUUID != nil {
+
+		// query param namespaces.uuid
+		var qrNamespacesUUID string
+
+		if o.NamespacesUUID != nil {
+			qrNamespacesUUID = *o.NamespacesUUID
+		}
+		qNamespacesUUID := qrNamespacesUUID
+		if qNamespacesUUID != "" {
+
+			if err := r.SetQueryParam("namespaces.uuid", qNamespacesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -3886,13 +7864,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ParentConsistencyGroupNameQueryParameter != nil {
+	if o.ParentConsistencyGroupName != nil {
 
 		// query param parent_consistency_group.name
 		var qrParentConsistencyGroupName string
 
-		if o.ParentConsistencyGroupNameQueryParameter != nil {
-			qrParentConsistencyGroupName = *o.ParentConsistencyGroupNameQueryParameter
+		if o.ParentConsistencyGroupName != nil {
+			qrParentConsistencyGroupName = *o.ParentConsistencyGroupName
 		}
 		qParentConsistencyGroupName := qrParentConsistencyGroupName
 		if qParentConsistencyGroupName != "" {
@@ -3903,13 +7881,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ParentConsistencyGroupUUIDQueryParameter != nil {
+	if o.ParentConsistencyGroupUUID != nil {
 
 		// query param parent_consistency_group.uuid
 		var qrParentConsistencyGroupUUID string
 
-		if o.ParentConsistencyGroupUUIDQueryParameter != nil {
-			qrParentConsistencyGroupUUID = *o.ParentConsistencyGroupUUIDQueryParameter
+		if o.ParentConsistencyGroupUUID != nil {
+			qrParentConsistencyGroupUUID = *o.ParentConsistencyGroupUUID
 		}
 		qParentConsistencyGroupUUID := qrParentConsistencyGroupUUID
 		if qParentConsistencyGroupUUID != "" {
@@ -3920,13 +7898,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos.policy.max_throughput_iops
 		var qrQosPolicyMaxThroughputIops int64
 
-		if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIopsQueryParameter
+		if o.QosPolicyMaxThroughputIops != nil {
+			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIops
 		}
 		qQosPolicyMaxThroughputIops := swag.FormatInt64(qrQosPolicyMaxThroughputIops)
 		if qQosPolicyMaxThroughputIops != "" {
@@ -3937,13 +7915,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.QosPolicyMaxThroughputMbps != nil {
 
 		// query param qos.policy.max_throughput_mbps
 		var qrQosPolicyMaxThroughputMbps int64
 
-		if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbpsQueryParameter
+		if o.QosPolicyMaxThroughputMbps != nil {
+			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbps
 		}
 		qQosPolicyMaxThroughputMbps := swag.FormatInt64(qrQosPolicyMaxThroughputMbps)
 		if qQosPolicyMaxThroughputMbps != "" {
@@ -3954,13 +7932,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.QosPolicyMinThroughputIops != nil {
 
 		// query param qos.policy.min_throughput_iops
 		var qrQosPolicyMinThroughputIops int64
 
-		if o.QosPolicyMinThroughputIopsQueryParameter != nil {
-			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIopsQueryParameter
+		if o.QosPolicyMinThroughputIops != nil {
+			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIops
 		}
 		qQosPolicyMinThroughputIops := swag.FormatInt64(qrQosPolicyMinThroughputIops)
 		if qQosPolicyMinThroughputIops != "" {
@@ -3971,13 +7949,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.QosPolicyMinThroughputMbps != nil {
 
 		// query param qos.policy.min_throughput_mbps
 		var qrQosPolicyMinThroughputMbps int64
 
-		if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbpsQueryParameter
+		if o.QosPolicyMinThroughputMbps != nil {
+			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbps
 		}
 		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
 		if qQosPolicyMinThroughputMbps != "" {
@@ -3988,13 +7966,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyNameQueryParameter != nil {
+	if o.QosPolicyName != nil {
 
 		// query param qos.policy.name
 		var qrQosPolicyName string
 
-		if o.QosPolicyNameQueryParameter != nil {
-			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		if o.QosPolicyName != nil {
+			qrQosPolicyName = *o.QosPolicyName
 		}
 		qQosPolicyName := qrQosPolicyName
 		if qQosPolicyName != "" {
@@ -4005,13 +7983,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.QosPolicyUUIDQueryParameter != nil {
+	if o.QosPolicyUUID != nil {
 
 		// query param qos.policy.uuid
 		var qrQosPolicyUUID string
 
-		if o.QosPolicyUUIDQueryParameter != nil {
-			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		if o.QosPolicyUUID != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUID
 		}
 		qQosPolicyUUID := qrQosPolicyUUID
 		if qQosPolicyUUID != "" {
@@ -4022,13 +8000,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReplicatedQueryParameter != nil {
+	if o.Replicated != nil {
 
 		// query param replicated
 		var qrReplicated bool
 
-		if o.ReplicatedQueryParameter != nil {
-			qrReplicated = *o.ReplicatedQueryParameter
+		if o.Replicated != nil {
+			qrReplicated = *o.Replicated
 		}
 		qReplicated := swag.FormatBool(qrReplicated)
 		if qReplicated != "" {
@@ -4039,13 +8017,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReplicationSourceQueryParameter != nil {
+	if o.ReplicationSource != nil {
 
 		// query param replication_source
 		var qrReplicationSource bool
 
-		if o.ReplicationSourceQueryParameter != nil {
-			qrReplicationSource = *o.ReplicationSourceQueryParameter
+		if o.ReplicationSource != nil {
+			qrReplicationSource = *o.ReplicationSource
 		}
 		qReplicationSource := swag.FormatBool(qrReplicationSource)
 		if qReplicationSource != "" {
@@ -4056,13 +8034,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -4073,13 +8051,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -4090,13 +8068,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SnapshotPolicyNameQueryParameter != nil {
+	if o.SnapshotPolicyName != nil {
 
 		// query param snapshot_policy.name
 		var qrSnapshotPolicyName string
 
-		if o.SnapshotPolicyNameQueryParameter != nil {
-			qrSnapshotPolicyName = *o.SnapshotPolicyNameQueryParameter
+		if o.SnapshotPolicyName != nil {
+			qrSnapshotPolicyName = *o.SnapshotPolicyName
 		}
 		qSnapshotPolicyName := qrSnapshotPolicyName
 		if qSnapshotPolicyName != "" {
@@ -4107,13 +8085,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SnapshotPolicyUUIDQueryParameter != nil {
+	if o.SnapshotPolicyUUID != nil {
 
 		// query param snapshot_policy.uuid
 		var qrSnapshotPolicyUUID string
 
-		if o.SnapshotPolicyUUIDQueryParameter != nil {
-			qrSnapshotPolicyUUID = *o.SnapshotPolicyUUIDQueryParameter
+		if o.SnapshotPolicyUUID != nil {
+			qrSnapshotPolicyUUID = *o.SnapshotPolicyUUID
 		}
 		qSnapshotPolicyUUID := qrSnapshotPolicyUUID
 		if qSnapshotPolicyUUID != "" {
@@ -4124,13 +8102,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SpaceAvailableQueryParameter != nil {
+	if o.SpaceAvailable != nil {
 
 		// query param space.available
 		var qrSpaceAvailable int64
 
-		if o.SpaceAvailableQueryParameter != nil {
-			qrSpaceAvailable = *o.SpaceAvailableQueryParameter
+		if o.SpaceAvailable != nil {
+			qrSpaceAvailable = *o.SpaceAvailable
 		}
 		qSpaceAvailable := swag.FormatInt64(qrSpaceAvailable)
 		if qSpaceAvailable != "" {
@@ -4141,13 +8119,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SpaceSizeQueryParameter != nil {
+	if o.SpaceSize != nil {
 
 		// query param space.size
 		var qrSpaceSize int64
 
-		if o.SpaceSizeQueryParameter != nil {
-			qrSpaceSize = *o.SpaceSizeQueryParameter
+		if o.SpaceSize != nil {
+			qrSpaceSize = *o.SpaceSize
 		}
 		qSpaceSize := swag.FormatInt64(qrSpaceSize)
 		if qSpaceSize != "" {
@@ -4158,13 +8136,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SpaceUsedQueryParameter != nil {
+	if o.SpaceUsed != nil {
 
 		// query param space.used
 		var qrSpaceUsed int64
 
-		if o.SpaceUsedQueryParameter != nil {
-			qrSpaceUsed = *o.SpaceUsedQueryParameter
+		if o.SpaceUsed != nil {
+			qrSpaceUsed = *o.SpaceUsed
 		}
 		qSpaceUsed := swag.FormatInt64(qrSpaceUsed)
 		if qSpaceUsed != "" {
@@ -4175,13 +8153,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -4192,13 +8170,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -4209,13 +8187,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.TieringPolicyQueryParameter != nil {
+	if o.TieringPolicy != nil {
 
 		// query param tiering.policy
 		var qrTieringPolicy string
 
-		if o.TieringPolicyQueryParameter != nil {
-			qrTieringPolicy = *o.TieringPolicyQueryParameter
+		if o.TieringPolicy != nil {
+			qrTieringPolicy = *o.TieringPolicy
 		}
 		qTieringPolicy := qrTieringPolicy
 		if qTieringPolicy != "" {
@@ -4226,13 +8204,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -4243,13 +8221,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesCommentQueryParameter != nil {
+	if o.VolumesComment != nil {
 
 		// query param volumes.comment
 		var qrVolumesComment string
 
-		if o.VolumesCommentQueryParameter != nil {
-			qrVolumesComment = *o.VolumesCommentQueryParameter
+		if o.VolumesComment != nil {
+			qrVolumesComment = *o.VolumesComment
 		}
 		qVolumesComment := qrVolumesComment
 		if qVolumesComment != "" {
@@ -4260,13 +8238,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesLanguageQueryParameter != nil {
+	if o.VolumesLanguage != nil {
 
 		// query param volumes.language
 		var qrVolumesLanguage string
 
-		if o.VolumesLanguageQueryParameter != nil {
-			qrVolumesLanguage = *o.VolumesLanguageQueryParameter
+		if o.VolumesLanguage != nil {
+			qrVolumesLanguage = *o.VolumesLanguage
 		}
 		qVolumesLanguage := qrVolumesLanguage
 		if qVolumesLanguage != "" {
@@ -4277,13 +8255,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesNameQueryParameter != nil {
+	if o.VolumesName != nil {
 
 		// query param volumes.name
 		var qrVolumesName string
 
-		if o.VolumesNameQueryParameter != nil {
-			qrVolumesName = *o.VolumesNameQueryParameter
+		if o.VolumesName != nil {
+			qrVolumesName = *o.VolumesName
 		}
 		qVolumesName := qrVolumesName
 		if qVolumesName != "" {
@@ -4294,13 +8272,693 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesQosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.VolumesNasCifsSharesAccessBasedEnumeration != nil {
+
+		// query param volumes.nas.cifs.shares.access_based_enumeration
+		var qrVolumesNasCifsSharesAccessBasedEnumeration bool
+
+		if o.VolumesNasCifsSharesAccessBasedEnumeration != nil {
+			qrVolumesNasCifsSharesAccessBasedEnumeration = *o.VolumesNasCifsSharesAccessBasedEnumeration
+		}
+		qVolumesNasCifsSharesAccessBasedEnumeration := swag.FormatBool(qrVolumesNasCifsSharesAccessBasedEnumeration)
+		if qVolumesNasCifsSharesAccessBasedEnumeration != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.access_based_enumeration", qVolumesNasCifsSharesAccessBasedEnumeration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesAclsPermission != nil {
+
+		// query param volumes.nas.cifs.shares.acls.permission
+		var qrVolumesNasCifsSharesAclsPermission string
+
+		if o.VolumesNasCifsSharesAclsPermission != nil {
+			qrVolumesNasCifsSharesAclsPermission = *o.VolumesNasCifsSharesAclsPermission
+		}
+		qVolumesNasCifsSharesAclsPermission := qrVolumesNasCifsSharesAclsPermission
+		if qVolumesNasCifsSharesAclsPermission != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.acls.permission", qVolumesNasCifsSharesAclsPermission); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesAclsType != nil {
+
+		// query param volumes.nas.cifs.shares.acls.type
+		var qrVolumesNasCifsSharesAclsType string
+
+		if o.VolumesNasCifsSharesAclsType != nil {
+			qrVolumesNasCifsSharesAclsType = *o.VolumesNasCifsSharesAclsType
+		}
+		qVolumesNasCifsSharesAclsType := qrVolumesNasCifsSharesAclsType
+		if qVolumesNasCifsSharesAclsType != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.acls.type", qVolumesNasCifsSharesAclsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesAclsUserOrGroup != nil {
+
+		// query param volumes.nas.cifs.shares.acls.user_or_group
+		var qrVolumesNasCifsSharesAclsUserOrGroup string
+
+		if o.VolumesNasCifsSharesAclsUserOrGroup != nil {
+			qrVolumesNasCifsSharesAclsUserOrGroup = *o.VolumesNasCifsSharesAclsUserOrGroup
+		}
+		qVolumesNasCifsSharesAclsUserOrGroup := qrVolumesNasCifsSharesAclsUserOrGroup
+		if qVolumesNasCifsSharesAclsUserOrGroup != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.acls.user_or_group", qVolumesNasCifsSharesAclsUserOrGroup); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesAllowUnencryptedAccess != nil {
+
+		// query param volumes.nas.cifs.shares.allow_unencrypted_access
+		var qrVolumesNasCifsSharesAllowUnencryptedAccess bool
+
+		if o.VolumesNasCifsSharesAllowUnencryptedAccess != nil {
+			qrVolumesNasCifsSharesAllowUnencryptedAccess = *o.VolumesNasCifsSharesAllowUnencryptedAccess
+		}
+		qVolumesNasCifsSharesAllowUnencryptedAccess := swag.FormatBool(qrVolumesNasCifsSharesAllowUnencryptedAccess)
+		if qVolumesNasCifsSharesAllowUnencryptedAccess != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.allow_unencrypted_access", qVolumesNasCifsSharesAllowUnencryptedAccess); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesChangeNotify != nil {
+
+		// query param volumes.nas.cifs.shares.change_notify
+		var qrVolumesNasCifsSharesChangeNotify bool
+
+		if o.VolumesNasCifsSharesChangeNotify != nil {
+			qrVolumesNasCifsSharesChangeNotify = *o.VolumesNasCifsSharesChangeNotify
+		}
+		qVolumesNasCifsSharesChangeNotify := swag.FormatBool(qrVolumesNasCifsSharesChangeNotify)
+		if qVolumesNasCifsSharesChangeNotify != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.change_notify", qVolumesNasCifsSharesChangeNotify); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesComment != nil {
+
+		// query param volumes.nas.cifs.shares.comment
+		var qrVolumesNasCifsSharesComment string
+
+		if o.VolumesNasCifsSharesComment != nil {
+			qrVolumesNasCifsSharesComment = *o.VolumesNasCifsSharesComment
+		}
+		qVolumesNasCifsSharesComment := qrVolumesNasCifsSharesComment
+		if qVolumesNasCifsSharesComment != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.comment", qVolumesNasCifsSharesComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesContinuouslyAvailable != nil {
+
+		// query param volumes.nas.cifs.shares.continuously_available
+		var qrVolumesNasCifsSharesContinuouslyAvailable bool
+
+		if o.VolumesNasCifsSharesContinuouslyAvailable != nil {
+			qrVolumesNasCifsSharesContinuouslyAvailable = *o.VolumesNasCifsSharesContinuouslyAvailable
+		}
+		qVolumesNasCifsSharesContinuouslyAvailable := swag.FormatBool(qrVolumesNasCifsSharesContinuouslyAvailable)
+		if qVolumesNasCifsSharesContinuouslyAvailable != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.continuously_available", qVolumesNasCifsSharesContinuouslyAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesDirUmask != nil {
+
+		// query param volumes.nas.cifs.shares.dir_umask
+		var qrVolumesNasCifsSharesDirUmask int64
+
+		if o.VolumesNasCifsSharesDirUmask != nil {
+			qrVolumesNasCifsSharesDirUmask = *o.VolumesNasCifsSharesDirUmask
+		}
+		qVolumesNasCifsSharesDirUmask := swag.FormatInt64(qrVolumesNasCifsSharesDirUmask)
+		if qVolumesNasCifsSharesDirUmask != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.dir_umask", qVolumesNasCifsSharesDirUmask); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesEncryption != nil {
+
+		// query param volumes.nas.cifs.shares.encryption
+		var qrVolumesNasCifsSharesEncryption bool
+
+		if o.VolumesNasCifsSharesEncryption != nil {
+			qrVolumesNasCifsSharesEncryption = *o.VolumesNasCifsSharesEncryption
+		}
+		qVolumesNasCifsSharesEncryption := swag.FormatBool(qrVolumesNasCifsSharesEncryption)
+		if qVolumesNasCifsSharesEncryption != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.encryption", qVolumesNasCifsSharesEncryption); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesFileUmask != nil {
+
+		// query param volumes.nas.cifs.shares.file_umask
+		var qrVolumesNasCifsSharesFileUmask int64
+
+		if o.VolumesNasCifsSharesFileUmask != nil {
+			qrVolumesNasCifsSharesFileUmask = *o.VolumesNasCifsSharesFileUmask
+		}
+		qVolumesNasCifsSharesFileUmask := swag.FormatInt64(qrVolumesNasCifsSharesFileUmask)
+		if qVolumesNasCifsSharesFileUmask != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.file_umask", qVolumesNasCifsSharesFileUmask); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesHomeDirectory != nil {
+
+		// query param volumes.nas.cifs.shares.home_directory
+		var qrVolumesNasCifsSharesHomeDirectory bool
+
+		if o.VolumesNasCifsSharesHomeDirectory != nil {
+			qrVolumesNasCifsSharesHomeDirectory = *o.VolumesNasCifsSharesHomeDirectory
+		}
+		qVolumesNasCifsSharesHomeDirectory := swag.FormatBool(qrVolumesNasCifsSharesHomeDirectory)
+		if qVolumesNasCifsSharesHomeDirectory != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.home_directory", qVolumesNasCifsSharesHomeDirectory); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesName != nil {
+
+		// query param volumes.nas.cifs.shares.name
+		var qrVolumesNasCifsSharesName string
+
+		if o.VolumesNasCifsSharesName != nil {
+			qrVolumesNasCifsSharesName = *o.VolumesNasCifsSharesName
+		}
+		qVolumesNasCifsSharesName := qrVolumesNasCifsSharesName
+		if qVolumesNasCifsSharesName != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.name", qVolumesNasCifsSharesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesNamespaceCaching != nil {
+
+		// query param volumes.nas.cifs.shares.namespace_caching
+		var qrVolumesNasCifsSharesNamespaceCaching bool
+
+		if o.VolumesNasCifsSharesNamespaceCaching != nil {
+			qrVolumesNasCifsSharesNamespaceCaching = *o.VolumesNasCifsSharesNamespaceCaching
+		}
+		qVolumesNasCifsSharesNamespaceCaching := swag.FormatBool(qrVolumesNasCifsSharesNamespaceCaching)
+		if qVolumesNasCifsSharesNamespaceCaching != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.namespace_caching", qVolumesNasCifsSharesNamespaceCaching); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesNoStrictSecurity != nil {
+
+		// query param volumes.nas.cifs.shares.no_strict_security
+		var qrVolumesNasCifsSharesNoStrictSecurity bool
+
+		if o.VolumesNasCifsSharesNoStrictSecurity != nil {
+			qrVolumesNasCifsSharesNoStrictSecurity = *o.VolumesNasCifsSharesNoStrictSecurity
+		}
+		qVolumesNasCifsSharesNoStrictSecurity := swag.FormatBool(qrVolumesNasCifsSharesNoStrictSecurity)
+		if qVolumesNasCifsSharesNoStrictSecurity != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.no_strict_security", qVolumesNasCifsSharesNoStrictSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesOfflineFiles != nil {
+
+		// query param volumes.nas.cifs.shares.offline_files
+		var qrVolumesNasCifsSharesOfflineFiles string
+
+		if o.VolumesNasCifsSharesOfflineFiles != nil {
+			qrVolumesNasCifsSharesOfflineFiles = *o.VolumesNasCifsSharesOfflineFiles
+		}
+		qVolumesNasCifsSharesOfflineFiles := qrVolumesNasCifsSharesOfflineFiles
+		if qVolumesNasCifsSharesOfflineFiles != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.offline_files", qVolumesNasCifsSharesOfflineFiles); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesOplocks != nil {
+
+		// query param volumes.nas.cifs.shares.oplocks
+		var qrVolumesNasCifsSharesOplocks bool
+
+		if o.VolumesNasCifsSharesOplocks != nil {
+			qrVolumesNasCifsSharesOplocks = *o.VolumesNasCifsSharesOplocks
+		}
+		qVolumesNasCifsSharesOplocks := swag.FormatBool(qrVolumesNasCifsSharesOplocks)
+		if qVolumesNasCifsSharesOplocks != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.oplocks", qVolumesNasCifsSharesOplocks); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesShowSnapshot != nil {
+
+		// query param volumes.nas.cifs.shares.show_snapshot
+		var qrVolumesNasCifsSharesShowSnapshot bool
+
+		if o.VolumesNasCifsSharesShowSnapshot != nil {
+			qrVolumesNasCifsSharesShowSnapshot = *o.VolumesNasCifsSharesShowSnapshot
+		}
+		qVolumesNasCifsSharesShowSnapshot := swag.FormatBool(qrVolumesNasCifsSharesShowSnapshot)
+		if qVolumesNasCifsSharesShowSnapshot != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.show_snapshot", qVolumesNasCifsSharesShowSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesUnixSymlink != nil {
+
+		// query param volumes.nas.cifs.shares.unix_symlink
+		var qrVolumesNasCifsSharesUnixSymlink string
+
+		if o.VolumesNasCifsSharesUnixSymlink != nil {
+			qrVolumesNasCifsSharesUnixSymlink = *o.VolumesNasCifsSharesUnixSymlink
+		}
+		qVolumesNasCifsSharesUnixSymlink := qrVolumesNasCifsSharesUnixSymlink
+		if qVolumesNasCifsSharesUnixSymlink != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.unix_symlink", qVolumesNasCifsSharesUnixSymlink); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasCifsSharesVscanProfile != nil {
+
+		// query param volumes.nas.cifs.shares.vscan_profile
+		var qrVolumesNasCifsSharesVscanProfile string
+
+		if o.VolumesNasCifsSharesVscanProfile != nil {
+			qrVolumesNasCifsSharesVscanProfile = *o.VolumesNasCifsSharesVscanProfile
+		}
+		qVolumesNasCifsSharesVscanProfile := qrVolumesNasCifsSharesVscanProfile
+		if qVolumesNasCifsSharesVscanProfile != "" {
+
+			if err := r.SetQueryParam("volumes.nas.cifs.shares.vscan_profile", qVolumesNasCifsSharesVscanProfile); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyName != nil {
+
+		// query param volumes.nas.export_policy.name
+		var qrVolumesNasExportPolicyName string
+
+		if o.VolumesNasExportPolicyName != nil {
+			qrVolumesNasExportPolicyName = *o.VolumesNasExportPolicyName
+		}
+		qVolumesNasExportPolicyName := qrVolumesNasExportPolicyName
+		if qVolumesNasExportPolicyName != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.name", qVolumesNasExportPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesAllowDeviceCreation != nil {
+
+		// query param volumes.nas.export_policy.rules.allow_device_creation
+		var qrVolumesNasExportPolicyRulesAllowDeviceCreation bool
+
+		if o.VolumesNasExportPolicyRulesAllowDeviceCreation != nil {
+			qrVolumesNasExportPolicyRulesAllowDeviceCreation = *o.VolumesNasExportPolicyRulesAllowDeviceCreation
+		}
+		qVolumesNasExportPolicyRulesAllowDeviceCreation := swag.FormatBool(qrVolumesNasExportPolicyRulesAllowDeviceCreation)
+		if qVolumesNasExportPolicyRulesAllowDeviceCreation != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.allow_device_creation", qVolumesNasExportPolicyRulesAllowDeviceCreation); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesAllowSuid != nil {
+
+		// query param volumes.nas.export_policy.rules.allow_suid
+		var qrVolumesNasExportPolicyRulesAllowSuid bool
+
+		if o.VolumesNasExportPolicyRulesAllowSuid != nil {
+			qrVolumesNasExportPolicyRulesAllowSuid = *o.VolumesNasExportPolicyRulesAllowSuid
+		}
+		qVolumesNasExportPolicyRulesAllowSuid := swag.FormatBool(qrVolumesNasExportPolicyRulesAllowSuid)
+		if qVolumesNasExportPolicyRulesAllowSuid != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.allow_suid", qVolumesNasExportPolicyRulesAllowSuid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesAnonymousUser != nil {
+
+		// query param volumes.nas.export_policy.rules.anonymous_user
+		var qrVolumesNasExportPolicyRulesAnonymousUser string
+
+		if o.VolumesNasExportPolicyRulesAnonymousUser != nil {
+			qrVolumesNasExportPolicyRulesAnonymousUser = *o.VolumesNasExportPolicyRulesAnonymousUser
+		}
+		qVolumesNasExportPolicyRulesAnonymousUser := qrVolumesNasExportPolicyRulesAnonymousUser
+		if qVolumesNasExportPolicyRulesAnonymousUser != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.anonymous_user", qVolumesNasExportPolicyRulesAnonymousUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesChownMode != nil {
+
+		// query param volumes.nas.export_policy.rules.chown_mode
+		var qrVolumesNasExportPolicyRulesChownMode string
+
+		if o.VolumesNasExportPolicyRulesChownMode != nil {
+			qrVolumesNasExportPolicyRulesChownMode = *o.VolumesNasExportPolicyRulesChownMode
+		}
+		qVolumesNasExportPolicyRulesChownMode := qrVolumesNasExportPolicyRulesChownMode
+		if qVolumesNasExportPolicyRulesChownMode != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.chown_mode", qVolumesNasExportPolicyRulesChownMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesClientsMatch != nil {
+
+		// query param volumes.nas.export_policy.rules.clients.match
+		var qrVolumesNasExportPolicyRulesClientsMatch string
+
+		if o.VolumesNasExportPolicyRulesClientsMatch != nil {
+			qrVolumesNasExportPolicyRulesClientsMatch = *o.VolumesNasExportPolicyRulesClientsMatch
+		}
+		qVolumesNasExportPolicyRulesClientsMatch := qrVolumesNasExportPolicyRulesClientsMatch
+		if qVolumesNasExportPolicyRulesClientsMatch != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.clients.match", qVolumesNasExportPolicyRulesClientsMatch); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesIndex != nil {
+
+		// query param volumes.nas.export_policy.rules.index
+		var qrVolumesNasExportPolicyRulesIndex int64
+
+		if o.VolumesNasExportPolicyRulesIndex != nil {
+			qrVolumesNasExportPolicyRulesIndex = *o.VolumesNasExportPolicyRulesIndex
+		}
+		qVolumesNasExportPolicyRulesIndex := swag.FormatInt64(qrVolumesNasExportPolicyRulesIndex)
+		if qVolumesNasExportPolicyRulesIndex != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.index", qVolumesNasExportPolicyRulesIndex); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesNtfsUnixSecurity != nil {
+
+		// query param volumes.nas.export_policy.rules.ntfs_unix_security
+		var qrVolumesNasExportPolicyRulesNtfsUnixSecurity string
+
+		if o.VolumesNasExportPolicyRulesNtfsUnixSecurity != nil {
+			qrVolumesNasExportPolicyRulesNtfsUnixSecurity = *o.VolumesNasExportPolicyRulesNtfsUnixSecurity
+		}
+		qVolumesNasExportPolicyRulesNtfsUnixSecurity := qrVolumesNasExportPolicyRulesNtfsUnixSecurity
+		if qVolumesNasExportPolicyRulesNtfsUnixSecurity != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.ntfs_unix_security", qVolumesNasExportPolicyRulesNtfsUnixSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesProtocols != nil {
+
+		// query param volumes.nas.export_policy.rules.protocols
+		var qrVolumesNasExportPolicyRulesProtocols string
+
+		if o.VolumesNasExportPolicyRulesProtocols != nil {
+			qrVolumesNasExportPolicyRulesProtocols = *o.VolumesNasExportPolicyRulesProtocols
+		}
+		qVolumesNasExportPolicyRulesProtocols := qrVolumesNasExportPolicyRulesProtocols
+		if qVolumesNasExportPolicyRulesProtocols != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.protocols", qVolumesNasExportPolicyRulesProtocols); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesRoRule != nil {
+
+		// query param volumes.nas.export_policy.rules.ro_rule
+		var qrVolumesNasExportPolicyRulesRoRule string
+
+		if o.VolumesNasExportPolicyRulesRoRule != nil {
+			qrVolumesNasExportPolicyRulesRoRule = *o.VolumesNasExportPolicyRulesRoRule
+		}
+		qVolumesNasExportPolicyRulesRoRule := qrVolumesNasExportPolicyRulesRoRule
+		if qVolumesNasExportPolicyRulesRoRule != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.ro_rule", qVolumesNasExportPolicyRulesRoRule); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesRwRule != nil {
+
+		// query param volumes.nas.export_policy.rules.rw_rule
+		var qrVolumesNasExportPolicyRulesRwRule string
+
+		if o.VolumesNasExportPolicyRulesRwRule != nil {
+			qrVolumesNasExportPolicyRulesRwRule = *o.VolumesNasExportPolicyRulesRwRule
+		}
+		qVolumesNasExportPolicyRulesRwRule := qrVolumesNasExportPolicyRulesRwRule
+		if qVolumesNasExportPolicyRulesRwRule != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.rw_rule", qVolumesNasExportPolicyRulesRwRule); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyRulesSuperuser != nil {
+
+		// query param volumes.nas.export_policy.rules.superuser
+		var qrVolumesNasExportPolicyRulesSuperuser string
+
+		if o.VolumesNasExportPolicyRulesSuperuser != nil {
+			qrVolumesNasExportPolicyRulesSuperuser = *o.VolumesNasExportPolicyRulesSuperuser
+		}
+		qVolumesNasExportPolicyRulesSuperuser := qrVolumesNasExportPolicyRulesSuperuser
+		if qVolumesNasExportPolicyRulesSuperuser != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.rules.superuser", qVolumesNasExportPolicyRulesSuperuser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasExportPolicyUUID != nil {
+
+		// query param volumes.nas.export_policy.uuid
+		var qrVolumesNasExportPolicyUUID string
+
+		if o.VolumesNasExportPolicyUUID != nil {
+			qrVolumesNasExportPolicyUUID = *o.VolumesNasExportPolicyUUID
+		}
+		qVolumesNasExportPolicyUUID := qrVolumesNasExportPolicyUUID
+		if qVolumesNasExportPolicyUUID != "" {
+
+			if err := r.SetQueryParam("volumes.nas.export_policy.uuid", qVolumesNasExportPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasGid != nil {
+
+		// query param volumes.nas.gid
+		var qrVolumesNasGid int64
+
+		if o.VolumesNasGid != nil {
+			qrVolumesNasGid = *o.VolumesNasGid
+		}
+		qVolumesNasGid := swag.FormatInt64(qrVolumesNasGid)
+		if qVolumesNasGid != "" {
+
+			if err := r.SetQueryParam("volumes.nas.gid", qVolumesNasGid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasJunctionParentName != nil {
+
+		// query param volumes.nas.junction_parent.name
+		var qrVolumesNasJunctionParentName string
+
+		if o.VolumesNasJunctionParentName != nil {
+			qrVolumesNasJunctionParentName = *o.VolumesNasJunctionParentName
+		}
+		qVolumesNasJunctionParentName := qrVolumesNasJunctionParentName
+		if qVolumesNasJunctionParentName != "" {
+
+			if err := r.SetQueryParam("volumes.nas.junction_parent.name", qVolumesNasJunctionParentName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasJunctionParentUUID != nil {
+
+		// query param volumes.nas.junction_parent.uuid
+		var qrVolumesNasJunctionParentUUID string
+
+		if o.VolumesNasJunctionParentUUID != nil {
+			qrVolumesNasJunctionParentUUID = *o.VolumesNasJunctionParentUUID
+		}
+		qVolumesNasJunctionParentUUID := qrVolumesNasJunctionParentUUID
+		if qVolumesNasJunctionParentUUID != "" {
+
+			if err := r.SetQueryParam("volumes.nas.junction_parent.uuid", qVolumesNasJunctionParentUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasPath != nil {
+
+		// query param volumes.nas.path
+		var qrVolumesNasPath string
+
+		if o.VolumesNasPath != nil {
+			qrVolumesNasPath = *o.VolumesNasPath
+		}
+		qVolumesNasPath := qrVolumesNasPath
+		if qVolumesNasPath != "" {
+
+			if err := r.SetQueryParam("volumes.nas.path", qVolumesNasPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasSecurityStyle != nil {
+
+		// query param volumes.nas.security_style
+		var qrVolumesNasSecurityStyle string
+
+		if o.VolumesNasSecurityStyle != nil {
+			qrVolumesNasSecurityStyle = *o.VolumesNasSecurityStyle
+		}
+		qVolumesNasSecurityStyle := qrVolumesNasSecurityStyle
+		if qVolumesNasSecurityStyle != "" {
+
+			if err := r.SetQueryParam("volumes.nas.security_style", qVolumesNasSecurityStyle); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasUID != nil {
+
+		// query param volumes.nas.uid
+		var qrVolumesNasUID int64
+
+		if o.VolumesNasUID != nil {
+			qrVolumesNasUID = *o.VolumesNasUID
+		}
+		qVolumesNasUID := swag.FormatInt64(qrVolumesNasUID)
+		if qVolumesNasUID != "" {
+
+			if err := r.SetQueryParam("volumes.nas.uid", qVolumesNasUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesNasUnixPermissions != nil {
+
+		// query param volumes.nas.unix_permissions
+		var qrVolumesNasUnixPermissions int64
+
+		if o.VolumesNasUnixPermissions != nil {
+			qrVolumesNasUnixPermissions = *o.VolumesNasUnixPermissions
+		}
+		qVolumesNasUnixPermissions := swag.FormatInt64(qrVolumesNasUnixPermissions)
+		if qVolumesNasUnixPermissions != "" {
+
+			if err := r.SetQueryParam("volumes.nas.unix_permissions", qVolumesNasUnixPermissions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VolumesQosPolicyMaxThroughputIops != nil {
 
 		// query param volumes.qos.policy.max_throughput_iops
 		var qrVolumesQosPolicyMaxThroughputIops int64
 
-		if o.VolumesQosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrVolumesQosPolicyMaxThroughputIops = *o.VolumesQosPolicyMaxThroughputIopsQueryParameter
+		if o.VolumesQosPolicyMaxThroughputIops != nil {
+			qrVolumesQosPolicyMaxThroughputIops = *o.VolumesQosPolicyMaxThroughputIops
 		}
 		qVolumesQosPolicyMaxThroughputIops := swag.FormatInt64(qrVolumesQosPolicyMaxThroughputIops)
 		if qVolumesQosPolicyMaxThroughputIops != "" {
@@ -4311,13 +8969,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesQosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.VolumesQosPolicyMaxThroughputMbps != nil {
 
 		// query param volumes.qos.policy.max_throughput_mbps
 		var qrVolumesQosPolicyMaxThroughputMbps int64
 
-		if o.VolumesQosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrVolumesQosPolicyMaxThroughputMbps = *o.VolumesQosPolicyMaxThroughputMbpsQueryParameter
+		if o.VolumesQosPolicyMaxThroughputMbps != nil {
+			qrVolumesQosPolicyMaxThroughputMbps = *o.VolumesQosPolicyMaxThroughputMbps
 		}
 		qVolumesQosPolicyMaxThroughputMbps := swag.FormatInt64(qrVolumesQosPolicyMaxThroughputMbps)
 		if qVolumesQosPolicyMaxThroughputMbps != "" {
@@ -4328,13 +8986,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesQosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.VolumesQosPolicyMinThroughputIops != nil {
 
 		// query param volumes.qos.policy.min_throughput_iops
 		var qrVolumesQosPolicyMinThroughputIops int64
 
-		if o.VolumesQosPolicyMinThroughputIopsQueryParameter != nil {
-			qrVolumesQosPolicyMinThroughputIops = *o.VolumesQosPolicyMinThroughputIopsQueryParameter
+		if o.VolumesQosPolicyMinThroughputIops != nil {
+			qrVolumesQosPolicyMinThroughputIops = *o.VolumesQosPolicyMinThroughputIops
 		}
 		qVolumesQosPolicyMinThroughputIops := swag.FormatInt64(qrVolumesQosPolicyMinThroughputIops)
 		if qVolumesQosPolicyMinThroughputIops != "" {
@@ -4345,13 +9003,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesQosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.VolumesQosPolicyMinThroughputMbps != nil {
 
 		// query param volumes.qos.policy.min_throughput_mbps
 		var qrVolumesQosPolicyMinThroughputMbps int64
 
-		if o.VolumesQosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrVolumesQosPolicyMinThroughputMbps = *o.VolumesQosPolicyMinThroughputMbpsQueryParameter
+		if o.VolumesQosPolicyMinThroughputMbps != nil {
+			qrVolumesQosPolicyMinThroughputMbps = *o.VolumesQosPolicyMinThroughputMbps
 		}
 		qVolumesQosPolicyMinThroughputMbps := swag.FormatInt64(qrVolumesQosPolicyMinThroughputMbps)
 		if qVolumesQosPolicyMinThroughputMbps != "" {
@@ -4362,13 +9020,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesQosPolicyNameQueryParameter != nil {
+	if o.VolumesQosPolicyName != nil {
 
 		// query param volumes.qos.policy.name
 		var qrVolumesQosPolicyName string
 
-		if o.VolumesQosPolicyNameQueryParameter != nil {
-			qrVolumesQosPolicyName = *o.VolumesQosPolicyNameQueryParameter
+		if o.VolumesQosPolicyName != nil {
+			qrVolumesQosPolicyName = *o.VolumesQosPolicyName
 		}
 		qVolumesQosPolicyName := qrVolumesQosPolicyName
 		if qVolumesQosPolicyName != "" {
@@ -4379,13 +9037,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesQosPolicyUUIDQueryParameter != nil {
+	if o.VolumesQosPolicyUUID != nil {
 
 		// query param volumes.qos.policy.uuid
 		var qrVolumesQosPolicyUUID string
 
-		if o.VolumesQosPolicyUUIDQueryParameter != nil {
-			qrVolumesQosPolicyUUID = *o.VolumesQosPolicyUUIDQueryParameter
+		if o.VolumesQosPolicyUUID != nil {
+			qrVolumesQosPolicyUUID = *o.VolumesQosPolicyUUID
 		}
 		qVolumesQosPolicyUUID := qrVolumesQosPolicyUUID
 		if qVolumesQosPolicyUUID != "" {
@@ -4396,13 +9054,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesSnapshotPolicyNameQueryParameter != nil {
+	if o.VolumesSnapshotPolicyName != nil {
 
 		// query param volumes.snapshot_policy.name
 		var qrVolumesSnapshotPolicyName string
 
-		if o.VolumesSnapshotPolicyNameQueryParameter != nil {
-			qrVolumesSnapshotPolicyName = *o.VolumesSnapshotPolicyNameQueryParameter
+		if o.VolumesSnapshotPolicyName != nil {
+			qrVolumesSnapshotPolicyName = *o.VolumesSnapshotPolicyName
 		}
 		qVolumesSnapshotPolicyName := qrVolumesSnapshotPolicyName
 		if qVolumesSnapshotPolicyName != "" {
@@ -4413,13 +9071,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesSnapshotPolicyUUIDQueryParameter != nil {
+	if o.VolumesSnapshotPolicyUUID != nil {
 
 		// query param volumes.snapshot_policy.uuid
 		var qrVolumesSnapshotPolicyUUID string
 
-		if o.VolumesSnapshotPolicyUUIDQueryParameter != nil {
-			qrVolumesSnapshotPolicyUUID = *o.VolumesSnapshotPolicyUUIDQueryParameter
+		if o.VolumesSnapshotPolicyUUID != nil {
+			qrVolumesSnapshotPolicyUUID = *o.VolumesSnapshotPolicyUUID
 		}
 		qVolumesSnapshotPolicyUUID := qrVolumesSnapshotPolicyUUID
 		if qVolumesSnapshotPolicyUUID != "" {
@@ -4430,13 +9088,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesSpaceAvailableQueryParameter != nil {
+	if o.VolumesSpaceAvailable != nil {
 
 		// query param volumes.space.available
 		var qrVolumesSpaceAvailable int64
 
-		if o.VolumesSpaceAvailableQueryParameter != nil {
-			qrVolumesSpaceAvailable = *o.VolumesSpaceAvailableQueryParameter
+		if o.VolumesSpaceAvailable != nil {
+			qrVolumesSpaceAvailable = *o.VolumesSpaceAvailable
 		}
 		qVolumesSpaceAvailable := swag.FormatInt64(qrVolumesSpaceAvailable)
 		if qVolumesSpaceAvailable != "" {
@@ -4447,13 +9105,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesSpaceSizeQueryParameter != nil {
+	if o.VolumesSpaceSize != nil {
 
 		// query param volumes.space.size
 		var qrVolumesSpaceSize int64
 
-		if o.VolumesSpaceSizeQueryParameter != nil {
-			qrVolumesSpaceSize = *o.VolumesSpaceSizeQueryParameter
+		if o.VolumesSpaceSize != nil {
+			qrVolumesSpaceSize = *o.VolumesSpaceSize
 		}
 		qVolumesSpaceSize := swag.FormatInt64(qrVolumesSpaceSize)
 		if qVolumesSpaceSize != "" {
@@ -4464,13 +9122,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesSpaceUsedQueryParameter != nil {
+	if o.VolumesSpaceUsed != nil {
 
 		// query param volumes.space.used
 		var qrVolumesSpaceUsed int64
 
-		if o.VolumesSpaceUsedQueryParameter != nil {
-			qrVolumesSpaceUsed = *o.VolumesSpaceUsedQueryParameter
+		if o.VolumesSpaceUsed != nil {
+			qrVolumesSpaceUsed = *o.VolumesSpaceUsed
 		}
 		qVolumesSpaceUsed := swag.FormatInt64(qrVolumesSpaceUsed)
 		if qVolumesSpaceUsed != "" {
@@ -4481,13 +9139,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesTieringPolicyQueryParameter != nil {
+	if o.VolumesTieringPolicy != nil {
 
 		// query param volumes.tiering.policy
 		var qrVolumesTieringPolicy string
 
-		if o.VolumesTieringPolicyQueryParameter != nil {
-			qrVolumesTieringPolicy = *o.VolumesTieringPolicyQueryParameter
+		if o.VolumesTieringPolicy != nil {
+			qrVolumesTieringPolicy = *o.VolumesTieringPolicy
 		}
 		qVolumesTieringPolicy := qrVolumesTieringPolicy
 		if qVolumesTieringPolicy != "" {
@@ -4498,13 +9156,13 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VolumesUUIDQueryParameter != nil {
+	if o.VolumesUUID != nil {
 
 		// query param volumes.uuid
 		var qrVolumesUUID string
 
-		if o.VolumesUUIDQueryParameter != nil {
-			qrVolumesUUID = *o.VolumesUUIDQueryParameter
+		if o.VolumesUUID != nil {
+			qrVolumesUUID = *o.VolumesUUID
 		}
 		qVolumesUUID := qrVolumesUUID
 		if qVolumesUUID != "" {
@@ -4523,7 +9181,7 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamConsistencyGroupCollectionGet binds the parameter fields
 func (o *ConsistencyGroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -4540,7 +9198,7 @@ func (o *ConsistencyGroupCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamConsistencyGroupCollectionGet binds the parameter order_by
 func (o *ConsistencyGroupCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -52,6 +52,10 @@ KerberosRealmCreateCreated describes a response with status code 201, with defau
 Created
 */
 type KerberosRealmCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this kerberos realm create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *KerberosRealmCreateCreated) String() string {
 }
 
 func (o *KerberosRealmCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

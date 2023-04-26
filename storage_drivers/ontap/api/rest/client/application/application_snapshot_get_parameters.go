@@ -66,19 +66,19 @@ type ApplicationSnapshotGetParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Snapshot copy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *ApplicationSnapshotGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationSnapshotGetParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) WithApplicationUUID(applicationUUID string) *ApplicationSnapshotGetParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) WithFieldsQueryParameter(fields []string) *ApplicationSnapshotGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) WithFields(fields []string) *ApplicationSnapshotGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) WithUUIDPathParameter(uuid string) *ApplicationSnapshotGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) WithUUID(uuid string) *ApplicationSnapshotGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *ApplicationSnapshotGetParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *ApplicationSnapshotGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *ApplicationSnapshotGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamApplicationSnapshotGet binds the parameter fields
 func (o *ApplicationSnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

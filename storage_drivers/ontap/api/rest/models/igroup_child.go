@@ -21,31 +21,31 @@ import (
 type IgroupChild struct {
 
 	// links
-	Links *IgroupChildLinks `json:"_links,omitempty"`
+	Links *IgroupChildInlineLinks `json:"_links,omitempty"`
 
 	// A comment available for use by the administrator.
 	//
 	// Read Only: true
 	// Max Length: 254
 	// Min Length: 0
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Further nested initiator groups.
 	//
 	// Read Only: true
-	Igroups []*IgroupChild `json:"igroups,omitempty"`
+	IgroupChildInlineIgroups []*IgroupChild `json:"igroups,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this igroup child
@@ -60,7 +60,7 @@ func (m *IgroupChild) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateIgroups(formats); err != nil {
+	if err := m.validateIgroupChildInlineIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -96,29 +96,29 @@ func (m *IgroupChild) validateComment(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("comment", "body", m.Comment, 0); err != nil {
+	if err := validate.MinLength("comment", "body", *m.Comment, 0); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("comment", "body", m.Comment, 254); err != nil {
+	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IgroupChild) validateIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroups) { // not required
+func (m *IgroupChild) validateIgroupChildInlineIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.IgroupChildInlineIgroups) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
-		if swag.IsZero(m.Igroups[i]) { // not required
+	for i := 0; i < len(m.IgroupChildInlineIgroups); i++ {
+		if swag.IsZero(m.IgroupChildInlineIgroups[i]) { // not required
 			continue
 		}
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].Validate(formats); err != nil {
+		if m.IgroupChildInlineIgroups[i] != nil {
+			if err := m.IgroupChildInlineIgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -136,11 +136,11 @@ func (m *IgroupChild) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
@@ -159,7 +159,7 @@ func (m *IgroupChild) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateIgroupChildInlineIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,23 +185,23 @@ func (m *IgroupChild) contextValidateLinks(ctx context.Context, formats strfmt.R
 
 func (m *IgroupChild) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "comment", "body", string(m.Comment)); err != nil {
+	if err := validate.ReadOnly(ctx, "comment", "body", m.Comment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IgroupChild) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupChild) contextValidateIgroupChildInlineIgroups(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "igroups", "body", []*IgroupChild(m.Igroups)); err != nil {
+	if err := validate.ReadOnly(ctx, "igroups", "body", []*IgroupChild(m.IgroupChildInlineIgroups)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Igroups); i++ {
+	for i := 0; i < len(m.IgroupChildInlineIgroups); i++ {
 
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+		if m.IgroupChildInlineIgroups[i] != nil {
+			if err := m.IgroupChildInlineIgroups[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
 				}
@@ -232,17 +232,17 @@ func (m *IgroupChild) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IgroupChildLinks igroup child links
+// IgroupChildInlineLinks igroup child inline links
 //
-// swagger:model IgroupChildLinks
-type IgroupChildLinks struct {
+// swagger:model igroup_child_inline__links
+type IgroupChildInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this igroup child links
-func (m *IgroupChildLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this igroup child inline links
+func (m *IgroupChildInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -255,7 +255,7 @@ func (m *IgroupChildLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IgroupChildLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IgroupChildInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -272,8 +272,8 @@ func (m *IgroupChildLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this igroup child links based on the context it is used
-func (m *IgroupChildLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this igroup child inline links based on the context it is used
+func (m *IgroupChildInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -286,7 +286,7 @@ func (m *IgroupChildLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *IgroupChildLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IgroupChildInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -301,7 +301,7 @@ func (m *IgroupChildLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *IgroupChildLinks) MarshalBinary() ([]byte, error) {
+func (m *IgroupChildInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -309,8 +309,8 @@ func (m *IgroupChildLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IgroupChildLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupChildLinks
+func (m *IgroupChildInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupChildInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,19 +66,19 @@ type PortGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Port name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *PortGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the port get params
-func (o *PortGetParams) WithFieldsQueryParameter(fields []string) *PortGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the port get params
+func (o *PortGetParams) WithFields(fields []string) *PortGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the port get params
-func (o *PortGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the port get params
+func (o *PortGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the port get params
-func (o *PortGetParams) WithNamePathParameter(name string) *PortGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the port get params
+func (o *PortGetParams) WithName(name string) *PortGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the port get params
-func (o *PortGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the port get params
+func (o *PortGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the port get params
-func (o *PortGetParams) WithNodeUUIDPathParameter(nodeUUID string) *PortGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the port get params
+func (o *PortGetParams) WithNodeUUID(nodeUUID string) *PortGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the port get params
-func (o *PortGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the port get params
+func (o *PortGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *PortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *PortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *PortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamPortGet binds the parameter fields
 func (o *PortGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

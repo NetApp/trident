@@ -22,20 +22,20 @@ type Audit struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// events
-	Events *AuditEvents `json:"events,omitempty"`
+	Events *AuditInlineEvents `json:"events,omitempty"`
 
 	// Indicates whether there is a strict Guarantee of Auditing
 	// Example: false
-	Guarantee bool `json:"guarantee,omitempty"`
+	Guarantee *bool `json:"guarantee,omitempty"`
 
 	// log
 	Log *Log `json:"log,omitempty"`
 
 	// The audit log destination path where consolidated audit logs are stored.
-	LogPath string `json:"log_path,omitempty"`
+	LogPath *string `json:"log_path,omitempty"`
 
 	// svm
-	Svm *AuditSvm `json:"svm,omitempty"`
+	Svm *AuditInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this audit
@@ -193,10 +193,10 @@ func (m *Audit) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AuditEvents audit events
+// AuditInlineEvents audit inline events
 //
-// swagger:model AuditEvents
-type AuditEvents struct {
+// swagger:model audit_inline_events
+type AuditInlineEvents struct {
 
 	// Authorization policy change events
 	AuthorizationPolicy *bool `json:"authorization_policy,omitempty"`
@@ -220,18 +220,18 @@ type AuditEvents struct {
 	UserAccount *bool `json:"user_account,omitempty"`
 }
 
-// Validate validates this audit events
-func (m *AuditEvents) Validate(formats strfmt.Registry) error {
+// Validate validates this audit inline events
+func (m *AuditInlineEvents) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this audit events based on context it is used
-func (m *AuditEvents) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this audit inline events based on context it is used
+func (m *AuditInlineEvents) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *AuditEvents) MarshalBinary() ([]byte, error) {
+func (m *AuditInlineEvents) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -239,8 +239,8 @@ func (m *AuditEvents) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AuditEvents) UnmarshalBinary(b []byte) error {
-	var res AuditEvents
+func (m *AuditInlineEvents) UnmarshalBinary(b []byte) error {
+	var res AuditInlineEvents
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -248,27 +248,27 @@ func (m *AuditEvents) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AuditSvm audit svm
+// AuditInlineSvm audit inline svm
 //
-// swagger:model AuditSvm
-type AuditSvm struct {
+// swagger:model audit_inline_svm
+type AuditInlineSvm struct {
 
 	// links
-	Links *AuditSvmLinks `json:"_links,omitempty"`
+	Links *AuditInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this audit svm
-func (m *AuditSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this audit inline svm
+func (m *AuditInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -281,7 +281,7 @@ func (m *AuditSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AuditSvm) validateLinks(formats strfmt.Registry) error {
+func (m *AuditInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -298,8 +298,8 @@ func (m *AuditSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this audit svm based on the context it is used
-func (m *AuditSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this audit inline svm based on the context it is used
+func (m *AuditInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -312,7 +312,7 @@ func (m *AuditSvm) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *AuditSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AuditInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -327,7 +327,7 @@ func (m *AuditSvm) contextValidateLinks(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *AuditSvm) MarshalBinary() ([]byte, error) {
+func (m *AuditInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -335,8 +335,8 @@ func (m *AuditSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AuditSvm) UnmarshalBinary(b []byte) error {
-	var res AuditSvm
+func (m *AuditInlineSvm) UnmarshalBinary(b []byte) error {
+	var res AuditInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -344,17 +344,17 @@ func (m *AuditSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AuditSvmLinks audit svm links
+// AuditInlineSvmInlineLinks audit inline svm inline links
 //
-// swagger:model AuditSvmLinks
-type AuditSvmLinks struct {
+// swagger:model audit_inline_svm_inline__links
+type AuditInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this audit svm links
-func (m *AuditSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this audit inline svm inline links
+func (m *AuditInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -367,7 +367,7 @@ func (m *AuditSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AuditSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AuditInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -384,8 +384,8 @@ func (m *AuditSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this audit svm links based on the context it is used
-func (m *AuditSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this audit inline svm inline links based on the context it is used
+func (m *AuditInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -398,7 +398,7 @@ func (m *AuditSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *AuditSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AuditInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -413,7 +413,7 @@ func (m *AuditSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *AuditSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *AuditInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -421,8 +421,8 @@ func (m *AuditSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AuditSvmLinks) UnmarshalBinary(b []byte) error {
-	var res AuditSvmLinks
+func (m *AuditInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AuditInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

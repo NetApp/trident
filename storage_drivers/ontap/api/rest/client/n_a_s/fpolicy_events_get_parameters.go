@@ -66,16 +66,16 @@ type FpolicyEventsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -130,37 +130,37 @@ func (o *FpolicyEventsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fpolicy events get params
-func (o *FpolicyEventsGetParams) WithFieldsQueryParameter(fields []string) *FpolicyEventsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fpolicy events get params
+func (o *FpolicyEventsGetParams) WithFields(fields []string) *FpolicyEventsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fpolicy events get params
-func (o *FpolicyEventsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fpolicy events get params
+func (o *FpolicyEventsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the fpolicy events get params
-func (o *FpolicyEventsGetParams) WithNamePathParameter(name string) *FpolicyEventsGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the fpolicy events get params
+func (o *FpolicyEventsGetParams) WithName(name string) *FpolicyEventsGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the fpolicy events get params
-func (o *FpolicyEventsGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the fpolicy events get params
+func (o *FpolicyEventsGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy events get params
-func (o *FpolicyEventsGetParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyEventsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy events get params
+func (o *FpolicyEventsGetParams) WithSvmUUID(svmUUID string) *FpolicyEventsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy events get params
-func (o *FpolicyEventsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy events get params
+func (o *FpolicyEventsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -171,7 +171,7 @@ func (o *FpolicyEventsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -183,12 +183,12 @@ func (o *FpolicyEventsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (o *FpolicyEventsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamFpolicyEventsGet binds the parameter fields
 func (o *FpolicyEventsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

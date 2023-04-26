@@ -19,11 +19,11 @@ type Member struct {
 
 	// RFC 2307 memberNisNetgroup attribute.
 	// Example: msSFU30MemberNisNetgroup
-	NisNetgroup string `json:"nis_netgroup,omitempty"`
+	NisNetgroup *string `json:"nis_netgroup,omitempty"`
 
 	// RFC 2307 memberUid attribute.
 	// Example: msSFU30MemberUid
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 }
 
 // Validate validates this member

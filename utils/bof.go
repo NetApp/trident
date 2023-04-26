@@ -15,9 +15,8 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 var BofUtils = NewBlockOnFileReconcileUtils()
@@ -25,6 +24,8 @@ var BofUtils = NewBlockOnFileReconcileUtils()
 func AttachBlockOnFileVolume(
 	ctx context.Context, mountPath string, publishInfo *VolumePublishInfo,
 ) (string, string, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> bof.AttachBlockOnFileVolume")
 	defer Logc(ctx).Debug("<<<< bof.AttachBlockOnFileVolume")
 
@@ -44,7 +45,7 @@ func AttachBlockOnFileVolume(
 		return "", "", err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":        loopFile,
 		"exportPath":    exportPath,
 		"nfsMountpoint": nfsMountpoint,
@@ -60,12 +61,12 @@ func AttachBlockOnFileVolume(
 
 	// Mount the NFS share if it isn't already mounted
 	if nfsShareMounted {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"exportPath":    exportPath,
 			"nfsMountpoint": nfsMountpoint,
 		}).Debug("NFS share already mounted.")
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"exportPath":    exportPath,
 			"nfsMountpoint": nfsMountpoint,
 		}).Debug("Mounting NFS share.")
@@ -113,13 +114,13 @@ func AttachBlockOnFileVolume(
 				Logc(ctx).WithField("device", loopDevice.Name).Errorf("Device is not unformatted; err: %v", err)
 				return "", "", fmt.Errorf("device %v is not unformatted", loopDevice.Name)
 			}
-			Logc(ctx).WithFields(log.Fields{"device": loopDevice.Name, "fsType": fsType}).Debug("Formatting Device.")
+			Logc(ctx).WithFields(LogFields{"device": loopDevice.Name, "fsType": fsType}).Debug("Formatting Device.")
 			err := formatVolumeRetry(ctx, loopDevice.Name, fsType)
 			if err != nil {
 				return "", "", fmt.Errorf("error formatting device %s: %v", loopDevice.Name, err)
 			}
 		} else if existingFstype != unknownFstype && existingFstype != fsType {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"device":          loopDevice.Name,
 				"existingFstype":  existingFstype,
 				"requestedFstype": fsType,
@@ -127,7 +128,7 @@ func AttachBlockOnFileVolume(
 			return "", "", fmt.Errorf("device %s already formatted with other filesystem: %s", loopDevice.Name,
 				existingFstype)
 		} else {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"device": loopDevice.Name,
 				"fstype": fsType,
 			}).Debug("Device already formatted.")
@@ -154,6 +155,8 @@ func AttachBlockOnFileVolume(
 }
 
 func DetachBlockOnFileVolume(ctx context.Context, loopDevice, loopFile string) error {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> bof.DetachBlockOnFileVolume")
 	defer Logc(ctx).Debug("<<<< bof.DetachBlockOnFileVolume")
 
@@ -213,6 +216,8 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 }
 
 func (h *BlockOnFileReconcileHelper) GetLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> bof.GetLoopDeviceAttachedToFile")
 	defer Logc(ctx).Debug("<<<< bof.GetLoopDeviceAttachedToFile")
 
@@ -227,7 +232,7 @@ func (h *BlockOnFileReconcileHelper) GetLoopDeviceAttachedToFile(ctx context.Con
 	for _, device := range devices {
 		_, deviceBackFileName := filepath.Split(device.BackFile)
 		if deviceBackFileName == loopFileBackFileName {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"loopFile":   loopFile,
 				"loopDevice": device.Name,
 			}).Debug("Found loop device.")
@@ -239,6 +244,8 @@ func (h *BlockOnFileReconcileHelper) GetLoopDeviceAttachedToFile(ctx context.Con
 }
 
 func GetAllLoopDeviceBackFiles(ctx context.Context) ([]string, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> bof.GetAllLoopDeviceBackFiles")
 	defer Logc(ctx).Debug("<<<< bof.GetAllLoopDeviceBackFiles")
 
@@ -260,7 +267,9 @@ func GetAllLoopDeviceBackFiles(ctx context.Context) ([]string, error) {
 }
 
 func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string) (bool, error) {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"loopFile":   loopFile,
 		"loopDevice": loopDevice,
 	}).Debug(">>>> bof.IsLoopDeviceAttachedToFile")
@@ -277,7 +286,7 @@ func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string
 	for _, device := range devices {
 		_, deviceBackFileName := filepath.Split(device.BackFile)
 		if device.Name == loopDevice && deviceBackFileName == loopBackFileName {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"loopFile":   loopFile,
 				"loopDevice": device.Name,
 			}).Debug("Found device attached.")
@@ -289,7 +298,9 @@ func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string
 }
 
 func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, requiredBytes int64) error {
-	Logc(ctx).WithFields(log.Fields{
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	Logc(ctx).WithFields(LogFields{
 		"loopFile":      loopFile,
 		"loopDevice":    loopDevice,
 		"requiredBytes": requiredBytes,
@@ -309,7 +320,7 @@ func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, required
 	if loopFileSize < requiredBytes {
 		err = fmt.Errorf("loopFileSize must be greater than or equal to requiredBytes: %d, %d", loopFileSize,
 			requiredBytes)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"loopFileSize":  loopFileSize,
 			"requiredBytes": requiredBytes,
 		}).WithError(err).Error("LoopFileSize must be greater than or equal to requiredBytes")
@@ -332,7 +343,7 @@ func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, required
 
 	if loopDeviceSize < requiredBytes {
 		err = fmt.Errorf("disk size not large enough after resize: %d < %d", loopDeviceSize, requiredBytes)
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"loopDeviceSize": loopDeviceSize,
 			"requiredBytes":  requiredBytes,
 		}).WithError(err).Error("Disk size not large enough after resize.")
@@ -381,7 +392,9 @@ func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
 func WaitForLoopDeviceDetach(
 	ctx context.Context, nfsMountpoint, loopFile string, maxDuration time.Duration,
 ) error {
-	logFields := log.Fields{"nfsMountpoint": nfsMountpoint, "loopFile": loopFile}
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
+	logFields := LogFields{"nfsMountpoint": nfsMountpoint, "loopFile": loopFile}
 	Logc(ctx).WithFields(logFields).Debug(">>>> bof.WaitForLoopDevicesOnNFSMountpoint")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< bof.WaitForLoopDevicesOnNFSMountpoint")
 
@@ -400,7 +413,7 @@ func WaitForLoopDeviceDetach(
 	}
 
 	loopDeviceNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"increment":     duration,
 			"nfsMountpoint": nfsMountpoint,
 			"error":         err,
@@ -417,7 +430,7 @@ func WaitForLoopDeviceDetach(
 	if err := backoff.RetryNotify(checkLoopDevices, loopDeviceBackoff, loopDeviceNotify); err != nil {
 		return fmt.Errorf("loopback device still attached after %3.2f seconds", maxDuration.Seconds())
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"nfsMountpoint": nfsMountpoint,
 			"loopFile":      loopFile,
 		}).Debug("Loopback device detached.")
@@ -428,6 +441,8 @@ func WaitForLoopDeviceDetach(
 
 // GetMountedLoopDevices returns a list of loop devices that are *mounted* on this host.
 func GetMountedLoopDevices(ctx context.Context) ([]string, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> bof.GetMountedLoopDevices")
 	defer Logc(ctx).Debug("<<<< bof.GetMountedLoopDevices")
 
@@ -446,7 +461,7 @@ func GetMountedLoopDevices(ctx context.Context) ([]string, error) {
 			continue
 		}
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"loopDevice": procMount.MountSource,
 			"mountpoint": procMount.MountPoint,
 		}).Debug("Found mounted loop device.")
@@ -459,8 +474,10 @@ func GetMountedLoopDevices(ctx context.Context) ([]string, error) {
 
 // IsLoopDeviceMounted returns true if loop device is mounted
 func IsLoopDeviceMounted(ctx context.Context, deviceName string) (mounted bool, err error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).WithField("deviceName", deviceName).Debug(">>>> bof.IsLoopDeviceMounted")
-	defer Logc(ctx).WithFields(log.Fields{
+	defer Logc(ctx).WithFields(LogFields{
 		"deviceName": deviceName,
 		"mounted":    mounted,
 		"err":        err,
@@ -484,13 +501,15 @@ func IsLoopDeviceMounted(ctx context.Context, deviceName string) (mounted bool, 
 
 // SafeToRemoveNFSMount returns true if NFS mount point has any subvolumes in use by loop, if not returns true
 func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).WithField("nfsMountPoint", nfsMountPoint).Debug(">>>> bof.SafeToRemoveNFSMount")
 	defer Logc(ctx).WithField("nfsMountPoint", nfsMountPoint).Debug("<<<< bof.SafeToRemoveNFSMount")
 
 	// Get names of all the loop backing files
 	allBackFiles, err := GetAllLoopDeviceBackFiles(ctx)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"error": err,
 		}).Warn("Failed to get backing files.")
 
@@ -507,7 +526,7 @@ func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
 
 	files, err := ioutil.ReadDir(nfsMountPoint)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"error": err,
 		}).Warn("Failed to get list of filename in NFS mountpoint.")
 
@@ -540,6 +559,8 @@ func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
 func (h *BlockOnFileReconcileHelper) ReconcileBlockOnFileVolumeInfo(
 	ctx context.Context, trackingInfo *VolumeTrackingInfo,
 ) (bool, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	pubInfo := trackingInfo.VolumePublishInfo
 	nfsMountpoint := pubInfo.NFSMountpoint
 	loopFile := path.Join(nfsMountpoint, pubInfo.SubvolumeName)

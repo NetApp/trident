@@ -20,7 +20,7 @@ import (
 type LoginMessages struct {
 
 	// links
-	Links *LoginMessagesLinks `json:"_links,omitempty"`
+	Links *LoginMessagesInlineLinks `json:"_links,omitempty"`
 
 	// The login banner text. This message is displayed during SSH and console device
 	// login just before the password prompt displays. When configured, a cluster-level
@@ -47,7 +47,7 @@ type LoginMessages struct {
 	Message *string `json:"message,omitempty"`
 
 	// scope
-	Scope NetworkScope `json:"scope,omitempty"`
+	Scope *NetworkScope `json:"scope,omitempty"`
 
 	// Specifies whether to show a cluster-level message before the SVM message
 	// when logging in as an SVM administrator.
@@ -57,12 +57,12 @@ type LoginMessages struct {
 	ShowClusterMessage *bool `json:"show_cluster_message,omitempty"`
 
 	// svm
-	Svm *LoginMessagesSvm `json:"svm,omitempty"`
+	Svm *LoginMessagesInlineSvm `json:"svm,omitempty"`
 
 	// The unique identifier (ID) of the login messages configuration.
 	//
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this login messages
@@ -149,11 +149,13 @@ func (m *LoginMessages) validateScope(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -218,11 +220,13 @@ func (m *LoginMessages) contextValidateLinks(ctx context.Context, formats strfmt
 
 func (m *LoginMessages) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -244,7 +248,7 @@ func (m *LoginMessages) contextValidateSvm(ctx context.Context, formats strfmt.R
 
 func (m *LoginMessages) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -269,17 +273,17 @@ func (m *LoginMessages) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LoginMessagesLinks login messages links
+// LoginMessagesInlineLinks login messages inline links
 //
-// swagger:model LoginMessagesLinks
-type LoginMessagesLinks struct {
+// swagger:model login_messages_inline__links
+type LoginMessagesInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this login messages links
-func (m *LoginMessagesLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this login messages inline links
+func (m *LoginMessagesInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -292,7 +296,7 @@ func (m *LoginMessagesLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LoginMessagesLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LoginMessagesInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -309,8 +313,8 @@ func (m *LoginMessagesLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this login messages links based on the context it is used
-func (m *LoginMessagesLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this login messages inline links based on the context it is used
+func (m *LoginMessagesInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -323,7 +327,7 @@ func (m *LoginMessagesLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *LoginMessagesLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LoginMessagesInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -338,7 +342,7 @@ func (m *LoginMessagesLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *LoginMessagesLinks) MarshalBinary() ([]byte, error) {
+func (m *LoginMessagesInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -346,8 +350,8 @@ func (m *LoginMessagesLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LoginMessagesLinks) UnmarshalBinary(b []byte) error {
-	var res LoginMessagesLinks
+func (m *LoginMessagesInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LoginMessagesInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -355,27 +359,27 @@ func (m *LoginMessagesLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LoginMessagesSvm login messages svm
+// LoginMessagesInlineSvm login messages inline svm
 //
-// swagger:model LoginMessagesSvm
-type LoginMessagesSvm struct {
+// swagger:model login_messages_inline_svm
+type LoginMessagesInlineSvm struct {
 
 	// links
-	Links *LoginMessagesSvmLinks `json:"_links,omitempty"`
+	Links *LoginMessagesInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this login messages svm
-func (m *LoginMessagesSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this login messages inline svm
+func (m *LoginMessagesInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -388,7 +392,7 @@ func (m *LoginMessagesSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LoginMessagesSvm) validateLinks(formats strfmt.Registry) error {
+func (m *LoginMessagesInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -405,8 +409,8 @@ func (m *LoginMessagesSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this login messages svm based on the context it is used
-func (m *LoginMessagesSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this login messages inline svm based on the context it is used
+func (m *LoginMessagesInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -419,7 +423,7 @@ func (m *LoginMessagesSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *LoginMessagesSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LoginMessagesInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -434,7 +438,7 @@ func (m *LoginMessagesSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *LoginMessagesSvm) MarshalBinary() ([]byte, error) {
+func (m *LoginMessagesInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -442,8 +446,8 @@ func (m *LoginMessagesSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LoginMessagesSvm) UnmarshalBinary(b []byte) error {
-	var res LoginMessagesSvm
+func (m *LoginMessagesInlineSvm) UnmarshalBinary(b []byte) error {
+	var res LoginMessagesInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -451,17 +455,17 @@ func (m *LoginMessagesSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LoginMessagesSvmLinks login messages svm links
+// LoginMessagesInlineSvmInlineLinks login messages inline svm inline links
 //
-// swagger:model LoginMessagesSvmLinks
-type LoginMessagesSvmLinks struct {
+// swagger:model login_messages_inline_svm_inline__links
+type LoginMessagesInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this login messages svm links
-func (m *LoginMessagesSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this login messages inline svm inline links
+func (m *LoginMessagesInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -474,7 +478,7 @@ func (m *LoginMessagesSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LoginMessagesSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LoginMessagesInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -491,8 +495,8 @@ func (m *LoginMessagesSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this login messages svm links based on the context it is used
-func (m *LoginMessagesSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this login messages inline svm inline links based on the context it is used
+func (m *LoginMessagesInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -505,7 +509,7 @@ func (m *LoginMessagesSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *LoginMessagesSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LoginMessagesInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -520,7 +524,7 @@ func (m *LoginMessagesSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *LoginMessagesSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *LoginMessagesInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -528,8 +532,8 @@ func (m *LoginMessagesSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LoginMessagesSvmLinks) UnmarshalBinary(b []byte) error {
-	var res LoginMessagesSvmLinks
+func (m *LoginMessagesInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LoginMessagesInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

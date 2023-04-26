@@ -74,19 +74,19 @@ type CifsDomainPreferredDcCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SkipConfigValidation.
 
 	   Skip the validation of the specified preferred DC configuration.
 	*/
-	SkIPConfigValidationQueryParameter *bool
+	SkipConfigValidation *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,14 +106,14 @@ func (o *CifsDomainPreferredDcCreateParams) WithDefaults() *CifsDomainPreferredD
 // All values with no default are reset to their zero value.
 func (o *CifsDomainPreferredDcCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		skIPConfigValidationQueryParameterDefault = bool(false)
+		skipConfigValidationDefault = bool(false)
 	)
 
 	val := CifsDomainPreferredDcCreateParams{
-		ReturnRecordsQueryParameter:        &returnRecordsQueryParameterDefault,
-		SkIPConfigValidationQueryParameter: &skIPConfigValidationQueryParameterDefault,
+		ReturnRecords:        &returnRecordsDefault,
+		SkipConfigValidation: &skipConfigValidationDefault,
 	}
 
 	val.timeout = o.timeout
@@ -166,37 +166,37 @@ func (o *CifsDomainPreferredDcCreateParams) SetInfo(info *models.CifsDomainPrefe
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs domain preferred dc create params
-func (o *CifsDomainPreferredDcCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsDomainPreferredDcCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cifs domain preferred dc create params
+func (o *CifsDomainPreferredDcCreateParams) WithReturnRecords(returnRecords *bool) *CifsDomainPreferredDcCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs domain preferred dc create params
-func (o *CifsDomainPreferredDcCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cifs domain preferred dc create params
+func (o *CifsDomainPreferredDcCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSkIPConfigValidationQueryParameter adds the skipConfigValidation to the cifs domain preferred dc create params
-func (o *CifsDomainPreferredDcCreateParams) WithSkIPConfigValidationQueryParameter(skipConfigValidation *bool) *CifsDomainPreferredDcCreateParams {
-	o.SetSkIPConfigValidationQueryParameter(skipConfigValidation)
+// WithSkipConfigValidation adds the skipConfigValidation to the cifs domain preferred dc create params
+func (o *CifsDomainPreferredDcCreateParams) WithSkipConfigValidation(skipConfigValidation *bool) *CifsDomainPreferredDcCreateParams {
+	o.SetSkipConfigValidation(skipConfigValidation)
 	return o
 }
 
-// SetSkIPConfigValidationQueryParameter adds the skipConfigValidation to the cifs domain preferred dc create params
-func (o *CifsDomainPreferredDcCreateParams) SetSkIPConfigValidationQueryParameter(skipConfigValidation *bool) {
-	o.SkIPConfigValidationQueryParameter = skipConfigValidation
+// SetSkipConfigValidation adds the skipConfigValidation to the cifs domain preferred dc create params
+func (o *CifsDomainPreferredDcCreateParams) SetSkipConfigValidation(skipConfigValidation *bool) {
+	o.SkipConfigValidation = skipConfigValidation
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs domain preferred dc create params
-func (o *CifsDomainPreferredDcCreateParams) WithSVMUUIDPathParameter(svmUUID string) *CifsDomainPreferredDcCreateParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs domain preferred dc create params
+func (o *CifsDomainPreferredDcCreateParams) WithSvmUUID(svmUUID string) *CifsDomainPreferredDcCreateParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs domain preferred dc create params
-func (o *CifsDomainPreferredDcCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs domain preferred dc create params
+func (o *CifsDomainPreferredDcCreateParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -212,13 +212,13 @@ func (o *CifsDomainPreferredDcCreateParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -229,13 +229,13 @@ func (o *CifsDomainPreferredDcCreateParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SkIPConfigValidationQueryParameter != nil {
+	if o.SkipConfigValidation != nil {
 
 		// query param skip_config_validation
 		var qrSkipConfigValidation bool
 
-		if o.SkIPConfigValidationQueryParameter != nil {
-			qrSkipConfigValidation = *o.SkIPConfigValidationQueryParameter
+		if o.SkipConfigValidation != nil {
+			qrSkipConfigValidation = *o.SkipConfigValidation
 		}
 		qSkipConfigValidation := swag.FormatBool(qrSkipConfigValidation)
 		if qSkipConfigValidation != "" {
@@ -247,7 +247,7 @@ func (o *CifsDomainPreferredDcCreateParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

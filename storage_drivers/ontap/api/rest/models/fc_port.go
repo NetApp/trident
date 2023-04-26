@@ -22,46 +22,46 @@ import (
 type FcPort struct {
 
 	// links
-	Links *FcPortLinks `json:"_links,omitempty"`
+	Links *FcPortInlineLinks `json:"_links,omitempty"`
 
 	// A description of the FC port.
 	//
 	// Example: Fibre Channel Target Adapter 0a (ACME Fibre Channel Adapter, rev. 1.0.0, 8G)
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// The administrative state of the FC port. If this property is set to _false_, all FC connectivity to FC interfaces are blocked. Optional in PATCH.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// fabric
-	Fabric *FcPortFabric `json:"fabric,omitempty"`
+	Fabric *FcPortInlineFabric `json:"fabric,omitempty"`
 
 	// The number of FC interfaces currently provisioned on this port. This property is not supported in an SVM context.
 	//
 	// Read Only: true
-	InterfaceCount int64 `json:"interface_count,omitempty"`
+	InterfaceCount *int64 `json:"interface_count,omitempty"`
 
 	// metric
-	Metric *FcPortMetric `json:"metric,omitempty"`
+	Metric *FcPortInlineMetric `json:"metric,omitempty"`
 
 	// The FC port name.
 	//
 	// Example: 0a
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *FcPortNode `json:"node,omitempty"`
+	Node *FcPortInlineNode `json:"node,omitempty"`
 
 	// The physical network protocol of the FC port.
 	//
 	// Read Only: true
 	// Enum: [fibre_channel ethernet]
-	PhysicalProtocol string `json:"physical_protocol,omitempty"`
+	PhysicalProtocol *string `json:"physical_protocol,omitempty"`
 
 	// speed
-	Speed *FcPortSpeed `json:"speed,omitempty"`
+	Speed *FcPortInlineSpeed `json:"speed,omitempty"`
 
 	// The operational state of the FC port.
 	// - startup - The port is booting up.
@@ -75,36 +75,36 @@ type FcPort struct {
 	// Example: online
 	// Read Only: true
 	// Enum: [startup link_not_connected online link_disconnected offlined_by_user offlined_by_system node_offline unknown]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *FcPortStatistics `json:"statistics,omitempty"`
+	Statistics *FcPortInlineStatistics `json:"statistics,omitempty"`
 
 	// The network protocols supported by the FC port.
 	//
 	// Read Only: true
-	SupportedProtocols []string `json:"supported_protocols,omitempty"`
+	SupportedProtocols []*string `json:"supported_protocols,omitempty"`
 
 	// transceiver
-	Transceiver *FcPortTransceiver `json:"transceiver,omitempty"`
+	Transceiver *FcPortInlineTransceiver `json:"transceiver,omitempty"`
 
 	// The unique identifier of the FC port.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// The base world wide node name (WWNN) for the FC port.
 	//
 	// Example: 20:00:00:50:56:b4:13:a8
 	// Read Only: true
-	Wwnn string `json:"wwnn,omitempty"`
+	Wwnn *string `json:"wwnn,omitempty"`
 
 	// The base world wide port name (WWPN) for the FC port.
 	//
 	// Example: 20:00:00:50:56:b4:13:a8
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this fc port
@@ -274,7 +274,7 @@ func (m *FcPort) validatePhysicalProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePhysicalProtocolEnum("physical_protocol", "body", m.PhysicalProtocol); err != nil {
+	if err := m.validatePhysicalProtocolEnum("physical_protocol", "body", *m.PhysicalProtocol); err != nil {
 		return err
 	}
 
@@ -407,7 +407,7 @@ func (m *FcPort) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -456,9 +456,12 @@ func (m *FcPort) validateSupportedProtocols(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.SupportedProtocols); i++ {
+		if swag.IsZero(m.SupportedProtocols[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateSupportedProtocolsItemsEnum("supported_protocols"+"."+strconv.Itoa(i), "body", m.SupportedProtocols[i]); err != nil {
+		if err := m.validateSupportedProtocolsItemsEnum("supported_protocols"+"."+strconv.Itoa(i), "body", *m.SupportedProtocols[i]); err != nil {
 			return err
 		}
 
@@ -574,7 +577,7 @@ func (m *FcPort) contextValidateLinks(ctx context.Context, formats strfmt.Regist
 
 func (m *FcPort) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "description", "body", m.Description); err != nil {
 		return err
 	}
 
@@ -597,7 +600,7 @@ func (m *FcPort) contextValidateFabric(ctx context.Context, formats strfmt.Regis
 
 func (m *FcPort) contextValidateInterfaceCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "interface_count", "body", int64(m.InterfaceCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "interface_count", "body", m.InterfaceCount); err != nil {
 		return err
 	}
 
@@ -620,7 +623,7 @@ func (m *FcPort) contextValidateMetric(ctx context.Context, formats strfmt.Regis
 
 func (m *FcPort) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -643,7 +646,7 @@ func (m *FcPort) contextValidateNode(ctx context.Context, formats strfmt.Registr
 
 func (m *FcPort) contextValidatePhysicalProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "physical_protocol", "body", string(m.PhysicalProtocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "physical_protocol", "body", m.PhysicalProtocol); err != nil {
 		return err
 	}
 
@@ -666,7 +669,7 @@ func (m *FcPort) contextValidateSpeed(ctx context.Context, formats strfmt.Regist
 
 func (m *FcPort) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -689,13 +692,13 @@ func (m *FcPort) contextValidateStatistics(ctx context.Context, formats strfmt.R
 
 func (m *FcPort) contextValidateSupportedProtocols(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "supported_protocols", "body", []string(m.SupportedProtocols)); err != nil {
+	if err := validate.ReadOnly(ctx, "supported_protocols", "body", []*string(m.SupportedProtocols)); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.SupportedProtocols); i++ {
 
-		if err := validate.ReadOnly(ctx, "supported_protocols"+"."+strconv.Itoa(i), "body", string(m.SupportedProtocols[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "supported_protocols"+"."+strconv.Itoa(i), "body", m.SupportedProtocols[i]); err != nil {
 			return err
 		}
 
@@ -720,7 +723,7 @@ func (m *FcPort) contextValidateTransceiver(ctx context.Context, formats strfmt.
 
 func (m *FcPort) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -729,7 +732,7 @@ func (m *FcPort) contextValidateUUID(ctx context.Context, formats strfmt.Registr
 
 func (m *FcPort) contextValidateWwnn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wwnn", "body", string(m.Wwnn)); err != nil {
+	if err := validate.ReadOnly(ctx, "wwnn", "body", m.Wwnn); err != nil {
 		return err
 	}
 
@@ -738,7 +741,7 @@ func (m *FcPort) contextValidateWwnn(ctx context.Context, formats strfmt.Registr
 
 func (m *FcPort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -763,10 +766,10 @@ func (m *FcPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortFabric Properties of the fabric to which the FC port is attached.
+// FcPortInlineFabric Properties of the fabric to which the FC port is attached.
 //
-// swagger:model FcPortFabric
-type FcPortFabric struct {
+// swagger:model fc_port_inline_fabric
+type FcPortInlineFabric struct {
 
 	// Reports if the physical port has established a connection with the FC fabric.
 	//
@@ -777,13 +780,13 @@ type FcPortFabric struct {
 	//
 	// Example: 16
 	// Read Only: true
-	ConnectedSpeed int64 `json:"connected_speed,omitempty"`
+	ConnectedSpeed *int64 `json:"connected_speed,omitempty"`
 
 	// The name of the fabric to which the port is connected. This is only available when the FC port is connected to a fabric.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The FC port address of the host bus adapter (HBA) physical port.<br/>
 	// Each FC port in an FC switched fabric has its own unique FC port address for routing purposes. The FC port address is assigned by a switch in the fabric when that port logs in to the fabric. This property refers to the FC port address given to the physical host bus adapter (HBA) port when the port performs a fabric login (FLOGI).<br/>
@@ -792,22 +795,22 @@ type FcPortFabric struct {
 	//
 	// Example: 52100A
 	// Read Only: true
-	PortAddress string `json:"port_address,omitempty"`
+	PortAddress *string `json:"port_address,omitempty"`
 
 	// The switch port to which the FC port is connected.
 	//
 	// Example: ssan-g620-03:33
 	// Read Only: true
-	SwitchPort string `json:"switch_port,omitempty"`
+	SwitchPort *string `json:"switch_port,omitempty"`
 }
 
-// Validate validates this fc port fabric
-func (m *FcPortFabric) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline fabric
+func (m *FcPortInlineFabric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port fabric based on the context it is used
-func (m *FcPortFabric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline fabric based on the context it is used
+func (m *FcPortInlineFabric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateConnected(ctx, formats); err != nil {
@@ -836,7 +839,7 @@ func (m *FcPortFabric) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FcPortFabric) contextValidateConnected(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineFabric) contextValidateConnected(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "fabric"+"."+"connected", "body", m.Connected); err != nil {
 		return err
@@ -845,36 +848,36 @@ func (m *FcPortFabric) contextValidateConnected(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FcPortFabric) contextValidateConnectedSpeed(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineFabric) contextValidateConnectedSpeed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fabric"+"."+"connected_speed", "body", int64(m.ConnectedSpeed)); err != nil {
+	if err := validate.ReadOnly(ctx, "fabric"+"."+"connected_speed", "body", m.ConnectedSpeed); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortFabric) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineFabric) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fabric"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "fabric"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortFabric) contextValidatePortAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineFabric) contextValidatePortAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fabric"+"."+"port_address", "body", string(m.PortAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "fabric"+"."+"port_address", "body", m.PortAddress); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortFabric) contextValidateSwitchPort(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineFabric) contextValidateSwitchPort(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fabric"+"."+"switch_port", "body", string(m.SwitchPort)); err != nil {
+	if err := validate.ReadOnly(ctx, "fabric"+"."+"switch_port", "body", m.SwitchPort); err != nil {
 		return err
 	}
 
@@ -882,7 +885,7 @@ func (m *FcPortFabric) contextValidateSwitchPort(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortFabric) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineFabric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -890,8 +893,8 @@ func (m *FcPortFabric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortFabric) UnmarshalBinary(b []byte) error {
-	var res FcPortFabric
+func (m *FcPortInlineFabric) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineFabric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -899,17 +902,17 @@ func (m *FcPortFabric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortLinks fc port links
+// FcPortInlineLinks fc port inline links
 //
-// swagger:model FcPortLinks
-type FcPortLinks struct {
+// swagger:model fc_port_inline__links
+type FcPortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc port links
-func (m *FcPortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline links
+func (m *FcPortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -922,7 +925,7 @@ func (m *FcPortLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcPortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -939,8 +942,8 @@ func (m *FcPortLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port links based on the context it is used
-func (m *FcPortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline links based on the context it is used
+func (m *FcPortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -953,7 +956,7 @@ func (m *FcPortLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FcPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -968,7 +971,7 @@ func (m *FcPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortLinks) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -976,8 +979,8 @@ func (m *FcPortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortLinks) UnmarshalBinary(b []byte) error {
-	var res FcPortLinks
+func (m *FcPortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -985,35 +988,35 @@ func (m *FcPortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortMetric Performance numbers, such as IOPS latency and throughput
+// FcPortInlineMetric Performance numbers, such as IOPS latency and throughput
 //
-// swagger:model FcPortMetric
-type FcPortMetric struct {
+// swagger:model fc_port_inline_metric
+type FcPortInlineMetric struct {
 
 	// links
-	Links *FcPortMetricLinks `json:"_links,omitempty"`
+	Links *FcPortInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *FcPortMetricIops `json:"iops,omitempty"`
+	Iops *FcPortInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *FcPortMetricLatency `json:"latency,omitempty"`
+	Latency *FcPortInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *FcPortMetricThroughput `json:"throughput,omitempty"`
+	Throughput *FcPortInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1022,8 +1025,8 @@ type FcPortMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this fc port metric
-func (m *FcPortMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline metric
+func (m *FcPortInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1060,7 +1063,7 @@ func (m *FcPortMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortMetric) validateLinks(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1077,7 +1080,7 @@ func (m *FcPortMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcPortMetricTypeDurationPropEnum []interface{}
+var fcPortInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1085,95 +1088,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortMetricTypeDurationPropEnum = append(fcPortMetricTypeDurationPropEnum, v)
+		fcPortInlineMetricTypeDurationPropEnum = append(fcPortInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// FcPortMetricDurationPT15S captures enum value "PT15S"
-	FcPortMetricDurationPT15S string = "PT15S"
+	// FcPortInlineMetricDurationPT15S captures enum value "PT15S"
+	FcPortInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// FcPortMetricDurationPT4M captures enum value "PT4M"
-	FcPortMetricDurationPT4M string = "PT4M"
+	// FcPortInlineMetricDurationPT4M captures enum value "PT4M"
+	FcPortInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// FcPortMetricDurationPT30M captures enum value "PT30M"
-	FcPortMetricDurationPT30M string = "PT30M"
+	// FcPortInlineMetricDurationPT30M captures enum value "PT30M"
+	FcPortInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// FcPortMetricDurationPT2H captures enum value "PT2H"
-	FcPortMetricDurationPT2H string = "PT2H"
+	// FcPortInlineMetricDurationPT2H captures enum value "PT2H"
+	FcPortInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// FcPortMetricDurationP1D captures enum value "P1D"
-	FcPortMetricDurationP1D string = "P1D"
+	// FcPortInlineMetricDurationP1D captures enum value "P1D"
+	FcPortInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// FcPortMetricDurationPT5M captures enum value "PT5M"
-	FcPortMetricDurationPT5M string = "PT5M"
+	// FcPortInlineMetricDurationPT5M captures enum value "PT5M"
+	FcPortInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *FcPortMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcPortMetricTypeDurationPropEnum, true); err != nil {
+func (m *FcPortInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortMetric) validateDuration(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortMetric) validateIops(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -1190,7 +1193,7 @@ func (m *FcPortMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortMetric) validateLatency(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -1207,7 +1210,7 @@ func (m *FcPortMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcPortMetricTypeStatusPropEnum []interface{}
+var fcPortInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1215,145 +1218,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortMetricTypeStatusPropEnum = append(fcPortMetricTypeStatusPropEnum, v)
+		fcPortInlineMetricTypeStatusPropEnum = append(fcPortInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// FcPortMetricStatusOk captures enum value "ok"
-	FcPortMetricStatusOk string = "ok"
+	// FcPortInlineMetricStatusOk captures enum value "ok"
+	FcPortInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// FcPortMetricStatusError captures enum value "error"
-	FcPortMetricStatusError string = "error"
+	// FcPortInlineMetricStatusError captures enum value "error"
+	FcPortInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// FcPortMetricStatusPartialNoData captures enum value "partial_no_data"
-	FcPortMetricStatusPartialNoData string = "partial_no_data"
+	// FcPortInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	FcPortInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// FcPortMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	FcPortMetricStatusPartialNoResponse string = "partial_no_response"
+	// FcPortInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	FcPortInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// FcPortMetricStatusPartialOtherError captures enum value "partial_other_error"
-	FcPortMetricStatusPartialOtherError string = "partial_other_error"
+	// FcPortInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	FcPortInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// FcPortMetricStatusNegativeDelta captures enum value "negative_delta"
-	FcPortMetricStatusNegativeDelta string = "negative_delta"
+	// FcPortInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	FcPortInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// FcPortMetricStatusNotFound captures enum value "not_found"
-	FcPortMetricStatusNotFound string = "not_found"
+	// FcPortInlineMetricStatusNotFound captures enum value "not_found"
+	FcPortInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// FcPortMetricStatusBackfilledData captures enum value "backfilled_data"
-	FcPortMetricStatusBackfilledData string = "backfilled_data"
+	// FcPortInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	FcPortInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// FcPortMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	FcPortMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// FcPortInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	FcPortInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// FcPortMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	FcPortMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// FcPortInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	FcPortInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// FcPortMetric
-	// FcPortMetric
+	// fc_port_inline_metric
+	// FcPortInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// FcPortMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	FcPortMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// FcPortInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	FcPortInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *FcPortMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcPortMetricTypeStatusPropEnum, true); err != nil {
+func (m *FcPortInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortMetric) validateStatus(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -1370,7 +1373,7 @@ func (m *FcPortMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1382,8 +1385,8 @@ func (m *FcPortMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port metric based on the context it is used
-func (m *FcPortMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline metric based on the context it is used
+func (m *FcPortInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1420,7 +1423,7 @@ func (m *FcPortMetric) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1434,16 +1437,16 @@ func (m *FcPortMetric) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1457,7 +1460,7 @@ func (m *FcPortMetric) contextValidateIops(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1471,16 +1474,16 @@ func (m *FcPortMetric) contextValidateLatency(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1494,7 +1497,7 @@ func (m *FcPortMetric) contextValidateThroughput(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FcPortMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1504,7 +1507,7 @@ func (m *FcPortMetric) contextValidateTimestamp(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortMetric) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1512,8 +1515,8 @@ func (m *FcPortMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortMetric) UnmarshalBinary(b []byte) error {
-	var res FcPortMetric
+func (m *FcPortInlineMetric) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1521,34 +1524,34 @@ func (m *FcPortMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortMetricIops The rate of I/O operations observed at the storage object.
+// FcPortInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model FcPortMetricIops
-type FcPortMetricIops struct {
+// swagger:model fc_port_inline_metric_inline_iops
+type FcPortInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fc port metric iops
-func (m *FcPortMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline metric inline iops
+func (m *FcPortInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port metric iops based on the context it is used
-func (m *FcPortMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline metric inline iops based on the context it is used
+func (m *FcPortInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1558,7 +1561,7 @@ func (m *FcPortMetricIops) ContextValidate(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortMetricIops) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1566,8 +1569,8 @@ func (m *FcPortMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortMetricIops) UnmarshalBinary(b []byte) error {
-	var res FcPortMetricIops
+func (m *FcPortInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1575,34 +1578,34 @@ func (m *FcPortMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortMetricLatency The round trip latency in microseconds observed at the storage object.
+// FcPortInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model FcPortMetricLatency
-type FcPortMetricLatency struct {
+// swagger:model fc_port_inline_metric_inline_latency
+type FcPortInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fc port metric latency
-func (m *FcPortMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline metric inline latency
+func (m *FcPortInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port metric latency based on the context it is used
-func (m *FcPortMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline metric inline latency based on the context it is used
+func (m *FcPortInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1612,7 +1615,7 @@ func (m *FcPortMetricLatency) ContextValidate(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1620,8 +1623,8 @@ func (m *FcPortMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortMetricLatency) UnmarshalBinary(b []byte) error {
-	var res FcPortMetricLatency
+func (m *FcPortInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1629,17 +1632,17 @@ func (m *FcPortMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortMetricLinks fc port metric links
+// FcPortInlineMetricInlineLinks fc port inline metric inline links
 //
-// swagger:model FcPortMetricLinks
-type FcPortMetricLinks struct {
+// swagger:model fc_port_inline_metric_inline__links
+type FcPortInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc port metric links
-func (m *FcPortMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline metric inline links
+func (m *FcPortInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1652,7 +1655,7 @@ func (m *FcPortMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcPortInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1669,8 +1672,8 @@ func (m *FcPortMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port metric links based on the context it is used
-func (m *FcPortMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline metric inline links based on the context it is used
+func (m *FcPortInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1683,7 +1686,7 @@ func (m *FcPortMetricLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FcPortMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1698,7 +1701,7 @@ func (m *FcPortMetricLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1706,8 +1709,8 @@ func (m *FcPortMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortMetricLinks) UnmarshalBinary(b []byte) error {
-	var res FcPortMetricLinks
+func (m *FcPortInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1715,31 +1718,31 @@ func (m *FcPortMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// FcPortInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model FcPortMetricThroughput
-type FcPortMetricThroughput struct {
+// swagger:model fc_port_inline_metric_inline_throughput
+type FcPortInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fc port metric throughput
-func (m *FcPortMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline metric inline throughput
+func (m *FcPortInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port metric throughput based on the context it is used
-func (m *FcPortMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline metric inline throughput based on the context it is used
+func (m *FcPortInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1749,7 +1752,7 @@ func (m *FcPortMetricThroughput) ContextValidate(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1757,8 +1760,8 @@ func (m *FcPortMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res FcPortMetricThroughput
+func (m *FcPortInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1766,25 +1769,25 @@ func (m *FcPortMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortNode fc port node
+// FcPortInlineNode fc port inline node
 //
-// swagger:model FcPortNode
-type FcPortNode struct {
+// swagger:model fc_port_inline_node
+type FcPortInlineNode struct {
 
 	// links
-	Links *FcPortNodeLinks `json:"_links,omitempty"`
+	Links *FcPortInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fc port node
-func (m *FcPortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline node
+func (m *FcPortInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1797,7 +1800,7 @@ func (m *FcPortNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortNode) validateLinks(formats strfmt.Registry) error {
+func (m *FcPortInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1814,8 +1817,8 @@ func (m *FcPortNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port node based on the context it is used
-func (m *FcPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline node based on the context it is used
+func (m *FcPortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1828,7 +1831,7 @@ func (m *FcPortNode) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *FcPortNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1843,7 +1846,7 @@ func (m *FcPortNode) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortNode) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1851,8 +1854,8 @@ func (m *FcPortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortNode) UnmarshalBinary(b []byte) error {
-	var res FcPortNode
+func (m *FcPortInlineNode) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1860,17 +1863,17 @@ func (m *FcPortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortNodeLinks fc port node links
+// FcPortInlineNodeInlineLinks fc port inline node inline links
 //
-// swagger:model FcPortNodeLinks
-type FcPortNodeLinks struct {
+// swagger:model fc_port_inline_node_inline__links
+type FcPortInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc port node links
-func (m *FcPortNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline node inline links
+func (m *FcPortInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1883,7 +1886,7 @@ func (m *FcPortNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcPortInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1900,8 +1903,8 @@ func (m *FcPortNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port node links based on the context it is used
-func (m *FcPortNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline node inline links based on the context it is used
+func (m *FcPortInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1914,7 +1917,7 @@ func (m *FcPortNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FcPortNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1929,7 +1932,7 @@ func (m *FcPortNodeLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1937,8 +1940,8 @@ func (m *FcPortNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortNodeLinks) UnmarshalBinary(b []byte) error {
-	var res FcPortNodeLinks
+func (m *FcPortInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1946,28 +1949,28 @@ func (m *FcPortNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortSpeed The physical device speed related properties of the FC port.
+// FcPortInlineSpeed The physical device speed related properties of the FC port.
 //
-// swagger:model FcPortSpeed
-type FcPortSpeed struct {
+// swagger:model fc_port_inline_speed
+type FcPortInlineSpeed struct {
 
 	// The configured speed of the FC port in gigabits per second.
 	//
 	// Example: auto
 	// Read Only: true
 	// Enum: [1 2 4 8 10 16 32 auto]
-	Configured string `json:"configured,omitempty"`
+	Configured *string `json:"configured,omitempty"`
 
 	// The maximum speed supported by the FC port in gigabits per second.
 	//
 	// Example: 32
 	// Read Only: true
 	// Enum: [1 2 4 8 10 16 32 auto]
-	Maximum string `json:"maximum,omitempty"`
+	Maximum *string `json:"maximum,omitempty"`
 }
 
-// Validate validates this fc port speed
-func (m *FcPortSpeed) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline speed
+func (m *FcPortInlineSpeed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfigured(formats); err != nil {
@@ -1984,7 +1987,7 @@ func (m *FcPortSpeed) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcPortSpeedTypeConfiguredPropEnum []interface{}
+var fcPortInlineSpeedTypeConfiguredPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1992,115 +1995,115 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortSpeedTypeConfiguredPropEnum = append(fcPortSpeedTypeConfiguredPropEnum, v)
+		fcPortInlineSpeedTypeConfiguredPropEnum = append(fcPortInlineSpeedTypeConfiguredPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 1
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr1 captures enum value "1"
-	FcPortSpeedConfiguredNr1 string = "1"
+	// FcPortInlineSpeedConfiguredNr1 captures enum value "1"
+	FcPortInlineSpeedConfiguredNr1 string = "1"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 2
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr2 captures enum value "2"
-	FcPortSpeedConfiguredNr2 string = "2"
+	// FcPortInlineSpeedConfiguredNr2 captures enum value "2"
+	FcPortInlineSpeedConfiguredNr2 string = "2"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 4
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr4 captures enum value "4"
-	FcPortSpeedConfiguredNr4 string = "4"
+	// FcPortInlineSpeedConfiguredNr4 captures enum value "4"
+	FcPortInlineSpeedConfiguredNr4 string = "4"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 8
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr8 captures enum value "8"
-	FcPortSpeedConfiguredNr8 string = "8"
+	// FcPortInlineSpeedConfiguredNr8 captures enum value "8"
+	FcPortInlineSpeedConfiguredNr8 string = "8"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 10
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr10 captures enum value "10"
-	FcPortSpeedConfiguredNr10 string = "10"
+	// FcPortInlineSpeedConfiguredNr10 captures enum value "10"
+	FcPortInlineSpeedConfiguredNr10 string = "10"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 16
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr16 captures enum value "16"
-	FcPortSpeedConfiguredNr16 string = "16"
+	// FcPortInlineSpeedConfiguredNr16 captures enum value "16"
+	FcPortInlineSpeedConfiguredNr16 string = "16"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// 32
 	// END DEBUGGING
-	// FcPortSpeedConfiguredNr32 captures enum value "32"
-	FcPortSpeedConfiguredNr32 string = "32"
+	// FcPortInlineSpeedConfiguredNr32 captures enum value "32"
+	FcPortInlineSpeedConfiguredNr32 string = "32"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// configured
 	// Configured
 	// auto
 	// END DEBUGGING
-	// FcPortSpeedConfiguredAuto captures enum value "auto"
-	FcPortSpeedConfiguredAuto string = "auto"
+	// FcPortInlineSpeedConfiguredAuto captures enum value "auto"
+	FcPortInlineSpeedConfiguredAuto string = "auto"
 )
 
 // prop value enum
-func (m *FcPortSpeed) validateConfiguredEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcPortSpeedTypeConfiguredPropEnum, true); err != nil {
+func (m *FcPortInlineSpeed) validateConfiguredEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineSpeedTypeConfiguredPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortSpeed) validateConfigured(formats strfmt.Registry) error {
+func (m *FcPortInlineSpeed) validateConfigured(formats strfmt.Registry) error {
 	if swag.IsZero(m.Configured) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateConfiguredEnum("speed"+"."+"configured", "body", m.Configured); err != nil {
+	if err := m.validateConfiguredEnum("speed"+"."+"configured", "body", *m.Configured); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var fcPortSpeedTypeMaximumPropEnum []interface{}
+var fcPortInlineSpeedTypeMaximumPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2108,116 +2111,116 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortSpeedTypeMaximumPropEnum = append(fcPortSpeedTypeMaximumPropEnum, v)
+		fcPortInlineSpeedTypeMaximumPropEnum = append(fcPortInlineSpeedTypeMaximumPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 1
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr1 captures enum value "1"
-	FcPortSpeedMaximumNr1 string = "1"
+	// FcPortInlineSpeedMaximumNr1 captures enum value "1"
+	FcPortInlineSpeedMaximumNr1 string = "1"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 2
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr2 captures enum value "2"
-	FcPortSpeedMaximumNr2 string = "2"
+	// FcPortInlineSpeedMaximumNr2 captures enum value "2"
+	FcPortInlineSpeedMaximumNr2 string = "2"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 4
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr4 captures enum value "4"
-	FcPortSpeedMaximumNr4 string = "4"
+	// FcPortInlineSpeedMaximumNr4 captures enum value "4"
+	FcPortInlineSpeedMaximumNr4 string = "4"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 8
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr8 captures enum value "8"
-	FcPortSpeedMaximumNr8 string = "8"
+	// FcPortInlineSpeedMaximumNr8 captures enum value "8"
+	FcPortInlineSpeedMaximumNr8 string = "8"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 10
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr10 captures enum value "10"
-	FcPortSpeedMaximumNr10 string = "10"
+	// FcPortInlineSpeedMaximumNr10 captures enum value "10"
+	FcPortInlineSpeedMaximumNr10 string = "10"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 16
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr16 captures enum value "16"
-	FcPortSpeedMaximumNr16 string = "16"
+	// FcPortInlineSpeedMaximumNr16 captures enum value "16"
+	FcPortInlineSpeedMaximumNr16 string = "16"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// 32
 	// END DEBUGGING
-	// FcPortSpeedMaximumNr32 captures enum value "32"
-	FcPortSpeedMaximumNr32 string = "32"
+	// FcPortInlineSpeedMaximumNr32 captures enum value "32"
+	FcPortInlineSpeedMaximumNr32 string = "32"
 
 	// BEGIN DEBUGGING
-	// FcPortSpeed
-	// FcPortSpeed
+	// fc_port_inline_speed
+	// FcPortInlineSpeed
 	// maximum
 	// Maximum
 	// auto
 	// END DEBUGGING
-	// FcPortSpeedMaximumAuto captures enum value "auto"
-	FcPortSpeedMaximumAuto string = "auto"
+	// FcPortInlineSpeedMaximumAuto captures enum value "auto"
+	FcPortInlineSpeedMaximumAuto string = "auto"
 )
 
 // prop value enum
-func (m *FcPortSpeed) validateMaximumEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcPortSpeedTypeMaximumPropEnum, true); err != nil {
+func (m *FcPortInlineSpeed) validateMaximumEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineSpeedTypeMaximumPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortSpeed) validateMaximum(formats strfmt.Registry) error {
+func (m *FcPortInlineSpeed) validateMaximum(formats strfmt.Registry) error {
 	if swag.IsZero(m.Maximum) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateMaximumEnum("speed"+"."+"maximum", "body", m.Maximum); err != nil {
+	if err := m.validateMaximumEnum("speed"+"."+"maximum", "body", *m.Maximum); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this fc port speed based on the context it is used
-func (m *FcPortSpeed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline speed based on the context it is used
+func (m *FcPortInlineSpeed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateConfigured(ctx, formats); err != nil {
@@ -2234,18 +2237,18 @@ func (m *FcPortSpeed) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FcPortSpeed) contextValidateConfigured(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineSpeed) contextValidateConfigured(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "speed"+"."+"configured", "body", string(m.Configured)); err != nil {
+	if err := validate.ReadOnly(ctx, "speed"+"."+"configured", "body", m.Configured); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortSpeed) contextValidateMaximum(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineSpeed) contextValidateMaximum(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "speed"+"."+"maximum", "body", string(m.Maximum)); err != nil {
+	if err := validate.ReadOnly(ctx, "speed"+"."+"maximum", "body", m.Maximum); err != nil {
 		return err
 	}
 
@@ -2253,7 +2256,7 @@ func (m *FcPortSpeed) contextValidateMaximum(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortSpeed) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineSpeed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2261,8 +2264,8 @@ func (m *FcPortSpeed) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortSpeed) UnmarshalBinary(b []byte) error {
-	var res FcPortSpeed
+func (m *FcPortInlineSpeed) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineSpeed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2270,25 +2273,25 @@ func (m *FcPortSpeed) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+// FcPortInlineStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
 //
-// swagger:model FcPortStatistics
-type FcPortStatistics struct {
+// swagger:model fc_port_inline_statistics
+type FcPortInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *FcPortStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *FcPortInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *FcPortStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *FcPortInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *FcPortStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *FcPortInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2297,8 +2300,8 @@ type FcPortStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this fc port statistics
-func (m *FcPortStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline statistics
+func (m *FcPortInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -2327,7 +2330,7 @@ func (m *FcPortStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -2344,7 +2347,7 @@ func (m *FcPortStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcPortStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -2361,7 +2364,7 @@ func (m *FcPortStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcPortStatisticsTypeStatusPropEnum []interface{}
+var fcPortInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2369,145 +2372,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortStatisticsTypeStatusPropEnum = append(fcPortStatisticsTypeStatusPropEnum, v)
+		fcPortInlineStatisticsTypeStatusPropEnum = append(fcPortInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// FcPortStatisticsStatusOk captures enum value "ok"
-	FcPortStatisticsStatusOk string = "ok"
+	// FcPortInlineStatisticsStatusOk captures enum value "ok"
+	FcPortInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// FcPortStatisticsStatusError captures enum value "error"
-	FcPortStatisticsStatusError string = "error"
+	// FcPortInlineStatisticsStatusError captures enum value "error"
+	FcPortInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// FcPortStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	FcPortStatisticsStatusPartialNoData string = "partial_no_data"
+	// FcPortInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	FcPortInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// FcPortStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	FcPortStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// FcPortInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	FcPortInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// FcPortStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	FcPortStatisticsStatusPartialOtherError string = "partial_other_error"
+	// FcPortInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	FcPortInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// FcPortStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	FcPortStatisticsStatusNegativeDelta string = "negative_delta"
+	// FcPortInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	FcPortInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// FcPortStatisticsStatusNotFound captures enum value "not_found"
-	FcPortStatisticsStatusNotFound string = "not_found"
+	// FcPortInlineStatisticsStatusNotFound captures enum value "not_found"
+	FcPortInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// FcPortStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	FcPortStatisticsStatusBackfilledData string = "backfilled_data"
+	// FcPortInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	FcPortInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// FcPortStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	FcPortStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// FcPortInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	FcPortInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// FcPortStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	FcPortStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// FcPortInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	FcPortInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// FcPortStatistics
-	// FcPortStatistics
+	// fc_port_inline_statistics
+	// FcPortInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// FcPortStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	FcPortStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// FcPortInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	FcPortInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *FcPortStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcPortStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *FcPortInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -2524,7 +2527,7 @@ func (m *FcPortStatistics) validateThroughputRaw(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *FcPortStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2536,8 +2539,8 @@ func (m *FcPortStatistics) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port statistics based on the context it is used
-func (m *FcPortStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline statistics based on the context it is used
+func (m *FcPortInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -2566,7 +2569,7 @@ func (m *FcPortStatistics) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcPortStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -2580,7 +2583,7 @@ func (m *FcPortStatistics) contextValidateIopsRaw(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcPortStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -2594,16 +2597,16 @@ func (m *FcPortStatistics) contextValidateLatencyRaw(ctx context.Context, format
 	return nil
 }
 
-func (m *FcPortStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -2617,7 +2620,7 @@ func (m *FcPortStatistics) contextValidateThroughputRaw(ctx context.Context, for
 	return nil
 }
 
-func (m *FcPortStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2627,7 +2630,7 @@ func (m *FcPortStatistics) contextValidateTimestamp(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortStatistics) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2635,8 +2638,8 @@ func (m *FcPortStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortStatistics) UnmarshalBinary(b []byte) error {
-	var res FcPortStatistics
+func (m *FcPortInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2644,34 +2647,34 @@ func (m *FcPortStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// FcPortInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model FcPortStatisticsIopsRaw
-type FcPortStatisticsIopsRaw struct {
+// swagger:model fc_port_inline_statistics_inline_iops_raw
+type FcPortInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fc port statistics iops raw
-func (m *FcPortStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline statistics inline iops raw
+func (m *FcPortInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port statistics iops raw based on the context it is used
-func (m *FcPortStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline statistics inline iops raw based on the context it is used
+func (m *FcPortInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2681,7 +2684,7 @@ func (m *FcPortStatisticsIopsRaw) ContextValidate(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2689,8 +2692,8 @@ func (m *FcPortStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res FcPortStatisticsIopsRaw
+func (m *FcPortInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2698,34 +2701,34 @@ func (m *FcPortStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// FcPortInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model FcPortStatisticsLatencyRaw
-type FcPortStatisticsLatencyRaw struct {
+// swagger:model fc_port_inline_statistics_inline_latency_raw
+type FcPortInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fc port statistics latency raw
-func (m *FcPortStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline statistics inline latency raw
+func (m *FcPortInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port statistics latency raw based on the context it is used
-func (m *FcPortStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline statistics inline latency raw based on the context it is used
+func (m *FcPortInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2735,7 +2738,7 @@ func (m *FcPortStatisticsLatencyRaw) ContextValidate(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2743,8 +2746,8 @@ func (m *FcPortStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res FcPortStatisticsLatencyRaw
+func (m *FcPortInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2752,31 +2755,31 @@ func (m *FcPortStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// FcPortInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model FcPortStatisticsThroughputRaw
-type FcPortStatisticsThroughputRaw struct {
+// swagger:model fc_port_inline_statistics_inline_throughput_raw
+type FcPortInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fc port statistics throughput raw
-func (m *FcPortStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline statistics inline throughput raw
+func (m *FcPortInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc port statistics throughput raw based on the context it is used
-func (m *FcPortStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline statistics inline throughput raw based on the context it is used
+func (m *FcPortInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -2786,7 +2789,7 @@ func (m *FcPortStatisticsThroughputRaw) ContextValidate(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2794,8 +2797,8 @@ func (m *FcPortStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res FcPortStatisticsThroughputRaw
+func (m *FcPortInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2803,15 +2806,15 @@ func (m *FcPortStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcPortTransceiver Properties of the transceiver connected to the FC port.
+// FcPortInlineTransceiver Properties of the transceiver connected to the FC port.
 //
-// swagger:model FcPortTransceiver
-type FcPortTransceiver struct {
+// swagger:model fc_port_inline_transceiver
+type FcPortInlineTransceiver struct {
 
 	// The speeds of which the transceiver is capable in gigabits per second.
 	//
 	// Read Only: true
-	Capabilities []int64 `json:"capabilities,omitempty"`
+	Capabilities []*int64 `json:"capabilities,omitempty"`
 
 	// The form factor of the transceiver. Possible values are:
 	// - _sfp_ - Small Form Factor - Pluggable
@@ -2820,21 +2823,21 @@ type FcPortTransceiver struct {
 	//
 	// Read Only: true
 	// Enum: [sfp sff unknown]
-	FormFactor string `json:"form_factor,omitempty"`
+	FormFactor *string `json:"form_factor,omitempty"`
 
 	// The manufacturer of the transceiver.
 	//
 	// Example: Acme, Inc.
 	// Read Only: true
-	Manufacturer string `json:"manufacturer,omitempty"`
+	Manufacturer *string `json:"manufacturer,omitempty"`
 
 	// The part number of the transceiver.
 	// Read Only: true
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 }
 
-// Validate validates this fc port transceiver
-func (m *FcPortTransceiver) Validate(formats strfmt.Registry) error {
+// Validate validates this fc port inline transceiver
+func (m *FcPortInlineTransceiver) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCapabilities(formats); err != nil {
@@ -2851,7 +2854,7 @@ func (m *FcPortTransceiver) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcPortTransceiverCapabilitiesItemsEnum []interface{}
+var fcPortInlineTransceiverCapabilitiesItemsEnum []interface{}
 
 func init() {
 	var res []int64
@@ -2859,26 +2862,29 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortTransceiverCapabilitiesItemsEnum = append(fcPortTransceiverCapabilitiesItemsEnum, v)
+		fcPortInlineTransceiverCapabilitiesItemsEnum = append(fcPortInlineTransceiverCapabilitiesItemsEnum, v)
 	}
 }
 
-func (m *FcPortTransceiver) validateCapabilitiesItemsEnum(path, location string, value int64) error {
-	if err := validate.EnumCase(path, location, value, fcPortTransceiverCapabilitiesItemsEnum, true); err != nil {
+func (m *FcPortInlineTransceiver) validateCapabilitiesItemsEnum(path, location string, value int64) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineTransceiverCapabilitiesItemsEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortTransceiver) validateCapabilities(formats strfmt.Registry) error {
+func (m *FcPortInlineTransceiver) validateCapabilities(formats strfmt.Registry) error {
 	if swag.IsZero(m.Capabilities) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.Capabilities); i++ {
+		if swag.IsZero(m.Capabilities[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateCapabilitiesItemsEnum("transceiver"+"."+"capabilities"+"."+strconv.Itoa(i), "body", m.Capabilities[i]); err != nil {
+		if err := m.validateCapabilitiesItemsEnum("transceiver"+"."+"capabilities"+"."+strconv.Itoa(i), "body", *m.Capabilities[i]); err != nil {
 			return err
 		}
 
@@ -2887,7 +2893,7 @@ func (m *FcPortTransceiver) validateCapabilities(formats strfmt.Registry) error 
 	return nil
 }
 
-var fcPortTransceiverTypeFormFactorPropEnum []interface{}
+var fcPortInlineTransceiverTypeFormFactorPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2895,66 +2901,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcPortTransceiverTypeFormFactorPropEnum = append(fcPortTransceiverTypeFormFactorPropEnum, v)
+		fcPortInlineTransceiverTypeFormFactorPropEnum = append(fcPortInlineTransceiverTypeFormFactorPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcPortTransceiver
-	// FcPortTransceiver
+	// fc_port_inline_transceiver
+	// FcPortInlineTransceiver
 	// form_factor
 	// FormFactor
 	// sfp
 	// END DEBUGGING
-	// FcPortTransceiverFormFactorSfp captures enum value "sfp"
-	FcPortTransceiverFormFactorSfp string = "sfp"
+	// FcPortInlineTransceiverFormFactorSfp captures enum value "sfp"
+	FcPortInlineTransceiverFormFactorSfp string = "sfp"
 
 	// BEGIN DEBUGGING
-	// FcPortTransceiver
-	// FcPortTransceiver
+	// fc_port_inline_transceiver
+	// FcPortInlineTransceiver
 	// form_factor
 	// FormFactor
 	// sff
 	// END DEBUGGING
-	// FcPortTransceiverFormFactorSff captures enum value "sff"
-	FcPortTransceiverFormFactorSff string = "sff"
+	// FcPortInlineTransceiverFormFactorSff captures enum value "sff"
+	FcPortInlineTransceiverFormFactorSff string = "sff"
 
 	// BEGIN DEBUGGING
-	// FcPortTransceiver
-	// FcPortTransceiver
+	// fc_port_inline_transceiver
+	// FcPortInlineTransceiver
 	// form_factor
 	// FormFactor
 	// unknown
 	// END DEBUGGING
-	// FcPortTransceiverFormFactorUnknown captures enum value "unknown"
-	FcPortTransceiverFormFactorUnknown string = "unknown"
+	// FcPortInlineTransceiverFormFactorUnknown captures enum value "unknown"
+	FcPortInlineTransceiverFormFactorUnknown string = "unknown"
 )
 
 // prop value enum
-func (m *FcPortTransceiver) validateFormFactorEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcPortTransceiverTypeFormFactorPropEnum, true); err != nil {
+func (m *FcPortInlineTransceiver) validateFormFactorEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcPortInlineTransceiverTypeFormFactorPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcPortTransceiver) validateFormFactor(formats strfmt.Registry) error {
+func (m *FcPortInlineTransceiver) validateFormFactor(formats strfmt.Registry) error {
 	if swag.IsZero(m.FormFactor) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateFormFactorEnum("transceiver"+"."+"form_factor", "body", m.FormFactor); err != nil {
+	if err := m.validateFormFactorEnum("transceiver"+"."+"form_factor", "body", *m.FormFactor); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this fc port transceiver based on the context it is used
-func (m *FcPortTransceiver) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc port inline transceiver based on the context it is used
+func (m *FcPortInlineTransceiver) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCapabilities(ctx, formats); err != nil {
@@ -2979,15 +2985,15 @@ func (m *FcPortTransceiver) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FcPortTransceiver) contextValidateCapabilities(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineTransceiver) contextValidateCapabilities(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "transceiver"+"."+"capabilities", "body", []int64(m.Capabilities)); err != nil {
+	if err := validate.ReadOnly(ctx, "transceiver"+"."+"capabilities", "body", []*int64(m.Capabilities)); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Capabilities); i++ {
 
-		if err := validate.ReadOnly(ctx, "transceiver"+"."+"capabilities"+"."+strconv.Itoa(i), "body", int64(m.Capabilities[i])); err != nil {
+		if err := validate.ReadOnly(ctx, "transceiver"+"."+"capabilities"+"."+strconv.Itoa(i), "body", m.Capabilities[i]); err != nil {
 			return err
 		}
 
@@ -2996,27 +3002,27 @@ func (m *FcPortTransceiver) contextValidateCapabilities(ctx context.Context, for
 	return nil
 }
 
-func (m *FcPortTransceiver) contextValidateFormFactor(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineTransceiver) contextValidateFormFactor(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "transceiver"+"."+"form_factor", "body", string(m.FormFactor)); err != nil {
+	if err := validate.ReadOnly(ctx, "transceiver"+"."+"form_factor", "body", m.FormFactor); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortTransceiver) contextValidateManufacturer(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineTransceiver) contextValidateManufacturer(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "transceiver"+"."+"manufacturer", "body", string(m.Manufacturer)); err != nil {
+	if err := validate.ReadOnly(ctx, "transceiver"+"."+"manufacturer", "body", m.Manufacturer); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcPortTransceiver) contextValidatePartNumber(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcPortInlineTransceiver) contextValidatePartNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "transceiver"+"."+"part_number", "body", string(m.PartNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "transceiver"+"."+"part_number", "body", m.PartNumber); err != nil {
 		return err
 	}
 
@@ -3024,7 +3030,7 @@ func (m *FcPortTransceiver) contextValidatePartNumber(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *FcPortTransceiver) MarshalBinary() ([]byte, error) {
+func (m *FcPortInlineTransceiver) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3032,8 +3038,8 @@ func (m *FcPortTransceiver) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcPortTransceiver) UnmarshalBinary(b []byte) error {
-	var res FcPortTransceiver
+func (m *FcPortInlineTransceiver) UnmarshalBinary(b []byte) error {
+	var res FcPortInlineTransceiver
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

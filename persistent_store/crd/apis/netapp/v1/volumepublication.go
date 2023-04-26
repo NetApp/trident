@@ -41,21 +41,17 @@ func (in *TridentVolumePublication) Apply(persistent *utils.VolumePublication) e
 	in.VolumeID = persistent.VolumeName
 	in.ReadOnly = persistent.ReadOnly
 	in.AccessMode = persistent.AccessMode
-	in.NotSafeToAttach = persistent.NotSafeToAttach
-	in.Unpublished = persistent.Unpublished
 
 	return nil
 }
 
 func (in *TridentVolumePublication) Persistent() (*utils.VolumePublication, error) {
 	persistent := &utils.VolumePublication{
-		Name:            in.Name,
-		NodeName:        in.NodeID,
-		VolumeName:      in.VolumeID,
-		ReadOnly:        in.ReadOnly,
-		AccessMode:      in.AccessMode,
-		NotSafeToAttach: in.NotSafeToAttach,
-		Unpublished:     in.Unpublished,
+		Name:       in.Name,
+		NodeName:   in.NodeID,
+		VolumeName: in.VolumeID,
+		ReadOnly:   in.ReadOnly,
+		AccessMode: in.AccessMode,
 	}
 
 	return persistent, nil
@@ -63,6 +59,10 @@ func (in *TridentVolumePublication) Persistent() (*utils.VolumePublication, erro
 
 func (in *TridentVolumePublication) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
+}
+
+func (in *TridentVolumePublication) GetKind() string {
+	return "TridentVolumePublication"
 }
 
 func (in *TridentVolumePublication) GetFinalizers() []string {

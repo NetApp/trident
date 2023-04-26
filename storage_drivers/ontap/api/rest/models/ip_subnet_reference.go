@@ -19,17 +19,17 @@ import (
 type IPSubnetReference struct {
 
 	// links
-	Links *IPSubnetReferenceLinks `json:"_links,omitempty"`
+	Links *IPSubnetReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the subnet. If only the name is provided, the IPspace scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: subnet1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the subnet.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ip subnet reference
@@ -109,17 +109,17 @@ func (m *IPSubnetReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPSubnetReferenceLinks IP subnet reference links
+// IPSubnetReferenceInlineLinks ip subnet reference inline links
 //
-// swagger:model IPSubnetReferenceLinks
-type IPSubnetReferenceLinks struct {
+// swagger:model ip_subnet_reference_inline__links
+type IPSubnetReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP subnet reference links
-func (m *IPSubnetReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip subnet reference inline links
+func (m *IPSubnetReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -132,7 +132,7 @@ func (m *IPSubnetReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPSubnetReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPSubnetReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -149,8 +149,8 @@ func (m *IPSubnetReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP subnet reference links based on the context it is used
-func (m *IPSubnetReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip subnet reference inline links based on the context it is used
+func (m *IPSubnetReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -163,7 +163,7 @@ func (m *IPSubnetReferenceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IPSubnetReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPSubnetReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -178,7 +178,7 @@ func (m *IPSubnetReferenceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *IPSubnetReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *IPSubnetReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -186,8 +186,8 @@ func (m *IPSubnetReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPSubnetReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res IPSubnetReferenceLinks
+func (m *IPSubnetReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPSubnetReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

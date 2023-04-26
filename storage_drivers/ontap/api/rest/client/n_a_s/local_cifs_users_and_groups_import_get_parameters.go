@@ -66,13 +66,13 @@ type LocalCifsUsersAndGroupsImportGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *LocalCifsUsersAndGroupsImportGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the local cifs users and groups import get params
-func (o *LocalCifsUsersAndGroupsImportGetParams) WithFieldsQueryParameter(fields []string) *LocalCifsUsersAndGroupsImportGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the local cifs users and groups import get params
+func (o *LocalCifsUsersAndGroupsImportGetParams) WithFields(fields []string) *LocalCifsUsersAndGroupsImportGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the local cifs users and groups import get params
-func (o *LocalCifsUsersAndGroupsImportGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the local cifs users and groups import get params
+func (o *LocalCifsUsersAndGroupsImportGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs users and groups import get params
-func (o *LocalCifsUsersAndGroupsImportGetParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsUsersAndGroupsImportGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs users and groups import get params
+func (o *LocalCifsUsersAndGroupsImportGetParams) WithSvmUUID(svmUUID string) *LocalCifsUsersAndGroupsImportGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs users and groups import get params
-func (o *LocalCifsUsersAndGroupsImportGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs users and groups import get params
+func (o *LocalCifsUsersAndGroupsImportGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *LocalCifsUsersAndGroupsImportGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *LocalCifsUsersAndGroupsImportGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *LocalCifsUsersAndGroupsImportGetParams) WriteToRequest(r runtime.Client
 
 // bindParamLocalCifsUsersAndGroupsImportGet binds the parameter fields
 func (o *LocalCifsUsersAndGroupsImportGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -66,25 +66,25 @@ type LocalCifsGroupMembersGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LocalCifsGroupSid.
 
 	   Local group SID
 	*/
-	LocalCifsGroupSIDPathParameter string
+	LocalCifsGroupSid string
 
 	/* Name.
 
 	   Member name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *LocalCifsGroupMembersGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) WithFieldsQueryParameter(fields []string) *LocalCifsGroupMembersGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) WithFields(fields []string) *LocalCifsGroupMembersGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) WithLocalCifsGroupSIDPathParameter(localCifsGroupSid string) *LocalCifsGroupMembersGetParams {
-	o.SetLocalCifsGroupSIDPathParameter(localCifsGroupSid)
+// WithLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) WithLocalCifsGroupSid(localCifsGroupSid string) *LocalCifsGroupMembersGetParams {
+	o.SetLocalCifsGroupSid(localCifsGroupSid)
 	return o
 }
 
-// SetLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) SetLocalCifsGroupSIDPathParameter(localCifsGroupSid string) {
-	o.LocalCifsGroupSIDPathParameter = localCifsGroupSid
+// SetLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) SetLocalCifsGroupSid(localCifsGroupSid string) {
+	o.LocalCifsGroupSid = localCifsGroupSid
 }
 
-// WithNamePathParameter adds the name to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) WithNamePathParameter(name string) *LocalCifsGroupMembersGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) WithName(name string) *LocalCifsGroupMembersGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsGroupMembersGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) WithSvmUUID(svmUUID string) *LocalCifsGroupMembersGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs group members get params
-func (o *LocalCifsGroupMembersGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs group members get params
+func (o *LocalCifsGroupMembersGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,7 +191,7 @@ func (o *LocalCifsGroupMembersGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,17 +203,17 @@ func (o *LocalCifsGroupMembersGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param local_cifs_group.sid
-	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSIDPathParameter); err != nil {
+	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSid); err != nil {
 		return err
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *LocalCifsGroupMembersGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamLocalCifsGroupMembersGet binds the parameter fields
 func (o *LocalCifsGroupMembersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

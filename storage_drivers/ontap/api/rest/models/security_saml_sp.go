@@ -20,20 +20,20 @@ import (
 type SecuritySamlSp struct {
 
 	// links
-	Links *SecuritySamlSpLinks `json:"_links,omitempty"`
+	Links *SecuritySamlSpInlineLinks `json:"_links,omitempty"`
 
 	// certificate
-	Certificate *SecuritySamlSpCertificate `json:"certificate,omitempty"`
+	Certificate *SecuritySamlSpInlineCertificate `json:"certificate,omitempty"`
 
 	// The SAML service provider is enabled.  Valid for PATCH and GET operations only.
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The SAML service provider host.
-	Host string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 
 	// The identity provider (IdP) metadata location. Required for POST operations.
 	// Example: https://idp.example.com/FederationMetadata/2007-06/FederationMetadata.xml
-	IdpURI string `json:"idp_uri,omitempty"`
+	IdpURI *string `json:"idp_uri,omitempty"`
 }
 
 // Validate validates this security saml sp
@@ -152,29 +152,29 @@ func (m *SecuritySamlSp) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecuritySamlSpCertificate security saml sp certificate
+// SecuritySamlSpInlineCertificate security saml sp inline certificate
 //
-// swagger:model SecuritySamlSpCertificate
-type SecuritySamlSpCertificate struct {
+// swagger:model security_saml_sp_inline_certificate
+type SecuritySamlSpInlineCertificate struct {
 
 	// Server certificate issuing certificate authority (CA).  This cannot be used with the server certificate common name.
 	// Max Length: 256
 	// Min Length: 1
-	Ca string `json:"ca,omitempty"`
+	Ca *string `json:"ca,omitempty"`
 
 	// Server certificate common name.  This cannot be used with the certificate authority (CA) or serial_number.
 	// Example: cluster1
-	CommonName string `json:"common_name,omitempty"`
+	CommonName *string `json:"common_name,omitempty"`
 
 	// Server certificate serial number.  This cannot be used with the server certificate common name.
 	// Example: 1506B24A94F566BA
 	// Max Length: 40
 	// Min Length: 1
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this security saml sp certificate
-func (m *SecuritySamlSpCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this security saml sp inline certificate
+func (m *SecuritySamlSpInlineCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCa(formats); err != nil {
@@ -191,45 +191,45 @@ func (m *SecuritySamlSpCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecuritySamlSpCertificate) validateCa(formats strfmt.Registry) error {
+func (m *SecuritySamlSpInlineCertificate) validateCa(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ca) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("certificate"+"."+"ca", "body", m.Ca, 1); err != nil {
+	if err := validate.MinLength("certificate"+"."+"ca", "body", *m.Ca, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("certificate"+"."+"ca", "body", m.Ca, 256); err != nil {
+	if err := validate.MaxLength("certificate"+"."+"ca", "body", *m.Ca, 256); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SecuritySamlSpCertificate) validateSerialNumber(formats strfmt.Registry) error {
+func (m *SecuritySamlSpInlineCertificate) validateSerialNumber(formats strfmt.Registry) error {
 	if swag.IsZero(m.SerialNumber) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("certificate"+"."+"serial_number", "body", m.SerialNumber, 1); err != nil {
+	if err := validate.MinLength("certificate"+"."+"serial_number", "body", *m.SerialNumber, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("certificate"+"."+"serial_number", "body", m.SerialNumber, 40); err != nil {
+	if err := validate.MaxLength("certificate"+"."+"serial_number", "body", *m.SerialNumber, 40); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this security saml sp certificate based on context it is used
-func (m *SecuritySamlSpCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this security saml sp inline certificate based on context it is used
+func (m *SecuritySamlSpInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SecuritySamlSpCertificate) MarshalBinary() ([]byte, error) {
+func (m *SecuritySamlSpInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -237,8 +237,8 @@ func (m *SecuritySamlSpCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecuritySamlSpCertificate) UnmarshalBinary(b []byte) error {
-	var res SecuritySamlSpCertificate
+func (m *SecuritySamlSpInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res SecuritySamlSpInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -246,17 +246,17 @@ func (m *SecuritySamlSpCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecuritySamlSpLinks security saml sp links
+// SecuritySamlSpInlineLinks security saml sp inline links
 //
-// swagger:model SecuritySamlSpLinks
-type SecuritySamlSpLinks struct {
+// swagger:model security_saml_sp_inline__links
+type SecuritySamlSpInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security saml sp links
-func (m *SecuritySamlSpLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security saml sp inline links
+func (m *SecuritySamlSpInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -269,7 +269,7 @@ func (m *SecuritySamlSpLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecuritySamlSpLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecuritySamlSpInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -286,8 +286,8 @@ func (m *SecuritySamlSpLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security saml sp links based on the context it is used
-func (m *SecuritySamlSpLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security saml sp inline links based on the context it is used
+func (m *SecuritySamlSpInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -300,7 +300,7 @@ func (m *SecuritySamlSpLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SecuritySamlSpLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecuritySamlSpInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -315,7 +315,7 @@ func (m *SecuritySamlSpLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *SecuritySamlSpLinks) MarshalBinary() ([]byte, error) {
+func (m *SecuritySamlSpInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -323,8 +323,8 @@ func (m *SecuritySamlSpLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecuritySamlSpLinks) UnmarshalBinary(b []byte) error {
-	var res SecuritySamlSpLinks
+func (m *SecuritySamlSpInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecuritySamlSpInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

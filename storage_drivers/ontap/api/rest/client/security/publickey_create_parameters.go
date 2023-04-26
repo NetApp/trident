@@ -74,7 +74,7 @@ type PublickeyCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *PublickeyCreateParams) WithDefaults() *PublickeyCreateParams {
 // All values with no default are reset to their zero value.
 func (o *PublickeyCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := PublickeyCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *PublickeyCreateParams) SetInfo(info *models.Publickey) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the publickey create params
-func (o *PublickeyCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PublickeyCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the publickey create params
+func (o *PublickeyCreateParams) WithReturnRecords(returnRecords *bool) *PublickeyCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the publickey create params
-func (o *PublickeyCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the publickey create params
+func (o *PublickeyCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *PublickeyCreateParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

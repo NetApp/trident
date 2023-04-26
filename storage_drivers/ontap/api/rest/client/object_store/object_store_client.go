@@ -242,6 +242,8 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `qos_policy` - A QoS policy for buckets.
 * `audit_event_selector` - Audit policy for buckets.
 * `versioning_state` - Versioning state for buckets.
+* `type` - Type of bucket.
+* `nas_path` - NAS path to which the bucket corresponds to.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
@@ -252,6 +254,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `policy.statements.resources` - all objects in the bucket.
 * `policy.statements.conditions` - list of bucket policy conditions.
 * `versioning_state` - disabled.
+* `type` - S3
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
@@ -394,6 +397,7 @@ func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientA
   - `qos_policy` - A QoS policy for buckets.
   - `audit_event_selector` - Audit policy for buckets. None can be specified for both access and permission to remove an audit event selector.
   - `versioning-state` - Versioning state of the buckets.
+  - `nas_path` - NAS path to which the bucket corresponds to.
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
@@ -458,6 +462,8 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 * `qos_policy` - A QoS policy for buckets.
 * `audit_event_selector` - Audit policy for buckets.
 * `versioning_state` - Versioning state for buckets.
+* `type` - Type of bucket.
+* `nas_path` - The NAS path to which the NAS bucket corresponds to.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
@@ -469,6 +475,7 @@ func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.C
 * `policy.statements.conditions` - list of bucket policy conditions.
 * `qos-policy` - No default value.
 * `versioning_state` - disabled.
+* `type` - S3.
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
@@ -612,6 +619,7 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
   - `qos_policy` - A QoS policy for buckets.
   - `audit_event_selector` - Audit policy for buckets.  None can be specified for both access and permission to remove audit event selector.
   - `versioning_state` - Versioning state for buckets.
+  - `nas_path` - NAS path to which the NAS bucket corresponds to.
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
@@ -1124,7 +1132,7 @@ func (a *Client) S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.C
 	S3ServiceCollectionGet Retrieves the S3 server configuration for all SVMs. Note that in order to retrieve S3 bucket policy conditions, 'fields' option should be set to '**'.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands

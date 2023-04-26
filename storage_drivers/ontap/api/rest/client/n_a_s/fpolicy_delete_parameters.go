@@ -65,7 +65,7 @@ type FpolicyDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *FpolicyDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy delete params
-func (o *FpolicyDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy delete params
+func (o *FpolicyDeleteParams) WithSvmUUID(svmUUID string) *FpolicyDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy delete params
-func (o *FpolicyDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy delete params
+func (o *FpolicyDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *FpolicyDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

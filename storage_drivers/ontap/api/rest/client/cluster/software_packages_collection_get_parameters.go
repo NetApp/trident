@@ -66,25 +66,25 @@ type SoftwarePackagesCollectionGetParams struct {
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type SoftwarePackagesCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,13 +100,13 @@ type SoftwarePackagesCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Version.
 
 	   Filter by version
 	*/
-	VersionQueryParameter *string
+	Version *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,14 +126,14 @@ func (o *SoftwarePackagesCollectionGetParams) WithDefaults() *SoftwarePackagesCo
 // All values with no default are reset to their zero value.
 func (o *SoftwarePackagesCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SoftwarePackagesCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -175,81 +175,81 @@ func (o *SoftwarePackagesCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *SoftwarePackagesCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithCreateTime(createTime *string) *SoftwarePackagesCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithFieldsQueryParameter adds the fields to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithFieldsQueryParameter(fields []string) *SoftwarePackagesCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithFields(fields []string) *SoftwarePackagesCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SoftwarePackagesCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithMaxRecords(maxRecords *int64) *SoftwarePackagesCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SoftwarePackagesCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithOrderBy(orderBy []string) *SoftwarePackagesCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SoftwarePackagesCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithReturnRecords(returnRecords *bool) *SoftwarePackagesCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwarePackagesCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SoftwarePackagesCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithVersionQueryParameter adds the version to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) WithVersionQueryParameter(version *string) *SoftwarePackagesCollectionGetParams {
-	o.SetVersionQueryParameter(version)
+// WithVersion adds the version to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) WithVersion(version *string) *SoftwarePackagesCollectionGetParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionQueryParameter adds the version to the software packages collection get params
-func (o *SoftwarePackagesCollectionGetParams) SetVersionQueryParameter(version *string) {
-	o.VersionQueryParameter = version
+// SetVersion adds the version to the software packages collection get params
+func (o *SoftwarePackagesCollectionGetParams) SetVersion(version *string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -260,13 +260,13 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -277,7 +277,7 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -288,13 +288,13 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -305,7 +305,7 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -316,13 +316,13 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -333,13 +333,13 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -350,13 +350,13 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.VersionQueryParameter != nil {
+	if o.Version != nil {
 
 		// query param version
 		var qrVersion string
 
-		if o.VersionQueryParameter != nil {
-			qrVersion = *o.VersionQueryParameter
+		if o.Version != nil {
+			qrVersion = *o.Version
 		}
 		qVersion := qrVersion
 		if qVersion != "" {
@@ -375,7 +375,7 @@ func (o *SoftwarePackagesCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamSoftwarePackagesCollectionGet binds the parameter fields
 func (o *SoftwarePackagesCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -392,7 +392,7 @@ func (o *SoftwarePackagesCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamSoftwarePackagesCollectionGet binds the parameter order_by
 func (o *SoftwarePackagesCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

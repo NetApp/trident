@@ -66,13 +66,13 @@ type SwitchGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SwitchGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the switch get params
-func (o *SwitchGetParams) WithFieldsQueryParameter(fields []string) *SwitchGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the switch get params
+func (o *SwitchGetParams) WithFields(fields []string) *SwitchGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the switch get params
-func (o *SwitchGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the switch get params
+func (o *SwitchGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the switch get params
-func (o *SwitchGetParams) WithNamePathParameter(name string) *SwitchGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the switch get params
+func (o *SwitchGetParams) WithName(name string) *SwitchGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the switch get params
-func (o *SwitchGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the switch get params
+func (o *SwitchGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SwitchGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamSwitchGet binds the parameter fields
 func (o *SwitchGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

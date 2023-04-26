@@ -4,12 +4,11 @@ package kubernetes
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 
 	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -20,7 +19,8 @@ import (
 
 // addLegacyStorageClass is the add handler for the legacy storage class watcher.
 func (h *helper) addLegacyStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate,
+		LogLayerCSIFrontend)
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -34,7 +34,8 @@ func (h *helper) addLegacyStorageClass(obj interface{}) {
 
 // updateLegacyStorageClass is the update handler for the legacy storage class watcher.
 func (h *helper) updateLegacyStorageClass(_, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate,
+		LogLayerCSIFrontend)
 
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -48,7 +49,8 @@ func (h *helper) updateLegacyStorageClass(_, newObj interface{}) {
 
 // deleteStorageClass is the delete handler for the storage class watcher.
 func (h *helper) deleteLegacyStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassDelete,
+		LogLayerCSIFrontend)
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -69,7 +71,7 @@ func (h *helper) processLegacyStorageClass(ctx context.Context, sc *k8sstoragev1
 		return
 	}
 
-	logFields := log.Fields{
+	logFields := LogFields{
 		"name":        sc.Name,
 		"provisioner": sc.Provisioner,
 		"parameters":  sc.Parameters,
@@ -98,7 +100,7 @@ func (h *helper) replaceLegacyStorageClass(ctx context.Context, oldSC *k8sstorag
 
 	// Delete the old storage class
 	if err := h.kubeClient.StorageV1().StorageClasses().Delete(ctx, oldSC.Name, deleteOpts); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":  oldSC.Name,
 			"error": err,
 		}).Error("Could not delete legacy storage class.")
@@ -108,14 +110,14 @@ func (h *helper) replaceLegacyStorageClass(ctx context.Context, oldSC *k8sstorag
 	// Create the new storage class
 	if _, err := h.kubeClient.StorageV1().StorageClasses().Create(ctx, newSC, createOpts); err != nil {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":  newSC.Name,
 			"error": err,
 		}).Error("Could not replace storage class, attempting to restore old one.")
 
 		// Failed to create the new storage class, so try to restore the old one
 		if _, err := h.kubeClient.StorageV1().StorageClasses().Create(ctx, oldSC, createOpts); err != nil {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"name":  oldSC.Name,
 				"error": err,
 			}).Error("Could not restore storage class, please recreate it manually.")
@@ -124,7 +126,7 @@ func (h *helper) replaceLegacyStorageClass(ctx context.Context, oldSC *k8sstorag
 		return
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":           newSC.Name,
 		"oldProvisioner": oldSC.Provisioner,
 		"newProvisioner": newSC.Provisioner,

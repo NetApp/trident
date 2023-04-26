@@ -14,30 +14,30 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// EmsCertificate Security certificate object reference
+// EmsCertificate Specifies the client-side certificate used by the ONTAP system when mutual authentication is required. This object is only applicable for __rest_api__ type destinations. Both the `ca` and `serial_number` fields must be specified when configuring a certificate in a PATCH or POST request. The `name` field is read-only and cannot be used to configure a client-side certificate.
 //
 // swagger:model ems_certificate
 type EmsCertificate struct {
 
 	// links
-	Links *EmsCertificateLinks `json:"_links,omitempty"`
+	Links *EmsCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Client certificate issuing CA
 	// Example: VeriSign
 	// Max Length: 256
 	// Min Length: 1
-	Ca string `json:"ca,omitempty"`
+	Ca *string `json:"ca,omitempty"`
 
 	// Certificate name
 	// Example: cert1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Client certificate serial number
 	// Example: 1234567890
 	// Max Length: 40
 	// Min Length: 1
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
 // Validate validates this ems certificate
@@ -84,11 +84,11 @@ func (m *EmsCertificate) validateCa(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("ca", "body", m.Ca, 1); err != nil {
+	if err := validate.MinLength("ca", "body", *m.Ca, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("ca", "body", m.Ca, 256); err != nil {
+	if err := validate.MaxLength("ca", "body", *m.Ca, 256); err != nil {
 		return err
 	}
 
@@ -100,11 +100,11 @@ func (m *EmsCertificate) validateSerialNumber(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("serial_number", "body", m.SerialNumber, 1); err != nil {
+	if err := validate.MinLength("serial_number", "body", *m.SerialNumber, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("serial_number", "body", m.SerialNumber, 40); err != nil {
+	if err := validate.MaxLength("serial_number", "body", *m.SerialNumber, 40); err != nil {
 		return err
 	}
 
@@ -145,7 +145,7 @@ func (m *EmsCertificate) contextValidateLinks(ctx context.Context, formats strfm
 
 func (m *EmsCertificate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -170,17 +170,17 @@ func (m *EmsCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsCertificateLinks ems certificate links
+// EmsCertificateInlineLinks ems certificate inline links
 //
-// swagger:model EmsCertificateLinks
-type EmsCertificateLinks struct {
+// swagger:model ems_certificate_inline__links
+type EmsCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ems certificate links
-func (m *EmsCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ems certificate inline links
+func (m *EmsCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -193,7 +193,7 @@ func (m *EmsCertificateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EmsCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -210,8 +210,8 @@ func (m *EmsCertificateLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems certificate links based on the context it is used
-func (m *EmsCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems certificate inline links based on the context it is used
+func (m *EmsCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -224,7 +224,7 @@ func (m *EmsCertificateLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *EmsCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *EmsCertificateLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *EmsCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *EmsCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -247,8 +247,8 @@ func (m *EmsCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res EmsCertificateLinks
+func (m *EmsCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EmsCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

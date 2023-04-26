@@ -20,18 +20,19 @@ import (
 type NvmeSubsystemReference struct {
 
 	// links
-	Links *NvmeSubsystemReferenceLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the NVMe subsystem.
 	//
+	// Example: subsystem1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the NVMe subsystem.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this nvme subsystem reference
@@ -74,11 +75,11 @@ func (m *NvmeSubsystemReference) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
@@ -131,17 +132,17 @@ func (m *NvmeSubsystemReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemReferenceLinks nvme subsystem reference links
+// NvmeSubsystemReferenceInlineLinks nvme subsystem reference inline links
 //
-// swagger:model NvmeSubsystemReferenceLinks
-type NvmeSubsystemReferenceLinks struct {
+// swagger:model nvme_subsystem_reference_inline__links
+type NvmeSubsystemReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem reference links
-func (m *NvmeSubsystemReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem reference inline links
+func (m *NvmeSubsystemReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -154,7 +155,7 @@ func (m *NvmeSubsystemReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeSubsystemReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -171,8 +172,8 @@ func (m *NvmeSubsystemReferenceLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem reference links based on the context it is used
-func (m *NvmeSubsystemReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem reference inline links based on the context it is used
+func (m *NvmeSubsystemReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -185,7 +186,7 @@ func (m *NvmeSubsystemReferenceLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeSubsystemReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +201,7 @@ func (m *NvmeSubsystemReferenceLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +209,8 @@ func (m *NvmeSubsystemReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemReferenceLinks
+func (m *NvmeSubsystemReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

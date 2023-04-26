@@ -19,10 +19,10 @@ import (
 type CounterTableReference struct {
 
 	// links
-	Links *CounterTableReferenceLinks `json:"_links,omitempty"`
+	Links *CounterTableReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Counter table name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this counter table reference
@@ -102,17 +102,17 @@ func (m *CounterTableReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CounterTableReferenceLinks counter table reference links
+// CounterTableReferenceInlineLinks counter table reference inline links
 //
-// swagger:model CounterTableReferenceLinks
-type CounterTableReferenceLinks struct {
+// swagger:model counter_table_reference_inline__links
+type CounterTableReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this counter table reference links
-func (m *CounterTableReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this counter table reference inline links
+func (m *CounterTableReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -125,7 +125,7 @@ func (m *CounterTableReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterTableReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CounterTableReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -142,8 +142,8 @@ func (m *CounterTableReferenceLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this counter table reference links based on the context it is used
-func (m *CounterTableReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this counter table reference inline links based on the context it is used
+func (m *CounterTableReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -156,7 +156,7 @@ func (m *CounterTableReferenceLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *CounterTableReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterTableReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -171,7 +171,7 @@ func (m *CounterTableReferenceLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *CounterTableReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *CounterTableReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -179,8 +179,8 @@ func (m *CounterTableReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CounterTableReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res CounterTableReferenceLinks
+func (m *CounterTableReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CounterTableReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -74,7 +74,7 @@ type SnaplockComplianceClockCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *SnaplockComplianceClockCreateParams) WithDefaults() *SnaplockCompliance
 // All values with no default are reset to their zero value.
 func (o *SnaplockComplianceClockCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SnaplockComplianceClockCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *SnaplockComplianceClockCreateParams) SetInfo(info *models.SnaplockCompl
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock compliance clock create params
-func (o *SnaplockComplianceClockCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockComplianceClockCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock compliance clock create params
+func (o *SnaplockComplianceClockCreateParams) WithReturnRecords(returnRecords *bool) *SnaplockComplianceClockCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock compliance clock create params
-func (o *SnaplockComplianceClockCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock compliance clock create params
+func (o *SnaplockComplianceClockCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *SnaplockComplianceClockCreateParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

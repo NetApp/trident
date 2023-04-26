@@ -10,27 +10,24 @@ import (
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/rest"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
 var (
-	getVolume          string
-	getNode            string
-	getNotSafeToAttach bool
+	getVolume string
+	getNode   string
 )
 
 func init() {
 	getCmd.AddCommand(getPublicationCmd)
 	getPublicationCmd.Flags().StringVar(&getVolume, "volume", "", "Limit query to volume")
 	getPublicationCmd.Flags().StringVar(&getNode, "node", "", "Limit query to node")
-	getPublicationCmd.Flags().BoolVar(&getNotSafeToAttach, "dirty", false,
-		"List only dirty or clean publications.")
 }
 
 var getPublicationCmd = &cobra.Command{
@@ -41,7 +38,7 @@ var getPublicationCmd = &cobra.Command{
 	Hidden:  true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if getVolume != "" && getNode != "" && cmd.Flags().Changed("dirty") {
-			log.Fatalf("--dirty flag not supported if both node and volume are specified.")
+			Log().Fatalf("--dirty flag not supported if both node and volume are specified.")
 		}
 
 		if OperatingMode == ModeTunnel {
@@ -52,9 +49,6 @@ var getPublicationCmd = &cobra.Command{
 			}
 			if getNode != "" {
 				command = append(command, "--node", getNode)
-			}
-			if cmd.Flags().Changed("dirty") {
-				command = append(command, "--dirty="+strconv.FormatBool(getNotSafeToAttach))
 			}
 
 			TunnelCommand(append(command, args...))
@@ -74,7 +68,7 @@ func GetVolumePublication(volumeName, nodeName string) (*utils.VolumePublication
 
 	url := BaseURL() + "/publication/" + volumeName + "/" + nodeName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +101,6 @@ func volumePublicationGet() error {
 }
 
 func volumePublicationsList(cmd *cobra.Command) error {
-	var err error
-
 	url := BaseURL() + "/publication"
 	if getVolume != "" {
 		url = BaseURL() + "/volume/" + getVolume + "/publication"
@@ -117,11 +109,7 @@ func volumePublicationsList(cmd *cobra.Command) error {
 		url = BaseURL() + "/node/" + getNode + "/publication"
 	}
 
-	if cmd.Flags().Changed("dirty") {
-		url += "?notSafeToAttach=" + strconv.FormatBool(getNotSafeToAttach)
-	}
-
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return err
 	}
@@ -185,7 +173,6 @@ func writeWideVolumePublicationTable(pubs []utils.VolumePublicationExternal) {
 			pub.NodeName,
 			pub.VolumeName,
 			strconv.FormatBool(pub.ReadOnly),
-			utils.GetPrintableBoolPtrValue(pub.NotSafeToAttach),
 			config.CSIAccessModes[pub.AccessMode],
 		})
 	}

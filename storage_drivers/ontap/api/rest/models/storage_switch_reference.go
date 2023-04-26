@@ -19,11 +19,11 @@ import (
 type StorageSwitchReference struct {
 
 	// links
-	Links *StorageSwitchReferenceLinks `json:"_links,omitempty"`
+	Links *StorageSwitchReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: Brocade_10.226.57.206
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this storage switch reference
@@ -103,17 +103,17 @@ func (m *StorageSwitchReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchReferenceLinks storage switch reference links
+// StorageSwitchReferenceInlineLinks storage switch reference inline links
 //
-// swagger:model StorageSwitchReferenceLinks
-type StorageSwitchReferenceLinks struct {
+// swagger:model storage_switch_reference_inline__links
+type StorageSwitchReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage switch reference links
-func (m *StorageSwitchReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch reference inline links
+func (m *StorageSwitchReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *StorageSwitchReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StorageSwitchReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *StorageSwitchReferenceLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this storage switch reference links based on the context it is used
-func (m *StorageSwitchReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch reference inline links based on the context it is used
+func (m *StorageSwitchReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *StorageSwitchReferenceLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *StorageSwitchReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *StorageSwitchReferenceLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *StorageSwitchReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchReferenceLinks
+func (m *StorageSwitchReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

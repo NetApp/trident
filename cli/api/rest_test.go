@@ -3,15 +3,15 @@
 package api
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/netapp/trident/logging"
 )
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	logging.InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }

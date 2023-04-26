@@ -27,24 +27,24 @@ type ConfigurationBackupFile struct {
 
 	// The list of nodes included in the backup.
 	// Read Only: true
-	BackupNodes []*BackupNode `json:"backup_nodes,omitempty"`
+	ConfigurationBackupFileInlineBackupNodes []*BackupNode `json:"backup_nodes,omitempty"`
 
 	// The link to download the backup file.
 	// Example: https://10.224.65.198/backups/backup_file.7z
 	// Read Only: true
-	DownloadLink string `json:"download_link,omitempty"`
+	DownloadLink *string `json:"download_link,omitempty"`
 
 	// The backup name.
 	// Example: backup_file.7z
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *ConfigurationBackupFileNode `json:"node,omitempty"`
+	Node *ConfigurationBackupFileInlineNode `json:"node,omitempty"`
 
 	// The size of the backup in bytes.
 	// Example: 4787563
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The backup creation time.
 	// Example: 2019-02-04T13:33:48-05:00
@@ -55,19 +55,19 @@ type ConfigurationBackupFile struct {
 	// The backup type.
 	// Read Only: true
 	// Enum: [node cluster]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// The software version.
 	// Example: 9.7.0
 	// Read Only: true
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this configuration backup file
 func (m *ConfigurationBackupFile) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateBackupNodes(formats); err != nil {
+	if err := m.validateConfigurationBackupFileInlineBackupNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,18 +89,18 @@ func (m *ConfigurationBackupFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ConfigurationBackupFile) validateBackupNodes(formats strfmt.Registry) error {
-	if swag.IsZero(m.BackupNodes) { // not required
+func (m *ConfigurationBackupFile) validateConfigurationBackupFileInlineBackupNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConfigurationBackupFileInlineBackupNodes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.BackupNodes); i++ {
-		if swag.IsZero(m.BackupNodes[i]) { // not required
+	for i := 0; i < len(m.ConfigurationBackupFileInlineBackupNodes); i++ {
+		if swag.IsZero(m.ConfigurationBackupFileInlineBackupNodes[i]) { // not required
 			continue
 		}
 
-		if m.BackupNodes[i] != nil {
-			if err := m.BackupNodes[i].Validate(formats); err != nil {
+		if m.ConfigurationBackupFileInlineBackupNodes[i] != nil {
+			if err := m.ConfigurationBackupFileInlineBackupNodes[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("backup_nodes" + "." + strconv.Itoa(i))
 				}
@@ -191,7 +191,7 @@ func (m *ConfigurationBackupFile) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ func (m *ConfigurationBackupFile) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateBackupNodes(ctx, formats); err != nil {
+	if err := m.contextValidateConfigurationBackupFileInlineBackupNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -249,16 +249,16 @@ func (m *ConfigurationBackupFile) contextValidateAuto(ctx context.Context, forma
 	return nil
 }
 
-func (m *ConfigurationBackupFile) contextValidateBackupNodes(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConfigurationBackupFile) contextValidateConfigurationBackupFileInlineBackupNodes(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backup_nodes", "body", []*BackupNode(m.BackupNodes)); err != nil {
+	if err := validate.ReadOnly(ctx, "backup_nodes", "body", []*BackupNode(m.ConfigurationBackupFileInlineBackupNodes)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.BackupNodes); i++ {
+	for i := 0; i < len(m.ConfigurationBackupFileInlineBackupNodes); i++ {
 
-		if m.BackupNodes[i] != nil {
-			if err := m.BackupNodes[i].ContextValidate(ctx, formats); err != nil {
+		if m.ConfigurationBackupFileInlineBackupNodes[i] != nil {
+			if err := m.ConfigurationBackupFileInlineBackupNodes[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("backup_nodes" + "." + strconv.Itoa(i))
 				}
@@ -273,7 +273,7 @@ func (m *ConfigurationBackupFile) contextValidateBackupNodes(ctx context.Context
 
 func (m *ConfigurationBackupFile) contextValidateDownloadLink(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "download_link", "body", string(m.DownloadLink)); err != nil {
+	if err := validate.ReadOnly(ctx, "download_link", "body", m.DownloadLink); err != nil {
 		return err
 	}
 
@@ -296,7 +296,7 @@ func (m *ConfigurationBackupFile) contextValidateNode(ctx context.Context, forma
 
 func (m *ConfigurationBackupFile) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -314,7 +314,7 @@ func (m *ConfigurationBackupFile) contextValidateTime(ctx context.Context, forma
 
 func (m *ConfigurationBackupFile) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -323,7 +323,7 @@ func (m *ConfigurationBackupFile) contextValidateType(ctx context.Context, forma
 
 func (m *ConfigurationBackupFile) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version", "body", string(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "version", "body", m.Version); err != nil {
 		return err
 	}
 
@@ -348,25 +348,25 @@ func (m *ConfigurationBackupFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConfigurationBackupFileNode The node that owns the configuration backup.
+// ConfigurationBackupFileInlineNode The node that owns the configuration backup.
 //
-// swagger:model ConfigurationBackupFileNode
-type ConfigurationBackupFileNode struct {
+// swagger:model configuration_backup_file_inline_node
+type ConfigurationBackupFileInlineNode struct {
 
 	// links
-	Links *ConfigurationBackupFileNodeLinks `json:"_links,omitempty"`
+	Links *ConfigurationBackupFileInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this configuration backup file node
-func (m *ConfigurationBackupFileNode) Validate(formats strfmt.Registry) error {
+// Validate validates this configuration backup file inline node
+func (m *ConfigurationBackupFileInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -379,7 +379,7 @@ func (m *ConfigurationBackupFileNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ConfigurationBackupFileNode) validateLinks(formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -396,8 +396,8 @@ func (m *ConfigurationBackupFileNode) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this configuration backup file node based on the context it is used
-func (m *ConfigurationBackupFileNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this configuration backup file inline node based on the context it is used
+func (m *ConfigurationBackupFileInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -410,7 +410,7 @@ func (m *ConfigurationBackupFileNode) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *ConfigurationBackupFileNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -425,7 +425,7 @@ func (m *ConfigurationBackupFileNode) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *ConfigurationBackupFileNode) MarshalBinary() ([]byte, error) {
+func (m *ConfigurationBackupFileInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -433,8 +433,8 @@ func (m *ConfigurationBackupFileNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConfigurationBackupFileNode) UnmarshalBinary(b []byte) error {
-	var res ConfigurationBackupFileNode
+func (m *ConfigurationBackupFileInlineNode) UnmarshalBinary(b []byte) error {
+	var res ConfigurationBackupFileInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -442,17 +442,17 @@ func (m *ConfigurationBackupFileNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConfigurationBackupFileNodeLinks configuration backup file node links
+// ConfigurationBackupFileInlineNodeInlineLinks configuration backup file inline node inline links
 //
-// swagger:model ConfigurationBackupFileNodeLinks
-type ConfigurationBackupFileNodeLinks struct {
+// swagger:model configuration_backup_file_inline_node_inline__links
+type ConfigurationBackupFileInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this configuration backup file node links
-func (m *ConfigurationBackupFileNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this configuration backup file inline node inline links
+func (m *ConfigurationBackupFileInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -465,7 +465,7 @@ func (m *ConfigurationBackupFileNodeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *ConfigurationBackupFileNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -482,8 +482,8 @@ func (m *ConfigurationBackupFileNodeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this configuration backup file node links based on the context it is used
-func (m *ConfigurationBackupFileNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this configuration backup file inline node inline links based on the context it is used
+func (m *ConfigurationBackupFileInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -496,7 +496,7 @@ func (m *ConfigurationBackupFileNodeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *ConfigurationBackupFileNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -511,7 +511,7 @@ func (m *ConfigurationBackupFileNodeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *ConfigurationBackupFileNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *ConfigurationBackupFileInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -519,8 +519,8 @@ func (m *ConfigurationBackupFileNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConfigurationBackupFileNodeLinks) UnmarshalBinary(b []byte) error {
-	var res ConfigurationBackupFileNodeLinks
+func (m *ConfigurationBackupFileInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ConfigurationBackupFileInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

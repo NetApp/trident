@@ -66,19 +66,19 @@ type SecurityKeyManagerKeyServersGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Server.
 
 	   Primary Key server configured in the key manager.
 	*/
-	ServerPathParameter string
+	Server string
 
 	/* UUID.
 
 	   External key manager UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SecurityKeyManagerKeyServersGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerKeyServersGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) WithFields(fields []string) *SecurityKeyManagerKeyServersGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithServerPathParameter adds the server to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) WithServerPathParameter(server string) *SecurityKeyManagerKeyServersGetParams {
-	o.SetServerPathParameter(server)
+// WithServer adds the server to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) WithServer(server string) *SecurityKeyManagerKeyServersGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerPathParameter adds the server to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) SetServerPathParameter(server string) {
-	o.ServerPathParameter = server
+// SetServer adds the server to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) SetServer(server string) {
+	o.Server = server
 }
 
-// WithUUIDPathParameter adds the uuid to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) WithUUIDPathParameter(uuid string) *SecurityKeyManagerKeyServersGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) WithUUID(uuid string) *SecurityKeyManagerKeyServersGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SecurityKeyManagerKeyServersGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *SecurityKeyManagerKeyServersGetParams) WriteToRequest(r runtime.ClientR
 	}
 
 	// path param server
-	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {
+	if err := r.SetPathParam("server", o.Server); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SecurityKeyManagerKeyServersGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamSecurityKeyManagerKeyServersGet binds the parameter fields
 func (o *SecurityKeyManagerKeyServersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

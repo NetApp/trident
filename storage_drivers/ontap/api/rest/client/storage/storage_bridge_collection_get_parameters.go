@@ -66,301 +66,301 @@ type StorageBridgeCollectionGetParams struct {
 
 	   Filter by chassis_throughput_state
 	*/
-	ChassisThroughputStateQueryParameter *string
+	ChassisThroughputState *string
 
 	/* DramSingleBitErrorCount.
 
 	   Filter by dram_single_bit_error_count
 	*/
-	DramSingleBitErrorCountQueryParameter *int64
+	DramSingleBitErrorCount *int64
 
 	/* ErrorsComponentID.
 
 	   Filter by errors.component.id
 	*/
-	ErrorsComponentIDQueryParameter *int64
+	ErrorsComponentID *int64
 
 	/* ErrorsComponentName.
 
 	   Filter by errors.component.name
 	*/
-	ErrorsComponentNameQueryParameter *string
+	ErrorsComponentName *string
 
 	/* ErrorsComponentUniqueID.
 
 	   Filter by errors.component.unique_id
 	*/
-	ErrorsComponentUniqueIDQueryParameter *string
+	ErrorsComponentUniqueID *string
 
 	/* ErrorsReasonArgumentsCode.
 
 	   Filter by errors.reason.arguments.code
 	*/
-	ErrorsReasonArgumentsCodeQueryParameter *string
+	ErrorsReasonArgumentsCode *string
 
 	/* ErrorsReasonArgumentsMessage.
 
 	   Filter by errors.reason.arguments.message
 	*/
-	ErrorsReasonArgumentsMessageQueryParameter *string
+	ErrorsReasonArgumentsMessage *string
 
 	/* ErrorsReasonCode.
 
 	   Filter by errors.reason.code
 	*/
-	ErrorsReasonCodeQueryParameter *string
+	ErrorsReasonCode *string
 
 	/* ErrorsReasonMessage.
 
 	   Filter by errors.reason.message
 	*/
-	ErrorsReasonMessageQueryParameter *string
+	ErrorsReasonMessage *string
 
 	/* ErrorsReasonTarget.
 
 	   Filter by errors.reason.target
 	*/
-	ErrorsReasonTargetQueryParameter *string
+	ErrorsReasonTarget *string
 
 	/* ErrorsSeverity.
 
 	   Filter by errors.severity
 	*/
-	ErrorsSeverityQueryParameter *string
+	ErrorsSeverity *string
 
 	/* ErrorsType.
 
 	   Filter by errors.type
 	*/
-	ErrorsTypeQueryParameter *string
+	ErrorsType *string
 
 	/* FcPortsConfiguredDataRate.
 
 	   Filter by fc_ports.configured_data_rate
 	*/
-	FcPortsConfiguredDataRateQueryParameter *float64
+	FcPortsConfiguredDataRate *float64
 
 	/* FcPortsConnectionMode.
 
 	   Filter by fc_ports.connection_mode
 	*/
-	FcPortsConnectionModeQueryParameter *string
+	FcPortsConnectionMode *string
 
 	/* FcPortsDataRateCapability.
 
 	   Filter by fc_ports.data_rate_capability
 	*/
-	FcPortsDataRateCapabilityQueryParameter *float64
+	FcPortsDataRateCapability *float64
 
 	/* FcPortsEnabled.
 
 	   Filter by fc_ports.enabled
 	*/
-	FcPortsEnabledQueryParameter *bool
+	FcPortsEnabled *bool
 
 	/* FcPortsID.
 
 	   Filter by fc_ports.id
 	*/
-	FcPortsIDQueryParameter *int64
+	FcPortsID *int64
 
 	/* FcPortsNegotiatedDataRate.
 
 	   Filter by fc_ports.negotiated_data_rate
 	*/
-	FcPortsNegotiatedDataRateQueryParameter *float64
+	FcPortsNegotiatedDataRate *float64
 
 	/* FcPortsPeerWwn.
 
 	   Filter by fc_ports.peer_wwn
 	*/
-	FcPortsPeerWwnQueryParameter *string
+	FcPortsPeerWwn *string
 
 	/* FcPortsSfpDataRateCapability.
 
 	   Filter by fc_ports.sfp.data_rate_capability
 	*/
-	FcPortsSfpDataRateCapabilityQueryParameter *float64
+	FcPortsSfpDataRateCapability *float64
 
 	/* FcPortsSfpPartNumber.
 
 	   Filter by fc_ports.sfp.part_number
 	*/
-	FcPortsSfpPartNumberQueryParameter *string
+	FcPortsSfpPartNumber *string
 
 	/* FcPortsSfpSerialNumber.
 
 	   Filter by fc_ports.sfp.serial_number
 	*/
-	FcPortsSfpSerialNumberQueryParameter *string
+	FcPortsSfpSerialNumber *string
 
 	/* FcPortsSfpVendor.
 
 	   Filter by fc_ports.sfp.vendor
 	*/
-	FcPortsSfpVendorQueryParameter *string
+	FcPortsSfpVendor *string
 
 	/* FcPortsState.
 
 	   Filter by fc_ports.state
 	*/
-	FcPortsStateQueryParameter *string
+	FcPortsState *string
 
 	/* FcPortsWwn.
 
 	   Filter by fc_ports.wwn
 	*/
-	FcPortsWwnQueryParameter *string
+	FcPortsWwn *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FirmwareVersion.
 
 	   Filter by firmware_version
 	*/
-	FirmwareVersionQueryParameter *string
+	FirmwareVersion *string
 
 	/* IPAddress.
 
 	   Filter by ip_address
 	*/
-	IPAddressQueryParameter *string
+	IPAddress *string
 
 	/* LastRebootReasonArgumentsCode.
 
 	   Filter by last_reboot.reason.arguments.code
 	*/
-	LastRebootReasonArgumentsCodeQueryParameter *string
+	LastRebootReasonArgumentsCode *string
 
 	/* LastRebootReasonArgumentsMessage.
 
 	   Filter by last_reboot.reason.arguments.message
 	*/
-	LastRebootReasonArgumentsMessageQueryParameter *string
+	LastRebootReasonArgumentsMessage *string
 
 	/* LastRebootReasonCode.
 
 	   Filter by last_reboot.reason.code
 	*/
-	LastRebootReasonCodeQueryParameter *string
+	LastRebootReasonCode *string
 
 	/* LastRebootReasonMessage.
 
 	   Filter by last_reboot.reason.message
 	*/
-	LastRebootReasonMessageQueryParameter *string
+	LastRebootReasonMessage *string
 
 	/* LastRebootReasonTarget.
 
 	   Filter by last_reboot.reason.target
 	*/
-	LastRebootReasonTargetQueryParameter *string
+	LastRebootReasonTarget *string
 
 	/* LastRebootTime.
 
 	   Filter by last_reboot.time
 	*/
-	LastRebootTimeQueryParameter *string
+	LastRebootTime *string
 
 	/* ManagedBy.
 
 	   Filter by managed_by
 	*/
-	ManagedByQueryParameter *string
+	ManagedBy *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Model.
 
 	   Filter by model
 	*/
-	ModelQueryParameter *string
+	Model *string
 
 	/* MonitoringEnabled.
 
 	   Filter by monitoring_enabled
 	*/
-	MonitoringEnabledQueryParameter *bool
+	MonitoringEnabled *bool
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PathsName.
 
 	   Filter by paths.name
 	*/
-	PathsNameQueryParameter *string
+	PathsName *string
 
 	/* PathsNodeName.
 
 	   Filter by paths.node.name
 	*/
-	PathsNodeNameQueryParameter *string
+	PathsNodeName *string
 
 	/* PathsNodeUUID.
 
 	   Filter by paths.node.uuid
 	*/
-	PathsNodeUUIDQueryParameter *string
+	PathsNodeUUID *string
 
 	/* PathsSourcePortID.
 
 	   Filter by paths.source_port.id
 	*/
-	PathsSourcePortIDQueryParameter *string
+	PathsSourcePortID *string
 
 	/* PathsSourcePortName.
 
 	   Filter by paths.source_port.name
 	*/
-	PathsSourcePortNameQueryParameter *string
+	PathsSourcePortName *string
 
 	/* PathsTargetPortID.
 
 	   Filter by paths.target_port.id
 	*/
-	PathsTargetPortIDQueryParameter *string
+	PathsTargetPortID *string
 
 	/* PathsTargetPortName.
 
 	   Filter by paths.target_port.name
 	*/
-	PathsTargetPortNameQueryParameter *string
+	PathsTargetPortName *string
 
 	/* PathsTargetPortWwn.
 
 	   Filter by paths.target_port.wwn
 	*/
-	PathsTargetPortWwnQueryParameter *string
+	PathsTargetPortWwn *string
 
 	/* PowerSupplyUnitsName.
 
 	   Filter by power_supply_units.name
 	*/
-	PowerSupplyUnitsNameQueryParameter *string
+	PowerSupplyUnitsName *string
 
 	/* PowerSupplyUnitsState.
 
 	   Filter by power_supply_units.state
 	*/
-	PowerSupplyUnitsStateQueryParameter *string
+	PowerSupplyUnitsState *string
 
 	/* ReturnRecords.
 
@@ -368,7 +368,7 @@ type StorageBridgeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -376,157 +376,157 @@ type StorageBridgeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SasPortsCablePartNumber.
 
 	   Filter by sas_ports.cable.part_number
 	*/
-	SasPortsCablePartNumberQueryParameter *string
+	SasPortsCablePartNumber *string
 
 	/* SasPortsCableSerialNumber.
 
 	   Filter by sas_ports.cable.serial_number
 	*/
-	SasPortsCableSerialNumberQueryParameter *string
+	SasPortsCableSerialNumber *string
 
 	/* SasPortsCableTechnology.
 
 	   Filter by sas_ports.cable.technology
 	*/
-	SasPortsCableTechnologyQueryParameter *string
+	SasPortsCableTechnology *string
 
 	/* SasPortsCableVendor.
 
 	   Filter by sas_ports.cable.vendor
 	*/
-	SasPortsCableVendorQueryParameter *string
+	SasPortsCableVendor *string
 
 	/* SasPortsDataRateCapability.
 
 	   Filter by sas_ports.data_rate_capability
 	*/
-	SasPortsDataRateCapabilityQueryParameter *float64
+	SasPortsDataRateCapability *float64
 
 	/* SasPortsEnabled.
 
 	   Filter by sas_ports.enabled
 	*/
-	SasPortsEnabledQueryParameter *bool
+	SasPortsEnabled *bool
 
 	/* SasPortsID.
 
 	   Filter by sas_ports.id
 	*/
-	SasPortsIDQueryParameter *int64
+	SasPortsID *int64
 
 	/* SasPortsNegotiatedDataRate.
 
 	   Filter by sas_ports.negotiated_data_rate
 	*/
-	SasPortsNegotiatedDataRateQueryParameter *float64
+	SasPortsNegotiatedDataRate *float64
 
 	/* SasPortsPhy1State.
 
 	   Filter by sas_ports.phy_1.state
 	*/
-	SasPortsPhy1StateQueryParameter *string
+	SasPortsPhy1State *string
 
 	/* SasPortsPhy2State.
 
 	   Filter by sas_ports.phy_2.state
 	*/
-	SasPortsPhy2StateQueryParameter *string
+	SasPortsPhy2State *string
 
 	/* SasPortsPhy3State.
 
 	   Filter by sas_ports.phy_3.state
 	*/
-	SasPortsPhy3StateQueryParameter *string
+	SasPortsPhy3State *string
 
 	/* SasPortsPhy4State.
 
 	   Filter by sas_ports.phy_4.state
 	*/
-	SasPortsPhy4StateQueryParameter *string
+	SasPortsPhy4State *string
 
 	/* SasPortsState.
 
 	   Filter by sas_ports.state
 	*/
-	SasPortsStateQueryParameter *string
+	SasPortsState *string
 
 	/* SasPortsWwn.
 
 	   Filter by sas_ports.wwn
 	*/
-	SasPortsWwnQueryParameter *string
+	SasPortsWwn *string
 
 	/* SecurityEnabled.
 
 	   Filter by security_enabled
 	*/
-	SecurityEnabledQueryParameter *bool
+	SecurityEnabled *bool
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SymbolicName.
 
 	   Filter by symbolic_name
 	*/
-	SymbolicNameQueryParameter *string
+	SymbolicName *string
 
 	/* TemperatureSensorMaximum.
 
 	   Filter by temperature_sensor.maximum
 	*/
-	TemperatureSensorMaximumQueryParameter *int64
+	TemperatureSensorMaximum *int64
 
 	/* TemperatureSensorMinimum.
 
 	   Filter by temperature_sensor.minimum
 	*/
-	TemperatureSensorMinimumQueryParameter *int64
+	TemperatureSensorMinimum *int64
 
 	/* TemperatureSensorName.
 
 	   Filter by temperature_sensor.name
 	*/
-	TemperatureSensorNameQueryParameter *string
+	TemperatureSensorName *string
 
 	/* TemperatureSensorReading.
 
 	   Filter by temperature_sensor.reading
 	*/
-	TemperatureSensorReadingQueryParameter *int64
+	TemperatureSensorReading *int64
 
 	/* TemperatureSensorState.
 
 	   Filter by temperature_sensor.state
 	*/
-	TemperatureSensorStateQueryParameter *string
+	TemperatureSensorState *string
 
 	/* Vendor.
 
 	   Filter by vendor
 	*/
-	VendorQueryParameter *string
+	Vendor *string
 
 	/* Wwn.
 
 	   Filter by wwn
 	*/
-	WwnQueryParameter *string
+	Wwn *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -546,14 +546,14 @@ func (o *StorageBridgeCollectionGetParams) WithDefaults() *StorageBridgeCollecti
 // All values with no default are reset to their zero value.
 func (o *StorageBridgeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := StorageBridgeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -595,851 +595,851 @@ func (o *StorageBridgeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithChassisThroughputStateQueryParameter adds the chassisThroughputState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithChassisThroughputStateQueryParameter(chassisThroughputState *string) *StorageBridgeCollectionGetParams {
-	o.SetChassisThroughputStateQueryParameter(chassisThroughputState)
+// WithChassisThroughputState adds the chassisThroughputState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithChassisThroughputState(chassisThroughputState *string) *StorageBridgeCollectionGetParams {
+	o.SetChassisThroughputState(chassisThroughputState)
 	return o
 }
 
-// SetChassisThroughputStateQueryParameter adds the chassisThroughputState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetChassisThroughputStateQueryParameter(chassisThroughputState *string) {
-	o.ChassisThroughputStateQueryParameter = chassisThroughputState
+// SetChassisThroughputState adds the chassisThroughputState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetChassisThroughputState(chassisThroughputState *string) {
+	o.ChassisThroughputState = chassisThroughputState
 }
 
-// WithDramSingleBitErrorCountQueryParameter adds the dramSingleBitErrorCount to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithDramSingleBitErrorCountQueryParameter(dramSingleBitErrorCount *int64) *StorageBridgeCollectionGetParams {
-	o.SetDramSingleBitErrorCountQueryParameter(dramSingleBitErrorCount)
+// WithDramSingleBitErrorCount adds the dramSingleBitErrorCount to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithDramSingleBitErrorCount(dramSingleBitErrorCount *int64) *StorageBridgeCollectionGetParams {
+	o.SetDramSingleBitErrorCount(dramSingleBitErrorCount)
 	return o
 }
 
-// SetDramSingleBitErrorCountQueryParameter adds the dramSingleBitErrorCount to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetDramSingleBitErrorCountQueryParameter(dramSingleBitErrorCount *int64) {
-	o.DramSingleBitErrorCountQueryParameter = dramSingleBitErrorCount
+// SetDramSingleBitErrorCount adds the dramSingleBitErrorCount to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetDramSingleBitErrorCount(dramSingleBitErrorCount *int64) {
+	o.DramSingleBitErrorCount = dramSingleBitErrorCount
 }
 
-// WithErrorsComponentIDQueryParameter adds the errorsComponentID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsComponentIDQueryParameter(errorsComponentID *int64) *StorageBridgeCollectionGetParams {
-	o.SetErrorsComponentIDQueryParameter(errorsComponentID)
+// WithErrorsComponentID adds the errorsComponentID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsComponentID(errorsComponentID *int64) *StorageBridgeCollectionGetParams {
+	o.SetErrorsComponentID(errorsComponentID)
 	return o
 }
 
-// SetErrorsComponentIDQueryParameter adds the errorsComponentId to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsComponentIDQueryParameter(errorsComponentID *int64) {
-	o.ErrorsComponentIDQueryParameter = errorsComponentID
+// SetErrorsComponentID adds the errorsComponentId to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsComponentID(errorsComponentID *int64) {
+	o.ErrorsComponentID = errorsComponentID
 }
 
-// WithErrorsComponentNameQueryParameter adds the errorsComponentName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsComponentNameQueryParameter(errorsComponentName *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsComponentNameQueryParameter(errorsComponentName)
+// WithErrorsComponentName adds the errorsComponentName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsComponentName(errorsComponentName *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsComponentName(errorsComponentName)
 	return o
 }
 
-// SetErrorsComponentNameQueryParameter adds the errorsComponentName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsComponentNameQueryParameter(errorsComponentName *string) {
-	o.ErrorsComponentNameQueryParameter = errorsComponentName
+// SetErrorsComponentName adds the errorsComponentName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsComponentName(errorsComponentName *string) {
+	o.ErrorsComponentName = errorsComponentName
 }
 
-// WithErrorsComponentUniqueIDQueryParameter adds the errorsComponentUniqueID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsComponentUniqueIDQueryParameter(errorsComponentUniqueID *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsComponentUniqueIDQueryParameter(errorsComponentUniqueID)
+// WithErrorsComponentUniqueID adds the errorsComponentUniqueID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsComponentUniqueID(errorsComponentUniqueID *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsComponentUniqueID(errorsComponentUniqueID)
 	return o
 }
 
-// SetErrorsComponentUniqueIDQueryParameter adds the errorsComponentUniqueId to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsComponentUniqueIDQueryParameter(errorsComponentUniqueID *string) {
-	o.ErrorsComponentUniqueIDQueryParameter = errorsComponentUniqueID
+// SetErrorsComponentUniqueID adds the errorsComponentUniqueId to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsComponentUniqueID(errorsComponentUniqueID *string) {
+	o.ErrorsComponentUniqueID = errorsComponentUniqueID
 }
 
-// WithErrorsReasonArgumentsCodeQueryParameter adds the errorsReasonArgumentsCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode)
+// WithErrorsReasonArgumentsCode adds the errorsReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonArgumentsCode(errorsReasonArgumentsCode *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonArgumentsCode(errorsReasonArgumentsCode)
 	return o
 }
 
-// SetErrorsReasonArgumentsCodeQueryParameter adds the errorsReasonArgumentsCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode *string) {
-	o.ErrorsReasonArgumentsCodeQueryParameter = errorsReasonArgumentsCode
+// SetErrorsReasonArgumentsCode adds the errorsReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonArgumentsCode(errorsReasonArgumentsCode *string) {
+	o.ErrorsReasonArgumentsCode = errorsReasonArgumentsCode
 }
 
-// WithErrorsReasonArgumentsMessageQueryParameter adds the errorsReasonArgumentsMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage)
+// WithErrorsReasonArgumentsMessage adds the errorsReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonArgumentsMessage(errorsReasonArgumentsMessage *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonArgumentsMessage(errorsReasonArgumentsMessage)
 	return o
 }
 
-// SetErrorsReasonArgumentsMessageQueryParameter adds the errorsReasonArgumentsMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage *string) {
-	o.ErrorsReasonArgumentsMessageQueryParameter = errorsReasonArgumentsMessage
+// SetErrorsReasonArgumentsMessage adds the errorsReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonArgumentsMessage(errorsReasonArgumentsMessage *string) {
+	o.ErrorsReasonArgumentsMessage = errorsReasonArgumentsMessage
 }
 
-// WithErrorsReasonCodeQueryParameter adds the errorsReasonCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsReasonCodeQueryParameter(errorsReasonCode *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsReasonCodeQueryParameter(errorsReasonCode)
+// WithErrorsReasonCode adds the errorsReasonCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonCode(errorsReasonCode *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonCode(errorsReasonCode)
 	return o
 }
 
-// SetErrorsReasonCodeQueryParameter adds the errorsReasonCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsReasonCodeQueryParameter(errorsReasonCode *string) {
-	o.ErrorsReasonCodeQueryParameter = errorsReasonCode
+// SetErrorsReasonCode adds the errorsReasonCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonCode(errorsReasonCode *string) {
+	o.ErrorsReasonCode = errorsReasonCode
 }
 
-// WithErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsReasonMessageQueryParameter(errorsReasonMessage *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsReasonMessageQueryParameter(errorsReasonMessage)
+// WithErrorsReasonMessage adds the errorsReasonMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonMessage(errorsReasonMessage *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonMessage(errorsReasonMessage)
 	return o
 }
 
-// SetErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsReasonMessageQueryParameter(errorsReasonMessage *string) {
-	o.ErrorsReasonMessageQueryParameter = errorsReasonMessage
+// SetErrorsReasonMessage adds the errorsReasonMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonMessage(errorsReasonMessage *string) {
+	o.ErrorsReasonMessage = errorsReasonMessage
 }
 
-// WithErrorsReasonTargetQueryParameter adds the errorsReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsReasonTargetQueryParameter(errorsReasonTarget *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsReasonTargetQueryParameter(errorsReasonTarget)
+// WithErrorsReasonTarget adds the errorsReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonTarget(errorsReasonTarget *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonTarget(errorsReasonTarget)
 	return o
 }
 
-// SetErrorsReasonTargetQueryParameter adds the errorsReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsReasonTargetQueryParameter(errorsReasonTarget *string) {
-	o.ErrorsReasonTargetQueryParameter = errorsReasonTarget
+// SetErrorsReasonTarget adds the errorsReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonTarget(errorsReasonTarget *string) {
+	o.ErrorsReasonTarget = errorsReasonTarget
 }
 
-// WithErrorsSeverityQueryParameter adds the errorsSeverity to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsSeverityQueryParameter(errorsSeverity *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsSeverityQueryParameter(errorsSeverity)
+// WithErrorsSeverity adds the errorsSeverity to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsSeverity(errorsSeverity *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsSeverity(errorsSeverity)
 	return o
 }
 
-// SetErrorsSeverityQueryParameter adds the errorsSeverity to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsSeverityQueryParameter(errorsSeverity *string) {
-	o.ErrorsSeverityQueryParameter = errorsSeverity
+// SetErrorsSeverity adds the errorsSeverity to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsSeverity(errorsSeverity *string) {
+	o.ErrorsSeverity = errorsSeverity
 }
 
-// WithErrorsTypeQueryParameter adds the errorsType to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithErrorsTypeQueryParameter(errorsType *string) *StorageBridgeCollectionGetParams {
-	o.SetErrorsTypeQueryParameter(errorsType)
+// WithErrorsType adds the errorsType to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsType(errorsType *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsType(errorsType)
 	return o
 }
 
-// SetErrorsTypeQueryParameter adds the errorsType to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetErrorsTypeQueryParameter(errorsType *string) {
-	o.ErrorsTypeQueryParameter = errorsType
+// SetErrorsType adds the errorsType to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsType(errorsType *string) {
+	o.ErrorsType = errorsType
 }
 
-// WithFcPortsConfiguredDataRateQueryParameter adds the fcPortsConfiguredDataRate to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsConfiguredDataRateQueryParameter(fcPortsConfiguredDataRate *float64) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsConfiguredDataRateQueryParameter(fcPortsConfiguredDataRate)
+// WithFcPortsConfiguredDataRate adds the fcPortsConfiguredDataRate to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsConfiguredDataRate(fcPortsConfiguredDataRate *float64) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsConfiguredDataRate(fcPortsConfiguredDataRate)
 	return o
 }
 
-// SetFcPortsConfiguredDataRateQueryParameter adds the fcPortsConfiguredDataRate to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsConfiguredDataRateQueryParameter(fcPortsConfiguredDataRate *float64) {
-	o.FcPortsConfiguredDataRateQueryParameter = fcPortsConfiguredDataRate
+// SetFcPortsConfiguredDataRate adds the fcPortsConfiguredDataRate to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsConfiguredDataRate(fcPortsConfiguredDataRate *float64) {
+	o.FcPortsConfiguredDataRate = fcPortsConfiguredDataRate
 }
 
-// WithFcPortsConnectionModeQueryParameter adds the fcPortsConnectionMode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsConnectionModeQueryParameter(fcPortsConnectionMode *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsConnectionModeQueryParameter(fcPortsConnectionMode)
+// WithFcPortsConnectionMode adds the fcPortsConnectionMode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsConnectionMode(fcPortsConnectionMode *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsConnectionMode(fcPortsConnectionMode)
 	return o
 }
 
-// SetFcPortsConnectionModeQueryParameter adds the fcPortsConnectionMode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsConnectionModeQueryParameter(fcPortsConnectionMode *string) {
-	o.FcPortsConnectionModeQueryParameter = fcPortsConnectionMode
+// SetFcPortsConnectionMode adds the fcPortsConnectionMode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsConnectionMode(fcPortsConnectionMode *string) {
+	o.FcPortsConnectionMode = fcPortsConnectionMode
 }
 
-// WithFcPortsDataRateCapabilityQueryParameter adds the fcPortsDataRateCapability to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsDataRateCapabilityQueryParameter(fcPortsDataRateCapability *float64) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsDataRateCapabilityQueryParameter(fcPortsDataRateCapability)
+// WithFcPortsDataRateCapability adds the fcPortsDataRateCapability to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsDataRateCapability(fcPortsDataRateCapability *float64) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsDataRateCapability(fcPortsDataRateCapability)
 	return o
 }
 
-// SetFcPortsDataRateCapabilityQueryParameter adds the fcPortsDataRateCapability to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsDataRateCapabilityQueryParameter(fcPortsDataRateCapability *float64) {
-	o.FcPortsDataRateCapabilityQueryParameter = fcPortsDataRateCapability
+// SetFcPortsDataRateCapability adds the fcPortsDataRateCapability to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsDataRateCapability(fcPortsDataRateCapability *float64) {
+	o.FcPortsDataRateCapability = fcPortsDataRateCapability
 }
 
-// WithFcPortsEnabledQueryParameter adds the fcPortsEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsEnabledQueryParameter(fcPortsEnabled *bool) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsEnabledQueryParameter(fcPortsEnabled)
+// WithFcPortsEnabled adds the fcPortsEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsEnabled(fcPortsEnabled *bool) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsEnabled(fcPortsEnabled)
 	return o
 }
 
-// SetFcPortsEnabledQueryParameter adds the fcPortsEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsEnabledQueryParameter(fcPortsEnabled *bool) {
-	o.FcPortsEnabledQueryParameter = fcPortsEnabled
+// SetFcPortsEnabled adds the fcPortsEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsEnabled(fcPortsEnabled *bool) {
+	o.FcPortsEnabled = fcPortsEnabled
 }
 
-// WithFcPortsIDQueryParameter adds the fcPortsID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsIDQueryParameter(fcPortsID *int64) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsIDQueryParameter(fcPortsID)
+// WithFcPortsID adds the fcPortsID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsID(fcPortsID *int64) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsID(fcPortsID)
 	return o
 }
 
-// SetFcPortsIDQueryParameter adds the fcPortsId to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsIDQueryParameter(fcPortsID *int64) {
-	o.FcPortsIDQueryParameter = fcPortsID
+// SetFcPortsID adds the fcPortsId to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsID(fcPortsID *int64) {
+	o.FcPortsID = fcPortsID
 }
 
-// WithFcPortsNegotiatedDataRateQueryParameter adds the fcPortsNegotiatedDataRate to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsNegotiatedDataRateQueryParameter(fcPortsNegotiatedDataRate *float64) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsNegotiatedDataRateQueryParameter(fcPortsNegotiatedDataRate)
+// WithFcPortsNegotiatedDataRate adds the fcPortsNegotiatedDataRate to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsNegotiatedDataRate(fcPortsNegotiatedDataRate *float64) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsNegotiatedDataRate(fcPortsNegotiatedDataRate)
 	return o
 }
 
-// SetFcPortsNegotiatedDataRateQueryParameter adds the fcPortsNegotiatedDataRate to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsNegotiatedDataRateQueryParameter(fcPortsNegotiatedDataRate *float64) {
-	o.FcPortsNegotiatedDataRateQueryParameter = fcPortsNegotiatedDataRate
+// SetFcPortsNegotiatedDataRate adds the fcPortsNegotiatedDataRate to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsNegotiatedDataRate(fcPortsNegotiatedDataRate *float64) {
+	o.FcPortsNegotiatedDataRate = fcPortsNegotiatedDataRate
 }
 
-// WithFcPortsPeerWwnQueryParameter adds the fcPortsPeerWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsPeerWwnQueryParameter(fcPortsPeerWwn *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsPeerWwnQueryParameter(fcPortsPeerWwn)
+// WithFcPortsPeerWwn adds the fcPortsPeerWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsPeerWwn(fcPortsPeerWwn *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsPeerWwn(fcPortsPeerWwn)
 	return o
 }
 
-// SetFcPortsPeerWwnQueryParameter adds the fcPortsPeerWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsPeerWwnQueryParameter(fcPortsPeerWwn *string) {
-	o.FcPortsPeerWwnQueryParameter = fcPortsPeerWwn
+// SetFcPortsPeerWwn adds the fcPortsPeerWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsPeerWwn(fcPortsPeerWwn *string) {
+	o.FcPortsPeerWwn = fcPortsPeerWwn
 }
 
-// WithFcPortsSfpDataRateCapabilityQueryParameter adds the fcPortsSfpDataRateCapability to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpDataRateCapabilityQueryParameter(fcPortsSfpDataRateCapability *float64) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsSfpDataRateCapabilityQueryParameter(fcPortsSfpDataRateCapability)
+// WithFcPortsSfpDataRateCapability adds the fcPortsSfpDataRateCapability to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpDataRateCapability(fcPortsSfpDataRateCapability *float64) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsSfpDataRateCapability(fcPortsSfpDataRateCapability)
 	return o
 }
 
-// SetFcPortsSfpDataRateCapabilityQueryParameter adds the fcPortsSfpDataRateCapability to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpDataRateCapabilityQueryParameter(fcPortsSfpDataRateCapability *float64) {
-	o.FcPortsSfpDataRateCapabilityQueryParameter = fcPortsSfpDataRateCapability
+// SetFcPortsSfpDataRateCapability adds the fcPortsSfpDataRateCapability to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpDataRateCapability(fcPortsSfpDataRateCapability *float64) {
+	o.FcPortsSfpDataRateCapability = fcPortsSfpDataRateCapability
 }
 
-// WithFcPortsSfpPartNumberQueryParameter adds the fcPortsSfpPartNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpPartNumberQueryParameter(fcPortsSfpPartNumber *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsSfpPartNumberQueryParameter(fcPortsSfpPartNumber)
+// WithFcPortsSfpPartNumber adds the fcPortsSfpPartNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpPartNumber(fcPortsSfpPartNumber *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsSfpPartNumber(fcPortsSfpPartNumber)
 	return o
 }
 
-// SetFcPortsSfpPartNumberQueryParameter adds the fcPortsSfpPartNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpPartNumberQueryParameter(fcPortsSfpPartNumber *string) {
-	o.FcPortsSfpPartNumberQueryParameter = fcPortsSfpPartNumber
+// SetFcPortsSfpPartNumber adds the fcPortsSfpPartNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpPartNumber(fcPortsSfpPartNumber *string) {
+	o.FcPortsSfpPartNumber = fcPortsSfpPartNumber
 }
 
-// WithFcPortsSfpSerialNumberQueryParameter adds the fcPortsSfpSerialNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpSerialNumberQueryParameter(fcPortsSfpSerialNumber *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsSfpSerialNumberQueryParameter(fcPortsSfpSerialNumber)
+// WithFcPortsSfpSerialNumber adds the fcPortsSfpSerialNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpSerialNumber(fcPortsSfpSerialNumber *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsSfpSerialNumber(fcPortsSfpSerialNumber)
 	return o
 }
 
-// SetFcPortsSfpSerialNumberQueryParameter adds the fcPortsSfpSerialNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpSerialNumberQueryParameter(fcPortsSfpSerialNumber *string) {
-	o.FcPortsSfpSerialNumberQueryParameter = fcPortsSfpSerialNumber
+// SetFcPortsSfpSerialNumber adds the fcPortsSfpSerialNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpSerialNumber(fcPortsSfpSerialNumber *string) {
+	o.FcPortsSfpSerialNumber = fcPortsSfpSerialNumber
 }
 
-// WithFcPortsSfpVendorQueryParameter adds the fcPortsSfpVendor to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpVendorQueryParameter(fcPortsSfpVendor *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsSfpVendorQueryParameter(fcPortsSfpVendor)
+// WithFcPortsSfpVendor adds the fcPortsSfpVendor to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsSfpVendor(fcPortsSfpVendor *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsSfpVendor(fcPortsSfpVendor)
 	return o
 }
 
-// SetFcPortsSfpVendorQueryParameter adds the fcPortsSfpVendor to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpVendorQueryParameter(fcPortsSfpVendor *string) {
-	o.FcPortsSfpVendorQueryParameter = fcPortsSfpVendor
+// SetFcPortsSfpVendor adds the fcPortsSfpVendor to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsSfpVendor(fcPortsSfpVendor *string) {
+	o.FcPortsSfpVendor = fcPortsSfpVendor
 }
 
-// WithFcPortsStateQueryParameter adds the fcPortsState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsStateQueryParameter(fcPortsState *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsStateQueryParameter(fcPortsState)
+// WithFcPortsState adds the fcPortsState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsState(fcPortsState *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsState(fcPortsState)
 	return o
 }
 
-// SetFcPortsStateQueryParameter adds the fcPortsState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsStateQueryParameter(fcPortsState *string) {
-	o.FcPortsStateQueryParameter = fcPortsState
+// SetFcPortsState adds the fcPortsState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsState(fcPortsState *string) {
+	o.FcPortsState = fcPortsState
 }
 
-// WithFcPortsWwnQueryParameter adds the fcPortsWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFcPortsWwnQueryParameter(fcPortsWwn *string) *StorageBridgeCollectionGetParams {
-	o.SetFcPortsWwnQueryParameter(fcPortsWwn)
+// WithFcPortsWwn adds the fcPortsWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFcPortsWwn(fcPortsWwn *string) *StorageBridgeCollectionGetParams {
+	o.SetFcPortsWwn(fcPortsWwn)
 	return o
 }
 
-// SetFcPortsWwnQueryParameter adds the fcPortsWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFcPortsWwnQueryParameter(fcPortsWwn *string) {
-	o.FcPortsWwnQueryParameter = fcPortsWwn
+// SetFcPortsWwn adds the fcPortsWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFcPortsWwn(fcPortsWwn *string) {
+	o.FcPortsWwn = fcPortsWwn
 }
 
-// WithFieldsQueryParameter adds the fields to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFieldsQueryParameter(fields []string) *StorageBridgeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFields(fields []string) *StorageBridgeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFirmwareVersionQueryParameter adds the firmwareVersion to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithFirmwareVersionQueryParameter(firmwareVersion *string) *StorageBridgeCollectionGetParams {
-	o.SetFirmwareVersionQueryParameter(firmwareVersion)
+// WithFirmwareVersion adds the firmwareVersion to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithFirmwareVersion(firmwareVersion *string) *StorageBridgeCollectionGetParams {
+	o.SetFirmwareVersion(firmwareVersion)
 	return o
 }
 
-// SetFirmwareVersionQueryParameter adds the firmwareVersion to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetFirmwareVersionQueryParameter(firmwareVersion *string) {
-	o.FirmwareVersionQueryParameter = firmwareVersion
+// SetFirmwareVersion adds the firmwareVersion to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetFirmwareVersion(firmwareVersion *string) {
+	o.FirmwareVersion = firmwareVersion
 }
 
-// WithIPAddressQueryParameter adds the iPAddress to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithIPAddressQueryParameter(iPAddress *string) *StorageBridgeCollectionGetParams {
-	o.SetIPAddressQueryParameter(iPAddress)
+// WithIPAddress adds the iPAddress to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithIPAddress(iPAddress *string) *StorageBridgeCollectionGetParams {
+	o.SetIPAddress(iPAddress)
 	return o
 }
 
-// SetIPAddressQueryParameter adds the ipAddress to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetIPAddressQueryParameter(iPAddress *string) {
-	o.IPAddressQueryParameter = iPAddress
+// SetIPAddress adds the ipAddress to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetIPAddress(iPAddress *string) {
+	o.IPAddress = iPAddress
 }
 
-// WithLastRebootReasonArgumentsCodeQueryParameter adds the lastRebootReasonArgumentsCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonArgumentsCodeQueryParameter(lastRebootReasonArgumentsCode *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootReasonArgumentsCodeQueryParameter(lastRebootReasonArgumentsCode)
+// WithLastRebootReasonArgumentsCode adds the lastRebootReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonArgumentsCode(lastRebootReasonArgumentsCode *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonArgumentsCode(lastRebootReasonArgumentsCode)
 	return o
 }
 
-// SetLastRebootReasonArgumentsCodeQueryParameter adds the lastRebootReasonArgumentsCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonArgumentsCodeQueryParameter(lastRebootReasonArgumentsCode *string) {
-	o.LastRebootReasonArgumentsCodeQueryParameter = lastRebootReasonArgumentsCode
+// SetLastRebootReasonArgumentsCode adds the lastRebootReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonArgumentsCode(lastRebootReasonArgumentsCode *string) {
+	o.LastRebootReasonArgumentsCode = lastRebootReasonArgumentsCode
 }
 
-// WithLastRebootReasonArgumentsMessageQueryParameter adds the lastRebootReasonArgumentsMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonArgumentsMessageQueryParameter(lastRebootReasonArgumentsMessage *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootReasonArgumentsMessageQueryParameter(lastRebootReasonArgumentsMessage)
+// WithLastRebootReasonArgumentsMessage adds the lastRebootReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonArgumentsMessage(lastRebootReasonArgumentsMessage *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonArgumentsMessage(lastRebootReasonArgumentsMessage)
 	return o
 }
 
-// SetLastRebootReasonArgumentsMessageQueryParameter adds the lastRebootReasonArgumentsMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonArgumentsMessageQueryParameter(lastRebootReasonArgumentsMessage *string) {
-	o.LastRebootReasonArgumentsMessageQueryParameter = lastRebootReasonArgumentsMessage
+// SetLastRebootReasonArgumentsMessage adds the lastRebootReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonArgumentsMessage(lastRebootReasonArgumentsMessage *string) {
+	o.LastRebootReasonArgumentsMessage = lastRebootReasonArgumentsMessage
 }
 
-// WithLastRebootReasonCodeQueryParameter adds the lastRebootReasonCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonCodeQueryParameter(lastRebootReasonCode *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootReasonCodeQueryParameter(lastRebootReasonCode)
+// WithLastRebootReasonCode adds the lastRebootReasonCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonCode(lastRebootReasonCode *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonCode(lastRebootReasonCode)
 	return o
 }
 
-// SetLastRebootReasonCodeQueryParameter adds the lastRebootReasonCode to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonCodeQueryParameter(lastRebootReasonCode *string) {
-	o.LastRebootReasonCodeQueryParameter = lastRebootReasonCode
+// SetLastRebootReasonCode adds the lastRebootReasonCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonCode(lastRebootReasonCode *string) {
+	o.LastRebootReasonCode = lastRebootReasonCode
 }
 
-// WithLastRebootReasonMessageQueryParameter adds the lastRebootReasonMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonMessageQueryParameter(lastRebootReasonMessage *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootReasonMessageQueryParameter(lastRebootReasonMessage)
+// WithLastRebootReasonMessage adds the lastRebootReasonMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonMessage(lastRebootReasonMessage *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonMessage(lastRebootReasonMessage)
 	return o
 }
 
-// SetLastRebootReasonMessageQueryParameter adds the lastRebootReasonMessage to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonMessageQueryParameter(lastRebootReasonMessage *string) {
-	o.LastRebootReasonMessageQueryParameter = lastRebootReasonMessage
+// SetLastRebootReasonMessage adds the lastRebootReasonMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonMessage(lastRebootReasonMessage *string) {
+	o.LastRebootReasonMessage = lastRebootReasonMessage
 }
 
-// WithLastRebootReasonTargetQueryParameter adds the lastRebootReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonTargetQueryParameter(lastRebootReasonTarget *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootReasonTargetQueryParameter(lastRebootReasonTarget)
+// WithLastRebootReasonTarget adds the lastRebootReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonTarget(lastRebootReasonTarget *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonTarget(lastRebootReasonTarget)
 	return o
 }
 
-// SetLastRebootReasonTargetQueryParameter adds the lastRebootReasonTarget to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonTargetQueryParameter(lastRebootReasonTarget *string) {
-	o.LastRebootReasonTargetQueryParameter = lastRebootReasonTarget
+// SetLastRebootReasonTarget adds the lastRebootReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonTarget(lastRebootReasonTarget *string) {
+	o.LastRebootReasonTarget = lastRebootReasonTarget
 }
 
-// WithLastRebootTimeQueryParameter adds the lastRebootTime to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithLastRebootTimeQueryParameter(lastRebootTime *string) *StorageBridgeCollectionGetParams {
-	o.SetLastRebootTimeQueryParameter(lastRebootTime)
+// WithLastRebootTime adds the lastRebootTime to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootTime(lastRebootTime *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootTime(lastRebootTime)
 	return o
 }
 
-// SetLastRebootTimeQueryParameter adds the lastRebootTime to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetLastRebootTimeQueryParameter(lastRebootTime *string) {
-	o.LastRebootTimeQueryParameter = lastRebootTime
+// SetLastRebootTime adds the lastRebootTime to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootTime(lastRebootTime *string) {
+	o.LastRebootTime = lastRebootTime
 }
 
-// WithManagedByQueryParameter adds the managedBy to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithManagedByQueryParameter(managedBy *string) *StorageBridgeCollectionGetParams {
-	o.SetManagedByQueryParameter(managedBy)
+// WithManagedBy adds the managedBy to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithManagedBy(managedBy *string) *StorageBridgeCollectionGetParams {
+	o.SetManagedBy(managedBy)
 	return o
 }
 
-// SetManagedByQueryParameter adds the managedBy to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetManagedByQueryParameter(managedBy *string) {
-	o.ManagedByQueryParameter = managedBy
+// SetManagedBy adds the managedBy to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetManagedBy(managedBy *string) {
+	o.ManagedBy = managedBy
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *StorageBridgeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithMaxRecords(maxRecords *int64) *StorageBridgeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithModelQueryParameter adds the model to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithModelQueryParameter(model *string) *StorageBridgeCollectionGetParams {
-	o.SetModelQueryParameter(model)
+// WithModel adds the model to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithModel(model *string) *StorageBridgeCollectionGetParams {
+	o.SetModel(model)
 	return o
 }
 
-// SetModelQueryParameter adds the model to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetModelQueryParameter(model *string) {
-	o.ModelQueryParameter = model
+// SetModel adds the model to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetModel(model *string) {
+	o.Model = model
 }
 
-// WithMonitoringEnabledQueryParameter adds the monitoringEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithMonitoringEnabledQueryParameter(monitoringEnabled *bool) *StorageBridgeCollectionGetParams {
-	o.SetMonitoringEnabledQueryParameter(monitoringEnabled)
+// WithMonitoringEnabled adds the monitoringEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithMonitoringEnabled(monitoringEnabled *bool) *StorageBridgeCollectionGetParams {
+	o.SetMonitoringEnabled(monitoringEnabled)
 	return o
 }
 
-// SetMonitoringEnabledQueryParameter adds the monitoringEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetMonitoringEnabledQueryParameter(monitoringEnabled *bool) {
-	o.MonitoringEnabledQueryParameter = monitoringEnabled
+// SetMonitoringEnabled adds the monitoringEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetMonitoringEnabled(monitoringEnabled *bool) {
+	o.MonitoringEnabled = monitoringEnabled
 }
 
-// WithNameQueryParameter adds the name to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithNameQueryParameter(name *string) *StorageBridgeCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithName(name *string) *StorageBridgeCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *StorageBridgeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithOrderBy(orderBy []string) *StorageBridgeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPathsNameQueryParameter adds the pathsName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsNameQueryParameter(pathsName *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsNameQueryParameter(pathsName)
+// WithPathsName adds the pathsName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsName(pathsName *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsName(pathsName)
 	return o
 }
 
-// SetPathsNameQueryParameter adds the pathsName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsNameQueryParameter(pathsName *string) {
-	o.PathsNameQueryParameter = pathsName
+// SetPathsName adds the pathsName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsName(pathsName *string) {
+	o.PathsName = pathsName
 }
 
-// WithPathsNodeNameQueryParameter adds the pathsNodeName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsNodeNameQueryParameter(pathsNodeName *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsNodeNameQueryParameter(pathsNodeName)
+// WithPathsNodeName adds the pathsNodeName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsNodeName(pathsNodeName *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsNodeName(pathsNodeName)
 	return o
 }
 
-// SetPathsNodeNameQueryParameter adds the pathsNodeName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsNodeNameQueryParameter(pathsNodeName *string) {
-	o.PathsNodeNameQueryParameter = pathsNodeName
+// SetPathsNodeName adds the pathsNodeName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsNodeName(pathsNodeName *string) {
+	o.PathsNodeName = pathsNodeName
 }
 
-// WithPathsNodeUUIDQueryParameter adds the pathsNodeUUID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsNodeUUIDQueryParameter(pathsNodeUUID *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsNodeUUIDQueryParameter(pathsNodeUUID)
+// WithPathsNodeUUID adds the pathsNodeUUID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsNodeUUID(pathsNodeUUID *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsNodeUUID(pathsNodeUUID)
 	return o
 }
 
-// SetPathsNodeUUIDQueryParameter adds the pathsNodeUuid to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsNodeUUIDQueryParameter(pathsNodeUUID *string) {
-	o.PathsNodeUUIDQueryParameter = pathsNodeUUID
+// SetPathsNodeUUID adds the pathsNodeUuid to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsNodeUUID(pathsNodeUUID *string) {
+	o.PathsNodeUUID = pathsNodeUUID
 }
 
-// WithPathsSourcePortIDQueryParameter adds the pathsSourcePortID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsSourcePortIDQueryParameter(pathsSourcePortID *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsSourcePortIDQueryParameter(pathsSourcePortID)
+// WithPathsSourcePortID adds the pathsSourcePortID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsSourcePortID(pathsSourcePortID *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsSourcePortID(pathsSourcePortID)
 	return o
 }
 
-// SetPathsSourcePortIDQueryParameter adds the pathsSourcePortId to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsSourcePortIDQueryParameter(pathsSourcePortID *string) {
-	o.PathsSourcePortIDQueryParameter = pathsSourcePortID
+// SetPathsSourcePortID adds the pathsSourcePortId to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsSourcePortID(pathsSourcePortID *string) {
+	o.PathsSourcePortID = pathsSourcePortID
 }
 
-// WithPathsSourcePortNameQueryParameter adds the pathsSourcePortName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsSourcePortNameQueryParameter(pathsSourcePortName *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsSourcePortNameQueryParameter(pathsSourcePortName)
+// WithPathsSourcePortName adds the pathsSourcePortName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsSourcePortName(pathsSourcePortName *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsSourcePortName(pathsSourcePortName)
 	return o
 }
 
-// SetPathsSourcePortNameQueryParameter adds the pathsSourcePortName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsSourcePortNameQueryParameter(pathsSourcePortName *string) {
-	o.PathsSourcePortNameQueryParameter = pathsSourcePortName
+// SetPathsSourcePortName adds the pathsSourcePortName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsSourcePortName(pathsSourcePortName *string) {
+	o.PathsSourcePortName = pathsSourcePortName
 }
 
-// WithPathsTargetPortIDQueryParameter adds the pathsTargetPortID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsTargetPortIDQueryParameter(pathsTargetPortID *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsTargetPortIDQueryParameter(pathsTargetPortID)
+// WithPathsTargetPortID adds the pathsTargetPortID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsTargetPortID(pathsTargetPortID *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsTargetPortID(pathsTargetPortID)
 	return o
 }
 
-// SetPathsTargetPortIDQueryParameter adds the pathsTargetPortId to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsTargetPortIDQueryParameter(pathsTargetPortID *string) {
-	o.PathsTargetPortIDQueryParameter = pathsTargetPortID
+// SetPathsTargetPortID adds the pathsTargetPortId to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsTargetPortID(pathsTargetPortID *string) {
+	o.PathsTargetPortID = pathsTargetPortID
 }
 
-// WithPathsTargetPortNameQueryParameter adds the pathsTargetPortName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsTargetPortNameQueryParameter(pathsTargetPortName *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsTargetPortNameQueryParameter(pathsTargetPortName)
+// WithPathsTargetPortName adds the pathsTargetPortName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsTargetPortName(pathsTargetPortName *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsTargetPortName(pathsTargetPortName)
 	return o
 }
 
-// SetPathsTargetPortNameQueryParameter adds the pathsTargetPortName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsTargetPortNameQueryParameter(pathsTargetPortName *string) {
-	o.PathsTargetPortNameQueryParameter = pathsTargetPortName
+// SetPathsTargetPortName adds the pathsTargetPortName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsTargetPortName(pathsTargetPortName *string) {
+	o.PathsTargetPortName = pathsTargetPortName
 }
 
-// WithPathsTargetPortWwnQueryParameter adds the pathsTargetPortWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPathsTargetPortWwnQueryParameter(pathsTargetPortWwn *string) *StorageBridgeCollectionGetParams {
-	o.SetPathsTargetPortWwnQueryParameter(pathsTargetPortWwn)
+// WithPathsTargetPortWwn adds the pathsTargetPortWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPathsTargetPortWwn(pathsTargetPortWwn *string) *StorageBridgeCollectionGetParams {
+	o.SetPathsTargetPortWwn(pathsTargetPortWwn)
 	return o
 }
 
-// SetPathsTargetPortWwnQueryParameter adds the pathsTargetPortWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPathsTargetPortWwnQueryParameter(pathsTargetPortWwn *string) {
-	o.PathsTargetPortWwnQueryParameter = pathsTargetPortWwn
+// SetPathsTargetPortWwn adds the pathsTargetPortWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPathsTargetPortWwn(pathsTargetPortWwn *string) {
+	o.PathsTargetPortWwn = pathsTargetPortWwn
 }
 
-// WithPowerSupplyUnitsNameQueryParameter adds the powerSupplyUnitsName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPowerSupplyUnitsNameQueryParameter(powerSupplyUnitsName *string) *StorageBridgeCollectionGetParams {
-	o.SetPowerSupplyUnitsNameQueryParameter(powerSupplyUnitsName)
+// WithPowerSupplyUnitsName adds the powerSupplyUnitsName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPowerSupplyUnitsName(powerSupplyUnitsName *string) *StorageBridgeCollectionGetParams {
+	o.SetPowerSupplyUnitsName(powerSupplyUnitsName)
 	return o
 }
 
-// SetPowerSupplyUnitsNameQueryParameter adds the powerSupplyUnitsName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPowerSupplyUnitsNameQueryParameter(powerSupplyUnitsName *string) {
-	o.PowerSupplyUnitsNameQueryParameter = powerSupplyUnitsName
+// SetPowerSupplyUnitsName adds the powerSupplyUnitsName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPowerSupplyUnitsName(powerSupplyUnitsName *string) {
+	o.PowerSupplyUnitsName = powerSupplyUnitsName
 }
 
-// WithPowerSupplyUnitsStateQueryParameter adds the powerSupplyUnitsState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithPowerSupplyUnitsStateQueryParameter(powerSupplyUnitsState *string) *StorageBridgeCollectionGetParams {
-	o.SetPowerSupplyUnitsStateQueryParameter(powerSupplyUnitsState)
+// WithPowerSupplyUnitsState adds the powerSupplyUnitsState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithPowerSupplyUnitsState(powerSupplyUnitsState *string) *StorageBridgeCollectionGetParams {
+	o.SetPowerSupplyUnitsState(powerSupplyUnitsState)
 	return o
 }
 
-// SetPowerSupplyUnitsStateQueryParameter adds the powerSupplyUnitsState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetPowerSupplyUnitsStateQueryParameter(powerSupplyUnitsState *string) {
-	o.PowerSupplyUnitsStateQueryParameter = powerSupplyUnitsState
+// SetPowerSupplyUnitsState adds the powerSupplyUnitsState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetPowerSupplyUnitsState(powerSupplyUnitsState *string) {
+	o.PowerSupplyUnitsState = powerSupplyUnitsState
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *StorageBridgeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithReturnRecords(returnRecords *bool) *StorageBridgeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *StorageBridgeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *StorageBridgeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSasPortsCablePartNumberQueryParameter adds the sasPortsCablePartNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsCablePartNumberQueryParameter(sasPortsCablePartNumber *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsCablePartNumberQueryParameter(sasPortsCablePartNumber)
+// WithSasPortsCablePartNumber adds the sasPortsCablePartNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsCablePartNumber(sasPortsCablePartNumber *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsCablePartNumber(sasPortsCablePartNumber)
 	return o
 }
 
-// SetSasPortsCablePartNumberQueryParameter adds the sasPortsCablePartNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsCablePartNumberQueryParameter(sasPortsCablePartNumber *string) {
-	o.SasPortsCablePartNumberQueryParameter = sasPortsCablePartNumber
+// SetSasPortsCablePartNumber adds the sasPortsCablePartNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsCablePartNumber(sasPortsCablePartNumber *string) {
+	o.SasPortsCablePartNumber = sasPortsCablePartNumber
 }
 
-// WithSasPortsCableSerialNumberQueryParameter adds the sasPortsCableSerialNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsCableSerialNumberQueryParameter(sasPortsCableSerialNumber *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsCableSerialNumberQueryParameter(sasPortsCableSerialNumber)
+// WithSasPortsCableSerialNumber adds the sasPortsCableSerialNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsCableSerialNumber(sasPortsCableSerialNumber *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsCableSerialNumber(sasPortsCableSerialNumber)
 	return o
 }
 
-// SetSasPortsCableSerialNumberQueryParameter adds the sasPortsCableSerialNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsCableSerialNumberQueryParameter(sasPortsCableSerialNumber *string) {
-	o.SasPortsCableSerialNumberQueryParameter = sasPortsCableSerialNumber
+// SetSasPortsCableSerialNumber adds the sasPortsCableSerialNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsCableSerialNumber(sasPortsCableSerialNumber *string) {
+	o.SasPortsCableSerialNumber = sasPortsCableSerialNumber
 }
 
-// WithSasPortsCableTechnologyQueryParameter adds the sasPortsCableTechnology to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsCableTechnologyQueryParameter(sasPortsCableTechnology *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsCableTechnologyQueryParameter(sasPortsCableTechnology)
+// WithSasPortsCableTechnology adds the sasPortsCableTechnology to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsCableTechnology(sasPortsCableTechnology *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsCableTechnology(sasPortsCableTechnology)
 	return o
 }
 
-// SetSasPortsCableTechnologyQueryParameter adds the sasPortsCableTechnology to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsCableTechnologyQueryParameter(sasPortsCableTechnology *string) {
-	o.SasPortsCableTechnologyQueryParameter = sasPortsCableTechnology
+// SetSasPortsCableTechnology adds the sasPortsCableTechnology to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsCableTechnology(sasPortsCableTechnology *string) {
+	o.SasPortsCableTechnology = sasPortsCableTechnology
 }
 
-// WithSasPortsCableVendorQueryParameter adds the sasPortsCableVendor to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsCableVendorQueryParameter(sasPortsCableVendor *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsCableVendorQueryParameter(sasPortsCableVendor)
+// WithSasPortsCableVendor adds the sasPortsCableVendor to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsCableVendor(sasPortsCableVendor *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsCableVendor(sasPortsCableVendor)
 	return o
 }
 
-// SetSasPortsCableVendorQueryParameter adds the sasPortsCableVendor to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsCableVendorQueryParameter(sasPortsCableVendor *string) {
-	o.SasPortsCableVendorQueryParameter = sasPortsCableVendor
+// SetSasPortsCableVendor adds the sasPortsCableVendor to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsCableVendor(sasPortsCableVendor *string) {
+	o.SasPortsCableVendor = sasPortsCableVendor
 }
 
-// WithSasPortsDataRateCapabilityQueryParameter adds the sasPortsDataRateCapability to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsDataRateCapabilityQueryParameter(sasPortsDataRateCapability *float64) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsDataRateCapabilityQueryParameter(sasPortsDataRateCapability)
+// WithSasPortsDataRateCapability adds the sasPortsDataRateCapability to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsDataRateCapability(sasPortsDataRateCapability *float64) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsDataRateCapability(sasPortsDataRateCapability)
 	return o
 }
 
-// SetSasPortsDataRateCapabilityQueryParameter adds the sasPortsDataRateCapability to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsDataRateCapabilityQueryParameter(sasPortsDataRateCapability *float64) {
-	o.SasPortsDataRateCapabilityQueryParameter = sasPortsDataRateCapability
+// SetSasPortsDataRateCapability adds the sasPortsDataRateCapability to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsDataRateCapability(sasPortsDataRateCapability *float64) {
+	o.SasPortsDataRateCapability = sasPortsDataRateCapability
 }
 
-// WithSasPortsEnabledQueryParameter adds the sasPortsEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsEnabledQueryParameter(sasPortsEnabled *bool) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsEnabledQueryParameter(sasPortsEnabled)
+// WithSasPortsEnabled adds the sasPortsEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsEnabled(sasPortsEnabled *bool) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsEnabled(sasPortsEnabled)
 	return o
 }
 
-// SetSasPortsEnabledQueryParameter adds the sasPortsEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsEnabledQueryParameter(sasPortsEnabled *bool) {
-	o.SasPortsEnabledQueryParameter = sasPortsEnabled
+// SetSasPortsEnabled adds the sasPortsEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsEnabled(sasPortsEnabled *bool) {
+	o.SasPortsEnabled = sasPortsEnabled
 }
 
-// WithSasPortsIDQueryParameter adds the sasPortsID to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsIDQueryParameter(sasPortsID *int64) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsIDQueryParameter(sasPortsID)
+// WithSasPortsID adds the sasPortsID to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsID(sasPortsID *int64) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsID(sasPortsID)
 	return o
 }
 
-// SetSasPortsIDQueryParameter adds the sasPortsId to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsIDQueryParameter(sasPortsID *int64) {
-	o.SasPortsIDQueryParameter = sasPortsID
+// SetSasPortsID adds the sasPortsId to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsID(sasPortsID *int64) {
+	o.SasPortsID = sasPortsID
 }
 
-// WithSasPortsNegotiatedDataRateQueryParameter adds the sasPortsNegotiatedDataRate to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsNegotiatedDataRateQueryParameter(sasPortsNegotiatedDataRate *float64) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsNegotiatedDataRateQueryParameter(sasPortsNegotiatedDataRate)
+// WithSasPortsNegotiatedDataRate adds the sasPortsNegotiatedDataRate to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsNegotiatedDataRate(sasPortsNegotiatedDataRate *float64) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsNegotiatedDataRate(sasPortsNegotiatedDataRate)
 	return o
 }
 
-// SetSasPortsNegotiatedDataRateQueryParameter adds the sasPortsNegotiatedDataRate to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsNegotiatedDataRateQueryParameter(sasPortsNegotiatedDataRate *float64) {
-	o.SasPortsNegotiatedDataRateQueryParameter = sasPortsNegotiatedDataRate
+// SetSasPortsNegotiatedDataRate adds the sasPortsNegotiatedDataRate to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsNegotiatedDataRate(sasPortsNegotiatedDataRate *float64) {
+	o.SasPortsNegotiatedDataRate = sasPortsNegotiatedDataRate
 }
 
-// WithSasPortsPhy1StateQueryParameter adds the sasPortsPhy1State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy1StateQueryParameter(sasPortsPhy1State *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsPhy1StateQueryParameter(sasPortsPhy1State)
+// WithSasPortsPhy1State adds the sasPortsPhy1State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy1State(sasPortsPhy1State *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsPhy1State(sasPortsPhy1State)
 	return o
 }
 
-// SetSasPortsPhy1StateQueryParameter adds the sasPortsPhy1State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy1StateQueryParameter(sasPortsPhy1State *string) {
-	o.SasPortsPhy1StateQueryParameter = sasPortsPhy1State
+// SetSasPortsPhy1State adds the sasPortsPhy1State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy1State(sasPortsPhy1State *string) {
+	o.SasPortsPhy1State = sasPortsPhy1State
 }
 
-// WithSasPortsPhy2StateQueryParameter adds the sasPortsPhy2State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy2StateQueryParameter(sasPortsPhy2State *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsPhy2StateQueryParameter(sasPortsPhy2State)
+// WithSasPortsPhy2State adds the sasPortsPhy2State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy2State(sasPortsPhy2State *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsPhy2State(sasPortsPhy2State)
 	return o
 }
 
-// SetSasPortsPhy2StateQueryParameter adds the sasPortsPhy2State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy2StateQueryParameter(sasPortsPhy2State *string) {
-	o.SasPortsPhy2StateQueryParameter = sasPortsPhy2State
+// SetSasPortsPhy2State adds the sasPortsPhy2State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy2State(sasPortsPhy2State *string) {
+	o.SasPortsPhy2State = sasPortsPhy2State
 }
 
-// WithSasPortsPhy3StateQueryParameter adds the sasPortsPhy3State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy3StateQueryParameter(sasPortsPhy3State *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsPhy3StateQueryParameter(sasPortsPhy3State)
+// WithSasPortsPhy3State adds the sasPortsPhy3State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy3State(sasPortsPhy3State *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsPhy3State(sasPortsPhy3State)
 	return o
 }
 
-// SetSasPortsPhy3StateQueryParameter adds the sasPortsPhy3State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy3StateQueryParameter(sasPortsPhy3State *string) {
-	o.SasPortsPhy3StateQueryParameter = sasPortsPhy3State
+// SetSasPortsPhy3State adds the sasPortsPhy3State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy3State(sasPortsPhy3State *string) {
+	o.SasPortsPhy3State = sasPortsPhy3State
 }
 
-// WithSasPortsPhy4StateQueryParameter adds the sasPortsPhy4State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy4StateQueryParameter(sasPortsPhy4State *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsPhy4StateQueryParameter(sasPortsPhy4State)
+// WithSasPortsPhy4State adds the sasPortsPhy4State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsPhy4State(sasPortsPhy4State *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsPhy4State(sasPortsPhy4State)
 	return o
 }
 
-// SetSasPortsPhy4StateQueryParameter adds the sasPortsPhy4State to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy4StateQueryParameter(sasPortsPhy4State *string) {
-	o.SasPortsPhy4StateQueryParameter = sasPortsPhy4State
+// SetSasPortsPhy4State adds the sasPortsPhy4State to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsPhy4State(sasPortsPhy4State *string) {
+	o.SasPortsPhy4State = sasPortsPhy4State
 }
 
-// WithSasPortsStateQueryParameter adds the sasPortsState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsStateQueryParameter(sasPortsState *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsStateQueryParameter(sasPortsState)
+// WithSasPortsState adds the sasPortsState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsState(sasPortsState *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsState(sasPortsState)
 	return o
 }
 
-// SetSasPortsStateQueryParameter adds the sasPortsState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsStateQueryParameter(sasPortsState *string) {
-	o.SasPortsStateQueryParameter = sasPortsState
+// SetSasPortsState adds the sasPortsState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsState(sasPortsState *string) {
+	o.SasPortsState = sasPortsState
 }
 
-// WithSasPortsWwnQueryParameter adds the sasPortsWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSasPortsWwnQueryParameter(sasPortsWwn *string) *StorageBridgeCollectionGetParams {
-	o.SetSasPortsWwnQueryParameter(sasPortsWwn)
+// WithSasPortsWwn adds the sasPortsWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSasPortsWwn(sasPortsWwn *string) *StorageBridgeCollectionGetParams {
+	o.SetSasPortsWwn(sasPortsWwn)
 	return o
 }
 
-// SetSasPortsWwnQueryParameter adds the sasPortsWwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSasPortsWwnQueryParameter(sasPortsWwn *string) {
-	o.SasPortsWwnQueryParameter = sasPortsWwn
+// SetSasPortsWwn adds the sasPortsWwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSasPortsWwn(sasPortsWwn *string) {
+	o.SasPortsWwn = sasPortsWwn
 }
 
-// WithSecurityEnabledQueryParameter adds the securityEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSecurityEnabledQueryParameter(securityEnabled *bool) *StorageBridgeCollectionGetParams {
-	o.SetSecurityEnabledQueryParameter(securityEnabled)
+// WithSecurityEnabled adds the securityEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSecurityEnabled(securityEnabled *bool) *StorageBridgeCollectionGetParams {
+	o.SetSecurityEnabled(securityEnabled)
 	return o
 }
 
-// SetSecurityEnabledQueryParameter adds the securityEnabled to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSecurityEnabledQueryParameter(securityEnabled *bool) {
-	o.SecurityEnabledQueryParameter = securityEnabled
+// SetSecurityEnabled adds the securityEnabled to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSecurityEnabled(securityEnabled *bool) {
+	o.SecurityEnabled = securityEnabled
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *StorageBridgeCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSerialNumber(serialNumber *string) *StorageBridgeCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithStateQueryParameter adds the state to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithStateQueryParameter(state *string) *StorageBridgeCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithState(state *string) *StorageBridgeCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSymbolicNameQueryParameter adds the symbolicName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithSymbolicNameQueryParameter(symbolicName *string) *StorageBridgeCollectionGetParams {
-	o.SetSymbolicNameQueryParameter(symbolicName)
+// WithSymbolicName adds the symbolicName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithSymbolicName(symbolicName *string) *StorageBridgeCollectionGetParams {
+	o.SetSymbolicName(symbolicName)
 	return o
 }
 
-// SetSymbolicNameQueryParameter adds the symbolicName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetSymbolicNameQueryParameter(symbolicName *string) {
-	o.SymbolicNameQueryParameter = symbolicName
+// SetSymbolicName adds the symbolicName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetSymbolicName(symbolicName *string) {
+	o.SymbolicName = symbolicName
 }
 
-// WithTemperatureSensorMaximumQueryParameter adds the temperatureSensorMaximum to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorMaximumQueryParameter(temperatureSensorMaximum *int64) *StorageBridgeCollectionGetParams {
-	o.SetTemperatureSensorMaximumQueryParameter(temperatureSensorMaximum)
+// WithTemperatureSensorMaximum adds the temperatureSensorMaximum to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorMaximum(temperatureSensorMaximum *int64) *StorageBridgeCollectionGetParams {
+	o.SetTemperatureSensorMaximum(temperatureSensorMaximum)
 	return o
 }
 
-// SetTemperatureSensorMaximumQueryParameter adds the temperatureSensorMaximum to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorMaximumQueryParameter(temperatureSensorMaximum *int64) {
-	o.TemperatureSensorMaximumQueryParameter = temperatureSensorMaximum
+// SetTemperatureSensorMaximum adds the temperatureSensorMaximum to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorMaximum(temperatureSensorMaximum *int64) {
+	o.TemperatureSensorMaximum = temperatureSensorMaximum
 }
 
-// WithTemperatureSensorMinimumQueryParameter adds the temperatureSensorMinimum to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorMinimumQueryParameter(temperatureSensorMinimum *int64) *StorageBridgeCollectionGetParams {
-	o.SetTemperatureSensorMinimumQueryParameter(temperatureSensorMinimum)
+// WithTemperatureSensorMinimum adds the temperatureSensorMinimum to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorMinimum(temperatureSensorMinimum *int64) *StorageBridgeCollectionGetParams {
+	o.SetTemperatureSensorMinimum(temperatureSensorMinimum)
 	return o
 }
 
-// SetTemperatureSensorMinimumQueryParameter adds the temperatureSensorMinimum to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorMinimumQueryParameter(temperatureSensorMinimum *int64) {
-	o.TemperatureSensorMinimumQueryParameter = temperatureSensorMinimum
+// SetTemperatureSensorMinimum adds the temperatureSensorMinimum to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorMinimum(temperatureSensorMinimum *int64) {
+	o.TemperatureSensorMinimum = temperatureSensorMinimum
 }
 
-// WithTemperatureSensorNameQueryParameter adds the temperatureSensorName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorNameQueryParameter(temperatureSensorName *string) *StorageBridgeCollectionGetParams {
-	o.SetTemperatureSensorNameQueryParameter(temperatureSensorName)
+// WithTemperatureSensorName adds the temperatureSensorName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorName(temperatureSensorName *string) *StorageBridgeCollectionGetParams {
+	o.SetTemperatureSensorName(temperatureSensorName)
 	return o
 }
 
-// SetTemperatureSensorNameQueryParameter adds the temperatureSensorName to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorNameQueryParameter(temperatureSensorName *string) {
-	o.TemperatureSensorNameQueryParameter = temperatureSensorName
+// SetTemperatureSensorName adds the temperatureSensorName to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorName(temperatureSensorName *string) {
+	o.TemperatureSensorName = temperatureSensorName
 }
 
-// WithTemperatureSensorReadingQueryParameter adds the temperatureSensorReading to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorReadingQueryParameter(temperatureSensorReading *int64) *StorageBridgeCollectionGetParams {
-	o.SetTemperatureSensorReadingQueryParameter(temperatureSensorReading)
+// WithTemperatureSensorReading adds the temperatureSensorReading to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorReading(temperatureSensorReading *int64) *StorageBridgeCollectionGetParams {
+	o.SetTemperatureSensorReading(temperatureSensorReading)
 	return o
 }
 
-// SetTemperatureSensorReadingQueryParameter adds the temperatureSensorReading to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorReadingQueryParameter(temperatureSensorReading *int64) {
-	o.TemperatureSensorReadingQueryParameter = temperatureSensorReading
+// SetTemperatureSensorReading adds the temperatureSensorReading to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorReading(temperatureSensorReading *int64) {
+	o.TemperatureSensorReading = temperatureSensorReading
 }
 
-// WithTemperatureSensorStateQueryParameter adds the temperatureSensorState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorStateQueryParameter(temperatureSensorState *string) *StorageBridgeCollectionGetParams {
-	o.SetTemperatureSensorStateQueryParameter(temperatureSensorState)
+// WithTemperatureSensorState adds the temperatureSensorState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithTemperatureSensorState(temperatureSensorState *string) *StorageBridgeCollectionGetParams {
+	o.SetTemperatureSensorState(temperatureSensorState)
 	return o
 }
 
-// SetTemperatureSensorStateQueryParameter adds the temperatureSensorState to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorStateQueryParameter(temperatureSensorState *string) {
-	o.TemperatureSensorStateQueryParameter = temperatureSensorState
+// SetTemperatureSensorState adds the temperatureSensorState to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetTemperatureSensorState(temperatureSensorState *string) {
+	o.TemperatureSensorState = temperatureSensorState
 }
 
-// WithVendorQueryParameter adds the vendor to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithVendorQueryParameter(vendor *string) *StorageBridgeCollectionGetParams {
-	o.SetVendorQueryParameter(vendor)
+// WithVendor adds the vendor to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithVendor(vendor *string) *StorageBridgeCollectionGetParams {
+	o.SetVendor(vendor)
 	return o
 }
 
-// SetVendorQueryParameter adds the vendor to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetVendorQueryParameter(vendor *string) {
-	o.VendorQueryParameter = vendor
+// SetVendor adds the vendor to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetVendor(vendor *string) {
+	o.Vendor = vendor
 }
 
-// WithWwnQueryParameter adds the wwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithWwnQueryParameter(wwn *string) *StorageBridgeCollectionGetParams {
-	o.SetWwnQueryParameter(wwn)
+// WithWwn adds the wwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithWwn(wwn *string) *StorageBridgeCollectionGetParams {
+	o.SetWwn(wwn)
 	return o
 }
 
-// SetWwnQueryParameter adds the wwn to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetWwnQueryParameter(wwn *string) {
-	o.WwnQueryParameter = wwn
+// SetWwn adds the wwn to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetWwn(wwn *string) {
+	o.Wwn = wwn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1450,13 +1450,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.ChassisThroughputStateQueryParameter != nil {
+	if o.ChassisThroughputState != nil {
 
 		// query param chassis_throughput_state
 		var qrChassisThroughputState string
 
-		if o.ChassisThroughputStateQueryParameter != nil {
-			qrChassisThroughputState = *o.ChassisThroughputStateQueryParameter
+		if o.ChassisThroughputState != nil {
+			qrChassisThroughputState = *o.ChassisThroughputState
 		}
 		qChassisThroughputState := qrChassisThroughputState
 		if qChassisThroughputState != "" {
@@ -1467,13 +1467,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DramSingleBitErrorCountQueryParameter != nil {
+	if o.DramSingleBitErrorCount != nil {
 
 		// query param dram_single_bit_error_count
 		var qrDramSingleBitErrorCount int64
 
-		if o.DramSingleBitErrorCountQueryParameter != nil {
-			qrDramSingleBitErrorCount = *o.DramSingleBitErrorCountQueryParameter
+		if o.DramSingleBitErrorCount != nil {
+			qrDramSingleBitErrorCount = *o.DramSingleBitErrorCount
 		}
 		qDramSingleBitErrorCount := swag.FormatInt64(qrDramSingleBitErrorCount)
 		if qDramSingleBitErrorCount != "" {
@@ -1484,13 +1484,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsComponentIDQueryParameter != nil {
+	if o.ErrorsComponentID != nil {
 
 		// query param errors.component.id
 		var qrErrorsComponentID int64
 
-		if o.ErrorsComponentIDQueryParameter != nil {
-			qrErrorsComponentID = *o.ErrorsComponentIDQueryParameter
+		if o.ErrorsComponentID != nil {
+			qrErrorsComponentID = *o.ErrorsComponentID
 		}
 		qErrorsComponentID := swag.FormatInt64(qrErrorsComponentID)
 		if qErrorsComponentID != "" {
@@ -1501,13 +1501,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsComponentNameQueryParameter != nil {
+	if o.ErrorsComponentName != nil {
 
 		// query param errors.component.name
 		var qrErrorsComponentName string
 
-		if o.ErrorsComponentNameQueryParameter != nil {
-			qrErrorsComponentName = *o.ErrorsComponentNameQueryParameter
+		if o.ErrorsComponentName != nil {
+			qrErrorsComponentName = *o.ErrorsComponentName
 		}
 		qErrorsComponentName := qrErrorsComponentName
 		if qErrorsComponentName != "" {
@@ -1518,13 +1518,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsComponentUniqueIDQueryParameter != nil {
+	if o.ErrorsComponentUniqueID != nil {
 
 		// query param errors.component.unique_id
 		var qrErrorsComponentUniqueID string
 
-		if o.ErrorsComponentUniqueIDQueryParameter != nil {
-			qrErrorsComponentUniqueID = *o.ErrorsComponentUniqueIDQueryParameter
+		if o.ErrorsComponentUniqueID != nil {
+			qrErrorsComponentUniqueID = *o.ErrorsComponentUniqueID
 		}
 		qErrorsComponentUniqueID := qrErrorsComponentUniqueID
 		if qErrorsComponentUniqueID != "" {
@@ -1535,13 +1535,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsReasonArgumentsCodeQueryParameter != nil {
+	if o.ErrorsReasonArgumentsCode != nil {
 
 		// query param errors.reason.arguments.code
 		var qrErrorsReasonArgumentsCode string
 
-		if o.ErrorsReasonArgumentsCodeQueryParameter != nil {
-			qrErrorsReasonArgumentsCode = *o.ErrorsReasonArgumentsCodeQueryParameter
+		if o.ErrorsReasonArgumentsCode != nil {
+			qrErrorsReasonArgumentsCode = *o.ErrorsReasonArgumentsCode
 		}
 		qErrorsReasonArgumentsCode := qrErrorsReasonArgumentsCode
 		if qErrorsReasonArgumentsCode != "" {
@@ -1552,13 +1552,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsReasonArgumentsMessageQueryParameter != nil {
+	if o.ErrorsReasonArgumentsMessage != nil {
 
 		// query param errors.reason.arguments.message
 		var qrErrorsReasonArgumentsMessage string
 
-		if o.ErrorsReasonArgumentsMessageQueryParameter != nil {
-			qrErrorsReasonArgumentsMessage = *o.ErrorsReasonArgumentsMessageQueryParameter
+		if o.ErrorsReasonArgumentsMessage != nil {
+			qrErrorsReasonArgumentsMessage = *o.ErrorsReasonArgumentsMessage
 		}
 		qErrorsReasonArgumentsMessage := qrErrorsReasonArgumentsMessage
 		if qErrorsReasonArgumentsMessage != "" {
@@ -1569,13 +1569,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsReasonCodeQueryParameter != nil {
+	if o.ErrorsReasonCode != nil {
 
 		// query param errors.reason.code
 		var qrErrorsReasonCode string
 
-		if o.ErrorsReasonCodeQueryParameter != nil {
-			qrErrorsReasonCode = *o.ErrorsReasonCodeQueryParameter
+		if o.ErrorsReasonCode != nil {
+			qrErrorsReasonCode = *o.ErrorsReasonCode
 		}
 		qErrorsReasonCode := qrErrorsReasonCode
 		if qErrorsReasonCode != "" {
@@ -1586,13 +1586,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsReasonMessageQueryParameter != nil {
+	if o.ErrorsReasonMessage != nil {
 
 		// query param errors.reason.message
 		var qrErrorsReasonMessage string
 
-		if o.ErrorsReasonMessageQueryParameter != nil {
-			qrErrorsReasonMessage = *o.ErrorsReasonMessageQueryParameter
+		if o.ErrorsReasonMessage != nil {
+			qrErrorsReasonMessage = *o.ErrorsReasonMessage
 		}
 		qErrorsReasonMessage := qrErrorsReasonMessage
 		if qErrorsReasonMessage != "" {
@@ -1603,13 +1603,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsReasonTargetQueryParameter != nil {
+	if o.ErrorsReasonTarget != nil {
 
 		// query param errors.reason.target
 		var qrErrorsReasonTarget string
 
-		if o.ErrorsReasonTargetQueryParameter != nil {
-			qrErrorsReasonTarget = *o.ErrorsReasonTargetQueryParameter
+		if o.ErrorsReasonTarget != nil {
+			qrErrorsReasonTarget = *o.ErrorsReasonTarget
 		}
 		qErrorsReasonTarget := qrErrorsReasonTarget
 		if qErrorsReasonTarget != "" {
@@ -1620,13 +1620,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsSeverityQueryParameter != nil {
+	if o.ErrorsSeverity != nil {
 
 		// query param errors.severity
 		var qrErrorsSeverity string
 
-		if o.ErrorsSeverityQueryParameter != nil {
-			qrErrorsSeverity = *o.ErrorsSeverityQueryParameter
+		if o.ErrorsSeverity != nil {
+			qrErrorsSeverity = *o.ErrorsSeverity
 		}
 		qErrorsSeverity := qrErrorsSeverity
 		if qErrorsSeverity != "" {
@@ -1637,13 +1637,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ErrorsTypeQueryParameter != nil {
+	if o.ErrorsType != nil {
 
 		// query param errors.type
 		var qrErrorsType string
 
-		if o.ErrorsTypeQueryParameter != nil {
-			qrErrorsType = *o.ErrorsTypeQueryParameter
+		if o.ErrorsType != nil {
+			qrErrorsType = *o.ErrorsType
 		}
 		qErrorsType := qrErrorsType
 		if qErrorsType != "" {
@@ -1654,13 +1654,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsConfiguredDataRateQueryParameter != nil {
+	if o.FcPortsConfiguredDataRate != nil {
 
 		// query param fc_ports.configured_data_rate
 		var qrFcPortsConfiguredDataRate float64
 
-		if o.FcPortsConfiguredDataRateQueryParameter != nil {
-			qrFcPortsConfiguredDataRate = *o.FcPortsConfiguredDataRateQueryParameter
+		if o.FcPortsConfiguredDataRate != nil {
+			qrFcPortsConfiguredDataRate = *o.FcPortsConfiguredDataRate
 		}
 		qFcPortsConfiguredDataRate := swag.FormatFloat64(qrFcPortsConfiguredDataRate)
 		if qFcPortsConfiguredDataRate != "" {
@@ -1671,13 +1671,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsConnectionModeQueryParameter != nil {
+	if o.FcPortsConnectionMode != nil {
 
 		// query param fc_ports.connection_mode
 		var qrFcPortsConnectionMode string
 
-		if o.FcPortsConnectionModeQueryParameter != nil {
-			qrFcPortsConnectionMode = *o.FcPortsConnectionModeQueryParameter
+		if o.FcPortsConnectionMode != nil {
+			qrFcPortsConnectionMode = *o.FcPortsConnectionMode
 		}
 		qFcPortsConnectionMode := qrFcPortsConnectionMode
 		if qFcPortsConnectionMode != "" {
@@ -1688,13 +1688,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsDataRateCapabilityQueryParameter != nil {
+	if o.FcPortsDataRateCapability != nil {
 
 		// query param fc_ports.data_rate_capability
 		var qrFcPortsDataRateCapability float64
 
-		if o.FcPortsDataRateCapabilityQueryParameter != nil {
-			qrFcPortsDataRateCapability = *o.FcPortsDataRateCapabilityQueryParameter
+		if o.FcPortsDataRateCapability != nil {
+			qrFcPortsDataRateCapability = *o.FcPortsDataRateCapability
 		}
 		qFcPortsDataRateCapability := swag.FormatFloat64(qrFcPortsDataRateCapability)
 		if qFcPortsDataRateCapability != "" {
@@ -1705,13 +1705,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsEnabledQueryParameter != nil {
+	if o.FcPortsEnabled != nil {
 
 		// query param fc_ports.enabled
 		var qrFcPortsEnabled bool
 
-		if o.FcPortsEnabledQueryParameter != nil {
-			qrFcPortsEnabled = *o.FcPortsEnabledQueryParameter
+		if o.FcPortsEnabled != nil {
+			qrFcPortsEnabled = *o.FcPortsEnabled
 		}
 		qFcPortsEnabled := swag.FormatBool(qrFcPortsEnabled)
 		if qFcPortsEnabled != "" {
@@ -1722,13 +1722,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsIDQueryParameter != nil {
+	if o.FcPortsID != nil {
 
 		// query param fc_ports.id
 		var qrFcPortsID int64
 
-		if o.FcPortsIDQueryParameter != nil {
-			qrFcPortsID = *o.FcPortsIDQueryParameter
+		if o.FcPortsID != nil {
+			qrFcPortsID = *o.FcPortsID
 		}
 		qFcPortsID := swag.FormatInt64(qrFcPortsID)
 		if qFcPortsID != "" {
@@ -1739,13 +1739,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsNegotiatedDataRateQueryParameter != nil {
+	if o.FcPortsNegotiatedDataRate != nil {
 
 		// query param fc_ports.negotiated_data_rate
 		var qrFcPortsNegotiatedDataRate float64
 
-		if o.FcPortsNegotiatedDataRateQueryParameter != nil {
-			qrFcPortsNegotiatedDataRate = *o.FcPortsNegotiatedDataRateQueryParameter
+		if o.FcPortsNegotiatedDataRate != nil {
+			qrFcPortsNegotiatedDataRate = *o.FcPortsNegotiatedDataRate
 		}
 		qFcPortsNegotiatedDataRate := swag.FormatFloat64(qrFcPortsNegotiatedDataRate)
 		if qFcPortsNegotiatedDataRate != "" {
@@ -1756,13 +1756,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsPeerWwnQueryParameter != nil {
+	if o.FcPortsPeerWwn != nil {
 
 		// query param fc_ports.peer_wwn
 		var qrFcPortsPeerWwn string
 
-		if o.FcPortsPeerWwnQueryParameter != nil {
-			qrFcPortsPeerWwn = *o.FcPortsPeerWwnQueryParameter
+		if o.FcPortsPeerWwn != nil {
+			qrFcPortsPeerWwn = *o.FcPortsPeerWwn
 		}
 		qFcPortsPeerWwn := qrFcPortsPeerWwn
 		if qFcPortsPeerWwn != "" {
@@ -1773,13 +1773,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsSfpDataRateCapabilityQueryParameter != nil {
+	if o.FcPortsSfpDataRateCapability != nil {
 
 		// query param fc_ports.sfp.data_rate_capability
 		var qrFcPortsSfpDataRateCapability float64
 
-		if o.FcPortsSfpDataRateCapabilityQueryParameter != nil {
-			qrFcPortsSfpDataRateCapability = *o.FcPortsSfpDataRateCapabilityQueryParameter
+		if o.FcPortsSfpDataRateCapability != nil {
+			qrFcPortsSfpDataRateCapability = *o.FcPortsSfpDataRateCapability
 		}
 		qFcPortsSfpDataRateCapability := swag.FormatFloat64(qrFcPortsSfpDataRateCapability)
 		if qFcPortsSfpDataRateCapability != "" {
@@ -1790,13 +1790,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsSfpPartNumberQueryParameter != nil {
+	if o.FcPortsSfpPartNumber != nil {
 
 		// query param fc_ports.sfp.part_number
 		var qrFcPortsSfpPartNumber string
 
-		if o.FcPortsSfpPartNumberQueryParameter != nil {
-			qrFcPortsSfpPartNumber = *o.FcPortsSfpPartNumberQueryParameter
+		if o.FcPortsSfpPartNumber != nil {
+			qrFcPortsSfpPartNumber = *o.FcPortsSfpPartNumber
 		}
 		qFcPortsSfpPartNumber := qrFcPortsSfpPartNumber
 		if qFcPortsSfpPartNumber != "" {
@@ -1807,13 +1807,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsSfpSerialNumberQueryParameter != nil {
+	if o.FcPortsSfpSerialNumber != nil {
 
 		// query param fc_ports.sfp.serial_number
 		var qrFcPortsSfpSerialNumber string
 
-		if o.FcPortsSfpSerialNumberQueryParameter != nil {
-			qrFcPortsSfpSerialNumber = *o.FcPortsSfpSerialNumberQueryParameter
+		if o.FcPortsSfpSerialNumber != nil {
+			qrFcPortsSfpSerialNumber = *o.FcPortsSfpSerialNumber
 		}
 		qFcPortsSfpSerialNumber := qrFcPortsSfpSerialNumber
 		if qFcPortsSfpSerialNumber != "" {
@@ -1824,13 +1824,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsSfpVendorQueryParameter != nil {
+	if o.FcPortsSfpVendor != nil {
 
 		// query param fc_ports.sfp.vendor
 		var qrFcPortsSfpVendor string
 
-		if o.FcPortsSfpVendorQueryParameter != nil {
-			qrFcPortsSfpVendor = *o.FcPortsSfpVendorQueryParameter
+		if o.FcPortsSfpVendor != nil {
+			qrFcPortsSfpVendor = *o.FcPortsSfpVendor
 		}
 		qFcPortsSfpVendor := qrFcPortsSfpVendor
 		if qFcPortsSfpVendor != "" {
@@ -1841,13 +1841,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsStateQueryParameter != nil {
+	if o.FcPortsState != nil {
 
 		// query param fc_ports.state
 		var qrFcPortsState string
 
-		if o.FcPortsStateQueryParameter != nil {
-			qrFcPortsState = *o.FcPortsStateQueryParameter
+		if o.FcPortsState != nil {
+			qrFcPortsState = *o.FcPortsState
 		}
 		qFcPortsState := qrFcPortsState
 		if qFcPortsState != "" {
@@ -1858,13 +1858,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcPortsWwnQueryParameter != nil {
+	if o.FcPortsWwn != nil {
 
 		// query param fc_ports.wwn
 		var qrFcPortsWwn string
 
-		if o.FcPortsWwnQueryParameter != nil {
-			qrFcPortsWwn = *o.FcPortsWwnQueryParameter
+		if o.FcPortsWwn != nil {
+			qrFcPortsWwn = *o.FcPortsWwn
 		}
 		qFcPortsWwn := qrFcPortsWwn
 		if qFcPortsWwn != "" {
@@ -1875,7 +1875,7 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1886,13 +1886,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FirmwareVersionQueryParameter != nil {
+	if o.FirmwareVersion != nil {
 
 		// query param firmware_version
 		var qrFirmwareVersion string
 
-		if o.FirmwareVersionQueryParameter != nil {
-			qrFirmwareVersion = *o.FirmwareVersionQueryParameter
+		if o.FirmwareVersion != nil {
+			qrFirmwareVersion = *o.FirmwareVersion
 		}
 		qFirmwareVersion := qrFirmwareVersion
 		if qFirmwareVersion != "" {
@@ -1903,13 +1903,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IPAddressQueryParameter != nil {
+	if o.IPAddress != nil {
 
 		// query param ip_address
 		var qrIPAddress string
 
-		if o.IPAddressQueryParameter != nil {
-			qrIPAddress = *o.IPAddressQueryParameter
+		if o.IPAddress != nil {
+			qrIPAddress = *o.IPAddress
 		}
 		qIPAddress := qrIPAddress
 		if qIPAddress != "" {
@@ -1920,13 +1920,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastRebootReasonArgumentsCodeQueryParameter != nil {
+	if o.LastRebootReasonArgumentsCode != nil {
 
 		// query param last_reboot.reason.arguments.code
 		var qrLastRebootReasonArgumentsCode string
 
-		if o.LastRebootReasonArgumentsCodeQueryParameter != nil {
-			qrLastRebootReasonArgumentsCode = *o.LastRebootReasonArgumentsCodeQueryParameter
+		if o.LastRebootReasonArgumentsCode != nil {
+			qrLastRebootReasonArgumentsCode = *o.LastRebootReasonArgumentsCode
 		}
 		qLastRebootReasonArgumentsCode := qrLastRebootReasonArgumentsCode
 		if qLastRebootReasonArgumentsCode != "" {
@@ -1937,13 +1937,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastRebootReasonArgumentsMessageQueryParameter != nil {
+	if o.LastRebootReasonArgumentsMessage != nil {
 
 		// query param last_reboot.reason.arguments.message
 		var qrLastRebootReasonArgumentsMessage string
 
-		if o.LastRebootReasonArgumentsMessageQueryParameter != nil {
-			qrLastRebootReasonArgumentsMessage = *o.LastRebootReasonArgumentsMessageQueryParameter
+		if o.LastRebootReasonArgumentsMessage != nil {
+			qrLastRebootReasonArgumentsMessage = *o.LastRebootReasonArgumentsMessage
 		}
 		qLastRebootReasonArgumentsMessage := qrLastRebootReasonArgumentsMessage
 		if qLastRebootReasonArgumentsMessage != "" {
@@ -1954,13 +1954,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastRebootReasonCodeQueryParameter != nil {
+	if o.LastRebootReasonCode != nil {
 
 		// query param last_reboot.reason.code
 		var qrLastRebootReasonCode string
 
-		if o.LastRebootReasonCodeQueryParameter != nil {
-			qrLastRebootReasonCode = *o.LastRebootReasonCodeQueryParameter
+		if o.LastRebootReasonCode != nil {
+			qrLastRebootReasonCode = *o.LastRebootReasonCode
 		}
 		qLastRebootReasonCode := qrLastRebootReasonCode
 		if qLastRebootReasonCode != "" {
@@ -1971,13 +1971,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastRebootReasonMessageQueryParameter != nil {
+	if o.LastRebootReasonMessage != nil {
 
 		// query param last_reboot.reason.message
 		var qrLastRebootReasonMessage string
 
-		if o.LastRebootReasonMessageQueryParameter != nil {
-			qrLastRebootReasonMessage = *o.LastRebootReasonMessageQueryParameter
+		if o.LastRebootReasonMessage != nil {
+			qrLastRebootReasonMessage = *o.LastRebootReasonMessage
 		}
 		qLastRebootReasonMessage := qrLastRebootReasonMessage
 		if qLastRebootReasonMessage != "" {
@@ -1988,13 +1988,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastRebootReasonTargetQueryParameter != nil {
+	if o.LastRebootReasonTarget != nil {
 
 		// query param last_reboot.reason.target
 		var qrLastRebootReasonTarget string
 
-		if o.LastRebootReasonTargetQueryParameter != nil {
-			qrLastRebootReasonTarget = *o.LastRebootReasonTargetQueryParameter
+		if o.LastRebootReasonTarget != nil {
+			qrLastRebootReasonTarget = *o.LastRebootReasonTarget
 		}
 		qLastRebootReasonTarget := qrLastRebootReasonTarget
 		if qLastRebootReasonTarget != "" {
@@ -2005,13 +2005,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastRebootTimeQueryParameter != nil {
+	if o.LastRebootTime != nil {
 
 		// query param last_reboot.time
 		var qrLastRebootTime string
 
-		if o.LastRebootTimeQueryParameter != nil {
-			qrLastRebootTime = *o.LastRebootTimeQueryParameter
+		if o.LastRebootTime != nil {
+			qrLastRebootTime = *o.LastRebootTime
 		}
 		qLastRebootTime := qrLastRebootTime
 		if qLastRebootTime != "" {
@@ -2022,13 +2022,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ManagedByQueryParameter != nil {
+	if o.ManagedBy != nil {
 
 		// query param managed_by
 		var qrManagedBy string
 
-		if o.ManagedByQueryParameter != nil {
-			qrManagedBy = *o.ManagedByQueryParameter
+		if o.ManagedBy != nil {
+			qrManagedBy = *o.ManagedBy
 		}
 		qManagedBy := qrManagedBy
 		if qManagedBy != "" {
@@ -2039,13 +2039,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -2056,13 +2056,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ModelQueryParameter != nil {
+	if o.Model != nil {
 
 		// query param model
 		var qrModel string
 
-		if o.ModelQueryParameter != nil {
-			qrModel = *o.ModelQueryParameter
+		if o.Model != nil {
+			qrModel = *o.Model
 		}
 		qModel := qrModel
 		if qModel != "" {
@@ -2073,13 +2073,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MonitoringEnabledQueryParameter != nil {
+	if o.MonitoringEnabled != nil {
 
 		// query param monitoring_enabled
 		var qrMonitoringEnabled bool
 
-		if o.MonitoringEnabledQueryParameter != nil {
-			qrMonitoringEnabled = *o.MonitoringEnabledQueryParameter
+		if o.MonitoringEnabled != nil {
+			qrMonitoringEnabled = *o.MonitoringEnabled
 		}
 		qMonitoringEnabled := swag.FormatBool(qrMonitoringEnabled)
 		if qMonitoringEnabled != "" {
@@ -2090,13 +2090,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -2107,7 +2107,7 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -2118,13 +2118,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsNameQueryParameter != nil {
+	if o.PathsName != nil {
 
 		// query param paths.name
 		var qrPathsName string
 
-		if o.PathsNameQueryParameter != nil {
-			qrPathsName = *o.PathsNameQueryParameter
+		if o.PathsName != nil {
+			qrPathsName = *o.PathsName
 		}
 		qPathsName := qrPathsName
 		if qPathsName != "" {
@@ -2135,13 +2135,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsNodeNameQueryParameter != nil {
+	if o.PathsNodeName != nil {
 
 		// query param paths.node.name
 		var qrPathsNodeName string
 
-		if o.PathsNodeNameQueryParameter != nil {
-			qrPathsNodeName = *o.PathsNodeNameQueryParameter
+		if o.PathsNodeName != nil {
+			qrPathsNodeName = *o.PathsNodeName
 		}
 		qPathsNodeName := qrPathsNodeName
 		if qPathsNodeName != "" {
@@ -2152,13 +2152,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsNodeUUIDQueryParameter != nil {
+	if o.PathsNodeUUID != nil {
 
 		// query param paths.node.uuid
 		var qrPathsNodeUUID string
 
-		if o.PathsNodeUUIDQueryParameter != nil {
-			qrPathsNodeUUID = *o.PathsNodeUUIDQueryParameter
+		if o.PathsNodeUUID != nil {
+			qrPathsNodeUUID = *o.PathsNodeUUID
 		}
 		qPathsNodeUUID := qrPathsNodeUUID
 		if qPathsNodeUUID != "" {
@@ -2169,13 +2169,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsSourcePortIDQueryParameter != nil {
+	if o.PathsSourcePortID != nil {
 
 		// query param paths.source_port.id
 		var qrPathsSourcePortID string
 
-		if o.PathsSourcePortIDQueryParameter != nil {
-			qrPathsSourcePortID = *o.PathsSourcePortIDQueryParameter
+		if o.PathsSourcePortID != nil {
+			qrPathsSourcePortID = *o.PathsSourcePortID
 		}
 		qPathsSourcePortID := qrPathsSourcePortID
 		if qPathsSourcePortID != "" {
@@ -2186,13 +2186,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsSourcePortNameQueryParameter != nil {
+	if o.PathsSourcePortName != nil {
 
 		// query param paths.source_port.name
 		var qrPathsSourcePortName string
 
-		if o.PathsSourcePortNameQueryParameter != nil {
-			qrPathsSourcePortName = *o.PathsSourcePortNameQueryParameter
+		if o.PathsSourcePortName != nil {
+			qrPathsSourcePortName = *o.PathsSourcePortName
 		}
 		qPathsSourcePortName := qrPathsSourcePortName
 		if qPathsSourcePortName != "" {
@@ -2203,13 +2203,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsTargetPortIDQueryParameter != nil {
+	if o.PathsTargetPortID != nil {
 
 		// query param paths.target_port.id
 		var qrPathsTargetPortID string
 
-		if o.PathsTargetPortIDQueryParameter != nil {
-			qrPathsTargetPortID = *o.PathsTargetPortIDQueryParameter
+		if o.PathsTargetPortID != nil {
+			qrPathsTargetPortID = *o.PathsTargetPortID
 		}
 		qPathsTargetPortID := qrPathsTargetPortID
 		if qPathsTargetPortID != "" {
@@ -2220,13 +2220,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsTargetPortNameQueryParameter != nil {
+	if o.PathsTargetPortName != nil {
 
 		// query param paths.target_port.name
 		var qrPathsTargetPortName string
 
-		if o.PathsTargetPortNameQueryParameter != nil {
-			qrPathsTargetPortName = *o.PathsTargetPortNameQueryParameter
+		if o.PathsTargetPortName != nil {
+			qrPathsTargetPortName = *o.PathsTargetPortName
 		}
 		qPathsTargetPortName := qrPathsTargetPortName
 		if qPathsTargetPortName != "" {
@@ -2237,13 +2237,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PathsTargetPortWwnQueryParameter != nil {
+	if o.PathsTargetPortWwn != nil {
 
 		// query param paths.target_port.wwn
 		var qrPathsTargetPortWwn string
 
-		if o.PathsTargetPortWwnQueryParameter != nil {
-			qrPathsTargetPortWwn = *o.PathsTargetPortWwnQueryParameter
+		if o.PathsTargetPortWwn != nil {
+			qrPathsTargetPortWwn = *o.PathsTargetPortWwn
 		}
 		qPathsTargetPortWwn := qrPathsTargetPortWwn
 		if qPathsTargetPortWwn != "" {
@@ -2254,13 +2254,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PowerSupplyUnitsNameQueryParameter != nil {
+	if o.PowerSupplyUnitsName != nil {
 
 		// query param power_supply_units.name
 		var qrPowerSupplyUnitsName string
 
-		if o.PowerSupplyUnitsNameQueryParameter != nil {
-			qrPowerSupplyUnitsName = *o.PowerSupplyUnitsNameQueryParameter
+		if o.PowerSupplyUnitsName != nil {
+			qrPowerSupplyUnitsName = *o.PowerSupplyUnitsName
 		}
 		qPowerSupplyUnitsName := qrPowerSupplyUnitsName
 		if qPowerSupplyUnitsName != "" {
@@ -2271,13 +2271,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PowerSupplyUnitsStateQueryParameter != nil {
+	if o.PowerSupplyUnitsState != nil {
 
 		// query param power_supply_units.state
 		var qrPowerSupplyUnitsState string
 
-		if o.PowerSupplyUnitsStateQueryParameter != nil {
-			qrPowerSupplyUnitsState = *o.PowerSupplyUnitsStateQueryParameter
+		if o.PowerSupplyUnitsState != nil {
+			qrPowerSupplyUnitsState = *o.PowerSupplyUnitsState
 		}
 		qPowerSupplyUnitsState := qrPowerSupplyUnitsState
 		if qPowerSupplyUnitsState != "" {
@@ -2288,13 +2288,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -2305,13 +2305,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2322,13 +2322,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsCablePartNumberQueryParameter != nil {
+	if o.SasPortsCablePartNumber != nil {
 
 		// query param sas_ports.cable.part_number
 		var qrSasPortsCablePartNumber string
 
-		if o.SasPortsCablePartNumberQueryParameter != nil {
-			qrSasPortsCablePartNumber = *o.SasPortsCablePartNumberQueryParameter
+		if o.SasPortsCablePartNumber != nil {
+			qrSasPortsCablePartNumber = *o.SasPortsCablePartNumber
 		}
 		qSasPortsCablePartNumber := qrSasPortsCablePartNumber
 		if qSasPortsCablePartNumber != "" {
@@ -2339,13 +2339,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsCableSerialNumberQueryParameter != nil {
+	if o.SasPortsCableSerialNumber != nil {
 
 		// query param sas_ports.cable.serial_number
 		var qrSasPortsCableSerialNumber string
 
-		if o.SasPortsCableSerialNumberQueryParameter != nil {
-			qrSasPortsCableSerialNumber = *o.SasPortsCableSerialNumberQueryParameter
+		if o.SasPortsCableSerialNumber != nil {
+			qrSasPortsCableSerialNumber = *o.SasPortsCableSerialNumber
 		}
 		qSasPortsCableSerialNumber := qrSasPortsCableSerialNumber
 		if qSasPortsCableSerialNumber != "" {
@@ -2356,13 +2356,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsCableTechnologyQueryParameter != nil {
+	if o.SasPortsCableTechnology != nil {
 
 		// query param sas_ports.cable.technology
 		var qrSasPortsCableTechnology string
 
-		if o.SasPortsCableTechnologyQueryParameter != nil {
-			qrSasPortsCableTechnology = *o.SasPortsCableTechnologyQueryParameter
+		if o.SasPortsCableTechnology != nil {
+			qrSasPortsCableTechnology = *o.SasPortsCableTechnology
 		}
 		qSasPortsCableTechnology := qrSasPortsCableTechnology
 		if qSasPortsCableTechnology != "" {
@@ -2373,13 +2373,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsCableVendorQueryParameter != nil {
+	if o.SasPortsCableVendor != nil {
 
 		// query param sas_ports.cable.vendor
 		var qrSasPortsCableVendor string
 
-		if o.SasPortsCableVendorQueryParameter != nil {
-			qrSasPortsCableVendor = *o.SasPortsCableVendorQueryParameter
+		if o.SasPortsCableVendor != nil {
+			qrSasPortsCableVendor = *o.SasPortsCableVendor
 		}
 		qSasPortsCableVendor := qrSasPortsCableVendor
 		if qSasPortsCableVendor != "" {
@@ -2390,13 +2390,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsDataRateCapabilityQueryParameter != nil {
+	if o.SasPortsDataRateCapability != nil {
 
 		// query param sas_ports.data_rate_capability
 		var qrSasPortsDataRateCapability float64
 
-		if o.SasPortsDataRateCapabilityQueryParameter != nil {
-			qrSasPortsDataRateCapability = *o.SasPortsDataRateCapabilityQueryParameter
+		if o.SasPortsDataRateCapability != nil {
+			qrSasPortsDataRateCapability = *o.SasPortsDataRateCapability
 		}
 		qSasPortsDataRateCapability := swag.FormatFloat64(qrSasPortsDataRateCapability)
 		if qSasPortsDataRateCapability != "" {
@@ -2407,13 +2407,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsEnabledQueryParameter != nil {
+	if o.SasPortsEnabled != nil {
 
 		// query param sas_ports.enabled
 		var qrSasPortsEnabled bool
 
-		if o.SasPortsEnabledQueryParameter != nil {
-			qrSasPortsEnabled = *o.SasPortsEnabledQueryParameter
+		if o.SasPortsEnabled != nil {
+			qrSasPortsEnabled = *o.SasPortsEnabled
 		}
 		qSasPortsEnabled := swag.FormatBool(qrSasPortsEnabled)
 		if qSasPortsEnabled != "" {
@@ -2424,13 +2424,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsIDQueryParameter != nil {
+	if o.SasPortsID != nil {
 
 		// query param sas_ports.id
 		var qrSasPortsID int64
 
-		if o.SasPortsIDQueryParameter != nil {
-			qrSasPortsID = *o.SasPortsIDQueryParameter
+		if o.SasPortsID != nil {
+			qrSasPortsID = *o.SasPortsID
 		}
 		qSasPortsID := swag.FormatInt64(qrSasPortsID)
 		if qSasPortsID != "" {
@@ -2441,13 +2441,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsNegotiatedDataRateQueryParameter != nil {
+	if o.SasPortsNegotiatedDataRate != nil {
 
 		// query param sas_ports.negotiated_data_rate
 		var qrSasPortsNegotiatedDataRate float64
 
-		if o.SasPortsNegotiatedDataRateQueryParameter != nil {
-			qrSasPortsNegotiatedDataRate = *o.SasPortsNegotiatedDataRateQueryParameter
+		if o.SasPortsNegotiatedDataRate != nil {
+			qrSasPortsNegotiatedDataRate = *o.SasPortsNegotiatedDataRate
 		}
 		qSasPortsNegotiatedDataRate := swag.FormatFloat64(qrSasPortsNegotiatedDataRate)
 		if qSasPortsNegotiatedDataRate != "" {
@@ -2458,13 +2458,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsPhy1StateQueryParameter != nil {
+	if o.SasPortsPhy1State != nil {
 
 		// query param sas_ports.phy_1.state
 		var qrSasPortsPhy1State string
 
-		if o.SasPortsPhy1StateQueryParameter != nil {
-			qrSasPortsPhy1State = *o.SasPortsPhy1StateQueryParameter
+		if o.SasPortsPhy1State != nil {
+			qrSasPortsPhy1State = *o.SasPortsPhy1State
 		}
 		qSasPortsPhy1State := qrSasPortsPhy1State
 		if qSasPortsPhy1State != "" {
@@ -2475,13 +2475,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsPhy2StateQueryParameter != nil {
+	if o.SasPortsPhy2State != nil {
 
 		// query param sas_ports.phy_2.state
 		var qrSasPortsPhy2State string
 
-		if o.SasPortsPhy2StateQueryParameter != nil {
-			qrSasPortsPhy2State = *o.SasPortsPhy2StateQueryParameter
+		if o.SasPortsPhy2State != nil {
+			qrSasPortsPhy2State = *o.SasPortsPhy2State
 		}
 		qSasPortsPhy2State := qrSasPortsPhy2State
 		if qSasPortsPhy2State != "" {
@@ -2492,13 +2492,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsPhy3StateQueryParameter != nil {
+	if o.SasPortsPhy3State != nil {
 
 		// query param sas_ports.phy_3.state
 		var qrSasPortsPhy3State string
 
-		if o.SasPortsPhy3StateQueryParameter != nil {
-			qrSasPortsPhy3State = *o.SasPortsPhy3StateQueryParameter
+		if o.SasPortsPhy3State != nil {
+			qrSasPortsPhy3State = *o.SasPortsPhy3State
 		}
 		qSasPortsPhy3State := qrSasPortsPhy3State
 		if qSasPortsPhy3State != "" {
@@ -2509,13 +2509,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsPhy4StateQueryParameter != nil {
+	if o.SasPortsPhy4State != nil {
 
 		// query param sas_ports.phy_4.state
 		var qrSasPortsPhy4State string
 
-		if o.SasPortsPhy4StateQueryParameter != nil {
-			qrSasPortsPhy4State = *o.SasPortsPhy4StateQueryParameter
+		if o.SasPortsPhy4State != nil {
+			qrSasPortsPhy4State = *o.SasPortsPhy4State
 		}
 		qSasPortsPhy4State := qrSasPortsPhy4State
 		if qSasPortsPhy4State != "" {
@@ -2526,13 +2526,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsStateQueryParameter != nil {
+	if o.SasPortsState != nil {
 
 		// query param sas_ports.state
 		var qrSasPortsState string
 
-		if o.SasPortsStateQueryParameter != nil {
-			qrSasPortsState = *o.SasPortsStateQueryParameter
+		if o.SasPortsState != nil {
+			qrSasPortsState = *o.SasPortsState
 		}
 		qSasPortsState := qrSasPortsState
 		if qSasPortsState != "" {
@@ -2543,13 +2543,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SasPortsWwnQueryParameter != nil {
+	if o.SasPortsWwn != nil {
 
 		// query param sas_ports.wwn
 		var qrSasPortsWwn string
 
-		if o.SasPortsWwnQueryParameter != nil {
-			qrSasPortsWwn = *o.SasPortsWwnQueryParameter
+		if o.SasPortsWwn != nil {
+			qrSasPortsWwn = *o.SasPortsWwn
 		}
 		qSasPortsWwn := qrSasPortsWwn
 		if qSasPortsWwn != "" {
@@ -2560,13 +2560,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SecurityEnabledQueryParameter != nil {
+	if o.SecurityEnabled != nil {
 
 		// query param security_enabled
 		var qrSecurityEnabled bool
 
-		if o.SecurityEnabledQueryParameter != nil {
-			qrSecurityEnabled = *o.SecurityEnabledQueryParameter
+		if o.SecurityEnabled != nil {
+			qrSecurityEnabled = *o.SecurityEnabled
 		}
 		qSecurityEnabled := swag.FormatBool(qrSecurityEnabled)
 		if qSecurityEnabled != "" {
@@ -2577,13 +2577,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -2594,13 +2594,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -2611,13 +2611,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SymbolicNameQueryParameter != nil {
+	if o.SymbolicName != nil {
 
 		// query param symbolic_name
 		var qrSymbolicName string
 
-		if o.SymbolicNameQueryParameter != nil {
-			qrSymbolicName = *o.SymbolicNameQueryParameter
+		if o.SymbolicName != nil {
+			qrSymbolicName = *o.SymbolicName
 		}
 		qSymbolicName := qrSymbolicName
 		if qSymbolicName != "" {
@@ -2628,13 +2628,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TemperatureSensorMaximumQueryParameter != nil {
+	if o.TemperatureSensorMaximum != nil {
 
 		// query param temperature_sensor.maximum
 		var qrTemperatureSensorMaximum int64
 
-		if o.TemperatureSensorMaximumQueryParameter != nil {
-			qrTemperatureSensorMaximum = *o.TemperatureSensorMaximumQueryParameter
+		if o.TemperatureSensorMaximum != nil {
+			qrTemperatureSensorMaximum = *o.TemperatureSensorMaximum
 		}
 		qTemperatureSensorMaximum := swag.FormatInt64(qrTemperatureSensorMaximum)
 		if qTemperatureSensorMaximum != "" {
@@ -2645,13 +2645,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TemperatureSensorMinimumQueryParameter != nil {
+	if o.TemperatureSensorMinimum != nil {
 
 		// query param temperature_sensor.minimum
 		var qrTemperatureSensorMinimum int64
 
-		if o.TemperatureSensorMinimumQueryParameter != nil {
-			qrTemperatureSensorMinimum = *o.TemperatureSensorMinimumQueryParameter
+		if o.TemperatureSensorMinimum != nil {
+			qrTemperatureSensorMinimum = *o.TemperatureSensorMinimum
 		}
 		qTemperatureSensorMinimum := swag.FormatInt64(qrTemperatureSensorMinimum)
 		if qTemperatureSensorMinimum != "" {
@@ -2662,13 +2662,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TemperatureSensorNameQueryParameter != nil {
+	if o.TemperatureSensorName != nil {
 
 		// query param temperature_sensor.name
 		var qrTemperatureSensorName string
 
-		if o.TemperatureSensorNameQueryParameter != nil {
-			qrTemperatureSensorName = *o.TemperatureSensorNameQueryParameter
+		if o.TemperatureSensorName != nil {
+			qrTemperatureSensorName = *o.TemperatureSensorName
 		}
 		qTemperatureSensorName := qrTemperatureSensorName
 		if qTemperatureSensorName != "" {
@@ -2679,13 +2679,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TemperatureSensorReadingQueryParameter != nil {
+	if o.TemperatureSensorReading != nil {
 
 		// query param temperature_sensor.reading
 		var qrTemperatureSensorReading int64
 
-		if o.TemperatureSensorReadingQueryParameter != nil {
-			qrTemperatureSensorReading = *o.TemperatureSensorReadingQueryParameter
+		if o.TemperatureSensorReading != nil {
+			qrTemperatureSensorReading = *o.TemperatureSensorReading
 		}
 		qTemperatureSensorReading := swag.FormatInt64(qrTemperatureSensorReading)
 		if qTemperatureSensorReading != "" {
@@ -2696,13 +2696,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TemperatureSensorStateQueryParameter != nil {
+	if o.TemperatureSensorState != nil {
 
 		// query param temperature_sensor.state
 		var qrTemperatureSensorState string
 
-		if o.TemperatureSensorStateQueryParameter != nil {
-			qrTemperatureSensorState = *o.TemperatureSensorStateQueryParameter
+		if o.TemperatureSensorState != nil {
+			qrTemperatureSensorState = *o.TemperatureSensorState
 		}
 		qTemperatureSensorState := qrTemperatureSensorState
 		if qTemperatureSensorState != "" {
@@ -2713,13 +2713,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.VendorQueryParameter != nil {
+	if o.Vendor != nil {
 
 		// query param vendor
 		var qrVendor string
 
-		if o.VendorQueryParameter != nil {
-			qrVendor = *o.VendorQueryParameter
+		if o.Vendor != nil {
+			qrVendor = *o.Vendor
 		}
 		qVendor := qrVendor
 		if qVendor != "" {
@@ -2730,13 +2730,13 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.WwnQueryParameter != nil {
+	if o.Wwn != nil {
 
 		// query param wwn
 		var qrWwn string
 
-		if o.WwnQueryParameter != nil {
-			qrWwn = *o.WwnQueryParameter
+		if o.Wwn != nil {
+			qrWwn = *o.Wwn
 		}
 		qWwn := qrWwn
 		if qWwn != "" {
@@ -2755,7 +2755,7 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamStorageBridgeCollectionGet binds the parameter fields
 func (o *StorageBridgeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2772,7 +2772,7 @@ func (o *StorageBridgeCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamStorageBridgeCollectionGet binds the parameter order_by
 func (o *StorageBridgeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

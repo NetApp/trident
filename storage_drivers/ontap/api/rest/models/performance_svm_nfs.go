@@ -19,7 +19,7 @@ import (
 type PerformanceSvmNfs struct {
 
 	// links
-	Links *PerformanceSvmNfsLinks `json:"_links,omitempty"`
+	Links *PerformanceSvmNfsInlineLinks `json:"_links,omitempty"`
 }
 
 // Validate validates this performance svm nfs
@@ -99,17 +99,17 @@ func (m *PerformanceSvmNfs) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceSvmNfsLinks performance svm nfs links
+// PerformanceSvmNfsInlineLinks performance svm nfs inline links
 //
-// swagger:model PerformanceSvmNfsLinks
-type PerformanceSvmNfsLinks struct {
+// swagger:model performance_svm_nfs_inline__links
+type PerformanceSvmNfsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance svm nfs links
-func (m *PerformanceSvmNfsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance svm nfs inline links
+func (m *PerformanceSvmNfsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -122,7 +122,7 @@ func (m *PerformanceSvmNfsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PerformanceSvmNfsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -139,8 +139,8 @@ func (m *PerformanceSvmNfsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance svm nfs links based on the context it is used
-func (m *PerformanceSvmNfsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance svm nfs inline links based on the context it is used
+func (m *PerformanceSvmNfsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -153,7 +153,7 @@ func (m *PerformanceSvmNfsLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *PerformanceSvmNfsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceSvmNfsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -168,7 +168,7 @@ func (m *PerformanceSvmNfsLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceSvmNfsLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceSvmNfsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -176,8 +176,8 @@ func (m *PerformanceSvmNfsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceSvmNfsLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceSvmNfsLinks
+func (m *PerformanceSvmNfsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceSvmNfsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

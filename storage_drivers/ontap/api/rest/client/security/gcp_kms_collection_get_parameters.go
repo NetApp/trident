@@ -66,115 +66,115 @@ type GcpKmsCollectionGetParams struct {
 
 	   Filter by ekmip_reachability.code
 	*/
-	EkmIPReachabilityCodeQueryParameter *int64
+	EkmipReachabilityCode *string
 
 	/* EkmipReachabilityMessage.
 
 	   Filter by ekmip_reachability.message
 	*/
-	EkmIPReachabilityMessageQueryParameter *string
+	EkmipReachabilityMessage *string
 
 	/* EkmipReachabilityNodeName.
 
 	   Filter by ekmip_reachability.node.name
 	*/
-	EkmIPReachabilityNodeNameQueryParameter *string
+	EkmipReachabilityNodeName *string
 
 	/* EkmipReachabilityNodeUUID.
 
 	   Filter by ekmip_reachability.node.uuid
 	*/
-	EkmIPReachabilityNodeUUIDQueryParameter *string
+	EkmipReachabilityNodeUUID *string
 
 	/* EkmipReachabilityReachable.
 
 	   Filter by ekmip_reachability.reachable
 	*/
-	EkmIPReachabilityReachableQueryParameter *bool
+	EkmipReachabilityReachable *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* GoogleReachabilityCode.
 
 	   Filter by google_reachability.code
 	*/
-	GoogleReachabilityCodeQueryParameter *int64
+	GoogleReachabilityCode *string
 
 	/* GoogleReachabilityMessage.
 
 	   Filter by google_reachability.message
 	*/
-	GoogleReachabilityMessageQueryParameter *string
+	GoogleReachabilityMessage *string
 
 	/* GoogleReachabilityReachable.
 
 	   Filter by google_reachability.reachable
 	*/
-	GoogleReachabilityReachableQueryParameter *bool
+	GoogleReachabilityReachable *bool
 
 	/* KeyName.
 
 	   Filter by key_name
 	*/
-	KeyNameQueryParameter *string
+	KeyName *string
 
 	/* KeyRingLocation.
 
 	   Filter by key_ring_location
 	*/
-	KeyRingLocationQueryParameter *string
+	KeyRingLocation *string
 
 	/* KeyRingName.
 
 	   Filter by key_ring_name
 	*/
-	KeyRingNameQueryParameter *string
+	KeyRingName *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ProjectID.
 
 	   Filter by project_id
 	*/
-	ProjectIDQueryParameter *string
+	ProjectID *string
 
 	/* ProxyHost.
 
 	   Filter by proxy_host
 	*/
-	ProxyHostQueryParameter *string
+	ProxyHost *string
 
 	/* ProxyPort.
 
 	   Filter by proxy_port
 	*/
-	ProxyPortQueryParameter *int64
+	ProxyPort *int64
 
 	/* ProxyType.
 
 	   Filter by proxy_type
 	*/
-	ProxyTypeQueryParameter *string
+	ProxyType *string
 
 	/* ProxyUsername.
 
 	   Filter by proxy_username
 	*/
-	ProxyUsernameQueryParameter *string
+	ProxyUsername *string
 
 	/* ReturnRecords.
 
@@ -182,7 +182,7 @@ type GcpKmsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -190,49 +190,49 @@ type GcpKmsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* StateClusterState.
 
 	   Filter by state.cluster_state
 	*/
-	StateClusterStateQueryParameter *bool
+	StateClusterState *bool
 
 	/* StateCode.
 
 	   Filter by state.code
 	*/
-	StateCodeQueryParameter *int64
+	StateCode *string
 
 	/* StateMessage.
 
 	   Filter by state.message
 	*/
-	StateMessageQueryParameter *string
+	StateMessage *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -252,14 +252,14 @@ func (o *GcpKmsCollectionGetParams) WithDefaults() *GcpKmsCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *GcpKmsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := GcpKmsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -301,312 +301,312 @@ func (o *GcpKmsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEkmIPReachabilityCodeQueryParameter adds the ekmipReachabilityCode to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithEkmIPReachabilityCodeQueryParameter(ekmipReachabilityCode *int64) *GcpKmsCollectionGetParams {
-	o.SetEkmIPReachabilityCodeQueryParameter(ekmipReachabilityCode)
+// WithEkmipReachabilityCode adds the ekmipReachabilityCode to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithEkmipReachabilityCode(ekmipReachabilityCode *string) *GcpKmsCollectionGetParams {
+	o.SetEkmipReachabilityCode(ekmipReachabilityCode)
 	return o
 }
 
-// SetEkmIPReachabilityCodeQueryParameter adds the ekmipReachabilityCode to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetEkmIPReachabilityCodeQueryParameter(ekmipReachabilityCode *int64) {
-	o.EkmIPReachabilityCodeQueryParameter = ekmipReachabilityCode
+// SetEkmipReachabilityCode adds the ekmipReachabilityCode to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetEkmipReachabilityCode(ekmipReachabilityCode *string) {
+	o.EkmipReachabilityCode = ekmipReachabilityCode
 }
 
-// WithEkmIPReachabilityMessageQueryParameter adds the ekmipReachabilityMessage to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithEkmIPReachabilityMessageQueryParameter(ekmipReachabilityMessage *string) *GcpKmsCollectionGetParams {
-	o.SetEkmIPReachabilityMessageQueryParameter(ekmipReachabilityMessage)
+// WithEkmipReachabilityMessage adds the ekmipReachabilityMessage to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithEkmipReachabilityMessage(ekmipReachabilityMessage *string) *GcpKmsCollectionGetParams {
+	o.SetEkmipReachabilityMessage(ekmipReachabilityMessage)
 	return o
 }
 
-// SetEkmIPReachabilityMessageQueryParameter adds the ekmipReachabilityMessage to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetEkmIPReachabilityMessageQueryParameter(ekmipReachabilityMessage *string) {
-	o.EkmIPReachabilityMessageQueryParameter = ekmipReachabilityMessage
+// SetEkmipReachabilityMessage adds the ekmipReachabilityMessage to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetEkmipReachabilityMessage(ekmipReachabilityMessage *string) {
+	o.EkmipReachabilityMessage = ekmipReachabilityMessage
 }
 
-// WithEkmIPReachabilityNodeNameQueryParameter adds the ekmipReachabilityNodeName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithEkmIPReachabilityNodeNameQueryParameter(ekmipReachabilityNodeName *string) *GcpKmsCollectionGetParams {
-	o.SetEkmIPReachabilityNodeNameQueryParameter(ekmipReachabilityNodeName)
+// WithEkmipReachabilityNodeName adds the ekmipReachabilityNodeName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithEkmipReachabilityNodeName(ekmipReachabilityNodeName *string) *GcpKmsCollectionGetParams {
+	o.SetEkmipReachabilityNodeName(ekmipReachabilityNodeName)
 	return o
 }
 
-// SetEkmIPReachabilityNodeNameQueryParameter adds the ekmipReachabilityNodeName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetEkmIPReachabilityNodeNameQueryParameter(ekmipReachabilityNodeName *string) {
-	o.EkmIPReachabilityNodeNameQueryParameter = ekmipReachabilityNodeName
+// SetEkmipReachabilityNodeName adds the ekmipReachabilityNodeName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetEkmipReachabilityNodeName(ekmipReachabilityNodeName *string) {
+	o.EkmipReachabilityNodeName = ekmipReachabilityNodeName
 }
 
-// WithEkmIPReachabilityNodeUUIDQueryParameter adds the ekmipReachabilityNodeUUID to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithEkmIPReachabilityNodeUUIDQueryParameter(ekmipReachabilityNodeUUID *string) *GcpKmsCollectionGetParams {
-	o.SetEkmIPReachabilityNodeUUIDQueryParameter(ekmipReachabilityNodeUUID)
+// WithEkmipReachabilityNodeUUID adds the ekmipReachabilityNodeUUID to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithEkmipReachabilityNodeUUID(ekmipReachabilityNodeUUID *string) *GcpKmsCollectionGetParams {
+	o.SetEkmipReachabilityNodeUUID(ekmipReachabilityNodeUUID)
 	return o
 }
 
-// SetEkmIPReachabilityNodeUUIDQueryParameter adds the ekmipReachabilityNodeUuid to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetEkmIPReachabilityNodeUUIDQueryParameter(ekmipReachabilityNodeUUID *string) {
-	o.EkmIPReachabilityNodeUUIDQueryParameter = ekmipReachabilityNodeUUID
+// SetEkmipReachabilityNodeUUID adds the ekmipReachabilityNodeUuid to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetEkmipReachabilityNodeUUID(ekmipReachabilityNodeUUID *string) {
+	o.EkmipReachabilityNodeUUID = ekmipReachabilityNodeUUID
 }
 
-// WithEkmIPReachabilityReachableQueryParameter adds the ekmipReachabilityReachable to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithEkmIPReachabilityReachableQueryParameter(ekmipReachabilityReachable *bool) *GcpKmsCollectionGetParams {
-	o.SetEkmIPReachabilityReachableQueryParameter(ekmipReachabilityReachable)
+// WithEkmipReachabilityReachable adds the ekmipReachabilityReachable to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithEkmipReachabilityReachable(ekmipReachabilityReachable *bool) *GcpKmsCollectionGetParams {
+	o.SetEkmipReachabilityReachable(ekmipReachabilityReachable)
 	return o
 }
 
-// SetEkmIPReachabilityReachableQueryParameter adds the ekmipReachabilityReachable to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetEkmIPReachabilityReachableQueryParameter(ekmipReachabilityReachable *bool) {
-	o.EkmIPReachabilityReachableQueryParameter = ekmipReachabilityReachable
+// SetEkmipReachabilityReachable adds the ekmipReachabilityReachable to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetEkmipReachabilityReachable(ekmipReachabilityReachable *bool) {
+	o.EkmipReachabilityReachable = ekmipReachabilityReachable
 }
 
-// WithFieldsQueryParameter adds the fields to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithFieldsQueryParameter(fields []string) *GcpKmsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithFields(fields []string) *GcpKmsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGoogleReachabilityCodeQueryParameter adds the googleReachabilityCode to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithGoogleReachabilityCodeQueryParameter(googleReachabilityCode *int64) *GcpKmsCollectionGetParams {
-	o.SetGoogleReachabilityCodeQueryParameter(googleReachabilityCode)
+// WithGoogleReachabilityCode adds the googleReachabilityCode to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithGoogleReachabilityCode(googleReachabilityCode *string) *GcpKmsCollectionGetParams {
+	o.SetGoogleReachabilityCode(googleReachabilityCode)
 	return o
 }
 
-// SetGoogleReachabilityCodeQueryParameter adds the googleReachabilityCode to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetGoogleReachabilityCodeQueryParameter(googleReachabilityCode *int64) {
-	o.GoogleReachabilityCodeQueryParameter = googleReachabilityCode
+// SetGoogleReachabilityCode adds the googleReachabilityCode to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetGoogleReachabilityCode(googleReachabilityCode *string) {
+	o.GoogleReachabilityCode = googleReachabilityCode
 }
 
-// WithGoogleReachabilityMessageQueryParameter adds the googleReachabilityMessage to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithGoogleReachabilityMessageQueryParameter(googleReachabilityMessage *string) *GcpKmsCollectionGetParams {
-	o.SetGoogleReachabilityMessageQueryParameter(googleReachabilityMessage)
+// WithGoogleReachabilityMessage adds the googleReachabilityMessage to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithGoogleReachabilityMessage(googleReachabilityMessage *string) *GcpKmsCollectionGetParams {
+	o.SetGoogleReachabilityMessage(googleReachabilityMessage)
 	return o
 }
 
-// SetGoogleReachabilityMessageQueryParameter adds the googleReachabilityMessage to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetGoogleReachabilityMessageQueryParameter(googleReachabilityMessage *string) {
-	o.GoogleReachabilityMessageQueryParameter = googleReachabilityMessage
+// SetGoogleReachabilityMessage adds the googleReachabilityMessage to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetGoogleReachabilityMessage(googleReachabilityMessage *string) {
+	o.GoogleReachabilityMessage = googleReachabilityMessage
 }
 
-// WithGoogleReachabilityReachableQueryParameter adds the googleReachabilityReachable to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithGoogleReachabilityReachableQueryParameter(googleReachabilityReachable *bool) *GcpKmsCollectionGetParams {
-	o.SetGoogleReachabilityReachableQueryParameter(googleReachabilityReachable)
+// WithGoogleReachabilityReachable adds the googleReachabilityReachable to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithGoogleReachabilityReachable(googleReachabilityReachable *bool) *GcpKmsCollectionGetParams {
+	o.SetGoogleReachabilityReachable(googleReachabilityReachable)
 	return o
 }
 
-// SetGoogleReachabilityReachableQueryParameter adds the googleReachabilityReachable to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetGoogleReachabilityReachableQueryParameter(googleReachabilityReachable *bool) {
-	o.GoogleReachabilityReachableQueryParameter = googleReachabilityReachable
+// SetGoogleReachabilityReachable adds the googleReachabilityReachable to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetGoogleReachabilityReachable(googleReachabilityReachable *bool) {
+	o.GoogleReachabilityReachable = googleReachabilityReachable
 }
 
-// WithKeyNameQueryParameter adds the keyName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithKeyNameQueryParameter(keyName *string) *GcpKmsCollectionGetParams {
-	o.SetKeyNameQueryParameter(keyName)
+// WithKeyName adds the keyName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithKeyName(keyName *string) *GcpKmsCollectionGetParams {
+	o.SetKeyName(keyName)
 	return o
 }
 
-// SetKeyNameQueryParameter adds the keyName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetKeyNameQueryParameter(keyName *string) {
-	o.KeyNameQueryParameter = keyName
+// SetKeyName adds the keyName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetKeyName(keyName *string) {
+	o.KeyName = keyName
 }
 
-// WithKeyRingLocationQueryParameter adds the keyRingLocation to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithKeyRingLocationQueryParameter(keyRingLocation *string) *GcpKmsCollectionGetParams {
-	o.SetKeyRingLocationQueryParameter(keyRingLocation)
+// WithKeyRingLocation adds the keyRingLocation to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithKeyRingLocation(keyRingLocation *string) *GcpKmsCollectionGetParams {
+	o.SetKeyRingLocation(keyRingLocation)
 	return o
 }
 
-// SetKeyRingLocationQueryParameter adds the keyRingLocation to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetKeyRingLocationQueryParameter(keyRingLocation *string) {
-	o.KeyRingLocationQueryParameter = keyRingLocation
+// SetKeyRingLocation adds the keyRingLocation to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetKeyRingLocation(keyRingLocation *string) {
+	o.KeyRingLocation = keyRingLocation
 }
 
-// WithKeyRingNameQueryParameter adds the keyRingName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithKeyRingNameQueryParameter(keyRingName *string) *GcpKmsCollectionGetParams {
-	o.SetKeyRingNameQueryParameter(keyRingName)
+// WithKeyRingName adds the keyRingName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithKeyRingName(keyRingName *string) *GcpKmsCollectionGetParams {
+	o.SetKeyRingName(keyRingName)
 	return o
 }
 
-// SetKeyRingNameQueryParameter adds the keyRingName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetKeyRingNameQueryParameter(keyRingName *string) {
-	o.KeyRingNameQueryParameter = keyRingName
+// SetKeyRingName adds the keyRingName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetKeyRingName(keyRingName *string) {
+	o.KeyRingName = keyRingName
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *GcpKmsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithMaxRecords(maxRecords *int64) *GcpKmsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *GcpKmsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithOrderBy(orderBy []string) *GcpKmsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProjectIDQueryParameter adds the projectID to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithProjectIDQueryParameter(projectID *string) *GcpKmsCollectionGetParams {
-	o.SetProjectIDQueryParameter(projectID)
+// WithProjectID adds the projectID to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithProjectID(projectID *string) *GcpKmsCollectionGetParams {
+	o.SetProjectID(projectID)
 	return o
 }
 
-// SetProjectIDQueryParameter adds the projectId to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetProjectIDQueryParameter(projectID *string) {
-	o.ProjectIDQueryParameter = projectID
+// SetProjectID adds the projectId to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetProjectID(projectID *string) {
+	o.ProjectID = projectID
 }
 
-// WithProxyHostQueryParameter adds the proxyHost to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithProxyHostQueryParameter(proxyHost *string) *GcpKmsCollectionGetParams {
-	o.SetProxyHostQueryParameter(proxyHost)
+// WithProxyHost adds the proxyHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithProxyHost(proxyHost *string) *GcpKmsCollectionGetParams {
+	o.SetProxyHost(proxyHost)
 	return o
 }
 
-// SetProxyHostQueryParameter adds the proxyHost to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetProxyHostQueryParameter(proxyHost *string) {
-	o.ProxyHostQueryParameter = proxyHost
+// SetProxyHost adds the proxyHost to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetProxyHost(proxyHost *string) {
+	o.ProxyHost = proxyHost
 }
 
-// WithProxyPortQueryParameter adds the proxyPort to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithProxyPortQueryParameter(proxyPort *int64) *GcpKmsCollectionGetParams {
-	o.SetProxyPortQueryParameter(proxyPort)
+// WithProxyPort adds the proxyPort to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithProxyPort(proxyPort *int64) *GcpKmsCollectionGetParams {
+	o.SetProxyPort(proxyPort)
 	return o
 }
 
-// SetProxyPortQueryParameter adds the proxyPort to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetProxyPortQueryParameter(proxyPort *int64) {
-	o.ProxyPortQueryParameter = proxyPort
+// SetProxyPort adds the proxyPort to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetProxyPort(proxyPort *int64) {
+	o.ProxyPort = proxyPort
 }
 
-// WithProxyTypeQueryParameter adds the proxyType to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithProxyTypeQueryParameter(proxyType *string) *GcpKmsCollectionGetParams {
-	o.SetProxyTypeQueryParameter(proxyType)
+// WithProxyType adds the proxyType to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithProxyType(proxyType *string) *GcpKmsCollectionGetParams {
+	o.SetProxyType(proxyType)
 	return o
 }
 
-// SetProxyTypeQueryParameter adds the proxyType to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetProxyTypeQueryParameter(proxyType *string) {
-	o.ProxyTypeQueryParameter = proxyType
+// SetProxyType adds the proxyType to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetProxyType(proxyType *string) {
+	o.ProxyType = proxyType
 }
 
-// WithProxyUsernameQueryParameter adds the proxyUsername to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithProxyUsernameQueryParameter(proxyUsername *string) *GcpKmsCollectionGetParams {
-	o.SetProxyUsernameQueryParameter(proxyUsername)
+// WithProxyUsername adds the proxyUsername to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithProxyUsername(proxyUsername *string) *GcpKmsCollectionGetParams {
+	o.SetProxyUsername(proxyUsername)
 	return o
 }
 
-// SetProxyUsernameQueryParameter adds the proxyUsername to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetProxyUsernameQueryParameter(proxyUsername *string) {
-	o.ProxyUsernameQueryParameter = proxyUsername
+// SetProxyUsername adds the proxyUsername to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetProxyUsername(proxyUsername *string) {
+	o.ProxyUsername = proxyUsername
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *GcpKmsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithReturnRecords(returnRecords *bool) *GcpKmsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *GcpKmsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *GcpKmsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithScopeQueryParameter(scope *string) *GcpKmsCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithScope(scope *string) *GcpKmsCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithStateClusterStateQueryParameter adds the stateClusterState to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithStateClusterStateQueryParameter(stateClusterState *bool) *GcpKmsCollectionGetParams {
-	o.SetStateClusterStateQueryParameter(stateClusterState)
+// WithStateClusterState adds the stateClusterState to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithStateClusterState(stateClusterState *bool) *GcpKmsCollectionGetParams {
+	o.SetStateClusterState(stateClusterState)
 	return o
 }
 
-// SetStateClusterStateQueryParameter adds the stateClusterState to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetStateClusterStateQueryParameter(stateClusterState *bool) {
-	o.StateClusterStateQueryParameter = stateClusterState
+// SetStateClusterState adds the stateClusterState to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetStateClusterState(stateClusterState *bool) {
+	o.StateClusterState = stateClusterState
 }
 
-// WithStateCodeQueryParameter adds the stateCode to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithStateCodeQueryParameter(stateCode *int64) *GcpKmsCollectionGetParams {
-	o.SetStateCodeQueryParameter(stateCode)
+// WithStateCode adds the stateCode to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithStateCode(stateCode *string) *GcpKmsCollectionGetParams {
+	o.SetStateCode(stateCode)
 	return o
 }
 
-// SetStateCodeQueryParameter adds the stateCode to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetStateCodeQueryParameter(stateCode *int64) {
-	o.StateCodeQueryParameter = stateCode
+// SetStateCode adds the stateCode to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetStateCode(stateCode *string) {
+	o.StateCode = stateCode
 }
 
-// WithStateMessageQueryParameter adds the stateMessage to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithStateMessageQueryParameter(stateMessage *string) *GcpKmsCollectionGetParams {
-	o.SetStateMessageQueryParameter(stateMessage)
+// WithStateMessage adds the stateMessage to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithStateMessage(stateMessage *string) *GcpKmsCollectionGetParams {
+	o.SetStateMessage(stateMessage)
 	return o
 }
 
-// SetStateMessageQueryParameter adds the stateMessage to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetStateMessageQueryParameter(stateMessage *string) {
-	o.StateMessageQueryParameter = stateMessage
+// SetStateMessage adds the stateMessage to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetStateMessage(stateMessage *string) {
+	o.StateMessage = stateMessage
 }
 
-// WithSVMNameQueryParameter adds the svmName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *GcpKmsCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithSvmName(svmName *string) *GcpKmsCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *GcpKmsCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithSvmUUID(svmUUID *string) *GcpKmsCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) WithUUIDQueryParameter(uuid *string) *GcpKmsCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithUUID(uuid *string) *GcpKmsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the gcp kms collection get params
-func (o *GcpKmsCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -617,15 +617,15 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.EkmIPReachabilityCodeQueryParameter != nil {
+	if o.EkmipReachabilityCode != nil {
 
 		// query param ekmip_reachability.code
-		var qrEkmipReachabilityCode int64
+		var qrEkmipReachabilityCode string
 
-		if o.EkmIPReachabilityCodeQueryParameter != nil {
-			qrEkmipReachabilityCode = *o.EkmIPReachabilityCodeQueryParameter
+		if o.EkmipReachabilityCode != nil {
+			qrEkmipReachabilityCode = *o.EkmipReachabilityCode
 		}
-		qEkmipReachabilityCode := swag.FormatInt64(qrEkmipReachabilityCode)
+		qEkmipReachabilityCode := qrEkmipReachabilityCode
 		if qEkmipReachabilityCode != "" {
 
 			if err := r.SetQueryParam("ekmip_reachability.code", qEkmipReachabilityCode); err != nil {
@@ -634,13 +634,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.EkmIPReachabilityMessageQueryParameter != nil {
+	if o.EkmipReachabilityMessage != nil {
 
 		// query param ekmip_reachability.message
 		var qrEkmipReachabilityMessage string
 
-		if o.EkmIPReachabilityMessageQueryParameter != nil {
-			qrEkmipReachabilityMessage = *o.EkmIPReachabilityMessageQueryParameter
+		if o.EkmipReachabilityMessage != nil {
+			qrEkmipReachabilityMessage = *o.EkmipReachabilityMessage
 		}
 		qEkmipReachabilityMessage := qrEkmipReachabilityMessage
 		if qEkmipReachabilityMessage != "" {
@@ -651,13 +651,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.EkmIPReachabilityNodeNameQueryParameter != nil {
+	if o.EkmipReachabilityNodeName != nil {
 
 		// query param ekmip_reachability.node.name
 		var qrEkmipReachabilityNodeName string
 
-		if o.EkmIPReachabilityNodeNameQueryParameter != nil {
-			qrEkmipReachabilityNodeName = *o.EkmIPReachabilityNodeNameQueryParameter
+		if o.EkmipReachabilityNodeName != nil {
+			qrEkmipReachabilityNodeName = *o.EkmipReachabilityNodeName
 		}
 		qEkmipReachabilityNodeName := qrEkmipReachabilityNodeName
 		if qEkmipReachabilityNodeName != "" {
@@ -668,13 +668,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.EkmIPReachabilityNodeUUIDQueryParameter != nil {
+	if o.EkmipReachabilityNodeUUID != nil {
 
 		// query param ekmip_reachability.node.uuid
 		var qrEkmipReachabilityNodeUUID string
 
-		if o.EkmIPReachabilityNodeUUIDQueryParameter != nil {
-			qrEkmipReachabilityNodeUUID = *o.EkmIPReachabilityNodeUUIDQueryParameter
+		if o.EkmipReachabilityNodeUUID != nil {
+			qrEkmipReachabilityNodeUUID = *o.EkmipReachabilityNodeUUID
 		}
 		qEkmipReachabilityNodeUUID := qrEkmipReachabilityNodeUUID
 		if qEkmipReachabilityNodeUUID != "" {
@@ -685,13 +685,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.EkmIPReachabilityReachableQueryParameter != nil {
+	if o.EkmipReachabilityReachable != nil {
 
 		// query param ekmip_reachability.reachable
 		var qrEkmipReachabilityReachable bool
 
-		if o.EkmIPReachabilityReachableQueryParameter != nil {
-			qrEkmipReachabilityReachable = *o.EkmIPReachabilityReachableQueryParameter
+		if o.EkmipReachabilityReachable != nil {
+			qrEkmipReachabilityReachable = *o.EkmipReachabilityReachable
 		}
 		qEkmipReachabilityReachable := swag.FormatBool(qrEkmipReachabilityReachable)
 		if qEkmipReachabilityReachable != "" {
@@ -702,7 +702,7 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -713,15 +713,15 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.GoogleReachabilityCodeQueryParameter != nil {
+	if o.GoogleReachabilityCode != nil {
 
 		// query param google_reachability.code
-		var qrGoogleReachabilityCode int64
+		var qrGoogleReachabilityCode string
 
-		if o.GoogleReachabilityCodeQueryParameter != nil {
-			qrGoogleReachabilityCode = *o.GoogleReachabilityCodeQueryParameter
+		if o.GoogleReachabilityCode != nil {
+			qrGoogleReachabilityCode = *o.GoogleReachabilityCode
 		}
-		qGoogleReachabilityCode := swag.FormatInt64(qrGoogleReachabilityCode)
+		qGoogleReachabilityCode := qrGoogleReachabilityCode
 		if qGoogleReachabilityCode != "" {
 
 			if err := r.SetQueryParam("google_reachability.code", qGoogleReachabilityCode); err != nil {
@@ -730,13 +730,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.GoogleReachabilityMessageQueryParameter != nil {
+	if o.GoogleReachabilityMessage != nil {
 
 		// query param google_reachability.message
 		var qrGoogleReachabilityMessage string
 
-		if o.GoogleReachabilityMessageQueryParameter != nil {
-			qrGoogleReachabilityMessage = *o.GoogleReachabilityMessageQueryParameter
+		if o.GoogleReachabilityMessage != nil {
+			qrGoogleReachabilityMessage = *o.GoogleReachabilityMessage
 		}
 		qGoogleReachabilityMessage := qrGoogleReachabilityMessage
 		if qGoogleReachabilityMessage != "" {
@@ -747,13 +747,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.GoogleReachabilityReachableQueryParameter != nil {
+	if o.GoogleReachabilityReachable != nil {
 
 		// query param google_reachability.reachable
 		var qrGoogleReachabilityReachable bool
 
-		if o.GoogleReachabilityReachableQueryParameter != nil {
-			qrGoogleReachabilityReachable = *o.GoogleReachabilityReachableQueryParameter
+		if o.GoogleReachabilityReachable != nil {
+			qrGoogleReachabilityReachable = *o.GoogleReachabilityReachable
 		}
 		qGoogleReachabilityReachable := swag.FormatBool(qrGoogleReachabilityReachable)
 		if qGoogleReachabilityReachable != "" {
@@ -764,13 +764,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.KeyNameQueryParameter != nil {
+	if o.KeyName != nil {
 
 		// query param key_name
 		var qrKeyName string
 
-		if o.KeyNameQueryParameter != nil {
-			qrKeyName = *o.KeyNameQueryParameter
+		if o.KeyName != nil {
+			qrKeyName = *o.KeyName
 		}
 		qKeyName := qrKeyName
 		if qKeyName != "" {
@@ -781,13 +781,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.KeyRingLocationQueryParameter != nil {
+	if o.KeyRingLocation != nil {
 
 		// query param key_ring_location
 		var qrKeyRingLocation string
 
-		if o.KeyRingLocationQueryParameter != nil {
-			qrKeyRingLocation = *o.KeyRingLocationQueryParameter
+		if o.KeyRingLocation != nil {
+			qrKeyRingLocation = *o.KeyRingLocation
 		}
 		qKeyRingLocation := qrKeyRingLocation
 		if qKeyRingLocation != "" {
@@ -798,13 +798,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.KeyRingNameQueryParameter != nil {
+	if o.KeyRingName != nil {
 
 		// query param key_ring_name
 		var qrKeyRingName string
 
-		if o.KeyRingNameQueryParameter != nil {
-			qrKeyRingName = *o.KeyRingNameQueryParameter
+		if o.KeyRingName != nil {
+			qrKeyRingName = *o.KeyRingName
 		}
 		qKeyRingName := qrKeyRingName
 		if qKeyRingName != "" {
@@ -815,13 +815,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -832,7 +832,7 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -843,13 +843,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ProjectIDQueryParameter != nil {
+	if o.ProjectID != nil {
 
 		// query param project_id
 		var qrProjectID string
 
-		if o.ProjectIDQueryParameter != nil {
-			qrProjectID = *o.ProjectIDQueryParameter
+		if o.ProjectID != nil {
+			qrProjectID = *o.ProjectID
 		}
 		qProjectID := qrProjectID
 		if qProjectID != "" {
@@ -860,13 +860,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ProxyHostQueryParameter != nil {
+	if o.ProxyHost != nil {
 
 		// query param proxy_host
 		var qrProxyHost string
 
-		if o.ProxyHostQueryParameter != nil {
-			qrProxyHost = *o.ProxyHostQueryParameter
+		if o.ProxyHost != nil {
+			qrProxyHost = *o.ProxyHost
 		}
 		qProxyHost := qrProxyHost
 		if qProxyHost != "" {
@@ -877,13 +877,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ProxyPortQueryParameter != nil {
+	if o.ProxyPort != nil {
 
 		// query param proxy_port
 		var qrProxyPort int64
 
-		if o.ProxyPortQueryParameter != nil {
-			qrProxyPort = *o.ProxyPortQueryParameter
+		if o.ProxyPort != nil {
+			qrProxyPort = *o.ProxyPort
 		}
 		qProxyPort := swag.FormatInt64(qrProxyPort)
 		if qProxyPort != "" {
@@ -894,13 +894,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ProxyTypeQueryParameter != nil {
+	if o.ProxyType != nil {
 
 		// query param proxy_type
 		var qrProxyType string
 
-		if o.ProxyTypeQueryParameter != nil {
-			qrProxyType = *o.ProxyTypeQueryParameter
+		if o.ProxyType != nil {
+			qrProxyType = *o.ProxyType
 		}
 		qProxyType := qrProxyType
 		if qProxyType != "" {
@@ -911,13 +911,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ProxyUsernameQueryParameter != nil {
+	if o.ProxyUsername != nil {
 
 		// query param proxy_username
 		var qrProxyUsername string
 
-		if o.ProxyUsernameQueryParameter != nil {
-			qrProxyUsername = *o.ProxyUsernameQueryParameter
+		if o.ProxyUsername != nil {
+			qrProxyUsername = *o.ProxyUsername
 		}
 		qProxyUsername := qrProxyUsername
 		if qProxyUsername != "" {
@@ -928,13 +928,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -945,13 +945,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -962,13 +962,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -979,13 +979,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.StateClusterStateQueryParameter != nil {
+	if o.StateClusterState != nil {
 
 		// query param state.cluster_state
 		var qrStateClusterState bool
 
-		if o.StateClusterStateQueryParameter != nil {
-			qrStateClusterState = *o.StateClusterStateQueryParameter
+		if o.StateClusterState != nil {
+			qrStateClusterState = *o.StateClusterState
 		}
 		qStateClusterState := swag.FormatBool(qrStateClusterState)
 		if qStateClusterState != "" {
@@ -996,15 +996,15 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.StateCodeQueryParameter != nil {
+	if o.StateCode != nil {
 
 		// query param state.code
-		var qrStateCode int64
+		var qrStateCode string
 
-		if o.StateCodeQueryParameter != nil {
-			qrStateCode = *o.StateCodeQueryParameter
+		if o.StateCode != nil {
+			qrStateCode = *o.StateCode
 		}
-		qStateCode := swag.FormatInt64(qrStateCode)
+		qStateCode := qrStateCode
 		if qStateCode != "" {
 
 			if err := r.SetQueryParam("state.code", qStateCode); err != nil {
@@ -1013,13 +1013,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.StateMessageQueryParameter != nil {
+	if o.StateMessage != nil {
 
 		// query param state.message
 		var qrStateMessage string
 
-		if o.StateMessageQueryParameter != nil {
-			qrStateMessage = *o.StateMessageQueryParameter
+		if o.StateMessage != nil {
+			qrStateMessage = *o.StateMessage
 		}
 		qStateMessage := qrStateMessage
 		if qStateMessage != "" {
@@ -1030,13 +1030,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1047,13 +1047,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1064,13 +1064,13 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1089,7 +1089,7 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamGcpKmsCollectionGet binds the parameter fields
 func (o *GcpKmsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1106,7 +1106,7 @@ func (o *GcpKmsCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamGcpKmsCollectionGet binds the parameter order_by
 func (o *GcpKmsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

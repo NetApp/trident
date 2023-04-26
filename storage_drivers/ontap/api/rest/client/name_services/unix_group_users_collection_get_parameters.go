@@ -66,25 +66,25 @@ type UnixGroupUsersCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type UnixGroupUsersCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,19 +100,19 @@ type UnixGroupUsersCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UnixGroupName.
 
 	   UNIX group name.
 	*/
-	UnixGroupNamePathParameter string
+	UnixGroupName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,14 +132,14 @@ func (o *UnixGroupUsersCollectionGetParams) WithDefaults() *UnixGroupUsersCollec
 // All values with no default are reset to their zero value.
 func (o *UnixGroupUsersCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := UnixGroupUsersCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -181,92 +181,92 @@ func (o *UnixGroupUsersCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithFieldsQueryParameter(fields []string) *UnixGroupUsersCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithFields(fields []string) *UnixGroupUsersCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *UnixGroupUsersCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithMaxRecords(maxRecords *int64) *UnixGroupUsersCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithNameQueryParameter(name *string) *UnixGroupUsersCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithName(name *string) *UnixGroupUsersCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *UnixGroupUsersCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithOrderBy(orderBy []string) *UnixGroupUsersCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *UnixGroupUsersCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithReturnRecords(returnRecords *bool) *UnixGroupUsersCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *UnixGroupUsersCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *UnixGroupUsersCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *UnixGroupUsersCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithSvmUUID(svmUUID string) *UnixGroupUsersCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixGroupNamePathParameter adds the unixGroupName to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) WithUnixGroupNamePathParameter(unixGroupName string) *UnixGroupUsersCollectionGetParams {
-	o.SetUnixGroupNamePathParameter(unixGroupName)
+// WithUnixGroupName adds the unixGroupName to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) WithUnixGroupName(unixGroupName string) *UnixGroupUsersCollectionGetParams {
+	o.SetUnixGroupName(unixGroupName)
 	return o
 }
 
-// SetUnixGroupNamePathParameter adds the unixGroupName to the unix group users collection get params
-func (o *UnixGroupUsersCollectionGetParams) SetUnixGroupNamePathParameter(unixGroupName string) {
-	o.UnixGroupNamePathParameter = unixGroupName
+// SetUnixGroupName adds the unixGroupName to the unix group users collection get params
+func (o *UnixGroupUsersCollectionGetParams) SetUnixGroupName(unixGroupName string) {
+	o.UnixGroupName = unixGroupName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -277,7 +277,7 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -288,13 +288,13 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -305,13 +305,13 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -322,7 +322,7 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -333,13 +333,13 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -350,13 +350,13 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -368,12 +368,12 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param unix_group.name
-	if err := r.SetPathParam("unix_group.name", o.UnixGroupNamePathParameter); err != nil {
+	if err := r.SetPathParam("unix_group.name", o.UnixGroupName); err != nil {
 		return err
 	}
 
@@ -385,7 +385,7 @@ func (o *UnixGroupUsersCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamUnixGroupUsersCollectionGet binds the parameter fields
 func (o *UnixGroupUsersCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -402,7 +402,7 @@ func (o *UnixGroupUsersCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamUnixGroupUsersCollectionGet binds the parameter order_by
 func (o *UnixGroupUsersCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

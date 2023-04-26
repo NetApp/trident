@@ -106,6 +106,7 @@ func NewRoleDeleteDefault(code int) *RoleDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1263347 | Cannot modify pre-defined roles. |
 | 5636169 | Specified URI path is invalid or not supported. Resource-qualified endpoints are not supported. |
 | 5636170 | URI does not exist. |
 | 5636172 | User accounts detected with this role assigned. Update or delete those accounts before deleting this role. |

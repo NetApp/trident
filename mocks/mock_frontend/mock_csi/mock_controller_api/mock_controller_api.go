@@ -81,6 +81,21 @@ func (mr *MockTridentControllerMockRecorder) GetChap(arg0, arg1, arg2 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChap", reflect.TypeOf((*MockTridentController)(nil).GetChap), arg0, arg1, arg2)
 }
 
+// GetNode mocks base method.
+func (m *MockTridentController) GetNode(arg0 context.Context, arg1 string) (*utils.NodeExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
+	ret0, _ := ret[0].(*utils.NodeExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNode indicates an expected call of GetNode.
+func (mr *MockTridentControllerMockRecorder) GetNode(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockTridentController)(nil).GetNode), arg0, arg1)
+}
+
 // GetNodes mocks base method.
 func (m *MockTridentController) GetNodes(arg0 context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -112,16 +127,45 @@ func (mr *MockTridentControllerMockRecorder) InvokeAPI(arg0, arg1, arg2, arg3, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeAPI", reflect.TypeOf((*MockTridentController)(nil).InvokeAPI), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
-// UpdateVolumePublication mocks base method.
-func (m *MockTridentController) UpdateVolumePublication(arg0 context.Context, arg1 *utils.VolumePublicationExternal) error {
+// ListVolumePublicationsForNode mocks base method.
+func (m *MockTridentController) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolumePublication", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1)
+	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVolumePublicationsForNode indicates an expected call of ListVolumePublicationsForNode.
+func (mr *MockTridentControllerMockRecorder) ListVolumePublicationsForNode(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForNode", reflect.TypeOf((*MockTridentController)(nil).ListVolumePublicationsForNode), arg0, arg1)
+}
+
+// UpdateNode mocks base method.
+func (m *MockTridentController) UpdateNode(arg0 context.Context, arg1 string, arg2 *utils.NodePublicationStateFlags) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNode", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateVolumePublication indicates an expected call of UpdateVolumePublication.
-func (mr *MockTridentControllerMockRecorder) UpdateVolumePublication(arg0, arg1 interface{}) *gomock.Call {
+// UpdateNode indicates an expected call of UpdateNode.
+func (mr *MockTridentControllerMockRecorder) UpdateNode(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePublication", reflect.TypeOf((*MockTridentController)(nil).UpdateVolumePublication), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNode", reflect.TypeOf((*MockTridentController)(nil).UpdateNode), arg0, arg1, arg2)
+}
+
+// UpdateVolumeLUKSPassphraseNames mocks base method.
+func (m *MockTridentController) UpdateVolumeLUKSPassphraseNames(arg0 context.Context, arg1 string, arg2 []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeLUKSPassphraseNames", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeLUKSPassphraseNames indicates an expected call of UpdateVolumeLUKSPassphraseNames.
+func (mr *MockTridentControllerMockRecorder) UpdateVolumeLUKSPassphraseNames(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeLUKSPassphraseNames", reflect.TypeOf((*MockTridentController)(nil).UpdateVolumeLUKSPassphraseNames), arg0, arg1, arg2)
 }

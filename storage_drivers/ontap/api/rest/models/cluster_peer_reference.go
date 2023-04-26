@@ -19,15 +19,15 @@ import (
 type ClusterPeerReference struct {
 
 	// links
-	Links *ClusterPeerReferenceLinks `json:"_links,omitempty"`
+	Links *ClusterPeerReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster2
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: ebe27c49-1adf-4496-8335-ab862aebebf2
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this cluster peer reference
@@ -107,17 +107,17 @@ func (m *ClusterPeerReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterPeerReferenceLinks cluster peer reference links
+// ClusterPeerReferenceInlineLinks cluster peer reference inline links
 //
-// swagger:model ClusterPeerReferenceLinks
-type ClusterPeerReferenceLinks struct {
+// swagger:model cluster_peer_reference_inline__links
+type ClusterPeerReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster peer reference links
-func (m *ClusterPeerReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster peer reference inline links
+func (m *ClusterPeerReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *ClusterPeerReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterPeerReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterPeerReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *ClusterPeerReferenceLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this cluster peer reference links based on the context it is used
-func (m *ClusterPeerReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster peer reference inline links based on the context it is used
+func (m *ClusterPeerReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *ClusterPeerReferenceLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ClusterPeerReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterPeerReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *ClusterPeerReferenceLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterPeerReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterPeerReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *ClusterPeerReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterPeerReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterPeerReferenceLinks
+func (m *ClusterPeerReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterPeerReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

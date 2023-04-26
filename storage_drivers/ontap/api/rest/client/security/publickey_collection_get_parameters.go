@@ -66,61 +66,61 @@ type PublickeyCollectionGetParams struct {
 
 	   Filter by account.name
 	*/
-	AccountNameQueryParameter *string
+	AccountName *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* ObfuscatedFingerprint.
 
 	   Filter by obfuscated_fingerprint
 	*/
-	ObfuscatedFingerprintQueryParameter *string
+	ObfuscatedFingerprint *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* PublicKey.
 
 	   Filter by public_key
 	*/
-	PublicKeyQueryParameter *string
+	PublicKey *string
 
 	/* ReturnRecords.
 
@@ -128,7 +128,7 @@ type PublickeyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -136,19 +136,19 @@ type PublickeyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* ShaFingerprint.
 
 	   Filter by sha_fingerprint
 	*/
-	ShaFingerprintQueryParameter *string
+	ShaFingerprint *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -168,14 +168,14 @@ func (o *PublickeyCollectionGetParams) WithDefaults() *PublickeyCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *PublickeyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := PublickeyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -217,158 +217,158 @@ func (o *PublickeyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAccountNameQueryParameter adds the accountName to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithAccountNameQueryParameter(accountName *string) *PublickeyCollectionGetParams {
-	o.SetAccountNameQueryParameter(accountName)
+// WithAccountName adds the accountName to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithAccountName(accountName *string) *PublickeyCollectionGetParams {
+	o.SetAccountName(accountName)
 	return o
 }
 
-// SetAccountNameQueryParameter adds the accountName to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetAccountNameQueryParameter(accountName *string) {
-	o.AccountNameQueryParameter = accountName
+// SetAccountName adds the accountName to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetAccountName(accountName *string) {
+	o.AccountName = accountName
 }
 
-// WithCommentQueryParameter adds the comment to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithCommentQueryParameter(comment *string) *PublickeyCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithComment(comment *string) *PublickeyCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithFieldsQueryParameter adds the fields to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithFieldsQueryParameter(fields []string) *PublickeyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithFields(fields []string) *PublickeyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexQueryParameter adds the index to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithIndexQueryParameter(index *int64) *PublickeyCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithIndex(index *int64) *PublickeyCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PublickeyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithMaxRecords(maxRecords *int64) *PublickeyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithObfuscatedFingerprintQueryParameter adds the obfuscatedFingerprint to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithObfuscatedFingerprintQueryParameter(obfuscatedFingerprint *string) *PublickeyCollectionGetParams {
-	o.SetObfuscatedFingerprintQueryParameter(obfuscatedFingerprint)
+// WithObfuscatedFingerprint adds the obfuscatedFingerprint to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithObfuscatedFingerprint(obfuscatedFingerprint *string) *PublickeyCollectionGetParams {
+	o.SetObfuscatedFingerprint(obfuscatedFingerprint)
 	return o
 }
 
-// SetObfuscatedFingerprintQueryParameter adds the obfuscatedFingerprint to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetObfuscatedFingerprintQueryParameter(obfuscatedFingerprint *string) {
-	o.ObfuscatedFingerprintQueryParameter = obfuscatedFingerprint
+// SetObfuscatedFingerprint adds the obfuscatedFingerprint to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetObfuscatedFingerprint(obfuscatedFingerprint *string) {
+	o.ObfuscatedFingerprint = obfuscatedFingerprint
 }
 
-// WithOrderByQueryParameter adds the orderBy to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PublickeyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithOrderBy(orderBy []string) *PublickeyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *PublickeyCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerName adds the ownerName to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithOwnerName(ownerName *string) *PublickeyCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerName adds the ownerName to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *PublickeyCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithOwnerUUID(ownerUUID *string) *PublickeyCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithPublicKeyQueryParameter adds the publicKey to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithPublicKeyQueryParameter(publicKey *string) *PublickeyCollectionGetParams {
-	o.SetPublicKeyQueryParameter(publicKey)
+// WithPublicKey adds the publicKey to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithPublicKey(publicKey *string) *PublickeyCollectionGetParams {
+	o.SetPublicKey(publicKey)
 	return o
 }
 
-// SetPublicKeyQueryParameter adds the publicKey to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetPublicKeyQueryParameter(publicKey *string) {
-	o.PublicKeyQueryParameter = publicKey
+// SetPublicKey adds the publicKey to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetPublicKey(publicKey *string) {
+	o.PublicKey = publicKey
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PublickeyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithReturnRecords(returnRecords *bool) *PublickeyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PublickeyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PublickeyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithScopeQueryParameter(scope *string) *PublickeyCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithScope(scope *string) *PublickeyCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithShaFingerprintQueryParameter adds the shaFingerprint to the publickey collection get params
-func (o *PublickeyCollectionGetParams) WithShaFingerprintQueryParameter(shaFingerprint *string) *PublickeyCollectionGetParams {
-	o.SetShaFingerprintQueryParameter(shaFingerprint)
+// WithShaFingerprint adds the shaFingerprint to the publickey collection get params
+func (o *PublickeyCollectionGetParams) WithShaFingerprint(shaFingerprint *string) *PublickeyCollectionGetParams {
+	o.SetShaFingerprint(shaFingerprint)
 	return o
 }
 
-// SetShaFingerprintQueryParameter adds the shaFingerprint to the publickey collection get params
-func (o *PublickeyCollectionGetParams) SetShaFingerprintQueryParameter(shaFingerprint *string) {
-	o.ShaFingerprintQueryParameter = shaFingerprint
+// SetShaFingerprint adds the shaFingerprint to the publickey collection get params
+func (o *PublickeyCollectionGetParams) SetShaFingerprint(shaFingerprint *string) {
+	o.ShaFingerprint = shaFingerprint
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -379,13 +379,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.AccountNameQueryParameter != nil {
+	if o.AccountName != nil {
 
 		// query param account.name
 		var qrAccountName string
 
-		if o.AccountNameQueryParameter != nil {
-			qrAccountName = *o.AccountNameQueryParameter
+		if o.AccountName != nil {
+			qrAccountName = *o.AccountName
 		}
 		qAccountName := qrAccountName
 		if qAccountName != "" {
@@ -396,13 +396,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -413,7 +413,7 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -424,13 +424,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -441,13 +441,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -458,13 +458,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ObfuscatedFingerprintQueryParameter != nil {
+	if o.ObfuscatedFingerprint != nil {
 
 		// query param obfuscated_fingerprint
 		var qrObfuscatedFingerprint string
 
-		if o.ObfuscatedFingerprintQueryParameter != nil {
-			qrObfuscatedFingerprint = *o.ObfuscatedFingerprintQueryParameter
+		if o.ObfuscatedFingerprint != nil {
+			qrObfuscatedFingerprint = *o.ObfuscatedFingerprint
 		}
 		qObfuscatedFingerprint := qrObfuscatedFingerprint
 		if qObfuscatedFingerprint != "" {
@@ -475,7 +475,7 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -486,13 +486,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -503,13 +503,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -520,13 +520,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.PublicKeyQueryParameter != nil {
+	if o.PublicKey != nil {
 
 		// query param public_key
 		var qrPublicKey string
 
-		if o.PublicKeyQueryParameter != nil {
-			qrPublicKey = *o.PublicKeyQueryParameter
+		if o.PublicKey != nil {
+			qrPublicKey = *o.PublicKey
 		}
 		qPublicKey := qrPublicKey
 		if qPublicKey != "" {
@@ -537,13 +537,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -588,13 +588,13 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ShaFingerprintQueryParameter != nil {
+	if o.ShaFingerprint != nil {
 
 		// query param sha_fingerprint
 		var qrShaFingerprint string
 
-		if o.ShaFingerprintQueryParameter != nil {
-			qrShaFingerprint = *o.ShaFingerprintQueryParameter
+		if o.ShaFingerprint != nil {
+			qrShaFingerprint = *o.ShaFingerprint
 		}
 		qShaFingerprint := qrShaFingerprint
 		if qShaFingerprint != "" {
@@ -613,7 +613,7 @@ func (o *PublickeyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamPublickeyCollectionGet binds the parameter fields
 func (o *PublickeyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -630,7 +630,7 @@ func (o *PublickeyCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamPublickeyCollectionGet binds the parameter order_by
 func (o *PublickeyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,13 +66,13 @@ type SnapshotPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Snapshot copy policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SnapshotPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snapshot policy get params
-func (o *SnapshotPolicyGetParams) WithFieldsQueryParameter(fields []string) *SnapshotPolicyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapshot policy get params
+func (o *SnapshotPolicyGetParams) WithFields(fields []string) *SnapshotPolicyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapshot policy get params
-func (o *SnapshotPolicyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapshot policy get params
+func (o *SnapshotPolicyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the snapshot policy get params
-func (o *SnapshotPolicyGetParams) WithUUIDPathParameter(uuid string) *SnapshotPolicyGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapshot policy get params
+func (o *SnapshotPolicyGetParams) WithUUID(uuid string) *SnapshotPolicyGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapshot policy get params
-func (o *SnapshotPolicyGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapshot policy get params
+func (o *SnapshotPolicyGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SnapshotPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SnapshotPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SnapshotPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamSnapshotPolicyGet binds the parameter fields
 func (o *SnapshotPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

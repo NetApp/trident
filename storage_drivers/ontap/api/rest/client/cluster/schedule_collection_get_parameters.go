@@ -66,73 +66,73 @@ type ScheduleCollectionGetParams struct {
 
 	   Filter by cluster.name
 	*/
-	ClusterNameQueryParameter *string
+	ClusterName *string
 
 	/* ClusterUUID.
 
 	   Filter by cluster.uuid
 	*/
-	ClusterUUIDQueryParameter *string
+	ClusterUUID *string
 
 	/* CronDays.
 
 	   Filter by cron.days
 	*/
-	CronDaysQueryParameter *int64
+	CronDays *int64
 
 	/* CronHours.
 
 	   Filter by cron.hours
 	*/
-	CronHoursQueryParameter *int64
+	CronHours *int64
 
 	/* CronMinutes.
 
 	   Filter by cron.minutes
 	*/
-	CronMinutesQueryParameter *int64
+	CronMinutes *int64
 
 	/* CronMonths.
 
 	   Filter by cron.months
 	*/
-	CronMonthsQueryParameter *int64
+	CronMonths *int64
 
 	/* CronWeekdays.
 
 	   Filter by cron.weekdays
 	*/
-	CronWeekdaysQueryParameter *int64
+	CronWeekdays *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
 	   Filter by interval
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -140,7 +140,7 @@ type ScheduleCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -148,37 +148,37 @@ type ScheduleCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -198,14 +198,14 @@ func (o *ScheduleCollectionGetParams) WithDefaults() *ScheduleCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *ScheduleCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ScheduleCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -247,213 +247,213 @@ func (o *ScheduleCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClusterNameQueryParameter adds the clusterName to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithClusterNameQueryParameter(clusterName *string) *ScheduleCollectionGetParams {
-	o.SetClusterNameQueryParameter(clusterName)
+// WithClusterName adds the clusterName to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithClusterName(clusterName *string) *ScheduleCollectionGetParams {
+	o.SetClusterName(clusterName)
 	return o
 }
 
-// SetClusterNameQueryParameter adds the clusterName to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetClusterNameQueryParameter(clusterName *string) {
-	o.ClusterNameQueryParameter = clusterName
+// SetClusterName adds the clusterName to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetClusterName(clusterName *string) {
+	o.ClusterName = clusterName
 }
 
-// WithClusterUUIDQueryParameter adds the clusterUUID to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithClusterUUIDQueryParameter(clusterUUID *string) *ScheduleCollectionGetParams {
-	o.SetClusterUUIDQueryParameter(clusterUUID)
+// WithClusterUUID adds the clusterUUID to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithClusterUUID(clusterUUID *string) *ScheduleCollectionGetParams {
+	o.SetClusterUUID(clusterUUID)
 	return o
 }
 
-// SetClusterUUIDQueryParameter adds the clusterUuid to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetClusterUUIDQueryParameter(clusterUUID *string) {
-	o.ClusterUUIDQueryParameter = clusterUUID
+// SetClusterUUID adds the clusterUuid to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetClusterUUID(clusterUUID *string) {
+	o.ClusterUUID = clusterUUID
 }
 
-// WithCronDaysQueryParameter adds the cronDays to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithCronDaysQueryParameter(cronDays *int64) *ScheduleCollectionGetParams {
-	o.SetCronDaysQueryParameter(cronDays)
+// WithCronDays adds the cronDays to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithCronDays(cronDays *int64) *ScheduleCollectionGetParams {
+	o.SetCronDays(cronDays)
 	return o
 }
 
-// SetCronDaysQueryParameter adds the cronDays to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetCronDaysQueryParameter(cronDays *int64) {
-	o.CronDaysQueryParameter = cronDays
+// SetCronDays adds the cronDays to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetCronDays(cronDays *int64) {
+	o.CronDays = cronDays
 }
 
-// WithCronHoursQueryParameter adds the cronHours to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithCronHoursQueryParameter(cronHours *int64) *ScheduleCollectionGetParams {
-	o.SetCronHoursQueryParameter(cronHours)
+// WithCronHours adds the cronHours to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithCronHours(cronHours *int64) *ScheduleCollectionGetParams {
+	o.SetCronHours(cronHours)
 	return o
 }
 
-// SetCronHoursQueryParameter adds the cronHours to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetCronHoursQueryParameter(cronHours *int64) {
-	o.CronHoursQueryParameter = cronHours
+// SetCronHours adds the cronHours to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetCronHours(cronHours *int64) {
+	o.CronHours = cronHours
 }
 
-// WithCronMinutesQueryParameter adds the cronMinutes to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithCronMinutesQueryParameter(cronMinutes *int64) *ScheduleCollectionGetParams {
-	o.SetCronMinutesQueryParameter(cronMinutes)
+// WithCronMinutes adds the cronMinutes to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithCronMinutes(cronMinutes *int64) *ScheduleCollectionGetParams {
+	o.SetCronMinutes(cronMinutes)
 	return o
 }
 
-// SetCronMinutesQueryParameter adds the cronMinutes to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetCronMinutesQueryParameter(cronMinutes *int64) {
-	o.CronMinutesQueryParameter = cronMinutes
+// SetCronMinutes adds the cronMinutes to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetCronMinutes(cronMinutes *int64) {
+	o.CronMinutes = cronMinutes
 }
 
-// WithCronMonthsQueryParameter adds the cronMonths to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithCronMonthsQueryParameter(cronMonths *int64) *ScheduleCollectionGetParams {
-	o.SetCronMonthsQueryParameter(cronMonths)
+// WithCronMonths adds the cronMonths to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithCronMonths(cronMonths *int64) *ScheduleCollectionGetParams {
+	o.SetCronMonths(cronMonths)
 	return o
 }
 
-// SetCronMonthsQueryParameter adds the cronMonths to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetCronMonthsQueryParameter(cronMonths *int64) {
-	o.CronMonthsQueryParameter = cronMonths
+// SetCronMonths adds the cronMonths to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetCronMonths(cronMonths *int64) {
+	o.CronMonths = cronMonths
 }
 
-// WithCronWeekdaysQueryParameter adds the cronWeekdays to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithCronWeekdaysQueryParameter(cronWeekdays *int64) *ScheduleCollectionGetParams {
-	o.SetCronWeekdaysQueryParameter(cronWeekdays)
+// WithCronWeekdays adds the cronWeekdays to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithCronWeekdays(cronWeekdays *int64) *ScheduleCollectionGetParams {
+	o.SetCronWeekdays(cronWeekdays)
 	return o
 }
 
-// SetCronWeekdaysQueryParameter adds the cronWeekdays to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetCronWeekdaysQueryParameter(cronWeekdays *int64) {
-	o.CronWeekdaysQueryParameter = cronWeekdays
+// SetCronWeekdays adds the cronWeekdays to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetCronWeekdays(cronWeekdays *int64) {
+	o.CronWeekdays = cronWeekdays
 }
 
-// WithFieldsQueryParameter adds the fields to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithFieldsQueryParameter(fields []string) *ScheduleCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithFields(fields []string) *ScheduleCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithIntervalQueryParameter(interval *string) *ScheduleCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithInterval(interval *string) *ScheduleCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ScheduleCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithMaxRecords(maxRecords *int64) *ScheduleCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithNameQueryParameter(name *string) *ScheduleCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithName(name *string) *ScheduleCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ScheduleCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithOrderBy(orderBy []string) *ScheduleCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ScheduleCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithReturnRecords(returnRecords *bool) *ScheduleCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ScheduleCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ScheduleCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithScopeQueryParameter(scope *string) *ScheduleCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithScope(scope *string) *ScheduleCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSVMNameQueryParameter adds the svmName to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ScheduleCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithSvmName(svmName *string) *ScheduleCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ScheduleCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithSvmUUID(svmUUID *string) *ScheduleCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithTypeQueryParameter(typeVar *string) *ScheduleCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithType(typeVar *string) *ScheduleCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ScheduleCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithUUID(uuid *string) *ScheduleCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -464,13 +464,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.ClusterNameQueryParameter != nil {
+	if o.ClusterName != nil {
 
 		// query param cluster.name
 		var qrClusterName string
 
-		if o.ClusterNameQueryParameter != nil {
-			qrClusterName = *o.ClusterNameQueryParameter
+		if o.ClusterName != nil {
+			qrClusterName = *o.ClusterName
 		}
 		qClusterName := qrClusterName
 		if qClusterName != "" {
@@ -481,13 +481,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ClusterUUIDQueryParameter != nil {
+	if o.ClusterUUID != nil {
 
 		// query param cluster.uuid
 		var qrClusterUUID string
 
-		if o.ClusterUUIDQueryParameter != nil {
-			qrClusterUUID = *o.ClusterUUIDQueryParameter
+		if o.ClusterUUID != nil {
+			qrClusterUUID = *o.ClusterUUID
 		}
 		qClusterUUID := qrClusterUUID
 		if qClusterUUID != "" {
@@ -498,13 +498,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CronDaysQueryParameter != nil {
+	if o.CronDays != nil {
 
 		// query param cron.days
 		var qrCronDays int64
 
-		if o.CronDaysQueryParameter != nil {
-			qrCronDays = *o.CronDaysQueryParameter
+		if o.CronDays != nil {
+			qrCronDays = *o.CronDays
 		}
 		qCronDays := swag.FormatInt64(qrCronDays)
 		if qCronDays != "" {
@@ -515,13 +515,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CronHoursQueryParameter != nil {
+	if o.CronHours != nil {
 
 		// query param cron.hours
 		var qrCronHours int64
 
-		if o.CronHoursQueryParameter != nil {
-			qrCronHours = *o.CronHoursQueryParameter
+		if o.CronHours != nil {
+			qrCronHours = *o.CronHours
 		}
 		qCronHours := swag.FormatInt64(qrCronHours)
 		if qCronHours != "" {
@@ -532,13 +532,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CronMinutesQueryParameter != nil {
+	if o.CronMinutes != nil {
 
 		// query param cron.minutes
 		var qrCronMinutes int64
 
-		if o.CronMinutesQueryParameter != nil {
-			qrCronMinutes = *o.CronMinutesQueryParameter
+		if o.CronMinutes != nil {
+			qrCronMinutes = *o.CronMinutes
 		}
 		qCronMinutes := swag.FormatInt64(qrCronMinutes)
 		if qCronMinutes != "" {
@@ -549,13 +549,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CronMonthsQueryParameter != nil {
+	if o.CronMonths != nil {
 
 		// query param cron.months
 		var qrCronMonths int64
 
-		if o.CronMonthsQueryParameter != nil {
-			qrCronMonths = *o.CronMonthsQueryParameter
+		if o.CronMonths != nil {
+			qrCronMonths = *o.CronMonths
 		}
 		qCronMonths := swag.FormatInt64(qrCronMonths)
 		if qCronMonths != "" {
@@ -566,13 +566,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.CronWeekdaysQueryParameter != nil {
+	if o.CronWeekdays != nil {
 
 		// query param cron.weekdays
 		var qrCronWeekdays int64
 
-		if o.CronWeekdaysQueryParameter != nil {
-			qrCronWeekdays = *o.CronWeekdaysQueryParameter
+		if o.CronWeekdays != nil {
+			qrCronWeekdays = *o.CronWeekdays
 		}
 		qCronWeekdays := swag.FormatInt64(qrCronWeekdays)
 		if qCronWeekdays != "" {
@@ -583,7 +583,7 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -594,13 +594,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -611,13 +611,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -628,13 +628,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -645,7 +645,7 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -656,13 +656,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -673,13 +673,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -690,13 +690,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -707,13 +707,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -724,13 +724,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -741,13 +741,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -758,13 +758,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -783,7 +783,7 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamScheduleCollectionGet binds the parameter fields
 func (o *ScheduleCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -800,7 +800,7 @@ func (o *ScheduleCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamScheduleCollectionGet binds the parameter order_by
 func (o *ScheduleCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

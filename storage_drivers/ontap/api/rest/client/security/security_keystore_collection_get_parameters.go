@@ -66,25 +66,25 @@ type SecurityKeystoreCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Location.
 
 	   Filter by location
 	*/
-	LocationQueryParameter *string
+	Location *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type SecurityKeystoreCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,31 +100,31 @@ type SecurityKeystoreCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *SecurityKeystoreCollectionGetParams) WithDefaults() *SecurityKeystoreCo
 // All values with no default are reset to their zero value.
 func (o *SecurityKeystoreCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SecurityKeystoreCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *SecurityKeystoreCollectionGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeystoreCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithFields(fields []string) *SecurityKeystoreCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLocationQueryParameter adds the location to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithLocationQueryParameter(location *string) *SecurityKeystoreCollectionGetParams {
-	o.SetLocationQueryParameter(location)
+// WithLocation adds the location to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithLocation(location *string) *SecurityKeystoreCollectionGetParams {
+	o.SetLocation(location)
 	return o
 }
 
-// SetLocationQueryParameter adds the location to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetLocationQueryParameter(location *string) {
-	o.LocationQueryParameter = location
+// SetLocation adds the location to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetLocation(location *string) {
+	o.Location = location
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityKeystoreCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityKeystoreCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityKeystoreCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithOrderBy(orderBy []string) *SecurityKeystoreCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityKeystoreCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityKeystoreCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityKeystoreCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityKeystoreCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SecurityKeystoreCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithSvmName(svmName *string) *SecurityKeystoreCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SecurityKeystoreCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithSvmUUID(svmUUID *string) *SecurityKeystoreCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithTypeQueryParameter(typeVar *string) *SecurityKeystoreCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithType(typeVar *string) *SecurityKeystoreCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) WithUUIDQueryParameter(uuid *string) *SecurityKeystoreCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithUUID(uuid *string) *SecurityKeystoreCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the security keystore collection get params
-func (o *SecurityKeystoreCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,7 +311,7 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -322,13 +322,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.LocationQueryParameter != nil {
+	if o.Location != nil {
 
 		// query param location
 		var qrLocation string
 
-		if o.LocationQueryParameter != nil {
-			qrLocation = *o.LocationQueryParameter
+		if o.Location != nil {
+			qrLocation = *o.Location
 		}
 		qLocation := qrLocation
 		if qLocation != "" {
@@ -339,13 +339,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -356,7 +356,7 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -367,13 +367,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -384,13 +384,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -401,13 +401,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -418,13 +418,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -435,13 +435,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -452,13 +452,13 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -477,7 +477,7 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamSecurityKeystoreCollectionGet binds the parameter fields
 func (o *SecurityKeystoreCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +494,7 @@ func (o *SecurityKeystoreCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamSecurityKeystoreCollectionGet binds the parameter order_by
 func (o *SecurityKeystoreCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,7 +66,7 @@ type FcInterfaceDeleteParams struct {
 	   The unique identifier for the FC interface.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *FcInterfaceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the fc interface delete params
-func (o *FcInterfaceDeleteParams) WithUUIDPathParameter(uuid string) *FcInterfaceDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the fc interface delete params
+func (o *FcInterfaceDeleteParams) WithUUID(uuid string) *FcInterfaceDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the fc interface delete params
-func (o *FcInterfaceDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the fc interface delete params
+func (o *FcInterfaceDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -141,7 +141,7 @@ func (o *FcInterfaceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

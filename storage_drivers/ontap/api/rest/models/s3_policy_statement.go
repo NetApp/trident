@@ -20,6 +20,15 @@ import (
 // swagger:model s3_policy_statement
 type S3PolicyStatement struct {
 
+	// Specifies whether access is allowed or denied. If access (to allow) is not granted explicitly to a resource, access is implicitly denied. Access can also be denied explicitly to a resource, in order to make sure that a user cannot access it, even if a different policy grants access.
+	// Example: allow
+	// Enum: [allow deny]
+	Effect *string `json:"effect,omitempty"`
+
+	// Specifies a unique statement index used to identify a particular statement. This parameter should not be specified in the POST method. A statement index is automatically generated and is retrieved using the GET method.
+	// Read Only: true
+	Index *int64 `json:"index,omitempty"`
+
 	// For each resource, S3 supports a set of operations. The resource operations allowed or denied are identified by an action list:
 	// * GetObject - retrieves objects from a bucket.
 	// * PutObject - puts objects in a bucket.
@@ -39,23 +48,17 @@ type S3PolicyStatement struct {
 	// * GetBucketVersioning - retrieves the versioning configuration of a bucket.
 	// * PutBucketVersioning - modifies the versioning configuration of a bucket.
 	// * ListBucketVersions - lists the object versions in a bucket.
+	// * PutBucketPolicy - puts bucket policy on the bucket specified.
+	// * GetBucketPolicy - retrieves the bucket policy of a bucket.
+	// * DeleteBucketPolicy - deletes the policy created for a bucket.
 	// The wildcard character "*" can be used to form a regular expression for specifying actions.
 	//
 	// Example: ["*"]
-	Actions []string `json:"actions,omitempty"`
+	S3PolicyStatementInlineActions []*string `json:"actions,omitempty"`
 
-	// Specifies whether access is allowed or denied. If access (to allow) is not granted explicitly to a resource, access is implicitly denied. Access can also be denied explicitly to a resource, in order to make sure that a user cannot access it, even if a different policy grants access.
-	// Example: allow
-	// Enum: [allow deny]
-	Effect string `json:"effect,omitempty"`
-
-	// Specifies a unique statement index used to identify a particular statement. This parameter should not be specified in the POST method. A statement index is automatically generated and is retrieved using the GET method.
-	// Read Only: true
-	Index int64 `json:"index,omitempty"`
-
-	// resources
+	// s3 policy statement inline resources
 	// Example: ["bucket1","bucket1/*"]
-	Resources []string `json:"resources,omitempty"`
+	S3PolicyStatementInlineResources []*string `json:"resources,omitempty"`
 
 	// Specifies the statement identifier which contains additional information about the statement.
 	// Example: FullAccessToBucket1
@@ -131,7 +134,7 @@ func (m *S3PolicyStatement) validateEffect(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateEffectEnum("effect", "body", m.Effect); err != nil {
+	if err := m.validateEffectEnum("effect", "body", *m.Effect); err != nil {
 		return err
 	}
 
@@ -170,7 +173,7 @@ func (m *S3PolicyStatement) ContextValidate(ctx context.Context, formats strfmt.
 
 func (m *S3PolicyStatement) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 

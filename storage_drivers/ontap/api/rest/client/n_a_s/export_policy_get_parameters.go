@@ -66,13 +66,13 @@ type ExportPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Export Policy ID
 	*/
-	IDPathParameter int64
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ExportPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the export policy get params
-func (o *ExportPolicyGetParams) WithFieldsQueryParameter(fields []string) *ExportPolicyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the export policy get params
+func (o *ExportPolicyGetParams) WithFields(fields []string) *ExportPolicyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the export policy get params
-func (o *ExportPolicyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the export policy get params
+func (o *ExportPolicyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the export policy get params
-func (o *ExportPolicyGetParams) WithIDPathParameter(id int64) *ExportPolicyGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the export policy get params
+func (o *ExportPolicyGetParams) WithID(id int64) *ExportPolicyGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the export policy get params
-func (o *ExportPolicyGetParams) SetIDPathParameter(id int64) {
-	o.IDPathParameter = id
+// SetID adds the id to the export policy get params
+func (o *ExportPolicyGetParams) SetID(id int64) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ExportPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ExportPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.IDPathParameter)); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ExportPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamExportPolicyGet binds the parameter fields
 func (o *ExportPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

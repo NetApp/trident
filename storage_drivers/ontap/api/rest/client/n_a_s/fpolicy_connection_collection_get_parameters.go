@@ -66,55 +66,55 @@ type FpolicyConnectionCollectionGetParams struct {
 
 	   Filter by disconnected_reason.code
 	*/
-	DisconnectedReasonCodeQueryParameter *int64
+	DisconnectedReasonCode *int64
 
 	/* DisconnectedReasonMessage.
 
 	   Filter by disconnected_reason.message
 	*/
-	DisconnectedReasonMessageQueryParameter *string
+	DisconnectedReasonMessage *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PassthroughRead.
 
 	   Whether to view only passthrough-read connections
 	*/
-	PassthroughReadQueryParameter *bool
+	PassthroughRead *bool
 
 	/* PolicyName.
 
 	   Filter by policy.name
 	*/
-	PolicyNameQueryParameter *string
+	PolicyName *string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type FpolicyConnectionCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,49 +130,49 @@ type FpolicyConnectionCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Server.
 
 	   Filter by server
 	*/
-	ServerQueryParameter *string
+	Server *string
 
 	/* SessionUUID.
 
 	   Filter by session_uuid
 	*/
-	SessionUUIDQueryParameter *string
+	SessionUUID *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UpdateTime.
 
 	   Filter by update_time
 	*/
-	UpdateTimeQueryParameter *string
+	UpdateTime *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -192,14 +192,14 @@ func (o *FpolicyConnectionCollectionGetParams) WithDefaults() *FpolicyConnection
 // All values with no default are reset to their zero value.
 func (o *FpolicyConnectionCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FpolicyConnectionCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -241,202 +241,202 @@ func (o *FpolicyConnectionCollectionGetParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithDisconnectedReasonCodeQueryParameter adds the disconnectedReasonCode to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithDisconnectedReasonCodeQueryParameter(disconnectedReasonCode *int64) *FpolicyConnectionCollectionGetParams {
-	o.SetDisconnectedReasonCodeQueryParameter(disconnectedReasonCode)
+// WithDisconnectedReasonCode adds the disconnectedReasonCode to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithDisconnectedReasonCode(disconnectedReasonCode *int64) *FpolicyConnectionCollectionGetParams {
+	o.SetDisconnectedReasonCode(disconnectedReasonCode)
 	return o
 }
 
-// SetDisconnectedReasonCodeQueryParameter adds the disconnectedReasonCode to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetDisconnectedReasonCodeQueryParameter(disconnectedReasonCode *int64) {
-	o.DisconnectedReasonCodeQueryParameter = disconnectedReasonCode
+// SetDisconnectedReasonCode adds the disconnectedReasonCode to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetDisconnectedReasonCode(disconnectedReasonCode *int64) {
+	o.DisconnectedReasonCode = disconnectedReasonCode
 }
 
-// WithDisconnectedReasonMessageQueryParameter adds the disconnectedReasonMessage to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithDisconnectedReasonMessageQueryParameter(disconnectedReasonMessage *string) *FpolicyConnectionCollectionGetParams {
-	o.SetDisconnectedReasonMessageQueryParameter(disconnectedReasonMessage)
+// WithDisconnectedReasonMessage adds the disconnectedReasonMessage to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithDisconnectedReasonMessage(disconnectedReasonMessage *string) *FpolicyConnectionCollectionGetParams {
+	o.SetDisconnectedReasonMessage(disconnectedReasonMessage)
 	return o
 }
 
-// SetDisconnectedReasonMessageQueryParameter adds the disconnectedReasonMessage to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetDisconnectedReasonMessageQueryParameter(disconnectedReasonMessage *string) {
-	o.DisconnectedReasonMessageQueryParameter = disconnectedReasonMessage
+// SetDisconnectedReasonMessage adds the disconnectedReasonMessage to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetDisconnectedReasonMessage(disconnectedReasonMessage *string) {
+	o.DisconnectedReasonMessage = disconnectedReasonMessage
 }
 
-// WithFieldsQueryParameter adds the fields to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithFieldsQueryParameter(fields []string) *FpolicyConnectionCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithFields(fields []string) *FpolicyConnectionCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FpolicyConnectionCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithMaxRecords(maxRecords *int64) *FpolicyConnectionCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *FpolicyConnectionCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithNodeName(nodeName *string) *FpolicyConnectionCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *FpolicyConnectionCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithNodeUUID(nodeUUID *string) *FpolicyConnectionCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FpolicyConnectionCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithOrderBy(orderBy []string) *FpolicyConnectionCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPassthroughReadQueryParameter adds the passthroughRead to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithPassthroughReadQueryParameter(passthroughRead *bool) *FpolicyConnectionCollectionGetParams {
-	o.SetPassthroughReadQueryParameter(passthroughRead)
+// WithPassthroughRead adds the passthroughRead to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithPassthroughRead(passthroughRead *bool) *FpolicyConnectionCollectionGetParams {
+	o.SetPassthroughRead(passthroughRead)
 	return o
 }
 
-// SetPassthroughReadQueryParameter adds the passthroughRead to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetPassthroughReadQueryParameter(passthroughRead *bool) {
-	o.PassthroughReadQueryParameter = passthroughRead
+// SetPassthroughRead adds the passthroughRead to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetPassthroughRead(passthroughRead *bool) {
+	o.PassthroughRead = passthroughRead
 }
 
-// WithPolicyNameQueryParameter adds the policyName to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithPolicyNameQueryParameter(policyName *string) *FpolicyConnectionCollectionGetParams {
-	o.SetPolicyNameQueryParameter(policyName)
+// WithPolicyName adds the policyName to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithPolicyName(policyName *string) *FpolicyConnectionCollectionGetParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNameQueryParameter adds the policyName to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetPolicyNameQueryParameter(policyName *string) {
-	o.PolicyNameQueryParameter = policyName
+// SetPolicyName adds the policyName to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetPolicyName(policyName *string) {
+	o.PolicyName = policyName
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyConnectionCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithReturnRecords(returnRecords *bool) *FpolicyConnectionCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FpolicyConnectionCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FpolicyConnectionCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerQueryParameter adds the server to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithServerQueryParameter(server *string) *FpolicyConnectionCollectionGetParams {
-	o.SetServerQueryParameter(server)
+// WithServer adds the server to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithServer(server *string) *FpolicyConnectionCollectionGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerQueryParameter adds the server to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetServerQueryParameter(server *string) {
-	o.ServerQueryParameter = server
+// SetServer adds the server to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetServer(server *string) {
+	o.Server = server
 }
 
-// WithSessionUUIDQueryParameter adds the sessionUUID to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithSessionUUIDQueryParameter(sessionUUID *string) *FpolicyConnectionCollectionGetParams {
-	o.SetSessionUUIDQueryParameter(sessionUUID)
+// WithSessionUUID adds the sessionUUID to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithSessionUUID(sessionUUID *string) *FpolicyConnectionCollectionGetParams {
+	o.SetSessionUUID(sessionUUID)
 	return o
 }
 
-// SetSessionUUIDQueryParameter adds the sessionUuid to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetSessionUUIDQueryParameter(sessionUUID *string) {
-	o.SessionUUIDQueryParameter = sessionUUID
+// SetSessionUUID adds the sessionUuid to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetSessionUUID(sessionUUID *string) {
+	o.SessionUUID = sessionUUID
 }
 
-// WithStateQueryParameter adds the state to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithStateQueryParameter(state *string) *FpolicyConnectionCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithState(state *string) *FpolicyConnectionCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithSVMNameQueryParameter adds the svmName to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *FpolicyConnectionCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithSvmName(svmName *string) *FpolicyConnectionCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyConnectionCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithSvmUUID(svmUUID string) *FpolicyConnectionCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithTypeQueryParameter(typeVar *string) *FpolicyConnectionCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithType(typeVar *string) *FpolicyConnectionCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUpdateTimeQueryParameter adds the updateTime to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) WithUpdateTimeQueryParameter(updateTime *string) *FpolicyConnectionCollectionGetParams {
-	o.SetUpdateTimeQueryParameter(updateTime)
+// WithUpdateTime adds the updateTime to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) WithUpdateTime(updateTime *string) *FpolicyConnectionCollectionGetParams {
+	o.SetUpdateTime(updateTime)
 	return o
 }
 
-// SetUpdateTimeQueryParameter adds the updateTime to the fpolicy connection collection get params
-func (o *FpolicyConnectionCollectionGetParams) SetUpdateTimeQueryParameter(updateTime *string) {
-	o.UpdateTimeQueryParameter = updateTime
+// SetUpdateTime adds the updateTime to the fpolicy connection collection get params
+func (o *FpolicyConnectionCollectionGetParams) SetUpdateTime(updateTime *string) {
+	o.UpdateTime = updateTime
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -447,13 +447,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.DisconnectedReasonCodeQueryParameter != nil {
+	if o.DisconnectedReasonCode != nil {
 
 		// query param disconnected_reason.code
 		var qrDisconnectedReasonCode int64
 
-		if o.DisconnectedReasonCodeQueryParameter != nil {
-			qrDisconnectedReasonCode = *o.DisconnectedReasonCodeQueryParameter
+		if o.DisconnectedReasonCode != nil {
+			qrDisconnectedReasonCode = *o.DisconnectedReasonCode
 		}
 		qDisconnectedReasonCode := swag.FormatInt64(qrDisconnectedReasonCode)
 		if qDisconnectedReasonCode != "" {
@@ -464,13 +464,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.DisconnectedReasonMessageQueryParameter != nil {
+	if o.DisconnectedReasonMessage != nil {
 
 		// query param disconnected_reason.message
 		var qrDisconnectedReasonMessage string
 
-		if o.DisconnectedReasonMessageQueryParameter != nil {
-			qrDisconnectedReasonMessage = *o.DisconnectedReasonMessageQueryParameter
+		if o.DisconnectedReasonMessage != nil {
+			qrDisconnectedReasonMessage = *o.DisconnectedReasonMessage
 		}
 		qDisconnectedReasonMessage := qrDisconnectedReasonMessage
 		if qDisconnectedReasonMessage != "" {
@@ -481,7 +481,7 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -492,13 +492,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -509,13 +509,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -526,13 +526,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -543,7 +543,7 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -554,13 +554,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.PassthroughReadQueryParameter != nil {
+	if o.PassthroughRead != nil {
 
 		// query param passthrough_read
 		var qrPassthroughRead bool
 
-		if o.PassthroughReadQueryParameter != nil {
-			qrPassthroughRead = *o.PassthroughReadQueryParameter
+		if o.PassthroughRead != nil {
+			qrPassthroughRead = *o.PassthroughRead
 		}
 		qPassthroughRead := swag.FormatBool(qrPassthroughRead)
 		if qPassthroughRead != "" {
@@ -571,13 +571,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.PolicyNameQueryParameter != nil {
+	if o.PolicyName != nil {
 
 		// query param policy.name
 		var qrPolicyName string
 
-		if o.PolicyNameQueryParameter != nil {
-			qrPolicyName = *o.PolicyNameQueryParameter
+		if o.PolicyName != nil {
+			qrPolicyName = *o.PolicyName
 		}
 		qPolicyName := qrPolicyName
 		if qPolicyName != "" {
@@ -588,13 +588,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -605,13 +605,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -622,13 +622,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ServerQueryParameter != nil {
+	if o.Server != nil {
 
 		// query param server
 		var qrServer string
 
-		if o.ServerQueryParameter != nil {
-			qrServer = *o.ServerQueryParameter
+		if o.Server != nil {
+			qrServer = *o.Server
 		}
 		qServer := qrServer
 		if qServer != "" {
@@ -639,13 +639,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SessionUUIDQueryParameter != nil {
+	if o.SessionUUID != nil {
 
 		// query param session_uuid
 		var qrSessionUUID string
 
-		if o.SessionUUIDQueryParameter != nil {
-			qrSessionUUID = *o.SessionUUIDQueryParameter
+		if o.SessionUUID != nil {
+			qrSessionUUID = *o.SessionUUID
 		}
 		qSessionUUID := qrSessionUUID
 		if qSessionUUID != "" {
@@ -656,13 +656,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -673,13 +673,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -691,17 +691,17 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -712,13 +712,13 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.UpdateTimeQueryParameter != nil {
+	if o.UpdateTime != nil {
 
 		// query param update_time
 		var qrUpdateTime string
 
-		if o.UpdateTimeQueryParameter != nil {
-			qrUpdateTime = *o.UpdateTimeQueryParameter
+		if o.UpdateTime != nil {
+			qrUpdateTime = *o.UpdateTime
 		}
 		qUpdateTime := qrUpdateTime
 		if qUpdateTime != "" {
@@ -737,7 +737,7 @@ func (o *FpolicyConnectionCollectionGetParams) WriteToRequest(r runtime.ClientRe
 
 // bindParamFpolicyConnectionCollectionGet binds the parameter fields
 func (o *FpolicyConnectionCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -754,7 +754,7 @@ func (o *FpolicyConnectionCollectionGetParams) bindParamFields(formats strfmt.Re
 
 // bindParamFpolicyConnectionCollectionGet binds the parameter order_by
 func (o *FpolicyConnectionCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,91 +66,79 @@ type AccountCollectionGetParams struct {
 
 	   Filter by applications.application
 	*/
-	ApplicationsApplicationQueryParameter *string
+	ApplicationsApplication *string
 
 	/* ApplicationsAuthenticationMethods.
 
 	   Filter by applications.authentication_methods
 	*/
-	ApplicationsAuthenticationMethodsQueryParameter *string
+	ApplicationsAuthenticationMethods *string
 
 	/* ApplicationsSecondAuthenticationMethod.
 
 	   Filter by applications.second_authentication_method
 	*/
-	ApplicationsSecondAuthenticationMethodQueryParameter *string
-
-	/* AuthenticationMethods.
-
-	   Filter by authentication_methods
-	*/
-	AuthenticationMethodsQueryParameter *string
+	ApplicationsSecondAuthenticationMethod *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LdapFastbind.
 
 	   Filter by ldap_fastbind
 	*/
-	LdapFastbindQueryParameter *bool
+	LdapFastbind *bool
 
 	/* Locked.
 
 	   Filter by locked
 	*/
-	LockedQueryParameter *bool
+	Locked *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* PasswordHashAlgorithm.
 
 	   Filter by password_hash_algorithm
 	*/
-	PasswordHashAlgorithmQueryParameter *string
-
-	/* PublicKey.
-
-	   Filter by public_key
-	*/
-	PublicKeyQueryParameter *string
+	PasswordHashAlgorithm *string
 
 	/* ReturnRecords.
 
@@ -158,7 +146,7 @@ type AccountCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -166,25 +154,19 @@ type AccountCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* RoleName.
 
 	   Filter by role.name
 	*/
-	RoleNameQueryParameter *string
+	RoleName *string
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
-
-	/* SslCaCertificate.
-
-	   Filter by ssl_ca_certificate
-	*/
-	SslCaCertificateQueryParameter *string
+	Scope *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -204,14 +186,14 @@ func (o *AccountCollectionGetParams) WithDefaults() *AccountCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *AccountCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AccountCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -253,224 +235,191 @@ func (o *AccountCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithApplicationsApplicationQueryParameter adds the applicationsApplication to the account collection get params
-func (o *AccountCollectionGetParams) WithApplicationsApplicationQueryParameter(applicationsApplication *string) *AccountCollectionGetParams {
-	o.SetApplicationsApplicationQueryParameter(applicationsApplication)
+// WithApplicationsApplication adds the applicationsApplication to the account collection get params
+func (o *AccountCollectionGetParams) WithApplicationsApplication(applicationsApplication *string) *AccountCollectionGetParams {
+	o.SetApplicationsApplication(applicationsApplication)
 	return o
 }
 
-// SetApplicationsApplicationQueryParameter adds the applicationsApplication to the account collection get params
-func (o *AccountCollectionGetParams) SetApplicationsApplicationQueryParameter(applicationsApplication *string) {
-	o.ApplicationsApplicationQueryParameter = applicationsApplication
+// SetApplicationsApplication adds the applicationsApplication to the account collection get params
+func (o *AccountCollectionGetParams) SetApplicationsApplication(applicationsApplication *string) {
+	o.ApplicationsApplication = applicationsApplication
 }
 
-// WithApplicationsAuthenticationMethodsQueryParameter adds the applicationsAuthenticationMethods to the account collection get params
-func (o *AccountCollectionGetParams) WithApplicationsAuthenticationMethodsQueryParameter(applicationsAuthenticationMethods *string) *AccountCollectionGetParams {
-	o.SetApplicationsAuthenticationMethodsQueryParameter(applicationsAuthenticationMethods)
+// WithApplicationsAuthenticationMethods adds the applicationsAuthenticationMethods to the account collection get params
+func (o *AccountCollectionGetParams) WithApplicationsAuthenticationMethods(applicationsAuthenticationMethods *string) *AccountCollectionGetParams {
+	o.SetApplicationsAuthenticationMethods(applicationsAuthenticationMethods)
 	return o
 }
 
-// SetApplicationsAuthenticationMethodsQueryParameter adds the applicationsAuthenticationMethods to the account collection get params
-func (o *AccountCollectionGetParams) SetApplicationsAuthenticationMethodsQueryParameter(applicationsAuthenticationMethods *string) {
-	o.ApplicationsAuthenticationMethodsQueryParameter = applicationsAuthenticationMethods
+// SetApplicationsAuthenticationMethods adds the applicationsAuthenticationMethods to the account collection get params
+func (o *AccountCollectionGetParams) SetApplicationsAuthenticationMethods(applicationsAuthenticationMethods *string) {
+	o.ApplicationsAuthenticationMethods = applicationsAuthenticationMethods
 }
 
-// WithApplicationsSecondAuthenticationMethodQueryParameter adds the applicationsSecondAuthenticationMethod to the account collection get params
-func (o *AccountCollectionGetParams) WithApplicationsSecondAuthenticationMethodQueryParameter(applicationsSecondAuthenticationMethod *string) *AccountCollectionGetParams {
-	o.SetApplicationsSecondAuthenticationMethodQueryParameter(applicationsSecondAuthenticationMethod)
+// WithApplicationsSecondAuthenticationMethod adds the applicationsSecondAuthenticationMethod to the account collection get params
+func (o *AccountCollectionGetParams) WithApplicationsSecondAuthenticationMethod(applicationsSecondAuthenticationMethod *string) *AccountCollectionGetParams {
+	o.SetApplicationsSecondAuthenticationMethod(applicationsSecondAuthenticationMethod)
 	return o
 }
 
-// SetApplicationsSecondAuthenticationMethodQueryParameter adds the applicationsSecondAuthenticationMethod to the account collection get params
-func (o *AccountCollectionGetParams) SetApplicationsSecondAuthenticationMethodQueryParameter(applicationsSecondAuthenticationMethod *string) {
-	o.ApplicationsSecondAuthenticationMethodQueryParameter = applicationsSecondAuthenticationMethod
+// SetApplicationsSecondAuthenticationMethod adds the applicationsSecondAuthenticationMethod to the account collection get params
+func (o *AccountCollectionGetParams) SetApplicationsSecondAuthenticationMethod(applicationsSecondAuthenticationMethod *string) {
+	o.ApplicationsSecondAuthenticationMethod = applicationsSecondAuthenticationMethod
 }
 
-// WithAuthenticationMethodsQueryParameter adds the authenticationMethods to the account collection get params
-func (o *AccountCollectionGetParams) WithAuthenticationMethodsQueryParameter(authenticationMethods *string) *AccountCollectionGetParams {
-	o.SetAuthenticationMethodsQueryParameter(authenticationMethods)
+// WithComment adds the comment to the account collection get params
+func (o *AccountCollectionGetParams) WithComment(comment *string) *AccountCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetAuthenticationMethodsQueryParameter adds the authenticationMethods to the account collection get params
-func (o *AccountCollectionGetParams) SetAuthenticationMethodsQueryParameter(authenticationMethods *string) {
-	o.AuthenticationMethodsQueryParameter = authenticationMethods
+// SetComment adds the comment to the account collection get params
+func (o *AccountCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithCommentQueryParameter adds the comment to the account collection get params
-func (o *AccountCollectionGetParams) WithCommentQueryParameter(comment *string) *AccountCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithFields adds the fields to the account collection get params
+func (o *AccountCollectionGetParams) WithFields(fields []string) *AccountCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the account collection get params
-func (o *AccountCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetFields adds the fields to the account collection get params
+func (o *AccountCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFieldsQueryParameter adds the fields to the account collection get params
-func (o *AccountCollectionGetParams) WithFieldsQueryParameter(fields []string) *AccountCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithLdapFastbind adds the ldapFastbind to the account collection get params
+func (o *AccountCollectionGetParams) WithLdapFastbind(ldapFastbind *bool) *AccountCollectionGetParams {
+	o.SetLdapFastbind(ldapFastbind)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the account collection get params
-func (o *AccountCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetLdapFastbind adds the ldapFastbind to the account collection get params
+func (o *AccountCollectionGetParams) SetLdapFastbind(ldapFastbind *bool) {
+	o.LdapFastbind = ldapFastbind
 }
 
-// WithLdapFastbindQueryParameter adds the ldapFastbind to the account collection get params
-func (o *AccountCollectionGetParams) WithLdapFastbindQueryParameter(ldapFastbind *bool) *AccountCollectionGetParams {
-	o.SetLdapFastbindQueryParameter(ldapFastbind)
+// WithLocked adds the locked to the account collection get params
+func (o *AccountCollectionGetParams) WithLocked(locked *bool) *AccountCollectionGetParams {
+	o.SetLocked(locked)
 	return o
 }
 
-// SetLdapFastbindQueryParameter adds the ldapFastbind to the account collection get params
-func (o *AccountCollectionGetParams) SetLdapFastbindQueryParameter(ldapFastbind *bool) {
-	o.LdapFastbindQueryParameter = ldapFastbind
+// SetLocked adds the locked to the account collection get params
+func (o *AccountCollectionGetParams) SetLocked(locked *bool) {
+	o.Locked = locked
 }
 
-// WithLockedQueryParameter adds the locked to the account collection get params
-func (o *AccountCollectionGetParams) WithLockedQueryParameter(locked *bool) *AccountCollectionGetParams {
-	o.SetLockedQueryParameter(locked)
+// WithMaxRecords adds the maxRecords to the account collection get params
+func (o *AccountCollectionGetParams) WithMaxRecords(maxRecords *int64) *AccountCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetLockedQueryParameter adds the locked to the account collection get params
-func (o *AccountCollectionGetParams) SetLockedQueryParameter(locked *bool) {
-	o.LockedQueryParameter = locked
+// SetMaxRecords adds the maxRecords to the account collection get params
+func (o *AccountCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the account collection get params
-func (o *AccountCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AccountCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithName adds the name to the account collection get params
+func (o *AccountCollectionGetParams) WithName(name *string) *AccountCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the account collection get params
-func (o *AccountCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetName adds the name to the account collection get params
+func (o *AccountCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNameQueryParameter adds the name to the account collection get params
-func (o *AccountCollectionGetParams) WithNameQueryParameter(name *string) *AccountCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithOrderBy adds the orderBy to the account collection get params
+func (o *AccountCollectionGetParams) WithOrderBy(orderBy []string) *AccountCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the account collection get params
-func (o *AccountCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetOrderBy adds the orderBy to the account collection get params
+func (o *AccountCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOrderByQueryParameter adds the orderBy to the account collection get params
-func (o *AccountCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AccountCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOwnerName adds the ownerName to the account collection get params
+func (o *AccountCollectionGetParams) WithOwnerName(ownerName *string) *AccountCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the account collection get params
-func (o *AccountCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOwnerName adds the ownerName to the account collection get params
+func (o *AccountCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the account collection get params
-func (o *AccountCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *AccountCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerUUID adds the ownerUUID to the account collection get params
+func (o *AccountCollectionGetParams) WithOwnerUUID(ownerUUID *string) *AccountCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the account collection get params
-func (o *AccountCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerUUID adds the ownerUuid to the account collection get params
+func (o *AccountCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the account collection get params
-func (o *AccountCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *AccountCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithPasswordHashAlgorithm adds the passwordHashAlgorithm to the account collection get params
+func (o *AccountCollectionGetParams) WithPasswordHashAlgorithm(passwordHashAlgorithm *string) *AccountCollectionGetParams {
+	o.SetPasswordHashAlgorithm(passwordHashAlgorithm)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the account collection get params
-func (o *AccountCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetPasswordHashAlgorithm adds the passwordHashAlgorithm to the account collection get params
+func (o *AccountCollectionGetParams) SetPasswordHashAlgorithm(passwordHashAlgorithm *string) {
+	o.PasswordHashAlgorithm = passwordHashAlgorithm
 }
 
-// WithPasswordHashAlgorithmQueryParameter adds the passwordHashAlgorithm to the account collection get params
-func (o *AccountCollectionGetParams) WithPasswordHashAlgorithmQueryParameter(passwordHashAlgorithm *string) *AccountCollectionGetParams {
-	o.SetPasswordHashAlgorithmQueryParameter(passwordHashAlgorithm)
+// WithReturnRecords adds the returnRecords to the account collection get params
+func (o *AccountCollectionGetParams) WithReturnRecords(returnRecords *bool) *AccountCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetPasswordHashAlgorithmQueryParameter adds the passwordHashAlgorithm to the account collection get params
-func (o *AccountCollectionGetParams) SetPasswordHashAlgorithmQueryParameter(passwordHashAlgorithm *string) {
-	o.PasswordHashAlgorithmQueryParameter = passwordHashAlgorithm
+// SetReturnRecords adds the returnRecords to the account collection get params
+func (o *AccountCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithPublicKeyQueryParameter adds the publicKey to the account collection get params
-func (o *AccountCollectionGetParams) WithPublicKeyQueryParameter(publicKey *string) *AccountCollectionGetParams {
-	o.SetPublicKeyQueryParameter(publicKey)
+// WithReturnTimeout adds the returnTimeout to the account collection get params
+func (o *AccountCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AccountCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetPublicKeyQueryParameter adds the publicKey to the account collection get params
-func (o *AccountCollectionGetParams) SetPublicKeyQueryParameter(publicKey *string) {
-	o.PublicKeyQueryParameter = publicKey
+// SetReturnTimeout adds the returnTimeout to the account collection get params
+func (o *AccountCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the account collection get params
-func (o *AccountCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AccountCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithRoleName adds the roleName to the account collection get params
+func (o *AccountCollectionGetParams) WithRoleName(roleName *string) *AccountCollectionGetParams {
+	o.SetRoleName(roleName)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the account collection get params
-func (o *AccountCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetRoleName adds the roleName to the account collection get params
+func (o *AccountCollectionGetParams) SetRoleName(roleName *string) {
+	o.RoleName = roleName
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the account collection get params
-func (o *AccountCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AccountCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithScope adds the scope to the account collection get params
+func (o *AccountCollectionGetParams) WithScope(scope *string) *AccountCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the account collection get params
-func (o *AccountCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
-}
-
-// WithRoleNameQueryParameter adds the roleName to the account collection get params
-func (o *AccountCollectionGetParams) WithRoleNameQueryParameter(roleName *string) *AccountCollectionGetParams {
-	o.SetRoleNameQueryParameter(roleName)
-	return o
-}
-
-// SetRoleNameQueryParameter adds the roleName to the account collection get params
-func (o *AccountCollectionGetParams) SetRoleNameQueryParameter(roleName *string) {
-	o.RoleNameQueryParameter = roleName
-}
-
-// WithScopeQueryParameter adds the scope to the account collection get params
-func (o *AccountCollectionGetParams) WithScopeQueryParameter(scope *string) *AccountCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
-	return o
-}
-
-// SetScopeQueryParameter adds the scope to the account collection get params
-func (o *AccountCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
-}
-
-// WithSslCaCertificateQueryParameter adds the sslCaCertificate to the account collection get params
-func (o *AccountCollectionGetParams) WithSslCaCertificateQueryParameter(sslCaCertificate *string) *AccountCollectionGetParams {
-	o.SetSslCaCertificateQueryParameter(sslCaCertificate)
-	return o
-}
-
-// SetSslCaCertificateQueryParameter adds the sslCaCertificate to the account collection get params
-func (o *AccountCollectionGetParams) SetSslCaCertificateQueryParameter(sslCaCertificate *string) {
-	o.SslCaCertificateQueryParameter = sslCaCertificate
+// SetScope adds the scope to the account collection get params
+func (o *AccountCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -481,13 +430,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.ApplicationsApplicationQueryParameter != nil {
+	if o.ApplicationsApplication != nil {
 
 		// query param applications.application
 		var qrApplicationsApplication string
 
-		if o.ApplicationsApplicationQueryParameter != nil {
-			qrApplicationsApplication = *o.ApplicationsApplicationQueryParameter
+		if o.ApplicationsApplication != nil {
+			qrApplicationsApplication = *o.ApplicationsApplication
 		}
 		qApplicationsApplication := qrApplicationsApplication
 		if qApplicationsApplication != "" {
@@ -498,13 +447,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ApplicationsAuthenticationMethodsQueryParameter != nil {
+	if o.ApplicationsAuthenticationMethods != nil {
 
 		// query param applications.authentication_methods
 		var qrApplicationsAuthenticationMethods string
 
-		if o.ApplicationsAuthenticationMethodsQueryParameter != nil {
-			qrApplicationsAuthenticationMethods = *o.ApplicationsAuthenticationMethodsQueryParameter
+		if o.ApplicationsAuthenticationMethods != nil {
+			qrApplicationsAuthenticationMethods = *o.ApplicationsAuthenticationMethods
 		}
 		qApplicationsAuthenticationMethods := qrApplicationsAuthenticationMethods
 		if qApplicationsAuthenticationMethods != "" {
@@ -515,13 +464,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ApplicationsSecondAuthenticationMethodQueryParameter != nil {
+	if o.ApplicationsSecondAuthenticationMethod != nil {
 
 		// query param applications.second_authentication_method
 		var qrApplicationsSecondAuthenticationMethod string
 
-		if o.ApplicationsSecondAuthenticationMethodQueryParameter != nil {
-			qrApplicationsSecondAuthenticationMethod = *o.ApplicationsSecondAuthenticationMethodQueryParameter
+		if o.ApplicationsSecondAuthenticationMethod != nil {
+			qrApplicationsSecondAuthenticationMethod = *o.ApplicationsSecondAuthenticationMethod
 		}
 		qApplicationsSecondAuthenticationMethod := qrApplicationsSecondAuthenticationMethod
 		if qApplicationsSecondAuthenticationMethod != "" {
@@ -532,30 +481,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.AuthenticationMethodsQueryParameter != nil {
-
-		// query param authentication_methods
-		var qrAuthenticationMethods string
-
-		if o.AuthenticationMethodsQueryParameter != nil {
-			qrAuthenticationMethods = *o.AuthenticationMethodsQueryParameter
-		}
-		qAuthenticationMethods := qrAuthenticationMethods
-		if qAuthenticationMethods != "" {
-
-			if err := r.SetQueryParam("authentication_methods", qAuthenticationMethods); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -566,7 +498,7 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -577,13 +509,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.LdapFastbindQueryParameter != nil {
+	if o.LdapFastbind != nil {
 
 		// query param ldap_fastbind
 		var qrLdapFastbind bool
 
-		if o.LdapFastbindQueryParameter != nil {
-			qrLdapFastbind = *o.LdapFastbindQueryParameter
+		if o.LdapFastbind != nil {
+			qrLdapFastbind = *o.LdapFastbind
 		}
 		qLdapFastbind := swag.FormatBool(qrLdapFastbind)
 		if qLdapFastbind != "" {
@@ -594,13 +526,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.LockedQueryParameter != nil {
+	if o.Locked != nil {
 
 		// query param locked
 		var qrLocked bool
 
-		if o.LockedQueryParameter != nil {
-			qrLocked = *o.LockedQueryParameter
+		if o.Locked != nil {
+			qrLocked = *o.Locked
 		}
 		qLocked := swag.FormatBool(qrLocked)
 		if qLocked != "" {
@@ -611,13 +543,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -628,13 +560,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -645,7 +577,7 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -656,13 +588,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -673,13 +605,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -690,13 +622,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PasswordHashAlgorithmQueryParameter != nil {
+	if o.PasswordHashAlgorithm != nil {
 
 		// query param password_hash_algorithm
 		var qrPasswordHashAlgorithm string
 
-		if o.PasswordHashAlgorithmQueryParameter != nil {
-			qrPasswordHashAlgorithm = *o.PasswordHashAlgorithmQueryParameter
+		if o.PasswordHashAlgorithm != nil {
+			qrPasswordHashAlgorithm = *o.PasswordHashAlgorithm
 		}
 		qPasswordHashAlgorithm := qrPasswordHashAlgorithm
 		if qPasswordHashAlgorithm != "" {
@@ -707,30 +639,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.PublicKeyQueryParameter != nil {
-
-		// query param public_key
-		var qrPublicKey string
-
-		if o.PublicKeyQueryParameter != nil {
-			qrPublicKey = *o.PublicKeyQueryParameter
-		}
-		qPublicKey := qrPublicKey
-		if qPublicKey != "" {
-
-			if err := r.SetQueryParam("public_key", qPublicKey); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -741,13 +656,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -758,13 +673,13 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.RoleNameQueryParameter != nil {
+	if o.RoleName != nil {
 
 		// query param role.name
 		var qrRoleName string
 
-		if o.RoleNameQueryParameter != nil {
-			qrRoleName = *o.RoleNameQueryParameter
+		if o.RoleName != nil {
+			qrRoleName = *o.RoleName
 		}
 		qRoleName := qrRoleName
 		if qRoleName != "" {
@@ -775,35 +690,18 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
 
 			if err := r.SetQueryParam("scope", qScope); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.SslCaCertificateQueryParameter != nil {
-
-		// query param ssl_ca_certificate
-		var qrSslCaCertificate string
-
-		if o.SslCaCertificateQueryParameter != nil {
-			qrSslCaCertificate = *o.SslCaCertificateQueryParameter
-		}
-		qSslCaCertificate := qrSslCaCertificate
-		if qSslCaCertificate != "" {
-
-			if err := r.SetQueryParam("ssl_ca_certificate", qSslCaCertificate); err != nil {
 				return err
 			}
 		}
@@ -817,7 +715,7 @@ func (o *AccountCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamAccountCollectionGet binds the parameter fields
 func (o *AccountCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -834,7 +732,7 @@ func (o *AccountCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamAccountCollectionGet binds the parameter order_by
 func (o *AccountCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

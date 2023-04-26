@@ -74,13 +74,13 @@ type SnaplockLegalHoldCreateParams struct {
 
 	   Litigation ID
 	*/
-	LitigationIDPathParameter string
+	LitigationID string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *SnaplockLegalHoldCreateParams) WithDefaults() *SnaplockLegalHoldCreateP
 // All values with no default are reset to their zero value.
 func (o *SnaplockLegalHoldCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := SnaplockLegalHoldCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *SnaplockLegalHoldCreateParams) SetInfo(info *models.SnaplockLegalHoldOp
 	o.Info = info
 }
 
-// WithLitigationIDPathParameter adds the litigationID to the snaplock legal hold create params
-func (o *SnaplockLegalHoldCreateParams) WithLitigationIDPathParameter(litigationID string) *SnaplockLegalHoldCreateParams {
-	o.SetLitigationIDPathParameter(litigationID)
+// WithLitigationID adds the litigationID to the snaplock legal hold create params
+func (o *SnaplockLegalHoldCreateParams) WithLitigationID(litigationID string) *SnaplockLegalHoldCreateParams {
+	o.SetLitigationID(litigationID)
 	return o
 }
 
-// SetLitigationIDPathParameter adds the litigationId to the snaplock legal hold create params
-func (o *SnaplockLegalHoldCreateParams) SetLitigationIDPathParameter(litigationID string) {
-	o.LitigationIDPathParameter = litigationID
+// SetLitigationID adds the litigationId to the snaplock legal hold create params
+func (o *SnaplockLegalHoldCreateParams) SetLitigationID(litigationID string) {
+	o.LitigationID = litigationID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock legal hold create params
-func (o *SnaplockLegalHoldCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockLegalHoldCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock legal hold create params
+func (o *SnaplockLegalHoldCreateParams) WithReturnRecords(returnRecords *bool) *SnaplockLegalHoldCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock legal hold create params
-func (o *SnaplockLegalHoldCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock legal hold create params
+func (o *SnaplockLegalHoldCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -193,17 +193,17 @@ func (o *SnaplockLegalHoldCreateParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param litigation.id
-	if err := r.SetPathParam("litigation.id", o.LitigationIDPathParameter); err != nil {
+	if err := r.SetPathParam("litigation.id", o.LitigationID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

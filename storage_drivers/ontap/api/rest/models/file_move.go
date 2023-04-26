@@ -24,28 +24,28 @@ type FileMove struct {
 	// Time that the file move operation takes before cutover completes, in seconds.
 	// Example: 8
 	// Read Only: true
-	CutoverTime int64 `json:"cutover_time,omitempty"`
+	CutoverTime *int64 `json:"cutover_time,omitempty"`
 
 	// destination
-	Destination *FileMoveDestination `json:"destination,omitempty"`
+	Destination *FileMoveInlineDestination `json:"destination,omitempty"`
 
 	// Time elapsed since the start of the file move operation, in seconds.
 	// Example: 100
 	// Read Only: true
-	ElapsedTime int64 `json:"elapsed_time,omitempty"`
+	ElapsedTime *int64 `json:"elapsed_time,omitempty"`
 
 	// Contains the most recent failure reason for move operation.
 	// Read Only: true
 	Failure *Error `json:"failure,omitempty"`
 
 	// files to move
-	FilesToMove *FileMoveFilesToMove `json:"files_to_move,omitempty"`
+	FilesToMove *FileMoveInlineFilesToMove `json:"files_to_move,omitempty"`
 
 	// An additional unique element identifying one file among many that could possibly be moved as part of a job. File index is an identifier ordered by the file path arrays provided during create. For file move operations that involve only one file, the file-index value of zero is always correct.
 	//
 	// Example: 0
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// Indicates whether the destination file is ready for use.
 	// Read Only: true
@@ -66,30 +66,30 @@ type FileMove struct {
 
 	// Maximum amount of data, in bytes that can be transferred per second in support of this operation. A non-zero value less than 1 MB/s is set to 1 MB/s. A non-zero value greater than 1 MB/s is truncated to the nearest integral megabyte value. If unspecified, the default value is "0" which means no range is set for the data transfer.
 	// Example: 250000
-	MaxThroughput int64 `json:"max_throughput,omitempty"`
+	MaxThroughput *int64 `json:"max_throughput,omitempty"`
 
 	// node
-	Node *FileMoveNode `json:"node,omitempty"`
+	Node *FileMoveInlineNode `json:"node,omitempty"`
 
 	// reference
-	Reference *FileMoveReference `json:"reference,omitempty"`
+	Reference *FileMoveInlineReference `json:"reference,omitempty"`
 
 	// scanner
-	Scanner *FileMoveScanner `json:"scanner,omitempty"`
+	Scanner *FileMoveInlineScanner `json:"scanner,omitempty"`
 
 	// source
-	Source *FileMoveSource `json:"source,omitempty"`
+	Source *FileMoveInlineSource `json:"source,omitempty"`
 
 	// svm
-	Svm *FileMoveSvm `json:"svm,omitempty"`
+	Svm *FileMoveInlineSvm `json:"svm,omitempty"`
 
 	// The UUID which uniquely identifies the job that started this move operation.
 	// Example: 4fcb3159-a4ee-42b5-bb16-f752f2c430fc
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// volume
-	Volume *FileMoveVolume `json:"volume,omitempty"`
+	Volume *FileMoveInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this file move
@@ -367,7 +367,7 @@ func (m *FileMove) ContextValidate(ctx context.Context, formats strfmt.Registry)
 
 func (m *FileMove) contextValidateCutoverTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cutover_time", "body", int64(m.CutoverTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "cutover_time", "body", m.CutoverTime); err != nil {
 		return err
 	}
 
@@ -390,7 +390,7 @@ func (m *FileMove) contextValidateDestination(ctx context.Context, formats strfm
 
 func (m *FileMove) contextValidateElapsedTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "elapsed_time", "body", int64(m.ElapsedTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "elapsed_time", "body", m.ElapsedTime); err != nil {
 		return err
 	}
 
@@ -427,7 +427,7 @@ func (m *FileMove) contextValidateFilesToMove(ctx context.Context, formats strfm
 
 func (m *FileMove) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -533,7 +533,7 @@ func (m *FileMove) contextValidateSvm(ctx context.Context, formats strfmt.Regist
 
 func (m *FileMove) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -572,24 +572,24 @@ func (m *FileMove) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveDestination Destination file information.
+// FileMoveInlineDestination Destination file information.
 //
-// swagger:model FileMoveDestination
-type FileMoveDestination struct {
+// swagger:model file_move_inline_destination
+type FileMoveInlineDestination struct {
 
 	// path
 	// Example: d1/d2/file1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
-	Svm *FileMoveDestinationSvm `json:"svm,omitempty"`
+	Svm *FileMoveInlineDestinationInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *FileMoveDestinationVolume `json:"volume,omitempty"`
+	Volume *FileMoveInlineDestinationInlineVolume `json:"volume,omitempty"`
 }
 
-// Validate validates this file move destination
-func (m *FileMoveDestination) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline destination
+func (m *FileMoveInlineDestination) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSvm(formats); err != nil {
@@ -606,7 +606,7 @@ func (m *FileMoveDestination) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveDestination) validateSvm(formats strfmt.Registry) error {
+func (m *FileMoveInlineDestination) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -623,7 +623,7 @@ func (m *FileMoveDestination) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveDestination) validateVolume(formats strfmt.Registry) error {
+func (m *FileMoveInlineDestination) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
 	}
@@ -640,8 +640,8 @@ func (m *FileMoveDestination) validateVolume(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move destination based on the context it is used
-func (m *FileMoveDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline destination based on the context it is used
+func (m *FileMoveInlineDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
@@ -658,7 +658,7 @@ func (m *FileMoveDestination) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FileMoveDestination) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineDestination) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -672,7 +672,7 @@ func (m *FileMoveDestination) contextValidateSvm(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FileMoveDestination) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineDestination) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Volume != nil {
 		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
@@ -687,7 +687,7 @@ func (m *FileMoveDestination) contextValidateVolume(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveDestination) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineDestination) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -695,8 +695,8 @@ func (m *FileMoveDestination) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveDestination) UnmarshalBinary(b []byte) error {
-	var res FileMoveDestination
+func (m *FileMoveInlineDestination) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineDestination
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -704,27 +704,27 @@ func (m *FileMoveDestination) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveDestinationSvm file move destination svm
+// FileMoveInlineDestinationInlineSvm file move inline destination inline svm
 //
-// swagger:model FileMoveDestinationSvm
-type FileMoveDestinationSvm struct {
+// swagger:model file_move_inline_destination_inline_svm
+type FileMoveInlineDestinationInlineSvm struct {
 
 	// links
-	Links *FileMoveDestinationSvmLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineDestinationInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move destination svm
-func (m *FileMoveDestinationSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline destination inline svm
+func (m *FileMoveInlineDestinationInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -737,7 +737,7 @@ func (m *FileMoveDestinationSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveDestinationSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -754,8 +754,8 @@ func (m *FileMoveDestinationSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move destination svm based on the context it is used
-func (m *FileMoveDestinationSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline destination inline svm based on the context it is used
+func (m *FileMoveInlineDestinationInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -768,7 +768,7 @@ func (m *FileMoveDestinationSvm) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FileMoveDestinationSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -783,7 +783,7 @@ func (m *FileMoveDestinationSvm) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveDestinationSvm) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineDestinationInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -791,8 +791,8 @@ func (m *FileMoveDestinationSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveDestinationSvm) UnmarshalBinary(b []byte) error {
-	var res FileMoveDestinationSvm
+func (m *FileMoveInlineDestinationInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineDestinationInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -800,17 +800,17 @@ func (m *FileMoveDestinationSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveDestinationSvmLinks file move destination svm links
+// FileMoveInlineDestinationInlineSvmInlineLinks file move inline destination inline svm inline links
 //
-// swagger:model FileMoveDestinationSvmLinks
-type FileMoveDestinationSvmLinks struct {
+// swagger:model file_move_inline_destination_inline_svm_inline__links
+type FileMoveInlineDestinationInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move destination svm links
-func (m *FileMoveDestinationSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline destination inline svm inline links
+func (m *FileMoveInlineDestinationInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -823,7 +823,7 @@ func (m *FileMoveDestinationSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveDestinationSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -840,8 +840,8 @@ func (m *FileMoveDestinationSvmLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this file move destination svm links based on the context it is used
-func (m *FileMoveDestinationSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline destination inline svm inline links based on the context it is used
+func (m *FileMoveInlineDestinationInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -854,7 +854,7 @@ func (m *FileMoveDestinationSvmLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *FileMoveDestinationSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -869,7 +869,7 @@ func (m *FileMoveDestinationSvmLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveDestinationSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineDestinationInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -877,8 +877,8 @@ func (m *FileMoveDestinationSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveDestinationSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveDestinationSvmLinks
+func (m *FileMoveInlineDestinationInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineDestinationInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -886,25 +886,25 @@ func (m *FileMoveDestinationSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveDestinationVolume file move destination volume
+// FileMoveInlineDestinationInlineVolume file move inline destination inline volume
 //
-// swagger:model FileMoveDestinationVolume
-type FileMoveDestinationVolume struct {
+// swagger:model file_move_inline_destination_inline_volume
+type FileMoveInlineDestinationInlineVolume struct {
 
 	// links
-	Links *FileMoveDestinationVolumeLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineDestinationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move destination volume
-func (m *FileMoveDestinationVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline destination inline volume
+func (m *FileMoveInlineDestinationInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -917,7 +917,7 @@ func (m *FileMoveDestinationVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveDestinationVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -934,8 +934,8 @@ func (m *FileMoveDestinationVolume) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this file move destination volume based on the context it is used
-func (m *FileMoveDestinationVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline destination inline volume based on the context it is used
+func (m *FileMoveInlineDestinationInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -948,7 +948,7 @@ func (m *FileMoveDestinationVolume) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FileMoveDestinationVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -963,7 +963,7 @@ func (m *FileMoveDestinationVolume) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveDestinationVolume) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineDestinationInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -971,8 +971,8 @@ func (m *FileMoveDestinationVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveDestinationVolume) UnmarshalBinary(b []byte) error {
-	var res FileMoveDestinationVolume
+func (m *FileMoveInlineDestinationInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineDestinationInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -980,17 +980,17 @@ func (m *FileMoveDestinationVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveDestinationVolumeLinks file move destination volume links
+// FileMoveInlineDestinationInlineVolumeInlineLinks file move inline destination inline volume inline links
 //
-// swagger:model FileMoveDestinationVolumeLinks
-type FileMoveDestinationVolumeLinks struct {
+// swagger:model file_move_inline_destination_inline_volume_inline__links
+type FileMoveInlineDestinationInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move destination volume links
-func (m *FileMoveDestinationVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline destination inline volume inline links
+func (m *FileMoveInlineDestinationInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1003,7 +1003,7 @@ func (m *FileMoveDestinationVolumeLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *FileMoveDestinationVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1020,8 +1020,8 @@ func (m *FileMoveDestinationVolumeLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this file move destination volume links based on the context it is used
-func (m *FileMoveDestinationVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline destination inline volume inline links based on the context it is used
+func (m *FileMoveInlineDestinationInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1034,7 +1034,7 @@ func (m *FileMoveDestinationVolumeLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *FileMoveDestinationVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineDestinationInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1049,7 +1049,7 @@ func (m *FileMoveDestinationVolumeLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveDestinationVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineDestinationInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1057,8 +1057,8 @@ func (m *FileMoveDestinationVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveDestinationVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveDestinationVolumeLinks
+func (m *FileMoveInlineDestinationInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineDestinationInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1066,10 +1066,10 @@ func (m *FileMoveDestinationVolumeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveFilesToMove A list of source files along with the destination file they are moved to. If the terminal path component of the destination is a directory, then the source file's basename is replicated in that directory. This is only used for FlexVol volume file move operations.
+// FileMoveInlineFilesToMove A list of source files along with the destination file they are moved to. If the terminal path component of the destination is a directory, then the source file's basename is replicated in that directory. This is only used for FlexVol volume file move operations.
 //
-// swagger:model FileMoveFilesToMove
-type FileMoveFilesToMove struct {
+// swagger:model file_move_inline_files_to_move
+type FileMoveInlineFilesToMove struct {
 
 	// The destination file information.
 	Destinations []*FileMoveFilesToMoveDestinationsItems0 `json:"destinations,omitempty"`
@@ -1078,8 +1078,8 @@ type FileMoveFilesToMove struct {
 	Sources []*FileMoveFilesToMoveSourcesItems0 `json:"sources,omitempty"`
 }
 
-// Validate validates this file move files to move
-func (m *FileMoveFilesToMove) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline files to move
+func (m *FileMoveInlineFilesToMove) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDestinations(formats); err != nil {
@@ -1096,7 +1096,7 @@ func (m *FileMoveFilesToMove) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveFilesToMove) validateDestinations(formats strfmt.Registry) error {
+func (m *FileMoveInlineFilesToMove) validateDestinations(formats strfmt.Registry) error {
 	if swag.IsZero(m.Destinations) { // not required
 		return nil
 	}
@@ -1120,7 +1120,7 @@ func (m *FileMoveFilesToMove) validateDestinations(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *FileMoveFilesToMove) validateSources(formats strfmt.Registry) error {
+func (m *FileMoveInlineFilesToMove) validateSources(formats strfmt.Registry) error {
 	if swag.IsZero(m.Sources) { // not required
 		return nil
 	}
@@ -1144,8 +1144,8 @@ func (m *FileMoveFilesToMove) validateSources(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move files to move based on the context it is used
-func (m *FileMoveFilesToMove) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline files to move based on the context it is used
+func (m *FileMoveInlineFilesToMove) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDestinations(ctx, formats); err != nil {
@@ -1162,7 +1162,7 @@ func (m *FileMoveFilesToMove) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FileMoveFilesToMove) contextValidateDestinations(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineFilesToMove) contextValidateDestinations(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Destinations); i++ {
 
@@ -1180,7 +1180,7 @@ func (m *FileMoveFilesToMove) contextValidateDestinations(ctx context.Context, f
 	return nil
 }
 
-func (m *FileMoveFilesToMove) contextValidateSources(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineFilesToMove) contextValidateSources(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Sources); i++ {
 
@@ -1199,7 +1199,7 @@ func (m *FileMoveFilesToMove) contextValidateSources(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveFilesToMove) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineFilesToMove) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1207,8 +1207,8 @@ func (m *FileMoveFilesToMove) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveFilesToMove) UnmarshalBinary(b []byte) error {
-	var res FileMoveFilesToMove
+func (m *FileMoveInlineFilesToMove) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineFilesToMove
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1223,7 +1223,7 @@ type FileMoveFilesToMoveDestinationsItems0 struct {
 
 	// path
 	// Example: d1/d2/file1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
 	Svm *FileMoveFilesToMoveDestinationsItems0Svm `json:"svm,omitempty"`
@@ -1359,12 +1359,12 @@ type FileMoveFilesToMoveDestinationsItems0Svm struct {
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this file move files to move destinations items0 svm
@@ -1540,11 +1540,11 @@ type FileMoveFilesToMoveDestinationsItems0Volume struct {
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this file move files to move destinations items0 volume
@@ -1717,7 +1717,7 @@ type FileMoveFilesToMoveSourcesItems0 struct {
 
 	// path
 	// Example: d1/d2/file1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
 	Svm *FileMoveFilesToMoveSourcesItems0Svm `json:"svm,omitempty"`
@@ -1853,12 +1853,12 @@ type FileMoveFilesToMoveSourcesItems0Svm struct {
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this file move files to move sources items0 svm
@@ -2034,11 +2034,11 @@ type FileMoveFilesToMoveSourcesItems0Volume struct {
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this file move files to move sources items0 volume
@@ -2204,25 +2204,25 @@ func (m *FileMoveFilesToMoveSourcesItems0VolumeLinks) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// FileMoveNode Node hosting the destination of this move operation.
+// FileMoveInlineNode Node hosting the destination of this move operation.
 //
-// swagger:model FileMoveNode
-type FileMoveNode struct {
+// swagger:model file_move_inline_node
+type FileMoveInlineNode struct {
 
 	// links
-	Links *FileMoveNodeLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move node
-func (m *FileMoveNode) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline node
+func (m *FileMoveInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2235,7 +2235,7 @@ func (m *FileMoveNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveNode) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2252,8 +2252,8 @@ func (m *FileMoveNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move node based on the context it is used
-func (m *FileMoveNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline node based on the context it is used
+func (m *FileMoveInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2266,7 +2266,7 @@ func (m *FileMoveNode) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *FileMoveNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2281,7 +2281,7 @@ func (m *FileMoveNode) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveNode) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2289,8 +2289,8 @@ func (m *FileMoveNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveNode) UnmarshalBinary(b []byte) error {
-	var res FileMoveNode
+func (m *FileMoveInlineNode) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2298,17 +2298,17 @@ func (m *FileMoveNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveNodeLinks file move node links
+// FileMoveInlineNodeInlineLinks file move inline node inline links
 //
-// swagger:model FileMoveNodeLinks
-type FileMoveNodeLinks struct {
+// swagger:model file_move_inline_node_inline__links
+type FileMoveInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move node links
-func (m *FileMoveNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline node inline links
+func (m *FileMoveInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2321,7 +2321,7 @@ func (m *FileMoveNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2338,8 +2338,8 @@ func (m *FileMoveNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move node links based on the context it is used
-func (m *FileMoveNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline node inline links based on the context it is used
+func (m *FileMoveInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2352,7 +2352,7 @@ func (m *FileMoveNodeLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileMoveNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2367,7 +2367,7 @@ func (m *FileMoveNodeLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2375,8 +2375,8 @@ func (m *FileMoveNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveNodeLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveNodeLinks
+func (m *FileMoveInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2384,10 +2384,10 @@ func (m *FileMoveNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveReference file move reference
+// FileMoveInlineReference Reference file information.
 //
-// swagger:model FileMoveReference
-type FileMoveReference struct {
+// swagger:model file_move_inline_reference
+type FileMoveInlineReference struct {
 
 	// The maximum amount of time, in seconds that the source reference file can be quiesced before the corresponding destination file must be made available for read-write traffic. Not supported in FlexGroup volume file move operations.
 	//
@@ -2396,17 +2396,17 @@ type FileMoveReference struct {
 
 	// The source reference file. If a reference file is specified, data for other files being moved will be transferred as a difference from the reference file. This can save bandwidth and destination storage if the specified source files share blocks. If provided, this input must match one of the source file paths. This input need not be provided if only one source file is specified. Not supported in FlexGroup volume file move operations.
 	//
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
-	Svm *FileMoveReferenceSvm `json:"svm,omitempty"`
+	Svm *FileMoveInlineReferenceInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *FileMoveReferenceVolume `json:"volume,omitempty"`
+	Volume *FileMoveInlineReferenceInlineVolume `json:"volume,omitempty"`
 }
 
-// Validate validates this file move reference
-func (m *FileMoveReference) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline reference
+func (m *FileMoveInlineReference) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSvm(formats); err != nil {
@@ -2423,7 +2423,7 @@ func (m *FileMoveReference) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveReference) validateSvm(formats strfmt.Registry) error {
+func (m *FileMoveInlineReference) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -2440,7 +2440,7 @@ func (m *FileMoveReference) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveReference) validateVolume(formats strfmt.Registry) error {
+func (m *FileMoveInlineReference) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
 	}
@@ -2457,8 +2457,8 @@ func (m *FileMoveReference) validateVolume(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move reference based on the context it is used
-func (m *FileMoveReference) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline reference based on the context it is used
+func (m *FileMoveInlineReference) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
@@ -2475,7 +2475,7 @@ func (m *FileMoveReference) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileMoveReference) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineReference) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -2489,7 +2489,7 @@ func (m *FileMoveReference) contextValidateSvm(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FileMoveReference) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineReference) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Volume != nil {
 		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
@@ -2504,7 +2504,7 @@ func (m *FileMoveReference) contextValidateVolume(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveReference) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineReference) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2512,8 +2512,8 @@ func (m *FileMoveReference) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveReference) UnmarshalBinary(b []byte) error {
-	var res FileMoveReference
+func (m *FileMoveInlineReference) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineReference
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2521,27 +2521,27 @@ func (m *FileMoveReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveReferenceSvm SVM of the source reference file.
+// FileMoveInlineReferenceInlineSvm SVM of the source reference file.
 //
-// swagger:model FileMoveReferenceSvm
-type FileMoveReferenceSvm struct {
+// swagger:model file_move_inline_reference_inline_svm
+type FileMoveInlineReferenceInlineSvm struct {
 
 	// links
-	Links *FileMoveReferenceSvmLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineReferenceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move reference svm
-func (m *FileMoveReferenceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline reference inline svm
+func (m *FileMoveInlineReferenceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2554,7 +2554,7 @@ func (m *FileMoveReferenceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveReferenceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2571,8 +2571,8 @@ func (m *FileMoveReferenceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move reference svm based on the context it is used
-func (m *FileMoveReferenceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline reference inline svm based on the context it is used
+func (m *FileMoveInlineReferenceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2585,7 +2585,7 @@ func (m *FileMoveReferenceSvm) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FileMoveReferenceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2600,7 +2600,7 @@ func (m *FileMoveReferenceSvm) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveReferenceSvm) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineReferenceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2608,8 +2608,8 @@ func (m *FileMoveReferenceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveReferenceSvm) UnmarshalBinary(b []byte) error {
-	var res FileMoveReferenceSvm
+func (m *FileMoveInlineReferenceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineReferenceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2617,17 +2617,17 @@ func (m *FileMoveReferenceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveReferenceSvmLinks file move reference svm links
+// FileMoveInlineReferenceInlineSvmInlineLinks file move inline reference inline svm inline links
 //
-// swagger:model FileMoveReferenceSvmLinks
-type FileMoveReferenceSvmLinks struct {
+// swagger:model file_move_inline_reference_inline_svm_inline__links
+type FileMoveInlineReferenceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move reference svm links
-func (m *FileMoveReferenceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline reference inline svm inline links
+func (m *FileMoveInlineReferenceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2640,7 +2640,7 @@ func (m *FileMoveReferenceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveReferenceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2657,8 +2657,8 @@ func (m *FileMoveReferenceSvmLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this file move reference svm links based on the context it is used
-func (m *FileMoveReferenceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline reference inline svm inline links based on the context it is used
+func (m *FileMoveInlineReferenceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2671,7 +2671,7 @@ func (m *FileMoveReferenceSvmLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FileMoveReferenceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2686,7 +2686,7 @@ func (m *FileMoveReferenceSvmLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveReferenceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineReferenceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2694,8 +2694,8 @@ func (m *FileMoveReferenceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveReferenceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveReferenceSvmLinks
+func (m *FileMoveInlineReferenceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineReferenceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2703,25 +2703,25 @@ func (m *FileMoveReferenceSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveReferenceVolume Volume of the source reference file.
+// FileMoveInlineReferenceInlineVolume Volume of the source reference file.
 //
-// swagger:model FileMoveReferenceVolume
-type FileMoveReferenceVolume struct {
+// swagger:model file_move_inline_reference_inline_volume
+type FileMoveInlineReferenceInlineVolume struct {
 
 	// links
-	Links *FileMoveReferenceVolumeLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineReferenceInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move reference volume
-func (m *FileMoveReferenceVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline reference inline volume
+func (m *FileMoveInlineReferenceInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2734,7 +2734,7 @@ func (m *FileMoveReferenceVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveReferenceVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2751,8 +2751,8 @@ func (m *FileMoveReferenceVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move reference volume based on the context it is used
-func (m *FileMoveReferenceVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline reference inline volume based on the context it is used
+func (m *FileMoveInlineReferenceInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2765,7 +2765,7 @@ func (m *FileMoveReferenceVolume) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FileMoveReferenceVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2780,7 +2780,7 @@ func (m *FileMoveReferenceVolume) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveReferenceVolume) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineReferenceInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2788,8 +2788,8 @@ func (m *FileMoveReferenceVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveReferenceVolume) UnmarshalBinary(b []byte) error {
-	var res FileMoveReferenceVolume
+func (m *FileMoveInlineReferenceInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineReferenceInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2797,17 +2797,17 @@ func (m *FileMoveReferenceVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveReferenceVolumeLinks file move reference volume links
+// FileMoveInlineReferenceInlineVolumeInlineLinks file move inline reference inline volume inline links
 //
-// swagger:model FileMoveReferenceVolumeLinks
-type FileMoveReferenceVolumeLinks struct {
+// swagger:model file_move_inline_reference_inline_volume_inline__links
+type FileMoveInlineReferenceInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move reference volume links
-func (m *FileMoveReferenceVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline reference inline volume inline links
+func (m *FileMoveInlineReferenceInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2820,7 +2820,7 @@ func (m *FileMoveReferenceVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveReferenceVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2837,8 +2837,8 @@ func (m *FileMoveReferenceVolumeLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this file move reference volume links based on the context it is used
-func (m *FileMoveReferenceVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline reference inline volume inline links based on the context it is used
+func (m *FileMoveInlineReferenceInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2851,7 +2851,7 @@ func (m *FileMoveReferenceVolumeLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *FileMoveReferenceVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineReferenceInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2866,7 +2866,7 @@ func (m *FileMoveReferenceVolumeLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveReferenceVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineReferenceInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2874,8 +2874,8 @@ func (m *FileMoveReferenceVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveReferenceVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveReferenceVolumeLinks
+func (m *FileMoveInlineReferenceInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineReferenceInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2883,34 +2883,34 @@ func (m *FileMoveReferenceVolumeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveScanner file move scanner
+// FileMoveInlineScanner file move inline scanner
 //
-// swagger:model FileMoveScanner
-type FileMoveScanner struct {
+// swagger:model file_move_inline_scanner
+type FileMoveInlineScanner struct {
 
 	// Scanner progress, as a percentage.
 	// Example: 80
 	// Read Only: true
-	Percent int64 `json:"percent,omitempty"`
+	Percent *int64 `json:"percent,omitempty"`
 
 	// Scanner progress, in bytes scanned.
 	// Example: 80000
 	// Read Only: true
-	Progress int64 `json:"progress,omitempty"`
+	Progress *int64 `json:"progress,omitempty"`
 
 	// Status of the file move scanner.
 	// Read Only: true
 	// Enum: [allocation_map complete data destroyed destroying paused_admin paused_error preparing]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Total bytes to be scanned.
 	// Example: 100000
 	// Read Only: true
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 }
 
-// Validate validates this file move scanner
-func (m *FileMoveScanner) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline scanner
+func (m *FileMoveInlineScanner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -2923,7 +2923,7 @@ func (m *FileMoveScanner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var fileMoveScannerTypeStatePropEnum []interface{}
+var fileMoveInlineScannerTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2931,116 +2931,116 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fileMoveScannerTypeStatePropEnum = append(fileMoveScannerTypeStatePropEnum, v)
+		fileMoveInlineScannerTypeStatePropEnum = append(fileMoveInlineScannerTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// allocation_map
 	// END DEBUGGING
-	// FileMoveScannerStateAllocationMap captures enum value "allocation_map"
-	FileMoveScannerStateAllocationMap string = "allocation_map"
+	// FileMoveInlineScannerStateAllocationMap captures enum value "allocation_map"
+	FileMoveInlineScannerStateAllocationMap string = "allocation_map"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// complete
 	// END DEBUGGING
-	// FileMoveScannerStateComplete captures enum value "complete"
-	FileMoveScannerStateComplete string = "complete"
+	// FileMoveInlineScannerStateComplete captures enum value "complete"
+	FileMoveInlineScannerStateComplete string = "complete"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// data
 	// END DEBUGGING
-	// FileMoveScannerStateData captures enum value "data"
-	FileMoveScannerStateData string = "data"
+	// FileMoveInlineScannerStateData captures enum value "data"
+	FileMoveInlineScannerStateData string = "data"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// destroyed
 	// END DEBUGGING
-	// FileMoveScannerStateDestroyed captures enum value "destroyed"
-	FileMoveScannerStateDestroyed string = "destroyed"
+	// FileMoveInlineScannerStateDestroyed captures enum value "destroyed"
+	FileMoveInlineScannerStateDestroyed string = "destroyed"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// destroying
 	// END DEBUGGING
-	// FileMoveScannerStateDestroying captures enum value "destroying"
-	FileMoveScannerStateDestroying string = "destroying"
+	// FileMoveInlineScannerStateDestroying captures enum value "destroying"
+	FileMoveInlineScannerStateDestroying string = "destroying"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// paused_admin
 	// END DEBUGGING
-	// FileMoveScannerStatePausedAdmin captures enum value "paused_admin"
-	FileMoveScannerStatePausedAdmin string = "paused_admin"
+	// FileMoveInlineScannerStatePausedAdmin captures enum value "paused_admin"
+	FileMoveInlineScannerStatePausedAdmin string = "paused_admin"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// paused_error
 	// END DEBUGGING
-	// FileMoveScannerStatePausedError captures enum value "paused_error"
-	FileMoveScannerStatePausedError string = "paused_error"
+	// FileMoveInlineScannerStatePausedError captures enum value "paused_error"
+	FileMoveInlineScannerStatePausedError string = "paused_error"
 
 	// BEGIN DEBUGGING
-	// FileMoveScanner
-	// FileMoveScanner
+	// file_move_inline_scanner
+	// FileMoveInlineScanner
 	// state
 	// State
 	// preparing
 	// END DEBUGGING
-	// FileMoveScannerStatePreparing captures enum value "preparing"
-	FileMoveScannerStatePreparing string = "preparing"
+	// FileMoveInlineScannerStatePreparing captures enum value "preparing"
+	FileMoveInlineScannerStatePreparing string = "preparing"
 )
 
 // prop value enum
-func (m *FileMoveScanner) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fileMoveScannerTypeStatePropEnum, true); err != nil {
+func (m *FileMoveInlineScanner) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fileMoveInlineScannerTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FileMoveScanner) validateState(formats strfmt.Registry) error {
+func (m *FileMoveInlineScanner) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("scanner"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("scanner"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this file move scanner based on the context it is used
-func (m *FileMoveScanner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline scanner based on the context it is used
+func (m *FileMoveInlineScanner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePercent(ctx, formats); err != nil {
@@ -3065,36 +3065,36 @@ func (m *FileMoveScanner) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FileMoveScanner) contextValidatePercent(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineScanner) contextValidatePercent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scanner"+"."+"percent", "body", int64(m.Percent)); err != nil {
+	if err := validate.ReadOnly(ctx, "scanner"+"."+"percent", "body", m.Percent); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FileMoveScanner) contextValidateProgress(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineScanner) contextValidateProgress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scanner"+"."+"progress", "body", int64(m.Progress)); err != nil {
+	if err := validate.ReadOnly(ctx, "scanner"+"."+"progress", "body", m.Progress); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FileMoveScanner) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineScanner) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scanner"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "scanner"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FileMoveScanner) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineScanner) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scanner"+"."+"total", "body", int64(m.Total)); err != nil {
+	if err := validate.ReadOnly(ctx, "scanner"+"."+"total", "body", m.Total); err != nil {
 		return err
 	}
 
@@ -3102,7 +3102,7 @@ func (m *FileMoveScanner) contextValidateTotal(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveScanner) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineScanner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3110,8 +3110,8 @@ func (m *FileMoveScanner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveScanner) UnmarshalBinary(b []byte) error {
-	var res FileMoveScanner
+func (m *FileMoveInlineScanner) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineScanner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3119,24 +3119,24 @@ func (m *FileMoveScanner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSource Source file information.
+// FileMoveInlineSource Source file information.
 //
-// swagger:model FileMoveSource
-type FileMoveSource struct {
+// swagger:model file_move_inline_source
+type FileMoveInlineSource struct {
 
 	// path
 	// Example: d1/d2/file1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
-	Svm *FileMoveSourceSvm `json:"svm,omitempty"`
+	Svm *FileMoveInlineSourceInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *FileMoveSourceVolume `json:"volume,omitempty"`
+	Volume *FileMoveInlineSourceInlineVolume `json:"volume,omitempty"`
 }
 
-// Validate validates this file move source
-func (m *FileMoveSource) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline source
+func (m *FileMoveInlineSource) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSvm(formats); err != nil {
@@ -3153,7 +3153,7 @@ func (m *FileMoveSource) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSource) validateSvm(formats strfmt.Registry) error {
+func (m *FileMoveInlineSource) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -3170,7 +3170,7 @@ func (m *FileMoveSource) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSource) validateVolume(formats strfmt.Registry) error {
+func (m *FileMoveInlineSource) validateVolume(formats strfmt.Registry) error {
 	if swag.IsZero(m.Volume) { // not required
 		return nil
 	}
@@ -3187,8 +3187,8 @@ func (m *FileMoveSource) validateVolume(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move source based on the context it is used
-func (m *FileMoveSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline source based on the context it is used
+func (m *FileMoveInlineSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
@@ -3205,7 +3205,7 @@ func (m *FileMoveSource) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *FileMoveSource) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSource) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -3219,7 +3219,7 @@ func (m *FileMoveSource) contextValidateSvm(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileMoveSource) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSource) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Volume != nil {
 		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
@@ -3234,7 +3234,7 @@ func (m *FileMoveSource) contextValidateVolume(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSource) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSource) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3242,8 +3242,8 @@ func (m *FileMoveSource) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSource) UnmarshalBinary(b []byte) error {
-	var res FileMoveSource
+func (m *FileMoveInlineSource) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSource
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3251,27 +3251,27 @@ func (m *FileMoveSource) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSourceSvm file move source svm
+// FileMoveInlineSourceInlineSvm file move inline source inline svm
 //
-// swagger:model FileMoveSourceSvm
-type FileMoveSourceSvm struct {
+// swagger:model file_move_inline_source_inline_svm
+type FileMoveInlineSourceInlineSvm struct {
 
 	// links
-	Links *FileMoveSourceSvmLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineSourceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move source svm
-func (m *FileMoveSourceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline source inline svm
+func (m *FileMoveInlineSourceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3284,7 +3284,7 @@ func (m *FileMoveSourceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSourceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3301,8 +3301,8 @@ func (m *FileMoveSourceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move source svm based on the context it is used
-func (m *FileMoveSourceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline source inline svm based on the context it is used
+func (m *FileMoveInlineSourceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3315,7 +3315,7 @@ func (m *FileMoveSourceSvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileMoveSourceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3330,7 +3330,7 @@ func (m *FileMoveSourceSvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSourceSvm) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSourceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3338,8 +3338,8 @@ func (m *FileMoveSourceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSourceSvm) UnmarshalBinary(b []byte) error {
-	var res FileMoveSourceSvm
+func (m *FileMoveInlineSourceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSourceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3347,17 +3347,17 @@ func (m *FileMoveSourceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSourceSvmLinks file move source svm links
+// FileMoveInlineSourceInlineSvmInlineLinks file move inline source inline svm inline links
 //
-// swagger:model FileMoveSourceSvmLinks
-type FileMoveSourceSvmLinks struct {
+// swagger:model file_move_inline_source_inline_svm_inline__links
+type FileMoveInlineSourceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move source svm links
-func (m *FileMoveSourceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline source inline svm inline links
+func (m *FileMoveInlineSourceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3370,7 +3370,7 @@ func (m *FileMoveSourceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSourceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3387,8 +3387,8 @@ func (m *FileMoveSourceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move source svm links based on the context it is used
-func (m *FileMoveSourceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline source inline svm inline links based on the context it is used
+func (m *FileMoveInlineSourceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3401,7 +3401,7 @@ func (m *FileMoveSourceSvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FileMoveSourceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3416,7 +3416,7 @@ func (m *FileMoveSourceSvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSourceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSourceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3424,8 +3424,8 @@ func (m *FileMoveSourceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSourceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveSourceSvmLinks
+func (m *FileMoveInlineSourceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSourceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3433,25 +3433,25 @@ func (m *FileMoveSourceSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSourceVolume file move source volume
+// FileMoveInlineSourceInlineVolume file move inline source inline volume
 //
-// swagger:model FileMoveSourceVolume
-type FileMoveSourceVolume struct {
+// swagger:model file_move_inline_source_inline_volume
+type FileMoveInlineSourceInlineVolume struct {
 
 	// links
-	Links *FileMoveSourceVolumeLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineSourceInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move source volume
-func (m *FileMoveSourceVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline source inline volume
+func (m *FileMoveInlineSourceInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3464,7 +3464,7 @@ func (m *FileMoveSourceVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSourceVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3481,8 +3481,8 @@ func (m *FileMoveSourceVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move source volume based on the context it is used
-func (m *FileMoveSourceVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline source inline volume based on the context it is used
+func (m *FileMoveInlineSourceInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3495,7 +3495,7 @@ func (m *FileMoveSourceVolume) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FileMoveSourceVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3510,7 +3510,7 @@ func (m *FileMoveSourceVolume) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSourceVolume) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSourceInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3518,8 +3518,8 @@ func (m *FileMoveSourceVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSourceVolume) UnmarshalBinary(b []byte) error {
-	var res FileMoveSourceVolume
+func (m *FileMoveInlineSourceInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSourceInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3527,17 +3527,17 @@ func (m *FileMoveSourceVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSourceVolumeLinks file move source volume links
+// FileMoveInlineSourceInlineVolumeInlineLinks file move inline source inline volume inline links
 //
-// swagger:model FileMoveSourceVolumeLinks
-type FileMoveSourceVolumeLinks struct {
+// swagger:model file_move_inline_source_inline_volume_inline__links
+type FileMoveInlineSourceInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move source volume links
-func (m *FileMoveSourceVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline source inline volume inline links
+func (m *FileMoveInlineSourceInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3550,7 +3550,7 @@ func (m *FileMoveSourceVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSourceVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3567,8 +3567,8 @@ func (m *FileMoveSourceVolumeLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this file move source volume links based on the context it is used
-func (m *FileMoveSourceVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline source inline volume inline links based on the context it is used
+func (m *FileMoveInlineSourceInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3581,7 +3581,7 @@ func (m *FileMoveSourceVolumeLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FileMoveSourceVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSourceInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3596,7 +3596,7 @@ func (m *FileMoveSourceVolumeLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSourceVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSourceInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3604,8 +3604,8 @@ func (m *FileMoveSourceVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSourceVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveSourceVolumeLinks
+func (m *FileMoveInlineSourceInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSourceInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3613,27 +3613,27 @@ func (m *FileMoveSourceVolumeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSvm SVM of the FlexGroup volume in file move operation. Only used in a FlexGroup volume file move operation.
+// FileMoveInlineSvm SVM of the FlexGroup volume in file move operation. Only used in a FlexGroup volume file move operation.
 //
-// swagger:model FileMoveSvm
-type FileMoveSvm struct {
+// swagger:model file_move_inline_svm
+type FileMoveInlineSvm struct {
 
 	// links
-	Links *FileMoveSvmLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move svm
-func (m *FileMoveSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline svm
+func (m *FileMoveInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3646,7 +3646,7 @@ func (m *FileMoveSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3663,8 +3663,8 @@ func (m *FileMoveSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move svm based on the context it is used
-func (m *FileMoveSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline svm based on the context it is used
+func (m *FileMoveInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3677,7 +3677,7 @@ func (m *FileMoveSvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *FileMoveSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3692,7 +3692,7 @@ func (m *FileMoveSvm) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSvm) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3700,8 +3700,8 @@ func (m *FileMoveSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSvm) UnmarshalBinary(b []byte) error {
-	var res FileMoveSvm
+func (m *FileMoveInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3709,17 +3709,17 @@ func (m *FileMoveSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveSvmLinks file move svm links
+// FileMoveInlineSvmInlineLinks file move inline svm inline links
 //
-// swagger:model FileMoveSvmLinks
-type FileMoveSvmLinks struct {
+// swagger:model file_move_inline_svm_inline__links
+type FileMoveInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move svm links
-func (m *FileMoveSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline svm inline links
+func (m *FileMoveInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3732,7 +3732,7 @@ func (m *FileMoveSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3749,8 +3749,8 @@ func (m *FileMoveSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move svm links based on the context it is used
-func (m *FileMoveSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline svm inline links based on the context it is used
+func (m *FileMoveInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3763,7 +3763,7 @@ func (m *FileMoveSvmLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FileMoveSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3778,7 +3778,7 @@ func (m *FileMoveSvmLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3786,8 +3786,8 @@ func (m *FileMoveSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveSvmLinks
+func (m *FileMoveInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3795,25 +3795,25 @@ func (m *FileMoveSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveVolume FlexGroup volume in file move operation. Only used in a FlexGroup volume file move operation.
+// FileMoveInlineVolume FlexGroup volume in file move operation. Only used in a FlexGroup volume file move operation.
 //
-// swagger:model FileMoveVolume
-type FileMoveVolume struct {
+// swagger:model file_move_inline_volume
+type FileMoveInlineVolume struct {
 
 	// links
-	Links *FileMoveVolumeLinks `json:"_links,omitempty"`
+	Links *FileMoveInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file move volume
-func (m *FileMoveVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline volume
+func (m *FileMoveInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3826,7 +3826,7 @@ func (m *FileMoveVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileMoveInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3843,8 +3843,8 @@ func (m *FileMoveVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move volume based on the context it is used
-func (m *FileMoveVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline volume based on the context it is used
+func (m *FileMoveInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3857,7 +3857,7 @@ func (m *FileMoveVolume) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *FileMoveVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3872,7 +3872,7 @@ func (m *FileMoveVolume) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveVolume) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3880,8 +3880,8 @@ func (m *FileMoveVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveVolume) UnmarshalBinary(b []byte) error {
-	var res FileMoveVolume
+func (m *FileMoveInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3889,17 +3889,17 @@ func (m *FileMoveVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileMoveVolumeLinks file move volume links
+// FileMoveInlineVolumeInlineLinks file move inline volume inline links
 //
-// swagger:model FileMoveVolumeLinks
-type FileMoveVolumeLinks struct {
+// swagger:model file_move_inline_volume_inline__links
+type FileMoveInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file move volume links
-func (m *FileMoveVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file move inline volume inline links
+func (m *FileMoveInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3912,7 +3912,7 @@ func (m *FileMoveVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileMoveVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileMoveInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3929,8 +3929,8 @@ func (m *FileMoveVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file move volume links based on the context it is used
-func (m *FileMoveVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file move inline volume inline links based on the context it is used
+func (m *FileMoveInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3943,7 +3943,7 @@ func (m *FileMoveVolumeLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FileMoveVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileMoveInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3958,7 +3958,7 @@ func (m *FileMoveVolumeLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FileMoveVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileMoveInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3966,8 +3966,8 @@ func (m *FileMoveVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileMoveVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileMoveVolumeLinks
+func (m *FileMoveInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileMoveInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

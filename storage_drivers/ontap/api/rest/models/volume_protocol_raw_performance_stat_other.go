@@ -19,11 +19,11 @@ type VolumeProtocolRawPerformanceStatOther struct {
 
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 }
 
 // Validate validates this volume protocol raw performance stat other

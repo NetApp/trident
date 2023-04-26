@@ -74,13 +74,13 @@ type EmsFiltersRulesCreateParams struct {
 
 	   Filter name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *EmsFiltersRulesCreateParams) WithDefaults() *EmsFiltersRulesCreateParam
 // All values with no default are reset to their zero value.
 func (o *EmsFiltersRulesCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := EmsFiltersRulesCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *EmsFiltersRulesCreateParams) SetInfo(info *models.EmsFilterRule) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the ems filters rules create params
-func (o *EmsFiltersRulesCreateParams) WithNamePathParameter(name string) *EmsFiltersRulesCreateParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems filters rules create params
+func (o *EmsFiltersRulesCreateParams) WithName(name string) *EmsFiltersRulesCreateParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems filters rules create params
-func (o *EmsFiltersRulesCreateParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems filters rules create params
+func (o *EmsFiltersRulesCreateParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ems filters rules create params
-func (o *EmsFiltersRulesCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *EmsFiltersRulesCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ems filters rules create params
+func (o *EmsFiltersRulesCreateParams) WithReturnRecords(returnRecords *bool) *EmsFiltersRulesCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ems filters rules create params
-func (o *EmsFiltersRulesCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ems filters rules create params
+func (o *EmsFiltersRulesCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -193,17 +193,17 @@ func (o *EmsFiltersRulesCreateParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

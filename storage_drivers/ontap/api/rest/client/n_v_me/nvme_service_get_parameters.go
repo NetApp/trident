@@ -66,14 +66,14 @@ type NvmeServiceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM whose NVMe service is to be retrieved.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *NvmeServiceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme service get params
-func (o *NvmeServiceGetParams) WithFieldsQueryParameter(fields []string) *NvmeServiceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme service get params
+func (o *NvmeServiceGetParams) WithFields(fields []string) *NvmeServiceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme service get params
-func (o *NvmeServiceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme service get params
+func (o *NvmeServiceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nvme service get params
-func (o *NvmeServiceGetParams) WithSVMUUIDPathParameter(svmUUID string) *NvmeServiceGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nvme service get params
+func (o *NvmeServiceGetParams) WithSvmUUID(svmUUID string) *NvmeServiceGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nvme service get params
-func (o *NvmeServiceGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nvme service get params
+func (o *NvmeServiceGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,7 +158,7 @@ func (o *NvmeServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -170,7 +170,7 @@ func (o *NvmeServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (o *NvmeServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamNvmeServiceGet binds the parameter fields
 func (o *NvmeServiceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

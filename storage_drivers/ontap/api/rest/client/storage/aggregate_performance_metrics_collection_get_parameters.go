@@ -66,13 +66,13 @@ type AggregatePerformanceMetricsCollectionGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -87,67 +87,67 @@ type AggregatePerformanceMetricsCollectionGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* IopsOther.
 
 	   Filter by iops.other
 	*/
-	IopsOtherQueryParameter *int64
+	IopsOther *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsTotal.
 
 	   Filter by iops.total
 	*/
-	IopsTotalQueryParameter *int64
+	IopsTotal *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* LatencyOther.
 
 	   Filter by latency.other
 	*/
-	LatencyOtherQueryParameter *int64
+	LatencyOther *int64
 
 	/* LatencyRead.
 
 	   Filter by latency.read
 	*/
-	LatencyReadQueryParameter *int64
+	LatencyRead *int64
 
 	/* LatencyTotal.
 
 	   Filter by latency.total
 	*/
-	LatencyTotalQueryParameter *int64
+	LatencyTotal *int64
 
 	/* LatencyWrite.
 
 	   Filter by latency.write
 	*/
-	LatencyWriteQueryParameter *int64
+	LatencyWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -155,7 +155,7 @@ type AggregatePerformanceMetricsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -163,49 +163,49 @@ type AggregatePerformanceMetricsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* ThroughputOther.
 
 	   Filter by throughput.other
 	*/
-	ThroughputOtherQueryParameter *int64
+	ThroughputOther *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* UUID.
 
 	   Unique identifier of the aggregate.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -225,17 +225,17 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WithDefaults() *Aggrega
 // All values with no default are reset to their zero value.
 func (o *AggregatePerformanceMetricsCollectionGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AggregatePerformanceMetricsCollectionGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,246 +277,246 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) SetHTTPClient(client *h
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithDurationQueryParameter(duration *string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithDuration(duration *string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithFieldsQueryParameter(fields []string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithFields(fields []string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithIntervalQueryParameter(interval *string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithInterval(interval *string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithIopsOtherQueryParameter adds the iopsOther to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsOtherQueryParameter(iopsOther *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetIopsOtherQueryParameter(iopsOther)
+// WithIopsOther adds the iopsOther to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsOther(iopsOther *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetIopsOther(iopsOther)
 	return o
 }
 
-// SetIopsOtherQueryParameter adds the iopsOther to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsOtherQueryParameter(iopsOther *int64) {
-	o.IopsOtherQueryParameter = iopsOther
+// SetIopsOther adds the iopsOther to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsOther(iopsOther *int64) {
+	o.IopsOther = iopsOther
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsReadQueryParameter(iopsRead *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsRead(iopsRead *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsTotalQueryParameter adds the iopsTotal to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsTotalQueryParameter(iopsTotal *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetIopsTotalQueryParameter(iopsTotal)
+// WithIopsTotal adds the iopsTotal to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsTotal(iopsTotal *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetIopsTotal(iopsTotal)
 	return o
 }
 
-// SetIopsTotalQueryParameter adds the iopsTotal to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsTotalQueryParameter(iopsTotal *int64) {
-	o.IopsTotalQueryParameter = iopsTotal
+// SetIopsTotal adds the iopsTotal to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsTotal(iopsTotal *int64) {
+	o.IopsTotal = iopsTotal
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithIopsWrite(iopsWrite *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithLatencyOtherQueryParameter adds the latencyOther to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyOtherQueryParameter(latencyOther *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetLatencyOtherQueryParameter(latencyOther)
+// WithLatencyOther adds the latencyOther to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyOther(latencyOther *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetLatencyOther(latencyOther)
 	return o
 }
 
-// SetLatencyOtherQueryParameter adds the latencyOther to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyOtherQueryParameter(latencyOther *int64) {
-	o.LatencyOtherQueryParameter = latencyOther
+// SetLatencyOther adds the latencyOther to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyOther(latencyOther *int64) {
+	o.LatencyOther = latencyOther
 }
 
-// WithLatencyReadQueryParameter adds the latencyRead to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyReadQueryParameter(latencyRead *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetLatencyReadQueryParameter(latencyRead)
+// WithLatencyRead adds the latencyRead to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyRead(latencyRead *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetLatencyRead(latencyRead)
 	return o
 }
 
-// SetLatencyReadQueryParameter adds the latencyRead to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyReadQueryParameter(latencyRead *int64) {
-	o.LatencyReadQueryParameter = latencyRead
+// SetLatencyRead adds the latencyRead to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyRead(latencyRead *int64) {
+	o.LatencyRead = latencyRead
 }
 
-// WithLatencyTotalQueryParameter adds the latencyTotal to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyTotalQueryParameter(latencyTotal *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetLatencyTotalQueryParameter(latencyTotal)
+// WithLatencyTotal adds the latencyTotal to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyTotal(latencyTotal *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetLatencyTotal(latencyTotal)
 	return o
 }
 
-// SetLatencyTotalQueryParameter adds the latencyTotal to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyTotalQueryParameter(latencyTotal *int64) {
-	o.LatencyTotalQueryParameter = latencyTotal
+// SetLatencyTotal adds the latencyTotal to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyTotal(latencyTotal *int64) {
+	o.LatencyTotal = latencyTotal
 }
 
-// WithLatencyWriteQueryParameter adds the latencyWrite to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyWriteQueryParameter(latencyWrite *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetLatencyWriteQueryParameter(latencyWrite)
+// WithLatencyWrite adds the latencyWrite to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithLatencyWrite(latencyWrite *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetLatencyWrite(latencyWrite)
 	return o
 }
 
-// SetLatencyWriteQueryParameter adds the latencyWrite to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyWriteQueryParameter(latencyWrite *int64) {
-	o.LatencyWriteQueryParameter = latencyWrite
+// SetLatencyWrite adds the latencyWrite to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetLatencyWrite(latencyWrite *int64) {
+	o.LatencyWrite = latencyWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithMaxRecords(maxRecords *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithOrderBy(orderBy []string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithReturnRecords(returnRecords *bool) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithStatusQueryParameter(status *string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithStatus(status *string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithThroughputOtherQueryParameter adds the throughputOther to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputOtherQueryParameter(throughputOther *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetThroughputOtherQueryParameter(throughputOther)
+// WithThroughputOther adds the throughputOther to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputOther(throughputOther *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetThroughputOther(throughputOther)
 	return o
 }
 
-// SetThroughputOtherQueryParameter adds the throughputOther to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputOtherQueryParameter(throughputOther *int64) {
-	o.ThroughputOtherQueryParameter = throughputOther
+// SetThroughputOther adds the throughputOther to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputOther(throughputOther *int64) {
+	o.ThroughputOther = throughputOther
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputRead(throughputRead *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputTotal(throughputTotal *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithTimestamp(timestamp *string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithUUIDPathParameter adds the uuid to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) WithUUIDPathParameter(uuid string) *AggregatePerformanceMetricsCollectionGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) WithUUID(uuid string) *AggregatePerformanceMetricsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the aggregate performance metrics collection get params
-func (o *AggregatePerformanceMetricsCollectionGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the aggregate performance metrics collection get params
+func (o *AggregatePerformanceMetricsCollectionGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -527,13 +527,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -544,7 +544,7 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -555,13 +555,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -572,13 +572,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.IopsOtherQueryParameter != nil {
+	if o.IopsOther != nil {
 
 		// query param iops.other
 		var qrIopsOther int64
 
-		if o.IopsOtherQueryParameter != nil {
-			qrIopsOther = *o.IopsOtherQueryParameter
+		if o.IopsOther != nil {
+			qrIopsOther = *o.IopsOther
 		}
 		qIopsOther := swag.FormatInt64(qrIopsOther)
 		if qIopsOther != "" {
@@ -589,13 +589,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -606,13 +606,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.IopsTotalQueryParameter != nil {
+	if o.IopsTotal != nil {
 
 		// query param iops.total
 		var qrIopsTotal int64
 
-		if o.IopsTotalQueryParameter != nil {
-			qrIopsTotal = *o.IopsTotalQueryParameter
+		if o.IopsTotal != nil {
+			qrIopsTotal = *o.IopsTotal
 		}
 		qIopsTotal := swag.FormatInt64(qrIopsTotal)
 		if qIopsTotal != "" {
@@ -623,13 +623,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -640,13 +640,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.LatencyOtherQueryParameter != nil {
+	if o.LatencyOther != nil {
 
 		// query param latency.other
 		var qrLatencyOther int64
 
-		if o.LatencyOtherQueryParameter != nil {
-			qrLatencyOther = *o.LatencyOtherQueryParameter
+		if o.LatencyOther != nil {
+			qrLatencyOther = *o.LatencyOther
 		}
 		qLatencyOther := swag.FormatInt64(qrLatencyOther)
 		if qLatencyOther != "" {
@@ -657,13 +657,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.LatencyReadQueryParameter != nil {
+	if o.LatencyRead != nil {
 
 		// query param latency.read
 		var qrLatencyRead int64
 
-		if o.LatencyReadQueryParameter != nil {
-			qrLatencyRead = *o.LatencyReadQueryParameter
+		if o.LatencyRead != nil {
+			qrLatencyRead = *o.LatencyRead
 		}
 		qLatencyRead := swag.FormatInt64(qrLatencyRead)
 		if qLatencyRead != "" {
@@ -674,13 +674,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.LatencyTotalQueryParameter != nil {
+	if o.LatencyTotal != nil {
 
 		// query param latency.total
 		var qrLatencyTotal int64
 
-		if o.LatencyTotalQueryParameter != nil {
-			qrLatencyTotal = *o.LatencyTotalQueryParameter
+		if o.LatencyTotal != nil {
+			qrLatencyTotal = *o.LatencyTotal
 		}
 		qLatencyTotal := swag.FormatInt64(qrLatencyTotal)
 		if qLatencyTotal != "" {
@@ -691,13 +691,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.LatencyWriteQueryParameter != nil {
+	if o.LatencyWrite != nil {
 
 		// query param latency.write
 		var qrLatencyWrite int64
 
-		if o.LatencyWriteQueryParameter != nil {
-			qrLatencyWrite = *o.LatencyWriteQueryParameter
+		if o.LatencyWrite != nil {
+			qrLatencyWrite = *o.LatencyWrite
 		}
 		qLatencyWrite := swag.FormatInt64(qrLatencyWrite)
 		if qLatencyWrite != "" {
@@ -708,13 +708,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -725,7 +725,7 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -736,13 +736,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -753,13 +753,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -770,13 +770,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -787,13 +787,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.ThroughputOtherQueryParameter != nil {
+	if o.ThroughputOther != nil {
 
 		// query param throughput.other
 		var qrThroughputOther int64
 
-		if o.ThroughputOtherQueryParameter != nil {
-			qrThroughputOther = *o.ThroughputOtherQueryParameter
+		if o.ThroughputOther != nil {
+			qrThroughputOther = *o.ThroughputOther
 		}
 		qThroughputOther := swag.FormatInt64(qrThroughputOther)
 		if qThroughputOther != "" {
@@ -804,13 +804,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -821,13 +821,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -838,13 +838,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -855,13 +855,13 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -873,7 +873,7 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -885,7 +885,7 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) WriteToRequest(r runtim
 
 // bindParamAggregatePerformanceMetricsCollectionGet binds the parameter fields
 func (o *AggregatePerformanceMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -902,7 +902,7 @@ func (o *AggregatePerformanceMetricsCollectionGetParams) bindParamFields(formats
 
 // bindParamAggregatePerformanceMetricsCollectionGet binds the parameter order_by
 func (o *AggregatePerformanceMetricsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

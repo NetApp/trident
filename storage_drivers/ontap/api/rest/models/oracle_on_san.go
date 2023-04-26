@@ -22,11 +22,11 @@ import (
 type OracleOnSan struct {
 
 	// archive log
-	ArchiveLog *OracleOnSanArchiveLog `json:"archive_log,omitempty"`
+	ArchiveLog *OracleOnSanInlineArchiveLog `json:"archive_log,omitempty"`
 
 	// db
 	// Required: true
-	Db *OracleOnSanDb `json:"db"`
+	Db *OracleOnSanInlineDb `json:"db"`
 
 	// The name of the initiator group through which the contents of this application will be accessed. Modification of this parameter is a disruptive operation. All LUNs in the application component will be unmapped from the current igroup and re-mapped to the new igroup.
 	// Required: true
@@ -34,13 +34,13 @@ type OracleOnSan struct {
 	// Min Length: 1
 	IgroupName *string `json:"igroup_name"`
 
+	// ora home
+	OraHome *OracleOnSanInlineOraHome `json:"ora_home,omitempty"`
+
 	// The list of initiator groups to create.
 	// Max Items: 1
 	// Min Items: 0
-	NewIgroups []*OracleOnSanNewIgroups `json:"new_igroups,omitempty"`
-
-	// ora home
-	OraHome *OracleOnSanOraHome `json:"ora_home,omitempty"`
+	OracleOnSanInlineNewIgroups []*OracleOnSanNewIgroups `json:"new_igroups,omitempty"`
 
 	// The name of the host OS running the application.
 	// Required: true
@@ -48,11 +48,11 @@ type OracleOnSan struct {
 	OsType *string `json:"os_type"`
 
 	// protection type
-	ProtectionType *OracleOnSanProtectionType `json:"protection_type,omitempty"`
+	ProtectionType *OracleOnSanInlineProtectionType `json:"protection_type,omitempty"`
 
 	// redo log
 	// Required: true
-	RedoLog *OracleOnSanRedoLog `json:"redo_log"`
+	RedoLog *OracleOnSanInlineRedoLog `json:"redo_log"`
 }
 
 // Validate validates this oracle on san
@@ -71,11 +71,11 @@ func (m *OracleOnSan) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNewIgroups(formats); err != nil {
+	if err := m.validateOraHome(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateOraHome(formats); err != nil {
+	if err := m.validateOracleOnSanInlineNewIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -149,40 +149,6 @@ func (m *OracleOnSan) validateIgroupName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSan) validateNewIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.NewIgroups) { // not required
-		return nil
-	}
-
-	iNewIgroupsSize := int64(len(m.NewIgroups))
-
-	if err := validate.MinItems("new_igroups", "body", iNewIgroupsSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("new_igroups", "body", iNewIgroupsSize, 1); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-		if swag.IsZero(m.NewIgroups[i]) { // not required
-			continue
-		}
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *OracleOnSan) validateOraHome(formats strfmt.Registry) error {
 	if swag.IsZero(m.OraHome) { // not required
 		return nil
@@ -195,6 +161,40 @@ func (m *OracleOnSan) validateOraHome(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *OracleOnSan) validateOracleOnSanInlineNewIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.OracleOnSanInlineNewIgroups) { // not required
+		return nil
+	}
+
+	iOracleOnSanInlineNewIgroupsSize := int64(len(m.OracleOnSanInlineNewIgroups))
+
+	if err := validate.MinItems("new_igroups", "body", iOracleOnSanInlineNewIgroupsSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("new_igroups", "body", iOracleOnSanInlineNewIgroupsSize, 1); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.OracleOnSanInlineNewIgroups); i++ {
+		if swag.IsZero(m.OracleOnSanInlineNewIgroups[i]) { // not required
+			continue
+		}
+
+		if m.OracleOnSanInlineNewIgroups[i] != nil {
+			if err := m.OracleOnSanInlineNewIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -394,11 +394,11 @@ func (m *OracleOnSan) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNewIgroups(ctx, formats); err != nil {
+	if err := m.contextValidateOraHome(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateOraHome(ctx, formats); err != nil {
+	if err := m.contextValidateOracleOnSanInlineNewIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -444,24 +444,6 @@ func (m *OracleOnSan) contextValidateDb(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *OracleOnSan) contextValidateNewIgroups(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *OracleOnSan) contextValidateOraHome(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.OraHome != nil {
@@ -471,6 +453,24 @@ func (m *OracleOnSan) contextValidateOraHome(ctx context.Context, formats strfmt
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *OracleOnSan) contextValidateOracleOnSanInlineNewIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.OracleOnSanInlineNewIgroups); i++ {
+
+		if m.OracleOnSanInlineNewIgroups[i] != nil {
+			if err := m.OracleOnSanInlineNewIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -522,20 +522,20 @@ func (m *OracleOnSan) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanArchiveLog oracle on san archive log
+// OracleOnSanInlineArchiveLog oracle on san inline archive log
 //
-// swagger:model OracleOnSanArchiveLog
-type OracleOnSanArchiveLog struct {
+// swagger:model oracle_on_san_inline_archive_log
+type OracleOnSanInlineArchiveLog struct {
 
 	// The size of the archive log. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *OracleOnSanArchiveLogStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnSanInlineArchiveLogInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on san archive log
-func (m *OracleOnSanArchiveLog) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline archive log
+func (m *OracleOnSanInlineArchiveLog) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -548,7 +548,7 @@ func (m *OracleOnSanArchiveLog) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanArchiveLog) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineArchiveLog) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -565,8 +565,8 @@ func (m *OracleOnSanArchiveLog) validateStorageService(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this oracle on san archive log based on the context it is used
-func (m *OracleOnSanArchiveLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on san inline archive log based on the context it is used
+func (m *OracleOnSanInlineArchiveLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -579,7 +579,7 @@ func (m *OracleOnSanArchiveLog) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *OracleOnSanArchiveLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnSanInlineArchiveLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -594,7 +594,7 @@ func (m *OracleOnSanArchiveLog) contextValidateStorageService(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanArchiveLog) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineArchiveLog) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -602,8 +602,8 @@ func (m *OracleOnSanArchiveLog) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanArchiveLog) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanArchiveLog
+func (m *OracleOnSanInlineArchiveLog) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineArchiveLog
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -611,18 +611,18 @@ func (m *OracleOnSanArchiveLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanArchiveLogStorageService oracle on san archive log storage service
+// OracleOnSanInlineArchiveLogInlineStorageService oracle on san inline archive log inline storage service
 //
-// swagger:model OracleOnSanArchiveLogStorageService
-type OracleOnSanArchiveLogStorageService struct {
+// swagger:model oracle_on_san_inline_archive_log_inline_storage_service
+type OracleOnSanInlineArchiveLogInlineStorageService struct {
 
 	// The storage service of the archive log.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on san archive log storage service
-func (m *OracleOnSanArchiveLogStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline archive log inline storage service
+func (m *OracleOnSanInlineArchiveLogInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -635,7 +635,7 @@ func (m *OracleOnSanArchiveLogStorageService) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var oracleOnSanArchiveLogStorageServiceTypeNamePropEnum []interface{}
+var oracleOnSanInlineArchiveLogInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -643,52 +643,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanArchiveLogStorageServiceTypeNamePropEnum = append(oracleOnSanArchiveLogStorageServiceTypeNamePropEnum, v)
+		oracleOnSanInlineArchiveLogInlineStorageServiceTypeNamePropEnum = append(oracleOnSanInlineArchiveLogInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnSanArchiveLogStorageService
-	// OracleOnSanArchiveLogStorageService
+	// oracle_on_san_inline_archive_log_inline_storage_service
+	// OracleOnSanInlineArchiveLogInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnSanArchiveLogStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnSanArchiveLogStorageServiceNameExtreme string = "extreme"
+	// OracleOnSanInlineArchiveLogInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnSanInlineArchiveLogInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanArchiveLogStorageService
-	// OracleOnSanArchiveLogStorageService
+	// oracle_on_san_inline_archive_log_inline_storage_service
+	// OracleOnSanInlineArchiveLogInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnSanArchiveLogStorageServiceNamePerformance captures enum value "performance"
-	OracleOnSanArchiveLogStorageServiceNamePerformance string = "performance"
+	// OracleOnSanInlineArchiveLogInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnSanInlineArchiveLogInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanArchiveLogStorageService
-	// OracleOnSanArchiveLogStorageService
+	// oracle_on_san_inline_archive_log_inline_storage_service
+	// OracleOnSanInlineArchiveLogInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnSanArchiveLogStorageServiceNameValue captures enum value "value"
-	OracleOnSanArchiveLogStorageServiceNameValue string = "value"
+	// OracleOnSanInlineArchiveLogInlineStorageServiceNameValue captures enum value "value"
+	OracleOnSanInlineArchiveLogInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnSanArchiveLogStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanArchiveLogStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnSanInlineArchiveLogInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineArchiveLogInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanArchiveLogStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineArchiveLogInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -701,13 +701,13 @@ func (m *OracleOnSanArchiveLogStorageService) validateName(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validates this oracle on san archive log storage service based on context it is used
-func (m *OracleOnSanArchiveLogStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san inline archive log inline storage service based on context it is used
+func (m *OracleOnSanInlineArchiveLogInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanArchiveLogStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineArchiveLogInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -715,8 +715,8 @@ func (m *OracleOnSanArchiveLogStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanArchiveLogStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanArchiveLogStorageService
+func (m *OracleOnSanInlineArchiveLogInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineArchiveLogInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -724,21 +724,21 @@ func (m *OracleOnSanArchiveLogStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanDb oracle on san db
+// OracleOnSanInlineDb oracle on san inline db
 //
-// swagger:model OracleOnSanDb
-type OracleOnSanDb struct {
+// swagger:model oracle_on_san_inline_db
+type OracleOnSanInlineDb struct {
 
 	// The size of the database. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *OracleOnSanDbStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnSanInlineDbInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on san db
-func (m *OracleOnSanDb) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline db
+func (m *OracleOnSanInlineDb) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSize(formats); err != nil {
@@ -755,7 +755,7 @@ func (m *OracleOnSanDb) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanDb) validateSize(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineDb) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("db"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -764,7 +764,7 @@ func (m *OracleOnSanDb) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanDb) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineDb) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -781,8 +781,8 @@ func (m *OracleOnSanDb) validateStorageService(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this oracle on san db based on the context it is used
-func (m *OracleOnSanDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on san inline db based on the context it is used
+func (m *OracleOnSanInlineDb) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -795,7 +795,7 @@ func (m *OracleOnSanDb) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *OracleOnSanDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnSanInlineDb) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -810,7 +810,7 @@ func (m *OracleOnSanDb) contextValidateStorageService(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanDb) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineDb) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -818,8 +818,8 @@ func (m *OracleOnSanDb) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanDb) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanDb
+func (m *OracleOnSanInlineDb) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineDb
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -827,18 +827,18 @@ func (m *OracleOnSanDb) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanDbStorageService oracle on san db storage service
+// OracleOnSanInlineDbInlineStorageService oracle on san inline db inline storage service
 //
-// swagger:model OracleOnSanDbStorageService
-type OracleOnSanDbStorageService struct {
+// swagger:model oracle_on_san_inline_db_inline_storage_service
+type OracleOnSanInlineDbInlineStorageService struct {
 
 	// The storage service of the database.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on san db storage service
-func (m *OracleOnSanDbStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline db inline storage service
+func (m *OracleOnSanInlineDbInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -851,7 +851,7 @@ func (m *OracleOnSanDbStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var oracleOnSanDbStorageServiceTypeNamePropEnum []interface{}
+var oracleOnSanInlineDbInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -859,52 +859,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanDbStorageServiceTypeNamePropEnum = append(oracleOnSanDbStorageServiceTypeNamePropEnum, v)
+		oracleOnSanInlineDbInlineStorageServiceTypeNamePropEnum = append(oracleOnSanInlineDbInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnSanDbStorageService
-	// OracleOnSanDbStorageService
+	// oracle_on_san_inline_db_inline_storage_service
+	// OracleOnSanInlineDbInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnSanDbStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnSanDbStorageServiceNameExtreme string = "extreme"
+	// OracleOnSanInlineDbInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnSanInlineDbInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanDbStorageService
-	// OracleOnSanDbStorageService
+	// oracle_on_san_inline_db_inline_storage_service
+	// OracleOnSanInlineDbInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnSanDbStorageServiceNamePerformance captures enum value "performance"
-	OracleOnSanDbStorageServiceNamePerformance string = "performance"
+	// OracleOnSanInlineDbInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnSanInlineDbInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanDbStorageService
-	// OracleOnSanDbStorageService
+	// oracle_on_san_inline_db_inline_storage_service
+	// OracleOnSanInlineDbInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnSanDbStorageServiceNameValue captures enum value "value"
-	OracleOnSanDbStorageServiceNameValue string = "value"
+	// OracleOnSanInlineDbInlineStorageServiceNameValue captures enum value "value"
+	OracleOnSanInlineDbInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnSanDbStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanDbStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnSanInlineDbInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineDbInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanDbStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineDbInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -917,13 +917,13 @@ func (m *OracleOnSanDbStorageService) validateName(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this oracle on san db storage service based on context it is used
-func (m *OracleOnSanDbStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san inline db inline storage service based on context it is used
+func (m *OracleOnSanInlineDbInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanDbStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineDbInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -931,8 +931,8 @@ func (m *OracleOnSanDbStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanDbStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanDbStorageService
+func (m *OracleOnSanInlineDbInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineDbInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -940,20 +940,20 @@ func (m *OracleOnSanDbStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanOraHome oracle on san ora home
+// OracleOnSanInlineOraHome oracle on san inline ora home
 //
-// swagger:model OracleOnSanOraHome
-type OracleOnSanOraHome struct {
+// swagger:model oracle_on_san_inline_ora_home
+type OracleOnSanInlineOraHome struct {
 
 	// The size of the ORACLE_HOME storage volume. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *OracleOnSanOraHomeStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnSanInlineOraHomeInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on san ora home
-func (m *OracleOnSanOraHome) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline ora home
+func (m *OracleOnSanInlineOraHome) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -966,7 +966,7 @@ func (m *OracleOnSanOraHome) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanOraHome) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineOraHome) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -983,8 +983,8 @@ func (m *OracleOnSanOraHome) validateStorageService(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this oracle on san ora home based on the context it is used
-func (m *OracleOnSanOraHome) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on san inline ora home based on the context it is used
+func (m *OracleOnSanInlineOraHome) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -997,7 +997,7 @@ func (m *OracleOnSanOraHome) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *OracleOnSanOraHome) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnSanInlineOraHome) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -1012,7 +1012,7 @@ func (m *OracleOnSanOraHome) contextValidateStorageService(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanOraHome) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineOraHome) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1020,8 +1020,8 @@ func (m *OracleOnSanOraHome) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanOraHome) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanOraHome
+func (m *OracleOnSanInlineOraHome) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineOraHome
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1029,18 +1029,18 @@ func (m *OracleOnSanOraHome) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanOraHomeStorageService oracle on san ora home storage service
+// OracleOnSanInlineOraHomeInlineStorageService oracle on san inline ora home inline storage service
 //
-// swagger:model OracleOnSanOraHomeStorageService
-type OracleOnSanOraHomeStorageService struct {
+// swagger:model oracle_on_san_inline_ora_home_inline_storage_service
+type OracleOnSanInlineOraHomeInlineStorageService struct {
 
 	// The storage service of the ORACLE_HOME storage volume.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on san ora home storage service
-func (m *OracleOnSanOraHomeStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline ora home inline storage service
+func (m *OracleOnSanInlineOraHomeInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1053,7 +1053,7 @@ func (m *OracleOnSanOraHomeStorageService) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-var oracleOnSanOraHomeStorageServiceTypeNamePropEnum []interface{}
+var oracleOnSanInlineOraHomeInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1061,52 +1061,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanOraHomeStorageServiceTypeNamePropEnum = append(oracleOnSanOraHomeStorageServiceTypeNamePropEnum, v)
+		oracleOnSanInlineOraHomeInlineStorageServiceTypeNamePropEnum = append(oracleOnSanInlineOraHomeInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnSanOraHomeStorageService
-	// OracleOnSanOraHomeStorageService
+	// oracle_on_san_inline_ora_home_inline_storage_service
+	// OracleOnSanInlineOraHomeInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnSanOraHomeStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnSanOraHomeStorageServiceNameExtreme string = "extreme"
+	// OracleOnSanInlineOraHomeInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnSanInlineOraHomeInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanOraHomeStorageService
-	// OracleOnSanOraHomeStorageService
+	// oracle_on_san_inline_ora_home_inline_storage_service
+	// OracleOnSanInlineOraHomeInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnSanOraHomeStorageServiceNamePerformance captures enum value "performance"
-	OracleOnSanOraHomeStorageServiceNamePerformance string = "performance"
+	// OracleOnSanInlineOraHomeInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnSanInlineOraHomeInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanOraHomeStorageService
-	// OracleOnSanOraHomeStorageService
+	// oracle_on_san_inline_ora_home_inline_storage_service
+	// OracleOnSanInlineOraHomeInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnSanOraHomeStorageServiceNameValue captures enum value "value"
-	OracleOnSanOraHomeStorageServiceNameValue string = "value"
+	// OracleOnSanInlineOraHomeInlineStorageServiceNameValue captures enum value "value"
+	OracleOnSanInlineOraHomeInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnSanOraHomeStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanOraHomeStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnSanInlineOraHomeInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineOraHomeInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanOraHomeStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineOraHomeInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1119,13 +1119,13 @@ func (m *OracleOnSanOraHomeStorageService) validateName(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this oracle on san ora home storage service based on context it is used
-func (m *OracleOnSanOraHomeStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san inline ora home inline storage service based on context it is used
+func (m *OracleOnSanInlineOraHomeInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanOraHomeStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineOraHomeInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1133,8 +1133,8 @@ func (m *OracleOnSanOraHomeStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanOraHomeStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanOraHomeStorageService
+func (m *OracleOnSanInlineOraHomeInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineOraHomeInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1142,22 +1142,22 @@ func (m *OracleOnSanOraHomeStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanProtectionType oracle on san protection type
+// OracleOnSanInlineProtectionType oracle on san inline protection type
 //
-// swagger:model OracleOnSanProtectionType
-type OracleOnSanProtectionType struct {
+// swagger:model oracle_on_san_inline_protection_type
+type OracleOnSanInlineProtectionType struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this oracle on san protection type
-func (m *OracleOnSanProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline protection type
+func (m *OracleOnSanInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -1174,7 +1174,7 @@ func (m *OracleOnSanProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var oracleOnSanProtectionTypeTypeLocalRpoPropEnum []interface{}
+var oracleOnSanInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1182,55 +1182,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanProtectionTypeTypeLocalRpoPropEnum = append(oracleOnSanProtectionTypeTypeLocalRpoPropEnum, v)
+		oracleOnSanInlineProtectionTypeTypeLocalRpoPropEnum = append(oracleOnSanInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnSanProtectionType
-	// OracleOnSanProtectionType
+	// oracle_on_san_inline_protection_type
+	// OracleOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// OracleOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
-	OracleOnSanProtectionTypeLocalRpoHourly string = "hourly"
+	// OracleOnSanInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	OracleOnSanInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanProtectionType
-	// OracleOnSanProtectionType
+	// oracle_on_san_inline_protection_type
+	// OracleOnSanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// OracleOnSanProtectionTypeLocalRpoNone captures enum value "none"
-	OracleOnSanProtectionTypeLocalRpoNone string = "none"
+	// OracleOnSanInlineProtectionTypeLocalRpoNone captures enum value "none"
+	OracleOnSanInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *OracleOnSanProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *OracleOnSanInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var oracleOnSanProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var oracleOnSanInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1238,61 +1238,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanProtectionTypeTypeRemoteRpoPropEnum = append(oracleOnSanProtectionTypeTypeRemoteRpoPropEnum, v)
+		oracleOnSanInlineProtectionTypeTypeRemoteRpoPropEnum = append(oracleOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnSanProtectionType
-	// OracleOnSanProtectionType
+	// oracle_on_san_inline_protection_type
+	// OracleOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// OracleOnSanProtectionTypeRemoteRpoNone captures enum value "none"
-	OracleOnSanProtectionTypeRemoteRpoNone string = "none"
+	// OracleOnSanInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	OracleOnSanInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanProtectionType
-	// OracleOnSanProtectionType
+	// oracle_on_san_inline_protection_type
+	// OracleOnSanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// OracleOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
-	OracleOnSanProtectionTypeRemoteRpoZero string = "zero"
+	// OracleOnSanInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	OracleOnSanInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *OracleOnSanProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *OracleOnSanInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this oracle on san protection type based on context it is used
-func (m *OracleOnSanProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san inline protection type based on context it is used
+func (m *OracleOnSanInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanProtectionType) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1300,8 +1300,8 @@ func (m *OracleOnSanProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanProtectionType) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanProtectionType
+func (m *OracleOnSanInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1309,10 +1309,10 @@ func (m *OracleOnSanProtectionType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanRedoLog oracle on san redo log
+// OracleOnSanInlineRedoLog oracle on san inline redo log
 //
-// swagger:model OracleOnSanRedoLog
-type OracleOnSanRedoLog struct {
+// swagger:model oracle_on_san_inline_redo_log
+type OracleOnSanInlineRedoLog struct {
 
 	// Specifies whether the redo log group should be mirrored.
 	// Enum: [false true]
@@ -1323,11 +1323,11 @@ type OracleOnSanRedoLog struct {
 	Size *int64 `json:"size"`
 
 	// storage service
-	StorageService *OracleOnSanRedoLogStorageService `json:"storage_service,omitempty"`
+	StorageService *OracleOnSanInlineRedoLogInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this oracle on san redo log
-func (m *OracleOnSanRedoLog) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline redo log
+func (m *OracleOnSanInlineRedoLog) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMirrored(formats); err != nil {
@@ -1348,7 +1348,7 @@ func (m *OracleOnSanRedoLog) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var oracleOnSanRedoLogTypeMirroredPropEnum []interface{}
+var oracleOnSanInlineRedoLogTypeMirroredPropEnum []interface{}
 
 func init() {
 	var res []bool
@@ -1356,19 +1356,19 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanRedoLogTypeMirroredPropEnum = append(oracleOnSanRedoLogTypeMirroredPropEnum, v)
+		oracleOnSanInlineRedoLogTypeMirroredPropEnum = append(oracleOnSanInlineRedoLogTypeMirroredPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *OracleOnSanRedoLog) validateMirroredEnum(path, location string, value bool) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanRedoLogTypeMirroredPropEnum, true); err != nil {
+func (m *OracleOnSanInlineRedoLog) validateMirroredEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineRedoLogTypeMirroredPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanRedoLog) validateMirrored(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineRedoLog) validateMirrored(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mirrored) { // not required
 		return nil
 	}
@@ -1381,7 +1381,7 @@ func (m *OracleOnSanRedoLog) validateMirrored(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanRedoLog) validateSize(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineRedoLog) validateSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("redo_log"+"."+"size", "body", m.Size); err != nil {
 		return err
@@ -1390,7 +1390,7 @@ func (m *OracleOnSanRedoLog) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *OracleOnSanRedoLog) validateStorageService(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineRedoLog) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -1407,8 +1407,8 @@ func (m *OracleOnSanRedoLog) validateStorageService(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this oracle on san redo log based on the context it is used
-func (m *OracleOnSanRedoLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this oracle on san inline redo log based on the context it is used
+func (m *OracleOnSanInlineRedoLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -1421,7 +1421,7 @@ func (m *OracleOnSanRedoLog) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *OracleOnSanRedoLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *OracleOnSanInlineRedoLog) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -1436,7 +1436,7 @@ func (m *OracleOnSanRedoLog) contextValidateStorageService(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanRedoLog) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineRedoLog) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1444,8 +1444,8 @@ func (m *OracleOnSanRedoLog) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanRedoLog) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanRedoLog
+func (m *OracleOnSanInlineRedoLog) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineRedoLog
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1453,18 +1453,18 @@ func (m *OracleOnSanRedoLog) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// OracleOnSanRedoLogStorageService oracle on san redo log storage service
+// OracleOnSanInlineRedoLogInlineStorageService oracle on san inline redo log inline storage service
 //
-// swagger:model OracleOnSanRedoLogStorageService
-type OracleOnSanRedoLogStorageService struct {
+// swagger:model oracle_on_san_inline_redo_log_inline_storage_service
+type OracleOnSanInlineRedoLogInlineStorageService struct {
 
 	// The storage service of the redo log group.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this oracle on san redo log storage service
-func (m *OracleOnSanRedoLogStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this oracle on san inline redo log inline storage service
+func (m *OracleOnSanInlineRedoLogInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1477,7 +1477,7 @@ func (m *OracleOnSanRedoLogStorageService) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-var oracleOnSanRedoLogStorageServiceTypeNamePropEnum []interface{}
+var oracleOnSanInlineRedoLogInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1485,52 +1485,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		oracleOnSanRedoLogStorageServiceTypeNamePropEnum = append(oracleOnSanRedoLogStorageServiceTypeNamePropEnum, v)
+		oracleOnSanInlineRedoLogInlineStorageServiceTypeNamePropEnum = append(oracleOnSanInlineRedoLogInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// OracleOnSanRedoLogStorageService
-	// OracleOnSanRedoLogStorageService
+	// oracle_on_san_inline_redo_log_inline_storage_service
+	// OracleOnSanInlineRedoLogInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// OracleOnSanRedoLogStorageServiceNameExtreme captures enum value "extreme"
-	OracleOnSanRedoLogStorageServiceNameExtreme string = "extreme"
+	// OracleOnSanInlineRedoLogInlineStorageServiceNameExtreme captures enum value "extreme"
+	OracleOnSanInlineRedoLogInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanRedoLogStorageService
-	// OracleOnSanRedoLogStorageService
+	// oracle_on_san_inline_redo_log_inline_storage_service
+	// OracleOnSanInlineRedoLogInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// OracleOnSanRedoLogStorageServiceNamePerformance captures enum value "performance"
-	OracleOnSanRedoLogStorageServiceNamePerformance string = "performance"
+	// OracleOnSanInlineRedoLogInlineStorageServiceNamePerformance captures enum value "performance"
+	OracleOnSanInlineRedoLogInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// OracleOnSanRedoLogStorageService
-	// OracleOnSanRedoLogStorageService
+	// oracle_on_san_inline_redo_log_inline_storage_service
+	// OracleOnSanInlineRedoLogInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// OracleOnSanRedoLogStorageServiceNameValue captures enum value "value"
-	OracleOnSanRedoLogStorageServiceNameValue string = "value"
+	// OracleOnSanInlineRedoLogInlineStorageServiceNameValue captures enum value "value"
+	OracleOnSanInlineRedoLogInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *OracleOnSanRedoLogStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, oracleOnSanRedoLogStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *OracleOnSanInlineRedoLogInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, oracleOnSanInlineRedoLogInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *OracleOnSanRedoLogStorageService) validateName(formats strfmt.Registry) error {
+func (m *OracleOnSanInlineRedoLogInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1543,13 +1543,13 @@ func (m *OracleOnSanRedoLogStorageService) validateName(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this oracle on san redo log storage service based on context it is used
-func (m *OracleOnSanRedoLogStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this oracle on san inline redo log inline storage service based on context it is used
+func (m *OracleOnSanInlineRedoLogInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *OracleOnSanRedoLogStorageService) MarshalBinary() ([]byte, error) {
+func (m *OracleOnSanInlineRedoLogInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1557,8 +1557,8 @@ func (m *OracleOnSanRedoLogStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *OracleOnSanRedoLogStorageService) UnmarshalBinary(b []byte) error {
-	var res OracleOnSanRedoLogStorageService
+func (m *OracleOnSanInlineRedoLogInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res OracleOnSanInlineRedoLogInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

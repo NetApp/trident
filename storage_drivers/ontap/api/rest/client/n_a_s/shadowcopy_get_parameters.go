@@ -66,13 +66,13 @@ type ShadowcopyGetParams struct {
 
 	   client shadowcopy ID
 	*/
-	ClientUUIDPathParameter string
+	ClientUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ShadowcopyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClientUUIDPathParameter adds the clientUUID to the shadowcopy get params
-func (o *ShadowcopyGetParams) WithClientUUIDPathParameter(clientUUID string) *ShadowcopyGetParams {
-	o.SetClientUUIDPathParameter(clientUUID)
+// WithClientUUID adds the clientUUID to the shadowcopy get params
+func (o *ShadowcopyGetParams) WithClientUUID(clientUUID string) *ShadowcopyGetParams {
+	o.SetClientUUID(clientUUID)
 	return o
 }
 
-// SetClientUUIDPathParameter adds the clientUuid to the shadowcopy get params
-func (o *ShadowcopyGetParams) SetClientUUIDPathParameter(clientUUID string) {
-	o.ClientUUIDPathParameter = clientUUID
+// SetClientUUID adds the clientUuid to the shadowcopy get params
+func (o *ShadowcopyGetParams) SetClientUUID(clientUUID string) {
+	o.ClientUUID = clientUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the shadowcopy get params
-func (o *ShadowcopyGetParams) WithFieldsQueryParameter(fields []string) *ShadowcopyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the shadowcopy get params
+func (o *ShadowcopyGetParams) WithFields(fields []string) *ShadowcopyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the shadowcopy get params
-func (o *ShadowcopyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the shadowcopy get params
+func (o *ShadowcopyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,11 +158,11 @@ func (o *ShadowcopyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param client_uuid
-	if err := r.SetPathParam("client_uuid", o.ClientUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("client_uuid", o.ClientUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -181,7 +181,7 @@ func (o *ShadowcopyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamShadowcopyGet binds the parameter fields
 func (o *ShadowcopyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

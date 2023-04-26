@@ -52,6 +52,11 @@ ExportPolicyCreateCreated describes a response with status code 201, with defaul
 Created
 */
 type ExportPolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.ExportPolicyResponse
 }
 
@@ -93,6 +98,13 @@ func (o *ExportPolicyCreateCreated) GetPayload() *models.ExportPolicyResponse {
 }
 
 func (o *ExportPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.ExportPolicyResponse)
 

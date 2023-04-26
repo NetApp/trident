@@ -21,19 +21,20 @@ import (
 type TopMetricsSvmUserResponse struct {
 
 	// links
-	Links *TopMetricsSvmUserResponseLinks `json:"_links,omitempty"`
-
-	// List of volumes that are not included in the SVM activity tracking REST API.
-	ExcludedVolumes []*TopMetricsSvmUserExcludedVolume `json:"excluded_volumes,omitempty"`
+	Links *TopMetricsSvmUserResponseInlineLinks `json:"_links,omitempty"`
 
 	// notice
-	Notice *TopMetricsSvmUserResponseNotice `json:"notice,omitempty"`
+	Notice *TopMetricsSvmUserResponseInlineNotice `json:"notice,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*TopMetricsSvmUser `json:"records,omitempty"`
+	// List of volumes that are not included in the SVM activity tracking REST API.
+	TopMetricsSvmUserResponseInlineExcludedVolumes []*TopMetricsSvmUserExcludedVolume `json:"excluded_volumes,omitempty"`
+
+	// top metrics svm user response inline records
+	TopMetricsSvmUserResponseInlineRecords []*TopMetricsSvmUser `json:"records,omitempty"`
 }
 
 // Validate validates this top metrics svm user response
@@ -44,15 +45,15 @@ func (m *TopMetricsSvmUserResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateExcludedVolumes(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateNotice(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateTopMetricsSvmUserResponseInlineExcludedVolumes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTopMetricsSvmUserResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -79,30 +80,6 @@ func (m *TopMetricsSvmUserResponse) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponse) validateExcludedVolumes(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExcludedVolumes) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ExcludedVolumes); i++ {
-		if swag.IsZero(m.ExcludedVolumes[i]) { // not required
-			continue
-		}
-
-		if m.ExcludedVolumes[i] != nil {
-			if err := m.ExcludedVolumes[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("excluded_volumes" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *TopMetricsSvmUserResponse) validateNotice(formats strfmt.Registry) error {
 	if swag.IsZero(m.Notice) { // not required
 		return nil
@@ -120,18 +97,42 @@ func (m *TopMetricsSvmUserResponse) validateNotice(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *TopMetricsSvmUserResponse) validateTopMetricsSvmUserResponseInlineExcludedVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.TopMetricsSvmUserResponseInlineExcludedVolumes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.TopMetricsSvmUserResponseInlineExcludedVolumes); i++ {
+		if swag.IsZero(m.TopMetricsSvmUserResponseInlineExcludedVolumes[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.TopMetricsSvmUserResponseInlineExcludedVolumes[i] != nil {
+			if err := m.TopMetricsSvmUserResponseInlineExcludedVolumes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("excluded_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *TopMetricsSvmUserResponse) validateTopMetricsSvmUserResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.TopMetricsSvmUserResponseInlineRecords) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.TopMetricsSvmUserResponseInlineRecords); i++ {
+		if swag.IsZero(m.TopMetricsSvmUserResponseInlineRecords[i]) { // not required
+			continue
+		}
+
+		if m.TopMetricsSvmUserResponseInlineRecords[i] != nil {
+			if err := m.TopMetricsSvmUserResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -152,15 +153,15 @@ func (m *TopMetricsSvmUserResponse) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateExcludedVolumes(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateNotice(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateTopMetricsSvmUserResponseInlineExcludedVolumes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTopMetricsSvmUserResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -184,24 +185,6 @@ func (m *TopMetricsSvmUserResponse) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponse) contextValidateExcludedVolumes(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.ExcludedVolumes); i++ {
-
-		if m.ExcludedVolumes[i] != nil {
-			if err := m.ExcludedVolumes[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("excluded_volumes" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *TopMetricsSvmUserResponse) contextValidateNotice(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Notice != nil {
@@ -216,12 +199,30 @@ func (m *TopMetricsSvmUserResponse) contextValidateNotice(ctx context.Context, f
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponse) contextValidateTopMetricsSvmUserResponseInlineExcludedVolumes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.TopMetricsSvmUserResponseInlineExcludedVolumes); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.TopMetricsSvmUserResponseInlineExcludedVolumes[i] != nil {
+			if err := m.TopMetricsSvmUserResponseInlineExcludedVolumes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("excluded_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *TopMetricsSvmUserResponse) contextValidateTopMetricsSvmUserResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.TopMetricsSvmUserResponseInlineRecords); i++ {
+
+		if m.TopMetricsSvmUserResponseInlineRecords[i] != nil {
+			if err := m.TopMetricsSvmUserResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -252,10 +253,10 @@ func (m *TopMetricsSvmUserResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmUserResponseLinks top metrics svm user response links
+// TopMetricsSvmUserResponseInlineLinks top metrics svm user response inline links
 //
-// swagger:model TopMetricsSvmUserResponseLinks
-type TopMetricsSvmUserResponseLinks struct {
+// swagger:model top_metrics_svm_user_response_inline__links
+type TopMetricsSvmUserResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -264,8 +265,8 @@ type TopMetricsSvmUserResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics svm user response links
-func (m *TopMetricsSvmUserResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm user response inline links
+func (m *TopMetricsSvmUserResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -282,7 +283,7 @@ func (m *TopMetricsSvmUserResponseLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -299,7 +300,7 @@ func (m *TopMetricsSvmUserResponseLinks) validateNext(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -316,8 +317,8 @@ func (m *TopMetricsSvmUserResponseLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this top metrics svm user response links based on the context it is used
-func (m *TopMetricsSvmUserResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm user response inline links based on the context it is used
+func (m *TopMetricsSvmUserResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -334,7 +335,7 @@ func (m *TopMetricsSvmUserResponseLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -348,7 +349,7 @@ func (m *TopMetricsSvmUserResponseLinks) contextValidateNext(ctx context.Context
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -363,7 +364,7 @@ func (m *TopMetricsSvmUserResponseLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmUserResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmUserResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -371,8 +372,8 @@ func (m *TopMetricsSvmUserResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmUserResponseLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmUserResponseLinks
+func (m *TopMetricsSvmUserResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmUserResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -380,29 +381,29 @@ func (m *TopMetricsSvmUserResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsSvmUserResponseNotice Optional field that indicates why no records are returned by the SVM activity tracking REST API.
+// TopMetricsSvmUserResponseInlineNotice Optional field that indicates why no records are returned by the SVM activity tracking REST API.
 //
-// swagger:model TopMetricsSvmUserResponseNotice
-type TopMetricsSvmUserResponseNotice struct {
+// swagger:model top_metrics_svm_user_response_inline_notice
+type TopMetricsSvmUserResponseInlineNotice struct {
 
 	// Warning code indicating why no records are returned.
 	// Example: 111411207
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Details why no records are returned.
 	// Example: The volume is offline.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this top metrics svm user response notice
-func (m *TopMetricsSvmUserResponseNotice) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics svm user response inline notice
+func (m *TopMetricsSvmUserResponseInlineNotice) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics svm user response notice based on the context it is used
-func (m *TopMetricsSvmUserResponseNotice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics svm user response inline notice based on the context it is used
+func (m *TopMetricsSvmUserResponseInlineNotice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -419,18 +420,18 @@ func (m *TopMetricsSvmUserResponseNotice) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponseNotice) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponseInlineNotice) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "notice"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "notice"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsSvmUserResponseNotice) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsSvmUserResponseInlineNotice) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "notice"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "notice"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -438,7 +439,7 @@ func (m *TopMetricsSvmUserResponseNotice) contextValidateMessage(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsSvmUserResponseNotice) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsSvmUserResponseInlineNotice) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -446,8 +447,8 @@ func (m *TopMetricsSvmUserResponseNotice) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsSvmUserResponseNotice) UnmarshalBinary(b []byte) error {
-	var res TopMetricsSvmUserResponseNotice
+func (m *TopMetricsSvmUserResponseInlineNotice) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmUserResponseInlineNotice
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,49 +66,49 @@ type NameMappingCollectionGetParams struct {
 
 	   Filter by client_match
 	*/
-	ClientMatchQueryParameter *string
+	ClientMatch *string
 
 	/* Direction.
 
 	   Filter by direction
 	*/
-	DirectionQueryParameter *string
+	Direction *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Pattern.
 
 	   Filter by pattern
 	*/
-	PatternQueryParameter *string
+	Pattern *string
 
 	/* Replacement.
 
 	   Filter by replacement
 	*/
-	ReplacementQueryParameter *string
+	Replacement *string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type NameMappingCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,19 +124,19 @@ type NameMappingCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *NameMappingCollectionGetParams) WithDefaults() *NameMappingCollectionGe
 // All values with no default are reset to their zero value.
 func (o *NameMappingCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NameMappingCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *NameMappingCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClientMatchQueryParameter adds the clientMatch to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithClientMatchQueryParameter(clientMatch *string) *NameMappingCollectionGetParams {
-	o.SetClientMatchQueryParameter(clientMatch)
+// WithClientMatch adds the clientMatch to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithClientMatch(clientMatch *string) *NameMappingCollectionGetParams {
+	o.SetClientMatch(clientMatch)
 	return o
 }
 
-// SetClientMatchQueryParameter adds the clientMatch to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetClientMatchQueryParameter(clientMatch *string) {
-	o.ClientMatchQueryParameter = clientMatch
+// SetClientMatch adds the clientMatch to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetClientMatch(clientMatch *string) {
+	o.ClientMatch = clientMatch
 }
 
-// WithDirectionQueryParameter adds the direction to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithDirectionQueryParameter(direction *string) *NameMappingCollectionGetParams {
-	o.SetDirectionQueryParameter(direction)
+// WithDirection adds the direction to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithDirection(direction *string) *NameMappingCollectionGetParams {
+	o.SetDirection(direction)
 	return o
 }
 
-// SetDirectionQueryParameter adds the direction to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetDirectionQueryParameter(direction *string) {
-	o.DirectionQueryParameter = direction
+// SetDirection adds the direction to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetDirection(direction *string) {
+	o.Direction = direction
 }
 
-// WithFieldsQueryParameter adds the fields to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithFieldsQueryParameter(fields []string) *NameMappingCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithFields(fields []string) *NameMappingCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexQueryParameter adds the index to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithIndexQueryParameter(index *int64) *NameMappingCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithIndex(index *int64) *NameMappingCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NameMappingCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithMaxRecords(maxRecords *int64) *NameMappingCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NameMappingCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithOrderBy(orderBy []string) *NameMappingCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPatternQueryParameter adds the pattern to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithPatternQueryParameter(pattern *string) *NameMappingCollectionGetParams {
-	o.SetPatternQueryParameter(pattern)
+// WithPattern adds the pattern to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithPattern(pattern *string) *NameMappingCollectionGetParams {
+	o.SetPattern(pattern)
 	return o
 }
 
-// SetPatternQueryParameter adds the pattern to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetPatternQueryParameter(pattern *string) {
-	o.PatternQueryParameter = pattern
+// SetPattern adds the pattern to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetPattern(pattern *string) {
+	o.Pattern = pattern
 }
 
-// WithReplacementQueryParameter adds the replacement to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithReplacementQueryParameter(replacement *string) *NameMappingCollectionGetParams {
-	o.SetReplacementQueryParameter(replacement)
+// WithReplacement adds the replacement to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithReplacement(replacement *string) *NameMappingCollectionGetParams {
+	o.SetReplacement(replacement)
 	return o
 }
 
-// SetReplacementQueryParameter adds the replacement to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetReplacementQueryParameter(replacement *string) {
-	o.ReplacementQueryParameter = replacement
+// SetReplacement adds the replacement to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetReplacement(replacement *string) {
+	o.Replacement = replacement
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NameMappingCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithReturnRecords(returnRecords *bool) *NameMappingCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NameMappingCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NameMappingCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NameMappingCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithSvmName(svmName *string) *NameMappingCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NameMappingCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) WithSvmUUID(svmUUID *string) *NameMappingCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the name mapping collection get params
-func (o *NameMappingCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the name mapping collection get params
+func (o *NameMappingCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +345,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.ClientMatchQueryParameter != nil {
+	if o.ClientMatch != nil {
 
 		// query param client_match
 		var qrClientMatch string
 
-		if o.ClientMatchQueryParameter != nil {
-			qrClientMatch = *o.ClientMatchQueryParameter
+		if o.ClientMatch != nil {
+			qrClientMatch = *o.ClientMatch
 		}
 		qClientMatch := qrClientMatch
 		if qClientMatch != "" {
@@ -362,13 +362,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.DirectionQueryParameter != nil {
+	if o.Direction != nil {
 
 		// query param direction
 		var qrDirection string
 
-		if o.DirectionQueryParameter != nil {
-			qrDirection = *o.DirectionQueryParameter
+		if o.Direction != nil {
+			qrDirection = *o.Direction
 		}
 		qDirection := qrDirection
 		if qDirection != "" {
@@ -379,7 +379,7 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -390,13 +390,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -407,13 +407,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -424,7 +424,7 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -435,13 +435,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.PatternQueryParameter != nil {
+	if o.Pattern != nil {
 
 		// query param pattern
 		var qrPattern string
 
-		if o.PatternQueryParameter != nil {
-			qrPattern = *o.PatternQueryParameter
+		if o.Pattern != nil {
+			qrPattern = *o.Pattern
 		}
 		qPattern := qrPattern
 		if qPattern != "" {
@@ -452,13 +452,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReplacementQueryParameter != nil {
+	if o.Replacement != nil {
 
 		// query param replacement
 		var qrReplacement string
 
-		if o.ReplacementQueryParameter != nil {
-			qrReplacement = *o.ReplacementQueryParameter
+		if o.Replacement != nil {
+			qrReplacement = *o.Replacement
 		}
 		qReplacement := qrReplacement
 		if qReplacement != "" {
@@ -469,13 +469,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -486,13 +486,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -503,13 +503,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -520,13 +520,13 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -545,7 +545,7 @@ func (o *NameMappingCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamNameMappingCollectionGet binds the parameter fields
 func (o *NameMappingCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *NameMappingCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamNameMappingCollectionGet binds the parameter order_by
 func (o *NameMappingCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

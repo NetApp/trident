@@ -19,22 +19,22 @@ import (
 type NfsClientsMap struct {
 
 	// links
-	Links *NfsClientsMapLinks `json:"_links,omitempty"`
+	Links *NfsClientsMapInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the IP address of the client.
 	//
 	// Example: ["127.0.0.1"]
-	ClientIps []string `json:"client_ips,omitempty"`
+	NfsClientsMapInlineClientIps []*string `json:"client_ips,omitempty"`
 
 	// node
-	Node *NfsClientsMapNode `json:"node,omitempty"`
+	Node *NfsClientsMapInlineNode `json:"node,omitempty"`
 
 	// Specifies the IP address of the server.
 	//
 	ServerIP *string `json:"server_ip,omitempty"`
 
 	// svm
-	Svm *NfsClientsMapSvm `json:"svm,omitempty"`
+	Svm *NfsClientsMapInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this nfs clients map
@@ -192,17 +192,17 @@ func (m *NfsClientsMap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsMapLinks nfs clients map links
+// NfsClientsMapInlineLinks nfs clients map inline links
 //
-// swagger:model NfsClientsMapLinks
-type NfsClientsMapLinks struct {
+// swagger:model nfs_clients_map_inline__links
+type NfsClientsMapInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients map links
-func (m *NfsClientsMapLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients map inline links
+func (m *NfsClientsMapInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -215,7 +215,7 @@ func (m *NfsClientsMapLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsMapLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -232,8 +232,8 @@ func (m *NfsClientsMapLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients map links based on the context it is used
-func (m *NfsClientsMapLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients map inline links based on the context it is used
+func (m *NfsClientsMapInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -246,7 +246,7 @@ func (m *NfsClientsMapLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *NfsClientsMapLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -261,7 +261,7 @@ func (m *NfsClientsMapLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsMapLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsMapInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -269,8 +269,8 @@ func (m *NfsClientsMapLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsMapLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsMapLinks
+func (m *NfsClientsMapInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsMapInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -278,25 +278,25 @@ func (m *NfsClientsMapLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsMapNode nfs clients map node
+// NfsClientsMapInlineNode nfs clients map inline node
 //
-// swagger:model NfsClientsMapNode
-type NfsClientsMapNode struct {
+// swagger:model nfs_clients_map_inline_node
+type NfsClientsMapInlineNode struct {
 
 	// links
-	Links *NfsClientsMapNodeLinks `json:"_links,omitempty"`
+	Links *NfsClientsMapInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nfs clients map node
-func (m *NfsClientsMapNode) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients map inline node
+func (m *NfsClientsMapInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -309,7 +309,7 @@ func (m *NfsClientsMapNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsMapNode) validateLinks(formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -326,8 +326,8 @@ func (m *NfsClientsMapNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients map node based on the context it is used
-func (m *NfsClientsMapNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients map inline node based on the context it is used
+func (m *NfsClientsMapInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -340,7 +340,7 @@ func (m *NfsClientsMapNode) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NfsClientsMapNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -355,7 +355,7 @@ func (m *NfsClientsMapNode) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsMapNode) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsMapInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -363,8 +363,8 @@ func (m *NfsClientsMapNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsMapNode) UnmarshalBinary(b []byte) error {
-	var res NfsClientsMapNode
+func (m *NfsClientsMapInlineNode) UnmarshalBinary(b []byte) error {
+	var res NfsClientsMapInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -372,17 +372,17 @@ func (m *NfsClientsMapNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsMapNodeLinks nfs clients map node links
+// NfsClientsMapInlineNodeInlineLinks nfs clients map inline node inline links
 //
-// swagger:model NfsClientsMapNodeLinks
-type NfsClientsMapNodeLinks struct {
+// swagger:model nfs_clients_map_inline_node_inline__links
+type NfsClientsMapInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients map node links
-func (m *NfsClientsMapNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients map inline node inline links
+func (m *NfsClientsMapInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -395,7 +395,7 @@ func (m *NfsClientsMapNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsMapNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -412,8 +412,8 @@ func (m *NfsClientsMapNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients map node links based on the context it is used
-func (m *NfsClientsMapNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients map inline node inline links based on the context it is used
+func (m *NfsClientsMapInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -426,7 +426,7 @@ func (m *NfsClientsMapNodeLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *NfsClientsMapNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -441,7 +441,7 @@ func (m *NfsClientsMapNodeLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsMapNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsMapInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -449,8 +449,8 @@ func (m *NfsClientsMapNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsMapNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsMapNodeLinks
+func (m *NfsClientsMapInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsMapInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -458,27 +458,27 @@ func (m *NfsClientsMapNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsMapSvm nfs clients map svm
+// NfsClientsMapInlineSvm nfs clients map inline svm
 //
-// swagger:model NfsClientsMapSvm
-type NfsClientsMapSvm struct {
+// swagger:model nfs_clients_map_inline_svm
+type NfsClientsMapInlineSvm struct {
 
 	// links
-	Links *NfsClientsMapSvmLinks `json:"_links,omitempty"`
+	Links *NfsClientsMapInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this nfs clients map svm
-func (m *NfsClientsMapSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients map inline svm
+func (m *NfsClientsMapInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -491,7 +491,7 @@ func (m *NfsClientsMapSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsMapSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -508,8 +508,8 @@ func (m *NfsClientsMapSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients map svm based on the context it is used
-func (m *NfsClientsMapSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients map inline svm based on the context it is used
+func (m *NfsClientsMapInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -522,7 +522,7 @@ func (m *NfsClientsMapSvm) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *NfsClientsMapSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -537,7 +537,7 @@ func (m *NfsClientsMapSvm) contextValidateLinks(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsMapSvm) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsMapInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -545,8 +545,8 @@ func (m *NfsClientsMapSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsMapSvm) UnmarshalBinary(b []byte) error {
-	var res NfsClientsMapSvm
+func (m *NfsClientsMapInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NfsClientsMapInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -554,17 +554,17 @@ func (m *NfsClientsMapSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsClientsMapSvmLinks nfs clients map svm links
+// NfsClientsMapInlineSvmInlineLinks nfs clients map inline svm inline links
 //
-// swagger:model NfsClientsMapSvmLinks
-type NfsClientsMapSvmLinks struct {
+// swagger:model nfs_clients_map_inline_svm_inline__links
+type NfsClientsMapInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs clients map svm links
-func (m *NfsClientsMapSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs clients map inline svm inline links
+func (m *NfsClientsMapInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -577,7 +577,7 @@ func (m *NfsClientsMapSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsClientsMapSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -594,8 +594,8 @@ func (m *NfsClientsMapSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs clients map svm links based on the context it is used
-func (m *NfsClientsMapSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs clients map inline svm inline links based on the context it is used
+func (m *NfsClientsMapInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -608,7 +608,7 @@ func (m *NfsClientsMapSvmLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *NfsClientsMapSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsClientsMapInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -623,7 +623,7 @@ func (m *NfsClientsMapSvmLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NfsClientsMapSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsClientsMapInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -631,8 +631,8 @@ func (m *NfsClientsMapSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsClientsMapSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NfsClientsMapSvmLinks
+func (m *NfsClientsMapInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsMapInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

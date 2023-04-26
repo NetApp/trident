@@ -73,7 +73,7 @@ type FlexcacheOriginModifyParams struct {
 
 	   Unique identifier of the origin of the FlexCache volume.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *FlexcacheOriginModifyParams) SetInfo(info *models.FlexcacheOrigin) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the flexcache origin modify params
-func (o *FlexcacheOriginModifyParams) WithUUIDPathParameter(uuid string) *FlexcacheOriginModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the flexcache origin modify params
+func (o *FlexcacheOriginModifyParams) WithUUID(uuid string) *FlexcacheOriginModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the flexcache origin modify params
-func (o *FlexcacheOriginModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the flexcache origin modify params
+func (o *FlexcacheOriginModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *FlexcacheOriginModifyParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

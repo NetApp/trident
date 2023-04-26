@@ -25,15 +25,15 @@ type SoftwareNodeReference struct {
 	// Name of the node.
 	// Example: node1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// software images
-	SoftwareImages SoftwareImages `json:"software_images,omitempty"`
+	SoftwareImages SoftwareImagesArrayInline `json:"software_images,omitempty"`
 
 	// ONTAP version of the node.
 	// Example: ONTAP_X
 	// Read Only: true
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this software node reference
@@ -128,7 +128,7 @@ func (m *SoftwareNodeReference) contextValidateFirmware(ctx context.Context, for
 
 func (m *SoftwareNodeReference) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -149,7 +149,7 @@ func (m *SoftwareNodeReference) contextValidateSoftwareImages(ctx context.Contex
 
 func (m *SoftwareNodeReference) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "version", "body", string(m.Version)); err != nil {
+	if err := validate.ReadOnly(ctx, "version", "body", m.Version); err != nil {
 		return err
 	}
 

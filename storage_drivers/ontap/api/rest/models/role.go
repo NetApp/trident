@@ -22,7 +22,7 @@ import (
 type Role struct {
 
 	// links
-	Links *RoleLinks `json:"_links,omitempty"`
+	Links *RoleInlineLinks `json:"_links,omitempty"`
 
 	// Indicates if this is a built-in (pre-defined) role which cannot be modified or deleted.
 	// Read Only: true
@@ -30,18 +30,18 @@ type Role struct {
 
 	// Role name
 	// Example: admin
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// owner
-	Owner *RoleOwner `json:"owner,omitempty"`
+	Owner *RoleInlineOwner `json:"owner,omitempty"`
 
 	// The list of privileges that this role has been granted.
-	Privileges []*RolePrivilege `json:"privileges,omitempty"`
+	RoleInlinePrivileges []*RolePrivilege `json:"privileges,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Read Only: true
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 }
 
 // Validate validates this role
@@ -56,7 +56,7 @@ func (m *Role) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePrivileges(formats); err != nil {
+	if err := m.validateRoleInlinePrivileges(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -104,18 +104,18 @@ func (m *Role) validateOwner(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Role) validatePrivileges(formats strfmt.Registry) error {
-	if swag.IsZero(m.Privileges) { // not required
+func (m *Role) validateRoleInlinePrivileges(formats strfmt.Registry) error {
+	if swag.IsZero(m.RoleInlinePrivileges) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Privileges); i++ {
-		if swag.IsZero(m.Privileges[i]) { // not required
+	for i := 0; i < len(m.RoleInlinePrivileges); i++ {
+		if swag.IsZero(m.RoleInlinePrivileges[i]) { // not required
 			continue
 		}
 
-		if m.Privileges[i] != nil {
-			if err := m.Privileges[i].Validate(formats); err != nil {
+		if m.RoleInlinePrivileges[i] != nil {
+			if err := m.RoleInlinePrivileges[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("privileges" + "." + strconv.Itoa(i))
 				}
@@ -177,7 +177,7 @@ func (m *Role) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (m *Role) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePrivileges(ctx, formats); err != nil {
+	if err := m.contextValidateRoleInlinePrivileges(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -251,12 +251,12 @@ func (m *Role) contextValidateOwner(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *Role) contextValidatePrivileges(ctx context.Context, formats strfmt.Registry) error {
+func (m *Role) contextValidateRoleInlinePrivileges(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Privileges); i++ {
+	for i := 0; i < len(m.RoleInlinePrivileges); i++ {
 
-		if m.Privileges[i] != nil {
-			if err := m.Privileges[i].ContextValidate(ctx, formats); err != nil {
+		if m.RoleInlinePrivileges[i] != nil {
+			if err := m.RoleInlinePrivileges[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("privileges" + "." + strconv.Itoa(i))
 				}
@@ -271,7 +271,7 @@ func (m *Role) contextValidatePrivileges(ctx context.Context, formats strfmt.Reg
 
 func (m *Role) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -296,17 +296,17 @@ func (m *Role) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RoleLinks role links
+// RoleInlineLinks role inline links
 //
-// swagger:model RoleLinks
-type RoleLinks struct {
+// swagger:model role_inline__links
+type RoleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this role links
-func (m *RoleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this role inline links
+func (m *RoleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -319,7 +319,7 @@ func (m *RoleLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *RoleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -336,8 +336,8 @@ func (m *RoleLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this role links based on the context it is used
-func (m *RoleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this role inline links based on the context it is used
+func (m *RoleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -350,7 +350,7 @@ func (m *RoleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *RoleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -365,7 +365,7 @@ func (m *RoleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Regi
 }
 
 // MarshalBinary interface implementation
-func (m *RoleLinks) MarshalBinary() ([]byte, error) {
+func (m *RoleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -373,8 +373,8 @@ func (m *RoleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RoleLinks) UnmarshalBinary(b []byte) error {
-	var res RoleLinks
+func (m *RoleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res RoleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -382,27 +382,27 @@ func (m *RoleLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RoleOwner Owner name and UUID that uniquely identifies the role.
+// RoleInlineOwner Owner name and UUID that uniquely identifies the role.
 //
-// swagger:model RoleOwner
-type RoleOwner struct {
+// swagger:model role_inline_owner
+type RoleInlineOwner struct {
 
 	// links
-	Links *RoleOwnerLinks `json:"_links,omitempty"`
+	Links *RoleInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this role owner
-func (m *RoleOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this role inline owner
+func (m *RoleInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -415,7 +415,7 @@ func (m *RoleOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleOwner) validateLinks(formats strfmt.Registry) error {
+func (m *RoleInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -432,8 +432,8 @@ func (m *RoleOwner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this role owner based on the context it is used
-func (m *RoleOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this role inline owner based on the context it is used
+func (m *RoleInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -446,7 +446,7 @@ func (m *RoleOwner) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *RoleOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -461,7 +461,7 @@ func (m *RoleOwner) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *RoleOwner) MarshalBinary() ([]byte, error) {
+func (m *RoleInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -469,8 +469,8 @@ func (m *RoleOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RoleOwner) UnmarshalBinary(b []byte) error {
-	var res RoleOwner
+func (m *RoleInlineOwner) UnmarshalBinary(b []byte) error {
+	var res RoleInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -478,17 +478,17 @@ func (m *RoleOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RoleOwnerLinks role owner links
+// RoleInlineOwnerInlineLinks role inline owner inline links
 //
-// swagger:model RoleOwnerLinks
-type RoleOwnerLinks struct {
+// swagger:model role_inline_owner_inline__links
+type RoleInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this role owner links
-func (m *RoleOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this role inline owner inline links
+func (m *RoleInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -501,7 +501,7 @@ func (m *RoleOwnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *RoleInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -518,8 +518,8 @@ func (m *RoleOwnerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this role owner links based on the context it is used
-func (m *RoleOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this role inline owner inline links based on the context it is used
+func (m *RoleInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -532,7 +532,7 @@ func (m *RoleOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *RoleOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -547,7 +547,7 @@ func (m *RoleOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *RoleOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *RoleInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -555,8 +555,8 @@ func (m *RoleOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RoleOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res RoleOwnerLinks
+func (m *RoleInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res RoleInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -19,33 +19,33 @@ import (
 type NetgroupsSettings struct {
 
 	// links
-	Links *NetgroupsSettingsLinks `json:"_links,omitempty"`
+	Links *NetgroupsSettingsInlineLinks `json:"_links,omitempty"`
 
 	// Indicates whether or not the cache is enabled.
 	//
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Indicates whether or not the negative cache is enabled.
 	//
-	NegativeCacheEnabledByhost bool `json:"negative_cache_enabled_byhost,omitempty"`
+	NegativeCacheEnabledByhost *bool `json:"negative_cache_enabled_byhost,omitempty"`
 
 	// Specifies negative Time to Live by host, in ISO 8601 format.
 	//
 	// Example: PT2M5S
-	NegativeTTLByhost string `json:"negative_ttl_byhost,omitempty"`
+	NegativeTTLByhost *string `json:"negative_ttl_byhost,omitempty"`
 
 	// svm
-	Svm *NetgroupsSettingsSvm `json:"svm,omitempty"`
+	Svm *NetgroupsSettingsInlineSvm `json:"svm,omitempty"`
 
 	// Specifies Time to Live by host, in ISO 8601 format.
 	//
 	// Example: PT24H
-	TTLByhost string `json:"ttl_byhost,omitempty"`
+	TTLByhost *string `json:"ttl_byhost,omitempty"`
 
 	// Specifies Time to Live for netgroup members, in ISO 8601 format.
 	//
 	// Example: PT2M
-	TTLForMembers string `json:"ttl_for_members,omitempty"`
+	TTLForMembers *string `json:"ttl_for_members,omitempty"`
 }
 
 // Validate validates this netgroups settings
@@ -164,17 +164,17 @@ func (m *NetgroupsSettings) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupsSettingsLinks netgroups settings links
+// NetgroupsSettingsInlineLinks netgroups settings inline links
 //
-// swagger:model NetgroupsSettingsLinks
-type NetgroupsSettingsLinks struct {
+// swagger:model netgroups_settings_inline__links
+type NetgroupsSettingsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netgroups settings links
-func (m *NetgroupsSettingsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroups settings inline links
+func (m *NetgroupsSettingsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *NetgroupsSettingsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetgroupsSettingsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetgroupsSettingsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -204,8 +204,8 @@ func (m *NetgroupsSettingsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netgroups settings links based on the context it is used
-func (m *NetgroupsSettingsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroups settings inline links based on the context it is used
+func (m *NetgroupsSettingsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -218,7 +218,7 @@ func (m *NetgroupsSettingsLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *NetgroupsSettingsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupsSettingsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -233,7 +233,7 @@ func (m *NetgroupsSettingsLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupsSettingsLinks) MarshalBinary() ([]byte, error) {
+func (m *NetgroupsSettingsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -241,8 +241,8 @@ func (m *NetgroupsSettingsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupsSettingsLinks) UnmarshalBinary(b []byte) error {
-	var res NetgroupsSettingsLinks
+func (m *NetgroupsSettingsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetgroupsSettingsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -250,27 +250,27 @@ func (m *NetgroupsSettingsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupsSettingsSvm netgroups settings svm
+// NetgroupsSettingsInlineSvm netgroups settings inline svm
 //
-// swagger:model NetgroupsSettingsSvm
-type NetgroupsSettingsSvm struct {
+// swagger:model netgroups_settings_inline_svm
+type NetgroupsSettingsInlineSvm struct {
 
 	// links
-	Links *NetgroupsSettingsSvmLinks `json:"_links,omitempty"`
+	Links *NetgroupsSettingsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this netgroups settings svm
-func (m *NetgroupsSettingsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroups settings inline svm
+func (m *NetgroupsSettingsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -283,7 +283,7 @@ func (m *NetgroupsSettingsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetgroupsSettingsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NetgroupsSettingsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -300,8 +300,8 @@ func (m *NetgroupsSettingsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netgroups settings svm based on the context it is used
-func (m *NetgroupsSettingsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroups settings inline svm based on the context it is used
+func (m *NetgroupsSettingsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -314,7 +314,7 @@ func (m *NetgroupsSettingsSvm) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NetgroupsSettingsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupsSettingsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -329,7 +329,7 @@ func (m *NetgroupsSettingsSvm) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupsSettingsSvm) MarshalBinary() ([]byte, error) {
+func (m *NetgroupsSettingsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -337,8 +337,8 @@ func (m *NetgroupsSettingsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupsSettingsSvm) UnmarshalBinary(b []byte) error {
-	var res NetgroupsSettingsSvm
+func (m *NetgroupsSettingsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NetgroupsSettingsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -346,17 +346,17 @@ func (m *NetgroupsSettingsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupsSettingsSvmLinks netgroups settings svm links
+// NetgroupsSettingsInlineSvmInlineLinks netgroups settings inline svm inline links
 //
-// swagger:model NetgroupsSettingsSvmLinks
-type NetgroupsSettingsSvmLinks struct {
+// swagger:model netgroups_settings_inline_svm_inline__links
+type NetgroupsSettingsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netgroups settings svm links
-func (m *NetgroupsSettingsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroups settings inline svm inline links
+func (m *NetgroupsSettingsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -369,7 +369,7 @@ func (m *NetgroupsSettingsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetgroupsSettingsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetgroupsSettingsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -386,8 +386,8 @@ func (m *NetgroupsSettingsSvmLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this netgroups settings svm links based on the context it is used
-func (m *NetgroupsSettingsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroups settings inline svm inline links based on the context it is used
+func (m *NetgroupsSettingsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -400,7 +400,7 @@ func (m *NetgroupsSettingsSvmLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *NetgroupsSettingsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupsSettingsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -415,7 +415,7 @@ func (m *NetgroupsSettingsSvmLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupsSettingsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NetgroupsSettingsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -423,8 +423,8 @@ func (m *NetgroupsSettingsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupsSettingsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NetgroupsSettingsSvmLinks
+func (m *NetgroupsSettingsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetgroupsSettingsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

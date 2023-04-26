@@ -19,15 +19,15 @@ type PortStatisticsPacketCounters struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
 // Validate validates this port statistics packet counters

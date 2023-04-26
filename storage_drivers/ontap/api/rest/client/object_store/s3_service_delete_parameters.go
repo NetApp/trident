@@ -68,13 +68,13 @@ type S3ServiceDeleteParams struct {
 
 	   Default: true
 	*/
-	DeleteAllQueryParameter *bool
+	DeleteAll *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *S3ServiceDeleteParams) WithDefaults() *S3ServiceDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *S3ServiceDeleteParams) SetDefaults() {
 	var (
-		deleteAllQueryParameterDefault = bool(true)
+		deleteAllDefault = bool(true)
 	)
 
 	val := S3ServiceDeleteParams{
-		DeleteAllQueryParameter: &deleteAllQueryParameterDefault,
+		DeleteAll: &deleteAllDefault,
 	}
 
 	val.timeout = o.timeout
@@ -140,26 +140,26 @@ func (o *S3ServiceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDeleteAllQueryParameter adds the deleteAll to the s3 service delete params
-func (o *S3ServiceDeleteParams) WithDeleteAllQueryParameter(deleteAll *bool) *S3ServiceDeleteParams {
-	o.SetDeleteAllQueryParameter(deleteAll)
+// WithDeleteAll adds the deleteAll to the s3 service delete params
+func (o *S3ServiceDeleteParams) WithDeleteAll(deleteAll *bool) *S3ServiceDeleteParams {
+	o.SetDeleteAll(deleteAll)
 	return o
 }
 
-// SetDeleteAllQueryParameter adds the deleteAll to the s3 service delete params
-func (o *S3ServiceDeleteParams) SetDeleteAllQueryParameter(deleteAll *bool) {
-	o.DeleteAllQueryParameter = deleteAll
+// SetDeleteAll adds the deleteAll to the s3 service delete params
+func (o *S3ServiceDeleteParams) SetDeleteAll(deleteAll *bool) {
+	o.DeleteAll = deleteAll
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 service delete params
-func (o *S3ServiceDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *S3ServiceDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 service delete params
+func (o *S3ServiceDeleteParams) WithSvmUUID(svmUUID string) *S3ServiceDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 service delete params
-func (o *S3ServiceDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 service delete params
+func (o *S3ServiceDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -170,13 +170,13 @@ func (o *S3ServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.DeleteAllQueryParameter != nil {
+	if o.DeleteAll != nil {
 
 		// query param delete_all
 		var qrDeleteAll bool
 
-		if o.DeleteAllQueryParameter != nil {
-			qrDeleteAll = *o.DeleteAllQueryParameter
+		if o.DeleteAll != nil {
+			qrDeleteAll = *o.DeleteAll
 		}
 		qDeleteAll := swag.FormatBool(qrDeleteAll)
 		if qDeleteAll != "" {
@@ -188,7 +188,7 @@ func (o *S3ServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

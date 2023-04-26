@@ -23,15 +23,15 @@ type CapacityPool struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// license manager
-	LicenseManager *CapacityPoolLicenseManager `json:"license_manager,omitempty"`
-
 	// Nodes in the cluster associated with this capacity pool.
-	Nodes []*CapacityPoolNodesItems0 `json:"nodes,omitempty"`
+	CapacityPoolInlineNodes []*CapacityPoolInlineNodesInlineArrayItem `json:"nodes,omitempty"`
+
+	// license manager
+	LicenseManager *CapacityPoolInlineLicenseManager `json:"license_manager,omitempty"`
 
 	// Serial number of the capacity pool license.
 	// Example: 390000100
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
 // Validate validates this capacity pool
@@ -42,11 +42,11 @@ func (m *CapacityPool) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateLicenseManager(formats); err != nil {
+	if err := m.validateCapacityPoolInlineNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateNodes(formats); err != nil {
+	if err := m.validateLicenseManager(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,6 +73,30 @@ func (m *CapacityPool) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *CapacityPool) validateCapacityPoolInlineNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.CapacityPoolInlineNodes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CapacityPoolInlineNodes); i++ {
+		if swag.IsZero(m.CapacityPoolInlineNodes[i]) { // not required
+			continue
+		}
+
+		if m.CapacityPoolInlineNodes[i] != nil {
+			if err := m.CapacityPoolInlineNodes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *CapacityPool) validateLicenseManager(formats strfmt.Registry) error {
 	if swag.IsZero(m.LicenseManager) { // not required
 		return nil
@@ -90,30 +114,6 @@ func (m *CapacityPool) validateLicenseManager(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CapacityPool) validateNodes(formats strfmt.Registry) error {
-	if swag.IsZero(m.Nodes) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Nodes); i++ {
-		if swag.IsZero(m.Nodes[i]) { // not required
-			continue
-		}
-
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this capacity pool based on the context it is used
 func (m *CapacityPool) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -122,11 +122,11 @@ func (m *CapacityPool) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateLicenseManager(ctx, formats); err != nil {
+	if err := m.contextValidateCapacityPoolInlineNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateNodes(ctx, formats); err != nil {
+	if err := m.contextValidateLicenseManager(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -150,6 +150,24 @@ func (m *CapacityPool) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
+func (m *CapacityPool) contextValidateCapacityPoolInlineNodes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CapacityPoolInlineNodes); i++ {
+
+		if m.CapacityPoolInlineNodes[i] != nil {
+			if err := m.CapacityPoolInlineNodes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *CapacityPool) contextValidateLicenseManager(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LicenseManager != nil {
@@ -159,24 +177,6 @@ func (m *CapacityPool) contextValidateLicenseManager(ctx context.Context, format
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *CapacityPool) contextValidateNodes(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Nodes); i++ {
-
-		if m.Nodes[i] != nil {
-			if err := m.Nodes[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -200,10 +200,10 @@ func (m *CapacityPool) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CapacityPoolLicenseManager License manager instance where this capacity pool license in installed.
+// CapacityPoolInlineLicenseManager License manager instance where this capacity pool license in installed.
 //
-// swagger:model CapacityPoolLicenseManager
-type CapacityPoolLicenseManager struct {
+// swagger:model capacity_pool_inline_license_manager
+type CapacityPoolInlineLicenseManager struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
@@ -211,11 +211,11 @@ type CapacityPoolLicenseManager struct {
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-112233445566
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this capacity pool license manager
-func (m *CapacityPoolLicenseManager) Validate(formats strfmt.Registry) error {
+// Validate validates this capacity pool inline license manager
+func (m *CapacityPoolInlineLicenseManager) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -232,7 +232,7 @@ func (m *CapacityPoolLicenseManager) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CapacityPoolLicenseManager) validateLinks(formats strfmt.Registry) error {
+func (m *CapacityPoolInlineLicenseManager) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -249,7 +249,7 @@ func (m *CapacityPoolLicenseManager) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *CapacityPoolLicenseManager) validateUUID(formats strfmt.Registry) error {
+func (m *CapacityPoolInlineLicenseManager) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -261,8 +261,8 @@ func (m *CapacityPoolLicenseManager) validateUUID(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this capacity pool license manager based on the context it is used
-func (m *CapacityPoolLicenseManager) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this capacity pool inline license manager based on the context it is used
+func (m *CapacityPoolInlineLicenseManager) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -275,7 +275,7 @@ func (m *CapacityPoolLicenseManager) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *CapacityPoolLicenseManager) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolInlineLicenseManager) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -290,7 +290,7 @@ func (m *CapacityPoolLicenseManager) contextValidateLinks(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *CapacityPoolLicenseManager) MarshalBinary() ([]byte, error) {
+func (m *CapacityPoolInlineLicenseManager) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -298,8 +298,8 @@ func (m *CapacityPoolLicenseManager) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CapacityPoolLicenseManager) UnmarshalBinary(b []byte) error {
-	var res CapacityPoolLicenseManager
+func (m *CapacityPoolInlineLicenseManager) UnmarshalBinary(b []byte) error {
+	var res CapacityPoolInlineLicenseManager
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -307,21 +307,21 @@ func (m *CapacityPoolLicenseManager) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CapacityPoolNodesItems0 Information on a node from the capacity licensing perspective.
+// CapacityPoolInlineNodesInlineArrayItem Information on a node from the capacity licensing perspective.
 //
-// swagger:model CapacityPoolNodesItems0
-type CapacityPoolNodesItems0 struct {
+// swagger:model capacity_pool_inline_nodes_inline_array_item
+type CapacityPoolInlineNodesInlineArrayItem struct {
 
 	// node
 	Node *NodeReference `json:"node,omitempty"`
 
 	// Capacity, in bytes, that is currently used by the node.
 	// Read Only: true
-	UsedSize int64 `json:"used_size,omitempty"`
+	UsedSize *int64 `json:"used_size,omitempty"`
 }
 
-// Validate validates this capacity pool nodes items0
-func (m *CapacityPoolNodesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this capacity pool inline nodes inline array item
+func (m *CapacityPoolInlineNodesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -334,7 +334,7 @@ func (m *CapacityPoolNodesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CapacityPoolNodesItems0) validateNode(formats strfmt.Registry) error {
+func (m *CapacityPoolInlineNodesInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -351,8 +351,8 @@ func (m *CapacityPoolNodesItems0) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this capacity pool nodes items0 based on the context it is used
-func (m *CapacityPoolNodesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this capacity pool inline nodes inline array item based on the context it is used
+func (m *CapacityPoolInlineNodesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -369,7 +369,7 @@ func (m *CapacityPoolNodesItems0) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CapacityPoolNodesItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolInlineNodesInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -383,9 +383,9 @@ func (m *CapacityPoolNodesItems0) contextValidateNode(ctx context.Context, forma
 	return nil
 }
 
-func (m *CapacityPoolNodesItems0) contextValidateUsedSize(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolInlineNodesInlineArrayItem) contextValidateUsedSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "used_size", "body", int64(m.UsedSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "used_size", "body", m.UsedSize); err != nil {
 		return err
 	}
 
@@ -393,7 +393,7 @@ func (m *CapacityPoolNodesItems0) contextValidateUsedSize(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *CapacityPoolNodesItems0) MarshalBinary() ([]byte, error) {
+func (m *CapacityPoolInlineNodesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -401,8 +401,8 @@ func (m *CapacityPoolNodesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CapacityPoolNodesItems0) UnmarshalBinary(b []byte) error {
-	var res CapacityPoolNodesItems0
+func (m *CapacityPoolInlineNodesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CapacityPoolInlineNodesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

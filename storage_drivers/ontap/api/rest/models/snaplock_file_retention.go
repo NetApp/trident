@@ -19,21 +19,21 @@ import (
 type SnaplockFileRetention struct {
 
 	// links
-	Links *SnaplockFileRetentionLinks `json:"_links,omitempty"`
+	Links *SnaplockFileRetentionInlineLinks `json:"_links,omitempty"`
 
 	// Expiry time of the file in date-time format, "infinite", "indefinite", or "unspecified". An "infinite" retention time indicates that the file will be retained forever. An "unspecified" retention time indicates that the file will be retained forever; however, the retention time of the file can be changed to an absolute value. An "indefinite" retention time indicates that the file is under Legal-Hold.
 	// Example: 2058-06-04T19:00:00Z
-	ExpiryTime string `json:"expiry_time,omitempty"`
+	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Specifies the volume relative path of the file
 	// Example: /dir1/file
-	FilePath string `json:"file_path,omitempty"`
+	FilePath *string `json:"file_path,omitempty"`
 
 	// svm
-	Svm *SnaplockFileRetentionSvm `json:"svm,omitempty"`
+	Svm *SnaplockFileRetentionInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *SnaplockFileRetentionVolume `json:"volume,omitempty"`
+	Volume *SnaplockFileRetentionInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this snaplock file retention
@@ -191,17 +191,17 @@ func (m *SnaplockFileRetention) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileRetentionLinks snaplock file retention links
+// SnaplockFileRetentionInlineLinks snaplock file retention inline links
 //
-// swagger:model SnaplockFileRetentionLinks
-type SnaplockFileRetentionLinks struct {
+// swagger:model snaplock_file_retention_inline__links
+type SnaplockFileRetentionInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file retention links
-func (m *SnaplockFileRetentionLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file retention inline links
+func (m *SnaplockFileRetentionInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -214,7 +214,7 @@ func (m *SnaplockFileRetentionLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockFileRetentionLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -231,8 +231,8 @@ func (m *SnaplockFileRetentionLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this snaplock file retention links based on the context it is used
-func (m *SnaplockFileRetentionLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file retention inline links based on the context it is used
+func (m *SnaplockFileRetentionInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -245,7 +245,7 @@ func (m *SnaplockFileRetentionLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *SnaplockFileRetentionLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -260,7 +260,7 @@ func (m *SnaplockFileRetentionLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileRetentionLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileRetentionInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -268,8 +268,8 @@ func (m *SnaplockFileRetentionLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileRetentionLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileRetentionLinks
+func (m *SnaplockFileRetentionInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileRetentionInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -277,27 +277,27 @@ func (m *SnaplockFileRetentionLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileRetentionSvm snaplock file retention svm
+// SnaplockFileRetentionInlineSvm snaplock file retention inline svm
 //
-// swagger:model SnaplockFileRetentionSvm
-type SnaplockFileRetentionSvm struct {
+// swagger:model snaplock_file_retention_inline_svm
+type SnaplockFileRetentionInlineSvm struct {
 
 	// links
-	Links *SnaplockFileRetentionSvmLinks `json:"_links,omitempty"`
+	Links *SnaplockFileRetentionInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock file retention svm
-func (m *SnaplockFileRetentionSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file retention inline svm
+func (m *SnaplockFileRetentionInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -310,7 +310,7 @@ func (m *SnaplockFileRetentionSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockFileRetentionSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -327,8 +327,8 @@ func (m *SnaplockFileRetentionSvm) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this snaplock file retention svm based on the context it is used
-func (m *SnaplockFileRetentionSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file retention inline svm based on the context it is used
+func (m *SnaplockFileRetentionInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -341,7 +341,7 @@ func (m *SnaplockFileRetentionSvm) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SnaplockFileRetentionSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -356,7 +356,7 @@ func (m *SnaplockFileRetentionSvm) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileRetentionSvm) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileRetentionInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -364,8 +364,8 @@ func (m *SnaplockFileRetentionSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileRetentionSvm) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileRetentionSvm
+func (m *SnaplockFileRetentionInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileRetentionInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -373,17 +373,17 @@ func (m *SnaplockFileRetentionSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileRetentionSvmLinks snaplock file retention svm links
+// SnaplockFileRetentionInlineSvmInlineLinks snaplock file retention inline svm inline links
 //
-// swagger:model SnaplockFileRetentionSvmLinks
-type SnaplockFileRetentionSvmLinks struct {
+// swagger:model snaplock_file_retention_inline_svm_inline__links
+type SnaplockFileRetentionInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file retention svm links
-func (m *SnaplockFileRetentionSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file retention inline svm inline links
+func (m *SnaplockFileRetentionInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -396,7 +396,7 @@ func (m *SnaplockFileRetentionSvmLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *SnaplockFileRetentionSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -413,8 +413,8 @@ func (m *SnaplockFileRetentionSvmLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this snaplock file retention svm links based on the context it is used
-func (m *SnaplockFileRetentionSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file retention inline svm inline links based on the context it is used
+func (m *SnaplockFileRetentionInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -427,7 +427,7 @@ func (m *SnaplockFileRetentionSvmLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *SnaplockFileRetentionSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -442,7 +442,7 @@ func (m *SnaplockFileRetentionSvmLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileRetentionSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileRetentionInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -450,8 +450,8 @@ func (m *SnaplockFileRetentionSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileRetentionSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileRetentionSvmLinks
+func (m *SnaplockFileRetentionInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileRetentionInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -459,25 +459,25 @@ func (m *SnaplockFileRetentionSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileRetentionVolume snaplock file retention volume
+// SnaplockFileRetentionInlineVolume snaplock file retention inline volume
 //
-// swagger:model SnaplockFileRetentionVolume
-type SnaplockFileRetentionVolume struct {
+// swagger:model snaplock_file_retention_inline_volume
+type SnaplockFileRetentionInlineVolume struct {
 
 	// links
-	Links *SnaplockFileRetentionVolumeLinks `json:"_links,omitempty"`
+	Links *SnaplockFileRetentionInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snaplock file retention volume
-func (m *SnaplockFileRetentionVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file retention inline volume
+func (m *SnaplockFileRetentionInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -490,7 +490,7 @@ func (m *SnaplockFileRetentionVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnaplockFileRetentionVolume) validateLinks(formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -507,8 +507,8 @@ func (m *SnaplockFileRetentionVolume) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this snaplock file retention volume based on the context it is used
-func (m *SnaplockFileRetentionVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file retention inline volume based on the context it is used
+func (m *SnaplockFileRetentionInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -521,7 +521,7 @@ func (m *SnaplockFileRetentionVolume) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *SnaplockFileRetentionVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -536,7 +536,7 @@ func (m *SnaplockFileRetentionVolume) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileRetentionVolume) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileRetentionInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -544,8 +544,8 @@ func (m *SnaplockFileRetentionVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileRetentionVolume) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileRetentionVolume
+func (m *SnaplockFileRetentionInlineVolume) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileRetentionInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -553,17 +553,17 @@ func (m *SnaplockFileRetentionVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileRetentionVolumeLinks snaplock file retention volume links
+// SnaplockFileRetentionInlineVolumeInlineLinks snaplock file retention inline volume inline links
 //
-// swagger:model SnaplockFileRetentionVolumeLinks
-type SnaplockFileRetentionVolumeLinks struct {
+// swagger:model snaplock_file_retention_inline_volume_inline__links
+type SnaplockFileRetentionInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file retention volume links
-func (m *SnaplockFileRetentionVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file retention inline volume inline links
+func (m *SnaplockFileRetentionInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -576,7 +576,7 @@ func (m *SnaplockFileRetentionVolumeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *SnaplockFileRetentionVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -593,8 +593,8 @@ func (m *SnaplockFileRetentionVolumeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this snaplock file retention volume links based on the context it is used
-func (m *SnaplockFileRetentionVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file retention inline volume inline links based on the context it is used
+func (m *SnaplockFileRetentionInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -607,7 +607,7 @@ func (m *SnaplockFileRetentionVolumeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *SnaplockFileRetentionVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileRetentionInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -622,7 +622,7 @@ func (m *SnaplockFileRetentionVolumeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileRetentionVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileRetentionInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -630,8 +630,8 @@ func (m *SnaplockFileRetentionVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileRetentionVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileRetentionVolumeLinks
+func (m *SnaplockFileRetentionInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileRetentionInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

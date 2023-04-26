@@ -66,19 +66,19 @@ type CifsSearchPathModifyParams struct {
 
 	   Home directory search path index
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* NewIndex.
 
 	   New position for the home directory search path
 	*/
-	NewIndexQueryParameter *int64
+	NewIndex *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CifsSearchPathModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the cifs search path modify params
-func (o *CifsSearchPathModifyParams) WithIndexPathParameter(index int64) *CifsSearchPathModifyParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the cifs search path modify params
+func (o *CifsSearchPathModifyParams) WithIndex(index int64) *CifsSearchPathModifyParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the cifs search path modify params
-func (o *CifsSearchPathModifyParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the cifs search path modify params
+func (o *CifsSearchPathModifyParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithNewIndexQueryParameter adds the newIndex to the cifs search path modify params
-func (o *CifsSearchPathModifyParams) WithNewIndexQueryParameter(newIndex *int64) *CifsSearchPathModifyParams {
-	o.SetNewIndexQueryParameter(newIndex)
+// WithNewIndex adds the newIndex to the cifs search path modify params
+func (o *CifsSearchPathModifyParams) WithNewIndex(newIndex *int64) *CifsSearchPathModifyParams {
+	o.SetNewIndex(newIndex)
 	return o
 }
 
-// SetNewIndexQueryParameter adds the newIndex to the cifs search path modify params
-func (o *CifsSearchPathModifyParams) SetNewIndexQueryParameter(newIndex *int64) {
-	o.NewIndexQueryParameter = newIndex
+// SetNewIndex adds the newIndex to the cifs search path modify params
+func (o *CifsSearchPathModifyParams) SetNewIndex(newIndex *int64) {
+	o.NewIndex = newIndex
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs search path modify params
-func (o *CifsSearchPathModifyParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSearchPathModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs search path modify params
+func (o *CifsSearchPathModifyParams) WithSvmUUID(svmUUID string) *CifsSearchPathModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs search path modify params
-func (o *CifsSearchPathModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs search path modify params
+func (o *CifsSearchPathModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,17 +175,17 @@ func (o *CifsSearchPathModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
-	if o.NewIndexQueryParameter != nil {
+	if o.NewIndex != nil {
 
 		// query param new_index
 		var qrNewIndex int64
 
-		if o.NewIndexQueryParameter != nil {
-			qrNewIndex = *o.NewIndexQueryParameter
+		if o.NewIndex != nil {
+			qrNewIndex = *o.NewIndex
 		}
 		qNewIndex := swag.FormatInt64(qrNewIndex)
 		if qNewIndex != "" {
@@ -197,7 +197,7 @@ func (o *CifsSearchPathModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

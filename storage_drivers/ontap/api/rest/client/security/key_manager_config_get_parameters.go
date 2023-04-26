@@ -66,7 +66,7 @@ type KeyManagerConfigGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *KeyManagerConfigGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the key manager config get params
-func (o *KeyManagerConfigGetParams) WithFieldsQueryParameter(fields []string) *KeyManagerConfigGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the key manager config get params
+func (o *KeyManagerConfigGetParams) WithFields(fields []string) *KeyManagerConfigGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the key manager config get params
-func (o *KeyManagerConfigGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the key manager config get params
+func (o *KeyManagerConfigGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *KeyManagerConfigGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *KeyManagerConfigGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamKeyManagerConfigGet binds the parameter fields
 func (o *KeyManagerConfigGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

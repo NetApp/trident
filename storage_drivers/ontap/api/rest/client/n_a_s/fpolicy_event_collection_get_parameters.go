@@ -66,247 +66,247 @@ type FpolicyEventCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FileOperationsClose.
 
 	   Filter by file_operations.close
 	*/
-	FileOperationsCloseQueryParameter *bool
+	FileOperationsClose *bool
 
 	/* FileOperationsCreate.
 
 	   Filter by file_operations.create
 	*/
-	FileOperationsCreateQueryParameter *bool
+	FileOperationsCreate *bool
 
 	/* FileOperationsCreateDir.
 
 	   Filter by file_operations.create_dir
 	*/
-	FileOperationsCreateDirQueryParameter *bool
+	FileOperationsCreateDir *bool
 
 	/* FileOperationsDelete.
 
 	   Filter by file_operations.delete
 	*/
-	FileOperationsDeleteQueryParameter *bool
+	FileOperationsDelete *bool
 
 	/* FileOperationsDeleteDir.
 
 	   Filter by file_operations.delete_dir
 	*/
-	FileOperationsDeleteDirQueryParameter *bool
+	FileOperationsDeleteDir *bool
 
 	/* FileOperationsGetattr.
 
 	   Filter by file_operations.getattr
 	*/
-	FileOperationsGetattrQueryParameter *bool
+	FileOperationsGetattr *bool
 
 	/* FileOperationsLink.
 
 	   Filter by file_operations.link
 	*/
-	FileOperationsLinkQueryParameter *bool
+	FileOperationsLink *bool
 
 	/* FileOperationsLookup.
 
 	   Filter by file_operations.lookup
 	*/
-	FileOperationsLookupQueryParameter *bool
+	FileOperationsLookup *bool
 
 	/* FileOperationsOpen.
 
 	   Filter by file_operations.open
 	*/
-	FileOperationsOpenQueryParameter *bool
+	FileOperationsOpen *bool
 
 	/* FileOperationsRead.
 
 	   Filter by file_operations.read
 	*/
-	FileOperationsReadQueryParameter *bool
+	FileOperationsRead *bool
 
 	/* FileOperationsRename.
 
 	   Filter by file_operations.rename
 	*/
-	FileOperationsRenameQueryParameter *bool
+	FileOperationsRename *bool
 
 	/* FileOperationsRenameDir.
 
 	   Filter by file_operations.rename_dir
 	*/
-	FileOperationsRenameDirQueryParameter *bool
+	FileOperationsRenameDir *bool
 
 	/* FileOperationsSetattr.
 
 	   Filter by file_operations.setattr
 	*/
-	FileOperationsSetattrQueryParameter *bool
+	FileOperationsSetattr *bool
 
 	/* FileOperationsSymlink.
 
 	   Filter by file_operations.symlink
 	*/
-	FileOperationsSymlinkQueryParameter *bool
+	FileOperationsSymlink *bool
 
 	/* FileOperationsWrite.
 
 	   Filter by file_operations.write
 	*/
-	FileOperationsWriteQueryParameter *bool
+	FileOperationsWrite *bool
 
 	/* FiltersCloseWithModification.
 
 	   Filter by filters.close_with_modification
 	*/
-	FiltersCloseWithModificationQueryParameter *bool
+	FiltersCloseWithModification *bool
 
 	/* FiltersCloseWithRead.
 
 	   Filter by filters.close_with_read
 	*/
-	FiltersCloseWithReadQueryParameter *bool
+	FiltersCloseWithRead *bool
 
 	/* FiltersCloseWithoutModification.
 
 	   Filter by filters.close_without_modification
 	*/
-	FiltersCloseWithoutModificationQueryParameter *bool
+	FiltersCloseWithoutModification *bool
 
 	/* FiltersExcludeDirectory.
 
 	   Filter by filters.exclude_directory
 	*/
-	FiltersExcludeDirectoryQueryParameter *bool
+	FiltersExcludeDirectory *bool
 
 	/* FiltersFirstRead.
 
 	   Filter by filters.first_read
 	*/
-	FiltersFirstReadQueryParameter *bool
+	FiltersFirstRead *bool
 
 	/* FiltersFirstWrite.
 
 	   Filter by filters.first_write
 	*/
-	FiltersFirstWriteQueryParameter *bool
+	FiltersFirstWrite *bool
 
 	/* FiltersMonitorAds.
 
 	   Filter by filters.monitor_ads
 	*/
-	FiltersMonitorAdsQueryParameter *bool
+	FiltersMonitorAds *bool
 
 	/* FiltersOfflineBit.
 
 	   Filter by filters.offline_bit
 	*/
-	FiltersOfflineBitQueryParameter *bool
+	FiltersOfflineBit *bool
 
 	/* FiltersOpenWithDeleteIntent.
 
 	   Filter by filters.open_with_delete_intent
 	*/
-	FiltersOpenWithDeleteIntentQueryParameter *bool
+	FiltersOpenWithDeleteIntent *bool
 
 	/* FiltersOpenWithWriteIntent.
 
 	   Filter by filters.open_with_write_intent
 	*/
-	FiltersOpenWithWriteIntentQueryParameter *bool
+	FiltersOpenWithWriteIntent *bool
 
 	/* FiltersSetattrWithAccessTimeChange.
 
 	   Filter by filters.setattr_with_access_time_change
 	*/
-	FiltersSetattrWithAccessTimeChangeQueryParameter *bool
+	FiltersSetattrWithAccessTimeChange *bool
 
 	/* FiltersSetattrWithAllocationSizeChange.
 
 	   Filter by filters.setattr_with_allocation_size_change
 	*/
-	FiltersSetattrWithAllocationSizeChangeQueryParameter *bool
+	FiltersSetattrWithAllocationSizeChange *bool
 
 	/* FiltersSetattrWithCreationTimeChange.
 
 	   Filter by filters.setattr_with_creation_time_change
 	*/
-	FiltersSetattrWithCreationTimeChangeQueryParameter *bool
+	FiltersSetattrWithCreationTimeChange *bool
 
 	/* FiltersSetattrWithDaclChange.
 
 	   Filter by filters.setattr_with_dacl_change
 	*/
-	FiltersSetattrWithDACLChangeQueryParameter *bool
+	FiltersSetattrWithDaclChange *bool
 
 	/* FiltersSetattrWithGroupChange.
 
 	   Filter by filters.setattr_with_group_change
 	*/
-	FiltersSetattrWithGroupChangeQueryParameter *bool
+	FiltersSetattrWithGroupChange *bool
 
 	/* FiltersSetattrWithModeChange.
 
 	   Filter by filters.setattr_with_mode_change
 	*/
-	FiltersSetattrWithModeChangeQueryParameter *bool
+	FiltersSetattrWithModeChange *bool
 
 	/* FiltersSetattrWithModifyTimeChange.
 
 	   Filter by filters.setattr_with_modify_time_change
 	*/
-	FiltersSetattrWithModifyTimeChangeQueryParameter *bool
+	FiltersSetattrWithModifyTimeChange *bool
 
 	/* FiltersSetattrWithOwnerChange.
 
 	   Filter by filters.setattr_with_owner_change
 	*/
-	FiltersSetattrWithOwnerChangeQueryParameter *bool
+	FiltersSetattrWithOwnerChange *bool
 
 	/* FiltersSetattrWithSaclChange.
 
 	   Filter by filters.setattr_with_sacl_change
 	*/
-	FiltersSetattrWithSACLChangeQueryParameter *bool
+	FiltersSetattrWithSaclChange *bool
 
 	/* FiltersSetattrWithSizeChange.
 
 	   Filter by filters.setattr_with_size_change
 	*/
-	FiltersSetattrWithSizeChangeQueryParameter *bool
+	FiltersSetattrWithSizeChange *bool
 
 	/* FiltersWriteWithSizeChange.
 
 	   Filter by filters.write_with_size_change
 	*/
-	FiltersWriteWithSizeChangeQueryParameter *bool
+	FiltersWriteWithSizeChange *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* ReturnRecords.
 
@@ -314,7 +314,7 @@ type FpolicyEventCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -322,19 +322,19 @@ type FpolicyEventCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* VolumeMonitoring.
 
 	   Filter by volume_monitoring
 	*/
-	VolumeMonitoringQueryParameter *bool
+	VolumeMonitoring *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -354,14 +354,14 @@ func (o *FpolicyEventCollectionGetParams) WithDefaults() *FpolicyEventCollection
 // All values with no default are reset to their zero value.
 func (o *FpolicyEventCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FpolicyEventCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -403,499 +403,499 @@ func (o *FpolicyEventCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFieldsQueryParameter(fields []string) *FpolicyEventCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFields(fields []string) *FpolicyEventCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFileOperationsCloseQueryParameter adds the fileOperationsClose to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsCloseQueryParameter(fileOperationsClose *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsCloseQueryParameter(fileOperationsClose)
+// WithFileOperationsClose adds the fileOperationsClose to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsClose(fileOperationsClose *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsClose(fileOperationsClose)
 	return o
 }
 
-// SetFileOperationsCloseQueryParameter adds the fileOperationsClose to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsCloseQueryParameter(fileOperationsClose *bool) {
-	o.FileOperationsCloseQueryParameter = fileOperationsClose
+// SetFileOperationsClose adds the fileOperationsClose to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsClose(fileOperationsClose *bool) {
+	o.FileOperationsClose = fileOperationsClose
 }
 
-// WithFileOperationsCreateQueryParameter adds the fileOperationsCreate to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsCreateQueryParameter(fileOperationsCreate *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsCreateQueryParameter(fileOperationsCreate)
+// WithFileOperationsCreate adds the fileOperationsCreate to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsCreate(fileOperationsCreate *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsCreate(fileOperationsCreate)
 	return o
 }
 
-// SetFileOperationsCreateQueryParameter adds the fileOperationsCreate to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsCreateQueryParameter(fileOperationsCreate *bool) {
-	o.FileOperationsCreateQueryParameter = fileOperationsCreate
+// SetFileOperationsCreate adds the fileOperationsCreate to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsCreate(fileOperationsCreate *bool) {
+	o.FileOperationsCreate = fileOperationsCreate
 }
 
-// WithFileOperationsCreateDirQueryParameter adds the fileOperationsCreateDir to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsCreateDirQueryParameter(fileOperationsCreateDir *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsCreateDirQueryParameter(fileOperationsCreateDir)
+// WithFileOperationsCreateDir adds the fileOperationsCreateDir to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsCreateDir(fileOperationsCreateDir *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsCreateDir(fileOperationsCreateDir)
 	return o
 }
 
-// SetFileOperationsCreateDirQueryParameter adds the fileOperationsCreateDir to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsCreateDirQueryParameter(fileOperationsCreateDir *bool) {
-	o.FileOperationsCreateDirQueryParameter = fileOperationsCreateDir
+// SetFileOperationsCreateDir adds the fileOperationsCreateDir to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsCreateDir(fileOperationsCreateDir *bool) {
+	o.FileOperationsCreateDir = fileOperationsCreateDir
 }
 
-// WithFileOperationsDeleteQueryParameter adds the fileOperationsDelete to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsDeleteQueryParameter(fileOperationsDelete *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsDeleteQueryParameter(fileOperationsDelete)
+// WithFileOperationsDelete adds the fileOperationsDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsDelete(fileOperationsDelete *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsDelete(fileOperationsDelete)
 	return o
 }
 
-// SetFileOperationsDeleteQueryParameter adds the fileOperationsDelete to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsDeleteQueryParameter(fileOperationsDelete *bool) {
-	o.FileOperationsDeleteQueryParameter = fileOperationsDelete
+// SetFileOperationsDelete adds the fileOperationsDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsDelete(fileOperationsDelete *bool) {
+	o.FileOperationsDelete = fileOperationsDelete
 }
 
-// WithFileOperationsDeleteDirQueryParameter adds the fileOperationsDeleteDir to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsDeleteDirQueryParameter(fileOperationsDeleteDir *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsDeleteDirQueryParameter(fileOperationsDeleteDir)
+// WithFileOperationsDeleteDir adds the fileOperationsDeleteDir to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsDeleteDir(fileOperationsDeleteDir *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsDeleteDir(fileOperationsDeleteDir)
 	return o
 }
 
-// SetFileOperationsDeleteDirQueryParameter adds the fileOperationsDeleteDir to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsDeleteDirQueryParameter(fileOperationsDeleteDir *bool) {
-	o.FileOperationsDeleteDirQueryParameter = fileOperationsDeleteDir
+// SetFileOperationsDeleteDir adds the fileOperationsDeleteDir to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsDeleteDir(fileOperationsDeleteDir *bool) {
+	o.FileOperationsDeleteDir = fileOperationsDeleteDir
 }
 
-// WithFileOperationsGetattrQueryParameter adds the fileOperationsGetattr to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsGetattrQueryParameter(fileOperationsGetattr *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsGetattrQueryParameter(fileOperationsGetattr)
+// WithFileOperationsGetattr adds the fileOperationsGetattr to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsGetattr(fileOperationsGetattr *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsGetattr(fileOperationsGetattr)
 	return o
 }
 
-// SetFileOperationsGetattrQueryParameter adds the fileOperationsGetattr to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsGetattrQueryParameter(fileOperationsGetattr *bool) {
-	o.FileOperationsGetattrQueryParameter = fileOperationsGetattr
+// SetFileOperationsGetattr adds the fileOperationsGetattr to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsGetattr(fileOperationsGetattr *bool) {
+	o.FileOperationsGetattr = fileOperationsGetattr
 }
 
-// WithFileOperationsLinkQueryParameter adds the fileOperationsLink to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsLinkQueryParameter(fileOperationsLink *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsLinkQueryParameter(fileOperationsLink)
+// WithFileOperationsLink adds the fileOperationsLink to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsLink(fileOperationsLink *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsLink(fileOperationsLink)
 	return o
 }
 
-// SetFileOperationsLinkQueryParameter adds the fileOperationsLink to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsLinkQueryParameter(fileOperationsLink *bool) {
-	o.FileOperationsLinkQueryParameter = fileOperationsLink
+// SetFileOperationsLink adds the fileOperationsLink to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsLink(fileOperationsLink *bool) {
+	o.FileOperationsLink = fileOperationsLink
 }
 
-// WithFileOperationsLookupQueryParameter adds the fileOperationsLookup to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsLookupQueryParameter(fileOperationsLookup *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsLookupQueryParameter(fileOperationsLookup)
+// WithFileOperationsLookup adds the fileOperationsLookup to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsLookup(fileOperationsLookup *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsLookup(fileOperationsLookup)
 	return o
 }
 
-// SetFileOperationsLookupQueryParameter adds the fileOperationsLookup to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsLookupQueryParameter(fileOperationsLookup *bool) {
-	o.FileOperationsLookupQueryParameter = fileOperationsLookup
+// SetFileOperationsLookup adds the fileOperationsLookup to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsLookup(fileOperationsLookup *bool) {
+	o.FileOperationsLookup = fileOperationsLookup
 }
 
-// WithFileOperationsOpenQueryParameter adds the fileOperationsOpen to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsOpenQueryParameter(fileOperationsOpen *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsOpenQueryParameter(fileOperationsOpen)
+// WithFileOperationsOpen adds the fileOperationsOpen to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsOpen(fileOperationsOpen *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsOpen(fileOperationsOpen)
 	return o
 }
 
-// SetFileOperationsOpenQueryParameter adds the fileOperationsOpen to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsOpenQueryParameter(fileOperationsOpen *bool) {
-	o.FileOperationsOpenQueryParameter = fileOperationsOpen
+// SetFileOperationsOpen adds the fileOperationsOpen to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsOpen(fileOperationsOpen *bool) {
+	o.FileOperationsOpen = fileOperationsOpen
 }
 
-// WithFileOperationsReadQueryParameter adds the fileOperationsRead to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsReadQueryParameter(fileOperationsRead *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsReadQueryParameter(fileOperationsRead)
+// WithFileOperationsRead adds the fileOperationsRead to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsRead(fileOperationsRead *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsRead(fileOperationsRead)
 	return o
 }
 
-// SetFileOperationsReadQueryParameter adds the fileOperationsRead to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsReadQueryParameter(fileOperationsRead *bool) {
-	o.FileOperationsReadQueryParameter = fileOperationsRead
+// SetFileOperationsRead adds the fileOperationsRead to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsRead(fileOperationsRead *bool) {
+	o.FileOperationsRead = fileOperationsRead
 }
 
-// WithFileOperationsRenameQueryParameter adds the fileOperationsRename to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsRenameQueryParameter(fileOperationsRename *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsRenameQueryParameter(fileOperationsRename)
+// WithFileOperationsRename adds the fileOperationsRename to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsRename(fileOperationsRename *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsRename(fileOperationsRename)
 	return o
 }
 
-// SetFileOperationsRenameQueryParameter adds the fileOperationsRename to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsRenameQueryParameter(fileOperationsRename *bool) {
-	o.FileOperationsRenameQueryParameter = fileOperationsRename
+// SetFileOperationsRename adds the fileOperationsRename to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsRename(fileOperationsRename *bool) {
+	o.FileOperationsRename = fileOperationsRename
 }
 
-// WithFileOperationsRenameDirQueryParameter adds the fileOperationsRenameDir to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsRenameDirQueryParameter(fileOperationsRenameDir *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsRenameDirQueryParameter(fileOperationsRenameDir)
+// WithFileOperationsRenameDir adds the fileOperationsRenameDir to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsRenameDir(fileOperationsRenameDir *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsRenameDir(fileOperationsRenameDir)
 	return o
 }
 
-// SetFileOperationsRenameDirQueryParameter adds the fileOperationsRenameDir to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsRenameDirQueryParameter(fileOperationsRenameDir *bool) {
-	o.FileOperationsRenameDirQueryParameter = fileOperationsRenameDir
+// SetFileOperationsRenameDir adds the fileOperationsRenameDir to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsRenameDir(fileOperationsRenameDir *bool) {
+	o.FileOperationsRenameDir = fileOperationsRenameDir
 }
 
-// WithFileOperationsSetattrQueryParameter adds the fileOperationsSetattr to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsSetattrQueryParameter(fileOperationsSetattr *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsSetattrQueryParameter(fileOperationsSetattr)
+// WithFileOperationsSetattr adds the fileOperationsSetattr to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsSetattr(fileOperationsSetattr *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsSetattr(fileOperationsSetattr)
 	return o
 }
 
-// SetFileOperationsSetattrQueryParameter adds the fileOperationsSetattr to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsSetattrQueryParameter(fileOperationsSetattr *bool) {
-	o.FileOperationsSetattrQueryParameter = fileOperationsSetattr
+// SetFileOperationsSetattr adds the fileOperationsSetattr to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsSetattr(fileOperationsSetattr *bool) {
+	o.FileOperationsSetattr = fileOperationsSetattr
 }
 
-// WithFileOperationsSymlinkQueryParameter adds the fileOperationsSymlink to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsSymlinkQueryParameter(fileOperationsSymlink *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsSymlinkQueryParameter(fileOperationsSymlink)
+// WithFileOperationsSymlink adds the fileOperationsSymlink to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsSymlink(fileOperationsSymlink *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsSymlink(fileOperationsSymlink)
 	return o
 }
 
-// SetFileOperationsSymlinkQueryParameter adds the fileOperationsSymlink to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsSymlinkQueryParameter(fileOperationsSymlink *bool) {
-	o.FileOperationsSymlinkQueryParameter = fileOperationsSymlink
+// SetFileOperationsSymlink adds the fileOperationsSymlink to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsSymlink(fileOperationsSymlink *bool) {
+	o.FileOperationsSymlink = fileOperationsSymlink
 }
 
-// WithFileOperationsWriteQueryParameter adds the fileOperationsWrite to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFileOperationsWriteQueryParameter(fileOperationsWrite *bool) *FpolicyEventCollectionGetParams {
-	o.SetFileOperationsWriteQueryParameter(fileOperationsWrite)
+// WithFileOperationsWrite adds the fileOperationsWrite to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsWrite(fileOperationsWrite *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsWrite(fileOperationsWrite)
 	return o
 }
 
-// SetFileOperationsWriteQueryParameter adds the fileOperationsWrite to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFileOperationsWriteQueryParameter(fileOperationsWrite *bool) {
-	o.FileOperationsWriteQueryParameter = fileOperationsWrite
+// SetFileOperationsWrite adds the fileOperationsWrite to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsWrite(fileOperationsWrite *bool) {
+	o.FileOperationsWrite = fileOperationsWrite
 }
 
-// WithFiltersCloseWithModificationQueryParameter adds the filtersCloseWithModification to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersCloseWithModificationQueryParameter(filtersCloseWithModification *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersCloseWithModificationQueryParameter(filtersCloseWithModification)
+// WithFiltersCloseWithModification adds the filtersCloseWithModification to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersCloseWithModification(filtersCloseWithModification *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersCloseWithModification(filtersCloseWithModification)
 	return o
 }
 
-// SetFiltersCloseWithModificationQueryParameter adds the filtersCloseWithModification to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersCloseWithModificationQueryParameter(filtersCloseWithModification *bool) {
-	o.FiltersCloseWithModificationQueryParameter = filtersCloseWithModification
+// SetFiltersCloseWithModification adds the filtersCloseWithModification to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersCloseWithModification(filtersCloseWithModification *bool) {
+	o.FiltersCloseWithModification = filtersCloseWithModification
 }
 
-// WithFiltersCloseWithReadQueryParameter adds the filtersCloseWithRead to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersCloseWithReadQueryParameter(filtersCloseWithRead *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersCloseWithReadQueryParameter(filtersCloseWithRead)
+// WithFiltersCloseWithRead adds the filtersCloseWithRead to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersCloseWithRead(filtersCloseWithRead *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersCloseWithRead(filtersCloseWithRead)
 	return o
 }
 
-// SetFiltersCloseWithReadQueryParameter adds the filtersCloseWithRead to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersCloseWithReadQueryParameter(filtersCloseWithRead *bool) {
-	o.FiltersCloseWithReadQueryParameter = filtersCloseWithRead
+// SetFiltersCloseWithRead adds the filtersCloseWithRead to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersCloseWithRead(filtersCloseWithRead *bool) {
+	o.FiltersCloseWithRead = filtersCloseWithRead
 }
 
-// WithFiltersCloseWithoutModificationQueryParameter adds the filtersCloseWithoutModification to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersCloseWithoutModificationQueryParameter(filtersCloseWithoutModification *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersCloseWithoutModificationQueryParameter(filtersCloseWithoutModification)
+// WithFiltersCloseWithoutModification adds the filtersCloseWithoutModification to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersCloseWithoutModification(filtersCloseWithoutModification *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersCloseWithoutModification(filtersCloseWithoutModification)
 	return o
 }
 
-// SetFiltersCloseWithoutModificationQueryParameter adds the filtersCloseWithoutModification to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersCloseWithoutModificationQueryParameter(filtersCloseWithoutModification *bool) {
-	o.FiltersCloseWithoutModificationQueryParameter = filtersCloseWithoutModification
+// SetFiltersCloseWithoutModification adds the filtersCloseWithoutModification to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersCloseWithoutModification(filtersCloseWithoutModification *bool) {
+	o.FiltersCloseWithoutModification = filtersCloseWithoutModification
 }
 
-// WithFiltersExcludeDirectoryQueryParameter adds the filtersExcludeDirectory to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersExcludeDirectoryQueryParameter(filtersExcludeDirectory *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersExcludeDirectoryQueryParameter(filtersExcludeDirectory)
+// WithFiltersExcludeDirectory adds the filtersExcludeDirectory to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersExcludeDirectory(filtersExcludeDirectory *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersExcludeDirectory(filtersExcludeDirectory)
 	return o
 }
 
-// SetFiltersExcludeDirectoryQueryParameter adds the filtersExcludeDirectory to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersExcludeDirectoryQueryParameter(filtersExcludeDirectory *bool) {
-	o.FiltersExcludeDirectoryQueryParameter = filtersExcludeDirectory
+// SetFiltersExcludeDirectory adds the filtersExcludeDirectory to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersExcludeDirectory(filtersExcludeDirectory *bool) {
+	o.FiltersExcludeDirectory = filtersExcludeDirectory
 }
 
-// WithFiltersFirstReadQueryParameter adds the filtersFirstRead to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersFirstReadQueryParameter(filtersFirstRead *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersFirstReadQueryParameter(filtersFirstRead)
+// WithFiltersFirstRead adds the filtersFirstRead to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersFirstRead(filtersFirstRead *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersFirstRead(filtersFirstRead)
 	return o
 }
 
-// SetFiltersFirstReadQueryParameter adds the filtersFirstRead to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersFirstReadQueryParameter(filtersFirstRead *bool) {
-	o.FiltersFirstReadQueryParameter = filtersFirstRead
+// SetFiltersFirstRead adds the filtersFirstRead to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersFirstRead(filtersFirstRead *bool) {
+	o.FiltersFirstRead = filtersFirstRead
 }
 
-// WithFiltersFirstWriteQueryParameter adds the filtersFirstWrite to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersFirstWriteQueryParameter(filtersFirstWrite *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersFirstWriteQueryParameter(filtersFirstWrite)
+// WithFiltersFirstWrite adds the filtersFirstWrite to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersFirstWrite(filtersFirstWrite *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersFirstWrite(filtersFirstWrite)
 	return o
 }
 
-// SetFiltersFirstWriteQueryParameter adds the filtersFirstWrite to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersFirstWriteQueryParameter(filtersFirstWrite *bool) {
-	o.FiltersFirstWriteQueryParameter = filtersFirstWrite
+// SetFiltersFirstWrite adds the filtersFirstWrite to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersFirstWrite(filtersFirstWrite *bool) {
+	o.FiltersFirstWrite = filtersFirstWrite
 }
 
-// WithFiltersMonitorAdsQueryParameter adds the filtersMonitorAds to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersMonitorAdsQueryParameter(filtersMonitorAds *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersMonitorAdsQueryParameter(filtersMonitorAds)
+// WithFiltersMonitorAds adds the filtersMonitorAds to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersMonitorAds(filtersMonitorAds *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersMonitorAds(filtersMonitorAds)
 	return o
 }
 
-// SetFiltersMonitorAdsQueryParameter adds the filtersMonitorAds to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersMonitorAdsQueryParameter(filtersMonitorAds *bool) {
-	o.FiltersMonitorAdsQueryParameter = filtersMonitorAds
+// SetFiltersMonitorAds adds the filtersMonitorAds to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersMonitorAds(filtersMonitorAds *bool) {
+	o.FiltersMonitorAds = filtersMonitorAds
 }
 
-// WithFiltersOfflineBitQueryParameter adds the filtersOfflineBit to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersOfflineBitQueryParameter(filtersOfflineBit *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersOfflineBitQueryParameter(filtersOfflineBit)
+// WithFiltersOfflineBit adds the filtersOfflineBit to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersOfflineBit(filtersOfflineBit *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersOfflineBit(filtersOfflineBit)
 	return o
 }
 
-// SetFiltersOfflineBitQueryParameter adds the filtersOfflineBit to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersOfflineBitQueryParameter(filtersOfflineBit *bool) {
-	o.FiltersOfflineBitQueryParameter = filtersOfflineBit
+// SetFiltersOfflineBit adds the filtersOfflineBit to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersOfflineBit(filtersOfflineBit *bool) {
+	o.FiltersOfflineBit = filtersOfflineBit
 }
 
-// WithFiltersOpenWithDeleteIntentQueryParameter adds the filtersOpenWithDeleteIntent to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersOpenWithDeleteIntentQueryParameter(filtersOpenWithDeleteIntent *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersOpenWithDeleteIntentQueryParameter(filtersOpenWithDeleteIntent)
+// WithFiltersOpenWithDeleteIntent adds the filtersOpenWithDeleteIntent to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersOpenWithDeleteIntent(filtersOpenWithDeleteIntent *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersOpenWithDeleteIntent(filtersOpenWithDeleteIntent)
 	return o
 }
 
-// SetFiltersOpenWithDeleteIntentQueryParameter adds the filtersOpenWithDeleteIntent to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersOpenWithDeleteIntentQueryParameter(filtersOpenWithDeleteIntent *bool) {
-	o.FiltersOpenWithDeleteIntentQueryParameter = filtersOpenWithDeleteIntent
+// SetFiltersOpenWithDeleteIntent adds the filtersOpenWithDeleteIntent to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersOpenWithDeleteIntent(filtersOpenWithDeleteIntent *bool) {
+	o.FiltersOpenWithDeleteIntent = filtersOpenWithDeleteIntent
 }
 
-// WithFiltersOpenWithWriteIntentQueryParameter adds the filtersOpenWithWriteIntent to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersOpenWithWriteIntentQueryParameter(filtersOpenWithWriteIntent *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersOpenWithWriteIntentQueryParameter(filtersOpenWithWriteIntent)
+// WithFiltersOpenWithWriteIntent adds the filtersOpenWithWriteIntent to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersOpenWithWriteIntent(filtersOpenWithWriteIntent *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersOpenWithWriteIntent(filtersOpenWithWriteIntent)
 	return o
 }
 
-// SetFiltersOpenWithWriteIntentQueryParameter adds the filtersOpenWithWriteIntent to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersOpenWithWriteIntentQueryParameter(filtersOpenWithWriteIntent *bool) {
-	o.FiltersOpenWithWriteIntentQueryParameter = filtersOpenWithWriteIntent
+// SetFiltersOpenWithWriteIntent adds the filtersOpenWithWriteIntent to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersOpenWithWriteIntent(filtersOpenWithWriteIntent *bool) {
+	o.FiltersOpenWithWriteIntent = filtersOpenWithWriteIntent
 }
 
-// WithFiltersSetattrWithAccessTimeChangeQueryParameter adds the filtersSetattrWithAccessTimeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithAccessTimeChangeQueryParameter(filtersSetattrWithAccessTimeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithAccessTimeChangeQueryParameter(filtersSetattrWithAccessTimeChange)
+// WithFiltersSetattrWithAccessTimeChange adds the filtersSetattrWithAccessTimeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithAccessTimeChange(filtersSetattrWithAccessTimeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithAccessTimeChange(filtersSetattrWithAccessTimeChange)
 	return o
 }
 
-// SetFiltersSetattrWithAccessTimeChangeQueryParameter adds the filtersSetattrWithAccessTimeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithAccessTimeChangeQueryParameter(filtersSetattrWithAccessTimeChange *bool) {
-	o.FiltersSetattrWithAccessTimeChangeQueryParameter = filtersSetattrWithAccessTimeChange
+// SetFiltersSetattrWithAccessTimeChange adds the filtersSetattrWithAccessTimeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithAccessTimeChange(filtersSetattrWithAccessTimeChange *bool) {
+	o.FiltersSetattrWithAccessTimeChange = filtersSetattrWithAccessTimeChange
 }
 
-// WithFiltersSetattrWithAllocationSizeChangeQueryParameter adds the filtersSetattrWithAllocationSizeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithAllocationSizeChangeQueryParameter(filtersSetattrWithAllocationSizeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithAllocationSizeChangeQueryParameter(filtersSetattrWithAllocationSizeChange)
+// WithFiltersSetattrWithAllocationSizeChange adds the filtersSetattrWithAllocationSizeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithAllocationSizeChange(filtersSetattrWithAllocationSizeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithAllocationSizeChange(filtersSetattrWithAllocationSizeChange)
 	return o
 }
 
-// SetFiltersSetattrWithAllocationSizeChangeQueryParameter adds the filtersSetattrWithAllocationSizeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithAllocationSizeChangeQueryParameter(filtersSetattrWithAllocationSizeChange *bool) {
-	o.FiltersSetattrWithAllocationSizeChangeQueryParameter = filtersSetattrWithAllocationSizeChange
+// SetFiltersSetattrWithAllocationSizeChange adds the filtersSetattrWithAllocationSizeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithAllocationSizeChange(filtersSetattrWithAllocationSizeChange *bool) {
+	o.FiltersSetattrWithAllocationSizeChange = filtersSetattrWithAllocationSizeChange
 }
 
-// WithFiltersSetattrWithCreationTimeChangeQueryParameter adds the filtersSetattrWithCreationTimeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithCreationTimeChangeQueryParameter(filtersSetattrWithCreationTimeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithCreationTimeChangeQueryParameter(filtersSetattrWithCreationTimeChange)
+// WithFiltersSetattrWithCreationTimeChange adds the filtersSetattrWithCreationTimeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithCreationTimeChange(filtersSetattrWithCreationTimeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithCreationTimeChange(filtersSetattrWithCreationTimeChange)
 	return o
 }
 
-// SetFiltersSetattrWithCreationTimeChangeQueryParameter adds the filtersSetattrWithCreationTimeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithCreationTimeChangeQueryParameter(filtersSetattrWithCreationTimeChange *bool) {
-	o.FiltersSetattrWithCreationTimeChangeQueryParameter = filtersSetattrWithCreationTimeChange
+// SetFiltersSetattrWithCreationTimeChange adds the filtersSetattrWithCreationTimeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithCreationTimeChange(filtersSetattrWithCreationTimeChange *bool) {
+	o.FiltersSetattrWithCreationTimeChange = filtersSetattrWithCreationTimeChange
 }
 
-// WithFiltersSetattrWithDACLChangeQueryParameter adds the filtersSetattrWithDaclChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithDACLChangeQueryParameter(filtersSetattrWithDaclChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithDACLChangeQueryParameter(filtersSetattrWithDaclChange)
+// WithFiltersSetattrWithDaclChange adds the filtersSetattrWithDaclChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithDaclChange(filtersSetattrWithDaclChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithDaclChange(filtersSetattrWithDaclChange)
 	return o
 }
 
-// SetFiltersSetattrWithDACLChangeQueryParameter adds the filtersSetattrWithDaclChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithDACLChangeQueryParameter(filtersSetattrWithDaclChange *bool) {
-	o.FiltersSetattrWithDACLChangeQueryParameter = filtersSetattrWithDaclChange
+// SetFiltersSetattrWithDaclChange adds the filtersSetattrWithDaclChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithDaclChange(filtersSetattrWithDaclChange *bool) {
+	o.FiltersSetattrWithDaclChange = filtersSetattrWithDaclChange
 }
 
-// WithFiltersSetattrWithGroupChangeQueryParameter adds the filtersSetattrWithGroupChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithGroupChangeQueryParameter(filtersSetattrWithGroupChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithGroupChangeQueryParameter(filtersSetattrWithGroupChange)
+// WithFiltersSetattrWithGroupChange adds the filtersSetattrWithGroupChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithGroupChange(filtersSetattrWithGroupChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithGroupChange(filtersSetattrWithGroupChange)
 	return o
 }
 
-// SetFiltersSetattrWithGroupChangeQueryParameter adds the filtersSetattrWithGroupChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithGroupChangeQueryParameter(filtersSetattrWithGroupChange *bool) {
-	o.FiltersSetattrWithGroupChangeQueryParameter = filtersSetattrWithGroupChange
+// SetFiltersSetattrWithGroupChange adds the filtersSetattrWithGroupChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithGroupChange(filtersSetattrWithGroupChange *bool) {
+	o.FiltersSetattrWithGroupChange = filtersSetattrWithGroupChange
 }
 
-// WithFiltersSetattrWithModeChangeQueryParameter adds the filtersSetattrWithModeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithModeChangeQueryParameter(filtersSetattrWithModeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithModeChangeQueryParameter(filtersSetattrWithModeChange)
+// WithFiltersSetattrWithModeChange adds the filtersSetattrWithModeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithModeChange(filtersSetattrWithModeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithModeChange(filtersSetattrWithModeChange)
 	return o
 }
 
-// SetFiltersSetattrWithModeChangeQueryParameter adds the filtersSetattrWithModeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithModeChangeQueryParameter(filtersSetattrWithModeChange *bool) {
-	o.FiltersSetattrWithModeChangeQueryParameter = filtersSetattrWithModeChange
+// SetFiltersSetattrWithModeChange adds the filtersSetattrWithModeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithModeChange(filtersSetattrWithModeChange *bool) {
+	o.FiltersSetattrWithModeChange = filtersSetattrWithModeChange
 }
 
-// WithFiltersSetattrWithModifyTimeChangeQueryParameter adds the filtersSetattrWithModifyTimeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithModifyTimeChangeQueryParameter(filtersSetattrWithModifyTimeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithModifyTimeChangeQueryParameter(filtersSetattrWithModifyTimeChange)
+// WithFiltersSetattrWithModifyTimeChange adds the filtersSetattrWithModifyTimeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithModifyTimeChange(filtersSetattrWithModifyTimeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithModifyTimeChange(filtersSetattrWithModifyTimeChange)
 	return o
 }
 
-// SetFiltersSetattrWithModifyTimeChangeQueryParameter adds the filtersSetattrWithModifyTimeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithModifyTimeChangeQueryParameter(filtersSetattrWithModifyTimeChange *bool) {
-	o.FiltersSetattrWithModifyTimeChangeQueryParameter = filtersSetattrWithModifyTimeChange
+// SetFiltersSetattrWithModifyTimeChange adds the filtersSetattrWithModifyTimeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithModifyTimeChange(filtersSetattrWithModifyTimeChange *bool) {
+	o.FiltersSetattrWithModifyTimeChange = filtersSetattrWithModifyTimeChange
 }
 
-// WithFiltersSetattrWithOwnerChangeQueryParameter adds the filtersSetattrWithOwnerChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithOwnerChangeQueryParameter(filtersSetattrWithOwnerChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithOwnerChangeQueryParameter(filtersSetattrWithOwnerChange)
+// WithFiltersSetattrWithOwnerChange adds the filtersSetattrWithOwnerChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithOwnerChange(filtersSetattrWithOwnerChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithOwnerChange(filtersSetattrWithOwnerChange)
 	return o
 }
 
-// SetFiltersSetattrWithOwnerChangeQueryParameter adds the filtersSetattrWithOwnerChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithOwnerChangeQueryParameter(filtersSetattrWithOwnerChange *bool) {
-	o.FiltersSetattrWithOwnerChangeQueryParameter = filtersSetattrWithOwnerChange
+// SetFiltersSetattrWithOwnerChange adds the filtersSetattrWithOwnerChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithOwnerChange(filtersSetattrWithOwnerChange *bool) {
+	o.FiltersSetattrWithOwnerChange = filtersSetattrWithOwnerChange
 }
 
-// WithFiltersSetattrWithSACLChangeQueryParameter adds the filtersSetattrWithSaclChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithSACLChangeQueryParameter(filtersSetattrWithSaclChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithSACLChangeQueryParameter(filtersSetattrWithSaclChange)
+// WithFiltersSetattrWithSaclChange adds the filtersSetattrWithSaclChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithSaclChange(filtersSetattrWithSaclChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithSaclChange(filtersSetattrWithSaclChange)
 	return o
 }
 
-// SetFiltersSetattrWithSACLChangeQueryParameter adds the filtersSetattrWithSaclChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithSACLChangeQueryParameter(filtersSetattrWithSaclChange *bool) {
-	o.FiltersSetattrWithSACLChangeQueryParameter = filtersSetattrWithSaclChange
+// SetFiltersSetattrWithSaclChange adds the filtersSetattrWithSaclChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithSaclChange(filtersSetattrWithSaclChange *bool) {
+	o.FiltersSetattrWithSaclChange = filtersSetattrWithSaclChange
 }
 
-// WithFiltersSetattrWithSizeChangeQueryParameter adds the filtersSetattrWithSizeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithSizeChangeQueryParameter(filtersSetattrWithSizeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersSetattrWithSizeChangeQueryParameter(filtersSetattrWithSizeChange)
+// WithFiltersSetattrWithSizeChange adds the filtersSetattrWithSizeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersSetattrWithSizeChange(filtersSetattrWithSizeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersSetattrWithSizeChange(filtersSetattrWithSizeChange)
 	return o
 }
 
-// SetFiltersSetattrWithSizeChangeQueryParameter adds the filtersSetattrWithSizeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithSizeChangeQueryParameter(filtersSetattrWithSizeChange *bool) {
-	o.FiltersSetattrWithSizeChangeQueryParameter = filtersSetattrWithSizeChange
+// SetFiltersSetattrWithSizeChange adds the filtersSetattrWithSizeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersSetattrWithSizeChange(filtersSetattrWithSizeChange *bool) {
+	o.FiltersSetattrWithSizeChange = filtersSetattrWithSizeChange
 }
 
-// WithFiltersWriteWithSizeChangeQueryParameter adds the filtersWriteWithSizeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithFiltersWriteWithSizeChangeQueryParameter(filtersWriteWithSizeChange *bool) *FpolicyEventCollectionGetParams {
-	o.SetFiltersWriteWithSizeChangeQueryParameter(filtersWriteWithSizeChange)
+// WithFiltersWriteWithSizeChange adds the filtersWriteWithSizeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersWriteWithSizeChange(filtersWriteWithSizeChange *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersWriteWithSizeChange(filtersWriteWithSizeChange)
 	return o
 }
 
-// SetFiltersWriteWithSizeChangeQueryParameter adds the filtersWriteWithSizeChange to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetFiltersWriteWithSizeChangeQueryParameter(filtersWriteWithSizeChange *bool) {
-	o.FiltersWriteWithSizeChangeQueryParameter = filtersWriteWithSizeChange
+// SetFiltersWriteWithSizeChange adds the filtersWriteWithSizeChange to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersWriteWithSizeChange(filtersWriteWithSizeChange *bool) {
+	o.FiltersWriteWithSizeChange = filtersWriteWithSizeChange
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FpolicyEventCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithMaxRecords(maxRecords *int64) *FpolicyEventCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithNameQueryParameter(name *string) *FpolicyEventCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithName(name *string) *FpolicyEventCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FpolicyEventCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithOrderBy(orderBy []string) *FpolicyEventCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolQueryParameter adds the protocol to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithProtocolQueryParameter(protocol *string) *FpolicyEventCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithProtocol(protocol *string) *FpolicyEventCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyEventCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithReturnRecords(returnRecords *bool) *FpolicyEventCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FpolicyEventCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FpolicyEventCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyEventCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithSvmUUID(svmUUID string) *FpolicyEventCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithVolumeMonitoringQueryParameter adds the volumeMonitoring to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) WithVolumeMonitoringQueryParameter(volumeMonitoring *bool) *FpolicyEventCollectionGetParams {
-	o.SetVolumeMonitoringQueryParameter(volumeMonitoring)
+// WithVolumeMonitoring adds the volumeMonitoring to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithVolumeMonitoring(volumeMonitoring *bool) *FpolicyEventCollectionGetParams {
+	o.SetVolumeMonitoring(volumeMonitoring)
 	return o
 }
 
-// SetVolumeMonitoringQueryParameter adds the volumeMonitoring to the fpolicy event collection get params
-func (o *FpolicyEventCollectionGetParams) SetVolumeMonitoringQueryParameter(volumeMonitoring *bool) {
-	o.VolumeMonitoringQueryParameter = volumeMonitoring
+// SetVolumeMonitoring adds the volumeMonitoring to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetVolumeMonitoring(volumeMonitoring *bool) {
+	o.VolumeMonitoring = volumeMonitoring
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -906,7 +906,7 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -917,13 +917,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsCloseQueryParameter != nil {
+	if o.FileOperationsClose != nil {
 
 		// query param file_operations.close
 		var qrFileOperationsClose bool
 
-		if o.FileOperationsCloseQueryParameter != nil {
-			qrFileOperationsClose = *o.FileOperationsCloseQueryParameter
+		if o.FileOperationsClose != nil {
+			qrFileOperationsClose = *o.FileOperationsClose
 		}
 		qFileOperationsClose := swag.FormatBool(qrFileOperationsClose)
 		if qFileOperationsClose != "" {
@@ -934,13 +934,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsCreateQueryParameter != nil {
+	if o.FileOperationsCreate != nil {
 
 		// query param file_operations.create
 		var qrFileOperationsCreate bool
 
-		if o.FileOperationsCreateQueryParameter != nil {
-			qrFileOperationsCreate = *o.FileOperationsCreateQueryParameter
+		if o.FileOperationsCreate != nil {
+			qrFileOperationsCreate = *o.FileOperationsCreate
 		}
 		qFileOperationsCreate := swag.FormatBool(qrFileOperationsCreate)
 		if qFileOperationsCreate != "" {
@@ -951,13 +951,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsCreateDirQueryParameter != nil {
+	if o.FileOperationsCreateDir != nil {
 
 		// query param file_operations.create_dir
 		var qrFileOperationsCreateDir bool
 
-		if o.FileOperationsCreateDirQueryParameter != nil {
-			qrFileOperationsCreateDir = *o.FileOperationsCreateDirQueryParameter
+		if o.FileOperationsCreateDir != nil {
+			qrFileOperationsCreateDir = *o.FileOperationsCreateDir
 		}
 		qFileOperationsCreateDir := swag.FormatBool(qrFileOperationsCreateDir)
 		if qFileOperationsCreateDir != "" {
@@ -968,13 +968,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsDeleteQueryParameter != nil {
+	if o.FileOperationsDelete != nil {
 
 		// query param file_operations.delete
 		var qrFileOperationsDelete bool
 
-		if o.FileOperationsDeleteQueryParameter != nil {
-			qrFileOperationsDelete = *o.FileOperationsDeleteQueryParameter
+		if o.FileOperationsDelete != nil {
+			qrFileOperationsDelete = *o.FileOperationsDelete
 		}
 		qFileOperationsDelete := swag.FormatBool(qrFileOperationsDelete)
 		if qFileOperationsDelete != "" {
@@ -985,13 +985,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsDeleteDirQueryParameter != nil {
+	if o.FileOperationsDeleteDir != nil {
 
 		// query param file_operations.delete_dir
 		var qrFileOperationsDeleteDir bool
 
-		if o.FileOperationsDeleteDirQueryParameter != nil {
-			qrFileOperationsDeleteDir = *o.FileOperationsDeleteDirQueryParameter
+		if o.FileOperationsDeleteDir != nil {
+			qrFileOperationsDeleteDir = *o.FileOperationsDeleteDir
 		}
 		qFileOperationsDeleteDir := swag.FormatBool(qrFileOperationsDeleteDir)
 		if qFileOperationsDeleteDir != "" {
@@ -1002,13 +1002,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsGetattrQueryParameter != nil {
+	if o.FileOperationsGetattr != nil {
 
 		// query param file_operations.getattr
 		var qrFileOperationsGetattr bool
 
-		if o.FileOperationsGetattrQueryParameter != nil {
-			qrFileOperationsGetattr = *o.FileOperationsGetattrQueryParameter
+		if o.FileOperationsGetattr != nil {
+			qrFileOperationsGetattr = *o.FileOperationsGetattr
 		}
 		qFileOperationsGetattr := swag.FormatBool(qrFileOperationsGetattr)
 		if qFileOperationsGetattr != "" {
@@ -1019,13 +1019,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsLinkQueryParameter != nil {
+	if o.FileOperationsLink != nil {
 
 		// query param file_operations.link
 		var qrFileOperationsLink bool
 
-		if o.FileOperationsLinkQueryParameter != nil {
-			qrFileOperationsLink = *o.FileOperationsLinkQueryParameter
+		if o.FileOperationsLink != nil {
+			qrFileOperationsLink = *o.FileOperationsLink
 		}
 		qFileOperationsLink := swag.FormatBool(qrFileOperationsLink)
 		if qFileOperationsLink != "" {
@@ -1036,13 +1036,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsLookupQueryParameter != nil {
+	if o.FileOperationsLookup != nil {
 
 		// query param file_operations.lookup
 		var qrFileOperationsLookup bool
 
-		if o.FileOperationsLookupQueryParameter != nil {
-			qrFileOperationsLookup = *o.FileOperationsLookupQueryParameter
+		if o.FileOperationsLookup != nil {
+			qrFileOperationsLookup = *o.FileOperationsLookup
 		}
 		qFileOperationsLookup := swag.FormatBool(qrFileOperationsLookup)
 		if qFileOperationsLookup != "" {
@@ -1053,13 +1053,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsOpenQueryParameter != nil {
+	if o.FileOperationsOpen != nil {
 
 		// query param file_operations.open
 		var qrFileOperationsOpen bool
 
-		if o.FileOperationsOpenQueryParameter != nil {
-			qrFileOperationsOpen = *o.FileOperationsOpenQueryParameter
+		if o.FileOperationsOpen != nil {
+			qrFileOperationsOpen = *o.FileOperationsOpen
 		}
 		qFileOperationsOpen := swag.FormatBool(qrFileOperationsOpen)
 		if qFileOperationsOpen != "" {
@@ -1070,13 +1070,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsReadQueryParameter != nil {
+	if o.FileOperationsRead != nil {
 
 		// query param file_operations.read
 		var qrFileOperationsRead bool
 
-		if o.FileOperationsReadQueryParameter != nil {
-			qrFileOperationsRead = *o.FileOperationsReadQueryParameter
+		if o.FileOperationsRead != nil {
+			qrFileOperationsRead = *o.FileOperationsRead
 		}
 		qFileOperationsRead := swag.FormatBool(qrFileOperationsRead)
 		if qFileOperationsRead != "" {
@@ -1087,13 +1087,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsRenameQueryParameter != nil {
+	if o.FileOperationsRename != nil {
 
 		// query param file_operations.rename
 		var qrFileOperationsRename bool
 
-		if o.FileOperationsRenameQueryParameter != nil {
-			qrFileOperationsRename = *o.FileOperationsRenameQueryParameter
+		if o.FileOperationsRename != nil {
+			qrFileOperationsRename = *o.FileOperationsRename
 		}
 		qFileOperationsRename := swag.FormatBool(qrFileOperationsRename)
 		if qFileOperationsRename != "" {
@@ -1104,13 +1104,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsRenameDirQueryParameter != nil {
+	if o.FileOperationsRenameDir != nil {
 
 		// query param file_operations.rename_dir
 		var qrFileOperationsRenameDir bool
 
-		if o.FileOperationsRenameDirQueryParameter != nil {
-			qrFileOperationsRenameDir = *o.FileOperationsRenameDirQueryParameter
+		if o.FileOperationsRenameDir != nil {
+			qrFileOperationsRenameDir = *o.FileOperationsRenameDir
 		}
 		qFileOperationsRenameDir := swag.FormatBool(qrFileOperationsRenameDir)
 		if qFileOperationsRenameDir != "" {
@@ -1121,13 +1121,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsSetattrQueryParameter != nil {
+	if o.FileOperationsSetattr != nil {
 
 		// query param file_operations.setattr
 		var qrFileOperationsSetattr bool
 
-		if o.FileOperationsSetattrQueryParameter != nil {
-			qrFileOperationsSetattr = *o.FileOperationsSetattrQueryParameter
+		if o.FileOperationsSetattr != nil {
+			qrFileOperationsSetattr = *o.FileOperationsSetattr
 		}
 		qFileOperationsSetattr := swag.FormatBool(qrFileOperationsSetattr)
 		if qFileOperationsSetattr != "" {
@@ -1138,13 +1138,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsSymlinkQueryParameter != nil {
+	if o.FileOperationsSymlink != nil {
 
 		// query param file_operations.symlink
 		var qrFileOperationsSymlink bool
 
-		if o.FileOperationsSymlinkQueryParameter != nil {
-			qrFileOperationsSymlink = *o.FileOperationsSymlinkQueryParameter
+		if o.FileOperationsSymlink != nil {
+			qrFileOperationsSymlink = *o.FileOperationsSymlink
 		}
 		qFileOperationsSymlink := swag.FormatBool(qrFileOperationsSymlink)
 		if qFileOperationsSymlink != "" {
@@ -1155,13 +1155,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FileOperationsWriteQueryParameter != nil {
+	if o.FileOperationsWrite != nil {
 
 		// query param file_operations.write
 		var qrFileOperationsWrite bool
 
-		if o.FileOperationsWriteQueryParameter != nil {
-			qrFileOperationsWrite = *o.FileOperationsWriteQueryParameter
+		if o.FileOperationsWrite != nil {
+			qrFileOperationsWrite = *o.FileOperationsWrite
 		}
 		qFileOperationsWrite := swag.FormatBool(qrFileOperationsWrite)
 		if qFileOperationsWrite != "" {
@@ -1172,13 +1172,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersCloseWithModificationQueryParameter != nil {
+	if o.FiltersCloseWithModification != nil {
 
 		// query param filters.close_with_modification
 		var qrFiltersCloseWithModification bool
 
-		if o.FiltersCloseWithModificationQueryParameter != nil {
-			qrFiltersCloseWithModification = *o.FiltersCloseWithModificationQueryParameter
+		if o.FiltersCloseWithModification != nil {
+			qrFiltersCloseWithModification = *o.FiltersCloseWithModification
 		}
 		qFiltersCloseWithModification := swag.FormatBool(qrFiltersCloseWithModification)
 		if qFiltersCloseWithModification != "" {
@@ -1189,13 +1189,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersCloseWithReadQueryParameter != nil {
+	if o.FiltersCloseWithRead != nil {
 
 		// query param filters.close_with_read
 		var qrFiltersCloseWithRead bool
 
-		if o.FiltersCloseWithReadQueryParameter != nil {
-			qrFiltersCloseWithRead = *o.FiltersCloseWithReadQueryParameter
+		if o.FiltersCloseWithRead != nil {
+			qrFiltersCloseWithRead = *o.FiltersCloseWithRead
 		}
 		qFiltersCloseWithRead := swag.FormatBool(qrFiltersCloseWithRead)
 		if qFiltersCloseWithRead != "" {
@@ -1206,13 +1206,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersCloseWithoutModificationQueryParameter != nil {
+	if o.FiltersCloseWithoutModification != nil {
 
 		// query param filters.close_without_modification
 		var qrFiltersCloseWithoutModification bool
 
-		if o.FiltersCloseWithoutModificationQueryParameter != nil {
-			qrFiltersCloseWithoutModification = *o.FiltersCloseWithoutModificationQueryParameter
+		if o.FiltersCloseWithoutModification != nil {
+			qrFiltersCloseWithoutModification = *o.FiltersCloseWithoutModification
 		}
 		qFiltersCloseWithoutModification := swag.FormatBool(qrFiltersCloseWithoutModification)
 		if qFiltersCloseWithoutModification != "" {
@@ -1223,13 +1223,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersExcludeDirectoryQueryParameter != nil {
+	if o.FiltersExcludeDirectory != nil {
 
 		// query param filters.exclude_directory
 		var qrFiltersExcludeDirectory bool
 
-		if o.FiltersExcludeDirectoryQueryParameter != nil {
-			qrFiltersExcludeDirectory = *o.FiltersExcludeDirectoryQueryParameter
+		if o.FiltersExcludeDirectory != nil {
+			qrFiltersExcludeDirectory = *o.FiltersExcludeDirectory
 		}
 		qFiltersExcludeDirectory := swag.FormatBool(qrFiltersExcludeDirectory)
 		if qFiltersExcludeDirectory != "" {
@@ -1240,13 +1240,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersFirstReadQueryParameter != nil {
+	if o.FiltersFirstRead != nil {
 
 		// query param filters.first_read
 		var qrFiltersFirstRead bool
 
-		if o.FiltersFirstReadQueryParameter != nil {
-			qrFiltersFirstRead = *o.FiltersFirstReadQueryParameter
+		if o.FiltersFirstRead != nil {
+			qrFiltersFirstRead = *o.FiltersFirstRead
 		}
 		qFiltersFirstRead := swag.FormatBool(qrFiltersFirstRead)
 		if qFiltersFirstRead != "" {
@@ -1257,13 +1257,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersFirstWriteQueryParameter != nil {
+	if o.FiltersFirstWrite != nil {
 
 		// query param filters.first_write
 		var qrFiltersFirstWrite bool
 
-		if o.FiltersFirstWriteQueryParameter != nil {
-			qrFiltersFirstWrite = *o.FiltersFirstWriteQueryParameter
+		if o.FiltersFirstWrite != nil {
+			qrFiltersFirstWrite = *o.FiltersFirstWrite
 		}
 		qFiltersFirstWrite := swag.FormatBool(qrFiltersFirstWrite)
 		if qFiltersFirstWrite != "" {
@@ -1274,13 +1274,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersMonitorAdsQueryParameter != nil {
+	if o.FiltersMonitorAds != nil {
 
 		// query param filters.monitor_ads
 		var qrFiltersMonitorAds bool
 
-		if o.FiltersMonitorAdsQueryParameter != nil {
-			qrFiltersMonitorAds = *o.FiltersMonitorAdsQueryParameter
+		if o.FiltersMonitorAds != nil {
+			qrFiltersMonitorAds = *o.FiltersMonitorAds
 		}
 		qFiltersMonitorAds := swag.FormatBool(qrFiltersMonitorAds)
 		if qFiltersMonitorAds != "" {
@@ -1291,13 +1291,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersOfflineBitQueryParameter != nil {
+	if o.FiltersOfflineBit != nil {
 
 		// query param filters.offline_bit
 		var qrFiltersOfflineBit bool
 
-		if o.FiltersOfflineBitQueryParameter != nil {
-			qrFiltersOfflineBit = *o.FiltersOfflineBitQueryParameter
+		if o.FiltersOfflineBit != nil {
+			qrFiltersOfflineBit = *o.FiltersOfflineBit
 		}
 		qFiltersOfflineBit := swag.FormatBool(qrFiltersOfflineBit)
 		if qFiltersOfflineBit != "" {
@@ -1308,13 +1308,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersOpenWithDeleteIntentQueryParameter != nil {
+	if o.FiltersOpenWithDeleteIntent != nil {
 
 		// query param filters.open_with_delete_intent
 		var qrFiltersOpenWithDeleteIntent bool
 
-		if o.FiltersOpenWithDeleteIntentQueryParameter != nil {
-			qrFiltersOpenWithDeleteIntent = *o.FiltersOpenWithDeleteIntentQueryParameter
+		if o.FiltersOpenWithDeleteIntent != nil {
+			qrFiltersOpenWithDeleteIntent = *o.FiltersOpenWithDeleteIntent
 		}
 		qFiltersOpenWithDeleteIntent := swag.FormatBool(qrFiltersOpenWithDeleteIntent)
 		if qFiltersOpenWithDeleteIntent != "" {
@@ -1325,13 +1325,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersOpenWithWriteIntentQueryParameter != nil {
+	if o.FiltersOpenWithWriteIntent != nil {
 
 		// query param filters.open_with_write_intent
 		var qrFiltersOpenWithWriteIntent bool
 
-		if o.FiltersOpenWithWriteIntentQueryParameter != nil {
-			qrFiltersOpenWithWriteIntent = *o.FiltersOpenWithWriteIntentQueryParameter
+		if o.FiltersOpenWithWriteIntent != nil {
+			qrFiltersOpenWithWriteIntent = *o.FiltersOpenWithWriteIntent
 		}
 		qFiltersOpenWithWriteIntent := swag.FormatBool(qrFiltersOpenWithWriteIntent)
 		if qFiltersOpenWithWriteIntent != "" {
@@ -1342,13 +1342,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithAccessTimeChangeQueryParameter != nil {
+	if o.FiltersSetattrWithAccessTimeChange != nil {
 
 		// query param filters.setattr_with_access_time_change
 		var qrFiltersSetattrWithAccessTimeChange bool
 
-		if o.FiltersSetattrWithAccessTimeChangeQueryParameter != nil {
-			qrFiltersSetattrWithAccessTimeChange = *o.FiltersSetattrWithAccessTimeChangeQueryParameter
+		if o.FiltersSetattrWithAccessTimeChange != nil {
+			qrFiltersSetattrWithAccessTimeChange = *o.FiltersSetattrWithAccessTimeChange
 		}
 		qFiltersSetattrWithAccessTimeChange := swag.FormatBool(qrFiltersSetattrWithAccessTimeChange)
 		if qFiltersSetattrWithAccessTimeChange != "" {
@@ -1359,13 +1359,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithAllocationSizeChangeQueryParameter != nil {
+	if o.FiltersSetattrWithAllocationSizeChange != nil {
 
 		// query param filters.setattr_with_allocation_size_change
 		var qrFiltersSetattrWithAllocationSizeChange bool
 
-		if o.FiltersSetattrWithAllocationSizeChangeQueryParameter != nil {
-			qrFiltersSetattrWithAllocationSizeChange = *o.FiltersSetattrWithAllocationSizeChangeQueryParameter
+		if o.FiltersSetattrWithAllocationSizeChange != nil {
+			qrFiltersSetattrWithAllocationSizeChange = *o.FiltersSetattrWithAllocationSizeChange
 		}
 		qFiltersSetattrWithAllocationSizeChange := swag.FormatBool(qrFiltersSetattrWithAllocationSizeChange)
 		if qFiltersSetattrWithAllocationSizeChange != "" {
@@ -1376,13 +1376,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithCreationTimeChangeQueryParameter != nil {
+	if o.FiltersSetattrWithCreationTimeChange != nil {
 
 		// query param filters.setattr_with_creation_time_change
 		var qrFiltersSetattrWithCreationTimeChange bool
 
-		if o.FiltersSetattrWithCreationTimeChangeQueryParameter != nil {
-			qrFiltersSetattrWithCreationTimeChange = *o.FiltersSetattrWithCreationTimeChangeQueryParameter
+		if o.FiltersSetattrWithCreationTimeChange != nil {
+			qrFiltersSetattrWithCreationTimeChange = *o.FiltersSetattrWithCreationTimeChange
 		}
 		qFiltersSetattrWithCreationTimeChange := swag.FormatBool(qrFiltersSetattrWithCreationTimeChange)
 		if qFiltersSetattrWithCreationTimeChange != "" {
@@ -1393,13 +1393,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithDACLChangeQueryParameter != nil {
+	if o.FiltersSetattrWithDaclChange != nil {
 
 		// query param filters.setattr_with_dacl_change
 		var qrFiltersSetattrWithDaclChange bool
 
-		if o.FiltersSetattrWithDACLChangeQueryParameter != nil {
-			qrFiltersSetattrWithDaclChange = *o.FiltersSetattrWithDACLChangeQueryParameter
+		if o.FiltersSetattrWithDaclChange != nil {
+			qrFiltersSetattrWithDaclChange = *o.FiltersSetattrWithDaclChange
 		}
 		qFiltersSetattrWithDaclChange := swag.FormatBool(qrFiltersSetattrWithDaclChange)
 		if qFiltersSetattrWithDaclChange != "" {
@@ -1410,13 +1410,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithGroupChangeQueryParameter != nil {
+	if o.FiltersSetattrWithGroupChange != nil {
 
 		// query param filters.setattr_with_group_change
 		var qrFiltersSetattrWithGroupChange bool
 
-		if o.FiltersSetattrWithGroupChangeQueryParameter != nil {
-			qrFiltersSetattrWithGroupChange = *o.FiltersSetattrWithGroupChangeQueryParameter
+		if o.FiltersSetattrWithGroupChange != nil {
+			qrFiltersSetattrWithGroupChange = *o.FiltersSetattrWithGroupChange
 		}
 		qFiltersSetattrWithGroupChange := swag.FormatBool(qrFiltersSetattrWithGroupChange)
 		if qFiltersSetattrWithGroupChange != "" {
@@ -1427,13 +1427,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithModeChangeQueryParameter != nil {
+	if o.FiltersSetattrWithModeChange != nil {
 
 		// query param filters.setattr_with_mode_change
 		var qrFiltersSetattrWithModeChange bool
 
-		if o.FiltersSetattrWithModeChangeQueryParameter != nil {
-			qrFiltersSetattrWithModeChange = *o.FiltersSetattrWithModeChangeQueryParameter
+		if o.FiltersSetattrWithModeChange != nil {
+			qrFiltersSetattrWithModeChange = *o.FiltersSetattrWithModeChange
 		}
 		qFiltersSetattrWithModeChange := swag.FormatBool(qrFiltersSetattrWithModeChange)
 		if qFiltersSetattrWithModeChange != "" {
@@ -1444,13 +1444,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithModifyTimeChangeQueryParameter != nil {
+	if o.FiltersSetattrWithModifyTimeChange != nil {
 
 		// query param filters.setattr_with_modify_time_change
 		var qrFiltersSetattrWithModifyTimeChange bool
 
-		if o.FiltersSetattrWithModifyTimeChangeQueryParameter != nil {
-			qrFiltersSetattrWithModifyTimeChange = *o.FiltersSetattrWithModifyTimeChangeQueryParameter
+		if o.FiltersSetattrWithModifyTimeChange != nil {
+			qrFiltersSetattrWithModifyTimeChange = *o.FiltersSetattrWithModifyTimeChange
 		}
 		qFiltersSetattrWithModifyTimeChange := swag.FormatBool(qrFiltersSetattrWithModifyTimeChange)
 		if qFiltersSetattrWithModifyTimeChange != "" {
@@ -1461,13 +1461,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithOwnerChangeQueryParameter != nil {
+	if o.FiltersSetattrWithOwnerChange != nil {
 
 		// query param filters.setattr_with_owner_change
 		var qrFiltersSetattrWithOwnerChange bool
 
-		if o.FiltersSetattrWithOwnerChangeQueryParameter != nil {
-			qrFiltersSetattrWithOwnerChange = *o.FiltersSetattrWithOwnerChangeQueryParameter
+		if o.FiltersSetattrWithOwnerChange != nil {
+			qrFiltersSetattrWithOwnerChange = *o.FiltersSetattrWithOwnerChange
 		}
 		qFiltersSetattrWithOwnerChange := swag.FormatBool(qrFiltersSetattrWithOwnerChange)
 		if qFiltersSetattrWithOwnerChange != "" {
@@ -1478,13 +1478,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithSACLChangeQueryParameter != nil {
+	if o.FiltersSetattrWithSaclChange != nil {
 
 		// query param filters.setattr_with_sacl_change
 		var qrFiltersSetattrWithSaclChange bool
 
-		if o.FiltersSetattrWithSACLChangeQueryParameter != nil {
-			qrFiltersSetattrWithSaclChange = *o.FiltersSetattrWithSACLChangeQueryParameter
+		if o.FiltersSetattrWithSaclChange != nil {
+			qrFiltersSetattrWithSaclChange = *o.FiltersSetattrWithSaclChange
 		}
 		qFiltersSetattrWithSaclChange := swag.FormatBool(qrFiltersSetattrWithSaclChange)
 		if qFiltersSetattrWithSaclChange != "" {
@@ -1495,13 +1495,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersSetattrWithSizeChangeQueryParameter != nil {
+	if o.FiltersSetattrWithSizeChange != nil {
 
 		// query param filters.setattr_with_size_change
 		var qrFiltersSetattrWithSizeChange bool
 
-		if o.FiltersSetattrWithSizeChangeQueryParameter != nil {
-			qrFiltersSetattrWithSizeChange = *o.FiltersSetattrWithSizeChangeQueryParameter
+		if o.FiltersSetattrWithSizeChange != nil {
+			qrFiltersSetattrWithSizeChange = *o.FiltersSetattrWithSizeChange
 		}
 		qFiltersSetattrWithSizeChange := swag.FormatBool(qrFiltersSetattrWithSizeChange)
 		if qFiltersSetattrWithSizeChange != "" {
@@ -1512,13 +1512,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FiltersWriteWithSizeChangeQueryParameter != nil {
+	if o.FiltersWriteWithSizeChange != nil {
 
 		// query param filters.write_with_size_change
 		var qrFiltersWriteWithSizeChange bool
 
-		if o.FiltersWriteWithSizeChangeQueryParameter != nil {
-			qrFiltersWriteWithSizeChange = *o.FiltersWriteWithSizeChangeQueryParameter
+		if o.FiltersWriteWithSizeChange != nil {
+			qrFiltersWriteWithSizeChange = *o.FiltersWriteWithSizeChange
 		}
 		qFiltersWriteWithSizeChange := swag.FormatBool(qrFiltersWriteWithSizeChange)
 		if qFiltersWriteWithSizeChange != "" {
@@ -1529,13 +1529,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1546,13 +1546,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1563,7 +1563,7 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1574,13 +1574,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -1591,13 +1591,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1608,13 +1608,13 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1626,17 +1626,17 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.VolumeMonitoringQueryParameter != nil {
+	if o.VolumeMonitoring != nil {
 
 		// query param volume_monitoring
 		var qrVolumeMonitoring bool
 
-		if o.VolumeMonitoringQueryParameter != nil {
-			qrVolumeMonitoring = *o.VolumeMonitoringQueryParameter
+		if o.VolumeMonitoring != nil {
+			qrVolumeMonitoring = *o.VolumeMonitoring
 		}
 		qVolumeMonitoring := swag.FormatBool(qrVolumeMonitoring)
 		if qVolumeMonitoring != "" {
@@ -1655,7 +1655,7 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamFpolicyEventCollectionGet binds the parameter fields
 func (o *FpolicyEventCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1672,7 +1672,7 @@ func (o *FpolicyEventCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamFpolicyEventCollectionGet binds the parameter order_by
 func (o *FpolicyEventCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

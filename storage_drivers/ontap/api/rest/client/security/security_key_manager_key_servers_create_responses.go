@@ -52,6 +52,11 @@ SecurityKeyManagerKeyServersCreateCreated describes a response with status code 
 Created
 */
 type SecurityKeyManagerKeyServersCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.KeyServerResponse
 }
 
@@ -93,6 +98,13 @@ func (o *SecurityKeyManagerKeyServersCreateCreated) GetPayload() *models.KeyServ
 }
 
 func (o *SecurityKeyManagerKeyServersCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.KeyServerResponse)
 

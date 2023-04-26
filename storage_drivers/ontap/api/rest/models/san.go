@@ -21,43 +21,31 @@ import (
 // swagger:model san
 type San struct {
 
-	// application components
+	// The name of the host OS running the application.
+	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	OsType *string `json:"os_type,omitempty"`
+
+	// protection type
+	ProtectionType *SanInlineProtectionType `json:"protection_type,omitempty"`
+
+	// san inline application components
 	// Required: true
 	// Max Items: 10
 	// Min Items: 1
-	ApplicationComponents []*SanApplicationComponentsItems0 `json:"application_components"`
+	SanInlineApplicationComponents []*SanInlineApplicationComponentsInlineArrayItem `json:"application_components"`
 
-	// exclude aggregates
-	ExcludeAggregates []*SanExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+	// san inline exclude aggregates
+	SanInlineExcludeAggregates []*SanInlineExcludeAggregatesInlineArrayItem `json:"exclude_aggregates,omitempty"`
 
 	// The list of initiator groups to create.
 	// Max Items: 10
 	// Min Items: 0
-	NewIgroups []*SanNewIgroups `json:"new_igroups,omitempty"`
-
-	// The name of the host OS running the application.
-	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
-	OsType string `json:"os_type,omitempty"`
-
-	// protection type
-	ProtectionType *SanProtectionType `json:"protection_type,omitempty"`
+	SanInlineNewIgroups []*SanNewIgroups `json:"new_igroups,omitempty"`
 }
 
 // Validate validates this san
 func (m *San) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateApplicationComponents(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateExcludeAggregates(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateNewIgroups(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
@@ -67,102 +55,21 @@ func (m *San) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSanInlineApplicationComponents(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSanInlineExcludeAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSanInlineNewIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *San) validateApplicationComponents(formats strfmt.Registry) error {
-
-	if err := validate.Required("application_components", "body", m.ApplicationComponents); err != nil {
-		return err
-	}
-
-	iApplicationComponentsSize := int64(len(m.ApplicationComponents))
-
-	if err := validate.MinItems("application_components", "body", iApplicationComponentsSize, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("application_components", "body", iApplicationComponentsSize, 10); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.ApplicationComponents); i++ {
-		if swag.IsZero(m.ApplicationComponents[i]) { // not required
-			continue
-		}
-
-		if m.ApplicationComponents[i] != nil {
-			if err := m.ApplicationComponents[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *San) validateExcludeAggregates(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExcludeAggregates) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ExcludeAggregates); i++ {
-		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
-			continue
-		}
-
-		if m.ExcludeAggregates[i] != nil {
-			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *San) validateNewIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.NewIgroups) { // not required
-		return nil
-	}
-
-	iNewIgroupsSize := int64(len(m.NewIgroups))
-
-	if err := validate.MinItems("new_igroups", "body", iNewIgroupsSize, 0); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("new_igroups", "body", iNewIgroupsSize, 10); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.NewIgroups); i++ {
-		if swag.IsZero(m.NewIgroups[i]) { // not required
-			continue
-		}
-
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -325,7 +232,7 @@ func (m *San) validateOsType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -349,38 +256,29 @@ func (m *San) validateProtectionType(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this san based on the context it is used
-func (m *San) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
+func (m *San) validateSanInlineApplicationComponents(formats strfmt.Registry) error {
 
-	if err := m.contextValidateApplicationComponents(ctx, formats); err != nil {
-		res = append(res, err)
+	if err := validate.Required("application_components", "body", m.SanInlineApplicationComponents); err != nil {
+		return err
 	}
 
-	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
-		res = append(res, err)
+	iSanInlineApplicationComponentsSize := int64(len(m.SanInlineApplicationComponents))
+
+	if err := validate.MinItems("application_components", "body", iSanInlineApplicationComponentsSize, 1); err != nil {
+		return err
 	}
 
-	if err := m.contextValidateNewIgroups(ctx, formats); err != nil {
-		res = append(res, err)
+	if err := validate.MaxItems("application_components", "body", iSanInlineApplicationComponentsSize, 10); err != nil {
+		return err
 	}
 
-	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
-		res = append(res, err)
-	}
+	for i := 0; i < len(m.SanInlineApplicationComponents); i++ {
+		if swag.IsZero(m.SanInlineApplicationComponents[i]) { // not required
+			continue
+		}
 
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *San) contextValidateApplicationComponents(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.ApplicationComponents); i++ {
-
-		if m.ApplicationComponents[i] != nil {
-			if err := m.ApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
+		if m.SanInlineApplicationComponents[i] != nil {
+			if err := m.SanInlineApplicationComponents[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
 				}
@@ -393,12 +291,18 @@ func (m *San) contextValidateApplicationComponents(ctx context.Context, formats 
 	return nil
 }
 
-func (m *San) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+func (m *San) validateSanInlineExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.SanInlineExcludeAggregates) { // not required
+		return nil
+	}
 
-	for i := 0; i < len(m.ExcludeAggregates); i++ {
+	for i := 0; i < len(m.SanInlineExcludeAggregates); i++ {
+		if swag.IsZero(m.SanInlineExcludeAggregates[i]) { // not required
+			continue
+		}
 
-		if m.ExcludeAggregates[i] != nil {
-			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+		if m.SanInlineExcludeAggregates[i] != nil {
+			if err := m.SanInlineExcludeAggregates[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
 				}
@@ -411,12 +315,28 @@ func (m *San) contextValidateExcludeAggregates(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *San) contextValidateNewIgroups(ctx context.Context, formats strfmt.Registry) error {
+func (m *San) validateSanInlineNewIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.SanInlineNewIgroups) { // not required
+		return nil
+	}
 
-	for i := 0; i < len(m.NewIgroups); i++ {
+	iSanInlineNewIgroupsSize := int64(len(m.SanInlineNewIgroups))
 
-		if m.NewIgroups[i] != nil {
-			if err := m.NewIgroups[i].ContextValidate(ctx, formats); err != nil {
+	if err := validate.MinItems("new_igroups", "body", iSanInlineNewIgroupsSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("new_igroups", "body", iSanInlineNewIgroupsSize, 10); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.SanInlineNewIgroups); i++ {
+		if swag.IsZero(m.SanInlineNewIgroups[i]) { // not required
+			continue
+		}
+
+		if m.SanInlineNewIgroups[i] != nil {
+			if err := m.SanInlineNewIgroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
 				}
@@ -429,6 +349,32 @@ func (m *San) contextValidateNewIgroups(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
+// ContextValidate validate this san based on the context it is used
+func (m *San) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateProtectionType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSanInlineApplicationComponents(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSanInlineExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSanInlineNewIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
 func (m *San) contextValidateProtectionType(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ProtectionType != nil {
@@ -438,6 +384,60 @@ func (m *San) contextValidateProtectionType(ctx context.Context, formats strfmt.
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *San) contextValidateSanInlineApplicationComponents(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SanInlineApplicationComponents); i++ {
+
+		if m.SanInlineApplicationComponents[i] != nil {
+			if err := m.SanInlineApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *San) contextValidateSanInlineExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SanInlineExcludeAggregates); i++ {
+
+		if m.SanInlineExcludeAggregates[i] != nil {
+			if err := m.SanInlineExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *San) contextValidateSanInlineNewIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SanInlineNewIgroups); i++ {
+
+		if m.SanInlineNewIgroups[i] != nil {
+			if err := m.SanInlineNewIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("new_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -461,20 +461,20 @@ func (m *San) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SanApplicationComponentsItems0 san application components items0
+// SanInlineApplicationComponentsInlineArrayItem san inline application components inline array item
 //
-// swagger:model SanApplicationComponentsItems0
-type SanApplicationComponentsItems0 struct {
+// swagger:model san_inline_application_components_inline_array_item
+type SanInlineApplicationComponentsInlineArrayItem struct {
 
 	// The name of the initiator group through which the contents of this application will be accessed. Modification of this parameter is a disruptive operation. All LUNs in the application component will be unmapped from the current igroup and re-mapped to the new igroup.
 	// Max Length: 96
 	// Min Length: 1
-	IgroupName string `json:"igroup_name,omitempty"`
+	IgroupName *string `json:"igroup_name,omitempty"`
 
 	// The number of LUNs in the application component.
 	// Maximum: 32
 	// Minimum: 1
-	LunCount int64 `json:"lun_count,omitempty"`
+	LunCount *int64 `json:"lun_count,omitempty"`
 
 	// The name of the application component.
 	// Required: true
@@ -484,23 +484,23 @@ type SanApplicationComponentsItems0 struct {
 
 	// The name of the host OS running the application.
 	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// qos
-	Qos *SanApplicationComponentsItems0Qos `json:"qos,omitempty"`
+	Qos *SanInlineApplicationComponentsInlineArrayItemInlineQos `json:"qos,omitempty"`
 
 	// storage service
-	StorageService *SanApplicationComponentsItems0StorageService `json:"storage_service,omitempty"`
+	StorageService *SanInlineApplicationComponentsInlineArrayItemInlineStorageService `json:"storage_service,omitempty"`
 
 	// tiering
 	Tiering *SanApplicationComponentsTiering `json:"tiering,omitempty"`
 
 	// The total size of the application component, split across the member LUNs. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	TotalSize int64 `json:"total_size,omitempty"`
+	TotalSize *int64 `json:"total_size,omitempty"`
 }
 
-// Validate validates this san application components items0
-func (m *SanApplicationComponentsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this san inline application components inline array item
+func (m *SanInlineApplicationComponentsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIgroupName(formats); err != nil {
@@ -537,39 +537,39 @@ func (m *SanApplicationComponentsItems0) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateIgroupName(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateIgroupName(formats strfmt.Registry) error {
 	if swag.IsZero(m.IgroupName) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("igroup_name", "body", m.IgroupName, 1); err != nil {
+	if err := validate.MinLength("igroup_name", "body", *m.IgroupName, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("igroup_name", "body", m.IgroupName, 96); err != nil {
+	if err := validate.MaxLength("igroup_name", "body", *m.IgroupName, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateLunCount(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateLunCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.LunCount) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("lun_count", "body", m.LunCount, 1, false); err != nil {
+	if err := validate.MinimumInt("lun_count", "body", *m.LunCount, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("lun_count", "body", m.LunCount, 32, false); err != nil {
+	if err := validate.MaximumInt("lun_count", "body", *m.LunCount, 32, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateName(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -586,7 +586,7 @@ func (m *SanApplicationComponentsItems0) validateName(formats strfmt.Registry) e
 	return nil
 }
 
-var sanApplicationComponentsItems0TypeOsTypePropEnum []interface{}
+var sanInlineApplicationComponentsInlineArrayItemTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -594,165 +594,165 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sanApplicationComponentsItems0TypeOsTypePropEnum = append(sanApplicationComponentsItems0TypeOsTypePropEnum, v)
+		sanInlineApplicationComponentsInlineArrayItemTypeOsTypePropEnum = append(sanInlineApplicationComponentsInlineArrayItemTypeOsTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// aix
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeAix captures enum value "aix"
-	SanApplicationComponentsItems0OsTypeAix string = "aix"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeAix captures enum value "aix"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// hpux
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeHpux captures enum value "hpux"
-	SanApplicationComponentsItems0OsTypeHpux string = "hpux"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeHpux captures enum value "hpux"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeHpux string = "hpux"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// hyper_v
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeHyperv captures enum value "hyper_v"
-	SanApplicationComponentsItems0OsTypeHyperv string = "hyper_v"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeHyperv captures enum value "hyper_v"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeHyperv string = "hyper_v"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// linux
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeLinux captures enum value "linux"
-	SanApplicationComponentsItems0OsTypeLinux string = "linux"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeLinux captures enum value "linux"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeLinux string = "linux"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// netware
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeNetware captures enum value "netware"
-	SanApplicationComponentsItems0OsTypeNetware string = "netware"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeNetware captures enum value "netware"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeNetware string = "netware"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// openvms
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeOpenvms captures enum value "openvms"
-	SanApplicationComponentsItems0OsTypeOpenvms string = "openvms"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeOpenvms captures enum value "openvms"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeOpenvms string = "openvms"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// solaris
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeSolaris captures enum value "solaris"
-	SanApplicationComponentsItems0OsTypeSolaris string = "solaris"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeSolaris captures enum value "solaris"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeSolaris string = "solaris"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// solaris_efi
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeSolarisEfi captures enum value "solaris_efi"
-	SanApplicationComponentsItems0OsTypeSolarisEfi string = "solaris_efi"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeSolarisEfi captures enum value "solaris_efi"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeSolarisEfi string = "solaris_efi"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// vmware
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeVmware captures enum value "vmware"
-	SanApplicationComponentsItems0OsTypeVmware string = "vmware"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeVmware captures enum value "vmware"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeVmware string = "vmware"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// windows
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeWindows captures enum value "windows"
-	SanApplicationComponentsItems0OsTypeWindows string = "windows"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeWindows captures enum value "windows"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeWindows string = "windows"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// windows_2008
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeWindows2008 captures enum value "windows_2008"
-	SanApplicationComponentsItems0OsTypeWindows2008 string = "windows_2008"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeWindows2008 captures enum value "windows_2008"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeWindows2008 string = "windows_2008"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// windows_gpt
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeWindowsGpt captures enum value "windows_gpt"
-	SanApplicationComponentsItems0OsTypeWindowsGpt string = "windows_gpt"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeWindowsGpt captures enum value "windows_gpt"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeWindowsGpt string = "windows_gpt"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0
-	// SanApplicationComponentsItems0
+	// san_inline_application_components_inline_array_item
+	// SanInlineApplicationComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// xen
 	// END DEBUGGING
-	// SanApplicationComponentsItems0OsTypeXen captures enum value "xen"
-	SanApplicationComponentsItems0OsTypeXen string = "xen"
+	// SanInlineApplicationComponentsInlineArrayItemOsTypeXen captures enum value "xen"
+	SanInlineApplicationComponentsInlineArrayItemOsTypeXen string = "xen"
 )
 
 // prop value enum
-func (m *SanApplicationComponentsItems0) validateOsTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sanApplicationComponentsItems0TypeOsTypePropEnum, true); err != nil {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sanInlineApplicationComponentsInlineArrayItemTypeOsTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateOsType(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateOsType(formats strfmt.Registry) error {
 	if swag.IsZero(m.OsType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateQos(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateQos(formats strfmt.Registry) error {
 	if swag.IsZero(m.Qos) { // not required
 		return nil
 	}
@@ -769,7 +769,7 @@ func (m *SanApplicationComponentsItems0) validateQos(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateStorageService(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -786,7 +786,7 @@ func (m *SanApplicationComponentsItems0) validateStorageService(formats strfmt.R
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateTiering(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) validateTiering(formats strfmt.Registry) error {
 	if swag.IsZero(m.Tiering) { // not required
 		return nil
 	}
@@ -803,8 +803,8 @@ func (m *SanApplicationComponentsItems0) validateTiering(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this san application components items0 based on the context it is used
-func (m *SanApplicationComponentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this san inline application components inline array item based on the context it is used
+func (m *SanInlineApplicationComponentsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateQos(ctx, formats); err != nil {
@@ -825,7 +825,7 @@ func (m *SanApplicationComponentsItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Qos != nil {
 		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
@@ -839,7 +839,7 @@ func (m *SanApplicationComponentsItems0) contextValidateQos(ctx context.Context,
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -853,7 +853,7 @@ func (m *SanApplicationComponentsItems0) contextValidateStorageService(ctx conte
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItem) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Tiering != nil {
 		if err := m.Tiering.ContextValidate(ctx, formats); err != nil {
@@ -868,7 +868,7 @@ func (m *SanApplicationComponentsItems0) contextValidateTiering(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0) MarshalBinary() ([]byte, error) {
+func (m *SanInlineApplicationComponentsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -876,8 +876,8 @@ func (m *SanApplicationComponentsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0) UnmarshalBinary(b []byte) error {
-	var res SanApplicationComponentsItems0
+func (m *SanInlineApplicationComponentsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SanInlineApplicationComponentsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -885,17 +885,17 @@ func (m *SanApplicationComponentsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SanApplicationComponentsItems0Qos san application components items0 qos
+// SanInlineApplicationComponentsInlineArrayItemInlineQos san inline application components inline array item inline qos
 //
-// swagger:model SanApplicationComponentsItems0Qos
-type SanApplicationComponentsItems0Qos struct {
+// swagger:model san_inline_application_components_inline_array_item_inline_qos
+type SanInlineApplicationComponentsInlineArrayItemInlineQos struct {
 
 	// policy
-	Policy *SanApplicationComponentsItems0QosPolicy `json:"policy,omitempty"`
+	Policy *SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy `json:"policy,omitempty"`
 }
 
-// Validate validates this san application components items0 qos
-func (m *SanApplicationComponentsItems0Qos) Validate(formats strfmt.Registry) error {
+// Validate validates this san inline application components inline array item inline qos
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQos) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePolicy(formats); err != nil {
@@ -908,7 +908,7 @@ func (m *SanApplicationComponentsItems0Qos) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0Qos) validatePolicy(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQos) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
@@ -925,8 +925,8 @@ func (m *SanApplicationComponentsItems0Qos) validatePolicy(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this san application components items0 qos based on the context it is used
-func (m *SanApplicationComponentsItems0Qos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this san inline application components inline array item inline qos based on the context it is used
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
@@ -939,7 +939,7 @@ func (m *SanApplicationComponentsItems0Qos) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0Qos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
 		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
@@ -954,7 +954,7 @@ func (m *SanApplicationComponentsItems0Qos) contextValidatePolicy(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0Qos) MarshalBinary() ([]byte, error) {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQos) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -962,8 +962,8 @@ func (m *SanApplicationComponentsItems0Qos) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0Qos) UnmarshalBinary(b []byte) error {
-	var res SanApplicationComponentsItems0Qos
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQos) UnmarshalBinary(b []byte) error {
+	var res SanInlineApplicationComponentsInlineArrayItemInlineQos
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -971,30 +971,30 @@ func (m *SanApplicationComponentsItems0Qos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SanApplicationComponentsItems0QosPolicy san application components items0 qos policy
+// SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy san inline application components inline array item inline qos inline policy
 //
-// swagger:model SanApplicationComponentsItems0QosPolicy
-type SanApplicationComponentsItems0QosPolicy struct {
+// swagger:model san_inline_application_components_inline_array_item_inline_qos_inline_policy
+type SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy struct {
 
 	// The name of an existing QoS policy.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this san application components items0 qos policy
-func (m *SanApplicationComponentsItems0QosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this san inline application components inline array item inline qos inline policy
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this san application components items0 qos policy based on context it is used
-func (m *SanApplicationComponentsItems0QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this san inline application components inline array item inline qos inline policy based on context it is used
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1002,8 +1002,8 @@ func (m *SanApplicationComponentsItems0QosPolicy) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
-	var res SanApplicationComponentsItems0QosPolicy
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res SanInlineApplicationComponentsInlineArrayItemInlineQosInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1011,18 +1011,18 @@ func (m *SanApplicationComponentsItems0QosPolicy) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// SanApplicationComponentsItems0StorageService san application components items0 storage service
+// SanInlineApplicationComponentsInlineArrayItemInlineStorageService san inline application components inline array item inline storage service
 //
-// swagger:model SanApplicationComponentsItems0StorageService
-type SanApplicationComponentsItems0StorageService struct {
+// swagger:model san_inline_application_components_inline_array_item_inline_storage_service
+type SanInlineApplicationComponentsInlineArrayItemInlineStorageService struct {
 
 	// The storage service of the application component.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this san application components items0 storage service
-func (m *SanApplicationComponentsItems0StorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this san inline application components inline array item inline storage service
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1035,7 +1035,7 @@ func (m *SanApplicationComponentsItems0StorageService) Validate(formats strfmt.R
 	return nil
 }
 
-var sanApplicationComponentsItems0StorageServiceTypeNamePropEnum []interface{}
+var sanInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1043,52 +1043,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sanApplicationComponentsItems0StorageServiceTypeNamePropEnum = append(sanApplicationComponentsItems0StorageServiceTypeNamePropEnum, v)
+		sanInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum = append(sanInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0StorageService
-	// SanApplicationComponentsItems0StorageService
+	// san_inline_application_components_inline_array_item_inline_storage_service
+	// SanInlineApplicationComponentsInlineArrayItemInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SanApplicationComponentsItems0StorageServiceNameExtreme captures enum value "extreme"
-	SanApplicationComponentsItems0StorageServiceNameExtreme string = "extreme"
+	// SanInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameExtreme captures enum value "extreme"
+	SanInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0StorageService
-	// SanApplicationComponentsItems0StorageService
+	// san_inline_application_components_inline_array_item_inline_storage_service
+	// SanInlineApplicationComponentsInlineArrayItemInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SanApplicationComponentsItems0StorageServiceNamePerformance captures enum value "performance"
-	SanApplicationComponentsItems0StorageServiceNamePerformance string = "performance"
+	// SanInlineApplicationComponentsInlineArrayItemInlineStorageServiceNamePerformance captures enum value "performance"
+	SanInlineApplicationComponentsInlineArrayItemInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SanApplicationComponentsItems0StorageService
-	// SanApplicationComponentsItems0StorageService
+	// san_inline_application_components_inline_array_item_inline_storage_service
+	// SanInlineApplicationComponentsInlineArrayItemInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SanApplicationComponentsItems0StorageServiceNameValue captures enum value "value"
-	SanApplicationComponentsItems0StorageServiceNameValue string = "value"
+	// SanInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameValue captures enum value "value"
+	SanInlineApplicationComponentsInlineArrayItemInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SanApplicationComponentsItems0StorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sanApplicationComponentsItems0StorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sanInlineApplicationComponentsInlineArrayItemInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0StorageService) validateName(formats strfmt.Registry) error {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -1101,13 +1101,13 @@ func (m *SanApplicationComponentsItems0StorageService) validateName(formats strf
 	return nil
 }
 
-// ContextValidate validates this san application components items0 storage service based on context it is used
-func (m *SanApplicationComponentsItems0StorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this san inline application components inline array item inline storage service based on context it is used
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0StorageService) MarshalBinary() ([]byte, error) {
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1115,8 +1115,8 @@ func (m *SanApplicationComponentsItems0StorageService) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte) error {
-	var res SanApplicationComponentsItems0StorageService
+func (m *SanInlineApplicationComponentsInlineArrayItemInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SanInlineApplicationComponentsInlineArrayItemInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1124,30 +1124,30 @@ func (m *SanApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// SanExcludeAggregatesItems0 san exclude aggregates items0
+// SanInlineExcludeAggregatesInlineArrayItem san inline exclude aggregates inline array item
 //
-// swagger:model SanExcludeAggregatesItems0
-type SanExcludeAggregatesItems0 struct {
+// swagger:model san_inline_exclude_aggregates_inline_array_item
+type SanInlineExcludeAggregatesInlineArrayItem struct {
 
-	// The name of the aggregate to exclude. Usage: &lt;aggr0_jrippy_vsim1&gt;
-	Name string `json:"name,omitempty"`
+	// The name of the aggregate to exclude. Usage: &lt;aggregate name&gt;
+	Name *string `json:"name,omitempty"`
 
 	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this san exclude aggregates items0
-func (m *SanExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this san inline exclude aggregates inline array item
+func (m *SanInlineExcludeAggregatesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this san exclude aggregates items0 based on context it is used
-func (m *SanExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this san inline exclude aggregates inline array item based on context it is used
+func (m *SanInlineExcludeAggregatesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SanExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+func (m *SanInlineExcludeAggregatesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1155,8 +1155,8 @@ func (m *SanExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
-	var res SanExcludeAggregatesItems0
+func (m *SanInlineExcludeAggregatesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SanInlineExcludeAggregatesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1164,25 +1164,25 @@ func (m *SanExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SanProtectionType san protection type
+// SanInlineProtectionType san inline protection type
 //
-// swagger:model SanProtectionType
-type SanProtectionType struct {
+// swagger:model san_inline_protection_type
+type SanInlineProtectionType struct {
 
 	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
-	LocalPolicy string `json:"local_policy,omitempty"`
+	LocalPolicy *string `json:"local_policy,omitempty"`
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	LocalRpo string `json:"local_rpo,omitempty"`
+	LocalRpo *string `json:"local_rpo,omitempty"`
 
 	// The remote RPO of the application.
 	// Enum: [none zero]
-	RemoteRpo string `json:"remote_rpo,omitempty"`
+	RemoteRpo *string `json:"remote_rpo,omitempty"`
 }
 
-// Validate validates this san protection type
-func (m *SanProtectionType) Validate(formats strfmt.Registry) error {
+// Validate validates this san inline protection type
+func (m *SanInlineProtectionType) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocalRpo(formats); err != nil {
@@ -1199,7 +1199,7 @@ func (m *SanProtectionType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var sanProtectionTypeTypeLocalRpoPropEnum []interface{}
+var sanInlineProtectionTypeTypeLocalRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1207,55 +1207,55 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sanProtectionTypeTypeLocalRpoPropEnum = append(sanProtectionTypeTypeLocalRpoPropEnum, v)
+		sanInlineProtectionTypeTypeLocalRpoPropEnum = append(sanInlineProtectionTypeTypeLocalRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SanProtectionType
-	// SanProtectionType
+	// san_inline_protection_type
+	// SanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
 	// END DEBUGGING
-	// SanProtectionTypeLocalRpoHourly captures enum value "hourly"
-	SanProtectionTypeLocalRpoHourly string = "hourly"
+	// SanInlineProtectionTypeLocalRpoHourly captures enum value "hourly"
+	SanInlineProtectionTypeLocalRpoHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// SanProtectionType
-	// SanProtectionType
+	// san_inline_protection_type
+	// SanInlineProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
 	// END DEBUGGING
-	// SanProtectionTypeLocalRpoNone captures enum value "none"
-	SanProtectionTypeLocalRpoNone string = "none"
+	// SanInlineProtectionTypeLocalRpoNone captures enum value "none"
+	SanInlineProtectionTypeLocalRpoNone string = "none"
 )
 
 // prop value enum
-func (m *SanProtectionType) validateLocalRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sanProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
+func (m *SanInlineProtectionType) validateLocalRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sanInlineProtectionTypeTypeLocalRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SanProtectionType) validateLocalRpo(formats strfmt.Registry) error {
+func (m *SanInlineProtectionType) validateLocalRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.LocalRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", m.LocalRpo); err != nil {
+	if err := m.validateLocalRpoEnum("protection_type"+"."+"local_rpo", "body", *m.LocalRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var sanProtectionTypeTypeRemoteRpoPropEnum []interface{}
+var sanInlineProtectionTypeTypeRemoteRpoPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1263,61 +1263,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		sanProtectionTypeTypeRemoteRpoPropEnum = append(sanProtectionTypeTypeRemoteRpoPropEnum, v)
+		sanInlineProtectionTypeTypeRemoteRpoPropEnum = append(sanInlineProtectionTypeTypeRemoteRpoPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SanProtectionType
-	// SanProtectionType
+	// san_inline_protection_type
+	// SanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
 	// END DEBUGGING
-	// SanProtectionTypeRemoteRpoNone captures enum value "none"
-	SanProtectionTypeRemoteRpoNone string = "none"
+	// SanInlineProtectionTypeRemoteRpoNone captures enum value "none"
+	SanInlineProtectionTypeRemoteRpoNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SanProtectionType
-	// SanProtectionType
+	// san_inline_protection_type
+	// SanInlineProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
 	// END DEBUGGING
-	// SanProtectionTypeRemoteRpoZero captures enum value "zero"
-	SanProtectionTypeRemoteRpoZero string = "zero"
+	// SanInlineProtectionTypeRemoteRpoZero captures enum value "zero"
+	SanInlineProtectionTypeRemoteRpoZero string = "zero"
 )
 
 // prop value enum
-func (m *SanProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, sanProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
+func (m *SanInlineProtectionType) validateRemoteRpoEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sanInlineProtectionTypeTypeRemoteRpoPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SanProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
+func (m *SanInlineProtectionType) validateRemoteRpo(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteRpo) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", m.RemoteRpo); err != nil {
+	if err := m.validateRemoteRpoEnum("protection_type"+"."+"remote_rpo", "body", *m.RemoteRpo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this san protection type based on context it is used
-func (m *SanProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this san inline protection type based on context it is used
+func (m *SanInlineProtectionType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SanProtectionType) MarshalBinary() ([]byte, error) {
+func (m *SanInlineProtectionType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1325,8 +1325,8 @@ func (m *SanProtectionType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SanProtectionType) UnmarshalBinary(b []byte) error {
-	var res SanProtectionType
+func (m *SanInlineProtectionType) UnmarshalBinary(b []byte) error {
+	var res SanInlineProtectionType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

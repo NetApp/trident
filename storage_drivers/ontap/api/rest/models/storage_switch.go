@@ -21,109 +21,85 @@ import (
 // swagger:model storage_switch
 type StorageSwitch struct {
 
-	// connections
-	Connections []*StorageSwitchConnectionsItems0 `json:"connections,omitempty"`
-
 	// director class
-	DirectorClass bool `json:"director_class,omitempty"`
+	DirectorClass *bool `json:"director_class,omitempty"`
 
 	// Domain ID
-	DomainID int64 `json:"domain_id,omitempty"`
-
-	// errors
-	Errors []*StorageSwitchErrorsItems0 `json:"errors,omitempty"`
+	DomainID *int64 `json:"domain_id,omitempty"`
 
 	// Storage switch fabric name
-	FabricName string `json:"fabric_name,omitempty"`
-
-	// fans
-	Fans []*StorageSwitchFansItems0 `json:"fans,omitempty"`
+	FabricName *string `json:"fabric_name,omitempty"`
 
 	// Storage switch firmware version
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// IP Address
-	IPAddress string `json:"ip_address,omitempty"`
+	IPAddress *string `json:"ip_address,omitempty"`
 
 	// Indicates whether the storage switch is directly connected to the reporting cluster.
-	Local bool `json:"local,omitempty"`
+	Local *bool `json:"local,omitempty"`
 
 	// Storage switch model.
-	Model string `json:"model,omitempty"`
-
-	// Indicates the blades that are being monitored for a director-class switch.
-	MonitoredBlades []int64 `json:"monitored_blades,omitempty"`
+	Model *string `json:"model,omitempty"`
 
 	// Indicates whether monitoring is enabled for the storage switch.
-	MonitoringEnabled bool `json:"monitoring_enabled,omitempty"`
+	MonitoringEnabled *bool `json:"monitoring_enabled,omitempty"`
 
 	// Storage switch name
-	Name string `json:"name,omitempty"`
-
-	// paths
-	Paths []*StorageSwitchPathsItems0 `json:"paths,omitempty"`
-
-	// ports
-	Ports []*StorageSwitchPortsItems0 `json:"ports,omitempty"`
-
-	// power supply units
-	PowerSupplyUnits []*StorageSwitchPowerSupplyUnitsItems0 `json:"power_supply_units,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Storage switch role in fabric.
 	// Enum: [unknown primary subordinate]
-	Role string `json:"role,omitempty"`
+	Role *string `json:"role,omitempty"`
 
 	// Storage switch state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
+
+	// storage switch inline connections
+	StorageSwitchInlineConnections []*StorageSwitchInlineConnectionsInlineArrayItem `json:"connections,omitempty"`
+
+	// storage switch inline errors
+	StorageSwitchInlineErrors []*StorageSwitchInlineErrorsInlineArrayItem `json:"errors,omitempty"`
+
+	// storage switch inline fans
+	StorageSwitchInlineFans []*StorageSwitchInlineFansInlineArrayItem `json:"fans,omitempty"`
+
+	// Indicates the blades that are being monitored for a director-class switch.
+	StorageSwitchInlineMonitoredBlades []*int64 `json:"monitored_blades,omitempty"`
+
+	// storage switch inline paths
+	StorageSwitchInlinePaths []*StorageSwitchInlinePathsInlineArrayItem `json:"paths,omitempty"`
+
+	// storage switch inline ports
+	StorageSwitchInlinePorts []*StorageSwitchInlinePortsInlineArrayItem `json:"ports,omitempty"`
+
+	// storage switch inline power supply units
+	StorageSwitchInlinePowerSupplyUnits []*StorageSwitchInlinePowerSupplyUnitsInlineArrayItem `json:"power_supply_units,omitempty"`
+
+	// storage switch inline temperature sensors
+	StorageSwitchInlineTemperatureSensors []*StorageSwitchInlineTemperatureSensorsInlineArrayItem `json:"temperature_sensors,omitempty"`
+
+	// storage switch inline vsans
+	StorageSwitchInlineVsans []*StorageSwitchInlineVsansInlineArrayItem `json:"vsans,omitempty"`
+
+	// storage switch inline zones
+	StorageSwitchInlineZones []*StorageSwitchInlineZonesInlineArrayItem `json:"zones,omitempty"`
 
 	// Storage switch symbolic name
-	SymbolicName string `json:"symbolic_name,omitempty"`
-
-	// temperature sensors
-	TemperatureSensors []*StorageSwitchTemperatureSensorsItems0 `json:"temperature_sensors,omitempty"`
+	SymbolicName *string `json:"symbolic_name,omitempty"`
 
 	// Storage switch vendor
 	// Enum: [unknown brocade cisco]
-	Vendor string `json:"vendor,omitempty"`
-
-	// vsans
-	Vsans []*StorageSwitchVsansItems0 `json:"vsans,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 
 	// Storage switch world wide name
-	Wwn string `json:"wwn,omitempty"`
-
-	// zones
-	Zones []*StorageSwitchZonesItems0 `json:"zones,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
 // Validate validates this storage switch
 func (m *StorageSwitch) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateConnections(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateErrors(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateFans(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePaths(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePorts(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePowerSupplyUnits(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateRole(formats); err != nil {
 		res = append(res, err)
@@ -133,7 +109,39 @@ func (m *StorageSwitch) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateTemperatureSensors(formats); err != nil {
+	if err := m.validateStorageSwitchInlineConnections(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlineErrors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlineFans(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlinePaths(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlinePorts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlinePowerSupplyUnits(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlineTemperatureSensors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlineVsans(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageSwitchInlineZones(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -141,161 +149,9 @@ func (m *StorageSwitch) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateVsans(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateZones(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *StorageSwitch) validateConnections(formats strfmt.Registry) error {
-	if swag.IsZero(m.Connections) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Connections); i++ {
-		if swag.IsZero(m.Connections[i]) { // not required
-			continue
-		}
-
-		if m.Connections[i] != nil {
-			if err := m.Connections[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validateErrors(formats strfmt.Registry) error {
-	if swag.IsZero(m.Errors) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Errors); i++ {
-		if swag.IsZero(m.Errors[i]) { // not required
-			continue
-		}
-
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validateFans(formats strfmt.Registry) error {
-	if swag.IsZero(m.Fans) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Fans); i++ {
-		if swag.IsZero(m.Fans[i]) { // not required
-			continue
-		}
-
-		if m.Fans[i] != nil {
-			if err := m.Fans[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validatePaths(formats strfmt.Registry) error {
-	if swag.IsZero(m.Paths) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Paths); i++ {
-		if swag.IsZero(m.Paths[i]) { // not required
-			continue
-		}
-
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validatePorts(formats strfmt.Registry) error {
-	if swag.IsZero(m.Ports) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Ports); i++ {
-		if swag.IsZero(m.Ports[i]) { // not required
-			continue
-		}
-
-		if m.Ports[i] != nil {
-			if err := m.Ports[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validatePowerSupplyUnits(formats strfmt.Registry) error {
-	if swag.IsZero(m.PowerSupplyUnits) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.PowerSupplyUnits); i++ {
-		if swag.IsZero(m.PowerSupplyUnits[i]) { // not required
-			continue
-		}
-
-		if m.PowerSupplyUnits[i] != nil {
-			if err := m.PowerSupplyUnits[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("power_supply_units" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -358,7 +214,7 @@ func (m *StorageSwitch) validateRole(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateRoleEnum("role", "body", m.Role); err != nil {
+	if err := m.validateRoleEnum("role", "body", *m.Role); err != nil {
 		return err
 	}
 
@@ -414,27 +270,219 @@ func (m *StorageSwitch) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StorageSwitch) validateTemperatureSensors(formats strfmt.Registry) error {
-	if swag.IsZero(m.TemperatureSensors) { // not required
+func (m *StorageSwitch) validateStorageSwitchInlineConnections(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlineConnections) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.TemperatureSensors); i++ {
-		if swag.IsZero(m.TemperatureSensors[i]) { // not required
+	for i := 0; i < len(m.StorageSwitchInlineConnections); i++ {
+		if swag.IsZero(m.StorageSwitchInlineConnections[i]) { // not required
 			continue
 		}
 
-		if m.TemperatureSensors[i] != nil {
-			if err := m.TemperatureSensors[i].Validate(formats); err != nil {
+		if m.StorageSwitchInlineConnections[i] != nil {
+			if err := m.StorageSwitchInlineConnections[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlineErrors(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlineErrors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlineErrors); i++ {
+		if swag.IsZero(m.StorageSwitchInlineErrors[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlineErrors[i] != nil {
+			if err := m.StorageSwitchInlineErrors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlineFans(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlineFans) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlineFans); i++ {
+		if swag.IsZero(m.StorageSwitchInlineFans[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlineFans[i] != nil {
+			if err := m.StorageSwitchInlineFans[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlinePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlinePaths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlinePaths); i++ {
+		if swag.IsZero(m.StorageSwitchInlinePaths[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlinePaths[i] != nil {
+			if err := m.StorageSwitchInlinePaths[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlinePorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlinePorts) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlinePorts); i++ {
+		if swag.IsZero(m.StorageSwitchInlinePorts[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlinePorts[i] != nil {
+			if err := m.StorageSwitchInlinePorts[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlinePowerSupplyUnits(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlinePowerSupplyUnits) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlinePowerSupplyUnits); i++ {
+		if swag.IsZero(m.StorageSwitchInlinePowerSupplyUnits[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlinePowerSupplyUnits[i] != nil {
+			if err := m.StorageSwitchInlinePowerSupplyUnits[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("power_supply_units" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlineTemperatureSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlineTemperatureSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlineTemperatureSensors); i++ {
+		if swag.IsZero(m.StorageSwitchInlineTemperatureSensors[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlineTemperatureSensors[i] != nil {
+			if err := m.StorageSwitchInlineTemperatureSensors[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlineVsans(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlineVsans) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlineVsans); i++ {
+		if swag.IsZero(m.StorageSwitchInlineVsans[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlineVsans[i] != nil {
+			if err := m.StorageSwitchInlineVsans[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("vsans" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StorageSwitch) validateStorageSwitchInlineZones(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageSwitchInlineZones) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StorageSwitchInlineZones); i++ {
+		if swag.IsZero(m.StorageSwitchInlineZones[i]) { // not required
+			continue
+		}
+
+		if m.StorageSwitchInlineZones[i] != nil {
+			if err := m.StorageSwitchInlineZones[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("zones" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -504,56 +552,8 @@ func (m *StorageSwitch) validateVendor(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateVendorEnum("vendor", "body", m.Vendor); err != nil {
+	if err := m.validateVendorEnum("vendor", "body", *m.Vendor); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validateVsans(formats strfmt.Registry) error {
-	if swag.IsZero(m.Vsans) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Vsans); i++ {
-		if swag.IsZero(m.Vsans[i]) { // not required
-			continue
-		}
-
-		if m.Vsans[i] != nil {
-			if err := m.Vsans[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("vsans" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *StorageSwitch) validateZones(formats strfmt.Registry) error {
-	if swag.IsZero(m.Zones) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Zones); i++ {
-		if swag.IsZero(m.Zones[i]) { // not required
-			continue
-		}
-
-		if m.Zones[i] != nil {
-			if err := m.Zones[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("zones" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -563,39 +563,39 @@ func (m *StorageSwitch) validateZones(formats strfmt.Registry) error {
 func (m *StorageSwitch) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateConnections(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlineConnections(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateErrors(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlineErrors(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateFans(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlineFans(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePaths(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlinePaths(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePorts(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlinePorts(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePowerSupplyUnits(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlinePowerSupplyUnits(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTemperatureSensors(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlineTemperatureSensors(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateVsans(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlineVsans(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateZones(ctx, formats); err != nil {
+	if err := m.contextValidateStorageSwitchInlineZones(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -605,12 +605,12 @@ func (m *StorageSwitch) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *StorageSwitch) contextValidateConnections(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlineConnections(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Connections); i++ {
+	for i := 0; i < len(m.StorageSwitchInlineConnections); i++ {
 
-		if m.Connections[i] != nil {
-			if err := m.Connections[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlineConnections[i] != nil {
+			if err := m.StorageSwitchInlineConnections[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
 				}
@@ -623,12 +623,12 @@ func (m *StorageSwitch) contextValidateConnections(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StorageSwitch) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlineErrors(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Errors); i++ {
+	for i := 0; i < len(m.StorageSwitchInlineErrors); i++ {
 
-		if m.Errors[i] != nil {
-			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlineErrors[i] != nil {
+			if err := m.StorageSwitchInlineErrors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
 				}
@@ -641,12 +641,12 @@ func (m *StorageSwitch) contextValidateErrors(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *StorageSwitch) contextValidateFans(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlineFans(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Fans); i++ {
+	for i := 0; i < len(m.StorageSwitchInlineFans); i++ {
 
-		if m.Fans[i] != nil {
-			if err := m.Fans[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlineFans[i] != nil {
+			if err := m.StorageSwitchInlineFans[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
 				}
@@ -659,12 +659,12 @@ func (m *StorageSwitch) contextValidateFans(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *StorageSwitch) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlinePaths(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Paths); i++ {
+	for i := 0; i < len(m.StorageSwitchInlinePaths); i++ {
 
-		if m.Paths[i] != nil {
-			if err := m.Paths[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlinePaths[i] != nil {
+			if err := m.StorageSwitchInlinePaths[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
 				}
@@ -677,12 +677,12 @@ func (m *StorageSwitch) contextValidatePaths(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *StorageSwitch) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlinePorts(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Ports); i++ {
+	for i := 0; i < len(m.StorageSwitchInlinePorts); i++ {
 
-		if m.Ports[i] != nil {
-			if err := m.Ports[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlinePorts[i] != nil {
+			if err := m.StorageSwitchInlinePorts[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ports" + "." + strconv.Itoa(i))
 				}
@@ -695,12 +695,12 @@ func (m *StorageSwitch) contextValidatePorts(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *StorageSwitch) contextValidatePowerSupplyUnits(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlinePowerSupplyUnits(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.PowerSupplyUnits); i++ {
+	for i := 0; i < len(m.StorageSwitchInlinePowerSupplyUnits); i++ {
 
-		if m.PowerSupplyUnits[i] != nil {
-			if err := m.PowerSupplyUnits[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlinePowerSupplyUnits[i] != nil {
+			if err := m.StorageSwitchInlinePowerSupplyUnits[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("power_supply_units" + "." + strconv.Itoa(i))
 				}
@@ -713,12 +713,12 @@ func (m *StorageSwitch) contextValidatePowerSupplyUnits(ctx context.Context, for
 	return nil
 }
 
-func (m *StorageSwitch) contextValidateTemperatureSensors(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlineTemperatureSensors(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.TemperatureSensors); i++ {
+	for i := 0; i < len(m.StorageSwitchInlineTemperatureSensors); i++ {
 
-		if m.TemperatureSensors[i] != nil {
-			if err := m.TemperatureSensors[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlineTemperatureSensors[i] != nil {
+			if err := m.StorageSwitchInlineTemperatureSensors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
 				}
@@ -731,12 +731,12 @@ func (m *StorageSwitch) contextValidateTemperatureSensors(ctx context.Context, f
 	return nil
 }
 
-func (m *StorageSwitch) contextValidateVsans(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlineVsans(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Vsans); i++ {
+	for i := 0; i < len(m.StorageSwitchInlineVsans); i++ {
 
-		if m.Vsans[i] != nil {
-			if err := m.Vsans[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlineVsans[i] != nil {
+			if err := m.StorageSwitchInlineVsans[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("vsans" + "." + strconv.Itoa(i))
 				}
@@ -749,12 +749,12 @@ func (m *StorageSwitch) contextValidateVsans(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *StorageSwitch) contextValidateZones(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitch) contextValidateStorageSwitchInlineZones(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Zones); i++ {
+	for i := 0; i < len(m.StorageSwitchInlineZones); i++ {
 
-		if m.Zones[i] != nil {
-			if err := m.Zones[i].ContextValidate(ctx, formats); err != nil {
+		if m.StorageSwitchInlineZones[i] != nil {
+			if err := m.StorageSwitchInlineZones[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("zones" + "." + strconv.Itoa(i))
 				}
@@ -785,20 +785,20 @@ func (m *StorageSwitch) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchConnectionsItems0 storage switch connections items0
+// StorageSwitchInlineConnectionsInlineArrayItem storage switch inline connections inline array item
 //
-// swagger:model StorageSwitchConnectionsItems0
-type StorageSwitchConnectionsItems0 struct {
+// swagger:model storage_switch_inline_connections_inline_array_item
+type StorageSwitchInlineConnectionsInlineArrayItem struct {
 
 	// peer port
-	PeerPort *StorageSwitchConnectionsItems0PeerPort `json:"peer_port,omitempty"`
+	PeerPort *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort `json:"peer_port,omitempty"`
 
 	// source port
-	SourcePort *StorageSwitchConnectionsItems0SourcePort `json:"source_port,omitempty"`
+	SourcePort *StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort `json:"source_port,omitempty"`
 }
 
-// Validate validates this storage switch connections items0
-func (m *StorageSwitchConnectionsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline connections inline array item
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePeerPort(formats); err != nil {
@@ -815,7 +815,7 @@ func (m *StorageSwitchConnectionsItems0) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *StorageSwitchConnectionsItems0) validatePeerPort(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) validatePeerPort(formats strfmt.Registry) error {
 	if swag.IsZero(m.PeerPort) { // not required
 		return nil
 	}
@@ -832,7 +832,7 @@ func (m *StorageSwitchConnectionsItems0) validatePeerPort(formats strfmt.Registr
 	return nil
 }
 
-func (m *StorageSwitchConnectionsItems0) validateSourcePort(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) validateSourcePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.SourcePort) { // not required
 		return nil
 	}
@@ -849,8 +849,8 @@ func (m *StorageSwitchConnectionsItems0) validateSourcePort(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this storage switch connections items0 based on the context it is used
-func (m *StorageSwitchConnectionsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline connections inline array item based on the context it is used
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePeerPort(ctx, formats); err != nil {
@@ -867,7 +867,7 @@ func (m *StorageSwitchConnectionsItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *StorageSwitchConnectionsItems0) contextValidatePeerPort(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) contextValidatePeerPort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.PeerPort != nil {
 		if err := m.PeerPort.ContextValidate(ctx, formats); err != nil {
@@ -881,7 +881,7 @@ func (m *StorageSwitchConnectionsItems0) contextValidatePeerPort(ctx context.Con
 	return nil
 }
 
-func (m *StorageSwitchConnectionsItems0) contextValidateSourcePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) contextValidateSourcePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.SourcePort != nil {
 		if err := m.SourcePort.ContextValidate(ctx, formats); err != nil {
@@ -896,7 +896,7 @@ func (m *StorageSwitchConnectionsItems0) contextValidateSourcePort(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchConnectionsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -904,8 +904,8 @@ func (m *StorageSwitchConnectionsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchConnectionsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchConnectionsItems0
+func (m *StorageSwitchInlineConnectionsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineConnectionsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -913,27 +913,27 @@ func (m *StorageSwitchConnectionsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchConnectionsItems0PeerPort storage switch connections items0 peer port
+// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort storage switch inline connections inline array item inline peer port
 //
-// swagger:model StorageSwitchConnectionsItems0PeerPort
-type StorageSwitchConnectionsItems0PeerPort struct {
+// swagger:model storage_switch_inline_connections_inline_array_item_inline_peer_port
+type StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort struct {
 
 	// Storage switch peer port host and name
-	Connection string `json:"connection,omitempty"`
+	Connection *string `json:"connection,omitempty"`
 
 	// Storage switch peer type
 	// Enum: [unknown bridge switch fcp_adapter fcvi_adapter]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Storage switch peer unique ID
-	UniqueID string `json:"unique_id,omitempty"`
+	UniqueID *string `json:"unique_id,omitempty"`
 
 	// Storage switch peer port world wide name
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage switch connections items0 peer port
-func (m *StorageSwitchConnectionsItems0PeerPort) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline connections inline array item inline peer port
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -946,7 +946,7 @@ func (m *StorageSwitchConnectionsItems0PeerPort) Validate(formats strfmt.Registr
 	return nil
 }
 
-var storageSwitchConnectionsItems0PeerPortTypeTypePropEnum []interface{}
+var storageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -954,91 +954,91 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchConnectionsItems0PeerPortTypeTypePropEnum = append(storageSwitchConnectionsItems0PeerPortTypeTypePropEnum, v)
+		storageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeTypePropEnum = append(storageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPort
-	// StorageSwitchConnectionsItems0PeerPort
+	// storage_switch_inline_connections_inline_array_item_inline_peer_port
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort
 	// type
 	// Type
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPortTypeUnknown captures enum value "unknown"
-	StorageSwitchConnectionsItems0PeerPortTypeUnknown string = "unknown"
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeUnknown captures enum value "unknown"
+	StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPort
-	// StorageSwitchConnectionsItems0PeerPort
+	// storage_switch_inline_connections_inline_array_item_inline_peer_port
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort
 	// type
 	// Type
 	// bridge
 	// END DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPortTypeBridge captures enum value "bridge"
-	StorageSwitchConnectionsItems0PeerPortTypeBridge string = "bridge"
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeBridge captures enum value "bridge"
+	StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeBridge string = "bridge"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPort
-	// StorageSwitchConnectionsItems0PeerPort
+	// storage_switch_inline_connections_inline_array_item_inline_peer_port
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort
 	// type
 	// Type
 	// switch
 	// END DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPortTypeSwitch captures enum value "switch"
-	StorageSwitchConnectionsItems0PeerPortTypeSwitch string = "switch"
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeSwitch captures enum value "switch"
+	StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeSwitch string = "switch"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPort
-	// StorageSwitchConnectionsItems0PeerPort
+	// storage_switch_inline_connections_inline_array_item_inline_peer_port
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort
 	// type
 	// Type
 	// fcp_adapter
 	// END DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPortTypeFcpAdapter captures enum value "fcp_adapter"
-	StorageSwitchConnectionsItems0PeerPortTypeFcpAdapter string = "fcp_adapter"
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeFcpAdapter captures enum value "fcp_adapter"
+	StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeFcpAdapter string = "fcp_adapter"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPort
-	// StorageSwitchConnectionsItems0PeerPort
+	// storage_switch_inline_connections_inline_array_item_inline_peer_port
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort
 	// type
 	// Type
 	// fcvi_adapter
 	// END DEBUGGING
-	// StorageSwitchConnectionsItems0PeerPortTypeFcviAdapter captures enum value "fcvi_adapter"
-	StorageSwitchConnectionsItems0PeerPortTypeFcviAdapter string = "fcvi_adapter"
+	// StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeFcviAdapter captures enum value "fcvi_adapter"
+	StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeFcviAdapter string = "fcvi_adapter"
 )
 
 // prop value enum
-func (m *StorageSwitchConnectionsItems0PeerPort) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchConnectionsItems0PeerPortTypeTypePropEnum, true); err != nil {
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlineConnectionsInlineArrayItemInlinePeerPortTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchConnectionsItems0PeerPort) validateType(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("peer_port"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("peer_port"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch connections items0 peer port based on context it is used
-func (m *StorageSwitchConnectionsItems0PeerPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline connections inline array item inline peer port based on context it is used
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchConnectionsItems0PeerPort) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1046,8 +1046,8 @@ func (m *StorageSwitchConnectionsItems0PeerPort) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchConnectionsItems0PeerPort) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchConnectionsItems0PeerPort
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineConnectionsInlineArrayItemInlinePeerPort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1055,33 +1055,33 @@ func (m *StorageSwitchConnectionsItems0PeerPort) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// StorageSwitchConnectionsItems0SourcePort storage switch connections items0 source port
+// StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort storage switch inline connections inline array item inline source port
 //
-// swagger:model StorageSwitchConnectionsItems0SourcePort
-type StorageSwitchConnectionsItems0SourcePort struct {
+// swagger:model storage_switch_inline_connections_inline_array_item_inline_source_port
+type StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort struct {
 
 	// Storage switch port operating mode
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// Storage switch port name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Storage switch peer port world wide name
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage switch connections items0 source port
-func (m *StorageSwitchConnectionsItems0SourcePort) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline connections inline array item inline source port
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage switch connections items0 source port based on context it is used
-func (m *StorageSwitchConnectionsItems0SourcePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline connections inline array item inline source port based on context it is used
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchConnectionsItems0SourcePort) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1089,8 +1089,8 @@ func (m *StorageSwitchConnectionsItems0SourcePort) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchConnectionsItems0SourcePort) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchConnectionsItems0SourcePort
+func (m *StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineConnectionsInlineArrayItemInlineSourcePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1098,28 +1098,28 @@ func (m *StorageSwitchConnectionsItems0SourcePort) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// StorageSwitchErrorsItems0 storage switch errors items0
+// StorageSwitchInlineErrorsInlineArrayItem storage switch inline errors inline array item
 //
-// swagger:model StorageSwitchErrorsItems0
-type StorageSwitchErrorsItems0 struct {
+// swagger:model storage_switch_inline_errors_inline_array_item
+type StorageSwitchInlineErrorsInlineArrayItem struct {
 
 	// component
-	Component *StorageSwitchErrorsItems0Component `json:"component,omitempty"`
+	Component *StorageSwitchInlineErrorsInlineArrayItemInlineComponent `json:"component,omitempty"`
 
 	// reason
 	Reason *Error `json:"reason,omitempty"`
 
 	// Error component severity
 	// Enum: [unknown notice warning error]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 
 	// Error component type
 	// Enum: [switch_unreachable temp_above_warning_level temp_above_critical_level temp_below_warning_level temp_below_critical_level temp_sensor_status_failed fan_status_non_operational power_supply_status_failed power_above_warning_level power_above_critical_level power_below_warning_level power_below_critical_level sfp_rx_power_above_warning_level sfp_rx_power_above_critical_level sfp_tx_power_above_warning_level sfp_tx_power_above_critical_level sfp_rx_power_below_warning_level sfp_rx_power_below_critical_level sfp_tx_power_below_warning_level sfp_tx_power_below_critical_level sfp_status_failed vsan_invalid_frame_delivery_configuration temp_sensor_status_unavailable fan_status_unavailable power_supply_inline_power_failed power_supply_status_unavailable unknown power_supply_off_env_other power_supply_off_admin power_supply_off_denied power_supply_off_env_power power_supply_off_env_temp power_supply_off_env_fan power_supply_on_but_fan_fail power_supply_off_cooling power_supply_off_connector_rating e_ports_down snmpv3_user_not_configured incomplete_snmp_data_refresh]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this storage switch errors items0
-func (m *StorageSwitchErrorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline errors inline array item
+func (m *StorageSwitchInlineErrorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateComponent(formats); err != nil {
@@ -1144,7 +1144,7 @@ func (m *StorageSwitchErrorsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchErrorsItems0) validateComponent(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) validateComponent(formats strfmt.Registry) error {
 	if swag.IsZero(m.Component) { // not required
 		return nil
 	}
@@ -1161,7 +1161,7 @@ func (m *StorageSwitchErrorsItems0) validateComponent(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *StorageSwitchErrorsItems0) validateReason(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) validateReason(formats strfmt.Registry) error {
 	if swag.IsZero(m.Reason) { // not required
 		return nil
 	}
@@ -1178,7 +1178,7 @@ func (m *StorageSwitchErrorsItems0) validateReason(formats strfmt.Registry) erro
 	return nil
 }
 
-var storageSwitchErrorsItems0TypeSeverityPropEnum []interface{}
+var storageSwitchInlineErrorsInlineArrayItemTypeSeverityPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1186,75 +1186,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchErrorsItems0TypeSeverityPropEnum = append(storageSwitchErrorsItems0TypeSeverityPropEnum, v)
+		storageSwitchInlineErrorsInlineArrayItemTypeSeverityPropEnum = append(storageSwitchInlineErrorsInlineArrayItemTypeSeverityPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0SeverityUnknown captures enum value "unknown"
-	StorageSwitchErrorsItems0SeverityUnknown string = "unknown"
+	// StorageSwitchInlineErrorsInlineArrayItemSeverityUnknown captures enum value "unknown"
+	StorageSwitchInlineErrorsInlineArrayItemSeverityUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// notice
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0SeverityNotice captures enum value "notice"
-	StorageSwitchErrorsItems0SeverityNotice string = "notice"
+	// StorageSwitchInlineErrorsInlineArrayItemSeverityNotice captures enum value "notice"
+	StorageSwitchInlineErrorsInlineArrayItemSeverityNotice string = "notice"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// warning
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0SeverityWarning captures enum value "warning"
-	StorageSwitchErrorsItems0SeverityWarning string = "warning"
+	// StorageSwitchInlineErrorsInlineArrayItemSeverityWarning captures enum value "warning"
+	StorageSwitchInlineErrorsInlineArrayItemSeverityWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// severity
 	// Severity
 	// error
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0SeverityError captures enum value "error"
-	StorageSwitchErrorsItems0SeverityError string = "error"
+	// StorageSwitchInlineErrorsInlineArrayItemSeverityError captures enum value "error"
+	StorageSwitchInlineErrorsInlineArrayItemSeverityError string = "error"
 )
 
 // prop value enum
-func (m *StorageSwitchErrorsItems0) validateSeverityEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchErrorsItems0TypeSeverityPropEnum, true); err != nil {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) validateSeverityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlineErrorsInlineArrayItemTypeSeverityPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchErrorsItems0) validateSeverity(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) validateSeverity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Severity) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageSwitchErrorsItems0TypeTypePropEnum []interface{}
+var storageSwitchInlineErrorsInlineArrayItemTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1262,426 +1262,426 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchErrorsItems0TypeTypePropEnum = append(storageSwitchErrorsItems0TypeTypePropEnum, v)
+		storageSwitchInlineErrorsInlineArrayItemTypeTypePropEnum = append(storageSwitchInlineErrorsInlineArrayItemTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// switch_unreachable
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSwitchUnreachable captures enum value "switch_unreachable"
-	StorageSwitchErrorsItems0TypeSwitchUnreachable string = "switch_unreachable"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSwitchUnreachable captures enum value "switch_unreachable"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSwitchUnreachable string = "switch_unreachable"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_above_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeTempAboveWarningLevel captures enum value "temp_above_warning_level"
-	StorageSwitchErrorsItems0TypeTempAboveWarningLevel string = "temp_above_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeTempAboveWarningLevel captures enum value "temp_above_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeTempAboveWarningLevel string = "temp_above_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_above_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeTempAboveCriticalLevel captures enum value "temp_above_critical_level"
-	StorageSwitchErrorsItems0TypeTempAboveCriticalLevel string = "temp_above_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeTempAboveCriticalLevel captures enum value "temp_above_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeTempAboveCriticalLevel string = "temp_above_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_below_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeTempBelowWarningLevel captures enum value "temp_below_warning_level"
-	StorageSwitchErrorsItems0TypeTempBelowWarningLevel string = "temp_below_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeTempBelowWarningLevel captures enum value "temp_below_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeTempBelowWarningLevel string = "temp_below_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_below_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeTempBelowCriticalLevel captures enum value "temp_below_critical_level"
-	StorageSwitchErrorsItems0TypeTempBelowCriticalLevel string = "temp_below_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeTempBelowCriticalLevel captures enum value "temp_below_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeTempBelowCriticalLevel string = "temp_below_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_sensor_status_failed
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeTempSensorStatusFailed captures enum value "temp_sensor_status_failed"
-	StorageSwitchErrorsItems0TypeTempSensorStatusFailed string = "temp_sensor_status_failed"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeTempSensorStatusFailed captures enum value "temp_sensor_status_failed"
+	StorageSwitchInlineErrorsInlineArrayItemTypeTempSensorStatusFailed string = "temp_sensor_status_failed"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// fan_status_non_operational
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeFanStatusNonOperational captures enum value "fan_status_non_operational"
-	StorageSwitchErrorsItems0TypeFanStatusNonOperational string = "fan_status_non_operational"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeFanStatusNonOperational captures enum value "fan_status_non_operational"
+	StorageSwitchInlineErrorsInlineArrayItemTypeFanStatusNonOperational string = "fan_status_non_operational"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_status_failed
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyStatusFailed captures enum value "power_supply_status_failed"
-	StorageSwitchErrorsItems0TypePowerSupplyStatusFailed string = "power_supply_status_failed"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyStatusFailed captures enum value "power_supply_status_failed"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyStatusFailed string = "power_supply_status_failed"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_above_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerAboveWarningLevel captures enum value "power_above_warning_level"
-	StorageSwitchErrorsItems0TypePowerAboveWarningLevel string = "power_above_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerAboveWarningLevel captures enum value "power_above_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerAboveWarningLevel string = "power_above_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_above_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerAboveCriticalLevel captures enum value "power_above_critical_level"
-	StorageSwitchErrorsItems0TypePowerAboveCriticalLevel string = "power_above_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerAboveCriticalLevel captures enum value "power_above_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerAboveCriticalLevel string = "power_above_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_below_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerBelowWarningLevel captures enum value "power_below_warning_level"
-	StorageSwitchErrorsItems0TypePowerBelowWarningLevel string = "power_below_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerBelowWarningLevel captures enum value "power_below_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerBelowWarningLevel string = "power_below_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_below_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerBelowCriticalLevel captures enum value "power_below_critical_level"
-	StorageSwitchErrorsItems0TypePowerBelowCriticalLevel string = "power_below_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerBelowCriticalLevel captures enum value "power_below_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerBelowCriticalLevel string = "power_below_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_rx_power_above_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpRxPowerAboveWarningLevel captures enum value "sfp_rx_power_above_warning_level"
-	StorageSwitchErrorsItems0TypeSfpRxPowerAboveWarningLevel string = "sfp_rx_power_above_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerAboveWarningLevel captures enum value "sfp_rx_power_above_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerAboveWarningLevel string = "sfp_rx_power_above_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_rx_power_above_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpRxPowerAboveCriticalLevel captures enum value "sfp_rx_power_above_critical_level"
-	StorageSwitchErrorsItems0TypeSfpRxPowerAboveCriticalLevel string = "sfp_rx_power_above_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerAboveCriticalLevel captures enum value "sfp_rx_power_above_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerAboveCriticalLevel string = "sfp_rx_power_above_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_tx_power_above_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpTxPowerAboveWarningLevel captures enum value "sfp_tx_power_above_warning_level"
-	StorageSwitchErrorsItems0TypeSfpTxPowerAboveWarningLevel string = "sfp_tx_power_above_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerAboveWarningLevel captures enum value "sfp_tx_power_above_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerAboveWarningLevel string = "sfp_tx_power_above_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_tx_power_above_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpTxPowerAboveCriticalLevel captures enum value "sfp_tx_power_above_critical_level"
-	StorageSwitchErrorsItems0TypeSfpTxPowerAboveCriticalLevel string = "sfp_tx_power_above_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerAboveCriticalLevel captures enum value "sfp_tx_power_above_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerAboveCriticalLevel string = "sfp_tx_power_above_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_rx_power_below_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpRxPowerBelowWarningLevel captures enum value "sfp_rx_power_below_warning_level"
-	StorageSwitchErrorsItems0TypeSfpRxPowerBelowWarningLevel string = "sfp_rx_power_below_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerBelowWarningLevel captures enum value "sfp_rx_power_below_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerBelowWarningLevel string = "sfp_rx_power_below_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_rx_power_below_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpRxPowerBelowCriticalLevel captures enum value "sfp_rx_power_below_critical_level"
-	StorageSwitchErrorsItems0TypeSfpRxPowerBelowCriticalLevel string = "sfp_rx_power_below_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerBelowCriticalLevel captures enum value "sfp_rx_power_below_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpRxPowerBelowCriticalLevel string = "sfp_rx_power_below_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_tx_power_below_warning_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpTxPowerBelowWarningLevel captures enum value "sfp_tx_power_below_warning_level"
-	StorageSwitchErrorsItems0TypeSfpTxPowerBelowWarningLevel string = "sfp_tx_power_below_warning_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerBelowWarningLevel captures enum value "sfp_tx_power_below_warning_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerBelowWarningLevel string = "sfp_tx_power_below_warning_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_tx_power_below_critical_level
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpTxPowerBelowCriticalLevel captures enum value "sfp_tx_power_below_critical_level"
-	StorageSwitchErrorsItems0TypeSfpTxPowerBelowCriticalLevel string = "sfp_tx_power_below_critical_level"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerBelowCriticalLevel captures enum value "sfp_tx_power_below_critical_level"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpTxPowerBelowCriticalLevel string = "sfp_tx_power_below_critical_level"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// sfp_status_failed
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSfpStatusFailed captures enum value "sfp_status_failed"
-	StorageSwitchErrorsItems0TypeSfpStatusFailed string = "sfp_status_failed"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSfpStatusFailed captures enum value "sfp_status_failed"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSfpStatusFailed string = "sfp_status_failed"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// vsan_invalid_frame_delivery_configuration
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeVsanInvalidFrameDeliveryConfiguration captures enum value "vsan_invalid_frame_delivery_configuration"
-	StorageSwitchErrorsItems0TypeVsanInvalidFrameDeliveryConfiguration string = "vsan_invalid_frame_delivery_configuration"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeVsanInvalidFrameDeliveryConfiguration captures enum value "vsan_invalid_frame_delivery_configuration"
+	StorageSwitchInlineErrorsInlineArrayItemTypeVsanInvalidFrameDeliveryConfiguration string = "vsan_invalid_frame_delivery_configuration"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// temp_sensor_status_unavailable
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeTempSensorStatusUnavailable captures enum value "temp_sensor_status_unavailable"
-	StorageSwitchErrorsItems0TypeTempSensorStatusUnavailable string = "temp_sensor_status_unavailable"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeTempSensorStatusUnavailable captures enum value "temp_sensor_status_unavailable"
+	StorageSwitchInlineErrorsInlineArrayItemTypeTempSensorStatusUnavailable string = "temp_sensor_status_unavailable"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// fan_status_unavailable
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeFanStatusUnavailable captures enum value "fan_status_unavailable"
-	StorageSwitchErrorsItems0TypeFanStatusUnavailable string = "fan_status_unavailable"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeFanStatusUnavailable captures enum value "fan_status_unavailable"
+	StorageSwitchInlineErrorsInlineArrayItemTypeFanStatusUnavailable string = "fan_status_unavailable"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_inline_power_failed
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyInlinePowerFailed captures enum value "power_supply_inline_power_failed"
-	StorageSwitchErrorsItems0TypePowerSupplyInlinePowerFailed string = "power_supply_inline_power_failed"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyInlinePowerFailed captures enum value "power_supply_inline_power_failed"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyInlinePowerFailed string = "power_supply_inline_power_failed"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_status_unavailable
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyStatusUnavailable captures enum value "power_supply_status_unavailable"
-	StorageSwitchErrorsItems0TypePowerSupplyStatusUnavailable string = "power_supply_status_unavailable"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyStatusUnavailable captures enum value "power_supply_status_unavailable"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyStatusUnavailable string = "power_supply_status_unavailable"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeUnknown captures enum value "unknown"
-	StorageSwitchErrorsItems0TypeUnknown string = "unknown"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeUnknown captures enum value "unknown"
+	StorageSwitchInlineErrorsInlineArrayItemTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_env_other
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffEnvOther captures enum value "power_supply_off_env_other"
-	StorageSwitchErrorsItems0TypePowerSupplyOffEnvOther string = "power_supply_off_env_other"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvOther captures enum value "power_supply_off_env_other"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvOther string = "power_supply_off_env_other"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_admin
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffAdmin captures enum value "power_supply_off_admin"
-	StorageSwitchErrorsItems0TypePowerSupplyOffAdmin string = "power_supply_off_admin"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffAdmin captures enum value "power_supply_off_admin"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffAdmin string = "power_supply_off_admin"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_denied
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffDenied captures enum value "power_supply_off_denied"
-	StorageSwitchErrorsItems0TypePowerSupplyOffDenied string = "power_supply_off_denied"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffDenied captures enum value "power_supply_off_denied"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffDenied string = "power_supply_off_denied"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_env_power
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffEnvPower captures enum value "power_supply_off_env_power"
-	StorageSwitchErrorsItems0TypePowerSupplyOffEnvPower string = "power_supply_off_env_power"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvPower captures enum value "power_supply_off_env_power"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvPower string = "power_supply_off_env_power"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_env_temp
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffEnvTemp captures enum value "power_supply_off_env_temp"
-	StorageSwitchErrorsItems0TypePowerSupplyOffEnvTemp string = "power_supply_off_env_temp"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvTemp captures enum value "power_supply_off_env_temp"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvTemp string = "power_supply_off_env_temp"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_env_fan
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffEnvFan captures enum value "power_supply_off_env_fan"
-	StorageSwitchErrorsItems0TypePowerSupplyOffEnvFan string = "power_supply_off_env_fan"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvFan captures enum value "power_supply_off_env_fan"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffEnvFan string = "power_supply_off_env_fan"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_on_but_fan_fail
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOnButFanFail captures enum value "power_supply_on_but_fan_fail"
-	StorageSwitchErrorsItems0TypePowerSupplyOnButFanFail string = "power_supply_on_but_fan_fail"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOnButFanFail captures enum value "power_supply_on_but_fan_fail"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOnButFanFail string = "power_supply_on_but_fan_fail"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_cooling
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffCooling captures enum value "power_supply_off_cooling"
-	StorageSwitchErrorsItems0TypePowerSupplyOffCooling string = "power_supply_off_cooling"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffCooling captures enum value "power_supply_off_cooling"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffCooling string = "power_supply_off_cooling"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// power_supply_off_connector_rating
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypePowerSupplyOffConnectorRating captures enum value "power_supply_off_connector_rating"
-	StorageSwitchErrorsItems0TypePowerSupplyOffConnectorRating string = "power_supply_off_connector_rating"
+	// StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffConnectorRating captures enum value "power_supply_off_connector_rating"
+	StorageSwitchInlineErrorsInlineArrayItemTypePowerSupplyOffConnectorRating string = "power_supply_off_connector_rating"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// e_ports_down
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeEPortsDown captures enum value "e_ports_down"
-	StorageSwitchErrorsItems0TypeEPortsDown string = "e_ports_down"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeEPortsDown captures enum value "e_ports_down"
+	StorageSwitchInlineErrorsInlineArrayItemTypeEPortsDown string = "e_ports_down"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// snmpv3_user_not_configured
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeSnmpv3UserNotConfigured captures enum value "snmpv3_user_not_configured"
-	StorageSwitchErrorsItems0TypeSnmpv3UserNotConfigured string = "snmpv3_user_not_configured"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeSnmpv3UserNotConfigured captures enum value "snmpv3_user_not_configured"
+	StorageSwitchInlineErrorsInlineArrayItemTypeSnmpv3UserNotConfigured string = "snmpv3_user_not_configured"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchErrorsItems0
-	// StorageSwitchErrorsItems0
+	// storage_switch_inline_errors_inline_array_item
+	// StorageSwitchInlineErrorsInlineArrayItem
 	// type
 	// Type
 	// incomplete_snmp_data_refresh
 	// END DEBUGGING
-	// StorageSwitchErrorsItems0TypeIncompleteSnmpDataRefresh captures enum value "incomplete_snmp_data_refresh"
-	StorageSwitchErrorsItems0TypeIncompleteSnmpDataRefresh string = "incomplete_snmp_data_refresh"
+	// StorageSwitchInlineErrorsInlineArrayItemTypeIncompleteSnmpDataRefresh captures enum value "incomplete_snmp_data_refresh"
+	StorageSwitchInlineErrorsInlineArrayItemTypeIncompleteSnmpDataRefresh string = "incomplete_snmp_data_refresh"
 )
 
 // prop value enum
-func (m *StorageSwitchErrorsItems0) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchErrorsItems0TypeTypePropEnum, true); err != nil {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlineErrorsInlineArrayItemTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchErrorsItems0) validateType(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this storage switch errors items0 based on the context it is used
-func (m *StorageSwitchErrorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline errors inline array item based on the context it is used
+func (m *StorageSwitchInlineErrorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateComponent(ctx, formats); err != nil {
@@ -1698,7 +1698,7 @@ func (m *StorageSwitchErrorsItems0) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *StorageSwitchErrorsItems0) contextValidateComponent(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) contextValidateComponent(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Component != nil {
 		if err := m.Component.ContextValidate(ctx, formats); err != nil {
@@ -1712,7 +1712,7 @@ func (m *StorageSwitchErrorsItems0) contextValidateComponent(ctx context.Context
 	return nil
 }
 
-func (m *StorageSwitchErrorsItems0) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Reason != nil {
 		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
@@ -1727,7 +1727,7 @@ func (m *StorageSwitchErrorsItems0) contextValidateReason(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchErrorsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineErrorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1735,8 +1735,8 @@ func (m *StorageSwitchErrorsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchErrorsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchErrorsItems0
+func (m *StorageSwitchInlineErrorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineErrorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1744,30 +1744,30 @@ func (m *StorageSwitchErrorsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchErrorsItems0Component storage switch errors items0 component
+// StorageSwitchInlineErrorsInlineArrayItemInlineComponent storage switch inline errors inline array item inline component
 //
-// swagger:model StorageSwitchErrorsItems0Component
-type StorageSwitchErrorsItems0Component struct {
+// swagger:model storage_switch_inline_errors_inline_array_item_inline_component
+type StorageSwitchInlineErrorsInlineArrayItemInlineComponent struct {
 
 	// Error component ID
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Error component name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this storage switch errors items0 component
-func (m *StorageSwitchErrorsItems0Component) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline errors inline array item inline component
+func (m *StorageSwitchInlineErrorsInlineArrayItemInlineComponent) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage switch errors items0 component based on context it is used
-func (m *StorageSwitchErrorsItems0Component) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline errors inline array item inline component based on context it is used
+func (m *StorageSwitchInlineErrorsInlineArrayItemInlineComponent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchErrorsItems0Component) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineErrorsInlineArrayItemInlineComponent) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1775,8 +1775,8 @@ func (m *StorageSwitchErrorsItems0Component) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchErrorsItems0Component) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchErrorsItems0Component
+func (m *StorageSwitchInlineErrorsInlineArrayItemInlineComponent) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineErrorsInlineArrayItemInlineComponent
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1784,24 +1784,24 @@ func (m *StorageSwitchErrorsItems0Component) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchFansItems0 storage switch fans items0
+// StorageSwitchInlineFansInlineArrayItem storage switch inline fans inline array item
 //
-// swagger:model StorageSwitchFansItems0
-type StorageSwitchFansItems0 struct {
+// swagger:model storage_switch_inline_fans_inline_array_item
+type StorageSwitchInlineFansInlineArrayItem struct {
 
 	// Storage switch fan name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Storage switch fan speed
-	Speed int64 `json:"speed,omitempty"`
+	Speed *int64 `json:"speed,omitempty"`
 
 	// Storage switch fan state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage switch fans items0
-func (m *StorageSwitchFansItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline fans inline array item
+func (m *StorageSwitchInlineFansInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -1814,7 +1814,7 @@ func (m *StorageSwitchFansItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var storageSwitchFansItems0TypeStatePropEnum []interface{}
+var storageSwitchInlineFansInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1822,61 +1822,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchFansItems0TypeStatePropEnum = append(storageSwitchFansItems0TypeStatePropEnum, v)
+		storageSwitchInlineFansInlineArrayItemTypeStatePropEnum = append(storageSwitchInlineFansInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchFansItems0
-	// StorageSwitchFansItems0
+	// storage_switch_inline_fans_inline_array_item
+	// StorageSwitchInlineFansInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// StorageSwitchFansItems0StateOk captures enum value "ok"
-	StorageSwitchFansItems0StateOk string = "ok"
+	// StorageSwitchInlineFansInlineArrayItemStateOk captures enum value "ok"
+	StorageSwitchInlineFansInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchFansItems0
-	// StorageSwitchFansItems0
+	// storage_switch_inline_fans_inline_array_item
+	// StorageSwitchInlineFansInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageSwitchFansItems0StateError captures enum value "error"
-	StorageSwitchFansItems0StateError string = "error"
+	// StorageSwitchInlineFansInlineArrayItemStateError captures enum value "error"
+	StorageSwitchInlineFansInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *StorageSwitchFansItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchFansItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageSwitchInlineFansInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlineFansInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchFansItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineFansInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch fans items0 based on context it is used
-func (m *StorageSwitchFansItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline fans inline array item based on context it is used
+func (m *StorageSwitchInlineFansInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchFansItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineFansInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1884,8 +1884,8 @@ func (m *StorageSwitchFansItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchFansItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchFansItems0
+func (m *StorageSwitchInlineFansInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineFansInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1893,23 +1893,23 @@ func (m *StorageSwitchFansItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPathsItems0 storage switch paths items0
+// StorageSwitchInlinePathsInlineArrayItem storage switch inline paths inline array item
 //
-// swagger:model StorageSwitchPathsItems0
-type StorageSwitchPathsItems0 struct {
+// swagger:model storage_switch_inline_paths_inline_array_item
+type StorageSwitchInlinePathsInlineArrayItem struct {
 
 	// adapter
-	Adapter *StorageSwitchPathsItems0Adapter `json:"adapter,omitempty"`
+	Adapter *StorageSwitchInlinePathsInlineArrayItemInlineAdapter `json:"adapter,omitempty"`
 
 	// node
-	Node *StorageSwitchPathsItems0Node `json:"node,omitempty"`
+	Node *StorageSwitchInlinePathsInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// port
-	Port *StorageSwitchPathsItems0Port `json:"port,omitempty"`
+	Port *StorageSwitchInlinePathsInlineArrayItemInlinePort `json:"port,omitempty"`
 }
 
-// Validate validates this storage switch paths items0
-func (m *StorageSwitchPathsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline paths inline array item
+func (m *StorageSwitchInlinePathsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAdapter(formats); err != nil {
@@ -1930,7 +1930,7 @@ func (m *StorageSwitchPathsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0) validateAdapter(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItem) validateAdapter(formats strfmt.Registry) error {
 	if swag.IsZero(m.Adapter) { // not required
 		return nil
 	}
@@ -1947,7 +1947,7 @@ func (m *StorageSwitchPathsItems0) validateAdapter(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0) validateNode(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1964,7 +1964,7 @@ func (m *StorageSwitchPathsItems0) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0) validatePort(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItem) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
@@ -1981,8 +1981,8 @@ func (m *StorageSwitchPathsItems0) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage switch paths items0 based on the context it is used
-func (m *StorageSwitchPathsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline paths inline array item based on the context it is used
+func (m *StorageSwitchInlinePathsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAdapter(ctx, formats); err != nil {
@@ -2003,7 +2003,7 @@ func (m *StorageSwitchPathsItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0) contextValidateAdapter(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItem) contextValidateAdapter(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Adapter != nil {
 		if err := m.Adapter.ContextValidate(ctx, formats); err != nil {
@@ -2017,7 +2017,7 @@ func (m *StorageSwitchPathsItems0) contextValidateAdapter(ctx context.Context, f
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -2031,7 +2031,7 @@ func (m *StorageSwitchPathsItems0) contextValidateNode(ctx context.Context, form
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItem) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Port != nil {
 		if err := m.Port.ContextValidate(ctx, formats); err != nil {
@@ -2046,7 +2046,7 @@ func (m *StorageSwitchPathsItems0) contextValidatePort(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePathsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2054,8 +2054,8 @@ func (m *StorageSwitchPathsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPathsItems0
+func (m *StorageSwitchInlinePathsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePathsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2063,24 +2063,24 @@ func (m *StorageSwitchPathsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPathsItems0Adapter storage switch paths items0 adapter
+// StorageSwitchInlinePathsInlineArrayItemInlineAdapter storage switch inline paths inline array item inline adapter
 //
-// swagger:model StorageSwitchPathsItems0Adapter
-type StorageSwitchPathsItems0Adapter struct {
+// swagger:model storage_switch_inline_paths_inline_array_item_inline_adapter
+type StorageSwitchInlinePathsInlineArrayItemInlineAdapter struct {
 
 	// Node adapter name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Node adapter type
 	// Enum: [unknown fcp_initiator fc_vi fcp_target]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Node adapter world wide name
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage switch paths items0 adapter
-func (m *StorageSwitchPathsItems0Adapter) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline paths inline array item inline adapter
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineAdapter) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -2093,7 +2093,7 @@ func (m *StorageSwitchPathsItems0Adapter) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-var storageSwitchPathsItems0AdapterTypeTypePropEnum []interface{}
+var storageSwitchInlinePathsInlineArrayItemInlineAdapterTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2101,81 +2101,81 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchPathsItems0AdapterTypeTypePropEnum = append(storageSwitchPathsItems0AdapterTypeTypePropEnum, v)
+		storageSwitchInlinePathsInlineArrayItemInlineAdapterTypeTypePropEnum = append(storageSwitchInlinePathsInlineArrayItemInlineAdapterTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPathsItems0Adapter
-	// StorageSwitchPathsItems0Adapter
+	// storage_switch_inline_paths_inline_array_item_inline_adapter
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapter
 	// type
 	// Type
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchPathsItems0AdapterTypeUnknown captures enum value "unknown"
-	StorageSwitchPathsItems0AdapterTypeUnknown string = "unknown"
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeUnknown captures enum value "unknown"
+	StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPathsItems0Adapter
-	// StorageSwitchPathsItems0Adapter
+	// storage_switch_inline_paths_inline_array_item_inline_adapter
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapter
 	// type
 	// Type
 	// fcp_initiator
 	// END DEBUGGING
-	// StorageSwitchPathsItems0AdapterTypeFcpInitiator captures enum value "fcp_initiator"
-	StorageSwitchPathsItems0AdapterTypeFcpInitiator string = "fcp_initiator"
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeFcpInitiator captures enum value "fcp_initiator"
+	StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeFcpInitiator string = "fcp_initiator"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPathsItems0Adapter
-	// StorageSwitchPathsItems0Adapter
+	// storage_switch_inline_paths_inline_array_item_inline_adapter
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapter
 	// type
 	// Type
 	// fc_vi
 	// END DEBUGGING
-	// StorageSwitchPathsItems0AdapterTypeFcVi captures enum value "fc_vi"
-	StorageSwitchPathsItems0AdapterTypeFcVi string = "fc_vi"
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeFcVi captures enum value "fc_vi"
+	StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeFcVi string = "fc_vi"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPathsItems0Adapter
-	// StorageSwitchPathsItems0Adapter
+	// storage_switch_inline_paths_inline_array_item_inline_adapter
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapter
 	// type
 	// Type
 	// fcp_target
 	// END DEBUGGING
-	// StorageSwitchPathsItems0AdapterTypeFcpTarget captures enum value "fcp_target"
-	StorageSwitchPathsItems0AdapterTypeFcpTarget string = "fcp_target"
+	// StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeFcpTarget captures enum value "fcp_target"
+	StorageSwitchInlinePathsInlineArrayItemInlineAdapterTypeFcpTarget string = "fcp_target"
 )
 
 // prop value enum
-func (m *StorageSwitchPathsItems0Adapter) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchPathsItems0AdapterTypeTypePropEnum, true); err != nil {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineAdapter) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlinePathsInlineArrayItemInlineAdapterTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0Adapter) validateType(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineAdapter) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("adapter"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("adapter"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch paths items0 adapter based on context it is used
-func (m *StorageSwitchPathsItems0Adapter) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline paths inline array item inline adapter based on context it is used
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineAdapter) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0Adapter) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineAdapter) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2183,8 +2183,8 @@ func (m *StorageSwitchPathsItems0Adapter) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0Adapter) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPathsItems0Adapter
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineAdapter) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePathsInlineArrayItemInlineAdapter
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2192,25 +2192,25 @@ func (m *StorageSwitchPathsItems0Adapter) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPathsItems0Node storage switch paths items0 node
+// StorageSwitchInlinePathsInlineArrayItemInlineNode storage switch inline paths inline array item inline node
 //
-// swagger:model StorageSwitchPathsItems0Node
-type StorageSwitchPathsItems0Node struct {
+// swagger:model storage_switch_inline_paths_inline_array_item_inline_node
+type StorageSwitchInlinePathsInlineArrayItemInlineNode struct {
 
 	// links
-	Links *StorageSwitchPathsItems0NodeLinks `json:"_links,omitempty"`
+	Links *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this storage switch paths items0 node
-func (m *StorageSwitchPathsItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline paths inline array item inline node
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2223,7 +2223,7 @@ func (m *StorageSwitchPathsItems0Node) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2240,8 +2240,8 @@ func (m *StorageSwitchPathsItems0Node) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this storage switch paths items0 node based on the context it is used
-func (m *StorageSwitchPathsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline paths inline array item inline node based on the context it is used
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2254,7 +2254,7 @@ func (m *StorageSwitchPathsItems0Node) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2269,7 +2269,7 @@ func (m *StorageSwitchPathsItems0Node) contextValidateLinks(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0Node) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2277,8 +2277,8 @@ func (m *StorageSwitchPathsItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0Node) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPathsItems0Node
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePathsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2286,17 +2286,17 @@ func (m *StorageSwitchPathsItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPathsItems0NodeLinks storage switch paths items0 node links
+// StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks storage switch inline paths inline array item inline node inline links
 //
-// swagger:model StorageSwitchPathsItems0NodeLinks
-type StorageSwitchPathsItems0NodeLinks struct {
+// swagger:model storage_switch_inline_paths_inline_array_item_inline_node_inline__links
+type StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage switch paths items0 node links
-func (m *StorageSwitchPathsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline paths inline array item inline node inline links
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2309,7 +2309,7 @@ func (m *StorageSwitchPathsItems0NodeLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2326,8 +2326,8 @@ func (m *StorageSwitchPathsItems0NodeLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this storage switch paths items0 node links based on the context it is used
-func (m *StorageSwitchPathsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline paths inline array item inline node inline links based on the context it is used
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2340,7 +2340,7 @@ func (m *StorageSwitchPathsItems0NodeLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *StorageSwitchPathsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2355,7 +2355,7 @@ func (m *StorageSwitchPathsItems0NodeLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2363,8 +2363,8 @@ func (m *StorageSwitchPathsItems0NodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPathsItems0NodeLinks
+func (m *StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePathsInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2372,30 +2372,30 @@ func (m *StorageSwitchPathsItems0NodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPathsItems0Port storage switch paths items0 port
+// StorageSwitchInlinePathsInlineArrayItemInlinePort storage switch inline paths inline array item inline port
 //
-// swagger:model StorageSwitchPathsItems0Port
-type StorageSwitchPathsItems0Port struct {
+// swagger:model storage_switch_inline_paths_inline_array_item_inline_port
+type StorageSwitchInlinePathsInlineArrayItemInlinePort struct {
 
 	// Storage switch port name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Storage switch port speed, in Gbps
-	Speed int64 `json:"speed,omitempty"`
+	Speed *int64 `json:"speed,omitempty"`
 }
 
-// Validate validates this storage switch paths items0 port
-func (m *StorageSwitchPathsItems0Port) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline paths inline array item inline port
+func (m *StorageSwitchInlinePathsInlineArrayItemInlinePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage switch paths items0 port based on context it is used
-func (m *StorageSwitchPathsItems0Port) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline paths inline array item inline port based on context it is used
+func (m *StorageSwitchInlinePathsInlineArrayItemInlinePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0Port) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePathsInlineArrayItemInlinePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2403,8 +2403,8 @@ func (m *StorageSwitchPathsItems0Port) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPathsItems0Port) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPathsItems0Port
+func (m *StorageSwitchInlinePathsInlineArrayItemInlinePort) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePathsInlineArrayItemInlinePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2412,37 +2412,37 @@ func (m *StorageSwitchPathsItems0Port) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPortsItems0 storage switch ports items0
+// StorageSwitchInlinePortsInlineArrayItem storage switch inline ports inline array item
 //
-// swagger:model StorageSwitchPortsItems0
-type StorageSwitchPortsItems0 struct {
+// swagger:model storage_switch_inline_ports_inline_array_item
+type StorageSwitchInlinePortsInlineArrayItem struct {
 
 	// Indicates whether the storage switch port is enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Storage switch port mode
 	// Enum: [unknown auto f_port fl_port e_port te_port u_port g_port other ex_port d_port sim_port ve_port ae_port af_port]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// Storage switch port name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// sfp
-	Sfp *StorageSwitchPortsItems0Sfp `json:"sfp,omitempty"`
+	Sfp *StorageSwitchInlinePortsInlineArrayItemInlineSfp `json:"sfp,omitempty"`
 
 	// Storage switch port speed, in Gbps
-	Speed int64 `json:"speed,omitempty"`
+	Speed *int64 `json:"speed,omitempty"`
 
 	// Storage switch port state
 	// Enum: [error online offline]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Storage switch port world wide name
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage switch ports items0
-func (m *StorageSwitchPortsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline ports inline array item
+func (m *StorageSwitchInlinePortsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMode(formats); err != nil {
@@ -2463,7 +2463,7 @@ func (m *StorageSwitchPortsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var storageSwitchPortsItems0TypeModePropEnum []interface{}
+var storageSwitchInlinePortsInlineArrayItemTypeModePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2471,185 +2471,185 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchPortsItems0TypeModePropEnum = append(storageSwitchPortsItems0TypeModePropEnum, v)
+		storageSwitchInlinePortsInlineArrayItemTypeModePropEnum = append(storageSwitchInlinePortsInlineArrayItemTypeModePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeUnknown captures enum value "unknown"
-	StorageSwitchPortsItems0ModeUnknown string = "unknown"
+	// StorageSwitchInlinePortsInlineArrayItemModeUnknown captures enum value "unknown"
+	StorageSwitchInlinePortsInlineArrayItemModeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// auto
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeAuto captures enum value "auto"
-	StorageSwitchPortsItems0ModeAuto string = "auto"
+	// StorageSwitchInlinePortsInlineArrayItemModeAuto captures enum value "auto"
+	StorageSwitchInlinePortsInlineArrayItemModeAuto string = "auto"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// f_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeFPort captures enum value "f_port"
-	StorageSwitchPortsItems0ModeFPort string = "f_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeFPort captures enum value "f_port"
+	StorageSwitchInlinePortsInlineArrayItemModeFPort string = "f_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// fl_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeFlPort captures enum value "fl_port"
-	StorageSwitchPortsItems0ModeFlPort string = "fl_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeFlPort captures enum value "fl_port"
+	StorageSwitchInlinePortsInlineArrayItemModeFlPort string = "fl_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// e_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeEPort captures enum value "e_port"
-	StorageSwitchPortsItems0ModeEPort string = "e_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeEPort captures enum value "e_port"
+	StorageSwitchInlinePortsInlineArrayItemModeEPort string = "e_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// te_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeTePort captures enum value "te_port"
-	StorageSwitchPortsItems0ModeTePort string = "te_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeTePort captures enum value "te_port"
+	StorageSwitchInlinePortsInlineArrayItemModeTePort string = "te_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// u_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeUPort captures enum value "u_port"
-	StorageSwitchPortsItems0ModeUPort string = "u_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeUPort captures enum value "u_port"
+	StorageSwitchInlinePortsInlineArrayItemModeUPort string = "u_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// g_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeGPort captures enum value "g_port"
-	StorageSwitchPortsItems0ModeGPort string = "g_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeGPort captures enum value "g_port"
+	StorageSwitchInlinePortsInlineArrayItemModeGPort string = "g_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// other
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeOther captures enum value "other"
-	StorageSwitchPortsItems0ModeOther string = "other"
+	// StorageSwitchInlinePortsInlineArrayItemModeOther captures enum value "other"
+	StorageSwitchInlinePortsInlineArrayItemModeOther string = "other"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// ex_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeExPort captures enum value "ex_port"
-	StorageSwitchPortsItems0ModeExPort string = "ex_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeExPort captures enum value "ex_port"
+	StorageSwitchInlinePortsInlineArrayItemModeExPort string = "ex_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// d_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeDPort captures enum value "d_port"
-	StorageSwitchPortsItems0ModeDPort string = "d_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeDPort captures enum value "d_port"
+	StorageSwitchInlinePortsInlineArrayItemModeDPort string = "d_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// sim_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeSimPort captures enum value "sim_port"
-	StorageSwitchPortsItems0ModeSimPort string = "sim_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeSimPort captures enum value "sim_port"
+	StorageSwitchInlinePortsInlineArrayItemModeSimPort string = "sim_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// ve_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeVePort captures enum value "ve_port"
-	StorageSwitchPortsItems0ModeVePort string = "ve_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeVePort captures enum value "ve_port"
+	StorageSwitchInlinePortsInlineArrayItemModeVePort string = "ve_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// ae_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeAePort captures enum value "ae_port"
-	StorageSwitchPortsItems0ModeAePort string = "ae_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeAePort captures enum value "ae_port"
+	StorageSwitchInlinePortsInlineArrayItemModeAePort string = "ae_port"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// mode
 	// Mode
 	// af_port
 	// END DEBUGGING
-	// StorageSwitchPortsItems0ModeAfPort captures enum value "af_port"
-	StorageSwitchPortsItems0ModeAfPort string = "af_port"
+	// StorageSwitchInlinePortsInlineArrayItemModeAfPort captures enum value "af_port"
+	StorageSwitchInlinePortsInlineArrayItemModeAfPort string = "af_port"
 )
 
 // prop value enum
-func (m *StorageSwitchPortsItems0) validateModeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchPortsItems0TypeModePropEnum, true); err != nil {
+func (m *StorageSwitchInlinePortsInlineArrayItem) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlinePortsInlineArrayItemTypeModePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchPortsItems0) validateMode(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePortsInlineArrayItem) validateMode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mode) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateModeEnum("mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *StorageSwitchPortsItems0) validateSfp(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePortsInlineArrayItem) validateSfp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Sfp) { // not required
 		return nil
 	}
@@ -2666,7 +2666,7 @@ func (m *StorageSwitchPortsItems0) validateSfp(formats strfmt.Registry) error {
 	return nil
 }
 
-var storageSwitchPortsItems0TypeStatePropEnum []interface{}
+var storageSwitchInlinePortsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2674,66 +2674,66 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchPortsItems0TypeStatePropEnum = append(storageSwitchPortsItems0TypeStatePropEnum, v)
+		storageSwitchInlinePortsInlineArrayItemTypeStatePropEnum = append(storageSwitchInlinePortsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageSwitchPortsItems0StateError captures enum value "error"
-	StorageSwitchPortsItems0StateError string = "error"
+	// StorageSwitchInlinePortsInlineArrayItemStateError captures enum value "error"
+	StorageSwitchInlinePortsInlineArrayItemStateError string = "error"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// state
 	// State
 	// online
 	// END DEBUGGING
-	// StorageSwitchPortsItems0StateOnline captures enum value "online"
-	StorageSwitchPortsItems0StateOnline string = "online"
+	// StorageSwitchInlinePortsInlineArrayItemStateOnline captures enum value "online"
+	StorageSwitchInlinePortsInlineArrayItemStateOnline string = "online"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0
-	// StorageSwitchPortsItems0
+	// storage_switch_inline_ports_inline_array_item
+	// StorageSwitchInlinePortsInlineArrayItem
 	// state
 	// State
 	// offline
 	// END DEBUGGING
-	// StorageSwitchPortsItems0StateOffline captures enum value "offline"
-	StorageSwitchPortsItems0StateOffline string = "offline"
+	// StorageSwitchInlinePortsInlineArrayItemStateOffline captures enum value "offline"
+	StorageSwitchInlinePortsInlineArrayItemStateOffline string = "offline"
 )
 
 // prop value enum
-func (m *StorageSwitchPortsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchPortsItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageSwitchInlinePortsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlinePortsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchPortsItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePortsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this storage switch ports items0 based on the context it is used
-func (m *StorageSwitchPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline ports inline array item based on the context it is used
+func (m *StorageSwitchInlinePortsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSfp(ctx, formats); err != nil {
@@ -2746,7 +2746,7 @@ func (m *StorageSwitchPortsItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StorageSwitchPortsItems0) contextValidateSfp(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePortsInlineArrayItem) contextValidateSfp(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Sfp != nil {
 		if err := m.Sfp.ContextValidate(ctx, formats); err != nil {
@@ -2761,7 +2761,7 @@ func (m *StorageSwitchPortsItems0) contextValidateSfp(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPortsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePortsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2769,8 +2769,8 @@ func (m *StorageSwitchPortsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPortsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPortsItems0
+func (m *StorageSwitchInlinePortsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePortsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2778,25 +2778,25 @@ func (m *StorageSwitchPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPortsItems0Sfp storage switch ports items0 sfp
+// StorageSwitchInlinePortsInlineArrayItemInlineSfp storage switch inline ports inline array item inline sfp
 //
-// swagger:model StorageSwitchPortsItems0Sfp
-type StorageSwitchPortsItems0Sfp struct {
+// swagger:model storage_switch_inline_ports_inline_array_item_inline_sfp
+type StorageSwitchInlinePortsInlineArrayItemInlineSfp struct {
 
 	// Storage switch port SFP serial number
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Storage switch port SFP transmitter type
 	// Enum: [unknown long_wave_laser short_wave_laser long_wave_laser_cost_reduced electrical ten_gig_base_sr ten_gig_base_lr ten_gig_base_er ten_gig_base_lx4 ten_gig_base_sw ten_gig_base_lw ten_gig_base_ew]
-	TransmitterType string `json:"transmitter_type,omitempty"`
+	TransmitterType *string `json:"transmitter_type,omitempty"`
 
 	// Storage switch port SFP type
 	// Enum: [unknown other gbic embedded glm gbic_with_serial_id gbic_without_serial_id sfp_with_serial_id sfp_without_serial_id xfp x2_short x2_medium x2_tall xpak_short xpak_medium xpak_tall xenpak sfp_dw_dm qsfp x2_dw_dm gbic_not_installed small_form_factor]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
-// Validate validates this storage switch ports items0 sfp
-func (m *StorageSwitchPortsItems0Sfp) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline ports inline array item inline sfp
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateTransmitterType(formats); err != nil {
@@ -2813,7 +2813,7 @@ func (m *StorageSwitchPortsItems0Sfp) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var storageSwitchPortsItems0SfpTypeTransmitterTypePropEnum []interface{}
+var storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTransmitterTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2821,155 +2821,155 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchPortsItems0SfpTypeTransmitterTypePropEnum = append(storageSwitchPortsItems0SfpTypeTransmitterTypePropEnum, v)
+		storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTransmitterTypePropEnum = append(storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTransmitterTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeUnknown captures enum value "unknown"
-	StorageSwitchPortsItems0SfpTransmitterTypeUnknown string = "unknown"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeUnknown captures enum value "unknown"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// long_wave_laser
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeLongWaveLaser captures enum value "long_wave_laser"
-	StorageSwitchPortsItems0SfpTransmitterTypeLongWaveLaser string = "long_wave_laser"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeLongWaveLaser captures enum value "long_wave_laser"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeLongWaveLaser string = "long_wave_laser"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// short_wave_laser
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeShortWaveLaser captures enum value "short_wave_laser"
-	StorageSwitchPortsItems0SfpTransmitterTypeShortWaveLaser string = "short_wave_laser"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeShortWaveLaser captures enum value "short_wave_laser"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeShortWaveLaser string = "short_wave_laser"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// long_wave_laser_cost_reduced
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeLongWaveLaserCostReduced captures enum value "long_wave_laser_cost_reduced"
-	StorageSwitchPortsItems0SfpTransmitterTypeLongWaveLaserCostReduced string = "long_wave_laser_cost_reduced"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeLongWaveLaserCostReduced captures enum value "long_wave_laser_cost_reduced"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeLongWaveLaserCostReduced string = "long_wave_laser_cost_reduced"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// electrical
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeElectrical captures enum value "electrical"
-	StorageSwitchPortsItems0SfpTransmitterTypeElectrical string = "electrical"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeElectrical captures enum value "electrical"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeElectrical string = "electrical"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_sr
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseSr captures enum value "ten_gig_base_sr"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseSr string = "ten_gig_base_sr"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseSr captures enum value "ten_gig_base_sr"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseSr string = "ten_gig_base_sr"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_lr
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseLr captures enum value "ten_gig_base_lr"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseLr string = "ten_gig_base_lr"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseLr captures enum value "ten_gig_base_lr"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseLr string = "ten_gig_base_lr"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_er
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseEr captures enum value "ten_gig_base_er"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseEr string = "ten_gig_base_er"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseEr captures enum value "ten_gig_base_er"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseEr string = "ten_gig_base_er"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_lx4
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseLx4 captures enum value "ten_gig_base_lx4"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseLx4 string = "ten_gig_base_lx4"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseLx4 captures enum value "ten_gig_base_lx4"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseLx4 string = "ten_gig_base_lx4"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_sw
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseSw captures enum value "ten_gig_base_sw"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseSw string = "ten_gig_base_sw"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseSw captures enum value "ten_gig_base_sw"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseSw string = "ten_gig_base_sw"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_lw
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseLw captures enum value "ten_gig_base_lw"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseLw string = "ten_gig_base_lw"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseLw captures enum value "ten_gig_base_lw"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseLw string = "ten_gig_base_lw"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// transmitter_type
 	// TransmitterType
 	// ten_gig_base_ew
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseEw captures enum value "ten_gig_base_ew"
-	StorageSwitchPortsItems0SfpTransmitterTypeTenGigBaseEw string = "ten_gig_base_ew"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseEw captures enum value "ten_gig_base_ew"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTransmitterTypeTenGigBaseEw string = "ten_gig_base_ew"
 )
 
 // prop value enum
-func (m *StorageSwitchPortsItems0Sfp) validateTransmitterTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchPortsItems0SfpTypeTransmitterTypePropEnum, true); err != nil {
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) validateTransmitterTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTransmitterTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchPortsItems0Sfp) validateTransmitterType(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) validateTransmitterType(formats strfmt.Registry) error {
 	if swag.IsZero(m.TransmitterType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTransmitterTypeEnum("sfp"+"."+"transmitter_type", "body", m.TransmitterType); err != nil {
+	if err := m.validateTransmitterTypeEnum("sfp"+"."+"transmitter_type", "body", *m.TransmitterType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var storageSwitchPortsItems0SfpTypeTypePropEnum []interface{}
+var storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2977,261 +2977,261 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchPortsItems0SfpTypeTypePropEnum = append(storageSwitchPortsItems0SfpTypeTypePropEnum, v)
+		storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTypePropEnum = append(storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// unknown
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeUnknown captures enum value "unknown"
-	StorageSwitchPortsItems0SfpTypeUnknown string = "unknown"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeUnknown captures enum value "unknown"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeUnknown string = "unknown"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// other
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeOther captures enum value "other"
-	StorageSwitchPortsItems0SfpTypeOther string = "other"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeOther captures enum value "other"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeOther string = "other"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// gbic
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeGbic captures enum value "gbic"
-	StorageSwitchPortsItems0SfpTypeGbic string = "gbic"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbic captures enum value "gbic"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbic string = "gbic"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// embedded
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeEmbedded captures enum value "embedded"
-	StorageSwitchPortsItems0SfpTypeEmbedded string = "embedded"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeEmbedded captures enum value "embedded"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeEmbedded string = "embedded"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// glm
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeGlm captures enum value "glm"
-	StorageSwitchPortsItems0SfpTypeGlm string = "glm"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGlm captures enum value "glm"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGlm string = "glm"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// gbic_with_serial_id
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeGbicWithSerialID captures enum value "gbic_with_serial_id"
-	StorageSwitchPortsItems0SfpTypeGbicWithSerialID string = "gbic_with_serial_id"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbicWithSerialID captures enum value "gbic_with_serial_id"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbicWithSerialID string = "gbic_with_serial_id"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// gbic_without_serial_id
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeGbicWithoutSerialID captures enum value "gbic_without_serial_id"
-	StorageSwitchPortsItems0SfpTypeGbicWithoutSerialID string = "gbic_without_serial_id"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbicWithoutSerialID captures enum value "gbic_without_serial_id"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbicWithoutSerialID string = "gbic_without_serial_id"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// sfp_with_serial_id
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeSfpWithSerialID captures enum value "sfp_with_serial_id"
-	StorageSwitchPortsItems0SfpTypeSfpWithSerialID string = "sfp_with_serial_id"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSfpWithSerialID captures enum value "sfp_with_serial_id"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSfpWithSerialID string = "sfp_with_serial_id"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// sfp_without_serial_id
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeSfpWithoutSerialID captures enum value "sfp_without_serial_id"
-	StorageSwitchPortsItems0SfpTypeSfpWithoutSerialID string = "sfp_without_serial_id"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSfpWithoutSerialID captures enum value "sfp_without_serial_id"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSfpWithoutSerialID string = "sfp_without_serial_id"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// xfp
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeXfp captures enum value "xfp"
-	StorageSwitchPortsItems0SfpTypeXfp string = "xfp"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXfp captures enum value "xfp"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXfp string = "xfp"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// x2_short
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeX2Short captures enum value "x2_short"
-	StorageSwitchPortsItems0SfpTypeX2Short string = "x2_short"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2Short captures enum value "x2_short"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2Short string = "x2_short"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// x2_medium
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeX2Medium captures enum value "x2_medium"
-	StorageSwitchPortsItems0SfpTypeX2Medium string = "x2_medium"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2Medium captures enum value "x2_medium"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2Medium string = "x2_medium"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// x2_tall
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeX2Tall captures enum value "x2_tall"
-	StorageSwitchPortsItems0SfpTypeX2Tall string = "x2_tall"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2Tall captures enum value "x2_tall"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2Tall string = "x2_tall"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// xpak_short
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeXpakShort captures enum value "xpak_short"
-	StorageSwitchPortsItems0SfpTypeXpakShort string = "xpak_short"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXpakShort captures enum value "xpak_short"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXpakShort string = "xpak_short"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// xpak_medium
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeXpakMedium captures enum value "xpak_medium"
-	StorageSwitchPortsItems0SfpTypeXpakMedium string = "xpak_medium"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXpakMedium captures enum value "xpak_medium"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXpakMedium string = "xpak_medium"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// xpak_tall
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeXpakTall captures enum value "xpak_tall"
-	StorageSwitchPortsItems0SfpTypeXpakTall string = "xpak_tall"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXpakTall captures enum value "xpak_tall"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXpakTall string = "xpak_tall"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// xenpak
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeXenpak captures enum value "xenpak"
-	StorageSwitchPortsItems0SfpTypeXenpak string = "xenpak"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXenpak captures enum value "xenpak"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeXenpak string = "xenpak"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// sfp_dw_dm
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeSfpDwDm captures enum value "sfp_dw_dm"
-	StorageSwitchPortsItems0SfpTypeSfpDwDm string = "sfp_dw_dm"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSfpDwDm captures enum value "sfp_dw_dm"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSfpDwDm string = "sfp_dw_dm"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// qsfp
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeQsfp captures enum value "qsfp"
-	StorageSwitchPortsItems0SfpTypeQsfp string = "qsfp"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeQsfp captures enum value "qsfp"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeQsfp string = "qsfp"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// x2_dw_dm
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeX2DwDm captures enum value "x2_dw_dm"
-	StorageSwitchPortsItems0SfpTypeX2DwDm string = "x2_dw_dm"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2DwDm captures enum value "x2_dw_dm"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeX2DwDm string = "x2_dw_dm"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// gbic_not_installed
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeGbicNotInstalled captures enum value "gbic_not_installed"
-	StorageSwitchPortsItems0SfpTypeGbicNotInstalled string = "gbic_not_installed"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbicNotInstalled captures enum value "gbic_not_installed"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeGbicNotInstalled string = "gbic_not_installed"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPortsItems0Sfp
-	// StorageSwitchPortsItems0Sfp
+	// storage_switch_inline_ports_inline_array_item_inline_sfp
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	// type
 	// Type
 	// small_form_factor
 	// END DEBUGGING
-	// StorageSwitchPortsItems0SfpTypeSmallFormFactor captures enum value "small_form_factor"
-	StorageSwitchPortsItems0SfpTypeSmallFormFactor string = "small_form_factor"
+	// StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSmallFormFactor captures enum value "small_form_factor"
+	StorageSwitchInlinePortsInlineArrayItemInlineSfpTypeSmallFormFactor string = "small_form_factor"
 )
 
 // prop value enum
-func (m *StorageSwitchPortsItems0Sfp) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchPortsItems0SfpTypeTypePropEnum, true); err != nil {
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlinePortsInlineArrayItemInlineSfpTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchPortsItems0Sfp) validateType(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("sfp"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("sfp"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch ports items0 sfp based on context it is used
-func (m *StorageSwitchPortsItems0Sfp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline ports inline array item inline sfp based on context it is used
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPortsItems0Sfp) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3239,8 +3239,8 @@ func (m *StorageSwitchPortsItems0Sfp) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPortsItems0Sfp) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPortsItems0Sfp
+func (m *StorageSwitchInlinePortsInlineArrayItemInlineSfp) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePortsInlineArrayItemInlineSfp
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3248,21 +3248,21 @@ func (m *StorageSwitchPortsItems0Sfp) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchPowerSupplyUnitsItems0 storage switch power supply units items0
+// StorageSwitchInlinePowerSupplyUnitsInlineArrayItem storage switch inline power supply units inline array item
 //
-// swagger:model StorageSwitchPowerSupplyUnitsItems0
-type StorageSwitchPowerSupplyUnitsItems0 struct {
+// swagger:model storage_switch_inline_power_supply_units_inline_array_item
+type StorageSwitchInlinePowerSupplyUnitsInlineArrayItem struct {
 
 	// Power supply unit name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Power supply unit state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage switch power supply units items0
-func (m *StorageSwitchPowerSupplyUnitsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline power supply units inline array item
+func (m *StorageSwitchInlinePowerSupplyUnitsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -3275,7 +3275,7 @@ func (m *StorageSwitchPowerSupplyUnitsItems0) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-var storageSwitchPowerSupplyUnitsItems0TypeStatePropEnum []interface{}
+var storageSwitchInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3283,61 +3283,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchPowerSupplyUnitsItems0TypeStatePropEnum = append(storageSwitchPowerSupplyUnitsItems0TypeStatePropEnum, v)
+		storageSwitchInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum = append(storageSwitchInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPowerSupplyUnitsItems0
-	// StorageSwitchPowerSupplyUnitsItems0
+	// storage_switch_inline_power_supply_units_inline_array_item
+	// StorageSwitchInlinePowerSupplyUnitsInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// StorageSwitchPowerSupplyUnitsItems0StateOk captures enum value "ok"
-	StorageSwitchPowerSupplyUnitsItems0StateOk string = "ok"
+	// StorageSwitchInlinePowerSupplyUnitsInlineArrayItemStateOk captures enum value "ok"
+	StorageSwitchInlinePowerSupplyUnitsInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchPowerSupplyUnitsItems0
-	// StorageSwitchPowerSupplyUnitsItems0
+	// storage_switch_inline_power_supply_units_inline_array_item
+	// StorageSwitchInlinePowerSupplyUnitsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageSwitchPowerSupplyUnitsItems0StateError captures enum value "error"
-	StorageSwitchPowerSupplyUnitsItems0StateError string = "error"
+	// StorageSwitchInlinePowerSupplyUnitsInlineArrayItemStateError captures enum value "error"
+	StorageSwitchInlinePowerSupplyUnitsInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *StorageSwitchPowerSupplyUnitsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchPowerSupplyUnitsItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageSwitchInlinePowerSupplyUnitsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlinePowerSupplyUnitsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchPowerSupplyUnitsItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageSwitchInlinePowerSupplyUnitsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch power supply units items0 based on context it is used
-func (m *StorageSwitchPowerSupplyUnitsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline power supply units inline array item based on context it is used
+func (m *StorageSwitchInlinePowerSupplyUnitsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchPowerSupplyUnitsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlinePowerSupplyUnitsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3345,8 +3345,8 @@ func (m *StorageSwitchPowerSupplyUnitsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchPowerSupplyUnitsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchPowerSupplyUnitsItems0
+func (m *StorageSwitchInlinePowerSupplyUnitsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlinePowerSupplyUnitsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3354,24 +3354,24 @@ func (m *StorageSwitchPowerSupplyUnitsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchTemperatureSensorsItems0 storage switch temperature sensors items0
+// StorageSwitchInlineTemperatureSensorsInlineArrayItem storage switch inline temperature sensors inline array item
 //
-// swagger:model StorageSwitchTemperatureSensorsItems0
-type StorageSwitchTemperatureSensorsItems0 struct {
+// swagger:model storage_switch_inline_temperature_sensors_inline_array_item
+type StorageSwitchInlineTemperatureSensorsInlineArrayItem struct {
 
 	// Temperature sensor name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Temperature sensor reading, in degrees celsius.
-	Reading int64 `json:"reading,omitempty"`
+	Reading *int64 `json:"reading,omitempty"`
 
 	// Temperature sensor state
 	// Enum: [error ok]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage switch temperature sensors items0
-func (m *StorageSwitchTemperatureSensorsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline temperature sensors inline array item
+func (m *StorageSwitchInlineTemperatureSensorsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -3384,7 +3384,7 @@ func (m *StorageSwitchTemperatureSensorsItems0) Validate(formats strfmt.Registry
 	return nil
 }
 
-var storageSwitchTemperatureSensorsItems0TypeStatePropEnum []interface{}
+var storageSwitchInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3392,61 +3392,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchTemperatureSensorsItems0TypeStatePropEnum = append(storageSwitchTemperatureSensorsItems0TypeStatePropEnum, v)
+		storageSwitchInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum = append(storageSwitchInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchTemperatureSensorsItems0
-	// StorageSwitchTemperatureSensorsItems0
+	// storage_switch_inline_temperature_sensors_inline_array_item
+	// StorageSwitchInlineTemperatureSensorsInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageSwitchTemperatureSensorsItems0StateError captures enum value "error"
-	StorageSwitchTemperatureSensorsItems0StateError string = "error"
+	// StorageSwitchInlineTemperatureSensorsInlineArrayItemStateError captures enum value "error"
+	StorageSwitchInlineTemperatureSensorsInlineArrayItemStateError string = "error"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchTemperatureSensorsItems0
-	// StorageSwitchTemperatureSensorsItems0
+	// storage_switch_inline_temperature_sensors_inline_array_item
+	// StorageSwitchInlineTemperatureSensorsInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// StorageSwitchTemperatureSensorsItems0StateOk captures enum value "ok"
-	StorageSwitchTemperatureSensorsItems0StateOk string = "ok"
+	// StorageSwitchInlineTemperatureSensorsInlineArrayItemStateOk captures enum value "ok"
+	StorageSwitchInlineTemperatureSensorsInlineArrayItemStateOk string = "ok"
 )
 
 // prop value enum
-func (m *StorageSwitchTemperatureSensorsItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchTemperatureSensorsItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageSwitchInlineTemperatureSensorsInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlineTemperatureSensorsInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchTemperatureSensorsItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineTemperatureSensorsInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch temperature sensors items0 based on context it is used
-func (m *StorageSwitchTemperatureSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline temperature sensors inline array item based on context it is used
+func (m *StorageSwitchInlineTemperatureSensorsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchTemperatureSensorsItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineTemperatureSensorsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3454,8 +3454,8 @@ func (m *StorageSwitchTemperatureSensorsItems0) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchTemperatureSensorsItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchTemperatureSensorsItems0
+func (m *StorageSwitchInlineTemperatureSensorsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineTemperatureSensorsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3463,30 +3463,30 @@ func (m *StorageSwitchTemperatureSensorsItems0) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// StorageSwitchVsansItems0 storage switch vsans items0
+// StorageSwitchInlineVsansInlineArrayItem storage switch inline vsans inline array item
 //
-// swagger:model StorageSwitchVsansItems0
-type StorageSwitchVsansItems0 struct {
+// swagger:model storage_switch_inline_vsans_inline_array_item
+type StorageSwitchInlineVsansInlineArrayItem struct {
 
 	// Storage switch VSAN ID
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Indicates whether in-order delivery is set for a zone.
-	Iod bool `json:"iod,omitempty"`
+	Iod *bool `json:"iod,omitempty"`
 
 	// Storage switch VSAN load balancing type
-	LoadBalancingTypes string `json:"load_balancing_types,omitempty"`
+	LoadBalancingTypes *string `json:"load_balancing_types,omitempty"`
 
 	// Storage switch VSAN name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Storage switch VSAN Port state
 	// Enum: [ok error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this storage switch vsans items0
-func (m *StorageSwitchVsansItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline vsans inline array item
+func (m *StorageSwitchInlineVsansInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -3499,7 +3499,7 @@ func (m *StorageSwitchVsansItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var storageSwitchVsansItems0TypeStatePropEnum []interface{}
+var storageSwitchInlineVsansInlineArrayItemTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3507,61 +3507,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		storageSwitchVsansItems0TypeStatePropEnum = append(storageSwitchVsansItems0TypeStatePropEnum, v)
+		storageSwitchInlineVsansInlineArrayItemTypeStatePropEnum = append(storageSwitchInlineVsansInlineArrayItemTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// StorageSwitchVsansItems0
-	// StorageSwitchVsansItems0
+	// storage_switch_inline_vsans_inline_array_item
+	// StorageSwitchInlineVsansInlineArrayItem
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// StorageSwitchVsansItems0StateOk captures enum value "ok"
-	StorageSwitchVsansItems0StateOk string = "ok"
+	// StorageSwitchInlineVsansInlineArrayItemStateOk captures enum value "ok"
+	StorageSwitchInlineVsansInlineArrayItemStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// StorageSwitchVsansItems0
-	// StorageSwitchVsansItems0
+	// storage_switch_inline_vsans_inline_array_item
+	// StorageSwitchInlineVsansInlineArrayItem
 	// state
 	// State
 	// error
 	// END DEBUGGING
-	// StorageSwitchVsansItems0StateError captures enum value "error"
-	StorageSwitchVsansItems0StateError string = "error"
+	// StorageSwitchInlineVsansInlineArrayItemStateError captures enum value "error"
+	StorageSwitchInlineVsansInlineArrayItemStateError string = "error"
 )
 
 // prop value enum
-func (m *StorageSwitchVsansItems0) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, storageSwitchVsansItems0TypeStatePropEnum, true); err != nil {
+func (m *StorageSwitchInlineVsansInlineArrayItem) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storageSwitchInlineVsansInlineArrayItemTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *StorageSwitchVsansItems0) validateState(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineVsansInlineArrayItem) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this storage switch vsans items0 based on context it is used
-func (m *StorageSwitchVsansItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline vsans inline array item based on context it is used
+func (m *StorageSwitchInlineVsansInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchVsansItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineVsansInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3569,8 +3569,8 @@ func (m *StorageSwitchVsansItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchVsansItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchVsansItems0
+func (m *StorageSwitchInlineVsansInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineVsansInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3578,26 +3578,26 @@ func (m *StorageSwitchVsansItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchZonesItems0 storage switch zones items0
+// StorageSwitchInlineZonesInlineArrayItem storage switch inline zones inline array item
 //
-// swagger:model StorageSwitchZonesItems0
-type StorageSwitchZonesItems0 struct {
+// swagger:model storage_switch_inline_zones_inline_array_item
+type StorageSwitchInlineZonesInlineArrayItem struct {
 
 	// Storage switch zone ID
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Storage switch zone name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// port
-	Port *StorageSwitchZonesItems0Port `json:"port,omitempty"`
+	Port *StorageSwitchInlineZonesInlineArrayItemInlinePort `json:"port,omitempty"`
 
 	// Storage switch zone world wide name
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 }
 
-// Validate validates this storage switch zones items0
-func (m *StorageSwitchZonesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline zones inline array item
+func (m *StorageSwitchInlineZonesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePort(formats); err != nil {
@@ -3610,7 +3610,7 @@ func (m *StorageSwitchZonesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StorageSwitchZonesItems0) validatePort(formats strfmt.Registry) error {
+func (m *StorageSwitchInlineZonesInlineArrayItem) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
@@ -3627,8 +3627,8 @@ func (m *StorageSwitchZonesItems0) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage switch zones items0 based on the context it is used
-func (m *StorageSwitchZonesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage switch inline zones inline array item based on the context it is used
+func (m *StorageSwitchInlineZonesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePort(ctx, formats); err != nil {
@@ -3641,7 +3641,7 @@ func (m *StorageSwitchZonesItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StorageSwitchZonesItems0) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageSwitchInlineZonesInlineArrayItem) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Port != nil {
 		if err := m.Port.ContextValidate(ctx, formats); err != nil {
@@ -3656,7 +3656,7 @@ func (m *StorageSwitchZonesItems0) contextValidatePort(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchZonesItems0) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineZonesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3664,8 +3664,8 @@ func (m *StorageSwitchZonesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchZonesItems0) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchZonesItems0
+func (m *StorageSwitchInlineZonesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineZonesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3673,30 +3673,30 @@ func (m *StorageSwitchZonesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StorageSwitchZonesItems0Port storage switch zones items0 port
+// StorageSwitchInlineZonesInlineArrayItemInlinePort storage switch inline zones inline array item inline port
 //
-// swagger:model StorageSwitchZonesItems0Port
-type StorageSwitchZonesItems0Port struct {
+// swagger:model storage_switch_inline_zones_inline_array_item_inline_port
+type StorageSwitchInlineZonesInlineArrayItemInlinePort struct {
 
 	// Storage switch zone port ID
-	ID string `json:"id,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Storage switch zone port
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this storage switch zones items0 port
-func (m *StorageSwitchZonesItems0Port) Validate(formats strfmt.Registry) error {
+// Validate validates this storage switch inline zones inline array item inline port
+func (m *StorageSwitchInlineZonesInlineArrayItemInlinePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage switch zones items0 port based on context it is used
-func (m *StorageSwitchZonesItems0Port) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage switch inline zones inline array item inline port based on context it is used
+func (m *StorageSwitchInlineZonesInlineArrayItemInlinePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageSwitchZonesItems0Port) MarshalBinary() ([]byte, error) {
+func (m *StorageSwitchInlineZonesInlineArrayItemInlinePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3704,8 +3704,8 @@ func (m *StorageSwitchZonesItems0Port) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageSwitchZonesItems0Port) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchZonesItems0Port
+func (m *StorageSwitchInlineZonesInlineArrayItemInlinePort) UnmarshalBinary(b []byte) error {
+	var res StorageSwitchInlineZonesInlineArrayItemInlinePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

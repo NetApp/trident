@@ -66,13 +66,13 @@ type MetroclusterNodeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *MetroclusterNodeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the metrocluster node get params
-func (o *MetroclusterNodeGetParams) WithFieldsQueryParameter(fields []string) *MetroclusterNodeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the metrocluster node get params
+func (o *MetroclusterNodeGetParams) WithFields(fields []string) *MetroclusterNodeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the metrocluster node get params
-func (o *MetroclusterNodeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the metrocluster node get params
+func (o *MetroclusterNodeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the metrocluster node get params
-func (o *MetroclusterNodeGetParams) WithNodeUUIDPathParameter(nodeUUID string) *MetroclusterNodeGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the metrocluster node get params
+func (o *MetroclusterNodeGetParams) WithNodeUUID(nodeUUID string) *MetroclusterNodeGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the metrocluster node get params
-func (o *MetroclusterNodeGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the metrocluster node get params
+func (o *MetroclusterNodeGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *MetroclusterNodeGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *MetroclusterNodeGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *MetroclusterNodeGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamMetroclusterNodeGet binds the parameter fields
 func (o *MetroclusterNodeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -19,24 +19,24 @@ import (
 // swagger:model zapp_s3_bucket_application_components_access_policies_conditions
 type ZappS3BucketApplicationComponentsAccessPoliciesConditions struct {
 
-	// delimiters
-	Delimiters []string `json:"delimiters,omitempty"`
-
-	// max keys
-	MaxKeys []int64 `json:"max_keys,omitempty"`
-
 	// Policy Condition Operator.
 	// Required: true
 	Operator *string `json:"operator"`
 
-	// prefixes
-	Prefixes []string `json:"prefixes,omitempty"`
+	// zapp s3 bucket application components access policies conditions inline delimiters
+	ZappS3BucketApplicationComponentsAccessPoliciesConditionsInlineDelimiters []*string `json:"delimiters,omitempty"`
 
-	// source ips
-	SourceIps []string `json:"source_ips,omitempty"`
+	// zapp s3 bucket application components access policies conditions inline max keys
+	ZappS3BucketApplicationComponentsAccessPoliciesConditionsInlineMaxKeys []*int64 `json:"max_keys,omitempty"`
 
-	// usernames
-	Usernames []string `json:"usernames,omitempty"`
+	// zapp s3 bucket application components access policies conditions inline prefixes
+	ZappS3BucketApplicationComponentsAccessPoliciesConditionsInlinePrefixes []*string `json:"prefixes,omitempty"`
+
+	// zapp s3 bucket application components access policies conditions inline source ips
+	ZappS3BucketApplicationComponentsAccessPoliciesConditionsInlineSourceIps []*string `json:"source_ips,omitempty"`
+
+	// zapp s3 bucket application components access policies conditions inline usernames
+	ZappS3BucketApplicationComponentsAccessPoliciesConditionsInlineUsernames []*string `json:"usernames,omitempty"`
 }
 
 // Validate validates this zapp s3 bucket application components access policies conditions

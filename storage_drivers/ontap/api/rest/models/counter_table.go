@@ -20,16 +20,16 @@ import (
 type CounterTable struct {
 
 	// links
-	Links *CounterTableLinks `json:"_links,omitempty"`
+	Links *CounterTableInlineLinks `json:"_links,omitempty"`
 
 	// Array of counter schema definitions.
-	CounterSchemas []*CounterSchema `json:"counter_schemas,omitempty"`
+	CounterTableInlineCounterSchemas []*CounterSchema `json:"counter_schemas,omitempty"`
 
 	// Description of the table.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// Table name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this counter table
@@ -40,7 +40,7 @@ func (m *CounterTable) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateCounterSchemas(formats); err != nil {
+	if err := m.validateCounterTableInlineCounterSchemas(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,18 +67,18 @@ func (m *CounterTable) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterTable) validateCounterSchemas(formats strfmt.Registry) error {
-	if swag.IsZero(m.CounterSchemas) { // not required
+func (m *CounterTable) validateCounterTableInlineCounterSchemas(formats strfmt.Registry) error {
+	if swag.IsZero(m.CounterTableInlineCounterSchemas) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.CounterSchemas); i++ {
-		if swag.IsZero(m.CounterSchemas[i]) { // not required
+	for i := 0; i < len(m.CounterTableInlineCounterSchemas); i++ {
+		if swag.IsZero(m.CounterTableInlineCounterSchemas[i]) { // not required
 			continue
 		}
 
-		if m.CounterSchemas[i] != nil {
-			if err := m.CounterSchemas[i].Validate(formats); err != nil {
+		if m.CounterTableInlineCounterSchemas[i] != nil {
+			if err := m.CounterTableInlineCounterSchemas[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counter_schemas" + "." + strconv.Itoa(i))
 				}
@@ -99,7 +99,7 @@ func (m *CounterTable) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCounterSchemas(ctx, formats); err != nil {
+	if err := m.contextValidateCounterTableInlineCounterSchemas(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,12 +123,12 @@ func (m *CounterTable) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CounterTable) contextValidateCounterSchemas(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterTable) contextValidateCounterTableInlineCounterSchemas(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.CounterSchemas); i++ {
+	for i := 0; i < len(m.CounterTableInlineCounterSchemas); i++ {
 
-		if m.CounterSchemas[i] != nil {
-			if err := m.CounterSchemas[i].ContextValidate(ctx, formats); err != nil {
+		if m.CounterTableInlineCounterSchemas[i] != nil {
+			if err := m.CounterTableInlineCounterSchemas[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counter_schemas" + "." + strconv.Itoa(i))
 				}
@@ -159,17 +159,17 @@ func (m *CounterTable) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CounterTableLinks counter table links
+// CounterTableInlineLinks counter table inline links
 //
-// swagger:model CounterTableLinks
-type CounterTableLinks struct {
+// swagger:model counter_table_inline__links
+type CounterTableInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this counter table links
-func (m *CounterTableLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this counter table inline links
+func (m *CounterTableInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -182,7 +182,7 @@ func (m *CounterTableLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterTableLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CounterTableInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -199,8 +199,8 @@ func (m *CounterTableLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this counter table links based on the context it is used
-func (m *CounterTableLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this counter table inline links based on the context it is used
+func (m *CounterTableInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -213,7 +213,7 @@ func (m *CounterTableLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CounterTableLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterTableInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -228,7 +228,7 @@ func (m *CounterTableLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *CounterTableLinks) MarshalBinary() ([]byte, error) {
+func (m *CounterTableInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -236,8 +236,8 @@ func (m *CounterTableLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CounterTableLinks) UnmarshalBinary(b []byte) error {
-	var res CounterTableLinks
+func (m *CounterTableInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CounterTableInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

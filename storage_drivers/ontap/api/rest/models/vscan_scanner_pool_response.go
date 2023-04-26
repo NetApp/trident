@@ -20,13 +20,14 @@ import (
 type VscanScannerPoolResponse struct {
 
 	// links
-	Links *VscanScannerPoolResponseLinks `json:"_links,omitempty"`
+	Links *VscanScannerPoolResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*VscanScannerPool `json:"records,omitempty"`
+	// vscan scanner pool response inline records
+	VscanScannerPoolResponseInlineRecords []*VscanScannerPool `json:"records,omitempty"`
 }
 
 // Validate validates this vscan scanner pool response
@@ -37,7 +38,7 @@ func (m *VscanScannerPoolResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateVscanScannerPoolResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *VscanScannerPoolResponse) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *VscanScannerPoolResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *VscanScannerPoolResponse) validateVscanScannerPoolResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanScannerPoolResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.VscanScannerPoolResponseInlineRecords); i++ {
+		if swag.IsZero(m.VscanScannerPoolResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.VscanScannerPoolResponseInlineRecords[i] != nil {
+			if err := m.VscanScannerPoolResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *VscanScannerPoolResponse) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateVscanScannerPoolResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *VscanScannerPoolResponse) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *VscanScannerPoolResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanScannerPoolResponse) contextValidateVscanScannerPoolResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.VscanScannerPoolResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.VscanScannerPoolResponseInlineRecords[i] != nil {
+			if err := m.VscanScannerPoolResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *VscanScannerPoolResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanScannerPoolResponseLinks vscan scanner pool response links
+// VscanScannerPoolResponseInlineLinks vscan scanner pool response inline links
 //
-// swagger:model VscanScannerPoolResponseLinks
-type VscanScannerPoolResponseLinks struct {
+// swagger:model vscan_scanner_pool_response_inline__links
+type VscanScannerPoolResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type VscanScannerPoolResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan scanner pool response links
-func (m *VscanScannerPoolResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan scanner pool response inline links
+func (m *VscanScannerPoolResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *VscanScannerPoolResponseLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *VscanScannerPoolResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *VscanScannerPoolResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *VscanScannerPoolResponseLinks) validateNext(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *VscanScannerPoolResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanScannerPoolResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *VscanScannerPoolResponseLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this vscan scanner pool response links based on the context it is used
-func (m *VscanScannerPoolResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan scanner pool response inline links based on the context it is used
+func (m *VscanScannerPoolResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *VscanScannerPoolResponseLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *VscanScannerPoolResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanScannerPoolResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *VscanScannerPoolResponseLinks) contextValidateNext(ctx context.Context,
 	return nil
 }
 
-func (m *VscanScannerPoolResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanScannerPoolResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *VscanScannerPoolResponseLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *VscanScannerPoolResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanScannerPoolResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *VscanScannerPoolResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanScannerPoolResponseLinks) UnmarshalBinary(b []byte) error {
-	var res VscanScannerPoolResponseLinks
+func (m *VscanScannerPoolResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanScannerPoolResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

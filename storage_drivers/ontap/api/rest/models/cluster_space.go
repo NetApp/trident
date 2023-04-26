@@ -22,10 +22,10 @@ import (
 type ClusterSpace struct {
 
 	// block storage
-	BlockStorage *ClusterSpaceBlockStorage `json:"block_storage,omitempty"`
+	BlockStorage *ClusterSpaceInlineBlockStorage `json:"block_storage,omitempty"`
 
 	// cloud storage
-	CloudStorage *ClusterSpaceCloudStorage `json:"cloud_storage,omitempty"`
+	CloudStorage *ClusterSpaceInlineCloudStorage `json:"cloud_storage,omitempty"`
 
 	// Storage efficiency
 	Efficiency *SpaceEfficiency `json:"efficiency,omitempty"`
@@ -270,32 +270,32 @@ func (m *ClusterSpace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterSpaceBlockStorage cluster space block storage
+// ClusterSpaceInlineBlockStorage cluster space inline block storage
 //
-// swagger:model ClusterSpaceBlockStorage
-type ClusterSpaceBlockStorage struct {
+// swagger:model cluster_space_inline_block_storage
+type ClusterSpaceInlineBlockStorage struct {
 
 	// Available space across the cluster
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// Inactive data across all aggregates
-	InactiveData int64 `json:"inactive_data,omitempty"`
+	InactiveData *int64 `json:"inactive_data,omitempty"`
 
 	// medias
 	Medias []*ClusterSpaceBlockStorageMediasItems0 `json:"medias,omitempty"`
 
 	// Total physical used space across the cluster
-	PhysicalUsed int64 `json:"physical_used,omitempty"`
+	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// Total space across the cluster
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// Space used (includes volume reserves)
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this cluster space block storage
-func (m *ClusterSpaceBlockStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster space inline block storage
+func (m *ClusterSpaceInlineBlockStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMedias(formats); err != nil {
@@ -308,7 +308,7 @@ func (m *ClusterSpaceBlockStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterSpaceBlockStorage) validateMedias(formats strfmt.Registry) error {
+func (m *ClusterSpaceInlineBlockStorage) validateMedias(formats strfmt.Registry) error {
 	if swag.IsZero(m.Medias) { // not required
 		return nil
 	}
@@ -332,8 +332,8 @@ func (m *ClusterSpaceBlockStorage) validateMedias(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this cluster space block storage based on the context it is used
-func (m *ClusterSpaceBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster space inline block storage based on the context it is used
+func (m *ClusterSpaceInlineBlockStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMedias(ctx, formats); err != nil {
@@ -346,7 +346,7 @@ func (m *ClusterSpaceBlockStorage) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ClusterSpaceBlockStorage) contextValidateMedias(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterSpaceInlineBlockStorage) contextValidateMedias(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Medias); i++ {
 
@@ -365,7 +365,7 @@ func (m *ClusterSpaceBlockStorage) contextValidateMedias(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterSpaceBlockStorage) MarshalBinary() ([]byte, error) {
+func (m *ClusterSpaceInlineBlockStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -373,8 +373,8 @@ func (m *ClusterSpaceBlockStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterSpaceBlockStorage) UnmarshalBinary(b []byte) error {
-	var res ClusterSpaceBlockStorage
+func (m *ClusterSpaceInlineBlockStorage) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineBlockStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -388,7 +388,7 @@ func (m *ClusterSpaceBlockStorage) UnmarshalBinary(b []byte) error {
 type ClusterSpaceBlockStorageMediasItems0 struct {
 
 	// Available space
-	Available int64 `json:"available,omitempty"`
+	Available *int64 `json:"available,omitempty"`
 
 	// Storage Efficiency
 	Efficiency *SpaceEfficiency `json:"efficiency,omitempty"`
@@ -400,17 +400,17 @@ type ClusterSpaceBlockStorageMediasItems0 struct {
 	EfficiencyWithoutSnapshotsFlexclones *SpaceEfficiency `json:"efficiency_without_snapshots_flexclones,omitempty"`
 
 	// Total physical used space
-	PhysicalUsed int64 `json:"physical_used,omitempty"`
+	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// Total space
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The type of media being used
 	// Enum: [hdd hybrid lun ssd vmdisk]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Used space
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 // Validate validates this cluster space block storage medias items0
@@ -569,7 +569,7 @@ func (m *ClusterSpaceBlockStorageMediasItems0) validateType(formats strfmt.Regis
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -658,23 +658,23 @@ func (m *ClusterSpaceBlockStorageMediasItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterSpaceCloudStorage cluster space cloud storage
+// ClusterSpaceInlineCloudStorage cluster space inline cloud storage
 //
-// swagger:model ClusterSpaceCloudStorage
-type ClusterSpaceCloudStorage struct {
+// swagger:model cluster_space_inline_cloud_storage
+type ClusterSpaceInlineCloudStorage struct {
 
 	// Total space used in cloud.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
-// Validate validates this cluster space cloud storage
-func (m *ClusterSpaceCloudStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster space inline cloud storage
+func (m *ClusterSpaceInlineCloudStorage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster space cloud storage based on the context it is used
-func (m *ClusterSpaceCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster space inline cloud storage based on the context it is used
+func (m *ClusterSpaceInlineCloudStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateUsed(ctx, formats); err != nil {
@@ -687,9 +687,9 @@ func (m *ClusterSpaceCloudStorage) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ClusterSpaceCloudStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterSpaceInlineCloudStorage) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cloud_storage"+"."+"used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "cloud_storage"+"."+"used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -697,7 +697,7 @@ func (m *ClusterSpaceCloudStorage) contextValidateUsed(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterSpaceCloudStorage) MarshalBinary() ([]byte, error) {
+func (m *ClusterSpaceInlineCloudStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -705,8 +705,8 @@ func (m *ClusterSpaceCloudStorage) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterSpaceCloudStorage) UnmarshalBinary(b []byte) error {
-	var res ClusterSpaceCloudStorage
+func (m *ClusterSpaceInlineCloudStorage) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineCloudStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

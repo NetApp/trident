@@ -21,16 +21,16 @@ import (
 type SnapmirrorDestinationCreation struct {
 
 	// Optional property to create the destination endpoint when establishing a SnapMirror relationship. It is assumed to be "false" if no other property is set and assumed to be "true" if any other property is set.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Optional property to specify the size of destination endpoint in bytes. This property is applicable only to ONTAP S3 Bucket endpoints. The minimum size for S3 bucket is 80MB and maximum size is 64TB. If not specified, system will create destination with default size of 800GB.
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// storage service
-	StorageService *SnapmirrorDestinationCreationStorageService `json:"storage_service,omitempty"`
+	StorageService *SnapmirrorDestinationCreationInlineStorageService `json:"storage_service,omitempty"`
 
 	// tiering
-	Tiering *SnapmirrorDestinationCreationTiering `json:"tiering,omitempty"`
+	Tiering *SnapmirrorDestinationCreationInlineTiering `json:"tiering,omitempty"`
 }
 
 // Validate validates this snapmirror destination creation
@@ -149,24 +149,24 @@ func (m *SnapmirrorDestinationCreation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorDestinationCreationStorageService snapmirror destination creation storage service
+// SnapmirrorDestinationCreationInlineStorageService snapmirror destination creation inline storage service
 //
-// swagger:model SnapmirrorDestinationCreationStorageService
-type SnapmirrorDestinationCreationStorageService struct {
+// swagger:model snapmirror_destination_creation_inline_storage_service
+type SnapmirrorDestinationCreationInlineStorageService struct {
 
 	// This property indicates whether to create the destination endpoint using storage service.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Optional property to enforce storage service performance on the destination endpoint. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints.
 	EnforcePerformance *bool `json:"enforce_performance,omitempty"`
 
 	// Optional property to specify the storage service name for the destination endpoint. This property is considered when the property "create_destination.storage_service.enabled" is set to "true". When the property "create_destination.storage_service.enabled" is set to "true" and the "create_destination.storage_service.name" for the endpoint is not specified, then ONTAP selects the highest storage service available on the cluster to provision the destination endpoint. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints.
 	// Enum: [extreme performance value]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this snapmirror destination creation storage service
-func (m *SnapmirrorDestinationCreationStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror destination creation inline storage service
+func (m *SnapmirrorDestinationCreationInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -179,7 +179,7 @@ func (m *SnapmirrorDestinationCreationStorageService) Validate(formats strfmt.Re
 	return nil
 }
 
-var snapmirrorDestinationCreationStorageServiceTypeNamePropEnum []interface{}
+var snapmirrorDestinationCreationInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -187,71 +187,71 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		snapmirrorDestinationCreationStorageServiceTypeNamePropEnum = append(snapmirrorDestinationCreationStorageServiceTypeNamePropEnum, v)
+		snapmirrorDestinationCreationInlineStorageServiceTypeNamePropEnum = append(snapmirrorDestinationCreationInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationStorageService
-	// SnapmirrorDestinationCreationStorageService
+	// snapmirror_destination_creation_inline_storage_service
+	// SnapmirrorDestinationCreationInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationStorageServiceNameExtreme captures enum value "extreme"
-	SnapmirrorDestinationCreationStorageServiceNameExtreme string = "extreme"
+	// SnapmirrorDestinationCreationInlineStorageServiceNameExtreme captures enum value "extreme"
+	SnapmirrorDestinationCreationInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationStorageService
-	// SnapmirrorDestinationCreationStorageService
+	// snapmirror_destination_creation_inline_storage_service
+	// SnapmirrorDestinationCreationInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationStorageServiceNamePerformance captures enum value "performance"
-	SnapmirrorDestinationCreationStorageServiceNamePerformance string = "performance"
+	// SnapmirrorDestinationCreationInlineStorageServiceNamePerformance captures enum value "performance"
+	SnapmirrorDestinationCreationInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationStorageService
-	// SnapmirrorDestinationCreationStorageService
+	// snapmirror_destination_creation_inline_storage_service
+	// SnapmirrorDestinationCreationInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationStorageServiceNameValue captures enum value "value"
-	SnapmirrorDestinationCreationStorageServiceNameValue string = "value"
+	// SnapmirrorDestinationCreationInlineStorageServiceNameValue captures enum value "value"
+	SnapmirrorDestinationCreationInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *SnapmirrorDestinationCreationStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, snapmirrorDestinationCreationStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *SnapmirrorDestinationCreationInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorDestinationCreationInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SnapmirrorDestinationCreationStorageService) validateName(formats strfmt.Registry) error {
+func (m *SnapmirrorDestinationCreationInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("storage_service"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("storage_service"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this snapmirror destination creation storage service based on context it is used
-func (m *SnapmirrorDestinationCreationStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this snapmirror destination creation inline storage service based on context it is used
+func (m *SnapmirrorDestinationCreationInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorDestinationCreationStorageService) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorDestinationCreationInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -259,8 +259,8 @@ func (m *SnapmirrorDestinationCreationStorageService) MarshalBinary() ([]byte, e
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorDestinationCreationStorageService) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorDestinationCreationStorageService
+func (m *SnapmirrorDestinationCreationInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorDestinationCreationInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -268,21 +268,21 @@ func (m *SnapmirrorDestinationCreationStorageService) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// SnapmirrorDestinationCreationTiering snapmirror destination creation tiering
+// SnapmirrorDestinationCreationInlineTiering snapmirror destination creation inline tiering
 //
-// swagger:model SnapmirrorDestinationCreationTiering
-type SnapmirrorDestinationCreationTiering struct {
+// swagger:model snapmirror_destination_creation_inline_tiering
+type SnapmirrorDestinationCreationInlineTiering struct {
 
 	// Optional property to specify the destination endpoint's tiering policy when "create_destination.tiering.supported" is set to "true". This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. This property determines whether the user data blocks of the destination endpoint in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of the destination endpoint volume blocks increases if they are accessed frequently and decreases when they are not.<br>all &dash; This policy allows tiering of both destination endpoint Snapshot copies and the user transfered data blocks to the cloud store as soon as possible by ignoring the temperature on the volume blocks. This tiering policy is not applicable for Consistency Group destination endpoints or for synchronous relationships.<br>auto &dash; This policy allows tiering of both destination endpoint Snapshot copies and the active file system user data to the cloud store<br>none &dash; Destination endpoint volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the destination endpoint volume Snapshot copies not associated with the active file system. The default tiering policy is "snapshot_only" for a FlexVol volume and "none" for a FlexGroup volume.
 	// Enum: [all auto none snapshot_only]
-	Policy string `json:"policy,omitempty"`
+	Policy *string `json:"policy,omitempty"`
 
 	// Optional property to enable provisioning of the destination endpoint volumes on FabricPool aggregates. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. Only FabricPool aggregates are used if this property is set to "true" and only non FabricPool aggregates are used if this property is set to "false". Tiering support for a FlexGroup volume can be changed by moving all of the constituents to the required aggregates. Note that in order to tier data, not only do the destination endpoint volumes need to support tiering by using FabricPools, the "create_destination.tiering.policy" must not be "none". A destination endpoint that uses FabricPools but has a tiering "policy" of "none" supports tiering but will not tier any data.
-	Supported bool `json:"supported,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
 }
 
-// Validate validates this snapmirror destination creation tiering
-func (m *SnapmirrorDestinationCreationTiering) Validate(formats strfmt.Registry) error {
+// Validate validates this snapmirror destination creation inline tiering
+func (m *SnapmirrorDestinationCreationInlineTiering) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePolicy(formats); err != nil {
@@ -295,7 +295,7 @@ func (m *SnapmirrorDestinationCreationTiering) Validate(formats strfmt.Registry)
 	return nil
 }
 
-var snapmirrorDestinationCreationTieringTypePolicyPropEnum []interface{}
+var snapmirrorDestinationCreationInlineTieringTypePolicyPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -303,81 +303,81 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		snapmirrorDestinationCreationTieringTypePolicyPropEnum = append(snapmirrorDestinationCreationTieringTypePolicyPropEnum, v)
+		snapmirrorDestinationCreationInlineTieringTypePolicyPropEnum = append(snapmirrorDestinationCreationInlineTieringTypePolicyPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationTiering
-	// SnapmirrorDestinationCreationTiering
+	// snapmirror_destination_creation_inline_tiering
+	// SnapmirrorDestinationCreationInlineTiering
 	// policy
 	// Policy
 	// all
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationTieringPolicyAll captures enum value "all"
-	SnapmirrorDestinationCreationTieringPolicyAll string = "all"
+	// SnapmirrorDestinationCreationInlineTieringPolicyAll captures enum value "all"
+	SnapmirrorDestinationCreationInlineTieringPolicyAll string = "all"
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationTiering
-	// SnapmirrorDestinationCreationTiering
+	// snapmirror_destination_creation_inline_tiering
+	// SnapmirrorDestinationCreationInlineTiering
 	// policy
 	// Policy
 	// auto
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationTieringPolicyAuto captures enum value "auto"
-	SnapmirrorDestinationCreationTieringPolicyAuto string = "auto"
+	// SnapmirrorDestinationCreationInlineTieringPolicyAuto captures enum value "auto"
+	SnapmirrorDestinationCreationInlineTieringPolicyAuto string = "auto"
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationTiering
-	// SnapmirrorDestinationCreationTiering
+	// snapmirror_destination_creation_inline_tiering
+	// SnapmirrorDestinationCreationInlineTiering
 	// policy
 	// Policy
 	// none
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationTieringPolicyNone captures enum value "none"
-	SnapmirrorDestinationCreationTieringPolicyNone string = "none"
+	// SnapmirrorDestinationCreationInlineTieringPolicyNone captures enum value "none"
+	SnapmirrorDestinationCreationInlineTieringPolicyNone string = "none"
 
 	// BEGIN DEBUGGING
-	// SnapmirrorDestinationCreationTiering
-	// SnapmirrorDestinationCreationTiering
+	// snapmirror_destination_creation_inline_tiering
+	// SnapmirrorDestinationCreationInlineTiering
 	// policy
 	// Policy
 	// snapshot_only
 	// END DEBUGGING
-	// SnapmirrorDestinationCreationTieringPolicySnapshotOnly captures enum value "snapshot_only"
-	SnapmirrorDestinationCreationTieringPolicySnapshotOnly string = "snapshot_only"
+	// SnapmirrorDestinationCreationInlineTieringPolicySnapshotOnly captures enum value "snapshot_only"
+	SnapmirrorDestinationCreationInlineTieringPolicySnapshotOnly string = "snapshot_only"
 )
 
 // prop value enum
-func (m *SnapmirrorDestinationCreationTiering) validatePolicyEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, snapmirrorDestinationCreationTieringTypePolicyPropEnum, true); err != nil {
+func (m *SnapmirrorDestinationCreationInlineTiering) validatePolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snapmirrorDestinationCreationInlineTieringTypePolicyPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *SnapmirrorDestinationCreationTiering) validatePolicy(formats strfmt.Registry) error {
+func (m *SnapmirrorDestinationCreationInlineTiering) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validatePolicyEnum("tiering"+"."+"policy", "body", m.Policy); err != nil {
+	if err := m.validatePolicyEnum("tiering"+"."+"policy", "body", *m.Policy); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this snapmirror destination creation tiering based on context it is used
-func (m *SnapmirrorDestinationCreationTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this snapmirror destination creation inline tiering based on context it is used
+func (m *SnapmirrorDestinationCreationInlineTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *SnapmirrorDestinationCreationTiering) MarshalBinary() ([]byte, error) {
+func (m *SnapmirrorDestinationCreationInlineTiering) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -385,8 +385,8 @@ func (m *SnapmirrorDestinationCreationTiering) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapmirrorDestinationCreationTiering) UnmarshalBinary(b []byte) error {
-	var res SnapmirrorDestinationCreationTiering
+func (m *SnapmirrorDestinationCreationInlineTiering) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorDestinationCreationInlineTiering
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

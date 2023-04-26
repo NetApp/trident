@@ -66,25 +66,25 @@ type SnmpUsersDeleteParams struct {
 
 	   Engine ID of owning SVM or remote switch.
 	*/
-	EngineIDPathParameter string
+	EngineID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   SNMP user name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,11 +104,11 @@ func (o *SnmpUsersDeleteParams) WithDefaults() *SnmpUsersDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *SnmpUsersDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnmpUsersDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,48 +150,48 @@ func (o *SnmpUsersDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEngineIDPathParameter adds the engineID to the snmp users delete params
-func (o *SnmpUsersDeleteParams) WithEngineIDPathParameter(engineID string) *SnmpUsersDeleteParams {
-	o.SetEngineIDPathParameter(engineID)
+// WithEngineID adds the engineID to the snmp users delete params
+func (o *SnmpUsersDeleteParams) WithEngineID(engineID string) *SnmpUsersDeleteParams {
+	o.SetEngineID(engineID)
 	return o
 }
 
-// SetEngineIDPathParameter adds the engineId to the snmp users delete params
-func (o *SnmpUsersDeleteParams) SetEngineIDPathParameter(engineID string) {
-	o.EngineIDPathParameter = engineID
+// SetEngineID adds the engineId to the snmp users delete params
+func (o *SnmpUsersDeleteParams) SetEngineID(engineID string) {
+	o.EngineID = engineID
 }
 
-// WithFieldsQueryParameter adds the fields to the snmp users delete params
-func (o *SnmpUsersDeleteParams) WithFieldsQueryParameter(fields []string) *SnmpUsersDeleteParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snmp users delete params
+func (o *SnmpUsersDeleteParams) WithFields(fields []string) *SnmpUsersDeleteParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snmp users delete params
-func (o *SnmpUsersDeleteParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snmp users delete params
+func (o *SnmpUsersDeleteParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the snmp users delete params
-func (o *SnmpUsersDeleteParams) WithNamePathParameter(name string) *SnmpUsersDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the snmp users delete params
+func (o *SnmpUsersDeleteParams) WithName(name string) *SnmpUsersDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the snmp users delete params
-func (o *SnmpUsersDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the snmp users delete params
+func (o *SnmpUsersDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp users delete params
-func (o *SnmpUsersDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpUsersDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snmp users delete params
+func (o *SnmpUsersDeleteParams) WithReturnTimeout(returnTimeout *int64) *SnmpUsersDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp users delete params
-func (o *SnmpUsersDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snmp users delete params
+func (o *SnmpUsersDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -203,11 +203,11 @@ func (o *SnmpUsersDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param engine_id
-	if err := r.SetPathParam("engine_id", o.EngineIDPathParameter); err != nil {
+	if err := r.SetPathParam("engine_id", o.EngineID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -219,17 +219,17 @@ func (o *SnmpUsersDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -248,7 +248,7 @@ func (o *SnmpUsersDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamSnmpUsersDelete binds the parameter fields
 func (o *SnmpUsersDeleteParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -75,7 +75,7 @@ type FcpServiceCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -95,11 +95,11 @@ func (o *FcpServiceCreateParams) WithDefaults() *FcpServiceCreateParams {
 // All values with no default are reset to their zero value.
 func (o *FcpServiceCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := FcpServiceCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,15 +152,15 @@ func (o *FcpServiceCreateParams) SetInfo(info *models.FcpService) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fcp service create params
-func (o *FcpServiceCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcpServiceCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fcp service create params
+func (o *FcpServiceCreateParams) WithReturnRecords(returnRecords *bool) *FcpServiceCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fcp service create params
-func (o *FcpServiceCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fcp service create params
+func (o *FcpServiceCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,13 +176,13 @@ func (o *FcpServiceCreateParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

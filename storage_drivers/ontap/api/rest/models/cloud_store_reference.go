@@ -19,15 +19,15 @@ import (
 type CloudStoreReference struct {
 
 	// links
-	Links *CloudStoreReferenceLinks `json:"_links,omitempty"`
+	Links *CloudStoreReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: store1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this cloud store reference
@@ -107,17 +107,17 @@ func (m *CloudStoreReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudStoreReferenceLinks cloud store reference links
+// CloudStoreReferenceInlineLinks cloud store reference inline links
 //
-// swagger:model CloudStoreReferenceLinks
-type CloudStoreReferenceLinks struct {
+// swagger:model cloud_store_reference_inline__links
+type CloudStoreReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud store reference links
-func (m *CloudStoreReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud store reference inline links
+func (m *CloudStoreReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *CloudStoreReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudStoreReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudStoreReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *CloudStoreReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud store reference links based on the context it is used
-func (m *CloudStoreReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud store reference inline links based on the context it is used
+func (m *CloudStoreReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *CloudStoreReferenceLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *CloudStoreReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudStoreReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *CloudStoreReferenceLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *CloudStoreReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudStoreReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *CloudStoreReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudStoreReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res CloudStoreReferenceLinks
+func (m *CloudStoreReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudStoreReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

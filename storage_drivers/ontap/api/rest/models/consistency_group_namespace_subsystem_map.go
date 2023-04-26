@@ -11,10 +11,11 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ConsistencyGroupNamespaceSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
-// There is an added cost to retrieving property values for `subsystem_map`.
+// There is an added computational cost to retrieving property values for `subsystem_map`.
 // They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter.
 //
 // swagger:model consistency_group_namespace_subsystem_map
@@ -24,20 +25,23 @@ type ConsistencyGroupNamespaceSubsystemMap struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
-	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
+	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
-	Anagrpid string `json:"anagrpid,omitempty"`
+	// Read Only: true
+	Anagrpid *string `json:"anagrpid,omitempty"`
 
 	// The NVMe namespace identifier. This is an identifier used by an NVMe controller to provide access to the NVMe namespace.<br/>
 	// The format for an NVMe namespace identifier is 8 hexadecimal digits (zero-filled) followed by a lower case "h".
 	//
 	// Example: 00000001h
-	Nsid string `json:"nsid,omitempty"`
+	// Read Only: true
+	Nsid *string `json:"nsid,omitempty"`
 
 	// The NVMe subsystem to which the NVMe namespace is mapped.
 	//
-	Subsystem *NvmeSubsystemReference `json:"subsystem,omitempty"`
+	Subsystem *ConsistencyGroupNvmeSubsystem `json:"subsystem,omitempty"`
 }
 
 // Validate validates this consistency group namespace subsystem map
@@ -100,6 +104,14 @@ func (m *ConsistencyGroupNamespaceSubsystemMap) ContextValidate(ctx context.Cont
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAnagrpid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNsid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSubsystem(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -119,6 +131,24 @@ func (m *ConsistencyGroupNamespaceSubsystemMap) contextValidateLinks(ctx context
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceSubsystemMap) contextValidateAnagrpid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anagrpid", "body", m.Anagrpid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceSubsystemMap) contextValidateNsid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nsid", "body", m.Nsid); err != nil {
+		return err
 	}
 
 	return nil

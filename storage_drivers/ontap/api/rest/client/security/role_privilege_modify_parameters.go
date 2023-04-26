@@ -70,19 +70,19 @@ type RolePrivilegeModifyParams struct {
 
 	   Role name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Role owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* Path.
 
 	   REST API path or command/command directory path
 	*/
-	PathPathParameter string
+	Path string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -148,37 +148,37 @@ func (o *RolePrivilegeModifyParams) SetInfo(info *models.RolePrivilege) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the role privilege modify params
-func (o *RolePrivilegeModifyParams) WithNamePathParameter(name string) *RolePrivilegeModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the role privilege modify params
+func (o *RolePrivilegeModifyParams) WithName(name string) *RolePrivilegeModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the role privilege modify params
-func (o *RolePrivilegeModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the role privilege modify params
+func (o *RolePrivilegeModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the role privilege modify params
-func (o *RolePrivilegeModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *RolePrivilegeModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the role privilege modify params
+func (o *RolePrivilegeModifyParams) WithOwnerUUID(ownerUUID string) *RolePrivilegeModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the role privilege modify params
-func (o *RolePrivilegeModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the role privilege modify params
+func (o *RolePrivilegeModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithPathPathParameter adds the path to the role privilege modify params
-func (o *RolePrivilegeModifyParams) WithPathPathParameter(path string) *RolePrivilegeModifyParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the role privilege modify params
+func (o *RolePrivilegeModifyParams) WithPath(path string) *RolePrivilegeModifyParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the role privilege modify params
-func (o *RolePrivilegeModifyParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the role privilege modify params
+func (o *RolePrivilegeModifyParams) SetPath(path string) {
+	o.Path = path
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -195,17 +195,17 @@ func (o *RolePrivilegeModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 

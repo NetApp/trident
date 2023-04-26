@@ -20,13 +20,13 @@ import (
 type NvmeSubsystemHostReference struct {
 
 	// links
-	Links *NvmeSubsystemHostReferenceLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemHostReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The NVMe qualified name (NQN) used to identify the NVMe storage target.
 	//
 	// Example: nqn.1992-01.example.com:string
 	// Read Only: true
-	Nqn string `json:"nqn,omitempty"`
+	Nqn *string `json:"nqn,omitempty"`
 }
 
 // Validate validates this nvme subsystem host reference
@@ -94,7 +94,7 @@ func (m *NvmeSubsystemHostReference) contextValidateLinks(ctx context.Context, f
 
 func (m *NvmeSubsystemHostReference) contextValidateNqn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "nqn", "body", string(m.Nqn)); err != nil {
+	if err := validate.ReadOnly(ctx, "nqn", "body", m.Nqn); err != nil {
 		return err
 	}
 
@@ -119,17 +119,17 @@ func (m *NvmeSubsystemHostReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemHostReferenceLinks nvme subsystem host reference links
+// NvmeSubsystemHostReferenceInlineLinks nvme subsystem host reference inline links
 //
-// swagger:model NvmeSubsystemHostReferenceLinks
-type NvmeSubsystemHostReferenceLinks struct {
+// swagger:model nvme_subsystem_host_reference_inline__links
+type NvmeSubsystemHostReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem host reference links
-func (m *NvmeSubsystemHostReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem host reference inline links
+func (m *NvmeSubsystemHostReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -142,7 +142,7 @@ func (m *NvmeSubsystemHostReferenceLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *NvmeSubsystemHostReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -159,8 +159,8 @@ func (m *NvmeSubsystemHostReferenceLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem host reference links based on the context it is used
-func (m *NvmeSubsystemHostReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem host reference inline links based on the context it is used
+func (m *NvmeSubsystemHostReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -173,7 +173,7 @@ func (m *NvmeSubsystemHostReferenceLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *NvmeSubsystemHostReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -188,7 +188,7 @@ func (m *NvmeSubsystemHostReferenceLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemHostReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemHostReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -196,8 +196,8 @@ func (m *NvmeSubsystemHostReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemHostReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemHostReferenceLinks
+func (m *NvmeSubsystemHostReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -20,22 +20,22 @@ type NdmpMover struct {
 
 	// Indicates the NDMP mover bytes moved.
 	// Example: 645120
-	BytesMoved int64 `json:"bytes_moved,omitempty"`
+	BytesMoved *int64 `json:"bytes_moved,omitempty"`
 
 	// Indicates the NDMP connection attributes.
 	Connection *NdmpConnect `json:"connection,omitempty"`
 
 	// Indicates the NDMP mover mode of operation.
 	// Example: read
-	Mode NdmpMoverMode `json:"mode,omitempty"`
+	Mode *NdmpMoverMode `json:"mode,omitempty"`
 
 	// Indicates the reason for the NDMP mover pause or halt.
 	// Example: end_of_media
-	Reason NdmpReason `json:"reason,omitempty"`
+	Reason *NdmpReason `json:"reason,omitempty"`
 
 	// Indicates the NDMP mover state.
 	// Example: connected
-	State NdmpState `json:"state,omitempty"`
+	State *NdmpState `json:"state,omitempty"`
 }
 
 // Validate validates this ndmp mover
@@ -86,11 +86,13 @@ func (m *NdmpMover) validateMode(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Mode.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("mode")
+	if m.Mode != nil {
+		if err := m.Mode.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("mode")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -101,11 +103,13 @@ func (m *NdmpMover) validateReason(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Reason.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("reason")
+	if m.Reason != nil {
+		if err := m.Reason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reason")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -116,11 +120,13 @@ func (m *NdmpMover) validateState(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.State.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("state")
+	if m.State != nil {
+		if err := m.State.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("state")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -168,11 +174,13 @@ func (m *NdmpMover) contextValidateConnection(ctx context.Context, formats strfm
 
 func (m *NdmpMover) contextValidateMode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Mode.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("mode")
+	if m.Mode != nil {
+		if err := m.Mode.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("mode")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -180,11 +188,13 @@ func (m *NdmpMover) contextValidateMode(ctx context.Context, formats strfmt.Regi
 
 func (m *NdmpMover) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Reason.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("reason")
+	if m.Reason != nil {
+		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reason")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -192,11 +202,13 @@ func (m *NdmpMover) contextValidateReason(ctx context.Context, formats strfmt.Re
 
 func (m *NdmpMover) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.State.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("state")
+	if m.State != nil {
+		if err := m.State.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("state")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

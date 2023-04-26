@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
+
+	. "github.com/netapp/trident/logging"
 )
 
 func init() {
@@ -57,7 +58,7 @@ func obliviateSecrets() error {
 	if err != nil {
 		return err
 	} else if len(secrets) == 0 {
-		log.Debug("No Trident secrets were found.")
+		Log().Debug("No Trident secrets were found.")
 		return nil
 	}
 
@@ -66,7 +67,7 @@ func obliviateSecrets() error {
 		return err
 	}
 
-	log.Infof("Reset Trident's secret state.")
+	Log().Infof("Reset Trident's secret state.")
 
 	return nil
 }
@@ -74,36 +75,36 @@ func obliviateSecrets() error {
 func deleteSecrets(secrets []v1.Secret) error {
 	for _, secret := range secrets {
 
-		logFields := log.Fields{
+		logFields := LogFields{
 			"secret":    secret.Name,
 			"namespace": secret.Namespace,
 		}
 
-		log.WithFields(logFields).Debug("Deleting Trident secret.")
+		Log().WithFields(logFields).Debug("Deleting Trident secret.")
 
 		// Try deleting the Secret. We don't add finalizers to the secret, so we shouldn't need to check for them.
 		if secret.DeletionTimestamp.IsZero() {
-			log.WithFields(logFields).Debug("Deleting Secret.")
+			Log().WithFields(logFields).Debug("Deleting Secret.")
 
 			err := k8sClient.DeleteSecret(secret.Name, secret.Namespace)
 			if isNotFoundError(err) {
-				log.WithFields(logFields).Info("Secret not found during deletion.")
+				Log().WithFields(logFields).Info("Secret not found during deletion.")
 				continue
 			} else if err != nil {
-				log.WithFields(logFields).Errorf("Could not delete Secret; %v", err)
+				Log().WithFields(logFields).Errorf("Could not delete Secret; %v", err)
 				return err
 			}
 		} else {
-			log.WithFields(logFields).Debug("Secret already has deletion timestamp.")
+			Log().WithFields(logFields).Debug("Secret already has deletion timestamp.")
 		}
 
 		// Wait for the Secret to delete.
 		if err := waitForSecretDeletion(secret.Name, k8sTimeout); err != nil {
-			log.WithFields(logFields).Error(err)
+			Log().WithFields(logFields).Error(err)
 			return err
 		}
 
-		log.WithFields(logFields).Info("Secret deleted.")
+		Log().WithFields(logFields).Info("Secret deleted.")
 	}
 
 	return nil
@@ -122,7 +123,7 @@ func waitForSecretDeletion(name string, timeout time.Duration) error {
 	}
 
 	checkDeletedNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
+		Log().WithFields(LogFields{
 			"secret": name,
 			"err":    err,
 		}).Debug("Secret not yet deleted, waiting.")
@@ -137,13 +138,13 @@ func waitForSecretDeletion(name string, timeout time.Duration) error {
 	deleteBackoff.MaxInterval = 5 * time.Second
 	deleteBackoff.MaxElapsedTime = timeout
 
-	log.WithField("secret", name).Trace("Waiting for Secret to be deleted.")
+	Log().WithField("secret", name).Trace("Waiting for Secret to be deleted.")
 
 	if err := backoff.RetryNotify(checkDeleted, deleteBackoff, checkDeletedNotify); err != nil {
 		return fmt.Errorf("secret %s was not deleted after %3.2f seconds", name, timeout.Seconds())
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"secret":      name,
 		"retries":     retries,
 		"waitSeconds": fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),

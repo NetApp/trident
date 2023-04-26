@@ -52,6 +52,11 @@ CifsDomainPreferredDcCreateCreated describes a response with status code 201, wi
 Created
 */
 type CifsDomainPreferredDcCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.CifsDomainPreferredDc
 }
 
@@ -93,6 +98,13 @@ func (o *CifsDomainPreferredDcCreateCreated) GetPayload() *models.CifsDomainPref
 }
 
 func (o *CifsDomainPreferredDcCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.CifsDomainPreferredDc)
 

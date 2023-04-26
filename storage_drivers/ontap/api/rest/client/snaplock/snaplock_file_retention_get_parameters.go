@@ -66,19 +66,19 @@ type SnaplockFileRetentionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Path.
 
 	   Path of the file in the form "/\<dirpath\>/\<filename\>"
 	*/
-	PathPathParameter string
+	Path string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *SnaplockFileRetentionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockFileRetentionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) WithFields(fields []string) *SnaplockFileRetentionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithPathPathParameter adds the path to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) WithPathPathParameter(path string) *SnaplockFileRetentionGetParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) WithPath(path string) *SnaplockFileRetentionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *SnaplockFileRetentionGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) WithVolumeUUID(volumeUUID string) *SnaplockFileRetentionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *SnaplockFileRetentionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *SnaplockFileRetentionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *SnaplockFileRetentionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamSnaplockFileRetentionGet binds the parameter fields
 func (o *SnaplockFileRetentionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

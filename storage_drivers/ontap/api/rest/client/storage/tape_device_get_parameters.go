@@ -66,19 +66,19 @@ type TapeDeviceGetParams struct {
 
 	   Device ID
 	*/
-	DeviceIDPathParameter string
+	DeviceID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *TapeDeviceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDeviceIDPathParameter adds the deviceID to the tape device get params
-func (o *TapeDeviceGetParams) WithDeviceIDPathParameter(deviceID string) *TapeDeviceGetParams {
-	o.SetDeviceIDPathParameter(deviceID)
+// WithDeviceID adds the deviceID to the tape device get params
+func (o *TapeDeviceGetParams) WithDeviceID(deviceID string) *TapeDeviceGetParams {
+	o.SetDeviceID(deviceID)
 	return o
 }
 
-// SetDeviceIDPathParameter adds the deviceId to the tape device get params
-func (o *TapeDeviceGetParams) SetDeviceIDPathParameter(deviceID string) {
-	o.DeviceIDPathParameter = deviceID
+// SetDeviceID adds the deviceId to the tape device get params
+func (o *TapeDeviceGetParams) SetDeviceID(deviceID string) {
+	o.DeviceID = deviceID
 }
 
-// WithFieldsQueryParameter adds the fields to the tape device get params
-func (o *TapeDeviceGetParams) WithFieldsQueryParameter(fields []string) *TapeDeviceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the tape device get params
+func (o *TapeDeviceGetParams) WithFields(fields []string) *TapeDeviceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the tape device get params
-func (o *TapeDeviceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the tape device get params
+func (o *TapeDeviceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the tape device get params
-func (o *TapeDeviceGetParams) WithNodeUUIDPathParameter(nodeUUID string) *TapeDeviceGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the tape device get params
+func (o *TapeDeviceGetParams) WithNodeUUID(nodeUUID string) *TapeDeviceGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the tape device get params
-func (o *TapeDeviceGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the tape device get params
+func (o *TapeDeviceGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *TapeDeviceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param device_id
-	if err := r.SetPathParam("device_id", o.DeviceIDPathParameter); err != nil {
+	if err := r.SetPathParam("device_id", o.DeviceID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *TapeDeviceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *TapeDeviceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamTapeDeviceGet binds the parameter fields
 func (o *TapeDeviceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

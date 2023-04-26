@@ -72,7 +72,7 @@ type SvmMigrationModifyParams struct {
 	The source_clean up action performs a clean up of the SVM on the source cluster.
 
 	*/
-	ActionQueryParameter *string
+	Action *string
 
 	/* AutoCutover.
 
@@ -80,7 +80,7 @@ type SvmMigrationModifyParams struct {
 
 	   Default: true
 	*/
-	AutoCutoverQueryParameter *bool
+	AutoCutover *bool
 
 	/* AutoSourceCleanup.
 
@@ -88,7 +88,7 @@ type SvmMigrationModifyParams struct {
 
 	   Default: true
 	*/
-	AutoSourceCleanupQueryParameter *bool
+	AutoSourceCleanup *bool
 
 	/* Info.
 
@@ -100,13 +100,13 @@ type SvmMigrationModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   SVM migration UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,17 +126,17 @@ func (o *SvmMigrationModifyParams) WithDefaults() *SvmMigrationModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SvmMigrationModifyParams) SetDefaults() {
 	var (
-		autoCutoverQueryParameterDefault = bool(true)
+		autoCutoverDefault = bool(true)
 
-		autoSourceCleanupQueryParameterDefault = bool(true)
+		autoSourceCleanupDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SvmMigrationModifyParams{
-		AutoCutoverQueryParameter:       &autoCutoverQueryParameterDefault,
-		AutoSourceCleanupQueryParameter: &autoSourceCleanupQueryParameterDefault,
-		ReturnTimeoutQueryParameter:     &returnTimeoutQueryParameterDefault,
+		AutoCutover:       &autoCutoverDefault,
+		AutoSourceCleanup: &autoSourceCleanupDefault,
+		ReturnTimeout:     &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -178,37 +178,37 @@ func (o *SvmMigrationModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the svm migration modify params
-func (o *SvmMigrationModifyParams) WithActionQueryParameter(action *string) *SvmMigrationModifyParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the svm migration modify params
+func (o *SvmMigrationModifyParams) WithAction(action *string) *SvmMigrationModifyParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the svm migration modify params
-func (o *SvmMigrationModifyParams) SetActionQueryParameter(action *string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the svm migration modify params
+func (o *SvmMigrationModifyParams) SetAction(action *string) {
+	o.Action = action
 }
 
-// WithAutoCutoverQueryParameter adds the autoCutover to the svm migration modify params
-func (o *SvmMigrationModifyParams) WithAutoCutoverQueryParameter(autoCutover *bool) *SvmMigrationModifyParams {
-	o.SetAutoCutoverQueryParameter(autoCutover)
+// WithAutoCutover adds the autoCutover to the svm migration modify params
+func (o *SvmMigrationModifyParams) WithAutoCutover(autoCutover *bool) *SvmMigrationModifyParams {
+	o.SetAutoCutover(autoCutover)
 	return o
 }
 
-// SetAutoCutoverQueryParameter adds the autoCutover to the svm migration modify params
-func (o *SvmMigrationModifyParams) SetAutoCutoverQueryParameter(autoCutover *bool) {
-	o.AutoCutoverQueryParameter = autoCutover
+// SetAutoCutover adds the autoCutover to the svm migration modify params
+func (o *SvmMigrationModifyParams) SetAutoCutover(autoCutover *bool) {
+	o.AutoCutover = autoCutover
 }
 
-// WithAutoSourceCleanupQueryParameter adds the autoSourceCleanup to the svm migration modify params
-func (o *SvmMigrationModifyParams) WithAutoSourceCleanupQueryParameter(autoSourceCleanup *bool) *SvmMigrationModifyParams {
-	o.SetAutoSourceCleanupQueryParameter(autoSourceCleanup)
+// WithAutoSourceCleanup adds the autoSourceCleanup to the svm migration modify params
+func (o *SvmMigrationModifyParams) WithAutoSourceCleanup(autoSourceCleanup *bool) *SvmMigrationModifyParams {
+	o.SetAutoSourceCleanup(autoSourceCleanup)
 	return o
 }
 
-// SetAutoSourceCleanupQueryParameter adds the autoSourceCleanup to the svm migration modify params
-func (o *SvmMigrationModifyParams) SetAutoSourceCleanupQueryParameter(autoSourceCleanup *bool) {
-	o.AutoSourceCleanupQueryParameter = autoSourceCleanup
+// SetAutoSourceCleanup adds the autoSourceCleanup to the svm migration modify params
+func (o *SvmMigrationModifyParams) SetAutoSourceCleanup(autoSourceCleanup *bool) {
+	o.AutoSourceCleanup = autoSourceCleanup
 }
 
 // WithInfo adds the info to the svm migration modify params
@@ -222,26 +222,26 @@ func (o *SvmMigrationModifyParams) SetInfo(info *models.SvmMigration) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm migration modify params
-func (o *SvmMigrationModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmMigrationModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the svm migration modify params
+func (o *SvmMigrationModifyParams) WithReturnTimeout(returnTimeout *int64) *SvmMigrationModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm migration modify params
-func (o *SvmMigrationModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the svm migration modify params
+func (o *SvmMigrationModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the svm migration modify params
-func (o *SvmMigrationModifyParams) WithUUIDPathParameter(uuid string) *SvmMigrationModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the svm migration modify params
+func (o *SvmMigrationModifyParams) WithUUID(uuid string) *SvmMigrationModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the svm migration modify params
-func (o *SvmMigrationModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the svm migration modify params
+func (o *SvmMigrationModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -252,13 +252,13 @@ func (o *SvmMigrationModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.ActionQueryParameter != nil {
+	if o.Action != nil {
 
 		// query param action
 		var qrAction string
 
-		if o.ActionQueryParameter != nil {
-			qrAction = *o.ActionQueryParameter
+		if o.Action != nil {
+			qrAction = *o.Action
 		}
 		qAction := qrAction
 		if qAction != "" {
@@ -269,13 +269,13 @@ func (o *SvmMigrationModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AutoCutoverQueryParameter != nil {
+	if o.AutoCutover != nil {
 
 		// query param auto_cutover
 		var qrAutoCutover bool
 
-		if o.AutoCutoverQueryParameter != nil {
-			qrAutoCutover = *o.AutoCutoverQueryParameter
+		if o.AutoCutover != nil {
+			qrAutoCutover = *o.AutoCutover
 		}
 		qAutoCutover := swag.FormatBool(qrAutoCutover)
 		if qAutoCutover != "" {
@@ -286,13 +286,13 @@ func (o *SvmMigrationModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AutoSourceCleanupQueryParameter != nil {
+	if o.AutoSourceCleanup != nil {
 
 		// query param auto_source_cleanup
 		var qrAutoSourceCleanup bool
 
-		if o.AutoSourceCleanupQueryParameter != nil {
-			qrAutoSourceCleanup = *o.AutoSourceCleanupQueryParameter
+		if o.AutoSourceCleanup != nil {
+			qrAutoSourceCleanup = *o.AutoSourceCleanup
 		}
 		qAutoSourceCleanup := swag.FormatBool(qrAutoSourceCleanup)
 		if qAutoSourceCleanup != "" {
@@ -308,13 +308,13 @@ func (o *SvmMigrationModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -326,7 +326,7 @@ func (o *SvmMigrationModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

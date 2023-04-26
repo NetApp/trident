@@ -74,13 +74,13 @@ type S3PolicyCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *S3PolicyCreateParams) WithDefaults() *S3PolicyCreateParams {
 // All values with no default are reset to their zero value.
 func (o *S3PolicyCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := S3PolicyCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *S3PolicyCreateParams) SetInfo(info *models.S3Policy) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the s3 policy create params
-func (o *S3PolicyCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3PolicyCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the s3 policy create params
+func (o *S3PolicyCreateParams) WithReturnRecords(returnRecords *bool) *S3PolicyCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the s3 policy create params
-func (o *S3PolicyCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the s3 policy create params
+func (o *S3PolicyCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 policy create params
-func (o *S3PolicyCreateParams) WithSVMUUIDPathParameter(svmUUID string) *S3PolicyCreateParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 policy create params
+func (o *S3PolicyCreateParams) WithSvmUUID(svmUUID string) *S3PolicyCreateParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 policy create params
-func (o *S3PolicyCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 policy create params
+func (o *S3PolicyCreateParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,13 +192,13 @@ func (o *S3PolicyCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -210,7 +210,7 @@ func (o *S3PolicyCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

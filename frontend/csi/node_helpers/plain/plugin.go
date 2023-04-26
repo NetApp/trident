@@ -5,14 +5,12 @@ package plain
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 type helper struct {
@@ -22,7 +20,8 @@ type helper struct {
 
 // NewHelper instantiates this plugin.
 func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
+		LogLayerCSIFrontend)
 	Logc(ctx).Info("Initializing plain CSI helper frontend.")
 
 	volPubManager := csi.NewVolumePublishManager("")
@@ -35,7 +34,8 @@ func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginActivate,
+		LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating plain CSI helper frontend.")
 
@@ -48,7 +48,7 @@ func (h *helper) Activate() error {
 
 // Deactivate stops this Trident frontend.
 func (h *helper) Deactivate() error {
-	log.Info("Deactivating plain CSI helper frontend.")
+	Log().Info("Deactivating plain CSI helper frontend.")
 	return nil
 }
 

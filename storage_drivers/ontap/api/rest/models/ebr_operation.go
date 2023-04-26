@@ -21,51 +21,51 @@ import (
 type EbrOperation struct {
 
 	// links
-	Links *EbrOperationLinks `json:"_links,omitempty"`
+	Links *EbrOperationInlineLinks `json:"_links,omitempty"`
 
 	// Operation ID
 	// Example: 16842759
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Specifies the number of files on which the application of EBR policy failed.
 	// Example: 0
 	// Read Only: true
-	NumFilesFailed int64 `json:"num_files_failed,omitempty"`
+	NumFilesFailed *int64 `json:"num_files_failed,omitempty"`
 
 	// Specifies the number of files on which EBR policy was applied successfully.
 	// Example: 50
 	// Read Only: true
-	NumFilesProcessed int64 `json:"num_files_processed,omitempty"`
+	NumFilesProcessed *int64 `json:"num_files_processed,omitempty"`
 
 	// Specifies the number of files on which the application of EBR policy was skipped.
 	// Example: 2
 	// Read Only: true
-	NumFilesSkipped int64 `json:"num_files_skipped,omitempty"`
+	NumFilesSkipped *int64 `json:"num_files_skipped,omitempty"`
 
 	// Specifies the number of inodes on which the application of EBR policy was not attempted because they were not regular files.
 	// Example: 2
 	// Read Only: true
-	NumInodesIgnored int64 `json:"num_inodes_ignored,omitempty"`
+	NumInodesIgnored *int64 `json:"num_inodes_ignored,omitempty"`
 
 	// The path for the EBR operation. Specifies the path relative to the output volume root, of the form "/path". The path can be path to a file or a directory.
 	// Example: /dir1/file
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// policy
-	Policy *EbrOperationPolicy `json:"policy,omitempty"`
+	Policy *EbrOperationInlinePolicy `json:"policy,omitempty"`
 
 	// Specifies the operation status of an EBR operation.
 	// Example: completed
 	// Read Only: true
 	// Enum: [unknown in_progress failed aborting completed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *EbrOperationSvm `json:"svm,omitempty"`
+	Svm *EbrOperationInlineSvm `json:"svm,omitempty"`
 
 	// volume
-	Volume *EbrOperationVolume `json:"volume,omitempty"`
+	Volume *EbrOperationInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this ebr operation
@@ -211,7 +211,7 @@ func (m *EbrOperation) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -318,7 +318,7 @@ func (m *EbrOperation) contextValidateLinks(ctx context.Context, formats strfmt.
 
 func (m *EbrOperation) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -327,7 +327,7 @@ func (m *EbrOperation) contextValidateID(ctx context.Context, formats strfmt.Reg
 
 func (m *EbrOperation) contextValidateNumFilesFailed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_files_failed", "body", int64(m.NumFilesFailed)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_files_failed", "body", m.NumFilesFailed); err != nil {
 		return err
 	}
 
@@ -336,7 +336,7 @@ func (m *EbrOperation) contextValidateNumFilesFailed(ctx context.Context, format
 
 func (m *EbrOperation) contextValidateNumFilesProcessed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_files_processed", "body", int64(m.NumFilesProcessed)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_files_processed", "body", m.NumFilesProcessed); err != nil {
 		return err
 	}
 
@@ -345,7 +345,7 @@ func (m *EbrOperation) contextValidateNumFilesProcessed(ctx context.Context, for
 
 func (m *EbrOperation) contextValidateNumFilesSkipped(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_files_skipped", "body", int64(m.NumFilesSkipped)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_files_skipped", "body", m.NumFilesSkipped); err != nil {
 		return err
 	}
 
@@ -354,7 +354,7 @@ func (m *EbrOperation) contextValidateNumFilesSkipped(ctx context.Context, forma
 
 func (m *EbrOperation) contextValidateNumInodesIgnored(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_inodes_ignored", "body", int64(m.NumInodesIgnored)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_inodes_ignored", "body", m.NumInodesIgnored); err != nil {
 		return err
 	}
 
@@ -377,7 +377,7 @@ func (m *EbrOperation) contextValidatePolicy(ctx context.Context, formats strfmt
 
 func (m *EbrOperation) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -430,17 +430,17 @@ func (m *EbrOperation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationLinks ebr operation links
+// EbrOperationInlineLinks ebr operation inline links
 //
-// swagger:model EbrOperationLinks
-type EbrOperationLinks struct {
+// swagger:model ebr_operation_inline__links
+type EbrOperationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ebr operation links
-func (m *EbrOperationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline links
+func (m *EbrOperationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -453,7 +453,7 @@ func (m *EbrOperationLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EbrOperationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -470,8 +470,8 @@ func (m *EbrOperationLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation links based on the context it is used
-func (m *EbrOperationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline links based on the context it is used
+func (m *EbrOperationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -484,7 +484,7 @@ func (m *EbrOperationLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *EbrOperationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -499,7 +499,7 @@ func (m *EbrOperationLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationLinks) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -507,8 +507,8 @@ func (m *EbrOperationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationLinks
+func (m *EbrOperationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -516,27 +516,27 @@ func (m *EbrOperationLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationPolicy ebr operation policy
+// EbrOperationInlinePolicy ebr operation inline policy
 //
-// swagger:model EbrOperationPolicy
-type EbrOperationPolicy struct {
+// swagger:model ebr_operation_inline_policy
+type EbrOperationInlinePolicy struct {
 
 	// links
-	Links *EbrOperationPolicyLinks `json:"_links,omitempty"`
+	Links *EbrOperationInlinePolicyInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the EBR policy name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the retention period of an event based retention policy. The retention period value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours or minutes. A period specified for years, months and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively. For example "P10Y" represents a duration of 10 years. Similarly, a duration in hours, minutes is represented by "PT<num>H", "PT<num>M" respectively. The period string must contain only a single time element i.e. either years, months, days, hours or minutes. A duration which combines different periods is not supported, example "P1Y10M" is not supported. Apart from the duration specified in the ISO-8601 format, the retention period field also accepts the strings "infinite" and "unspecified".
 	// Example: P30M
 	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// svm
-	Svm *EbrOperationPolicySvm `json:"svm,omitempty"`
+	Svm *EbrOperationInlinePolicyInlineSvm `json:"svm,omitempty"`
 }
 
-// Validate validates this ebr operation policy
-func (m *EbrOperationPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline policy
+func (m *EbrOperationInlinePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -553,7 +553,7 @@ func (m *EbrOperationPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -570,7 +570,7 @@ func (m *EbrOperationPolicy) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationPolicy) validateSvm(formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicy) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
 	}
@@ -587,8 +587,8 @@ func (m *EbrOperationPolicy) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation policy based on the context it is used
-func (m *EbrOperationPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline policy based on the context it is used
+func (m *EbrOperationInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -605,7 +605,7 @@ func (m *EbrOperationPolicy) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *EbrOperationPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -619,7 +619,7 @@ func (m *EbrOperationPolicy) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *EbrOperationPolicy) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicy) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
@@ -634,7 +634,7 @@ func (m *EbrOperationPolicy) contextValidateSvm(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationPolicy) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -642,8 +642,8 @@ func (m *EbrOperationPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationPolicy) UnmarshalBinary(b []byte) error {
-	var res EbrOperationPolicy
+func (m *EbrOperationInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -651,17 +651,17 @@ func (m *EbrOperationPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationPolicyLinks ebr operation policy links
+// EbrOperationInlinePolicyInlineLinks ebr operation inline policy inline links
 //
-// swagger:model EbrOperationPolicyLinks
-type EbrOperationPolicyLinks struct {
+// swagger:model ebr_operation_inline_policy_inline__links
+type EbrOperationInlinePolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ebr operation policy links
-func (m *EbrOperationPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline policy inline links
+func (m *EbrOperationInlinePolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -674,7 +674,7 @@ func (m *EbrOperationPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -691,8 +691,8 @@ func (m *EbrOperationPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation policy links based on the context it is used
-func (m *EbrOperationPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline policy inline links based on the context it is used
+func (m *EbrOperationInlinePolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -705,7 +705,7 @@ func (m *EbrOperationPolicyLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *EbrOperationPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -720,7 +720,7 @@ func (m *EbrOperationPolicyLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlinePolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -728,8 +728,8 @@ func (m *EbrOperationPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationPolicyLinks
+func (m *EbrOperationInlinePolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlinePolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -737,27 +737,27 @@ func (m *EbrOperationPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationPolicySvm ebr operation policy svm
+// EbrOperationInlinePolicyInlineSvm ebr operation inline policy inline svm
 //
-// swagger:model EbrOperationPolicySvm
-type EbrOperationPolicySvm struct {
+// swagger:model ebr_operation_inline_policy_inline_svm
+type EbrOperationInlinePolicyInlineSvm struct {
 
 	// links
-	Links *EbrOperationPolicySvmLinks `json:"_links,omitempty"`
+	Links *EbrOperationInlinePolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ebr operation policy svm
-func (m *EbrOperationPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline policy inline svm
+func (m *EbrOperationInlinePolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -770,7 +770,7 @@ func (m *EbrOperationPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -787,8 +787,8 @@ func (m *EbrOperationPolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation policy svm based on the context it is used
-func (m *EbrOperationPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline policy inline svm based on the context it is used
+func (m *EbrOperationInlinePolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -801,7 +801,7 @@ func (m *EbrOperationPolicySvm) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *EbrOperationPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -816,7 +816,7 @@ func (m *EbrOperationPolicySvm) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlinePolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -824,8 +824,8 @@ func (m *EbrOperationPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationPolicySvm) UnmarshalBinary(b []byte) error {
-	var res EbrOperationPolicySvm
+func (m *EbrOperationInlinePolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlinePolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -833,17 +833,17 @@ func (m *EbrOperationPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationPolicySvmLinks ebr operation policy svm links
+// EbrOperationInlinePolicyInlineSvmInlineLinks ebr operation inline policy inline svm inline links
 //
-// swagger:model EbrOperationPolicySvmLinks
-type EbrOperationPolicySvmLinks struct {
+// swagger:model ebr_operation_inline_policy_inline_svm_inline__links
+type EbrOperationInlinePolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ebr operation policy svm links
-func (m *EbrOperationPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline policy inline svm inline links
+func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -856,7 +856,7 @@ func (m *EbrOperationPolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -873,8 +873,8 @@ func (m *EbrOperationPolicySvmLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this ebr operation policy svm links based on the context it is used
-func (m *EbrOperationPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline policy inline svm inline links based on the context it is used
+func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -887,7 +887,7 @@ func (m *EbrOperationPolicySvmLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *EbrOperationPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -902,7 +902,7 @@ func (m *EbrOperationPolicySvmLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -910,8 +910,8 @@ func (m *EbrOperationPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationPolicySvmLinks
+func (m *EbrOperationInlinePolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlinePolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -919,27 +919,27 @@ func (m *EbrOperationPolicySvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationSvm ebr operation svm
+// EbrOperationInlineSvm ebr operation inline svm
 //
-// swagger:model EbrOperationSvm
-type EbrOperationSvm struct {
+// swagger:model ebr_operation_inline_svm
+type EbrOperationInlineSvm struct {
 
 	// links
-	Links *EbrOperationSvmLinks `json:"_links,omitempty"`
+	Links *EbrOperationInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ebr operation svm
-func (m *EbrOperationSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline svm
+func (m *EbrOperationInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -952,7 +952,7 @@ func (m *EbrOperationSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationSvm) validateLinks(formats strfmt.Registry) error {
+func (m *EbrOperationInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -969,8 +969,8 @@ func (m *EbrOperationSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation svm based on the context it is used
-func (m *EbrOperationSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline svm based on the context it is used
+func (m *EbrOperationInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -983,7 +983,7 @@ func (m *EbrOperationSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *EbrOperationSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -998,7 +998,7 @@ func (m *EbrOperationSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationSvm) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1006,8 +1006,8 @@ func (m *EbrOperationSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationSvm) UnmarshalBinary(b []byte) error {
-	var res EbrOperationSvm
+func (m *EbrOperationInlineSvm) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1015,17 +1015,17 @@ func (m *EbrOperationSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationSvmLinks ebr operation svm links
+// EbrOperationInlineSvmInlineLinks ebr operation inline svm inline links
 //
-// swagger:model EbrOperationSvmLinks
-type EbrOperationSvmLinks struct {
+// swagger:model ebr_operation_inline_svm_inline__links
+type EbrOperationInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ebr operation svm links
-func (m *EbrOperationSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline svm inline links
+func (m *EbrOperationInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1038,7 +1038,7 @@ func (m *EbrOperationSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EbrOperationInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1055,8 +1055,8 @@ func (m *EbrOperationSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation svm links based on the context it is used
-func (m *EbrOperationSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline svm inline links based on the context it is used
+func (m *EbrOperationInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1069,7 +1069,7 @@ func (m *EbrOperationSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *EbrOperationSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1084,7 +1084,7 @@ func (m *EbrOperationSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1092,8 +1092,8 @@ func (m *EbrOperationSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationSvmLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationSvmLinks
+func (m *EbrOperationInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1101,25 +1101,25 @@ func (m *EbrOperationSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationVolume ebr operation volume
+// EbrOperationInlineVolume ebr operation inline volume
 //
-// swagger:model EbrOperationVolume
-type EbrOperationVolume struct {
+// swagger:model ebr_operation_inline_volume
+type EbrOperationInlineVolume struct {
 
 	// links
-	Links *EbrOperationVolumeLinks `json:"_links,omitempty"`
+	Links *EbrOperationInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ebr operation volume
-func (m *EbrOperationVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline volume
+func (m *EbrOperationInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1132,7 +1132,7 @@ func (m *EbrOperationVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationVolume) validateLinks(formats strfmt.Registry) error {
+func (m *EbrOperationInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1149,8 +1149,8 @@ func (m *EbrOperationVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation volume based on the context it is used
-func (m *EbrOperationVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline volume based on the context it is used
+func (m *EbrOperationInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1163,7 +1163,7 @@ func (m *EbrOperationVolume) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *EbrOperationVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1178,7 +1178,7 @@ func (m *EbrOperationVolume) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationVolume) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1186,8 +1186,8 @@ func (m *EbrOperationVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationVolume) UnmarshalBinary(b []byte) error {
-	var res EbrOperationVolume
+func (m *EbrOperationInlineVolume) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1195,17 +1195,17 @@ func (m *EbrOperationVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EbrOperationVolumeLinks ebr operation volume links
+// EbrOperationInlineVolumeInlineLinks ebr operation inline volume inline links
 //
-// swagger:model EbrOperationVolumeLinks
-type EbrOperationVolumeLinks struct {
+// swagger:model ebr_operation_inline_volume_inline__links
+type EbrOperationInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ebr operation volume links
-func (m *EbrOperationVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ebr operation inline volume inline links
+func (m *EbrOperationInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1218,7 +1218,7 @@ func (m *EbrOperationVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EbrOperationVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *EbrOperationInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1235,8 +1235,8 @@ func (m *EbrOperationVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ebr operation volume links based on the context it is used
-func (m *EbrOperationVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ebr operation inline volume inline links based on the context it is used
+func (m *EbrOperationInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1249,7 +1249,7 @@ func (m *EbrOperationVolumeLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *EbrOperationVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *EbrOperationInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1264,7 +1264,7 @@ func (m *EbrOperationVolumeLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *EbrOperationVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *EbrOperationInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1272,8 +1272,8 @@ func (m *EbrOperationVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EbrOperationVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res EbrOperationVolumeLinks
+func (m *EbrOperationInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res EbrOperationInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

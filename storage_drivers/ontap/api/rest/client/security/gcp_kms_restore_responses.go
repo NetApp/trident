@@ -52,6 +52,10 @@ GcpKmsRestoreAccepted describes a response with status code 202, with default he
 Accepted
 */
 type GcpKmsRestoreAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this gcp kms restore accepted response has a 2xx status code
@@ -89,6 +93,13 @@ func (o *GcpKmsRestoreAccepted) String() string {
 
 func (o *GcpKmsRestoreAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	return nil
 }
 
@@ -106,8 +117,9 @@ func NewGcpKmsRestoreDefault(code int) *GcpKmsRestoreDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 65537544 | Missing wrapped top-level internal key protection key (KEK) from internal database. |
 | 65537721 | The Google Cloud Key Management Service is not configured for the given SVM. |
-| 65537722 | Failed to restore keys on the following SVMs. |
+| 65537722 | Failed to restore keys on the following nodes. |
 */
 type GcpKmsRestoreDefault struct {
 	_statusCode int

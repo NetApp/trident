@@ -21,30 +21,30 @@ import (
 type LocalCifsGroup struct {
 
 	// links
-	Links *LocalCifsGroupLinks `json:"_links,omitempty"`
+	Links *LocalCifsGroupInlineLinks `json:"_links,omitempty"`
 
 	// Description for the local group.
 	//
 	// Example: This is a local group
 	// Max Length: 256
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
-	// members
-	Members []*LocalCifsGroupMembersItems0 `json:"members,omitempty"`
+	// local cifs group inline members
+	LocalCifsGroupInlineMembers []*LocalCifsGroupInlineMembersInlineArrayItem `json:"members,omitempty"`
 
 	// Local group name. The maximum supported length of a group name is 256 characters.
 	//
 	// Example: SMB_SERVER01\\group
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The security ID of the local group which uniquely identifies the group. The group SID is automatically generated in POST and it is retrieved using the GET method.
 	//
 	// Example: S-1-5-21-256008430-3394229847-3930036330-1001
-	Sid string `json:"sid,omitempty"`
+	Sid *string `json:"sid,omitempty"`
 
 	// svm
-	Svm *LocalCifsGroupSvm `json:"svm,omitempty"`
+	Svm *LocalCifsGroupInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this local cifs group
@@ -59,7 +59,7 @@ func (m *LocalCifsGroup) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMembers(formats); err != nil {
+	if err := m.validateLocalCifsGroupInlineMembers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -99,25 +99,25 @@ func (m *LocalCifsGroup) validateDescription(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MaxLength("description", "body", m.Description, 256); err != nil {
+	if err := validate.MaxLength("description", "body", *m.Description, 256); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LocalCifsGroup) validateMembers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Members) { // not required
+func (m *LocalCifsGroup) validateLocalCifsGroupInlineMembers(formats strfmt.Registry) error {
+	if swag.IsZero(m.LocalCifsGroupInlineMembers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Members); i++ {
-		if swag.IsZero(m.Members[i]) { // not required
+	for i := 0; i < len(m.LocalCifsGroupInlineMembers); i++ {
+		if swag.IsZero(m.LocalCifsGroupInlineMembers[i]) { // not required
 			continue
 		}
 
-		if m.Members[i] != nil {
-			if err := m.Members[i].Validate(formats); err != nil {
+		if m.LocalCifsGroupInlineMembers[i] != nil {
+			if err := m.LocalCifsGroupInlineMembers[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("members" + "." + strconv.Itoa(i))
 				}
@@ -135,7 +135,7 @@ func (m *LocalCifsGroup) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
@@ -167,7 +167,7 @@ func (m *LocalCifsGroup) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMembers(ctx, formats); err != nil {
+	if err := m.contextValidateLocalCifsGroupInlineMembers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -195,12 +195,12 @@ func (m *LocalCifsGroup) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *LocalCifsGroup) contextValidateMembers(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsGroup) contextValidateLocalCifsGroupInlineMembers(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Members); i++ {
+	for i := 0; i < len(m.LocalCifsGroupInlineMembers); i++ {
 
-		if m.Members[i] != nil {
-			if err := m.Members[i].ContextValidate(ctx, formats); err != nil {
+		if m.LocalCifsGroupInlineMembers[i] != nil {
+			if err := m.LocalCifsGroupInlineMembers[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("members" + "." + strconv.Itoa(i))
 				}
@@ -245,17 +245,17 @@ func (m *LocalCifsGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsGroupLinks local cifs group links
+// LocalCifsGroupInlineLinks local cifs group inline links
 //
-// swagger:model LocalCifsGroupLinks
-type LocalCifsGroupLinks struct {
+// swagger:model local_cifs_group_inline__links
+type LocalCifsGroupInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local cifs group links
-func (m *LocalCifsGroupLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs group inline links
+func (m *LocalCifsGroupInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -268,7 +268,7 @@ func (m *LocalCifsGroupLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalCifsGroupLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalCifsGroupInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -285,8 +285,8 @@ func (m *LocalCifsGroupLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local cifs group links based on the context it is used
-func (m *LocalCifsGroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local cifs group inline links based on the context it is used
+func (m *LocalCifsGroupInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -299,7 +299,7 @@ func (m *LocalCifsGroupLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *LocalCifsGroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsGroupInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -314,7 +314,7 @@ func (m *LocalCifsGroupLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsGroupLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsGroupInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -322,8 +322,8 @@ func (m *LocalCifsGroupLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsGroupLinks) UnmarshalBinary(b []byte) error {
-	var res LocalCifsGroupLinks
+func (m *LocalCifsGroupInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalCifsGroupInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -331,28 +331,28 @@ func (m *LocalCifsGroupLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsGroupMembersItems0 local cifs group members items0
+// LocalCifsGroupInlineMembersInlineArrayItem local cifs group inline members inline array item
 //
-// swagger:model LocalCifsGroupMembersItems0
-type LocalCifsGroupMembersItems0 struct {
+// swagger:model local_cifs_group_inline_members_inline_array_item
+type LocalCifsGroupInlineMembersInlineArrayItem struct {
 
 	// Local user, Active Directory user, or Active Directory group which is a member of the specified local group.
 	//
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this local cifs group members items0
-func (m *LocalCifsGroupMembersItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs group inline members inline array item
+func (m *LocalCifsGroupInlineMembersInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this local cifs group members items0 based on context it is used
-func (m *LocalCifsGroupMembersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this local cifs group inline members inline array item based on context it is used
+func (m *LocalCifsGroupInlineMembersInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsGroupMembersItems0) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsGroupInlineMembersInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -360,8 +360,8 @@ func (m *LocalCifsGroupMembersItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsGroupMembersItems0) UnmarshalBinary(b []byte) error {
-	var res LocalCifsGroupMembersItems0
+func (m *LocalCifsGroupInlineMembersInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res LocalCifsGroupInlineMembersInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -369,27 +369,27 @@ func (m *LocalCifsGroupMembersItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsGroupSvm local cifs group svm
+// LocalCifsGroupInlineSvm local cifs group inline svm
 //
-// swagger:model LocalCifsGroupSvm
-type LocalCifsGroupSvm struct {
+// swagger:model local_cifs_group_inline_svm
+type LocalCifsGroupInlineSvm struct {
 
 	// links
-	Links *LocalCifsGroupSvmLinks `json:"_links,omitempty"`
+	Links *LocalCifsGroupInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this local cifs group svm
-func (m *LocalCifsGroupSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs group inline svm
+func (m *LocalCifsGroupInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -402,7 +402,7 @@ func (m *LocalCifsGroupSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalCifsGroupSvm) validateLinks(formats strfmt.Registry) error {
+func (m *LocalCifsGroupInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -419,8 +419,8 @@ func (m *LocalCifsGroupSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local cifs group svm based on the context it is used
-func (m *LocalCifsGroupSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local cifs group inline svm based on the context it is used
+func (m *LocalCifsGroupInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -433,7 +433,7 @@ func (m *LocalCifsGroupSvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *LocalCifsGroupSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsGroupInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -448,7 +448,7 @@ func (m *LocalCifsGroupSvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsGroupSvm) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsGroupInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -456,8 +456,8 @@ func (m *LocalCifsGroupSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsGroupSvm) UnmarshalBinary(b []byte) error {
-	var res LocalCifsGroupSvm
+func (m *LocalCifsGroupInlineSvm) UnmarshalBinary(b []byte) error {
+	var res LocalCifsGroupInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -465,17 +465,17 @@ func (m *LocalCifsGroupSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LocalCifsGroupSvmLinks local cifs group svm links
+// LocalCifsGroupInlineSvmInlineLinks local cifs group inline svm inline links
 //
-// swagger:model LocalCifsGroupSvmLinks
-type LocalCifsGroupSvmLinks struct {
+// swagger:model local_cifs_group_inline_svm_inline__links
+type LocalCifsGroupInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this local cifs group svm links
-func (m *LocalCifsGroupSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this local cifs group inline svm inline links
+func (m *LocalCifsGroupInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -488,7 +488,7 @@ func (m *LocalCifsGroupSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LocalCifsGroupSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LocalCifsGroupInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -505,8 +505,8 @@ func (m *LocalCifsGroupSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this local cifs group svm links based on the context it is used
-func (m *LocalCifsGroupSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this local cifs group inline svm inline links based on the context it is used
+func (m *LocalCifsGroupInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -519,7 +519,7 @@ func (m *LocalCifsGroupSvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *LocalCifsGroupSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LocalCifsGroupInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -534,7 +534,7 @@ func (m *LocalCifsGroupSvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *LocalCifsGroupSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *LocalCifsGroupInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -542,8 +542,8 @@ func (m *LocalCifsGroupSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LocalCifsGroupSvmLinks) UnmarshalBinary(b []byte) error {
-	var res LocalCifsGroupSvmLinks
+func (m *LocalCifsGroupInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LocalCifsGroupInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

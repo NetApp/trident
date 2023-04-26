@@ -21,21 +21,21 @@ type Rfc2307bis struct {
 
 	// Indicates whether RFC 2307bis is enabled for the client schema.
 	// Example: false
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// RFC 2307bis groupOfUniqueNames object class.
 	// Example: groupOfUniqueNames
-	GroupOfUniqueNames string `json:"group_of_unique_names,omitempty"`
+	GroupOfUniqueNames *string `json:"group_of_unique_names,omitempty"`
 
 	// Maximum number of groups supported when RFC 2307bis is enabled.
 	// Example: 256
 	// Maximum: 1024
 	// Minimum: 1
-	MaximumGroups int64 `json:"maximum_groups,omitempty"`
+	MaximumGroups *int64 `json:"maximum_groups,omitempty"`
 
 	// RFC 2307bis uniqueMember attribute.
 	// Example: uniqueMember
-	UniqueMember string `json:"unique_member,omitempty"`
+	UniqueMember *string `json:"unique_member,omitempty"`
 }
 
 // Validate validates this rfc2307bis
@@ -57,11 +57,11 @@ func (m *Rfc2307bis) validateMaximumGroups(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("maximum_groups", "body", m.MaximumGroups, 1, false); err != nil {
+	if err := validate.MinimumInt("maximum_groups", "body", *m.MaximumGroups, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("maximum_groups", "body", m.MaximumGroups, 1024, false); err != nil {
+	if err := validate.MaximumInt("maximum_groups", "body", *m.MaximumGroups, 1024, false); err != nil {
 		return err
 	}
 

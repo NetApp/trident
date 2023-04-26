@@ -65,7 +65,7 @@ type NetworkIPInterfaceDeleteParams struct {
 
 	   IP interface UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *NetworkIPInterfaceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the network ip interface delete params
-func (o *NetworkIPInterfaceDeleteParams) WithUUIDPathParameter(uuid string) *NetworkIPInterfaceDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ip interface delete params
+func (o *NetworkIPInterfaceDeleteParams) WithUUID(uuid string) *NetworkIPInterfaceDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ip interface delete params
-func (o *NetworkIPInterfaceDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ip interface delete params
+func (o *NetworkIPInterfaceDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *NetworkIPInterfaceDeleteParams) WriteToRequest(r runtime.ClientRequest,
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

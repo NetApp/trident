@@ -66,37 +66,37 @@ type CapacityPoolGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LicenseManagerUUID.
 
 	   Filter by license_manager.uuid
 	*/
-	LicenseManagerUUIDQueryParameter *string
+	LicenseManagerUUID *string
 
 	/* NodesNodeName.
 
 	   Filter by nodes.node.name
 	*/
-	NodesNodeNameQueryParameter *string
+	NodesNodeName *string
 
 	/* NodesNodeUUID.
 
 	   Filter by nodes.node.uuid
 	*/
-	NodesNodeUUIDQueryParameter *string
+	NodesNodeUUID *string
 
 	/* NodesUsedSize.
 
 	   Filter by nodes.used_size
 	*/
-	NodesUsedSizeQueryParameter *int64
+	NodesUsedSize *int64
 
 	/* SerialNumber.
 
 	   Serial number of the capacity pool license.
 	*/
-	SerialNumberPathParameter string
+	SerialNumber string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -151,70 +151,70 @@ func (o *CapacityPoolGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the capacity pool get params
-func (o *CapacityPoolGetParams) WithFieldsQueryParameter(fields []string) *CapacityPoolGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the capacity pool get params
+func (o *CapacityPoolGetParams) WithFields(fields []string) *CapacityPoolGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the capacity pool get params
-func (o *CapacityPoolGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the capacity pool get params
+func (o *CapacityPoolGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLicenseManagerUUIDQueryParameter adds the licenseManagerUUID to the capacity pool get params
-func (o *CapacityPoolGetParams) WithLicenseManagerUUIDQueryParameter(licenseManagerUUID *string) *CapacityPoolGetParams {
-	o.SetLicenseManagerUUIDQueryParameter(licenseManagerUUID)
+// WithLicenseManagerUUID adds the licenseManagerUUID to the capacity pool get params
+func (o *CapacityPoolGetParams) WithLicenseManagerUUID(licenseManagerUUID *string) *CapacityPoolGetParams {
+	o.SetLicenseManagerUUID(licenseManagerUUID)
 	return o
 }
 
-// SetLicenseManagerUUIDQueryParameter adds the licenseManagerUuid to the capacity pool get params
-func (o *CapacityPoolGetParams) SetLicenseManagerUUIDQueryParameter(licenseManagerUUID *string) {
-	o.LicenseManagerUUIDQueryParameter = licenseManagerUUID
+// SetLicenseManagerUUID adds the licenseManagerUuid to the capacity pool get params
+func (o *CapacityPoolGetParams) SetLicenseManagerUUID(licenseManagerUUID *string) {
+	o.LicenseManagerUUID = licenseManagerUUID
 }
 
-// WithNodesNodeNameQueryParameter adds the nodesNodeName to the capacity pool get params
-func (o *CapacityPoolGetParams) WithNodesNodeNameQueryParameter(nodesNodeName *string) *CapacityPoolGetParams {
-	o.SetNodesNodeNameQueryParameter(nodesNodeName)
+// WithNodesNodeName adds the nodesNodeName to the capacity pool get params
+func (o *CapacityPoolGetParams) WithNodesNodeName(nodesNodeName *string) *CapacityPoolGetParams {
+	o.SetNodesNodeName(nodesNodeName)
 	return o
 }
 
-// SetNodesNodeNameQueryParameter adds the nodesNodeName to the capacity pool get params
-func (o *CapacityPoolGetParams) SetNodesNodeNameQueryParameter(nodesNodeName *string) {
-	o.NodesNodeNameQueryParameter = nodesNodeName
+// SetNodesNodeName adds the nodesNodeName to the capacity pool get params
+func (o *CapacityPoolGetParams) SetNodesNodeName(nodesNodeName *string) {
+	o.NodesNodeName = nodesNodeName
 }
 
-// WithNodesNodeUUIDQueryParameter adds the nodesNodeUUID to the capacity pool get params
-func (o *CapacityPoolGetParams) WithNodesNodeUUIDQueryParameter(nodesNodeUUID *string) *CapacityPoolGetParams {
-	o.SetNodesNodeUUIDQueryParameter(nodesNodeUUID)
+// WithNodesNodeUUID adds the nodesNodeUUID to the capacity pool get params
+func (o *CapacityPoolGetParams) WithNodesNodeUUID(nodesNodeUUID *string) *CapacityPoolGetParams {
+	o.SetNodesNodeUUID(nodesNodeUUID)
 	return o
 }
 
-// SetNodesNodeUUIDQueryParameter adds the nodesNodeUuid to the capacity pool get params
-func (o *CapacityPoolGetParams) SetNodesNodeUUIDQueryParameter(nodesNodeUUID *string) {
-	o.NodesNodeUUIDQueryParameter = nodesNodeUUID
+// SetNodesNodeUUID adds the nodesNodeUuid to the capacity pool get params
+func (o *CapacityPoolGetParams) SetNodesNodeUUID(nodesNodeUUID *string) {
+	o.NodesNodeUUID = nodesNodeUUID
 }
 
-// WithNodesUsedSizeQueryParameter adds the nodesUsedSize to the capacity pool get params
-func (o *CapacityPoolGetParams) WithNodesUsedSizeQueryParameter(nodesUsedSize *int64) *CapacityPoolGetParams {
-	o.SetNodesUsedSizeQueryParameter(nodesUsedSize)
+// WithNodesUsedSize adds the nodesUsedSize to the capacity pool get params
+func (o *CapacityPoolGetParams) WithNodesUsedSize(nodesUsedSize *int64) *CapacityPoolGetParams {
+	o.SetNodesUsedSize(nodesUsedSize)
 	return o
 }
 
-// SetNodesUsedSizeQueryParameter adds the nodesUsedSize to the capacity pool get params
-func (o *CapacityPoolGetParams) SetNodesUsedSizeQueryParameter(nodesUsedSize *int64) {
-	o.NodesUsedSizeQueryParameter = nodesUsedSize
+// SetNodesUsedSize adds the nodesUsedSize to the capacity pool get params
+func (o *CapacityPoolGetParams) SetNodesUsedSize(nodesUsedSize *int64) {
+	o.NodesUsedSize = nodesUsedSize
 }
 
-// WithSerialNumberPathParameter adds the serialNumber to the capacity pool get params
-func (o *CapacityPoolGetParams) WithSerialNumberPathParameter(serialNumber string) *CapacityPoolGetParams {
-	o.SetSerialNumberPathParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the capacity pool get params
+func (o *CapacityPoolGetParams) WithSerialNumber(serialNumber string) *CapacityPoolGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberPathParameter adds the serialNumber to the capacity pool get params
-func (o *CapacityPoolGetParams) SetSerialNumberPathParameter(serialNumber string) {
-	o.SerialNumberPathParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the capacity pool get params
+func (o *CapacityPoolGetParams) SetSerialNumber(serialNumber string) {
+	o.SerialNumber = serialNumber
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -225,7 +225,7 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -236,13 +236,13 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.LicenseManagerUUIDQueryParameter != nil {
+	if o.LicenseManagerUUID != nil {
 
 		// query param license_manager.uuid
 		var qrLicenseManagerUUID string
 
-		if o.LicenseManagerUUIDQueryParameter != nil {
-			qrLicenseManagerUUID = *o.LicenseManagerUUIDQueryParameter
+		if o.LicenseManagerUUID != nil {
+			qrLicenseManagerUUID = *o.LicenseManagerUUID
 		}
 		qLicenseManagerUUID := qrLicenseManagerUUID
 		if qLicenseManagerUUID != "" {
@@ -253,13 +253,13 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.NodesNodeNameQueryParameter != nil {
+	if o.NodesNodeName != nil {
 
 		// query param nodes.node.name
 		var qrNodesNodeName string
 
-		if o.NodesNodeNameQueryParameter != nil {
-			qrNodesNodeName = *o.NodesNodeNameQueryParameter
+		if o.NodesNodeName != nil {
+			qrNodesNodeName = *o.NodesNodeName
 		}
 		qNodesNodeName := qrNodesNodeName
 		if qNodesNodeName != "" {
@@ -270,13 +270,13 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.NodesNodeUUIDQueryParameter != nil {
+	if o.NodesNodeUUID != nil {
 
 		// query param nodes.node.uuid
 		var qrNodesNodeUUID string
 
-		if o.NodesNodeUUIDQueryParameter != nil {
-			qrNodesNodeUUID = *o.NodesNodeUUIDQueryParameter
+		if o.NodesNodeUUID != nil {
+			qrNodesNodeUUID = *o.NodesNodeUUID
 		}
 		qNodesNodeUUID := qrNodesNodeUUID
 		if qNodesNodeUUID != "" {
@@ -287,13 +287,13 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.NodesUsedSizeQueryParameter != nil {
+	if o.NodesUsedSize != nil {
 
 		// query param nodes.used_size
 		var qrNodesUsedSize int64
 
-		if o.NodesUsedSizeQueryParameter != nil {
-			qrNodesUsedSize = *o.NodesUsedSizeQueryParameter
+		if o.NodesUsedSize != nil {
+			qrNodesUsedSize = *o.NodesUsedSize
 		}
 		qNodesUsedSize := swag.FormatInt64(qrNodesUsedSize)
 		if qNodesUsedSize != "" {
@@ -305,7 +305,7 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param serial_number
-	if err := r.SetPathParam("serial_number", o.SerialNumberPathParameter); err != nil {
+	if err := r.SetPathParam("serial_number", o.SerialNumber); err != nil {
 		return err
 	}
 
@@ -317,7 +317,7 @@ func (o *CapacityPoolGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamCapacityPoolGet binds the parameter fields
 func (o *CapacityPoolGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

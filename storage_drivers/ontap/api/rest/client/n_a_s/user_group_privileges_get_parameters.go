@@ -66,19 +66,19 @@ type UserGroupPrivilegesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Local or Active Directory user or group name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *UserGroupPrivilegesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the user group privileges get params
-func (o *UserGroupPrivilegesGetParams) WithFieldsQueryParameter(fields []string) *UserGroupPrivilegesGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the user group privileges get params
+func (o *UserGroupPrivilegesGetParams) WithFields(fields []string) *UserGroupPrivilegesGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the user group privileges get params
-func (o *UserGroupPrivilegesGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the user group privileges get params
+func (o *UserGroupPrivilegesGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the user group privileges get params
-func (o *UserGroupPrivilegesGetParams) WithNamePathParameter(name string) *UserGroupPrivilegesGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the user group privileges get params
+func (o *UserGroupPrivilegesGetParams) WithName(name string) *UserGroupPrivilegesGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the user group privileges get params
-func (o *UserGroupPrivilegesGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the user group privileges get params
+func (o *UserGroupPrivilegesGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the user group privileges get params
-func (o *UserGroupPrivilegesGetParams) WithSVMUUIDPathParameter(svmUUID string) *UserGroupPrivilegesGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the user group privileges get params
+func (o *UserGroupPrivilegesGetParams) WithSvmUUID(svmUUID string) *UserGroupPrivilegesGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the user group privileges get params
-func (o *UserGroupPrivilegesGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the user group privileges get params
+func (o *UserGroupPrivilegesGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *UserGroupPrivilegesGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *UserGroupPrivilegesGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *UserGroupPrivilegesGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamUserGroupPrivilegesGet binds the parameter fields
 func (o *UserGroupPrivilegesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

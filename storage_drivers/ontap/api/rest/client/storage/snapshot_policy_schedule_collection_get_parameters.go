@@ -66,31 +66,37 @@ type SnapshotPolicyScheduleCollectionGetParams struct {
 
 	   Filter by count
 	*/
-	CountQueryParameter *int64
+	Count *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Prefix.
 
 	   Filter by prefix
 	*/
-	PrefixQueryParameter *string
+	Prefix *string
+
+	/* RetentionPeriod.
+
+	   Filter by retention_period
+	*/
+	RetentionPeriod *string
 
 	/* ReturnRecords.
 
@@ -98,7 +104,7 @@ type SnapshotPolicyScheduleCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,37 +112,37 @@ type SnapshotPolicyScheduleCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScheduleName.
 
 	   Filter by schedule.name
 	*/
-	ScheduleNameQueryParameter *string
+	ScheduleName *string
 
 	/* ScheduleUUID.
 
 	   Filter by schedule.uuid
 	*/
-	ScheduleUUIDQueryParameter *string
+	ScheduleUUID *string
 
 	/* SnapmirrorLabel.
 
 	   Filter by snapmirror_label
 	*/
-	SnapmirrorLabelQueryParameter *string
+	SnapmirrorLabel *string
 
 	/* SnapshotPolicyName.
 
 	   Filter by snapshot_policy.name
 	*/
-	SnapshotPolicyNameQueryParameter *string
+	SnapshotPolicyName *string
 
 	/* SnapshotPolicyUUID.
 
 	   Snapshot copy policy UUID
 	*/
-	SnapshotPolicyUUIDPathParameter string
+	SnapshotPolicyUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +162,14 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WithDefaults() *SnapshotPoli
 // All values with no default are reset to their zero value.
 func (o *SnapshotPolicyScheduleCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnapshotPolicyScheduleCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +211,147 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) SetHTTPClient(client *http.C
 	o.HTTPClient = client
 }
 
-// WithCountQueryParameter adds the count to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithCountQueryParameter(count *int64) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetCountQueryParameter(count)
+// WithCount adds the count to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithCount(count *int64) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetCount(count)
 	return o
 }
 
-// SetCountQueryParameter adds the count to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetCountQueryParameter(count *int64) {
-	o.CountQueryParameter = count
+// SetCount adds the count to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetCount(count *int64) {
+	o.Count = count
 }
 
-// WithFieldsQueryParameter adds the fields to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithFields(fields []string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithOrderBy(orderBy []string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPrefixQueryParameter adds the prefix to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithPrefixQueryParameter(prefix *string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetPrefixQueryParameter(prefix)
+// WithPrefix adds the prefix to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithPrefix(prefix *string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetPrefix(prefix)
 	return o
 }
 
-// SetPrefixQueryParameter adds the prefix to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetPrefixQueryParameter(prefix *string) {
-	o.PrefixQueryParameter = prefix
+// SetPrefix adds the prefix to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetPrefix(prefix *string) {
+	o.Prefix = prefix
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithRetentionPeriod adds the retentionPeriod to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithRetentionPeriod(retentionPeriod *string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetRetentionPeriod(retentionPeriod)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetRetentionPeriod adds the retentionPeriod to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetRetentionPeriod(retentionPeriod *string) {
+	o.RetentionPeriod = retentionPeriod
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnRecords adds the returnRecords to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnRecords adds the returnRecords to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithScheduleNameQueryParameter adds the scheduleName to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithScheduleNameQueryParameter(scheduleName *string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetScheduleNameQueryParameter(scheduleName)
+// WithReturnTimeout adds the returnTimeout to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetScheduleNameQueryParameter adds the scheduleName to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetScheduleNameQueryParameter(scheduleName *string) {
-	o.ScheduleNameQueryParameter = scheduleName
+// SetReturnTimeout adds the returnTimeout to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScheduleUUIDQueryParameter adds the scheduleUUID to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithScheduleUUIDQueryParameter(scheduleUUID *string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetScheduleUUIDQueryParameter(scheduleUUID)
+// WithScheduleName adds the scheduleName to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithScheduleName(scheduleName *string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetScheduleName(scheduleName)
 	return o
 }
 
-// SetScheduleUUIDQueryParameter adds the scheduleUuid to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetScheduleUUIDQueryParameter(scheduleUUID *string) {
-	o.ScheduleUUIDQueryParameter = scheduleUUID
+// SetScheduleName adds the scheduleName to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetScheduleName(scheduleName *string) {
+	o.ScheduleName = scheduleName
 }
 
-// WithSnapmirrorLabelQueryParameter adds the snapmirrorLabel to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithSnapmirrorLabelQueryParameter(snapmirrorLabel *string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetSnapmirrorLabelQueryParameter(snapmirrorLabel)
+// WithScheduleUUID adds the scheduleUUID to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithScheduleUUID(scheduleUUID *string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetScheduleUUID(scheduleUUID)
 	return o
 }
 
-// SetSnapmirrorLabelQueryParameter adds the snapmirrorLabel to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetSnapmirrorLabelQueryParameter(snapmirrorLabel *string) {
-	o.SnapmirrorLabelQueryParameter = snapmirrorLabel
+// SetScheduleUUID adds the scheduleUuid to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetScheduleUUID(scheduleUUID *string) {
+	o.ScheduleUUID = scheduleUUID
 }
 
-// WithSnapshotPolicyNameQueryParameter adds the snapshotPolicyName to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithSnapshotPolicyNameQueryParameter(snapshotPolicyName *string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetSnapshotPolicyNameQueryParameter(snapshotPolicyName)
+// WithSnapmirrorLabel adds the snapmirrorLabel to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithSnapmirrorLabel(snapmirrorLabel *string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetSnapmirrorLabel(snapmirrorLabel)
 	return o
 }
 
-// SetSnapshotPolicyNameQueryParameter adds the snapshotPolicyName to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetSnapshotPolicyNameQueryParameter(snapshotPolicyName *string) {
-	o.SnapshotPolicyNameQueryParameter = snapshotPolicyName
+// SetSnapmirrorLabel adds the snapmirrorLabel to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetSnapmirrorLabel(snapmirrorLabel *string) {
+	o.SnapmirrorLabel = snapmirrorLabel
 }
 
-// WithSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUUID to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) WithSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) *SnapshotPolicyScheduleCollectionGetParams {
-	o.SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID)
+// WithSnapshotPolicyName adds the snapshotPolicyName to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithSnapshotPolicyName(snapshotPolicyName *string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetSnapshotPolicyName(snapshotPolicyName)
 	return o
 }
 
-// SetSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUuid to the snapshot policy schedule collection get params
-func (o *SnapshotPolicyScheduleCollectionGetParams) SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) {
-	o.SnapshotPolicyUUIDPathParameter = snapshotPolicyUUID
+// SetSnapshotPolicyName adds the snapshotPolicyName to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetSnapshotPolicyName(snapshotPolicyName *string) {
+	o.SnapshotPolicyName = snapshotPolicyName
+}
+
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID string) *SnapshotPolicyScheduleCollectionGetParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
+	return o
+}
+
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the snapshot policy schedule collection get params
+func (o *SnapshotPolicyScheduleCollectionGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,13 +362,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 	}
 	var res []error
 
-	if o.CountQueryParameter != nil {
+	if o.Count != nil {
 
 		// query param count
 		var qrCount int64
 
-		if o.CountQueryParameter != nil {
-			qrCount = *o.CountQueryParameter
+		if o.Count != nil {
+			qrCount = *o.Count
 		}
 		qCount := swag.FormatInt64(qrCount)
 		if qCount != "" {
@@ -362,7 +379,7 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +390,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,7 +407,7 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -401,13 +418,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.PrefixQueryParameter != nil {
+	if o.Prefix != nil {
 
 		// query param prefix
 		var qrPrefix string
 
-		if o.PrefixQueryParameter != nil {
-			qrPrefix = *o.PrefixQueryParameter
+		if o.Prefix != nil {
+			qrPrefix = *o.Prefix
 		}
 		qPrefix := qrPrefix
 		if qPrefix != "" {
@@ -418,13 +435,30 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.RetentionPeriod != nil {
+
+		// query param retention_period
+		var qrRetentionPeriod string
+
+		if o.RetentionPeriod != nil {
+			qrRetentionPeriod = *o.RetentionPeriod
+		}
+		qRetentionPeriod := qrRetentionPeriod
+		if qRetentionPeriod != "" {
+
+			if err := r.SetQueryParam("retention_period", qRetentionPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +469,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +486,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ScheduleNameQueryParameter != nil {
+	if o.ScheduleName != nil {
 
 		// query param schedule.name
 		var qrScheduleName string
 
-		if o.ScheduleNameQueryParameter != nil {
-			qrScheduleName = *o.ScheduleNameQueryParameter
+		if o.ScheduleName != nil {
+			qrScheduleName = *o.ScheduleName
 		}
 		qScheduleName := qrScheduleName
 		if qScheduleName != "" {
@@ -469,13 +503,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ScheduleUUIDQueryParameter != nil {
+	if o.ScheduleUUID != nil {
 
 		// query param schedule.uuid
 		var qrScheduleUUID string
 
-		if o.ScheduleUUIDQueryParameter != nil {
-			qrScheduleUUID = *o.ScheduleUUIDQueryParameter
+		if o.ScheduleUUID != nil {
+			qrScheduleUUID = *o.ScheduleUUID
 		}
 		qScheduleUUID := qrScheduleUUID
 		if qScheduleUUID != "" {
@@ -486,13 +520,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.SnapmirrorLabelQueryParameter != nil {
+	if o.SnapmirrorLabel != nil {
 
 		// query param snapmirror_label
 		var qrSnapmirrorLabel string
 
-		if o.SnapmirrorLabelQueryParameter != nil {
-			qrSnapmirrorLabel = *o.SnapmirrorLabelQueryParameter
+		if o.SnapmirrorLabel != nil {
+			qrSnapmirrorLabel = *o.SnapmirrorLabel
 		}
 		qSnapmirrorLabel := qrSnapmirrorLabel
 		if qSnapmirrorLabel != "" {
@@ -503,13 +537,13 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.SnapshotPolicyNameQueryParameter != nil {
+	if o.SnapshotPolicyName != nil {
 
 		// query param snapshot_policy.name
 		var qrSnapshotPolicyName string
 
-		if o.SnapshotPolicyNameQueryParameter != nil {
-			qrSnapshotPolicyName = *o.SnapshotPolicyNameQueryParameter
+		if o.SnapshotPolicyName != nil {
+			qrSnapshotPolicyName = *o.SnapshotPolicyName
 		}
 		qSnapshotPolicyName := qrSnapshotPolicyName
 		if qSnapshotPolicyName != "" {
@@ -521,7 +555,7 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 	}
 
 	// path param snapshot_policy.uuid
-	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUID); err != nil {
 		return err
 	}
 
@@ -533,7 +567,7 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) WriteToRequest(r runtime.Cli
 
 // bindParamSnapshotPolicyScheduleCollectionGet binds the parameter fields
 func (o *SnapshotPolicyScheduleCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -550,7 +584,7 @@ func (o *SnapshotPolicyScheduleCollectionGetParams) bindParamFields(formats strf
 
 // bindParamSnapshotPolicyScheduleCollectionGet binds the parameter order_by
 func (o *SnapshotPolicyScheduleCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

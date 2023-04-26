@@ -66,14 +66,14 @@ type NvmeSubsystemMapDeleteParams struct {
 	   The unique identifier of the NVMe namespace.
 
 	*/
-	NamespaceUUIDPathParameter string
+	NamespaceUUID string
 
 	/* SubsystemUUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	SubsystemUUIDPathParameter string
+	SubsystemUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *NvmeSubsystemMapDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamespaceUUIDPathParameter adds the namespaceUUID to the nvme subsystem map delete params
-func (o *NvmeSubsystemMapDeleteParams) WithNamespaceUUIDPathParameter(namespaceUUID string) *NvmeSubsystemMapDeleteParams {
-	o.SetNamespaceUUIDPathParameter(namespaceUUID)
+// WithNamespaceUUID adds the namespaceUUID to the nvme subsystem map delete params
+func (o *NvmeSubsystemMapDeleteParams) WithNamespaceUUID(namespaceUUID string) *NvmeSubsystemMapDeleteParams {
+	o.SetNamespaceUUID(namespaceUUID)
 	return o
 }
 
-// SetNamespaceUUIDPathParameter adds the namespaceUuid to the nvme subsystem map delete params
-func (o *NvmeSubsystemMapDeleteParams) SetNamespaceUUIDPathParameter(namespaceUUID string) {
-	o.NamespaceUUIDPathParameter = namespaceUUID
+// SetNamespaceUUID adds the namespaceUuid to the nvme subsystem map delete params
+func (o *NvmeSubsystemMapDeleteParams) SetNamespaceUUID(namespaceUUID string) {
+	o.NamespaceUUID = namespaceUUID
 }
 
-// WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem map delete params
-func (o *NvmeSubsystemMapDeleteParams) WithSubsystemUUIDPathParameter(subsystemUUID string) *NvmeSubsystemMapDeleteParams {
-	o.SetSubsystemUUIDPathParameter(subsystemUUID)
+// WithSubsystemUUID adds the subsystemUUID to the nvme subsystem map delete params
+func (o *NvmeSubsystemMapDeleteParams) WithSubsystemUUID(subsystemUUID string) *NvmeSubsystemMapDeleteParams {
+	o.SetSubsystemUUID(subsystemUUID)
 	return o
 }
 
-// SetSubsystemUUIDPathParameter adds the subsystemUuid to the nvme subsystem map delete params
-func (o *NvmeSubsystemMapDeleteParams) SetSubsystemUUIDPathParameter(subsystemUUID string) {
-	o.SubsystemUUIDPathParameter = subsystemUUID
+// SetSubsystemUUID adds the subsystemUuid to the nvme subsystem map delete params
+func (o *NvmeSubsystemMapDeleteParams) SetSubsystemUUID(subsystemUUID string) {
+	o.SubsystemUUID = subsystemUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -159,12 +159,12 @@ func (o *NvmeSubsystemMapDeleteParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param namespace.uuid
-	if err := r.SetPathParam("namespace.uuid", o.NamespaceUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("namespace.uuid", o.NamespaceUUID); err != nil {
 		return err
 	}
 
 	// path param subsystem.uuid
-	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUID); err != nil {
 		return err
 	}
 

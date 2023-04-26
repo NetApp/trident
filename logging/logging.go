@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"sort"
@@ -20,7 +19,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/crypto"
 )
 
 const (
@@ -29,11 +28,11 @@ const (
 	defaultTimestampFormat = time.RFC3339
 )
 
-// InitLoggingForDocker configures logging for nDVP.  Logs are written both to a log file as well as stdout/stderr.
+// InitLoggingForDocker configures logging for nDVP.  Logs are written both to a log file and stdout/stderr.
 // Since logrus doesn't support multiple writers, each log stream is implemented as a hook.
 func InitLoggingForDocker(logName, logFormat string) error {
 	// No output except for the hooks
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	// Write to the log file
 	logFileHook, err := NewFileHook(logName, logFormat)
@@ -67,19 +66,28 @@ func InitLoggingForDocker(logName, logFormat string) error {
 	return nil
 }
 
-// InitLogLevel configures the logging level.  The debug flag takes precedence if set,
-// otherwise the logLevel flag (debug, info, warn, error, fatal) is used.
-func InitLogLevel(debug bool, logLevel string) error {
-	if debug {
-		log.SetLevel(log.DebugLevel)
-		log.SetFormatter(&Redactor{&log.TextFormatter{FullTimestamp: true}})
-	} else {
-		level, err := log.ParseLevel(logLevel)
-		if err != nil {
-			return err
-		}
-		log.SetLevel(level)
+// InitLogLevel configures the logging level using the flag value (trace, debug, info, warn, error, fatal).
+func InitLogLevel(logLevel string) error {
+	// If debug or higher, use the full timestamp for log entries.
+	level, err := log.ParseLevel(logLevel)
+	if err != nil {
+		return err
 	}
+
+	var useFullTimestamp bool
+	if level >= log.DebugLevel {
+		useFullTimestamp = true
+	}
+
+	// This package handles log-level checking on its own, so we decide when to forward to the logging implementation.
+	// If the logging implementation is not at trace, it may not log things we ask it to.
+	log.SetLevel(log.TraceLevel)
+	if err = SetDefaultLogLevel(level.String()); err != nil {
+		return err
+	}
+
+	log.SetFormatter(&Redactor{&log.TextFormatter{FullTimestamp: useFullTimestamp}})
+
 	return nil
 }
 
@@ -99,6 +107,22 @@ func InitLogFormat(logFormat string) error {
 	log.SetFormatter(&Redactor{formatter})
 
 	return nil
+}
+
+func InitLogOutput(out io.Writer) {
+	log.SetOutput(out)
+}
+
+func InitLogFormatter(formatter log.Formatter) {
+	log.SetFormatter(formatter)
+}
+
+func IsLevelEnabled(level log.Level) bool {
+	return log.IsLevelEnabled(level)
+}
+
+func GetLogLevel() string {
+	return log.GetLevel().String()
 }
 
 // ConsoleHook sends log entries to stdout.
@@ -139,7 +163,7 @@ func (hook *ConsoleHook) Fire(entry *log.Entry) error {
 	// Determine output stream
 	var logWriter io.Writer
 	switch entry.Level {
-	case log.DebugLevel, log.InfoLevel, log.WarnLevel:
+	case log.DebugLevel, log.InfoLevel, log.WarnLevel, log.TraceLevel:
 		logWriter = os.Stdout
 	case log.ErrorLevel, log.FatalLevel, log.PanicLevel:
 		logWriter = os.Stderr
@@ -212,11 +236,11 @@ func NewFileHook(logName, logFormat string) (*FileHook, error) {
 	// Build log file path
 	logFileLocation := ""
 	switch runtime.GOOS {
-	case utils.Linux:
+	case config.Linux:
 		logFileLocation = LogRoot + "/" + logName + ".log"
-	case utils.Darwin:
+	case config.Darwin:
 		logFileLocation = LogRoot + "/" + logName + ".log"
-	case utils.Windows:
+	case config.Windows:
 		logFileLocation = logName + ".log"
 	}
 
@@ -290,7 +314,7 @@ func (hook *FileHook) logfileNeedsRotation() bool {
 func (hook *FileHook) maybeDoLogfileRotation() error {
 	// Could use a counter or some other heuristic to decide when to do this, but it's
 	// more a less a wash to let rand() do it every 1/n times.
-	if utils.GetRandomNumber(randomLogcheckInterval) == 0 {
+	if crypto.GetRandomNumber(randomLogcheckInterval) == 0 {
 		return hook.doLogfileRotation()
 	}
 	return nil

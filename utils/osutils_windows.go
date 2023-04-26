@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastic/go-sysinfo"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 // The Trident build process builds the Trident CLI client for both linux and windows.

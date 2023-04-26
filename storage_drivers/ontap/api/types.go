@@ -2,7 +2,7 @@
 
 package api
 
-//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI
+//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI,AggregateSpace,Response
 
 type Volume struct {
 	AccessType        string
@@ -102,7 +102,10 @@ type SnapmirrorState string
 const (
 	SnapmirrorStateUninitialized = SnapmirrorState("uninitialized")
 	SnapmirrorStateSnapmirrored  = SnapmirrorState("snapmirrored")
-	SnapmirrorStateBroken        = SnapmirrorState("broken-off")
+	SnapmirrorStateBrokenOffZapi = SnapmirrorState("broken-off")
+	SnapmirrorStateBrokenOffRest = SnapmirrorState("broken_off")
+	SnapmirrorStateSynchronizing = SnapmirrorState("synchronizing")
+	SnapmirrorStateInSync        = SnapmirrorState("in_sync")
 )
 
 func (s SnapmirrorState) IsUninitialized() bool {
@@ -117,6 +120,12 @@ const (
 	SnapmirrorStatusBreaking     = SnapmirrorStatus("breaking")
 	SnapmirrorStatusQuiescing    = SnapmirrorStatus("quiescing")
 	SnapmirrorStatusTransferring = SnapmirrorStatus("transferring")
+	// Snapmirror transfer status for REST
+	SnapmirrorStatusAborted     = SnapmirrorStatus("aborted")
+	SnapmirrorStatusFailed      = SnapmirrorStatus("failed")
+	SnapmirrorStatusHardAborted = SnapmirrorStatus("hard_aborted")
+	SnapmirrorStatusQueued      = SnapmirrorStatus("queued")
+	SnapmirrorStatusSuccess     = SnapmirrorStatus("success")
 )
 
 func (s SnapmirrorStatus) IsAborting() bool {
@@ -129,6 +138,10 @@ func (s SnapmirrorStatus) IsIdle() bool {
 
 func (s SnapmirrorStatus) IsBreaking() bool {
 	return s == SnapmirrorStatusBreaking
+}
+
+func (s SnapmirrorStatus) IsTransferring() bool {
+	return s == SnapmirrorStatusTransferring
 }
 
 type Snapmirror struct {
@@ -144,19 +157,21 @@ type Snapmirror struct {
 type SnapmirrorPolicyType string
 
 const (
-	SnapmirrorPolicyTypeSync  = SnapmirrorPolicyType("sync_mirror")
-	SnapmirrorPolicyTypeAsync = SnapmirrorPolicyType("async_mirror")
+	SnapmirrorPolicyZAPITypeSync  = SnapmirrorPolicyType("sync_mirror")
+	SnapmirrorPolicyZAPITypeAsync = SnapmirrorPolicyType("async_mirror")
+	SnapmirrorPolicyRESTTypeSync  = SnapmirrorPolicyType("sync")
+	SnapmirrorPolicyRESTTypeAsync = SnapmirrorPolicyType("async")
 )
 
 type SnapmirrorPolicy struct {
-	Type  SnapmirrorPolicyType
-	Rules map[string]struct{}
+	Type             SnapmirrorPolicyType
+	CopyAllSnapshots bool
 }
 
 func (s SnapmirrorPolicyType) IsSnapmirrorPolicyTypeSync() bool {
-	return s == SnapmirrorPolicyTypeSync
+	return (s == SnapmirrorPolicyZAPITypeSync || s == SnapmirrorPolicyRESTTypeSync)
 }
 
 func (s SnapmirrorPolicyType) IsSnapmirrorPolicyTypeAsync() bool {
-	return s == SnapmirrorPolicyTypeAsync
+	return (s == SnapmirrorPolicyZAPITypeAsync || s == SnapmirrorPolicyRESTTypeAsync)
 }

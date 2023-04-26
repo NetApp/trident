@@ -4,7 +4,7 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -13,12 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 func TestMain(m *testing.M) {
-	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	// Disable any standard log output; don't import our logging package here or else an import cycle will occur.
+	log.SetOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
@@ -65,22 +65,23 @@ func TestPlatformAtLeast(t *testing.T) {
 	tests := []struct {
 		platformName string
 		version      string
-		result       bool
+		causedErr    bool
 	}{
-		{platformName: "docker", version: "v1.6.0", result: false},
-		{platformName: "kubernetes", version: "v1.7.0", result: true},
-		{platformName: "kubernetes", version: "v1.6.0", result: true},
-		{platformName: "kubernetes", version: "v1.9.0", result: true},
-		{platformName: "kubernetes", version: "v1.12.0", result: false},
-		{platformName: "kubernetes", version: "x123", result: false},
+		{platformName: "docker", version: "v1.6.0", causedErr: true},
+		{platformName: "kubernetes", version: "v1.7.0", causedErr: true},
+		{platformName: "kubernetes", version: "v1.6.0", causedErr: true},
+		{platformName: "kubernetes", version: "v1.9.0", causedErr: true},
+		{platformName: "kubernetes", version: "v1.12.0", causedErr: true},
+		{platformName: "kubernetes", version: "x123", causedErr: false},
 	}
 
 	OrchestratorTelemetry.Platform = "kubernetes"
 	OrchestratorTelemetry.PlatformVersion = "v1.9.0"
 	for _, test := range tests {
-		result := PlatformAtLeast(test.platformName, test.version)
-		if result != test.result {
-			t.Errorf("Failed platform test. %s %s result: %v", test.platformName, test.version, result)
+		err := PlatformAtLeast(test.platformName, test.version)
+		isErr := err != nil
+		if isErr == test.causedErr {
+			t.Errorf("Failed platform test. %s %s result: %v", test.platformName, test.version, test.causedErr)
 		}
 	}
 }
@@ -109,12 +110,12 @@ func TestVersion(t *testing.T) {
 
 func TestValidateKubernetesVersion(t *testing.T) {
 	minK8sVersion := KubernetesVersionMin
-	currentK8sVersion, _ := utils.ParseGeneric(KubernetesVersionMax)
+	currentK8sVersion, _ := versionutils.ParseGeneric(KubernetesVersionMax)
 	err := ValidateKubernetesVersion(minK8sVersion, currentK8sVersion)
 	assert.Nil(t, err, "expected nil error")
 
 	minK8sVersion = KubernetesVersionMin
-	currentK8sVersion, _ = utils.ParseGeneric("v1.18") // any version older than KubernetesVersionMin may be used.
+	currentK8sVersion, _ = versionutils.ParseGeneric("v1.18") // any version older than KubernetesVersionMin may be used.
 	err = ValidateKubernetesVersion(minK8sVersion, currentK8sVersion)
 	assert.NotNil(t, err, "expected non-nil error")
 }
@@ -133,7 +134,7 @@ func TestValidateKubernetesVersionFromInfo(t *testing.T) {
 
 	// mismatched versions
 	k8sMinVersion = KubernetesVersionMax
-	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.20 -> [v1, 20]
+	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.21 -> [v1, 21]
 	currentK8sVersionInfo = &k8sversion.Info{
 		Major:      k8sCurrentVersionParts[0],
 		Minor:      k8sCurrentVersionParts[1],
@@ -144,7 +145,7 @@ func TestValidateKubernetesVersionFromInfo(t *testing.T) {
 
 	// improperly formatted version
 	k8sMinVersion = KubernetesVersionMax
-	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.20 -> [v1, 20]
+	k8sCurrentVersionParts = strings.Split(KubernetesVersionMin, ".") // v1.21 -> [v1, 21]
 	currentK8sVersionInfo = &k8sversion.Info{
 		Major:      k8sCurrentVersionParts[0],
 		Minor:      k8sCurrentVersionParts[1],

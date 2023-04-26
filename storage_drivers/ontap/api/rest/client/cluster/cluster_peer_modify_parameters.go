@@ -73,7 +73,7 @@ type ClusterPeerModifyParams struct {
 
 	   Cluster peer relationship UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *ClusterPeerModifyParams) SetInfo(info *models.ClusterPeer) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the cluster peer modify params
-func (o *ClusterPeerModifyParams) WithUUIDPathParameter(uuid string) *ClusterPeerModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the cluster peer modify params
+func (o *ClusterPeerModifyParams) WithUUID(uuid string) *ClusterPeerModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the cluster peer modify params
-func (o *ClusterPeerModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the cluster peer modify params
+func (o *ClusterPeerModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *ClusterPeerModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

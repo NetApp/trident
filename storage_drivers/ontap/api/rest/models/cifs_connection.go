@@ -20,55 +20,55 @@ import (
 // swagger:model cifs_connection
 type CifsConnection struct {
 
+	// cifs connection inline sessions
+	CifsConnectionInlineSessions []*CifsConnectionInlineSessionsInlineArrayItem `json:"sessions,omitempty"`
+
 	// Specifies IP of the client.
 	//
 	// Example: 10.74.7.182
 	// Read Only: true
-	ClientIP string `json:"client_ip,omitempty"`
+	ClientIP *string `json:"client_ip,omitempty"`
 
 	// "A unique 32-bit unsigned number used to represent the port number of the connection".
 	//
 	// Example: 12345
 	// Read Only: true
-	ClientPort int64 `json:"client_port,omitempty"`
+	ClientPort *int64 `json:"client_port,omitempty"`
 
 	// A unique 32-bit unsigned number used to represent each SMB session's connection ID.
 	//
 	// Example: 22802
 	// Read Only: true
-	Identifier int64 `json:"identifier,omitempty"`
+	Identifier *int64 `json:"identifier,omitempty"`
 
 	// A unique 32-bit unsigned number used to represent each SMB session's network context ID.
 	//
 	// Example: 22802
 	// Read Only: true
-	NetworkContextID int64 `json:"network_context_id,omitempty"`
+	NetworkContextID *int64 `json:"network_context_id,omitempty"`
 
 	// node
-	Node *CifsConnectionNode `json:"node,omitempty"`
+	Node *CifsConnectionInlineNode `json:"node,omitempty"`
 
 	// Specifies the IP address of the SVM.
 	//
 	// Example: 10.140.78.248
 	// Read Only: true
-	ServerIP string `json:"server_ip,omitempty"`
-
-	// sessions
-	Sessions []*CifsConnectionSessionsItems0 `json:"sessions,omitempty"`
+	ServerIP *string `json:"server_ip,omitempty"`
 
 	// svm
-	Svm *CifsConnectionSvm `json:"svm,omitempty"`
+	Svm *CifsConnectionInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this cifs connection
 func (m *CifsConnection) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateNode(formats); err != nil {
+	if err := m.validateCifsConnectionInlineSessions(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateSessions(formats); err != nil {
+	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -79,6 +79,30 @@ func (m *CifsConnection) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *CifsConnection) validateCifsConnectionInlineSessions(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsConnectionInlineSessions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CifsConnectionInlineSessions); i++ {
+		if swag.IsZero(m.CifsConnectionInlineSessions[i]) { // not required
+			continue
+		}
+
+		if m.CifsConnectionInlineSessions[i] != nil {
+			if err := m.CifsConnectionInlineSessions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("sessions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -94,30 +118,6 @@ func (m *CifsConnection) validateNode(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *CifsConnection) validateSessions(formats strfmt.Registry) error {
-	if swag.IsZero(m.Sessions) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Sessions); i++ {
-		if swag.IsZero(m.Sessions[i]) { // not required
-			continue
-		}
-
-		if m.Sessions[i] != nil {
-			if err := m.Sessions[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("sessions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -144,6 +144,10 @@ func (m *CifsConnection) validateSvm(formats strfmt.Registry) error {
 func (m *CifsConnection) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateCifsConnectionInlineSessions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateClientIP(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -168,10 +172,6 @@ func (m *CifsConnection) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateSessions(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -182,9 +182,27 @@ func (m *CifsConnection) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
+func (m *CifsConnection) contextValidateCifsConnectionInlineSessions(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CifsConnectionInlineSessions); i++ {
+
+		if m.CifsConnectionInlineSessions[i] != nil {
+			if err := m.CifsConnectionInlineSessions[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("sessions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *CifsConnection) contextValidateClientIP(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "client_ip", "body", string(m.ClientIP)); err != nil {
+	if err := validate.ReadOnly(ctx, "client_ip", "body", m.ClientIP); err != nil {
 		return err
 	}
 
@@ -193,7 +211,7 @@ func (m *CifsConnection) contextValidateClientIP(ctx context.Context, formats st
 
 func (m *CifsConnection) contextValidateClientPort(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "client_port", "body", int64(m.ClientPort)); err != nil {
+	if err := validate.ReadOnly(ctx, "client_port", "body", m.ClientPort); err != nil {
 		return err
 	}
 
@@ -202,7 +220,7 @@ func (m *CifsConnection) contextValidateClientPort(ctx context.Context, formats 
 
 func (m *CifsConnection) contextValidateIdentifier(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "identifier", "body", int64(m.Identifier)); err != nil {
+	if err := validate.ReadOnly(ctx, "identifier", "body", m.Identifier); err != nil {
 		return err
 	}
 
@@ -211,7 +229,7 @@ func (m *CifsConnection) contextValidateIdentifier(ctx context.Context, formats 
 
 func (m *CifsConnection) contextValidateNetworkContextID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "network_context_id", "body", int64(m.NetworkContextID)); err != nil {
+	if err := validate.ReadOnly(ctx, "network_context_id", "body", m.NetworkContextID); err != nil {
 		return err
 	}
 
@@ -234,26 +252,8 @@ func (m *CifsConnection) contextValidateNode(ctx context.Context, formats strfmt
 
 func (m *CifsConnection) contextValidateServerIP(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "server_ip", "body", string(m.ServerIP)); err != nil {
+	if err := validate.ReadOnly(ctx, "server_ip", "body", m.ServerIP); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *CifsConnection) contextValidateSessions(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Sessions); i++ {
-
-		if m.Sessions[i] != nil {
-			if err := m.Sessions[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("sessions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -291,25 +291,25 @@ func (m *CifsConnection) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsConnectionNode cifs connection node
+// CifsConnectionInlineNode cifs connection inline node
 //
-// swagger:model CifsConnectionNode
-type CifsConnectionNode struct {
+// swagger:model cifs_connection_inline_node
+type CifsConnectionInlineNode struct {
 
 	// links
-	Links *CifsConnectionNodeLinks `json:"_links,omitempty"`
+	Links *CifsConnectionInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs connection node
-func (m *CifsConnectionNode) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs connection inline node
+func (m *CifsConnectionInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -322,7 +322,7 @@ func (m *CifsConnectionNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsConnectionNode) validateLinks(formats strfmt.Registry) error {
+func (m *CifsConnectionInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -339,8 +339,8 @@ func (m *CifsConnectionNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs connection node based on the context it is used
-func (m *CifsConnectionNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs connection inline node based on the context it is used
+func (m *CifsConnectionInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -353,7 +353,7 @@ func (m *CifsConnectionNode) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *CifsConnectionNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsConnectionInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -368,7 +368,7 @@ func (m *CifsConnectionNode) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *CifsConnectionNode) MarshalBinary() ([]byte, error) {
+func (m *CifsConnectionInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -376,8 +376,8 @@ func (m *CifsConnectionNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsConnectionNode) UnmarshalBinary(b []byte) error {
-	var res CifsConnectionNode
+func (m *CifsConnectionInlineNode) UnmarshalBinary(b []byte) error {
+	var res CifsConnectionInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -385,17 +385,17 @@ func (m *CifsConnectionNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsConnectionNodeLinks cifs connection node links
+// CifsConnectionInlineNodeInlineLinks cifs connection inline node inline links
 //
-// swagger:model CifsConnectionNodeLinks
-type CifsConnectionNodeLinks struct {
+// swagger:model cifs_connection_inline_node_inline__links
+type CifsConnectionInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs connection node links
-func (m *CifsConnectionNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs connection inline node inline links
+func (m *CifsConnectionInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -408,7 +408,7 @@ func (m *CifsConnectionNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsConnectionNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsConnectionInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -425,8 +425,8 @@ func (m *CifsConnectionNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs connection node links based on the context it is used
-func (m *CifsConnectionNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs connection inline node inline links based on the context it is used
+func (m *CifsConnectionInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -439,7 +439,7 @@ func (m *CifsConnectionNodeLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CifsConnectionNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsConnectionInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -454,7 +454,7 @@ func (m *CifsConnectionNodeLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsConnectionNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsConnectionInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -462,8 +462,8 @@ func (m *CifsConnectionNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsConnectionNodeLinks) UnmarshalBinary(b []byte) error {
-	var res CifsConnectionNodeLinks
+func (m *CifsConnectionInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsConnectionInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -471,25 +471,25 @@ func (m *CifsConnectionNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsConnectionSessionsItems0 cifs connection sessions items0
+// CifsConnectionInlineSessionsInlineArrayItem cifs connection inline sessions inline array item
 //
-// swagger:model CifsConnectionSessionsItems0
-type CifsConnectionSessionsItems0 struct {
+// swagger:model cifs_connection_inline_sessions_inline_array_item
+type CifsConnectionInlineSessionsInlineArrayItem struct {
 
 	// A unique 64-bit unsigned number represented as string used to represent each SMB session's identifier.
 	//
 	// Example: 4622663542519103000
 	// Read Only: true
-	Identifier int64 `json:"identifier,omitempty"`
+	Identifier *int64 `json:"identifier,omitempty"`
 }
 
-// Validate validates this cifs connection sessions items0
-func (m *CifsConnectionSessionsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs connection inline sessions inline array item
+func (m *CifsConnectionInlineSessionsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs connection sessions items0 based on the context it is used
-func (m *CifsConnectionSessionsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs connection inline sessions inline array item based on the context it is used
+func (m *CifsConnectionInlineSessionsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIdentifier(ctx, formats); err != nil {
@@ -502,9 +502,9 @@ func (m *CifsConnectionSessionsItems0) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *CifsConnectionSessionsItems0) contextValidateIdentifier(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsConnectionInlineSessionsInlineArrayItem) contextValidateIdentifier(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "identifier", "body", int64(m.Identifier)); err != nil {
+	if err := validate.ReadOnly(ctx, "identifier", "body", m.Identifier); err != nil {
 		return err
 	}
 
@@ -512,7 +512,7 @@ func (m *CifsConnectionSessionsItems0) contextValidateIdentifier(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *CifsConnectionSessionsItems0) MarshalBinary() ([]byte, error) {
+func (m *CifsConnectionInlineSessionsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -520,8 +520,8 @@ func (m *CifsConnectionSessionsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsConnectionSessionsItems0) UnmarshalBinary(b []byte) error {
-	var res CifsConnectionSessionsItems0
+func (m *CifsConnectionInlineSessionsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CifsConnectionInlineSessionsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -529,27 +529,27 @@ func (m *CifsConnectionSessionsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsConnectionSvm cifs connection svm
+// CifsConnectionInlineSvm cifs connection inline svm
 //
-// swagger:model CifsConnectionSvm
-type CifsConnectionSvm struct {
+// swagger:model cifs_connection_inline_svm
+type CifsConnectionInlineSvm struct {
 
 	// links
-	Links *CifsConnectionSvmLinks `json:"_links,omitempty"`
+	Links *CifsConnectionInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs connection svm
-func (m *CifsConnectionSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs connection inline svm
+func (m *CifsConnectionInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -562,7 +562,7 @@ func (m *CifsConnectionSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsConnectionSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsConnectionInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -579,8 +579,8 @@ func (m *CifsConnectionSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs connection svm based on the context it is used
-func (m *CifsConnectionSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs connection inline svm based on the context it is used
+func (m *CifsConnectionInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -593,7 +593,7 @@ func (m *CifsConnectionSvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CifsConnectionSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsConnectionInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -608,7 +608,7 @@ func (m *CifsConnectionSvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *CifsConnectionSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsConnectionInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -616,8 +616,8 @@ func (m *CifsConnectionSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsConnectionSvm) UnmarshalBinary(b []byte) error {
-	var res CifsConnectionSvm
+func (m *CifsConnectionInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsConnectionInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -625,17 +625,17 @@ func (m *CifsConnectionSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsConnectionSvmLinks cifs connection svm links
+// CifsConnectionInlineSvmInlineLinks cifs connection inline svm inline links
 //
-// swagger:model CifsConnectionSvmLinks
-type CifsConnectionSvmLinks struct {
+// swagger:model cifs_connection_inline_svm_inline__links
+type CifsConnectionInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs connection svm links
-func (m *CifsConnectionSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs connection inline svm inline links
+func (m *CifsConnectionInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -648,7 +648,7 @@ func (m *CifsConnectionSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsConnectionSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsConnectionInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -665,8 +665,8 @@ func (m *CifsConnectionSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs connection svm links based on the context it is used
-func (m *CifsConnectionSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs connection inline svm inline links based on the context it is used
+func (m *CifsConnectionInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -679,7 +679,7 @@ func (m *CifsConnectionSvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsConnectionSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsConnectionInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -694,7 +694,7 @@ func (m *CifsConnectionSvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *CifsConnectionSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsConnectionInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -702,8 +702,8 @@ func (m *CifsConnectionSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsConnectionSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsConnectionSvmLinks
+func (m *CifsConnectionInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsConnectionInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

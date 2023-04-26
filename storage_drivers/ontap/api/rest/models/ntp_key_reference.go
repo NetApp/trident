@@ -20,7 +20,7 @@ import (
 type NtpKeyReference struct {
 
 	// links
-	Links *NtpKeyReferenceLinks `json:"_links,omitempty"`
+	Links *NtpKeyReferenceInlineLinks `json:"_links,omitempty"`
 
 	// NTP symmetric authentication key identifier or index number (ID). This ID,
 	// the type of cryptographic hash, and the cryptographic hash value are all
@@ -29,7 +29,7 @@ type NtpKeyReference struct {
 	// Example: 10
 	// Maximum: 65535
 	// Minimum: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
 // Validate validates this ntp key reference
@@ -72,11 +72,11 @@ func (m *NtpKeyReference) validateID(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("id", "body", m.ID, 1, false); err != nil {
+	if err := validate.MinimumInt("id", "body", *m.ID, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("id", "body", m.ID, 65535, false); err != nil {
+	if err := validate.MaximumInt("id", "body", *m.ID, 65535, false); err != nil {
 		return err
 	}
 
@@ -129,17 +129,17 @@ func (m *NtpKeyReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NtpKeyReferenceLinks ntp key reference links
+// NtpKeyReferenceInlineLinks ntp key reference inline links
 //
-// swagger:model NtpKeyReferenceLinks
-type NtpKeyReferenceLinks struct {
+// swagger:model ntp_key_reference_inline__links
+type NtpKeyReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ntp key reference links
-func (m *NtpKeyReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ntp key reference inline links
+func (m *NtpKeyReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -152,7 +152,7 @@ func (m *NtpKeyReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NtpKeyReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NtpKeyReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -169,8 +169,8 @@ func (m *NtpKeyReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ntp key reference links based on the context it is used
-func (m *NtpKeyReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ntp key reference inline links based on the context it is used
+func (m *NtpKeyReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -183,7 +183,7 @@ func (m *NtpKeyReferenceLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NtpKeyReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NtpKeyReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -198,7 +198,7 @@ func (m *NtpKeyReferenceLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NtpKeyReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *NtpKeyReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -206,8 +206,8 @@ func (m *NtpKeyReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NtpKeyReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res NtpKeyReferenceLinks
+func (m *NtpKeyReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NtpKeyReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

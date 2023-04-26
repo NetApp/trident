@@ -65,7 +65,7 @@ type SnaplockRetentionPolicyDeleteParams struct {
 
 	   Name of the retention policy
 	*/
-	PolicyNamePathParameter string
+	PolicyName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SnaplockRetentionPolicyDeleteParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithPolicyNamePathParameter adds the policyName to the snaplock retention policy delete params
-func (o *SnaplockRetentionPolicyDeleteParams) WithPolicyNamePathParameter(policyName string) *SnaplockRetentionPolicyDeleteParams {
-	o.SetPolicyNamePathParameter(policyName)
+// WithPolicyName adds the policyName to the snaplock retention policy delete params
+func (o *SnaplockRetentionPolicyDeleteParams) WithPolicyName(policyName string) *SnaplockRetentionPolicyDeleteParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNamePathParameter adds the policyName to the snaplock retention policy delete params
-func (o *SnaplockRetentionPolicyDeleteParams) SetPolicyNamePathParameter(policyName string) {
-	o.PolicyNamePathParameter = policyName
+// SetPolicyName adds the policyName to the snaplock retention policy delete params
+func (o *SnaplockRetentionPolicyDeleteParams) SetPolicyName(policyName string) {
+	o.PolicyName = policyName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SnaplockRetentionPolicyDeleteParams) WriteToRequest(r runtime.ClientReq
 	var res []error
 
 	// path param policy.name
-	if err := r.SetPathParam("policy.name", o.PolicyNamePathParameter); err != nil {
+	if err := r.SetPathParam("policy.name", o.PolicyName); err != nil {
 		return err
 	}
 

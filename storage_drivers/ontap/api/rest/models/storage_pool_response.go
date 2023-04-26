@@ -20,16 +20,20 @@ import (
 type StoragePoolResponse struct {
 
 	// links
-	Links *StoragePoolResponseLinks `json:"_links,omitempty"`
+	Links *StoragePoolResponseInlineLinks `json:"_links,omitempty"`
 
 	// error
 	Error *Error `json:"error,omitempty"`
 
 	// Number of shared storage pools in the cluster.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*StoragePool `json:"records,omitempty"`
+	// storage pool response inline records
+	StoragePoolResponseInlineRecords []*StoragePool `json:"records,omitempty"`
+
+	// storage pool response inline spares
+	StoragePoolResponseInlineSpares []*StoragePoolShowSpares `json:"spares,omitempty"`
 }
 
 // Validate validates this storage pool response
@@ -44,7 +48,11 @@ func (m *StoragePoolResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateStoragePoolResponseInlineRecords(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStoragePoolResponseInlineSpares(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,20 +96,44 @@ func (m *StoragePoolResponse) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *StoragePoolResponse) validateStoragePoolResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePoolResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.StoragePoolResponseInlineRecords); i++ {
+		if swag.IsZero(m.StoragePoolResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.StoragePoolResponseInlineRecords[i] != nil {
+			if err := m.StoragePoolResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StoragePoolResponse) validateStoragePoolResponseInlineSpares(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePoolResponseInlineSpares) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StoragePoolResponseInlineSpares); i++ {
+		if swag.IsZero(m.StoragePoolResponseInlineSpares[i]) { // not required
+			continue
+		}
+
+		if m.StoragePoolResponseInlineSpares[i] != nil {
+			if err := m.StoragePoolResponseInlineSpares[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("spares" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -124,7 +156,11 @@ func (m *StoragePoolResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateStoragePoolResponseInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStoragePoolResponseInlineSpares(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -162,14 +198,32 @@ func (m *StoragePoolResponse) contextValidateError(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StoragePoolResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolResponse) contextValidateStoragePoolResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.StoragePoolResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.StoragePoolResponseInlineRecords[i] != nil {
+			if err := m.StoragePoolResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *StoragePoolResponse) contextValidateStoragePoolResponseInlineSpares(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.StoragePoolResponseInlineSpares); i++ {
+
+		if m.StoragePoolResponseInlineSpares[i] != nil {
+			if err := m.StoragePoolResponseInlineSpares[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("spares" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -198,10 +252,10 @@ func (m *StoragePoolResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePoolResponseLinks storage pool response links
+// StoragePoolResponseInlineLinks storage pool response inline links
 //
-// swagger:model StoragePoolResponseLinks
-type StoragePoolResponseLinks struct {
+// swagger:model storage_pool_response_inline__links
+type StoragePoolResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -210,8 +264,8 @@ type StoragePoolResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage pool response links
-func (m *StoragePoolResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage pool response inline links
+func (m *StoragePoolResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -228,7 +282,7 @@ func (m *StoragePoolResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *StoragePoolResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -245,7 +299,7 @@ func (m *StoragePoolResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePoolResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePoolResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -262,8 +316,8 @@ func (m *StoragePoolResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage pool response links based on the context it is used
-func (m *StoragePoolResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage pool response inline links based on the context it is used
+func (m *StoragePoolResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -280,7 +334,7 @@ func (m *StoragePoolResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StoragePoolResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -294,7 +348,7 @@ func (m *StoragePoolResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *StoragePoolResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePoolResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -309,7 +363,7 @@ func (m *StoragePoolResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePoolResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePoolResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -317,8 +371,8 @@ func (m *StoragePoolResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePoolResponseLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePoolResponseLinks
+func (m *StoragePoolResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePoolResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

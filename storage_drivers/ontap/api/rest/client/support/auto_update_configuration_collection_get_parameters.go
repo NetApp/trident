@@ -66,43 +66,43 @@ type AutoUpdateConfigurationCollectionGetParams struct {
 
 	   Filter by action
 	*/
-	ActionQueryParameter *string
+	Action *string
 
 	/* Category.
 
 	   Filter by category
 	*/
-	CategoryQueryParameter *string
+	Category *string
 
 	/* DescriptionCode.
 
 	   Filter by description.code
 	*/
-	DescriptionCodeQueryParameter *string
+	DescriptionCode *string
 
 	/* DescriptionMessage.
 
 	   Filter by description.message
 	*/
-	DescriptionMessageQueryParameter *string
+	DescriptionMessage *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -110,7 +110,7 @@ type AutoUpdateConfigurationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -118,13 +118,13 @@ type AutoUpdateConfigurationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WithDefaults() *AutoUpdateC
 // All values with no default are reset to their zero value.
 func (o *AutoUpdateConfigurationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AutoUpdateConfigurationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *AutoUpdateConfigurationCollectionGetParams) SetHTTPClient(client *http.
 	o.HTTPClient = client
 }
 
-// WithActionQueryParameter adds the action to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithActionQueryParameter(action *string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetActionQueryParameter(action)
+// WithAction adds the action to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithAction(action *string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetAction(action)
 	return o
 }
 
-// SetActionQueryParameter adds the action to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetActionQueryParameter(action *string) {
-	o.ActionQueryParameter = action
+// SetAction adds the action to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetAction(action *string) {
+	o.Action = action
 }
 
-// WithCategoryQueryParameter adds the category to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithCategoryQueryParameter(category *string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetCategoryQueryParameter(category)
+// WithCategory adds the category to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithCategory(category *string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetCategory(category)
 	return o
 }
 
-// SetCategoryQueryParameter adds the category to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetCategoryQueryParameter(category *string) {
-	o.CategoryQueryParameter = category
+// SetCategory adds the category to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetCategory(category *string) {
+	o.Category = category
 }
 
-// WithDescriptionCodeQueryParameter adds the descriptionCode to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithDescriptionCodeQueryParameter(descriptionCode *string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetDescriptionCodeQueryParameter(descriptionCode)
+// WithDescriptionCode adds the descriptionCode to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithDescriptionCode(descriptionCode *string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetDescriptionCode(descriptionCode)
 	return o
 }
 
-// SetDescriptionCodeQueryParameter adds the descriptionCode to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetDescriptionCodeQueryParameter(descriptionCode *string) {
-	o.DescriptionCodeQueryParameter = descriptionCode
+// SetDescriptionCode adds the descriptionCode to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetDescriptionCode(descriptionCode *string) {
+	o.DescriptionCode = descriptionCode
 }
 
-// WithDescriptionMessageQueryParameter adds the descriptionMessage to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithDescriptionMessageQueryParameter(descriptionMessage *string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetDescriptionMessageQueryParameter(descriptionMessage)
+// WithDescriptionMessage adds the descriptionMessage to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithDescriptionMessage(descriptionMessage *string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetDescriptionMessage(descriptionMessage)
 	return o
 }
 
-// SetDescriptionMessageQueryParameter adds the descriptionMessage to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetDescriptionMessageQueryParameter(descriptionMessage *string) {
-	o.DescriptionMessageQueryParameter = descriptionMessage
+// SetDescriptionMessage adds the descriptionMessage to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetDescriptionMessage(descriptionMessage *string) {
+	o.DescriptionMessage = descriptionMessage
 }
 
-// WithFieldsQueryParameter adds the fields to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithFieldsQueryParameter(fields []string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithFields(fields []string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithMaxRecords(maxRecords *int64) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithOrderBy(orderBy []string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithReturnRecords(returnRecords *bool) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDQueryParameter adds the uuid to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) WithUUIDQueryParameter(uuid *string) *AutoUpdateConfigurationCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) WithUUID(uuid *string) *AutoUpdateConfigurationCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the auto update configuration collection get params
-func (o *AutoUpdateConfigurationCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the auto update configuration collection get params
+func (o *AutoUpdateConfigurationCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -311,13 +311,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 	}
 	var res []error
 
-	if o.ActionQueryParameter != nil {
+	if o.Action != nil {
 
 		// query param action
 		var qrAction string
 
-		if o.ActionQueryParameter != nil {
-			qrAction = *o.ActionQueryParameter
+		if o.Action != nil {
+			qrAction = *o.Action
 		}
 		qAction := qrAction
 		if qAction != "" {
@@ -328,13 +328,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.CategoryQueryParameter != nil {
+	if o.Category != nil {
 
 		// query param category
 		var qrCategory string
 
-		if o.CategoryQueryParameter != nil {
-			qrCategory = *o.CategoryQueryParameter
+		if o.Category != nil {
+			qrCategory = *o.Category
 		}
 		qCategory := qrCategory
 		if qCategory != "" {
@@ -345,13 +345,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.DescriptionCodeQueryParameter != nil {
+	if o.DescriptionCode != nil {
 
 		// query param description.code
 		var qrDescriptionCode string
 
-		if o.DescriptionCodeQueryParameter != nil {
-			qrDescriptionCode = *o.DescriptionCodeQueryParameter
+		if o.DescriptionCode != nil {
+			qrDescriptionCode = *o.DescriptionCode
 		}
 		qDescriptionCode := qrDescriptionCode
 		if qDescriptionCode != "" {
@@ -362,13 +362,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.DescriptionMessageQueryParameter != nil {
+	if o.DescriptionMessage != nil {
 
 		// query param description.message
 		var qrDescriptionMessage string
 
-		if o.DescriptionMessageQueryParameter != nil {
-			qrDescriptionMessage = *o.DescriptionMessageQueryParameter
+		if o.DescriptionMessage != nil {
+			qrDescriptionMessage = *o.DescriptionMessage
 		}
 		qDescriptionMessage := qrDescriptionMessage
 		if qDescriptionMessage != "" {
@@ -379,7 +379,7 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -390,13 +390,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -407,7 +407,7 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -418,13 +418,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -435,13 +435,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -452,13 +452,13 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -477,7 +477,7 @@ func (o *AutoUpdateConfigurationCollectionGetParams) WriteToRequest(r runtime.Cl
 
 // bindParamAutoUpdateConfigurationCollectionGet binds the parameter fields
 func (o *AutoUpdateConfigurationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -494,7 +494,7 @@ func (o *AutoUpdateConfigurationCollectionGetParams) bindParamFields(formats str
 
 // bindParamAutoUpdateConfigurationCollectionGet binds the parameter order_by
 func (o *AutoUpdateConfigurationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

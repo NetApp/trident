@@ -21,24 +21,24 @@ import (
 type TopMetricsFile struct {
 
 	// links
-	Links *TopMetricsFileLinks `json:"_links,omitempty"`
+	Links *TopMetricsFileInlineLinks `json:"_links,omitempty"`
 
 	// iops
-	Iops *TopMetricsFileIops `json:"iops,omitempty"`
+	Iops *TopMetricsFileInlineIops `json:"iops,omitempty"`
 
 	// Path of the file.
 	// Example: /dir_abc/dir_123/file_1
 	// Read Only: true
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
-	Svm *TopMetricsFileSvm `json:"svm,omitempty"`
+	Svm *TopMetricsFileInlineSvm `json:"svm,omitempty"`
 
 	// throughput
-	Throughput *TopMetricsFileThroughput `json:"throughput,omitempty"`
+	Throughput *TopMetricsFileInlineThroughput `json:"throughput,omitempty"`
 
 	// volume
-	Volume *TopMetricsFileVolume `json:"volume,omitempty"`
+	Volume *TopMetricsFileInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this top metrics file
@@ -220,7 +220,7 @@ func (m *TopMetricsFile) contextValidateIops(ctx context.Context, formats strfmt
 
 func (m *TopMetricsFile) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "path", "body", m.Path); err != nil {
 		return err
 	}
 
@@ -287,10 +287,10 @@ func (m *TopMetricsFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileIops top metrics file iops
+// TopMetricsFileInlineIops top metrics file inline iops
 //
-// swagger:model TopMetricsFileIops
-type TopMetricsFileIops struct {
+// swagger:model top_metrics_file_inline_iops
+type TopMetricsFileInlineIops struct {
 
 	// error
 	Error *TopMetricValueErrorBounds `json:"error,omitempty"`
@@ -298,16 +298,16 @@ type TopMetricsFileIops struct {
 	// Average number of read operations per second.
 	// Example: 5
 	// Read Only: true
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Average number of write operations per second.
 	// Example: 4
 	// Read Only: true
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this top metrics file iops
-func (m *TopMetricsFileIops) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline iops
+func (m *TopMetricsFileInlineIops) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -320,7 +320,7 @@ func (m *TopMetricsFileIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileIops) validateError(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineIops) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -337,8 +337,8 @@ func (m *TopMetricsFileIops) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics file iops based on the context it is used
-func (m *TopMetricsFileIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline iops based on the context it is used
+func (m *TopMetricsFileInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -359,7 +359,7 @@ func (m *TopMetricsFileIops) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *TopMetricsFileIops) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineIops) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -373,18 +373,18 @@ func (m *TopMetricsFileIops) contextValidateError(ctx context.Context, formats s
 	return nil
 }
 
-func (m *TopMetricsFileIops) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineIops) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"read", "body", int64(m.Read)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"read", "body", m.Read); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsFileIops) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineIops) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "iops"+"."+"write", "body", int64(m.Write)); err != nil {
+	if err := validate.ReadOnly(ctx, "iops"+"."+"write", "body", m.Write); err != nil {
 		return err
 	}
 
@@ -392,7 +392,7 @@ func (m *TopMetricsFileIops) contextValidateWrite(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileIops) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -400,8 +400,8 @@ func (m *TopMetricsFileIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileIops) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileIops
+func (m *TopMetricsFileInlineIops) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -409,10 +409,10 @@ func (m *TopMetricsFileIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileLinks top metrics file links
+// TopMetricsFileInlineLinks top metrics file inline links
 //
-// swagger:model TopMetricsFileLinks
-type TopMetricsFileLinks struct {
+// swagger:model top_metrics_file_inline__links
+type TopMetricsFileInlineLinks struct {
 
 	// metadata
 	Metadata *Href `json:"metadata,omitempty"`
@@ -421,8 +421,8 @@ type TopMetricsFileLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics file links
-func (m *TopMetricsFileLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline links
+func (m *TopMetricsFileInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMetadata(formats); err != nil {
@@ -439,7 +439,7 @@ func (m *TopMetricsFileLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileLinks) validateMetadata(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineLinks) validateMetadata(formats strfmt.Registry) error {
 	if swag.IsZero(m.Metadata) { // not required
 		return nil
 	}
@@ -456,7 +456,7 @@ func (m *TopMetricsFileLinks) validateMetadata(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -473,8 +473,8 @@ func (m *TopMetricsFileLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics file links based on the context it is used
-func (m *TopMetricsFileLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline links based on the context it is used
+func (m *TopMetricsFileInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMetadata(ctx, formats); err != nil {
@@ -491,7 +491,7 @@ func (m *TopMetricsFileLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *TopMetricsFileLinks) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineLinks) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Metadata != nil {
 		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
@@ -505,7 +505,7 @@ func (m *TopMetricsFileLinks) contextValidateMetadata(ctx context.Context, forma
 	return nil
 }
 
-func (m *TopMetricsFileLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -520,7 +520,7 @@ func (m *TopMetricsFileLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -528,8 +528,8 @@ func (m *TopMetricsFileLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileLinks
+func (m *TopMetricsFileInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -537,27 +537,27 @@ func (m *TopMetricsFileLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileSvm top metrics file svm
+// TopMetricsFileInlineSvm top metrics file inline svm
 //
-// swagger:model TopMetricsFileSvm
-type TopMetricsFileSvm struct {
+// swagger:model top_metrics_file_inline_svm
+type TopMetricsFileInlineSvm struct {
 
 	// links
-	Links *TopMetricsFileSvmLinks `json:"_links,omitempty"`
+	Links *TopMetricsFileInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this top metrics file svm
-func (m *TopMetricsFileSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline svm
+func (m *TopMetricsFileInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -570,7 +570,7 @@ func (m *TopMetricsFileSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileSvm) validateLinks(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -587,8 +587,8 @@ func (m *TopMetricsFileSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics file svm based on the context it is used
-func (m *TopMetricsFileSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline svm based on the context it is used
+func (m *TopMetricsFileInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -601,7 +601,7 @@ func (m *TopMetricsFileSvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *TopMetricsFileSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -616,7 +616,7 @@ func (m *TopMetricsFileSvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileSvm) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -624,8 +624,8 @@ func (m *TopMetricsFileSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileSvm) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileSvm
+func (m *TopMetricsFileInlineSvm) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -633,17 +633,17 @@ func (m *TopMetricsFileSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileSvmLinks top metrics file svm links
+// TopMetricsFileInlineSvmInlineLinks top metrics file inline svm inline links
 //
-// swagger:model TopMetricsFileSvmLinks
-type TopMetricsFileSvmLinks struct {
+// swagger:model top_metrics_file_inline_svm_inline__links
+type TopMetricsFileInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics file svm links
-func (m *TopMetricsFileSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline svm inline links
+func (m *TopMetricsFileInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -656,7 +656,7 @@ func (m *TopMetricsFileSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -673,8 +673,8 @@ func (m *TopMetricsFileSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics file svm links based on the context it is used
-func (m *TopMetricsFileSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline svm inline links based on the context it is used
+func (m *TopMetricsFileInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -687,7 +687,7 @@ func (m *TopMetricsFileSvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *TopMetricsFileSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -702,7 +702,7 @@ func (m *TopMetricsFileSvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -710,8 +710,8 @@ func (m *TopMetricsFileSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileSvmLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileSvmLinks
+func (m *TopMetricsFileInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -719,10 +719,10 @@ func (m *TopMetricsFileSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileThroughput top metrics file throughput
+// TopMetricsFileInlineThroughput top metrics file inline throughput
 //
-// swagger:model TopMetricsFileThroughput
-type TopMetricsFileThroughput struct {
+// swagger:model top_metrics_file_inline_throughput
+type TopMetricsFileInlineThroughput struct {
 
 	// error
 	Error *TopMetricValueErrorBounds `json:"error,omitempty"`
@@ -730,16 +730,16 @@ type TopMetricsFileThroughput struct {
 	// Average number of read bytes received per second.
 	// Example: 2
 	// Read Only: true
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Average number of write bytes received per second.
 	// Example: 20
 	// Read Only: true
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this top metrics file throughput
-func (m *TopMetricsFileThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline throughput
+func (m *TopMetricsFileInlineThroughput) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateError(formats); err != nil {
@@ -752,7 +752,7 @@ func (m *TopMetricsFileThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileThroughput) validateError(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineThroughput) validateError(formats strfmt.Registry) error {
 	if swag.IsZero(m.Error) { // not required
 		return nil
 	}
@@ -769,8 +769,8 @@ func (m *TopMetricsFileThroughput) validateError(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this top metrics file throughput based on the context it is used
-func (m *TopMetricsFileThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline throughput based on the context it is used
+func (m *TopMetricsFileInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateError(ctx, formats); err != nil {
@@ -791,7 +791,7 @@ func (m *TopMetricsFileThroughput) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *TopMetricsFileThroughput) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineThroughput) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Error != nil {
 		if err := m.Error.ContextValidate(ctx, formats); err != nil {
@@ -805,18 +805,18 @@ func (m *TopMetricsFileThroughput) contextValidateError(ctx context.Context, for
 	return nil
 }
 
-func (m *TopMetricsFileThroughput) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineThroughput) contextValidateRead(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "throughput"+"."+"read", "body", int64(m.Read)); err != nil {
+	if err := validate.ReadOnly(ctx, "throughput"+"."+"read", "body", m.Read); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *TopMetricsFileThroughput) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineThroughput) contextValidateWrite(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "throughput"+"."+"write", "body", int64(m.Write)); err != nil {
+	if err := validate.ReadOnly(ctx, "throughput"+"."+"write", "body", m.Write); err != nil {
 		return err
 	}
 
@@ -824,7 +824,7 @@ func (m *TopMetricsFileThroughput) contextValidateWrite(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileThroughput) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -832,8 +832,8 @@ func (m *TopMetricsFileThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileThroughput) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileThroughput
+func (m *TopMetricsFileInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -841,25 +841,25 @@ func (m *TopMetricsFileThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileVolume top metrics file volume
+// TopMetricsFileInlineVolume top metrics file inline volume
 //
-// swagger:model TopMetricsFileVolume
-type TopMetricsFileVolume struct {
+// swagger:model top_metrics_file_inline_volume
+type TopMetricsFileInlineVolume struct {
 
 	// links
-	Links *TopMetricsFileVolumeLinks `json:"_links,omitempty"`
+	Links *TopMetricsFileInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this top metrics file volume
-func (m *TopMetricsFileVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline volume
+func (m *TopMetricsFileInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -872,7 +872,7 @@ func (m *TopMetricsFileVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileVolume) validateLinks(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -889,8 +889,8 @@ func (m *TopMetricsFileVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this top metrics file volume based on the context it is used
-func (m *TopMetricsFileVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline volume based on the context it is used
+func (m *TopMetricsFileInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -903,7 +903,7 @@ func (m *TopMetricsFileVolume) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *TopMetricsFileVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -918,7 +918,7 @@ func (m *TopMetricsFileVolume) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileVolume) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -926,8 +926,8 @@ func (m *TopMetricsFileVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileVolume) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileVolume
+func (m *TopMetricsFileInlineVolume) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -935,17 +935,17 @@ func (m *TopMetricsFileVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TopMetricsFileVolumeLinks top metrics file volume links
+// TopMetricsFileInlineVolumeInlineLinks top metrics file inline volume inline links
 //
-// swagger:model TopMetricsFileVolumeLinks
-type TopMetricsFileVolumeLinks struct {
+// swagger:model top_metrics_file_inline_volume_inline__links
+type TopMetricsFileInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this top metrics file volume links
-func (m *TopMetricsFileVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this top metrics file inline volume inline links
+func (m *TopMetricsFileInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -958,7 +958,7 @@ func (m *TopMetricsFileVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TopMetricsFileVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -975,8 +975,8 @@ func (m *TopMetricsFileVolumeLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this top metrics file volume links based on the context it is used
-func (m *TopMetricsFileVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this top metrics file inline volume inline links based on the context it is used
+func (m *TopMetricsFileInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -989,7 +989,7 @@ func (m *TopMetricsFileVolumeLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *TopMetricsFileVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TopMetricsFileInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1004,7 +1004,7 @@ func (m *TopMetricsFileVolumeLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *TopMetricsFileVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *TopMetricsFileInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1012,8 +1012,8 @@ func (m *TopMetricsFileVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TopMetricsFileVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res TopMetricsFileVolumeLinks
+func (m *TopMetricsFileInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TopMetricsFileInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

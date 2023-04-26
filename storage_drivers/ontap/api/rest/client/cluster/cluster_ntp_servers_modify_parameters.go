@@ -74,13 +74,13 @@ type ClusterNtpServersModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Server.
 
 	   Server address or host name
 	*/
-	ServerPathParameter string
+	Server string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *ClusterNtpServersModifyParams) WithDefaults() *ClusterNtpServersModifyP
 // All values with no default are reset to their zero value.
 func (o *ClusterNtpServersModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ClusterNtpServersModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *ClusterNtpServersModifyParams) SetInfo(info *models.NtpServer) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cluster ntp servers modify params
-func (o *ClusterNtpServersModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ClusterNtpServersModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cluster ntp servers modify params
+func (o *ClusterNtpServersModifyParams) WithReturnTimeout(returnTimeout *int64) *ClusterNtpServersModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cluster ntp servers modify params
-func (o *ClusterNtpServersModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cluster ntp servers modify params
+func (o *ClusterNtpServersModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerPathParameter adds the server to the cluster ntp servers modify params
-func (o *ClusterNtpServersModifyParams) WithServerPathParameter(server string) *ClusterNtpServersModifyParams {
-	o.SetServerPathParameter(server)
+// WithServer adds the server to the cluster ntp servers modify params
+func (o *ClusterNtpServersModifyParams) WithServer(server string) *ClusterNtpServersModifyParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerPathParameter adds the server to the cluster ntp servers modify params
-func (o *ClusterNtpServersModifyParams) SetServerPathParameter(server string) {
-	o.ServerPathParameter = server
+// SetServer adds the server to the cluster ntp servers modify params
+func (o *ClusterNtpServersModifyParams) SetServer(server string) {
+	o.Server = server
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,13 +192,13 @@ func (o *ClusterNtpServersModifyParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -210,7 +210,7 @@ func (o *ClusterNtpServersModifyParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param server
-	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {
+	if err := r.SetPathParam("server", o.Server); err != nil {
 		return err
 	}
 

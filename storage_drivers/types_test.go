@@ -22,47 +22,47 @@ func TestGetDriverConfigByName(t *testing.T) {
 		errorExpected        bool
 	}{
 		{
-			driverName:           OntapNASStorageDriverName,
+			driverName:           config.OntapNASStorageDriverName,
 			expectedDriverConfig: &OntapStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           OntapNASQtreeStorageDriverName,
+			driverName:           config.OntapNASQtreeStorageDriverName,
 			expectedDriverConfig: &OntapStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           OntapSANEconomyStorageDriverName,
+			driverName:           config.OntapSANEconomyStorageDriverName,
 			expectedDriverConfig: &OntapStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           OntapNASFlexGroupStorageDriverName,
+			driverName:           config.OntapNASFlexGroupStorageDriverName,
 			expectedDriverConfig: &OntapStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           SolidfireSANStorageDriverName,
+			driverName:           config.SolidfireSANStorageDriverName,
 			expectedDriverConfig: &SolidfireStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           AzureNASStorageDriverName,
+			driverName:           config.AzureNASStorageDriverName,
 			expectedDriverConfig: &AzureNASStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           AzureNASBlockStorageDriverName,
+			driverName:           config.AzureNASBlockStorageDriverName,
 			expectedDriverConfig: &AzureNASStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           GCPNFSStorageDriverName,
+			driverName:           config.GCPNFSStorageDriverName,
 			expectedDriverConfig: &GCPNFSStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{
-			driverName:           FakeStorageDriverName,
+			driverName:           config.FakeStorageDriverName,
 			expectedDriverConfig: &FakeStorageDriverConfig{},
 			errorExpected:        false,
 		},
@@ -1234,7 +1234,7 @@ func newTestFakeStorageDriverConfig() *FakeStorageDriverConfig {
 	fakeConfig := &FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &CommonStorageDriverConfig{
 			Version:           ConfigVersion,
-			StorageDriverName: FakeStorageDriverName,
+			StorageDriverName: config.FakeStorageDriverName,
 			DebugTraceFlags:   map[string]bool{},
 		},
 		Protocol:     config.File,

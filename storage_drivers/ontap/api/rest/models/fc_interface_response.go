@@ -21,17 +21,17 @@ import (
 type FcInterfaceResponse struct {
 
 	// links
-	Links *FcInterfaceResponseLinks `json:"_links,omitempty"`
+	Links *FcInterfaceResponseInlineLinks `json:"_links,omitempty"`
+
+	// fc interface response inline records
+	FcInterfaceResponseInlineRecords []*FcInterface `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 
 	// recommend
-	Recommend *FcInterfaceResponseRecommend `json:"recommend,omitempty"`
-
-	// records
-	Records []*FcInterface `json:"records,omitempty"`
+	Recommend *FcInterfaceResponseInlineRecommend `json:"recommend,omitempty"`
 }
 
 // Validate validates this fc interface response
@@ -42,11 +42,11 @@ func (m *FcInterfaceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecommend(formats); err != nil {
+	if err := m.validateFcInterfaceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateRecommend(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,6 +73,30 @@ func (m *FcInterfaceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *FcInterfaceResponse) validateFcInterfaceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcInterfaceResponseInlineRecords) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FcInterfaceResponseInlineRecords); i++ {
+		if swag.IsZero(m.FcInterfaceResponseInlineRecords[i]) { // not required
+			continue
+		}
+
+		if m.FcInterfaceResponseInlineRecords[i] != nil {
+			if err := m.FcInterfaceResponseInlineRecords[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("records" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FcInterfaceResponse) validateRecommend(formats strfmt.Registry) error {
 	if swag.IsZero(m.Recommend) { // not required
 		return nil
@@ -90,30 +114,6 @@ func (m *FcInterfaceResponse) validateRecommend(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
-			continue
-		}
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this fc interface response based on the context it is used
 func (m *FcInterfaceResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -122,11 +122,11 @@ func (m *FcInterfaceResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecommend(ctx, formats); err != nil {
+	if err := m.contextValidateFcInterfaceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateRecommend(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -150,6 +150,24 @@ func (m *FcInterfaceResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
+func (m *FcInterfaceResponse) contextValidateFcInterfaceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FcInterfaceResponseInlineRecords); i++ {
+
+		if m.FcInterfaceResponseInlineRecords[i] != nil {
+			if err := m.FcInterfaceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("records" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *FcInterfaceResponse) contextValidateRecommend(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Recommend != nil {
@@ -159,24 +177,6 @@ func (m *FcInterfaceResponse) contextValidateRecommend(ctx context.Context, form
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *FcInterfaceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Records); i++ {
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -200,10 +200,10 @@ func (m *FcInterfaceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcInterfaceResponseLinks fc interface response links
+// FcInterfaceResponseInlineLinks fc interface response inline links
 //
-// swagger:model FcInterfaceResponseLinks
-type FcInterfaceResponseLinks struct {
+// swagger:model fc_interface_response_inline__links
+type FcInterfaceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -212,8 +212,8 @@ type FcInterfaceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fc interface response links
-func (m *FcInterfaceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fc interface response inline links
+func (m *FcInterfaceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -230,7 +230,7 @@ func (m *FcInterfaceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FcInterfaceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -247,7 +247,7 @@ func (m *FcInterfaceResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcInterfaceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -264,8 +264,8 @@ func (m *FcInterfaceResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fc interface response links based on the context it is used
-func (m *FcInterfaceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc interface response inline links based on the context it is used
+func (m *FcInterfaceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -282,7 +282,7 @@ func (m *FcInterfaceResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *FcInterfaceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -296,7 +296,7 @@ func (m *FcInterfaceResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *FcInterfaceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -311,7 +311,7 @@ func (m *FcInterfaceResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *FcInterfaceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FcInterfaceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -319,8 +319,8 @@ func (m *FcInterfaceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcInterfaceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FcInterfaceResponseLinks
+func (m *FcInterfaceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -328,10 +328,10 @@ func (m *FcInterfaceResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcInterfaceResponseRecommend Response properties specific to the FC interface placement functionality. See the _Interface placement recommendations_ section of [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
+// FcInterfaceResponseInlineRecommend Response properties specific to the FC interface placement functionality. See the _Interface placement recommendations_ section of [`DOC /network/fc/interfaces`](#docs-networking-network_fc_interfaces)
 //
-// swagger:model FcInterfaceResponseRecommend
-type FcInterfaceResponseRecommend struct {
+// swagger:model fc_interface_response_inline_recommend
+type FcInterfaceResponseInlineRecommend struct {
 
 	// Messages describing the results of a FC network interface placement operation or evaluation of caller-proposed locations.
 	//
@@ -339,8 +339,8 @@ type FcInterfaceResponseRecommend struct {
 	Messages []*FcInterfaceRecommendMessage `json:"messages,omitempty"`
 }
 
-// Validate validates this fc interface response recommend
-func (m *FcInterfaceResponseRecommend) Validate(formats strfmt.Registry) error {
+// Validate validates this fc interface response inline recommend
+func (m *FcInterfaceResponseInlineRecommend) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMessages(formats); err != nil {
@@ -353,7 +353,7 @@ func (m *FcInterfaceResponseRecommend) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceResponseRecommend) validateMessages(formats strfmt.Registry) error {
+func (m *FcInterfaceResponseInlineRecommend) validateMessages(formats strfmt.Registry) error {
 	if swag.IsZero(m.Messages) { // not required
 		return nil
 	}
@@ -377,8 +377,8 @@ func (m *FcInterfaceResponseRecommend) validateMessages(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this fc interface response recommend based on the context it is used
-func (m *FcInterfaceResponseRecommend) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fc interface response inline recommend based on the context it is used
+func (m *FcInterfaceResponseInlineRecommend) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMessages(ctx, formats); err != nil {
@@ -391,7 +391,7 @@ func (m *FcInterfaceResponseRecommend) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *FcInterfaceResponseRecommend) contextValidateMessages(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceResponseInlineRecommend) contextValidateMessages(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "recommend"+"."+"messages", "body", []*FcInterfaceRecommendMessage(m.Messages)); err != nil {
 		return err
@@ -414,7 +414,7 @@ func (m *FcInterfaceResponseRecommend) contextValidateMessages(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *FcInterfaceResponseRecommend) MarshalBinary() ([]byte, error) {
+func (m *FcInterfaceResponseInlineRecommend) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -422,8 +422,8 @@ func (m *FcInterfaceResponseRecommend) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcInterfaceResponseRecommend) UnmarshalBinary(b []byte) error {
-	var res FcInterfaceResponseRecommend
+func (m *FcInterfaceResponseInlineRecommend) UnmarshalBinary(b []byte) error {
+	var res FcInterfaceResponseInlineRecommend
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

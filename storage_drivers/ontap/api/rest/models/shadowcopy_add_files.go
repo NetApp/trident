@@ -19,11 +19,11 @@ type ShadowcopyAddFiles struct {
 
 	// The universally-unique identifier of the storage's shadow copy set.
 	// Example: f8328660-00e6-11e6-80d9-005056bd65a9
-	StorageShadowcopySetUUID string `json:"storage_shadowcopy_set_uuid,omitempty"`
+	StorageShadowcopySetUUID *string `json:"storage_shadowcopy_set_uuid,omitempty"`
 
 	// The universally-unique identifier of the storage's shadow copy.
 	// Example: fef32805-1f19-40ba-9b82-ebf277517e7e
-	StorageShadowcopyUUID string `json:"storage_shadowcopy_uuid,omitempty"`
+	StorageShadowcopyUUID *string `json:"storage_shadowcopy_uuid,omitempty"`
 }
 
 // Validate validates this shadowcopy add files

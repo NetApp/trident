@@ -68,7 +68,7 @@ type SnmpUsersModifyParams struct {
 
 	   Engine ID of owning SVM or remote switch.
 	*/
-	EngineIDPathParameter string
+	EngineID string
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type SnmpUsersModifyParams struct {
 
 	   SNMP user name.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *SnmpUsersModifyParams) WithDefaults() *SnmpUsersModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SnmpUsersModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnmpUsersModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,15 +152,15 @@ func (o *SnmpUsersModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEngineIDPathParameter adds the engineID to the snmp users modify params
-func (o *SnmpUsersModifyParams) WithEngineIDPathParameter(engineID string) *SnmpUsersModifyParams {
-	o.SetEngineIDPathParameter(engineID)
+// WithEngineID adds the engineID to the snmp users modify params
+func (o *SnmpUsersModifyParams) WithEngineID(engineID string) *SnmpUsersModifyParams {
+	o.SetEngineID(engineID)
 	return o
 }
 
-// SetEngineIDPathParameter adds the engineId to the snmp users modify params
-func (o *SnmpUsersModifyParams) SetEngineIDPathParameter(engineID string) {
-	o.EngineIDPathParameter = engineID
+// SetEngineID adds the engineId to the snmp users modify params
+func (o *SnmpUsersModifyParams) SetEngineID(engineID string) {
+	o.EngineID = engineID
 }
 
 // WithInfo adds the info to the snmp users modify params
@@ -174,26 +174,26 @@ func (o *SnmpUsersModifyParams) SetInfo(info *models.SnmpUser) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the snmp users modify params
-func (o *SnmpUsersModifyParams) WithNamePathParameter(name string) *SnmpUsersModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the snmp users modify params
+func (o *SnmpUsersModifyParams) WithName(name string) *SnmpUsersModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the snmp users modify params
-func (o *SnmpUsersModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the snmp users modify params
+func (o *SnmpUsersModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp users modify params
-func (o *SnmpUsersModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpUsersModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snmp users modify params
+func (o *SnmpUsersModifyParams) WithReturnTimeout(returnTimeout *int64) *SnmpUsersModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp users modify params
-func (o *SnmpUsersModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snmp users modify params
+func (o *SnmpUsersModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,7 +205,7 @@ func (o *SnmpUsersModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param engine_id
-	if err := r.SetPathParam("engine_id", o.EngineIDPathParameter); err != nil {
+	if err := r.SetPathParam("engine_id", o.EngineID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -215,17 +215,17 @@ func (o *SnmpUsersModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

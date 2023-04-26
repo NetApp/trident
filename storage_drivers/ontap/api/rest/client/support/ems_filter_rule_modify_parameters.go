@@ -68,7 +68,7 @@ type EmsFilterRuleModifyParams struct {
 
 	   Filter index
 	*/
-	IndexPathParameter string
+	Index string
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type EmsFilterRuleModifyParams struct {
 
 	   Filter name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NewIndex.
 
 	   New position for the filter rule index
 	*/
-	NewIndexQueryParameter *int64
+	NewIndex *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *EmsFilterRuleModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the ems filter rule modify params
-func (o *EmsFilterRuleModifyParams) WithIndexPathParameter(index string) *EmsFilterRuleModifyParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the ems filter rule modify params
+func (o *EmsFilterRuleModifyParams) WithIndex(index string) *EmsFilterRuleModifyParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the ems filter rule modify params
-func (o *EmsFilterRuleModifyParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the ems filter rule modify params
+func (o *EmsFilterRuleModifyParams) SetIndex(index string) {
+	o.Index = index
 }
 
 // WithInfo adds the info to the ems filter rule modify params
@@ -163,26 +163,26 @@ func (o *EmsFilterRuleModifyParams) SetInfo(info *models.EmsFilterRule) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the ems filter rule modify params
-func (o *EmsFilterRuleModifyParams) WithNamePathParameter(name string) *EmsFilterRuleModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems filter rule modify params
+func (o *EmsFilterRuleModifyParams) WithName(name string) *EmsFilterRuleModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems filter rule modify params
-func (o *EmsFilterRuleModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems filter rule modify params
+func (o *EmsFilterRuleModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNewIndexQueryParameter adds the newIndex to the ems filter rule modify params
-func (o *EmsFilterRuleModifyParams) WithNewIndexQueryParameter(newIndex *int64) *EmsFilterRuleModifyParams {
-	o.SetNewIndexQueryParameter(newIndex)
+// WithNewIndex adds the newIndex to the ems filter rule modify params
+func (o *EmsFilterRuleModifyParams) WithNewIndex(newIndex *int64) *EmsFilterRuleModifyParams {
+	o.SetNewIndex(newIndex)
 	return o
 }
 
-// SetNewIndexQueryParameter adds the newIndex to the ems filter rule modify params
-func (o *EmsFilterRuleModifyParams) SetNewIndexQueryParameter(newIndex *int64) {
-	o.NewIndexQueryParameter = newIndex
+// SetNewIndex adds the newIndex to the ems filter rule modify params
+func (o *EmsFilterRuleModifyParams) SetNewIndex(newIndex *int64) {
+	o.NewIndex = newIndex
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -194,7 +194,7 @@ func (o *EmsFilterRuleModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -204,17 +204,17 @@ func (o *EmsFilterRuleModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.NewIndexQueryParameter != nil {
+	if o.NewIndex != nil {
 
 		// query param new_index
 		var qrNewIndex int64
 
-		if o.NewIndexQueryParameter != nil {
-			qrNewIndex = *o.NewIndexQueryParameter
+		if o.NewIndex != nil {
+			qrNewIndex = *o.NewIndex
 		}
 		qNewIndex := swag.FormatInt64(qrNewIndex)
 		if qNewIndex != "" {

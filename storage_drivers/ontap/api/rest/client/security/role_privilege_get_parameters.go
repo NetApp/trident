@@ -66,25 +66,25 @@ type RolePrivilegeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Role name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Role owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* Path.
 
 	   REST API path or command/command directory path
 	*/
-	PathPathParameter string
+	Path string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,48 +139,48 @@ func (o *RolePrivilegeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the role privilege get params
-func (o *RolePrivilegeGetParams) WithFieldsQueryParameter(fields []string) *RolePrivilegeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the role privilege get params
+func (o *RolePrivilegeGetParams) WithFields(fields []string) *RolePrivilegeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the role privilege get params
-func (o *RolePrivilegeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the role privilege get params
+func (o *RolePrivilegeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the role privilege get params
-func (o *RolePrivilegeGetParams) WithNamePathParameter(name string) *RolePrivilegeGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the role privilege get params
+func (o *RolePrivilegeGetParams) WithName(name string) *RolePrivilegeGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the role privilege get params
-func (o *RolePrivilegeGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the role privilege get params
+func (o *RolePrivilegeGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the role privilege get params
-func (o *RolePrivilegeGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *RolePrivilegeGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the role privilege get params
+func (o *RolePrivilegeGetParams) WithOwnerUUID(ownerUUID string) *RolePrivilegeGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the role privilege get params
-func (o *RolePrivilegeGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the role privilege get params
+func (o *RolePrivilegeGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithPathPathParameter adds the path to the role privilege get params
-func (o *RolePrivilegeGetParams) WithPathPathParameter(path string) *RolePrivilegeGetParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the role privilege get params
+func (o *RolePrivilegeGetParams) WithPath(path string) *RolePrivilegeGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the role privilege get params
-func (o *RolePrivilegeGetParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the role privilege get params
+func (o *RolePrivilegeGetParams) SetPath(path string) {
+	o.Path = path
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -191,7 +191,7 @@ func (o *RolePrivilegeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,17 +203,17 @@ func (o *RolePrivilegeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
@@ -225,7 +225,7 @@ func (o *RolePrivilegeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamRolePrivilegeGet binds the parameter fields
 func (o *RolePrivilegeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

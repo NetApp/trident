@@ -66,19 +66,19 @@ type SnaplockLegalHoldCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -86,7 +86,7 @@ type SnaplockLegalHoldCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -94,7 +94,7 @@ type SnaplockLegalHoldCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -114,14 +114,14 @@ func (o *SnaplockLegalHoldCollectionGetParams) WithDefaults() *SnaplockLegalHold
 // All values with no default are reset to their zero value.
 func (o *SnaplockLegalHoldCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnaplockLegalHoldCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -163,59 +163,59 @@ func (o *SnaplockLegalHoldCollectionGetParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockLegalHoldCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) WithFields(fields []string) *SnaplockLegalHoldCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnaplockLegalHoldCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnaplockLegalHoldCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnaplockLegalHoldCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) WithOrderBy(orderBy []string) *SnaplockLegalHoldCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockLegalHoldCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnaplockLegalHoldCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnaplockLegalHoldCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnaplockLegalHoldCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snaplock legal hold collection get params
-func (o *SnaplockLegalHoldCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snaplock legal hold collection get params
+func (o *SnaplockLegalHoldCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -226,7 +226,7 @@ func (o *SnaplockLegalHoldCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -237,13 +237,13 @@ func (o *SnaplockLegalHoldCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -254,7 +254,7 @@ func (o *SnaplockLegalHoldCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -265,13 +265,13 @@ func (o *SnaplockLegalHoldCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -282,13 +282,13 @@ func (o *SnaplockLegalHoldCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -307,7 +307,7 @@ func (o *SnaplockLegalHoldCollectionGetParams) WriteToRequest(r runtime.ClientRe
 
 // bindParamSnaplockLegalHoldCollectionGet binds the parameter fields
 func (o *SnaplockLegalHoldCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -324,7 +324,7 @@ func (o *SnaplockLegalHoldCollectionGetParams) bindParamFields(formats strfmt.Re
 
 // bindParamSnaplockLegalHoldCollectionGet binds the parameter order_by
 func (o *SnaplockLegalHoldCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

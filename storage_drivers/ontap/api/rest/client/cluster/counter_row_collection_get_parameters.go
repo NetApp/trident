@@ -66,91 +66,91 @@ type CounterRowCollectionGetParams struct {
 
 	   Filter by aggregation.complete
 	*/
-	AggregationCompleteQueryParameter *bool
+	AggregationComplete *bool
 
 	/* AggregationCount.
 
 	   Filter by aggregation.count
 	*/
-	AggregationCountQueryParameter *int64
+	AggregationCount *int64
 
 	/* CounterTableName.
 
 	   Counter table name.
 	*/
-	CounterTableNamePathParameter string
+	CounterTableName string
 
 	/* CountersCountersLabel.
 
 	   Filter by counters.counters.label
 	*/
-	CountersCountersLabelQueryParameter *string
+	CountersCountersLabel *string
 
 	/* CountersCountersValues.
 
 	   Filter by counters.counters.values
 	*/
-	CountersCountersValuesQueryParameter *int64
+	CountersCountersValues *int64
 
 	/* CountersLabels.
 
 	   Filter by counters.labels
 	*/
-	CountersLabelsQueryParameter *string
+	CountersLabels *string
 
 	/* CountersName.
 
 	   Filter by counters.name
 	*/
-	CountersNameQueryParameter *string
+	CountersName *string
 
 	/* CountersValue.
 
 	   Filter by counters.value
 	*/
-	CountersValueQueryParameter *int64
+	CountersValue *int64
 
 	/* CountersValues.
 
 	   Filter by counters.values
 	*/
-	CountersValuesQueryParameter *int64
+	CountersValues *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *string
+	ID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PropertiesName.
 
 	   Filter by properties.name
 	*/
-	PropertiesNameQueryParameter *string
+	PropertiesName *string
 
 	/* PropertiesValue.
 
 	   Filter by properties.value
 	*/
-	PropertiesValueQueryParameter *string
+	PropertiesValue *string
 
 	/* ReturnRecords.
 
@@ -158,7 +158,7 @@ type CounterRowCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -166,7 +166,7 @@ type CounterRowCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -186,14 +186,14 @@ func (o *CounterRowCollectionGetParams) WithDefaults() *CounterRowCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *CounterRowCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CounterRowCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -235,191 +235,191 @@ func (o *CounterRowCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregationCompleteQueryParameter adds the aggregationComplete to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithAggregationCompleteQueryParameter(aggregationComplete *bool) *CounterRowCollectionGetParams {
-	o.SetAggregationCompleteQueryParameter(aggregationComplete)
+// WithAggregationComplete adds the aggregationComplete to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithAggregationComplete(aggregationComplete *bool) *CounterRowCollectionGetParams {
+	o.SetAggregationComplete(aggregationComplete)
 	return o
 }
 
-// SetAggregationCompleteQueryParameter adds the aggregationComplete to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetAggregationCompleteQueryParameter(aggregationComplete *bool) {
-	o.AggregationCompleteQueryParameter = aggregationComplete
+// SetAggregationComplete adds the aggregationComplete to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetAggregationComplete(aggregationComplete *bool) {
+	o.AggregationComplete = aggregationComplete
 }
 
-// WithAggregationCountQueryParameter adds the aggregationCount to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithAggregationCountQueryParameter(aggregationCount *int64) *CounterRowCollectionGetParams {
-	o.SetAggregationCountQueryParameter(aggregationCount)
+// WithAggregationCount adds the aggregationCount to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithAggregationCount(aggregationCount *int64) *CounterRowCollectionGetParams {
+	o.SetAggregationCount(aggregationCount)
 	return o
 }
 
-// SetAggregationCountQueryParameter adds the aggregationCount to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetAggregationCountQueryParameter(aggregationCount *int64) {
-	o.AggregationCountQueryParameter = aggregationCount
+// SetAggregationCount adds the aggregationCount to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetAggregationCount(aggregationCount *int64) {
+	o.AggregationCount = aggregationCount
 }
 
-// WithCounterTableNamePathParameter adds the counterTableName to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCounterTableNamePathParameter(counterTableName string) *CounterRowCollectionGetParams {
-	o.SetCounterTableNamePathParameter(counterTableName)
+// WithCounterTableName adds the counterTableName to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCounterTableName(counterTableName string) *CounterRowCollectionGetParams {
+	o.SetCounterTableName(counterTableName)
 	return o
 }
 
-// SetCounterTableNamePathParameter adds the counterTableName to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCounterTableNamePathParameter(counterTableName string) {
-	o.CounterTableNamePathParameter = counterTableName
+// SetCounterTableName adds the counterTableName to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCounterTableName(counterTableName string) {
+	o.CounterTableName = counterTableName
 }
 
-// WithCountersCountersLabelQueryParameter adds the countersCountersLabel to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCountersCountersLabelQueryParameter(countersCountersLabel *string) *CounterRowCollectionGetParams {
-	o.SetCountersCountersLabelQueryParameter(countersCountersLabel)
+// WithCountersCountersLabel adds the countersCountersLabel to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCountersCountersLabel(countersCountersLabel *string) *CounterRowCollectionGetParams {
+	o.SetCountersCountersLabel(countersCountersLabel)
 	return o
 }
 
-// SetCountersCountersLabelQueryParameter adds the countersCountersLabel to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCountersCountersLabelQueryParameter(countersCountersLabel *string) {
-	o.CountersCountersLabelQueryParameter = countersCountersLabel
+// SetCountersCountersLabel adds the countersCountersLabel to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCountersCountersLabel(countersCountersLabel *string) {
+	o.CountersCountersLabel = countersCountersLabel
 }
 
-// WithCountersCountersValuesQueryParameter adds the countersCountersValues to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCountersCountersValuesQueryParameter(countersCountersValues *int64) *CounterRowCollectionGetParams {
-	o.SetCountersCountersValuesQueryParameter(countersCountersValues)
+// WithCountersCountersValues adds the countersCountersValues to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCountersCountersValues(countersCountersValues *int64) *CounterRowCollectionGetParams {
+	o.SetCountersCountersValues(countersCountersValues)
 	return o
 }
 
-// SetCountersCountersValuesQueryParameter adds the countersCountersValues to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCountersCountersValuesQueryParameter(countersCountersValues *int64) {
-	o.CountersCountersValuesQueryParameter = countersCountersValues
+// SetCountersCountersValues adds the countersCountersValues to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCountersCountersValues(countersCountersValues *int64) {
+	o.CountersCountersValues = countersCountersValues
 }
 
-// WithCountersLabelsQueryParameter adds the countersLabels to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCountersLabelsQueryParameter(countersLabels *string) *CounterRowCollectionGetParams {
-	o.SetCountersLabelsQueryParameter(countersLabels)
+// WithCountersLabels adds the countersLabels to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCountersLabels(countersLabels *string) *CounterRowCollectionGetParams {
+	o.SetCountersLabels(countersLabels)
 	return o
 }
 
-// SetCountersLabelsQueryParameter adds the countersLabels to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCountersLabelsQueryParameter(countersLabels *string) {
-	o.CountersLabelsQueryParameter = countersLabels
+// SetCountersLabels adds the countersLabels to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCountersLabels(countersLabels *string) {
+	o.CountersLabels = countersLabels
 }
 
-// WithCountersNameQueryParameter adds the countersName to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCountersNameQueryParameter(countersName *string) *CounterRowCollectionGetParams {
-	o.SetCountersNameQueryParameter(countersName)
+// WithCountersName adds the countersName to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCountersName(countersName *string) *CounterRowCollectionGetParams {
+	o.SetCountersName(countersName)
 	return o
 }
 
-// SetCountersNameQueryParameter adds the countersName to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCountersNameQueryParameter(countersName *string) {
-	o.CountersNameQueryParameter = countersName
+// SetCountersName adds the countersName to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCountersName(countersName *string) {
+	o.CountersName = countersName
 }
 
-// WithCountersValueQueryParameter adds the countersValue to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCountersValueQueryParameter(countersValue *int64) *CounterRowCollectionGetParams {
-	o.SetCountersValueQueryParameter(countersValue)
+// WithCountersValue adds the countersValue to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCountersValue(countersValue *int64) *CounterRowCollectionGetParams {
+	o.SetCountersValue(countersValue)
 	return o
 }
 
-// SetCountersValueQueryParameter adds the countersValue to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCountersValueQueryParameter(countersValue *int64) {
-	o.CountersValueQueryParameter = countersValue
+// SetCountersValue adds the countersValue to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCountersValue(countersValue *int64) {
+	o.CountersValue = countersValue
 }
 
-// WithCountersValuesQueryParameter adds the countersValues to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithCountersValuesQueryParameter(countersValues *int64) *CounterRowCollectionGetParams {
-	o.SetCountersValuesQueryParameter(countersValues)
+// WithCountersValues adds the countersValues to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithCountersValues(countersValues *int64) *CounterRowCollectionGetParams {
+	o.SetCountersValues(countersValues)
 	return o
 }
 
-// SetCountersValuesQueryParameter adds the countersValues to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetCountersValuesQueryParameter(countersValues *int64) {
-	o.CountersValuesQueryParameter = countersValues
+// SetCountersValues adds the countersValues to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetCountersValues(countersValues *int64) {
+	o.CountersValues = countersValues
 }
 
-// WithFieldsQueryParameter adds the fields to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithFieldsQueryParameter(fields []string) *CounterRowCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithFields(fields []string) *CounterRowCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDQueryParameter adds the id to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithIDQueryParameter(id *string) *CounterRowCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithID(id *string) *CounterRowCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetIDQueryParameter(id *string) {
-	o.IDQueryParameter = id
+// SetID adds the id to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetID(id *string) {
+	o.ID = id
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CounterRowCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithMaxRecords(maxRecords *int64) *CounterRowCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CounterRowCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithOrderBy(orderBy []string) *CounterRowCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPropertiesNameQueryParameter adds the propertiesName to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithPropertiesNameQueryParameter(propertiesName *string) *CounterRowCollectionGetParams {
-	o.SetPropertiesNameQueryParameter(propertiesName)
+// WithPropertiesName adds the propertiesName to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithPropertiesName(propertiesName *string) *CounterRowCollectionGetParams {
+	o.SetPropertiesName(propertiesName)
 	return o
 }
 
-// SetPropertiesNameQueryParameter adds the propertiesName to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetPropertiesNameQueryParameter(propertiesName *string) {
-	o.PropertiesNameQueryParameter = propertiesName
+// SetPropertiesName adds the propertiesName to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetPropertiesName(propertiesName *string) {
+	o.PropertiesName = propertiesName
 }
 
-// WithPropertiesValueQueryParameter adds the propertiesValue to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithPropertiesValueQueryParameter(propertiesValue *string) *CounterRowCollectionGetParams {
-	o.SetPropertiesValueQueryParameter(propertiesValue)
+// WithPropertiesValue adds the propertiesValue to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithPropertiesValue(propertiesValue *string) *CounterRowCollectionGetParams {
+	o.SetPropertiesValue(propertiesValue)
 	return o
 }
 
-// SetPropertiesValueQueryParameter adds the propertiesValue to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetPropertiesValueQueryParameter(propertiesValue *string) {
-	o.PropertiesValueQueryParameter = propertiesValue
+// SetPropertiesValue adds the propertiesValue to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetPropertiesValue(propertiesValue *string) {
+	o.PropertiesValue = propertiesValue
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CounterRowCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithReturnRecords(returnRecords *bool) *CounterRowCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the counter row collection get params
-func (o *CounterRowCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CounterRowCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the counter row collection get params
+func (o *CounterRowCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CounterRowCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the counter row collection get params
-func (o *CounterRowCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the counter row collection get params
+func (o *CounterRowCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -430,13 +430,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.AggregationCompleteQueryParameter != nil {
+	if o.AggregationComplete != nil {
 
 		// query param aggregation.complete
 		var qrAggregationComplete bool
 
-		if o.AggregationCompleteQueryParameter != nil {
-			qrAggregationComplete = *o.AggregationCompleteQueryParameter
+		if o.AggregationComplete != nil {
+			qrAggregationComplete = *o.AggregationComplete
 		}
 		qAggregationComplete := swag.FormatBool(qrAggregationComplete)
 		if qAggregationComplete != "" {
@@ -447,13 +447,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.AggregationCountQueryParameter != nil {
+	if o.AggregationCount != nil {
 
 		// query param aggregation.count
 		var qrAggregationCount int64
 
-		if o.AggregationCountQueryParameter != nil {
-			qrAggregationCount = *o.AggregationCountQueryParameter
+		if o.AggregationCount != nil {
+			qrAggregationCount = *o.AggregationCount
 		}
 		qAggregationCount := swag.FormatInt64(qrAggregationCount)
 		if qAggregationCount != "" {
@@ -465,17 +465,17 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param counter_table.name
-	if err := r.SetPathParam("counter_table.name", o.CounterTableNamePathParameter); err != nil {
+	if err := r.SetPathParam("counter_table.name", o.CounterTableName); err != nil {
 		return err
 	}
 
-	if o.CountersCountersLabelQueryParameter != nil {
+	if o.CountersCountersLabel != nil {
 
 		// query param counters.counters.label
 		var qrCountersCountersLabel string
 
-		if o.CountersCountersLabelQueryParameter != nil {
-			qrCountersCountersLabel = *o.CountersCountersLabelQueryParameter
+		if o.CountersCountersLabel != nil {
+			qrCountersCountersLabel = *o.CountersCountersLabel
 		}
 		qCountersCountersLabel := qrCountersCountersLabel
 		if qCountersCountersLabel != "" {
@@ -486,13 +486,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.CountersCountersValuesQueryParameter != nil {
+	if o.CountersCountersValues != nil {
 
 		// query param counters.counters.values
 		var qrCountersCountersValues int64
 
-		if o.CountersCountersValuesQueryParameter != nil {
-			qrCountersCountersValues = *o.CountersCountersValuesQueryParameter
+		if o.CountersCountersValues != nil {
+			qrCountersCountersValues = *o.CountersCountersValues
 		}
 		qCountersCountersValues := swag.FormatInt64(qrCountersCountersValues)
 		if qCountersCountersValues != "" {
@@ -503,13 +503,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.CountersLabelsQueryParameter != nil {
+	if o.CountersLabels != nil {
 
 		// query param counters.labels
 		var qrCountersLabels string
 
-		if o.CountersLabelsQueryParameter != nil {
-			qrCountersLabels = *o.CountersLabelsQueryParameter
+		if o.CountersLabels != nil {
+			qrCountersLabels = *o.CountersLabels
 		}
 		qCountersLabels := qrCountersLabels
 		if qCountersLabels != "" {
@@ -520,13 +520,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.CountersNameQueryParameter != nil {
+	if o.CountersName != nil {
 
 		// query param counters.name
 		var qrCountersName string
 
-		if o.CountersNameQueryParameter != nil {
-			qrCountersName = *o.CountersNameQueryParameter
+		if o.CountersName != nil {
+			qrCountersName = *o.CountersName
 		}
 		qCountersName := qrCountersName
 		if qCountersName != "" {
@@ -537,13 +537,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.CountersValueQueryParameter != nil {
+	if o.CountersValue != nil {
 
 		// query param counters.value
 		var qrCountersValue int64
 
-		if o.CountersValueQueryParameter != nil {
-			qrCountersValue = *o.CountersValueQueryParameter
+		if o.CountersValue != nil {
+			qrCountersValue = *o.CountersValue
 		}
 		qCountersValue := swag.FormatInt64(qrCountersValue)
 		if qCountersValue != "" {
@@ -554,13 +554,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.CountersValuesQueryParameter != nil {
+	if o.CountersValues != nil {
 
 		// query param counters.values
 		var qrCountersValues int64
 
-		if o.CountersValuesQueryParameter != nil {
-			qrCountersValues = *o.CountersValuesQueryParameter
+		if o.CountersValues != nil {
+			qrCountersValues = *o.CountersValues
 		}
 		qCountersValues := swag.FormatInt64(qrCountersValues)
 		if qCountersValues != "" {
@@ -571,7 +571,7 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -582,13 +582,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID string
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := qrID
 		if qID != "" {
@@ -599,13 +599,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -616,7 +616,7 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -627,13 +627,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PropertiesNameQueryParameter != nil {
+	if o.PropertiesName != nil {
 
 		// query param properties.name
 		var qrPropertiesName string
 
-		if o.PropertiesNameQueryParameter != nil {
-			qrPropertiesName = *o.PropertiesNameQueryParameter
+		if o.PropertiesName != nil {
+			qrPropertiesName = *o.PropertiesName
 		}
 		qPropertiesName := qrPropertiesName
 		if qPropertiesName != "" {
@@ -644,13 +644,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PropertiesValueQueryParameter != nil {
+	if o.PropertiesValue != nil {
 
 		// query param properties.value
 		var qrPropertiesValue string
 
-		if o.PropertiesValueQueryParameter != nil {
-			qrPropertiesValue = *o.PropertiesValueQueryParameter
+		if o.PropertiesValue != nil {
+			qrPropertiesValue = *o.PropertiesValue
 		}
 		qPropertiesValue := qrPropertiesValue
 		if qPropertiesValue != "" {
@@ -661,13 +661,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -678,13 +678,13 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -703,7 +703,7 @@ func (o *CounterRowCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamCounterRowCollectionGet binds the parameter fields
 func (o *CounterRowCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -720,7 +720,7 @@ func (o *CounterRowCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamCounterRowCollectionGet binds the parameter order_by
 func (o *CounterRowCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

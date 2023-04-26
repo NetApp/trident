@@ -65,7 +65,7 @@ type IpsecCaCertificateDeleteParams struct {
 
 	   UUID of the CA certificate to be deleted from IPsec.
 	*/
-	CertificateUUIDPathParameter string
+	CertificateUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *IpsecCaCertificateDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCertificateUUIDPathParameter adds the certificateUUID to the ipsec ca certificate delete params
-func (o *IpsecCaCertificateDeleteParams) WithCertificateUUIDPathParameter(certificateUUID string) *IpsecCaCertificateDeleteParams {
-	o.SetCertificateUUIDPathParameter(certificateUUID)
+// WithCertificateUUID adds the certificateUUID to the ipsec ca certificate delete params
+func (o *IpsecCaCertificateDeleteParams) WithCertificateUUID(certificateUUID string) *IpsecCaCertificateDeleteParams {
+	o.SetCertificateUUID(certificateUUID)
 	return o
 }
 
-// SetCertificateUUIDPathParameter adds the certificateUuid to the ipsec ca certificate delete params
-func (o *IpsecCaCertificateDeleteParams) SetCertificateUUIDPathParameter(certificateUUID string) {
-	o.CertificateUUIDPathParameter = certificateUUID
+// SetCertificateUUID adds the certificateUuid to the ipsec ca certificate delete params
+func (o *IpsecCaCertificateDeleteParams) SetCertificateUUID(certificateUUID string) {
+	o.CertificateUUID = certificateUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *IpsecCaCertificateDeleteParams) WriteToRequest(r runtime.ClientRequest,
 	var res []error
 
 	// path param certificate.uuid
-	if err := r.SetPathParam("certificate.uuid", o.CertificateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("certificate.uuid", o.CertificateUUID); err != nil {
 		return err
 	}
 

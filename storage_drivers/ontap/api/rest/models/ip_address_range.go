@@ -19,13 +19,13 @@ import (
 type IPAddressRange struct {
 
 	// end
-	End IPAddress `json:"end,omitempty"`
+	End *IPAddress `json:"end,omitempty"`
 
 	// family
-	Family IPAddressFamily `json:"family,omitempty"`
+	Family *IPAddressFamily `json:"family,omitempty"`
 
 	// start
-	Start IPAddress `json:"start,omitempty"`
+	Start *IPAddress `json:"start,omitempty"`
 }
 
 // Validate validates this ip address range
@@ -55,11 +55,13 @@ func (m *IPAddressRange) validateEnd(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.End.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("end")
+	if m.End != nil {
+		if err := m.End.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("end")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -70,11 +72,13 @@ func (m *IPAddressRange) validateFamily(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Family.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("family")
+	if m.Family != nil {
+		if err := m.Family.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -85,11 +89,13 @@ func (m *IPAddressRange) validateStart(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Start.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("start")
+	if m.Start != nil {
+		if err := m.Start.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("start")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -119,11 +125,13 @@ func (m *IPAddressRange) ContextValidate(ctx context.Context, formats strfmt.Reg
 
 func (m *IPAddressRange) contextValidateEnd(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.End.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("end")
+	if m.End != nil {
+		if err := m.End.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("end")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -131,11 +139,13 @@ func (m *IPAddressRange) contextValidateEnd(ctx context.Context, formats strfmt.
 
 func (m *IPAddressRange) contextValidateFamily(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Family.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("family")
+	if m.Family != nil {
+		if err := m.Family.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -143,11 +153,13 @@ func (m *IPAddressRange) contextValidateFamily(ctx context.Context, formats strf
 
 func (m *IPAddressRange) contextValidateStart(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Start.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("start")
+	if m.Start != nil {
+		if err := m.Start.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("start")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

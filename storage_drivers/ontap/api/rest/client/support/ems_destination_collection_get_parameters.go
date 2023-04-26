@@ -66,97 +66,97 @@ type EmsDestinationCollectionGetParams struct {
 
 	   Filter by certificate.ca
 	*/
-	CertificateCaQueryParameter *string
+	CertificateCa *string
 
 	/* CertificateName.
 
 	   Filter by certificate.name
 	*/
-	CertificateNameQueryParameter *string
+	CertificateName *string
 
 	/* CertificateSerialNumber.
 
 	   Filter by certificate.serial_number
 	*/
-	CertificateSerialNumberQueryParameter *string
+	CertificateSerialNumber *string
 
 	/* ConnectivityErrorsMessageArgumentsCode.
 
 	   Filter by connectivity.errors.message.arguments.code
 	*/
-	ConnectivityErrorsMessageArgumentsCodeQueryParameter *string
+	ConnectivityErrorsMessageArgumentsCode *string
 
 	/* ConnectivityErrorsMessageArgumentsMessage.
 
 	   Filter by connectivity.errors.message.arguments.message
 	*/
-	ConnectivityErrorsMessageArgumentsMessageQueryParameter *string
+	ConnectivityErrorsMessageArgumentsMessage *string
 
 	/* ConnectivityErrorsMessageCode.
 
 	   Filter by connectivity.errors.message.code
 	*/
-	ConnectivityErrorsMessageCodeQueryParameter *string
+	ConnectivityErrorsMessageCode *string
 
 	/* ConnectivityErrorsMessageMessage.
 
 	   Filter by connectivity.errors.message.message
 	*/
-	ConnectivityErrorsMessageMessageQueryParameter *string
+	ConnectivityErrorsMessageMessage *string
 
 	/* ConnectivityErrorsNodeName.
 
 	   Filter by connectivity.errors.node.name
 	*/
-	ConnectivityErrorsNodeNameQueryParameter *string
+	ConnectivityErrorsNodeName *string
 
 	/* ConnectivityErrorsNodeUUID.
 
 	   Filter by connectivity.errors.node.uuid
 	*/
-	ConnectivityErrorsNodeUUIDQueryParameter *string
+	ConnectivityErrorsNodeUUID *string
 
 	/* ConnectivityState.
 
 	   Filter by connectivity.state
 	*/
-	ConnectivityStateQueryParameter *string
+	ConnectivityState *string
 
 	/* Destination.
 
 	   Filter by destination
 	*/
-	DestinationQueryParameter *string
+	Destination *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FiltersName.
 
 	   Filter by filters.name
 	*/
-	FiltersNameQueryParameter *string
+	FiltersName *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -164,7 +164,7 @@ type EmsDestinationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -172,19 +172,49 @@ type EmsDestinationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
+
+	/* SyslogFormatHostnameOverride.
+
+	   Filter by syslog.format.hostname_override
+	*/
+	SyslogFormatHostnameOverride *string
+
+	/* SyslogFormatMessage.
+
+	   Filter by syslog.format.message
+	*/
+	SyslogFormatMessage *string
+
+	/* SyslogFormatTimestampOverride.
+
+	   Filter by syslog.format.timestamp_override
+	*/
+	SyslogFormatTimestampOverride *string
+
+	/* SyslogPort.
+
+	   Filter by syslog.port
+	*/
+	SyslogPort *int64
+
+	/* SyslogTransport.
+
+	   Filter by syslog.transport
+	*/
+	SyslogTransport *string
 
 	/* SystemDefined.
 
 	   Filter by system_defined
 	*/
-	SystemDefinedQueryParameter *bool
+	SystemDefined *bool
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -204,14 +234,14 @@ func (o *EmsDestinationCollectionGetParams) WithDefaults() *EmsDestinationCollec
 // All values with no default are reset to their zero value.
 func (o *EmsDestinationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := EmsDestinationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -253,224 +283,279 @@ func (o *EmsDestinationCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCertificateCaQueryParameter adds the certificateCa to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithCertificateCaQueryParameter(certificateCa *string) *EmsDestinationCollectionGetParams {
-	o.SetCertificateCaQueryParameter(certificateCa)
+// WithCertificateCa adds the certificateCa to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithCertificateCa(certificateCa *string) *EmsDestinationCollectionGetParams {
+	o.SetCertificateCa(certificateCa)
 	return o
 }
 
-// SetCertificateCaQueryParameter adds the certificateCa to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetCertificateCaQueryParameter(certificateCa *string) {
-	o.CertificateCaQueryParameter = certificateCa
+// SetCertificateCa adds the certificateCa to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetCertificateCa(certificateCa *string) {
+	o.CertificateCa = certificateCa
 }
 
-// WithCertificateNameQueryParameter adds the certificateName to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *EmsDestinationCollectionGetParams {
-	o.SetCertificateNameQueryParameter(certificateName)
+// WithCertificateName adds the certificateName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithCertificateName(certificateName *string) *EmsDestinationCollectionGetParams {
+	o.SetCertificateName(certificateName)
 	return o
 }
 
-// SetCertificateNameQueryParameter adds the certificateName to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
-	o.CertificateNameQueryParameter = certificateName
+// SetCertificateName adds the certificateName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetCertificateName(certificateName *string) {
+	o.CertificateName = certificateName
 }
 
-// WithCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithCertificateSerialNumberQueryParameter(certificateSerialNumber *string) *EmsDestinationCollectionGetParams {
-	o.SetCertificateSerialNumberQueryParameter(certificateSerialNumber)
+// WithCertificateSerialNumber adds the certificateSerialNumber to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithCertificateSerialNumber(certificateSerialNumber *string) *EmsDestinationCollectionGetParams {
+	o.SetCertificateSerialNumber(certificateSerialNumber)
 	return o
 }
 
-// SetCertificateSerialNumberQueryParameter adds the certificateSerialNumber to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetCertificateSerialNumberQueryParameter(certificateSerialNumber *string) {
-	o.CertificateSerialNumberQueryParameter = certificateSerialNumber
+// SetCertificateSerialNumber adds the certificateSerialNumber to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetCertificateSerialNumber(certificateSerialNumber *string) {
+	o.CertificateSerialNumber = certificateSerialNumber
 }
 
-// WithConnectivityErrorsMessageArgumentsCodeQueryParameter adds the connectivityErrorsMessageArgumentsCode to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageArgumentsCodeQueryParameter(connectivityErrorsMessageArgumentsCode *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityErrorsMessageArgumentsCodeQueryParameter(connectivityErrorsMessageArgumentsCode)
+// WithConnectivityErrorsMessageArgumentsCode adds the connectivityErrorsMessageArgumentsCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageArgumentsCode(connectivityErrorsMessageArgumentsCode *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageArgumentsCode(connectivityErrorsMessageArgumentsCode)
 	return o
 }
 
-// SetConnectivityErrorsMessageArgumentsCodeQueryParameter adds the connectivityErrorsMessageArgumentsCode to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageArgumentsCodeQueryParameter(connectivityErrorsMessageArgumentsCode *string) {
-	o.ConnectivityErrorsMessageArgumentsCodeQueryParameter = connectivityErrorsMessageArgumentsCode
+// SetConnectivityErrorsMessageArgumentsCode adds the connectivityErrorsMessageArgumentsCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageArgumentsCode(connectivityErrorsMessageArgumentsCode *string) {
+	o.ConnectivityErrorsMessageArgumentsCode = connectivityErrorsMessageArgumentsCode
 }
 
-// WithConnectivityErrorsMessageArgumentsMessageQueryParameter adds the connectivityErrorsMessageArgumentsMessage to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageArgumentsMessageQueryParameter(connectivityErrorsMessageArgumentsMessage *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityErrorsMessageArgumentsMessageQueryParameter(connectivityErrorsMessageArgumentsMessage)
+// WithConnectivityErrorsMessageArgumentsMessage adds the connectivityErrorsMessageArgumentsMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageArgumentsMessage(connectivityErrorsMessageArgumentsMessage *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageArgumentsMessage(connectivityErrorsMessageArgumentsMessage)
 	return o
 }
 
-// SetConnectivityErrorsMessageArgumentsMessageQueryParameter adds the connectivityErrorsMessageArgumentsMessage to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageArgumentsMessageQueryParameter(connectivityErrorsMessageArgumentsMessage *string) {
-	o.ConnectivityErrorsMessageArgumentsMessageQueryParameter = connectivityErrorsMessageArgumentsMessage
+// SetConnectivityErrorsMessageArgumentsMessage adds the connectivityErrorsMessageArgumentsMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageArgumentsMessage(connectivityErrorsMessageArgumentsMessage *string) {
+	o.ConnectivityErrorsMessageArgumentsMessage = connectivityErrorsMessageArgumentsMessage
 }
 
-// WithConnectivityErrorsMessageCodeQueryParameter adds the connectivityErrorsMessageCode to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageCodeQueryParameter(connectivityErrorsMessageCode *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityErrorsMessageCodeQueryParameter(connectivityErrorsMessageCode)
+// WithConnectivityErrorsMessageCode adds the connectivityErrorsMessageCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageCode(connectivityErrorsMessageCode *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageCode(connectivityErrorsMessageCode)
 	return o
 }
 
-// SetConnectivityErrorsMessageCodeQueryParameter adds the connectivityErrorsMessageCode to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageCodeQueryParameter(connectivityErrorsMessageCode *string) {
-	o.ConnectivityErrorsMessageCodeQueryParameter = connectivityErrorsMessageCode
+// SetConnectivityErrorsMessageCode adds the connectivityErrorsMessageCode to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageCode(connectivityErrorsMessageCode *string) {
+	o.ConnectivityErrorsMessageCode = connectivityErrorsMessageCode
 }
 
-// WithConnectivityErrorsMessageMessageQueryParameter adds the connectivityErrorsMessageMessage to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageMessageQueryParameter(connectivityErrorsMessageMessage *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityErrorsMessageMessageQueryParameter(connectivityErrorsMessageMessage)
+// WithConnectivityErrorsMessageMessage adds the connectivityErrorsMessageMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsMessageMessage(connectivityErrorsMessageMessage *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsMessageMessage(connectivityErrorsMessageMessage)
 	return o
 }
 
-// SetConnectivityErrorsMessageMessageQueryParameter adds the connectivityErrorsMessageMessage to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageMessageQueryParameter(connectivityErrorsMessageMessage *string) {
-	o.ConnectivityErrorsMessageMessageQueryParameter = connectivityErrorsMessageMessage
+// SetConnectivityErrorsMessageMessage adds the connectivityErrorsMessageMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsMessageMessage(connectivityErrorsMessageMessage *string) {
+	o.ConnectivityErrorsMessageMessage = connectivityErrorsMessageMessage
 }
 
-// WithConnectivityErrorsNodeNameQueryParameter adds the connectivityErrorsNodeName to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsNodeNameQueryParameter(connectivityErrorsNodeName *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityErrorsNodeNameQueryParameter(connectivityErrorsNodeName)
+// WithConnectivityErrorsNodeName adds the connectivityErrorsNodeName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsNodeName(connectivityErrorsNodeName *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsNodeName(connectivityErrorsNodeName)
 	return o
 }
 
-// SetConnectivityErrorsNodeNameQueryParameter adds the connectivityErrorsNodeName to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsNodeNameQueryParameter(connectivityErrorsNodeName *string) {
-	o.ConnectivityErrorsNodeNameQueryParameter = connectivityErrorsNodeName
+// SetConnectivityErrorsNodeName adds the connectivityErrorsNodeName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsNodeName(connectivityErrorsNodeName *string) {
+	o.ConnectivityErrorsNodeName = connectivityErrorsNodeName
 }
 
-// WithConnectivityErrorsNodeUUIDQueryParameter adds the connectivityErrorsNodeUUID to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsNodeUUIDQueryParameter(connectivityErrorsNodeUUID *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityErrorsNodeUUIDQueryParameter(connectivityErrorsNodeUUID)
+// WithConnectivityErrorsNodeUUID adds the connectivityErrorsNodeUUID to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityErrorsNodeUUID(connectivityErrorsNodeUUID *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityErrorsNodeUUID(connectivityErrorsNodeUUID)
 	return o
 }
 
-// SetConnectivityErrorsNodeUUIDQueryParameter adds the connectivityErrorsNodeUuid to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsNodeUUIDQueryParameter(connectivityErrorsNodeUUID *string) {
-	o.ConnectivityErrorsNodeUUIDQueryParameter = connectivityErrorsNodeUUID
+// SetConnectivityErrorsNodeUUID adds the connectivityErrorsNodeUuid to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityErrorsNodeUUID(connectivityErrorsNodeUUID *string) {
+	o.ConnectivityErrorsNodeUUID = connectivityErrorsNodeUUID
 }
 
-// WithConnectivityStateQueryParameter adds the connectivityState to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithConnectivityStateQueryParameter(connectivityState *string) *EmsDestinationCollectionGetParams {
-	o.SetConnectivityStateQueryParameter(connectivityState)
+// WithConnectivityState adds the connectivityState to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithConnectivityState(connectivityState *string) *EmsDestinationCollectionGetParams {
+	o.SetConnectivityState(connectivityState)
 	return o
 }
 
-// SetConnectivityStateQueryParameter adds the connectivityState to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetConnectivityStateQueryParameter(connectivityState *string) {
-	o.ConnectivityStateQueryParameter = connectivityState
+// SetConnectivityState adds the connectivityState to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetConnectivityState(connectivityState *string) {
+	o.ConnectivityState = connectivityState
 }
 
-// WithDestinationQueryParameter adds the destination to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithDestinationQueryParameter(destination *string) *EmsDestinationCollectionGetParams {
-	o.SetDestinationQueryParameter(destination)
+// WithDestination adds the destination to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithDestination(destination *string) *EmsDestinationCollectionGetParams {
+	o.SetDestination(destination)
 	return o
 }
 
-// SetDestinationQueryParameter adds the destination to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetDestinationQueryParameter(destination *string) {
-	o.DestinationQueryParameter = destination
+// SetDestination adds the destination to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetDestination(destination *string) {
+	o.Destination = destination
 }
 
-// WithFieldsQueryParameter adds the fields to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithFieldsQueryParameter(fields []string) *EmsDestinationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithFields(fields []string) *EmsDestinationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFiltersNameQueryParameter adds the filtersName to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithFiltersNameQueryParameter(filtersName *string) *EmsDestinationCollectionGetParams {
-	o.SetFiltersNameQueryParameter(filtersName)
+// WithFiltersName adds the filtersName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithFiltersName(filtersName *string) *EmsDestinationCollectionGetParams {
+	o.SetFiltersName(filtersName)
 	return o
 }
 
-// SetFiltersNameQueryParameter adds the filtersName to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetFiltersNameQueryParameter(filtersName *string) {
-	o.FiltersNameQueryParameter = filtersName
+// SetFiltersName adds the filtersName to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetFiltersName(filtersName *string) {
+	o.FiltersName = filtersName
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *EmsDestinationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithMaxRecords(maxRecords *int64) *EmsDestinationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithNameQueryParameter(name *string) *EmsDestinationCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithName(name *string) *EmsDestinationCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *EmsDestinationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithOrderBy(orderBy []string) *EmsDestinationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *EmsDestinationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithReturnRecords(returnRecords *bool) *EmsDestinationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *EmsDestinationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *EmsDestinationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSystemDefinedQueryParameter adds the systemDefined to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithSystemDefinedQueryParameter(systemDefined *bool) *EmsDestinationCollectionGetParams {
-	o.SetSystemDefinedQueryParameter(systemDefined)
+// WithSyslogFormatHostnameOverride adds the syslogFormatHostnameOverride to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSyslogFormatHostnameOverride(syslogFormatHostnameOverride *string) *EmsDestinationCollectionGetParams {
+	o.SetSyslogFormatHostnameOverride(syslogFormatHostnameOverride)
 	return o
 }
 
-// SetSystemDefinedQueryParameter adds the systemDefined to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetSystemDefinedQueryParameter(systemDefined *bool) {
-	o.SystemDefinedQueryParameter = systemDefined
+// SetSyslogFormatHostnameOverride adds the syslogFormatHostnameOverride to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSyslogFormatHostnameOverride(syslogFormatHostnameOverride *string) {
+	o.SyslogFormatHostnameOverride = syslogFormatHostnameOverride
 }
 
-// WithTypeQueryParameter adds the typeVar to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) WithTypeQueryParameter(typeVar *string) *EmsDestinationCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithSyslogFormatMessage adds the syslogFormatMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSyslogFormatMessage(syslogFormatMessage *string) *EmsDestinationCollectionGetParams {
+	o.SetSyslogFormatMessage(syslogFormatMessage)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the ems destination collection get params
-func (o *EmsDestinationCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetSyslogFormatMessage adds the syslogFormatMessage to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSyslogFormatMessage(syslogFormatMessage *string) {
+	o.SyslogFormatMessage = syslogFormatMessage
+}
+
+// WithSyslogFormatTimestampOverride adds the syslogFormatTimestampOverride to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSyslogFormatTimestampOverride(syslogFormatTimestampOverride *string) *EmsDestinationCollectionGetParams {
+	o.SetSyslogFormatTimestampOverride(syslogFormatTimestampOverride)
+	return o
+}
+
+// SetSyslogFormatTimestampOverride adds the syslogFormatTimestampOverride to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSyslogFormatTimestampOverride(syslogFormatTimestampOverride *string) {
+	o.SyslogFormatTimestampOverride = syslogFormatTimestampOverride
+}
+
+// WithSyslogPort adds the syslogPort to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSyslogPort(syslogPort *int64) *EmsDestinationCollectionGetParams {
+	o.SetSyslogPort(syslogPort)
+	return o
+}
+
+// SetSyslogPort adds the syslogPort to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSyslogPort(syslogPort *int64) {
+	o.SyslogPort = syslogPort
+}
+
+// WithSyslogTransport adds the syslogTransport to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSyslogTransport(syslogTransport *string) *EmsDestinationCollectionGetParams {
+	o.SetSyslogTransport(syslogTransport)
+	return o
+}
+
+// SetSyslogTransport adds the syslogTransport to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSyslogTransport(syslogTransport *string) {
+	o.SyslogTransport = syslogTransport
+}
+
+// WithSystemDefined adds the systemDefined to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSystemDefined(systemDefined *bool) *EmsDestinationCollectionGetParams {
+	o.SetSystemDefined(systemDefined)
+	return o
+}
+
+// SetSystemDefined adds the systemDefined to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSystemDefined(systemDefined *bool) {
+	o.SystemDefined = systemDefined
+}
+
+// WithType adds the typeVar to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithType(typeVar *string) *EmsDestinationCollectionGetParams {
+	o.SetType(typeVar)
+	return o
+}
+
+// SetType adds the type to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -481,13 +566,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.CertificateCaQueryParameter != nil {
+	if o.CertificateCa != nil {
 
 		// query param certificate.ca
 		var qrCertificateCa string
 
-		if o.CertificateCaQueryParameter != nil {
-			qrCertificateCa = *o.CertificateCaQueryParameter
+		if o.CertificateCa != nil {
+			qrCertificateCa = *o.CertificateCa
 		}
 		qCertificateCa := qrCertificateCa
 		if qCertificateCa != "" {
@@ -498,13 +583,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.CertificateNameQueryParameter != nil {
+	if o.CertificateName != nil {
 
 		// query param certificate.name
 		var qrCertificateName string
 
-		if o.CertificateNameQueryParameter != nil {
-			qrCertificateName = *o.CertificateNameQueryParameter
+		if o.CertificateName != nil {
+			qrCertificateName = *o.CertificateName
 		}
 		qCertificateName := qrCertificateName
 		if qCertificateName != "" {
@@ -515,13 +600,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.CertificateSerialNumberQueryParameter != nil {
+	if o.CertificateSerialNumber != nil {
 
 		// query param certificate.serial_number
 		var qrCertificateSerialNumber string
 
-		if o.CertificateSerialNumberQueryParameter != nil {
-			qrCertificateSerialNumber = *o.CertificateSerialNumberQueryParameter
+		if o.CertificateSerialNumber != nil {
+			qrCertificateSerialNumber = *o.CertificateSerialNumber
 		}
 		qCertificateSerialNumber := qrCertificateSerialNumber
 		if qCertificateSerialNumber != "" {
@@ -532,13 +617,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityErrorsMessageArgumentsCodeQueryParameter != nil {
+	if o.ConnectivityErrorsMessageArgumentsCode != nil {
 
 		// query param connectivity.errors.message.arguments.code
 		var qrConnectivityErrorsMessageArgumentsCode string
 
-		if o.ConnectivityErrorsMessageArgumentsCodeQueryParameter != nil {
-			qrConnectivityErrorsMessageArgumentsCode = *o.ConnectivityErrorsMessageArgumentsCodeQueryParameter
+		if o.ConnectivityErrorsMessageArgumentsCode != nil {
+			qrConnectivityErrorsMessageArgumentsCode = *o.ConnectivityErrorsMessageArgumentsCode
 		}
 		qConnectivityErrorsMessageArgumentsCode := qrConnectivityErrorsMessageArgumentsCode
 		if qConnectivityErrorsMessageArgumentsCode != "" {
@@ -549,13 +634,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityErrorsMessageArgumentsMessageQueryParameter != nil {
+	if o.ConnectivityErrorsMessageArgumentsMessage != nil {
 
 		// query param connectivity.errors.message.arguments.message
 		var qrConnectivityErrorsMessageArgumentsMessage string
 
-		if o.ConnectivityErrorsMessageArgumentsMessageQueryParameter != nil {
-			qrConnectivityErrorsMessageArgumentsMessage = *o.ConnectivityErrorsMessageArgumentsMessageQueryParameter
+		if o.ConnectivityErrorsMessageArgumentsMessage != nil {
+			qrConnectivityErrorsMessageArgumentsMessage = *o.ConnectivityErrorsMessageArgumentsMessage
 		}
 		qConnectivityErrorsMessageArgumentsMessage := qrConnectivityErrorsMessageArgumentsMessage
 		if qConnectivityErrorsMessageArgumentsMessage != "" {
@@ -566,13 +651,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityErrorsMessageCodeQueryParameter != nil {
+	if o.ConnectivityErrorsMessageCode != nil {
 
 		// query param connectivity.errors.message.code
 		var qrConnectivityErrorsMessageCode string
 
-		if o.ConnectivityErrorsMessageCodeQueryParameter != nil {
-			qrConnectivityErrorsMessageCode = *o.ConnectivityErrorsMessageCodeQueryParameter
+		if o.ConnectivityErrorsMessageCode != nil {
+			qrConnectivityErrorsMessageCode = *o.ConnectivityErrorsMessageCode
 		}
 		qConnectivityErrorsMessageCode := qrConnectivityErrorsMessageCode
 		if qConnectivityErrorsMessageCode != "" {
@@ -583,13 +668,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityErrorsMessageMessageQueryParameter != nil {
+	if o.ConnectivityErrorsMessageMessage != nil {
 
 		// query param connectivity.errors.message.message
 		var qrConnectivityErrorsMessageMessage string
 
-		if o.ConnectivityErrorsMessageMessageQueryParameter != nil {
-			qrConnectivityErrorsMessageMessage = *o.ConnectivityErrorsMessageMessageQueryParameter
+		if o.ConnectivityErrorsMessageMessage != nil {
+			qrConnectivityErrorsMessageMessage = *o.ConnectivityErrorsMessageMessage
 		}
 		qConnectivityErrorsMessageMessage := qrConnectivityErrorsMessageMessage
 		if qConnectivityErrorsMessageMessage != "" {
@@ -600,13 +685,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityErrorsNodeNameQueryParameter != nil {
+	if o.ConnectivityErrorsNodeName != nil {
 
 		// query param connectivity.errors.node.name
 		var qrConnectivityErrorsNodeName string
 
-		if o.ConnectivityErrorsNodeNameQueryParameter != nil {
-			qrConnectivityErrorsNodeName = *o.ConnectivityErrorsNodeNameQueryParameter
+		if o.ConnectivityErrorsNodeName != nil {
+			qrConnectivityErrorsNodeName = *o.ConnectivityErrorsNodeName
 		}
 		qConnectivityErrorsNodeName := qrConnectivityErrorsNodeName
 		if qConnectivityErrorsNodeName != "" {
@@ -617,13 +702,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityErrorsNodeUUIDQueryParameter != nil {
+	if o.ConnectivityErrorsNodeUUID != nil {
 
 		// query param connectivity.errors.node.uuid
 		var qrConnectivityErrorsNodeUUID string
 
-		if o.ConnectivityErrorsNodeUUIDQueryParameter != nil {
-			qrConnectivityErrorsNodeUUID = *o.ConnectivityErrorsNodeUUIDQueryParameter
+		if o.ConnectivityErrorsNodeUUID != nil {
+			qrConnectivityErrorsNodeUUID = *o.ConnectivityErrorsNodeUUID
 		}
 		qConnectivityErrorsNodeUUID := qrConnectivityErrorsNodeUUID
 		if qConnectivityErrorsNodeUUID != "" {
@@ -634,13 +719,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ConnectivityStateQueryParameter != nil {
+	if o.ConnectivityState != nil {
 
 		// query param connectivity.state
 		var qrConnectivityState string
 
-		if o.ConnectivityStateQueryParameter != nil {
-			qrConnectivityState = *o.ConnectivityStateQueryParameter
+		if o.ConnectivityState != nil {
+			qrConnectivityState = *o.ConnectivityState
 		}
 		qConnectivityState := qrConnectivityState
 		if qConnectivityState != "" {
@@ -651,13 +736,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.DestinationQueryParameter != nil {
+	if o.Destination != nil {
 
 		// query param destination
 		var qrDestination string
 
-		if o.DestinationQueryParameter != nil {
-			qrDestination = *o.DestinationQueryParameter
+		if o.Destination != nil {
+			qrDestination = *o.Destination
 		}
 		qDestination := qrDestination
 		if qDestination != "" {
@@ -668,7 +753,7 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -679,13 +764,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.FiltersNameQueryParameter != nil {
+	if o.FiltersName != nil {
 
 		// query param filters.name
 		var qrFiltersName string
 
-		if o.FiltersNameQueryParameter != nil {
-			qrFiltersName = *o.FiltersNameQueryParameter
+		if o.FiltersName != nil {
+			qrFiltersName = *o.FiltersName
 		}
 		qFiltersName := qrFiltersName
 		if qFiltersName != "" {
@@ -696,13 +781,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -713,13 +798,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -730,7 +815,7 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -741,13 +826,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -758,13 +843,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -775,13 +860,98 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.SystemDefinedQueryParameter != nil {
+	if o.SyslogFormatHostnameOverride != nil {
+
+		// query param syslog.format.hostname_override
+		var qrSyslogFormatHostnameOverride string
+
+		if o.SyslogFormatHostnameOverride != nil {
+			qrSyslogFormatHostnameOverride = *o.SyslogFormatHostnameOverride
+		}
+		qSyslogFormatHostnameOverride := qrSyslogFormatHostnameOverride
+		if qSyslogFormatHostnameOverride != "" {
+
+			if err := r.SetQueryParam("syslog.format.hostname_override", qSyslogFormatHostnameOverride); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SyslogFormatMessage != nil {
+
+		// query param syslog.format.message
+		var qrSyslogFormatMessage string
+
+		if o.SyslogFormatMessage != nil {
+			qrSyslogFormatMessage = *o.SyslogFormatMessage
+		}
+		qSyslogFormatMessage := qrSyslogFormatMessage
+		if qSyslogFormatMessage != "" {
+
+			if err := r.SetQueryParam("syslog.format.message", qSyslogFormatMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SyslogFormatTimestampOverride != nil {
+
+		// query param syslog.format.timestamp_override
+		var qrSyslogFormatTimestampOverride string
+
+		if o.SyslogFormatTimestampOverride != nil {
+			qrSyslogFormatTimestampOverride = *o.SyslogFormatTimestampOverride
+		}
+		qSyslogFormatTimestampOverride := qrSyslogFormatTimestampOverride
+		if qSyslogFormatTimestampOverride != "" {
+
+			if err := r.SetQueryParam("syslog.format.timestamp_override", qSyslogFormatTimestampOverride); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SyslogPort != nil {
+
+		// query param syslog.port
+		var qrSyslogPort int64
+
+		if o.SyslogPort != nil {
+			qrSyslogPort = *o.SyslogPort
+		}
+		qSyslogPort := swag.FormatInt64(qrSyslogPort)
+		if qSyslogPort != "" {
+
+			if err := r.SetQueryParam("syslog.port", qSyslogPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SyslogTransport != nil {
+
+		// query param syslog.transport
+		var qrSyslogTransport string
+
+		if o.SyslogTransport != nil {
+			qrSyslogTransport = *o.SyslogTransport
+		}
+		qSyslogTransport := qrSyslogTransport
+		if qSyslogTransport != "" {
+
+			if err := r.SetQueryParam("syslog.transport", qSyslogTransport); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SystemDefined != nil {
 
 		// query param system_defined
 		var qrSystemDefined bool
 
-		if o.SystemDefinedQueryParameter != nil {
-			qrSystemDefined = *o.SystemDefinedQueryParameter
+		if o.SystemDefined != nil {
+			qrSystemDefined = *o.SystemDefined
 		}
 		qSystemDefined := swag.FormatBool(qrSystemDefined)
 		if qSystemDefined != "" {
@@ -792,13 +962,13 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -817,7 +987,7 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamEmsDestinationCollectionGet binds the parameter fields
 func (o *EmsDestinationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -834,7 +1004,7 @@ func (o *EmsDestinationCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamEmsDestinationCollectionGet binds the parameter order_by
 func (o *EmsDestinationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

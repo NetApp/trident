@@ -69,7 +69,7 @@ type IscsiCredentialsModifyParams struct {
 	   If _true_, the initiator addresses in the body merge into the existing addresses in the iSCSI security object rather than replace the existing addresses.
 
 	*/
-	AddInitiatorAddressesQueryParameter *bool
+	AddInitiatorAddresses *bool
 
 	/* Info.
 
@@ -83,21 +83,21 @@ type IscsiCredentialsModifyParams struct {
 	   The iSCSI initiator of the credentials object.
 
 	*/
-	InitiatorPathParameter string
+	Initiator string
 
 	/* RemoveInitiatorAddresses.
 
 	   If _true_, the initiator addresses in the body are removed from the existing addresses in the iSCSI security object rather than replace the existing addresses.
 
 	*/
-	RemoveInitiatorAddressesQueryParameter *bool
+	RemoveInitiatorAddresses *bool
 
 	/* SvmUUID.
 
 	   The unique identifier of an SVM.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -117,14 +117,14 @@ func (o *IscsiCredentialsModifyParams) WithDefaults() *IscsiCredentialsModifyPar
 // All values with no default are reset to their zero value.
 func (o *IscsiCredentialsModifyParams) SetDefaults() {
 	var (
-		addInitiatorAddressesQueryParameterDefault = bool(false)
+		addInitiatorAddressesDefault = bool(false)
 
-		removeInitiatorAddressesQueryParameterDefault = bool(false)
+		removeInitiatorAddressesDefault = bool(false)
 	)
 
 	val := IscsiCredentialsModifyParams{
-		AddInitiatorAddressesQueryParameter:    &addInitiatorAddressesQueryParameterDefault,
-		RemoveInitiatorAddressesQueryParameter: &removeInitiatorAddressesQueryParameterDefault,
+		AddInitiatorAddresses:    &addInitiatorAddressesDefault,
+		RemoveInitiatorAddresses: &removeInitiatorAddressesDefault,
 	}
 
 	val.timeout = o.timeout
@@ -166,15 +166,15 @@ func (o *IscsiCredentialsModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddInitiatorAddressesQueryParameter adds the addInitiatorAddresses to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) WithAddInitiatorAddressesQueryParameter(addInitiatorAddresses *bool) *IscsiCredentialsModifyParams {
-	o.SetAddInitiatorAddressesQueryParameter(addInitiatorAddresses)
+// WithAddInitiatorAddresses adds the addInitiatorAddresses to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) WithAddInitiatorAddresses(addInitiatorAddresses *bool) *IscsiCredentialsModifyParams {
+	o.SetAddInitiatorAddresses(addInitiatorAddresses)
 	return o
 }
 
-// SetAddInitiatorAddressesQueryParameter adds the addInitiatorAddresses to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) SetAddInitiatorAddressesQueryParameter(addInitiatorAddresses *bool) {
-	o.AddInitiatorAddressesQueryParameter = addInitiatorAddresses
+// SetAddInitiatorAddresses adds the addInitiatorAddresses to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) SetAddInitiatorAddresses(addInitiatorAddresses *bool) {
+	o.AddInitiatorAddresses = addInitiatorAddresses
 }
 
 // WithInfo adds the info to the iscsi credentials modify params
@@ -188,37 +188,37 @@ func (o *IscsiCredentialsModifyParams) SetInfo(info *models.IscsiCredentials) {
 	o.Info = info
 }
 
-// WithInitiatorPathParameter adds the initiator to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) WithInitiatorPathParameter(initiator string) *IscsiCredentialsModifyParams {
-	o.SetInitiatorPathParameter(initiator)
+// WithInitiator adds the initiator to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) WithInitiator(initiator string) *IscsiCredentialsModifyParams {
+	o.SetInitiator(initiator)
 	return o
 }
 
-// SetInitiatorPathParameter adds the initiator to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) SetInitiatorPathParameter(initiator string) {
-	o.InitiatorPathParameter = initiator
+// SetInitiator adds the initiator to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) SetInitiator(initiator string) {
+	o.Initiator = initiator
 }
 
-// WithRemoveInitiatorAddressesQueryParameter adds the removeInitiatorAddresses to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) WithRemoveInitiatorAddressesQueryParameter(removeInitiatorAddresses *bool) *IscsiCredentialsModifyParams {
-	o.SetRemoveInitiatorAddressesQueryParameter(removeInitiatorAddresses)
+// WithRemoveInitiatorAddresses adds the removeInitiatorAddresses to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) WithRemoveInitiatorAddresses(removeInitiatorAddresses *bool) *IscsiCredentialsModifyParams {
+	o.SetRemoveInitiatorAddresses(removeInitiatorAddresses)
 	return o
 }
 
-// SetRemoveInitiatorAddressesQueryParameter adds the removeInitiatorAddresses to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) SetRemoveInitiatorAddressesQueryParameter(removeInitiatorAddresses *bool) {
-	o.RemoveInitiatorAddressesQueryParameter = removeInitiatorAddresses
+// SetRemoveInitiatorAddresses adds the removeInitiatorAddresses to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) SetRemoveInitiatorAddresses(removeInitiatorAddresses *bool) {
+	o.RemoveInitiatorAddresses = removeInitiatorAddresses
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiCredentialsModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) WithSvmUUID(svmUUID string) *IscsiCredentialsModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi credentials modify params
-func (o *IscsiCredentialsModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi credentials modify params
+func (o *IscsiCredentialsModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -229,13 +229,13 @@ func (o *IscsiCredentialsModifyParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.AddInitiatorAddressesQueryParameter != nil {
+	if o.AddInitiatorAddresses != nil {
 
 		// query param add_initiator_addresses
 		var qrAddInitiatorAddresses bool
 
-		if o.AddInitiatorAddressesQueryParameter != nil {
-			qrAddInitiatorAddresses = *o.AddInitiatorAddressesQueryParameter
+		if o.AddInitiatorAddresses != nil {
+			qrAddInitiatorAddresses = *o.AddInitiatorAddresses
 		}
 		qAddInitiatorAddresses := swag.FormatBool(qrAddInitiatorAddresses)
 		if qAddInitiatorAddresses != "" {
@@ -252,17 +252,17 @@ func (o *IscsiCredentialsModifyParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param initiator
-	if err := r.SetPathParam("initiator", o.InitiatorPathParameter); err != nil {
+	if err := r.SetPathParam("initiator", o.Initiator); err != nil {
 		return err
 	}
 
-	if o.RemoveInitiatorAddressesQueryParameter != nil {
+	if o.RemoveInitiatorAddresses != nil {
 
 		// query param remove_initiator_addresses
 		var qrRemoveInitiatorAddresses bool
 
-		if o.RemoveInitiatorAddressesQueryParameter != nil {
-			qrRemoveInitiatorAddresses = *o.RemoveInitiatorAddressesQueryParameter
+		if o.RemoveInitiatorAddresses != nil {
+			qrRemoveInitiatorAddresses = *o.RemoveInitiatorAddresses
 		}
 		qRemoveInitiatorAddresses := swag.FormatBool(qrRemoveInitiatorAddresses)
 		if qRemoveInitiatorAddresses != "" {
@@ -274,7 +274,7 @@ func (o *IscsiCredentialsModifyParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

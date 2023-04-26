@@ -19,15 +19,15 @@ import (
 type ScheduleReference struct {
 
 	// links
-	Links *ScheduleReferenceLinks `json:"_links,omitempty"`
+	Links *ScheduleReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this schedule reference
@@ -107,17 +107,17 @@ func (m *ScheduleReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleReferenceLinks schedule reference links
+// ScheduleReferenceInlineLinks schedule reference inline links
 //
-// swagger:model ScheduleReferenceLinks
-type ScheduleReferenceLinks struct {
+// swagger:model schedule_reference_inline__links
+type ScheduleReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this schedule reference links
-func (m *ScheduleReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule reference inline links
+func (m *ScheduleReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *ScheduleReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ScheduleReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *ScheduleReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this schedule reference links based on the context it is used
-func (m *ScheduleReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this schedule reference inline links based on the context it is used
+func (m *ScheduleReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *ScheduleReferenceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ScheduleReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *ScheduleReferenceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *ScheduleReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *ScheduleReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res ScheduleReferenceLinks
+func (m *ScheduleReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ScheduleReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

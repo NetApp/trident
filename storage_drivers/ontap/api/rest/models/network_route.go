@@ -21,35 +21,35 @@ import (
 type NetworkRoute struct {
 
 	// links
-	Links *NetworkRouteLinks `json:"_links,omitempty"`
+	Links *NetworkRouteInlineLinks `json:"_links,omitempty"`
 
 	// destination
 	Destination *IPInfo `json:"destination,omitempty"`
 
 	// The IP address of the gateway router leading to the destination.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
+
+	// ipspace
+	Ipspace *NetworkRouteInlineIpspace `json:"ipspace,omitempty"`
+
+	// Indicates a preference order between several routes to the same destination.  With typical usage, the default metrics provided are adequate, there is no need to specify a metric in the route creation.
+	Metric *int64 `json:"metric,omitempty"`
 
 	// IP interfaces on the same subnet as the gateway.
 	// Read Only: true
-	Interfaces []*NetworkRouteInterfacesItems0 `json:"interfaces,omitempty"`
-
-	// ipspace
-	Ipspace *NetworkRouteIpspace `json:"ipspace,omitempty"`
-
-	// Indicates a preference order between several routes to the same destination.  With typical usage, the default metrics provided are adequate, there is no need to specify a metric in the route creation.
-	Metric int64 `json:"metric,omitempty"`
+	NetworkRouteInlineInterfaces []*NetworkRouteInlineInterfacesInlineArrayItem `json:"interfaces,omitempty"`
 
 	// scope
-	Scope NetworkScopeReadonly `json:"scope,omitempty"`
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
 
 	// svm
-	Svm *NetworkRouteSvm `json:"svm,omitempty"`
+	Svm *NetworkRouteInlineSvm `json:"svm,omitempty"`
 
 	// The UUID that uniquely identifies the route.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this network route
@@ -64,11 +64,11 @@ func (m *NetworkRoute) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateInterfaces(formats); err != nil {
+	if err := m.validateIpspace(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateIpspace(formats); err != nil {
+	if err := m.validateNetworkRouteInlineInterfaces(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,30 +120,6 @@ func (m *NetworkRoute) validateDestination(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRoute) validateInterfaces(formats strfmt.Registry) error {
-	if swag.IsZero(m.Interfaces) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Interfaces); i++ {
-		if swag.IsZero(m.Interfaces[i]) { // not required
-			continue
-		}
-
-		if m.Interfaces[i] != nil {
-			if err := m.Interfaces[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *NetworkRoute) validateIpspace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipspace) { // not required
 		return nil
@@ -161,16 +137,42 @@ func (m *NetworkRoute) validateIpspace(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NetworkRoute) validateNetworkRouteInlineInterfaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetworkRouteInlineInterfaces) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NetworkRouteInlineInterfaces); i++ {
+		if swag.IsZero(m.NetworkRouteInlineInterfaces[i]) { // not required
+			continue
+		}
+
+		if m.NetworkRouteInlineInterfaces[i] != nil {
+			if err := m.NetworkRouteInlineInterfaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *NetworkRoute) validateScope(formats strfmt.Registry) error {
 	if swag.IsZero(m.Scope) { // not required
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -205,11 +207,11 @@ func (m *NetworkRoute) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateInterfaces(ctx, formats); err != nil {
+	if err := m.contextValidateIpspace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIpspace(ctx, formats); err != nil {
+	if err := m.contextValidateNetworkRouteInlineInterfaces(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -259,28 +261,6 @@ func (m *NetworkRoute) contextValidateDestination(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NetworkRoute) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interfaces", "body", []*NetworkRouteInterfacesItems0(m.Interfaces)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Interfaces); i++ {
-
-		if m.Interfaces[i] != nil {
-			if err := m.Interfaces[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *NetworkRoute) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ipspace != nil {
@@ -295,13 +275,37 @@ func (m *NetworkRoute) contextValidateIpspace(ctx context.Context, formats strfm
 	return nil
 }
 
+func (m *NetworkRoute) contextValidateNetworkRouteInlineInterfaces(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interfaces", "body", []*NetworkRouteInlineInterfacesInlineArrayItem(m.NetworkRouteInlineInterfaces)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.NetworkRouteInlineInterfaces); i++ {
+
+		if m.NetworkRouteInlineInterfaces[i] != nil {
+			if err := m.NetworkRouteInlineInterfaces[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *NetworkRoute) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -323,7 +327,7 @@ func (m *NetworkRoute) contextValidateSvm(ctx context.Context, formats strfmt.Re
 
 func (m *NetworkRoute) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -348,30 +352,30 @@ func (m *NetworkRoute) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteInterfacesItems0 network route interfaces items0
+// NetworkRouteInlineInterfacesInlineArrayItem network route inline interfaces inline array item
 //
-// swagger:model NetworkRouteInterfacesItems0
-type NetworkRouteInterfacesItems0 struct {
+// swagger:model network_route_inline_interfaces_inline_array_item
+type NetworkRouteInlineInterfacesInlineArrayItem struct {
 
 	// links
-	Links *NetworkRouteInterfacesItems0Links `json:"_links,omitempty"`
+	Links *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *NetworkRouteInterfacesItems0IP `json:"ip,omitempty"`
+	IP *NetworkRouteInlineInterfacesInlineArrayItemInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this network route interfaces items0
-func (m *NetworkRouteInterfacesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline interfaces inline array item
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -388,7 +392,7 @@ func (m *NetworkRouteInterfacesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -405,7 +409,7 @@ func (m *NetworkRouteInterfacesItems0) validateLinks(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0) validateIP(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -422,8 +426,8 @@ func (m *NetworkRouteInterfacesItems0) validateIP(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this network route interfaces items0 based on the context it is used
-func (m *NetworkRouteInterfacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline interfaces inline array item based on the context it is used
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -440,7 +444,7 @@ func (m *NetworkRouteInterfacesItems0) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -454,7 +458,7 @@ func (m *NetworkRouteInterfacesItems0) contextValidateLinks(ctx context.Context,
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -469,7 +473,7 @@ func (m *NetworkRouteInterfacesItems0) contextValidateIP(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteInterfacesItems0) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -477,8 +481,8 @@ func (m *NetworkRouteInterfacesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteInterfacesItems0) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteInterfacesItems0
+func (m *NetworkRouteInlineInterfacesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineInterfacesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -486,17 +490,17 @@ func (m *NetworkRouteInterfacesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteInterfacesItems0IP IP information
+// NetworkRouteInlineInterfacesInlineArrayItemInlineIP IP information
 //
-// swagger:model NetworkRouteInterfacesItems0IP
-type NetworkRouteInterfacesItems0IP struct {
+// swagger:model network_route_inline_interfaces_inline_array_item_inline_ip
+type NetworkRouteInlineInterfacesInlineArrayItemInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this network route interfaces items0 IP
-func (m *NetworkRouteInterfacesItems0IP) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline interfaces inline array item inline ip
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -509,23 +513,25 @@ func (m *NetworkRouteInterfacesItems0IP) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0IP) validateAddress(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this network route interfaces items0 IP based on the context it is used
-func (m *NetworkRouteInterfacesItems0IP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline interfaces inline array item inline ip based on the context it is used
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -538,20 +544,22 @@ func (m *NetworkRouteInterfacesItems0IP) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0IP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteInterfacesItems0IP) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -559,8 +567,8 @@ func (m *NetworkRouteInterfacesItems0IP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteInterfacesItems0IP) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteInterfacesItems0IP
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineIP) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineInterfacesInlineArrayItemInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -568,17 +576,17 @@ func (m *NetworkRouteInterfacesItems0IP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteInterfacesItems0Links network route interfaces items0 links
+// NetworkRouteInlineInterfacesInlineArrayItemInlineLinks network route inline interfaces inline array item inline links
 //
-// swagger:model NetworkRouteInterfacesItems0Links
-type NetworkRouteInterfacesItems0Links struct {
+// swagger:model network_route_inline_interfaces_inline_array_item_inline__links
+type NetworkRouteInlineInterfacesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network route interfaces items0 links
-func (m *NetworkRouteInterfacesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline interfaces inline array item inline links
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -591,7 +599,7 @@ func (m *NetworkRouteInterfacesItems0Links) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -608,8 +616,8 @@ func (m *NetworkRouteInterfacesItems0Links) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this network route interfaces items0 links based on the context it is used
-func (m *NetworkRouteInterfacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline interfaces inline array item inline links based on the context it is used
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -622,7 +630,7 @@ func (m *NetworkRouteInterfacesItems0Links) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *NetworkRouteInterfacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -637,7 +645,7 @@ func (m *NetworkRouteInterfacesItems0Links) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteInterfacesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -645,8 +653,8 @@ func (m *NetworkRouteInterfacesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteInterfacesItems0Links) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteInterfacesItems0Links
+func (m *NetworkRouteInlineInterfacesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineInterfacesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -654,25 +662,25 @@ func (m *NetworkRouteInterfacesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name may be supplied on input.
+// NetworkRouteInlineIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name may be supplied on input.
 //
-// swagger:model NetworkRouteIpspace
-type NetworkRouteIpspace struct {
+// swagger:model network_route_inline_ipspace
+type NetworkRouteInlineIpspace struct {
 
 	// links
-	Links *NetworkRouteIpspaceLinks `json:"_links,omitempty"`
+	Links *NetworkRouteInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this network route ipspace
-func (m *NetworkRouteIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline ipspace
+func (m *NetworkRouteInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -685,7 +693,7 @@ func (m *NetworkRouteIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -702,8 +710,8 @@ func (m *NetworkRouteIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network route ipspace based on the context it is used
-func (m *NetworkRouteIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline ipspace based on the context it is used
+func (m *NetworkRouteInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -716,7 +724,7 @@ func (m *NetworkRouteIpspace) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *NetworkRouteIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -731,7 +739,7 @@ func (m *NetworkRouteIpspace) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteIpspace) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -739,8 +747,8 @@ func (m *NetworkRouteIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteIpspace) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteIpspace
+func (m *NetworkRouteInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -748,17 +756,17 @@ func (m *NetworkRouteIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteIpspaceLinks network route ipspace links
+// NetworkRouteInlineIpspaceInlineLinks network route inline ipspace inline links
 //
-// swagger:model NetworkRouteIpspaceLinks
-type NetworkRouteIpspaceLinks struct {
+// swagger:model network_route_inline_ipspace_inline__links
+type NetworkRouteInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network route ipspace links
-func (m *NetworkRouteIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline ipspace inline links
+func (m *NetworkRouteInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -771,7 +779,7 @@ func (m *NetworkRouteIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -788,8 +796,8 @@ func (m *NetworkRouteIpspaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network route ipspace links based on the context it is used
-func (m *NetworkRouteIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline ipspace inline links based on the context it is used
+func (m *NetworkRouteInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -802,7 +810,7 @@ func (m *NetworkRouteIpspaceLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *NetworkRouteIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -817,7 +825,7 @@ func (m *NetworkRouteIpspaceLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -825,8 +833,8 @@ func (m *NetworkRouteIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteIpspaceLinks
+func (m *NetworkRouteInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -834,17 +842,17 @@ func (m *NetworkRouteIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteLinks network route links
+// NetworkRouteInlineLinks network route inline links
 //
-// swagger:model NetworkRouteLinks
-type NetworkRouteLinks struct {
+// swagger:model network_route_inline__links
+type NetworkRouteInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network route links
-func (m *NetworkRouteLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline links
+func (m *NetworkRouteInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -857,7 +865,7 @@ func (m *NetworkRouteLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -874,8 +882,8 @@ func (m *NetworkRouteLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network route links based on the context it is used
-func (m *NetworkRouteLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline links based on the context it is used
+func (m *NetworkRouteInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -888,7 +896,7 @@ func (m *NetworkRouteLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NetworkRouteLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -903,7 +911,7 @@ func (m *NetworkRouteLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -911,8 +919,8 @@ func (m *NetworkRouteLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteLinks
+func (m *NetworkRouteInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -920,27 +928,27 @@ func (m *NetworkRouteLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteSvm network route svm
+// NetworkRouteInlineSvm network route inline svm
 //
-// swagger:model NetworkRouteSvm
-type NetworkRouteSvm struct {
+// swagger:model network_route_inline_svm
+type NetworkRouteInlineSvm struct {
 
 	// links
-	Links *NetworkRouteSvmLinks `json:"_links,omitempty"`
+	Links *NetworkRouteInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this network route svm
-func (m *NetworkRouteSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline svm
+func (m *NetworkRouteInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -953,7 +961,7 @@ func (m *NetworkRouteSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -970,8 +978,8 @@ func (m *NetworkRouteSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network route svm based on the context it is used
-func (m *NetworkRouteSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline svm based on the context it is used
+func (m *NetworkRouteInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -984,7 +992,7 @@ func (m *NetworkRouteSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NetworkRouteSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -999,7 +1007,7 @@ func (m *NetworkRouteSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteSvm) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1007,8 +1015,8 @@ func (m *NetworkRouteSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteSvm) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteSvm
+func (m *NetworkRouteInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1016,17 +1024,17 @@ func (m *NetworkRouteSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetworkRouteSvmLinks network route svm links
+// NetworkRouteInlineSvmInlineLinks network route inline svm inline links
 //
-// swagger:model NetworkRouteSvmLinks
-type NetworkRouteSvmLinks struct {
+// swagger:model network_route_inline_svm_inline__links
+type NetworkRouteInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this network route svm links
-func (m *NetworkRouteSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this network route inline svm inline links
+func (m *NetworkRouteInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1039,7 +1047,7 @@ func (m *NetworkRouteSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetworkRouteSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetworkRouteInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1056,8 +1064,8 @@ func (m *NetworkRouteSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network route svm links based on the context it is used
-func (m *NetworkRouteSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this network route inline svm inline links based on the context it is used
+func (m *NetworkRouteInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1070,7 +1078,7 @@ func (m *NetworkRouteSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NetworkRouteSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetworkRouteInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1085,7 +1093,7 @@ func (m *NetworkRouteSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NetworkRouteSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NetworkRouteInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1093,8 +1101,8 @@ func (m *NetworkRouteSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetworkRouteSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NetworkRouteSvmLinks
+func (m *NetworkRouteInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

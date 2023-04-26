@@ -66,13 +66,13 @@ type S3ServiceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *S3ServiceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the s3 service get params
-func (o *S3ServiceGetParams) WithFieldsQueryParameter(fields []string) *S3ServiceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the s3 service get params
+func (o *S3ServiceGetParams) WithFields(fields []string) *S3ServiceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the s3 service get params
-func (o *S3ServiceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the s3 service get params
+func (o *S3ServiceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 service get params
-func (o *S3ServiceGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3ServiceGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 service get params
+func (o *S3ServiceGetParams) WithSvmUUID(svmUUID string) *S3ServiceGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 service get params
-func (o *S3ServiceGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 service get params
+func (o *S3ServiceGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *S3ServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *S3ServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *S3ServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamS3ServiceGet binds the parameter fields
 func (o *S3ServiceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

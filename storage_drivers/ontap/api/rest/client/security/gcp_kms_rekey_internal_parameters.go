@@ -66,19 +66,19 @@ type GcpKmsRekeyInternalParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   UUID of the existing Google Cloud KMS configuration.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,14 +98,14 @@ func (o *GcpKmsRekeyInternalParams) WithDefaults() *GcpKmsRekeyInternalParams {
 // All values with no default are reset to their zero value.
 func (o *GcpKmsRekeyInternalParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := GcpKmsRekeyInternalParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -147,37 +147,37 @@ func (o *GcpKmsRekeyInternalParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the gcp kms rekey internal params
-func (o *GcpKmsRekeyInternalParams) WithReturnRecordsQueryParameter(returnRecords *bool) *GcpKmsRekeyInternalParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the gcp kms rekey internal params
+func (o *GcpKmsRekeyInternalParams) WithReturnRecords(returnRecords *bool) *GcpKmsRekeyInternalParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the gcp kms rekey internal params
-func (o *GcpKmsRekeyInternalParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the gcp kms rekey internal params
+func (o *GcpKmsRekeyInternalParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the gcp kms rekey internal params
-func (o *GcpKmsRekeyInternalParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *GcpKmsRekeyInternalParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the gcp kms rekey internal params
+func (o *GcpKmsRekeyInternalParams) WithReturnTimeout(returnTimeout *int64) *GcpKmsRekeyInternalParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the gcp kms rekey internal params
-func (o *GcpKmsRekeyInternalParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the gcp kms rekey internal params
+func (o *GcpKmsRekeyInternalParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the gcp kms rekey internal params
-func (o *GcpKmsRekeyInternalParams) WithUUIDPathParameter(uuid string) *GcpKmsRekeyInternalParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the gcp kms rekey internal params
+func (o *GcpKmsRekeyInternalParams) WithUUID(uuid string) *GcpKmsRekeyInternalParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the gcp kms rekey internal params
-func (o *GcpKmsRekeyInternalParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the gcp kms rekey internal params
+func (o *GcpKmsRekeyInternalParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -188,13 +188,13 @@ func (o *GcpKmsRekeyInternalParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -205,13 +205,13 @@ func (o *GcpKmsRekeyInternalParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -223,7 +223,7 @@ func (o *GcpKmsRekeyInternalParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

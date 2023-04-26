@@ -67,20 +67,20 @@ type WwpnAliasGetParams struct {
 	   The name of FC WWPN alias.
 
 	*/
-	AliasPathParameter string
+	Alias string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM in which the alias is found.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *WwpnAliasGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAliasPathParameter adds the alias to the wwpn alias get params
-func (o *WwpnAliasGetParams) WithAliasPathParameter(alias string) *WwpnAliasGetParams {
-	o.SetAliasPathParameter(alias)
+// WithAlias adds the alias to the wwpn alias get params
+func (o *WwpnAliasGetParams) WithAlias(alias string) *WwpnAliasGetParams {
+	o.SetAlias(alias)
 	return o
 }
 
-// SetAliasPathParameter adds the alias to the wwpn alias get params
-func (o *WwpnAliasGetParams) SetAliasPathParameter(alias string) {
-	o.AliasPathParameter = alias
+// SetAlias adds the alias to the wwpn alias get params
+func (o *WwpnAliasGetParams) SetAlias(alias string) {
+	o.Alias = alias
 }
 
-// WithFieldsQueryParameter adds the fields to the wwpn alias get params
-func (o *WwpnAliasGetParams) WithFieldsQueryParameter(fields []string) *WwpnAliasGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the wwpn alias get params
+func (o *WwpnAliasGetParams) WithFields(fields []string) *WwpnAliasGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the wwpn alias get params
-func (o *WwpnAliasGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the wwpn alias get params
+func (o *WwpnAliasGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the wwpn alias get params
-func (o *WwpnAliasGetParams) WithSVMUUIDPathParameter(svmUUID string) *WwpnAliasGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the wwpn alias get params
+func (o *WwpnAliasGetParams) WithSvmUUID(svmUUID string) *WwpnAliasGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the wwpn alias get params
-func (o *WwpnAliasGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the wwpn alias get params
+func (o *WwpnAliasGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -177,11 +177,11 @@ func (o *WwpnAliasGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	var res []error
 
 	// path param alias
-	if err := r.SetPathParam("alias", o.AliasPathParameter); err != nil {
+	if err := r.SetPathParam("alias", o.Alias); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -193,7 +193,7 @@ func (o *WwpnAliasGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *WwpnAliasGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamWwpnAliasGet binds the parameter fields
 func (o *WwpnAliasGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

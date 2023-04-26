@@ -25,63 +25,63 @@ type Sensors struct {
 
 	// Value above which the sensor goes into a critically high state.
 	// Read Only: true
-	CriticalHighThreshold int64 `json:"critical_high_threshold,omitempty"`
+	CriticalHighThreshold *int64 `json:"critical_high_threshold,omitempty"`
 
 	// Value below which the sensor goes into a critically low state.
 	// Read Only: true
-	CriticalLowThreshold int64 `json:"critical_low_threshold,omitempty"`
+	CriticalLowThreshold *int64 `json:"critical_low_threshold,omitempty"`
 
 	// Used to determine whether the sensor is in a normal state or any other failed state based on the value of "discrete_value" field. This field is only applicable for discrete sensors.
 	// Example: normal
 	// Read Only: true
 	// Enum: [bad crit_high crit_low disabled failed fault ignored init_failed invalid normal not_available not_present retry uninitialized unknown warn_high warn_low]
-	DiscreteState string `json:"discrete_state,omitempty"`
+	DiscreteState *string `json:"discrete_state,omitempty"`
 
 	// Applies to discrete sensors which do not have an integer value. It can have values like on, off, good, bad, ok.
 	// Example: ok
 	// Read Only: true
-	DiscreteValue string `json:"discrete_value,omitempty"`
+	DiscreteValue *string `json:"discrete_value,omitempty"`
 
 	// Provides the sensor ID.
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// Name of the sensor.
 	// Example: PVCCSA CPU FD
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *SensorsNode `json:"node,omitempty"`
+	Node *SensorsInlineNode `json:"node,omitempty"`
 
 	// Used to determine whether the sensor is in a normal state or any other failed state.
 	// Example: normal
 	// Read Only: true
 	// Enum: [bad crit_high crit_low disabled failed fault ignored init_failed invalid normal not_available not_present retry uninitialized unknown warn_high warn_low]
-	ThresholdState string `json:"threshold_state,omitempty"`
+	ThresholdState *string `json:"threshold_state,omitempty"`
 
 	// Used to detrmine the type of the sensor.
 	// Read Only: true
 	// Enum: [agent battery_life counter current discrete fan fru minutes nvmem percent thermal unknown voltage]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Provides the sensor reading.
 	// Example: 831
 	// Read Only: true
-	Value int32 `json:"value,omitempty"`
+	Value *int32 `json:"value,omitempty"`
 
 	// Units in which the "value" is measured. Some examples of units are mV, mW*hr, C, RPM.
 	// Example: mV
 	// Read Only: true
-	ValueUnits string `json:"value_units,omitempty"`
+	ValueUnits *string `json:"value_units,omitempty"`
 
 	// Value above which the sensor goes into a warning high state.
 	// Read Only: true
-	WarningHighThreshold int64 `json:"warning_high_threshold,omitempty"`
+	WarningHighThreshold *int64 `json:"warning_high_threshold,omitempty"`
 
 	// Value below which the sensor goes into a warning low state.
 	// Read Only: true
-	WarningLowThreshold int64 `json:"warning_low_threshold,omitempty"`
+	WarningLowThreshold *int64 `json:"warning_low_threshold,omitempty"`
 }
 
 // Validate validates this sensors
@@ -330,7 +330,7 @@ func (m *Sensors) validateDiscreteState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDiscreteStateEnum("discrete_state", "body", m.DiscreteState); err != nil {
+	if err := m.validateDiscreteStateEnum("discrete_state", "body", *m.DiscreteState); err != nil {
 		return err
 	}
 
@@ -553,7 +553,7 @@ func (m *Sensors) validateThresholdState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateThresholdStateEnum("threshold_state", "body", m.ThresholdState); err != nil {
+	if err := m.validateThresholdStateEnum("threshold_state", "body", *m.ThresholdState); err != nil {
 		return err
 	}
 
@@ -719,7 +719,7 @@ func (m *Sensors) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -808,7 +808,7 @@ func (m *Sensors) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 
 func (m *Sensors) contextValidateCriticalHighThreshold(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "critical_high_threshold", "body", int64(m.CriticalHighThreshold)); err != nil {
+	if err := validate.ReadOnly(ctx, "critical_high_threshold", "body", m.CriticalHighThreshold); err != nil {
 		return err
 	}
 
@@ -817,7 +817,7 @@ func (m *Sensors) contextValidateCriticalHighThreshold(ctx context.Context, form
 
 func (m *Sensors) contextValidateCriticalLowThreshold(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "critical_low_threshold", "body", int64(m.CriticalLowThreshold)); err != nil {
+	if err := validate.ReadOnly(ctx, "critical_low_threshold", "body", m.CriticalLowThreshold); err != nil {
 		return err
 	}
 
@@ -826,7 +826,7 @@ func (m *Sensors) contextValidateCriticalLowThreshold(ctx context.Context, forma
 
 func (m *Sensors) contextValidateDiscreteState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "discrete_state", "body", string(m.DiscreteState)); err != nil {
+	if err := validate.ReadOnly(ctx, "discrete_state", "body", m.DiscreteState); err != nil {
 		return err
 	}
 
@@ -835,7 +835,7 @@ func (m *Sensors) contextValidateDiscreteState(ctx context.Context, formats strf
 
 func (m *Sensors) contextValidateDiscreteValue(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "discrete_value", "body", string(m.DiscreteValue)); err != nil {
+	if err := validate.ReadOnly(ctx, "discrete_value", "body", m.DiscreteValue); err != nil {
 		return err
 	}
 
@@ -844,7 +844,7 @@ func (m *Sensors) contextValidateDiscreteValue(ctx context.Context, formats strf
 
 func (m *Sensors) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -853,7 +853,7 @@ func (m *Sensors) contextValidateIndex(ctx context.Context, formats strfmt.Regis
 
 func (m *Sensors) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -876,7 +876,7 @@ func (m *Sensors) contextValidateNode(ctx context.Context, formats strfmt.Regist
 
 func (m *Sensors) contextValidateThresholdState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "threshold_state", "body", string(m.ThresholdState)); err != nil {
+	if err := validate.ReadOnly(ctx, "threshold_state", "body", m.ThresholdState); err != nil {
 		return err
 	}
 
@@ -885,7 +885,7 @@ func (m *Sensors) contextValidateThresholdState(ctx context.Context, formats str
 
 func (m *Sensors) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -894,7 +894,7 @@ func (m *Sensors) contextValidateType(ctx context.Context, formats strfmt.Regist
 
 func (m *Sensors) contextValidateValue(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "value", "body", int32(m.Value)); err != nil {
+	if err := validate.ReadOnly(ctx, "value", "body", m.Value); err != nil {
 		return err
 	}
 
@@ -903,7 +903,7 @@ func (m *Sensors) contextValidateValue(ctx context.Context, formats strfmt.Regis
 
 func (m *Sensors) contextValidateValueUnits(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "value_units", "body", string(m.ValueUnits)); err != nil {
+	if err := validate.ReadOnly(ctx, "value_units", "body", m.ValueUnits); err != nil {
 		return err
 	}
 
@@ -912,7 +912,7 @@ func (m *Sensors) contextValidateValueUnits(ctx context.Context, formats strfmt.
 
 func (m *Sensors) contextValidateWarningHighThreshold(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "warning_high_threshold", "body", int64(m.WarningHighThreshold)); err != nil {
+	if err := validate.ReadOnly(ctx, "warning_high_threshold", "body", m.WarningHighThreshold); err != nil {
 		return err
 	}
 
@@ -921,7 +921,7 @@ func (m *Sensors) contextValidateWarningHighThreshold(ctx context.Context, forma
 
 func (m *Sensors) contextValidateWarningLowThreshold(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "warning_low_threshold", "body", int64(m.WarningLowThreshold)); err != nil {
+	if err := validate.ReadOnly(ctx, "warning_low_threshold", "body", m.WarningLowThreshold); err != nil {
 		return err
 	}
 
@@ -946,25 +946,25 @@ func (m *Sensors) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SensorsNode sensors node
+// SensorsInlineNode sensors inline node
 //
-// swagger:model SensorsNode
-type SensorsNode struct {
+// swagger:model sensors_inline_node
+type SensorsInlineNode struct {
 
 	// links
-	Links *SensorsNodeLinks `json:"_links,omitempty"`
+	Links *SensorsInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this sensors node
-func (m *SensorsNode) Validate(formats strfmt.Registry) error {
+// Validate validates this sensors inline node
+func (m *SensorsInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -977,7 +977,7 @@ func (m *SensorsNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SensorsNode) validateLinks(formats strfmt.Registry) error {
+func (m *SensorsInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -994,8 +994,8 @@ func (m *SensorsNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this sensors node based on the context it is used
-func (m *SensorsNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sensors inline node based on the context it is used
+func (m *SensorsInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1008,7 +1008,7 @@ func (m *SensorsNode) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *SensorsNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SensorsInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1023,7 +1023,7 @@ func (m *SensorsNode) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *SensorsNode) MarshalBinary() ([]byte, error) {
+func (m *SensorsInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1031,8 +1031,8 @@ func (m *SensorsNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SensorsNode) UnmarshalBinary(b []byte) error {
-	var res SensorsNode
+func (m *SensorsInlineNode) UnmarshalBinary(b []byte) error {
+	var res SensorsInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1040,17 +1040,17 @@ func (m *SensorsNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SensorsNodeLinks sensors node links
+// SensorsInlineNodeInlineLinks sensors inline node inline links
 //
-// swagger:model SensorsNodeLinks
-type SensorsNodeLinks struct {
+// swagger:model sensors_inline_node_inline__links
+type SensorsInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this sensors node links
-func (m *SensorsNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this sensors inline node inline links
+func (m *SensorsInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1063,7 +1063,7 @@ func (m *SensorsNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SensorsNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SensorsInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1080,8 +1080,8 @@ func (m *SensorsNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this sensors node links based on the context it is used
-func (m *SensorsNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this sensors inline node inline links based on the context it is used
+func (m *SensorsInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1094,7 +1094,7 @@ func (m *SensorsNodeLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *SensorsNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SensorsInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1109,7 +1109,7 @@ func (m *SensorsNodeLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *SensorsNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *SensorsInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1117,8 +1117,8 @@ func (m *SensorsNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SensorsNodeLinks) UnmarshalBinary(b []byte) error {
-	var res SensorsNodeLinks
+func (m *SensorsInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SensorsInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

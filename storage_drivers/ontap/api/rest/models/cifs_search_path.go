@@ -21,14 +21,14 @@ type CifsSearchPath struct {
 
 	// The position in the list of paths that is searched to find the home directory of the CIFS client. Not available in POST.
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// The file system path that is searched to find the home directory of the CIFS client.
 	// Example: /HomeDirectory/EngDomain
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// svm
-	Svm *CifsSearchPathSvm `json:"svm,omitempty"`
+	Svm *CifsSearchPathInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this cifs search path
@@ -82,7 +82,7 @@ func (m *CifsSearchPath) ContextValidate(ctx context.Context, formats strfmt.Reg
 
 func (m *CifsSearchPath) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -121,27 +121,27 @@ func (m *CifsSearchPath) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSearchPathSvm cifs search path svm
+// CifsSearchPathInlineSvm cifs search path inline svm
 //
-// swagger:model CifsSearchPathSvm
-type CifsSearchPathSvm struct {
+// swagger:model cifs_search_path_inline_svm
+type CifsSearchPathInlineSvm struct {
 
 	// links
-	Links *CifsSearchPathSvmLinks `json:"_links,omitempty"`
+	Links *CifsSearchPathInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cifs search path svm
-func (m *CifsSearchPathSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs search path inline svm
+func (m *CifsSearchPathInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -154,7 +154,7 @@ func (m *CifsSearchPathSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSearchPathSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CifsSearchPathInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -171,8 +171,8 @@ func (m *CifsSearchPathSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs search path svm based on the context it is used
-func (m *CifsSearchPathSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs search path inline svm based on the context it is used
+func (m *CifsSearchPathInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -185,7 +185,7 @@ func (m *CifsSearchPathSvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *CifsSearchPathSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSearchPathInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +200,7 @@ func (m *CifsSearchPathSvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSearchPathSvm) MarshalBinary() ([]byte, error) {
+func (m *CifsSearchPathInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *CifsSearchPathSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSearchPathSvm) UnmarshalBinary(b []byte) error {
-	var res CifsSearchPathSvm
+func (m *CifsSearchPathInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CifsSearchPathInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -217,17 +217,17 @@ func (m *CifsSearchPathSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSearchPathSvmLinks cifs search path svm links
+// CifsSearchPathInlineSvmInlineLinks cifs search path inline svm inline links
 //
-// swagger:model CifsSearchPathSvmLinks
-type CifsSearchPathSvmLinks struct {
+// swagger:model cifs_search_path_inline_svm_inline__links
+type CifsSearchPathInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs search path svm links
-func (m *CifsSearchPathSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs search path inline svm inline links
+func (m *CifsSearchPathInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -240,7 +240,7 @@ func (m *CifsSearchPathSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSearchPathSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSearchPathInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -257,8 +257,8 @@ func (m *CifsSearchPathSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs search path svm links based on the context it is used
-func (m *CifsSearchPathSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs search path inline svm inline links based on the context it is used
+func (m *CifsSearchPathInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -271,7 +271,7 @@ func (m *CifsSearchPathSvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *CifsSearchPathSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSearchPathInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -286,7 +286,7 @@ func (m *CifsSearchPathSvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSearchPathSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSearchPathInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -294,8 +294,8 @@ func (m *CifsSearchPathSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSearchPathSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSearchPathSvmLinks
+func (m *CifsSearchPathInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSearchPathInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

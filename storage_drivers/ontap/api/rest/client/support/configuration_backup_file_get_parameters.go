@@ -66,19 +66,19 @@ type ConfigurationBackupFileGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Name of the configuration backup.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NodeUUID.
 
 	   UUID of the node that owns the configuration backup.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *ConfigurationBackupFileGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the configuration backup file get params
-func (o *ConfigurationBackupFileGetParams) WithFieldsQueryParameter(fields []string) *ConfigurationBackupFileGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the configuration backup file get params
+func (o *ConfigurationBackupFileGetParams) WithFields(fields []string) *ConfigurationBackupFileGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the configuration backup file get params
-func (o *ConfigurationBackupFileGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the configuration backup file get params
+func (o *ConfigurationBackupFileGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the configuration backup file get params
-func (o *ConfigurationBackupFileGetParams) WithNamePathParameter(name string) *ConfigurationBackupFileGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the configuration backup file get params
+func (o *ConfigurationBackupFileGetParams) WithName(name string) *ConfigurationBackupFileGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the configuration backup file get params
-func (o *ConfigurationBackupFileGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the configuration backup file get params
+func (o *ConfigurationBackupFileGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the configuration backup file get params
-func (o *ConfigurationBackupFileGetParams) WithNodeUUIDPathParameter(nodeUUID string) *ConfigurationBackupFileGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the configuration backup file get params
+func (o *ConfigurationBackupFileGetParams) WithNodeUUID(nodeUUID string) *ConfigurationBackupFileGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the configuration backup file get params
-func (o *ConfigurationBackupFileGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the configuration backup file get params
+func (o *ConfigurationBackupFileGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *ConfigurationBackupFileGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *ConfigurationBackupFileGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *ConfigurationBackupFileGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamConfigurationBackupFileGet binds the parameter fields
 func (o *ConfigurationBackupFileGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

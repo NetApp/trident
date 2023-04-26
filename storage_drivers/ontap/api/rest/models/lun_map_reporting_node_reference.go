@@ -19,19 +19,19 @@ import (
 type LunMapReportingNodeReference struct {
 
 	// links
-	Links *LunMapReportingNodeReferenceLinks `json:"_links,omitempty"`
+	Links *LunMapReportingNodeReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the node.<br/>
 	// Either `uuid` or `name` are required in POST.
 	//
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the node.<br/>
 	// Either `uuid` or `name` are required in POST.
 	//
 	// Example: 5ac8eb9c-4e32-dbaa-57ca-fb905976f54e
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this lun map reporting node reference
@@ -111,10 +111,10 @@ func (m *LunMapReportingNodeReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMapReportingNodeReferenceLinks lun map reporting node reference links
+// LunMapReportingNodeReferenceInlineLinks lun map reporting node reference inline links
 //
-// swagger:model LunMapReportingNodeReferenceLinks
-type LunMapReportingNodeReferenceLinks struct {
+// swagger:model lun_map_reporting_node_reference_inline__links
+type LunMapReportingNodeReferenceInlineLinks struct {
 
 	// node
 	Node *Href `json:"node,omitempty"`
@@ -123,8 +123,8 @@ type LunMapReportingNodeReferenceLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun map reporting node reference links
-func (m *LunMapReportingNodeReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun map reporting node reference inline links
+func (m *LunMapReportingNodeReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -141,7 +141,7 @@ func (m *LunMapReportingNodeReferenceLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *LunMapReportingNodeReferenceLinks) validateNode(formats strfmt.Registry) error {
+func (m *LunMapReportingNodeReferenceInlineLinks) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -158,7 +158,7 @@ func (m *LunMapReportingNodeReferenceLinks) validateNode(formats strfmt.Registry
 	return nil
 }
 
-func (m *LunMapReportingNodeReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunMapReportingNodeReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -175,8 +175,8 @@ func (m *LunMapReportingNodeReferenceLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this lun map reporting node reference links based on the context it is used
-func (m *LunMapReportingNodeReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun map reporting node reference inline links based on the context it is used
+func (m *LunMapReportingNodeReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -193,7 +193,7 @@ func (m *LunMapReportingNodeReferenceLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *LunMapReportingNodeReferenceLinks) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapReportingNodeReferenceInlineLinks) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -207,7 +207,7 @@ func (m *LunMapReportingNodeReferenceLinks) contextValidateNode(ctx context.Cont
 	return nil
 }
 
-func (m *LunMapReportingNodeReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunMapReportingNodeReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -222,7 +222,7 @@ func (m *LunMapReportingNodeReferenceLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *LunMapReportingNodeReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *LunMapReportingNodeReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -230,8 +230,8 @@ func (m *LunMapReportingNodeReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunMapReportingNodeReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res LunMapReportingNodeReferenceLinks
+func (m *LunMapReportingNodeReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunMapReportingNodeReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

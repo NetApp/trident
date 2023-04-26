@@ -29,13 +29,13 @@ type LicenseManager struct {
 	Default *bool `json:"default,omitempty"`
 
 	// uri
-	URI *LicenseManagerURIType `json:"uri,omitempty"`
+	URI *LicenseManagerInlineURI `json:"uri,omitempty"`
 
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-112233445566
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this license manager
@@ -171,7 +171,7 @@ func (m *LicenseManager) contextValidateURI(ctx context.Context, formats strfmt.
 
 func (m *LicenseManager) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -196,28 +196,28 @@ func (m *LicenseManager) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LicenseManagerURIType License manager URI.
+// LicenseManagerInlineURI License manager URI.
 //
-// swagger:model LicenseManagerURIType
-type LicenseManagerURIType struct {
+// swagger:model license_manager_inline_uri
+type LicenseManagerInlineURI struct {
 
 	// License manager host name, IPv4 or IPv6 address.
 	// Example: 10.1.1.1
-	Host string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 }
 
-// Validate validates this license manager URI type
-func (m *LicenseManagerURIType) Validate(formats strfmt.Registry) error {
+// Validate validates this license manager inline uri
+func (m *LicenseManagerInlineURI) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this license manager URI type based on context it is used
-func (m *LicenseManagerURIType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this license manager inline uri based on context it is used
+func (m *LicenseManagerInlineURI) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *LicenseManagerURIType) MarshalBinary() ([]byte, error) {
+func (m *LicenseManagerInlineURI) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -225,8 +225,8 @@ func (m *LicenseManagerURIType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LicenseManagerURIType) UnmarshalBinary(b []byte) error {
-	var res LicenseManagerURIType
+func (m *LicenseManagerInlineURI) UnmarshalBinary(b []byte) error {
+	var res LicenseManagerInlineURI
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

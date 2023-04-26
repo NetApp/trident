@@ -24,7 +24,7 @@ type Ddns struct {
 	// Fully Qualified Domain Name (FQDN) to be used for dynamic DNS updates.
 	//
 	// Example: example.com
-	Fqdn string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn,omitempty"`
 
 	// Enable or disable FQDN validation.
 	//

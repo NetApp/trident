@@ -66,49 +66,49 @@ type TokenCollectionGetParams struct {
 
 	   Filter by expiry_time.left
 	*/
-	ExpiryTimeLeftQueryParameter *string
+	ExpiryTimeLeft *string
 
 	/* ExpiryTimeLimit.
 
 	   Filter by expiry_time.limit
 	*/
-	ExpiryTimeLimitQueryParameter *string
+	ExpiryTimeLimit *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReserveSize.
 
 	   Filter by reserve_size
 	*/
-	ReserveSizeQueryParameter *int64
+	ReserveSize *int64
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type TokenCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,13 +124,13 @@ type TokenCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *TokenCollectionGetParams) WithDefaults() *TokenCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *TokenCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := TokenCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *TokenCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithExpiryTimeLeftQueryParameter adds the expiryTimeLeft to the token collection get params
-func (o *TokenCollectionGetParams) WithExpiryTimeLeftQueryParameter(expiryTimeLeft *string) *TokenCollectionGetParams {
-	o.SetExpiryTimeLeftQueryParameter(expiryTimeLeft)
+// WithExpiryTimeLeft adds the expiryTimeLeft to the token collection get params
+func (o *TokenCollectionGetParams) WithExpiryTimeLeft(expiryTimeLeft *string) *TokenCollectionGetParams {
+	o.SetExpiryTimeLeft(expiryTimeLeft)
 	return o
 }
 
-// SetExpiryTimeLeftQueryParameter adds the expiryTimeLeft to the token collection get params
-func (o *TokenCollectionGetParams) SetExpiryTimeLeftQueryParameter(expiryTimeLeft *string) {
-	o.ExpiryTimeLeftQueryParameter = expiryTimeLeft
+// SetExpiryTimeLeft adds the expiryTimeLeft to the token collection get params
+func (o *TokenCollectionGetParams) SetExpiryTimeLeft(expiryTimeLeft *string) {
+	o.ExpiryTimeLeft = expiryTimeLeft
 }
 
-// WithExpiryTimeLimitQueryParameter adds the expiryTimeLimit to the token collection get params
-func (o *TokenCollectionGetParams) WithExpiryTimeLimitQueryParameter(expiryTimeLimit *string) *TokenCollectionGetParams {
-	o.SetExpiryTimeLimitQueryParameter(expiryTimeLimit)
+// WithExpiryTimeLimit adds the expiryTimeLimit to the token collection get params
+func (o *TokenCollectionGetParams) WithExpiryTimeLimit(expiryTimeLimit *string) *TokenCollectionGetParams {
+	o.SetExpiryTimeLimit(expiryTimeLimit)
 	return o
 }
 
-// SetExpiryTimeLimitQueryParameter adds the expiryTimeLimit to the token collection get params
-func (o *TokenCollectionGetParams) SetExpiryTimeLimitQueryParameter(expiryTimeLimit *string) {
-	o.ExpiryTimeLimitQueryParameter = expiryTimeLimit
+// SetExpiryTimeLimit adds the expiryTimeLimit to the token collection get params
+func (o *TokenCollectionGetParams) SetExpiryTimeLimit(expiryTimeLimit *string) {
+	o.ExpiryTimeLimit = expiryTimeLimit
 }
 
-// WithFieldsQueryParameter adds the fields to the token collection get params
-func (o *TokenCollectionGetParams) WithFieldsQueryParameter(fields []string) *TokenCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the token collection get params
+func (o *TokenCollectionGetParams) WithFields(fields []string) *TokenCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the token collection get params
-func (o *TokenCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the token collection get params
+func (o *TokenCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the token collection get params
-func (o *TokenCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *TokenCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the token collection get params
+func (o *TokenCollectionGetParams) WithMaxRecords(maxRecords *int64) *TokenCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the token collection get params
-func (o *TokenCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the token collection get params
+func (o *TokenCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the token collection get params
-func (o *TokenCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *TokenCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the token collection get params
+func (o *TokenCollectionGetParams) WithNodeName(nodeName *string) *TokenCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the token collection get params
-func (o *TokenCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the token collection get params
+func (o *TokenCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the token collection get params
-func (o *TokenCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *TokenCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the token collection get params
+func (o *TokenCollectionGetParams) WithNodeUUID(nodeUUID *string) *TokenCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the token collection get params
-func (o *TokenCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the token collection get params
+func (o *TokenCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the token collection get params
-func (o *TokenCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *TokenCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the token collection get params
+func (o *TokenCollectionGetParams) WithOrderBy(orderBy []string) *TokenCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the token collection get params
-func (o *TokenCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the token collection get params
+func (o *TokenCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReserveSizeQueryParameter adds the reserveSize to the token collection get params
-func (o *TokenCollectionGetParams) WithReserveSizeQueryParameter(reserveSize *int64) *TokenCollectionGetParams {
-	o.SetReserveSizeQueryParameter(reserveSize)
+// WithReserveSize adds the reserveSize to the token collection get params
+func (o *TokenCollectionGetParams) WithReserveSize(reserveSize *int64) *TokenCollectionGetParams {
+	o.SetReserveSize(reserveSize)
 	return o
 }
 
-// SetReserveSizeQueryParameter adds the reserveSize to the token collection get params
-func (o *TokenCollectionGetParams) SetReserveSizeQueryParameter(reserveSize *int64) {
-	o.ReserveSizeQueryParameter = reserveSize
+// SetReserveSize adds the reserveSize to the token collection get params
+func (o *TokenCollectionGetParams) SetReserveSize(reserveSize *int64) {
+	o.ReserveSize = reserveSize
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the token collection get params
-func (o *TokenCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *TokenCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the token collection get params
+func (o *TokenCollectionGetParams) WithReturnRecords(returnRecords *bool) *TokenCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the token collection get params
-func (o *TokenCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the token collection get params
+func (o *TokenCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the token collection get params
-func (o *TokenCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *TokenCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the token collection get params
+func (o *TokenCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *TokenCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the token collection get params
-func (o *TokenCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the token collection get params
+func (o *TokenCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDQueryParameter adds the uuid to the token collection get params
-func (o *TokenCollectionGetParams) WithUUIDQueryParameter(uuid *string) *TokenCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the token collection get params
+func (o *TokenCollectionGetParams) WithUUID(uuid *string) *TokenCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the token collection get params
-func (o *TokenCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the token collection get params
+func (o *TokenCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,13 +328,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.ExpiryTimeLeftQueryParameter != nil {
+	if o.ExpiryTimeLeft != nil {
 
 		// query param expiry_time.left
 		var qrExpiryTimeLeft string
 
-		if o.ExpiryTimeLeftQueryParameter != nil {
-			qrExpiryTimeLeft = *o.ExpiryTimeLeftQueryParameter
+		if o.ExpiryTimeLeft != nil {
+			qrExpiryTimeLeft = *o.ExpiryTimeLeft
 		}
 		qExpiryTimeLeft := qrExpiryTimeLeft
 		if qExpiryTimeLeft != "" {
@@ -345,13 +345,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ExpiryTimeLimitQueryParameter != nil {
+	if o.ExpiryTimeLimit != nil {
 
 		// query param expiry_time.limit
 		var qrExpiryTimeLimit string
 
-		if o.ExpiryTimeLimitQueryParameter != nil {
-			qrExpiryTimeLimit = *o.ExpiryTimeLimitQueryParameter
+		if o.ExpiryTimeLimit != nil {
+			qrExpiryTimeLimit = *o.ExpiryTimeLimit
 		}
 		qExpiryTimeLimit := qrExpiryTimeLimit
 		if qExpiryTimeLimit != "" {
@@ -362,7 +362,7 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -373,13 +373,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,13 +390,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -407,13 +407,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -424,7 +424,7 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -435,13 +435,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReserveSizeQueryParameter != nil {
+	if o.ReserveSize != nil {
 
 		// query param reserve_size
 		var qrReserveSize int64
 
-		if o.ReserveSizeQueryParameter != nil {
-			qrReserveSize = *o.ReserveSizeQueryParameter
+		if o.ReserveSize != nil {
+			qrReserveSize = *o.ReserveSize
 		}
 		qReserveSize := swag.FormatInt64(qrReserveSize)
 		if qReserveSize != "" {
@@ -452,13 +452,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -469,13 +469,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -486,13 +486,13 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -511,7 +511,7 @@ func (o *TokenCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamTokenCollectionGet binds the parameter fields
 func (o *TokenCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -528,7 +528,7 @@ func (o *TokenCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamTokenCollectionGet binds the parameter order_by
 func (o *TokenCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

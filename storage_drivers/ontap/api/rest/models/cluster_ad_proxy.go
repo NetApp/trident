@@ -19,10 +19,10 @@ import (
 type ClusterAdProxy struct {
 
 	// links
-	Links *ClusterAdProxyLinks `json:"_links,omitempty"`
+	Links *ClusterAdProxyInlineLinks `json:"_links,omitempty"`
 
 	// svm
-	Svm *ClusterAdProxySvm `json:"svm,omitempty"`
+	Svm *ClusterAdProxyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this cluster ad proxy
@@ -141,17 +141,17 @@ func (m *ClusterAdProxy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterAdProxyLinks cluster ad proxy links
+// ClusterAdProxyInlineLinks cluster ad proxy inline links
 //
-// swagger:model ClusterAdProxyLinks
-type ClusterAdProxyLinks struct {
+// swagger:model cluster_ad_proxy_inline__links
+type ClusterAdProxyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster ad proxy links
-func (m *ClusterAdProxyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ad proxy inline links
+func (m *ClusterAdProxyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -164,7 +164,7 @@ func (m *ClusterAdProxyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterAdProxyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterAdProxyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -181,8 +181,8 @@ func (m *ClusterAdProxyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster ad proxy links based on the context it is used
-func (m *ClusterAdProxyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ad proxy inline links based on the context it is used
+func (m *ClusterAdProxyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -195,7 +195,7 @@ func (m *ClusterAdProxyLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ClusterAdProxyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterAdProxyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -210,7 +210,7 @@ func (m *ClusterAdProxyLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterAdProxyLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterAdProxyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -218,8 +218,8 @@ func (m *ClusterAdProxyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterAdProxyLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterAdProxyLinks
+func (m *ClusterAdProxyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterAdProxyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -227,27 +227,27 @@ func (m *ClusterAdProxyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterAdProxySvm cluster ad proxy svm
+// ClusterAdProxyInlineSvm cluster ad proxy inline svm
 //
-// swagger:model ClusterAdProxySvm
-type ClusterAdProxySvm struct {
+// swagger:model cluster_ad_proxy_inline_svm
+type ClusterAdProxyInlineSvm struct {
 
 	// links
-	Links *ClusterAdProxySvmLinks `json:"_links,omitempty"`
+	Links *ClusterAdProxyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cluster ad proxy svm
-func (m *ClusterAdProxySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ad proxy inline svm
+func (m *ClusterAdProxyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -260,7 +260,7 @@ func (m *ClusterAdProxySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterAdProxySvm) validateLinks(formats strfmt.Registry) error {
+func (m *ClusterAdProxyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -277,8 +277,8 @@ func (m *ClusterAdProxySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster ad proxy svm based on the context it is used
-func (m *ClusterAdProxySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ad proxy inline svm based on the context it is used
+func (m *ClusterAdProxyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -291,7 +291,7 @@ func (m *ClusterAdProxySvm) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *ClusterAdProxySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterAdProxyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -306,7 +306,7 @@ func (m *ClusterAdProxySvm) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterAdProxySvm) MarshalBinary() ([]byte, error) {
+func (m *ClusterAdProxyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -314,8 +314,8 @@ func (m *ClusterAdProxySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterAdProxySvm) UnmarshalBinary(b []byte) error {
-	var res ClusterAdProxySvm
+func (m *ClusterAdProxyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ClusterAdProxyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -323,17 +323,17 @@ func (m *ClusterAdProxySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterAdProxySvmLinks cluster ad proxy svm links
+// ClusterAdProxyInlineSvmInlineLinks cluster ad proxy inline svm inline links
 //
-// swagger:model ClusterAdProxySvmLinks
-type ClusterAdProxySvmLinks struct {
+// swagger:model cluster_ad_proxy_inline_svm_inline__links
+type ClusterAdProxyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster ad proxy svm links
-func (m *ClusterAdProxySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ad proxy inline svm inline links
+func (m *ClusterAdProxyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -346,7 +346,7 @@ func (m *ClusterAdProxySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterAdProxySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterAdProxyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -363,8 +363,8 @@ func (m *ClusterAdProxySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster ad proxy svm links based on the context it is used
-func (m *ClusterAdProxySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ad proxy inline svm inline links based on the context it is used
+func (m *ClusterAdProxyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -377,7 +377,7 @@ func (m *ClusterAdProxySvmLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *ClusterAdProxySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterAdProxyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -392,7 +392,7 @@ func (m *ClusterAdProxySvmLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterAdProxySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterAdProxyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -400,8 +400,8 @@ func (m *ClusterAdProxySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterAdProxySvmLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterAdProxySvmLinks
+func (m *ClusterAdProxyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterAdProxyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

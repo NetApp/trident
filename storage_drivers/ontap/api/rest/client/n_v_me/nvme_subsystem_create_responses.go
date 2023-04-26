@@ -52,6 +52,11 @@ NvmeSubsystemCreateCreated describes a response with status code 201, with defau
 Created
 */
 type NvmeSubsystemCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.NvmeSubsystemResponse
 }
 
@@ -94,6 +99,13 @@ func (o *NvmeSubsystemCreateCreated) GetPayload() *models.NvmeSubsystemResponse 
 
 func (o *NvmeSubsystemCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.NvmeSubsystemResponse)
 
 	// response payload
@@ -129,11 +141,12 @@ func NewNvmeSubsystemCreateDefault(code int) *NvmeSubsystemCreateDefault {
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
+| 72090003 | A host to be added to an NVMe subsystem is missing the "nqn" property. |
 | 72090025 | The NVMe subsystem already exists for the SVM. |
 | 72090029 | The NVMe service does not exist. |
 | 72090030 | A partial success occured while adding multiple NVMe subsystem hosts to an NVMe subsystem. |
-| 72090035 | Passing NVMe subsystem host NQNs on NVMe subsystem POST requires an effective cluster version of 9.7 or later. |
-| 72090036 | The `hosts.nqn` NVMe subsystem property must contain unique values. |
+| 72090036 | An NVMe subsystem host NQN was duplicated in the input. |
+| 72090042 | The `dh_hmac_chap.host_secret_key` property is required when setting any other NVMe in-band authentication properties for a host. |
 */
 type NvmeSubsystemCreateDefault struct {
 	_statusCode int

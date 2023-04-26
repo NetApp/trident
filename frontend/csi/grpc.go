@@ -11,10 +11,10 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 )
 
 // NonBlockingGRPCServer Defines Non blocking GRPC server interfaces
@@ -55,7 +55,7 @@ func (s *nonBlockingGRPCServer) serve(
 ) {
 	proto, addr, err := ParseEndpoint(endpoint)
 	if err != nil {
-		log.Fatal(err.Error())
+		Log().Fatal(err.Error())
 	}
 
 	if proto == "unix" {
@@ -63,32 +63,35 @@ func (s *nonBlockingGRPCServer) serve(
 			addr = "/" + addr
 		}
 		if err := os.Remove(addr); err != nil && !os.IsNotExist(err) {
-			log.Fatalf("Failed to remove %s, error: %s", addr, err.Error())
+			Log().Fatalf("Failed to remove %s, error: %s", addr, err.Error())
 		}
 	}
 
 	listener, err := net.Listen(proto, addr)
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		Log().Fatalf("Failed to listen: %v", err)
 	}
 
 	addrString := listener.Addr().String()
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"name": addrString,
 		"net":  listener.Addr().Network(),
 	}).Info("Listening for GRPC connections.")
 
-	if listener.Addr().Network() == "unix" {
+	// Check whether we are in a container using a variable we always set.
+	_, inCSIContainer := os.LookupEnv("CSI_ENDPOINT")
+
+	if listener.Addr().Network() == "unix" && inCSIContainer {
 		pluginDir := strings.ReplaceAll(addrString, "csi.sock", "")
 		// Plugins directory only needs to be accessed by Container Orchestrator components or Trident, so set to 600.
 		if err := os.Chmod(pluginDir, config.CSISocketDirPermissions); err != nil {
-			log.Fatal(err)
+			Log().Fatal(err)
 		}
 
 		// CSI socket file only needs read+write access to Container Orchestrator components or Trident, so set to 600.
 		if err := os.Chmod(addrString, config.CSIUnixSocketPermissions); err != nil {
-			log.Fatal(err)
+			Log().Fatal(err)
 		}
 	}
 
@@ -100,18 +103,18 @@ func (s *nonBlockingGRPCServer) serve(
 
 	if ids != nil {
 		csi.RegisterIdentityServer(server, ids)
-		log.Debug("Registered CSI identity server.")
+		Log().Debug("Registered CSI identity server.")
 	}
 	if cs != nil {
 		csi.RegisterControllerServer(server, cs)
-		log.Debug("Registered CSI controller server.")
+		Log().Debug("Registered CSI controller server.")
 	}
 	if ns != nil {
 		csi.RegisterNodeServer(server, ns)
-		log.Debug("Registered CSI node server.")
+		Log().Debug("Registered CSI node server.")
 	}
 
 	if err := server.Serve(listener); err != nil {
-		log.Fatal(err)
+		Log().Fatal(err)
 	}
 }

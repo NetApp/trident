@@ -62,29 +62,107 @@ KeyManagerKeysCollectionGetParams contains all the parameters to send to the API
 */
 type KeyManagerKeysCollectionGetParams struct {
 
+	/* Crn.
+
+	   Filter by crn
+	*/
+	Crn *string
+
+	/* EncryptionAlgorithm.
+
+	   Filter by encryption_algorithm
+	*/
+	EncryptionAlgorithm *string
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
+
+	/* KeyID.
+
+	   Filter by key_id
+	*/
+	KeyID *string
+
+	/* KeyManager.
+
+	   Filter by key_manager
+	*/
+	KeyManager *string
+
+	/* KeyServer.
+
+	   Filter by key_server
+	*/
+	KeyServer *string
+
+	/* KeyStore.
+
+	   Filter by key_store
+	*/
+	KeyStore *string
+
+	/* KeyStoreType.
+
+	   Filter by key_store_type
+	*/
+	KeyStoreType *string
+
+	/* KeyTag.
+
+	   Filter by key_tag
+	*/
+	KeyTag *string
+
+	/* KeyType.
+
+	   Filter by key_type
+	*/
+	KeyType *string
+
+	/* KeyUser.
+
+	   Filter by key_user
+	*/
+	KeyUser *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
+
+	/* NodeName.
+
+	   Filter by node.name
+	*/
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Node UUID.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
+
+	/* Policy.
+
+	   Filter by policy
+	*/
+	Policy *string
+
+	/* Restored.
+
+	   Filter by restored
+	*/
+	Restored *bool
 
 	/* ReturnRecords.
 
@@ -92,7 +170,7 @@ type KeyManagerKeysCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,13 +178,13 @@ type KeyManagerKeysCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SecurityKeyManagerUUID.
 
 	   Key manager UUID.
 	*/
-	SecurityKeyManagerUUIDPathParameter string
+	SecurityKeyManagerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,14 +204,14 @@ func (o *KeyManagerKeysCollectionGetParams) WithDefaults() *KeyManagerKeysCollec
 // All values with no default are reset to their zero value.
 func (o *KeyManagerKeysCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := KeyManagerKeysCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -175,81 +253,224 @@ func (o *KeyManagerKeysCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithFieldsQueryParameter(fields []string) *KeyManagerKeysCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithCrn adds the crn to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithCrn(crn *string) *KeyManagerKeysCollectionGetParams {
+	o.SetCrn(crn)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetCrn adds the crn to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetCrn(crn *string) {
+	o.Crn = crn
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *KeyManagerKeysCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithEncryptionAlgorithm adds the encryptionAlgorithm to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithEncryptionAlgorithm(encryptionAlgorithm *string) *KeyManagerKeysCollectionGetParams {
+	o.SetEncryptionAlgorithm(encryptionAlgorithm)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetEncryptionAlgorithm adds the encryptionAlgorithm to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetEncryptionAlgorithm(encryptionAlgorithm *string) {
+	o.EncryptionAlgorithm = encryptionAlgorithm
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithNodeUUIDPathParameter(nodeUUID string) *KeyManagerKeysCollectionGetParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithFields adds the fields to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithFields(fields []string) *KeyManagerKeysCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetFields adds the fields to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithOrderByQueryParameter adds the orderBy to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *KeyManagerKeysCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithKeyID adds the keyID to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyID(keyID *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyID(keyID)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetKeyID adds the keyId to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyID(keyID *string) {
+	o.KeyID = keyID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *KeyManagerKeysCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithKeyManager adds the keyManager to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyManager(keyManager *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyManager(keyManager)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetKeyManager adds the keyManager to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyManager(keyManager *string) {
+	o.KeyManager = keyManager
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *KeyManagerKeysCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithKeyServer adds the keyServer to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyServer(keyServer *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyServer(keyServer)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetKeyServer adds the keyServer to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyServer(keyServer *string) {
+	o.KeyServer = keyServer
 }
 
-// WithSecurityKeyManagerUUIDPathParameter adds the securityKeyManagerUUID to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) WithSecurityKeyManagerUUIDPathParameter(securityKeyManagerUUID string) *KeyManagerKeysCollectionGetParams {
-	o.SetSecurityKeyManagerUUIDPathParameter(securityKeyManagerUUID)
+// WithKeyStore adds the keyStore to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyStore(keyStore *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyStore(keyStore)
 	return o
 }
 
-// SetSecurityKeyManagerUUIDPathParameter adds the securityKeyManagerUuid to the key manager keys collection get params
-func (o *KeyManagerKeysCollectionGetParams) SetSecurityKeyManagerUUIDPathParameter(securityKeyManagerUUID string) {
-	o.SecurityKeyManagerUUIDPathParameter = securityKeyManagerUUID
+// SetKeyStore adds the keyStore to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyStore(keyStore *string) {
+	o.KeyStore = keyStore
+}
+
+// WithKeyStoreType adds the keyStoreType to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyStoreType(keyStoreType *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyStoreType(keyStoreType)
+	return o
+}
+
+// SetKeyStoreType adds the keyStoreType to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyStoreType(keyStoreType *string) {
+	o.KeyStoreType = keyStoreType
+}
+
+// WithKeyTag adds the keyTag to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyTag(keyTag *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyTag(keyTag)
+	return o
+}
+
+// SetKeyTag adds the keyTag to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyTag(keyTag *string) {
+	o.KeyTag = keyTag
+}
+
+// WithKeyType adds the keyType to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyType(keyType *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyType(keyType)
+	return o
+}
+
+// SetKeyType adds the keyType to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyType(keyType *string) {
+	o.KeyType = keyType
+}
+
+// WithKeyUser adds the keyUser to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithKeyUser(keyUser *string) *KeyManagerKeysCollectionGetParams {
+	o.SetKeyUser(keyUser)
+	return o
+}
+
+// SetKeyUser adds the keyUser to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetKeyUser(keyUser *string) {
+	o.KeyUser = keyUser
+}
+
+// WithMaxRecords adds the maxRecords to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithMaxRecords(maxRecords *int64) *KeyManagerKeysCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
+	return o
+}
+
+// SetMaxRecords adds the maxRecords to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
+}
+
+// WithNodeName adds the nodeName to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithNodeName(nodeName *string) *KeyManagerKeysCollectionGetParams {
+	o.SetNodeName(nodeName)
+	return o
+}
+
+// SetNodeName adds the nodeName to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
+}
+
+// WithNodeUUID adds the nodeUUID to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithNodeUUID(nodeUUID string) *KeyManagerKeysCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
+	return o
+}
+
+// SetNodeUUID adds the nodeUuid to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
+}
+
+// WithOrderBy adds the orderBy to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithOrderBy(orderBy []string) *KeyManagerKeysCollectionGetParams {
+	o.SetOrderBy(orderBy)
+	return o
+}
+
+// SetOrderBy adds the orderBy to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
+}
+
+// WithPolicy adds the policy to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithPolicy(policy *string) *KeyManagerKeysCollectionGetParams {
+	o.SetPolicy(policy)
+	return o
+}
+
+// SetPolicy adds the policy to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetPolicy(policy *string) {
+	o.Policy = policy
+}
+
+// WithRestored adds the restored to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithRestored(restored *bool) *KeyManagerKeysCollectionGetParams {
+	o.SetRestored(restored)
+	return o
+}
+
+// SetRestored adds the restored to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetRestored(restored *bool) {
+	o.Restored = restored
+}
+
+// WithReturnRecords adds the returnRecords to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithReturnRecords(returnRecords *bool) *KeyManagerKeysCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
+	return o
+}
+
+// SetReturnRecords adds the returnRecords to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
+}
+
+// WithReturnTimeout adds the returnTimeout to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *KeyManagerKeysCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
+// WithSecurityKeyManagerUUID adds the securityKeyManagerUUID to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) WithSecurityKeyManagerUUID(securityKeyManagerUUID string) *KeyManagerKeysCollectionGetParams {
+	o.SetSecurityKeyManagerUUID(securityKeyManagerUUID)
+	return o
+}
+
+// SetSecurityKeyManagerUUID adds the securityKeyManagerUuid to the key manager keys collection get params
+func (o *KeyManagerKeysCollectionGetParams) SetSecurityKeyManagerUUID(securityKeyManagerUUID string) {
+	o.SecurityKeyManagerUUID = securityKeyManagerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -260,7 +481,41 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Crn != nil {
+
+		// query param crn
+		var qrCrn string
+
+		if o.Crn != nil {
+			qrCrn = *o.Crn
+		}
+		qCrn := qrCrn
+		if qCrn != "" {
+
+			if err := r.SetQueryParam("crn", qCrn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionAlgorithm != nil {
+
+		// query param encryption_algorithm
+		var qrEncryptionAlgorithm string
+
+		if o.EncryptionAlgorithm != nil {
+			qrEncryptionAlgorithm = *o.EncryptionAlgorithm
+		}
+		qEncryptionAlgorithm := qrEncryptionAlgorithm
+		if qEncryptionAlgorithm != "" {
+
+			if err := r.SetQueryParam("encryption_algorithm", qEncryptionAlgorithm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -271,13 +526,149 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.KeyID != nil {
+
+		// query param key_id
+		var qrKeyID string
+
+		if o.KeyID != nil {
+			qrKeyID = *o.KeyID
+		}
+		qKeyID := qrKeyID
+		if qKeyID != "" {
+
+			if err := r.SetQueryParam("key_id", qKeyID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyManager != nil {
+
+		// query param key_manager
+		var qrKeyManager string
+
+		if o.KeyManager != nil {
+			qrKeyManager = *o.KeyManager
+		}
+		qKeyManager := qrKeyManager
+		if qKeyManager != "" {
+
+			if err := r.SetQueryParam("key_manager", qKeyManager); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyServer != nil {
+
+		// query param key_server
+		var qrKeyServer string
+
+		if o.KeyServer != nil {
+			qrKeyServer = *o.KeyServer
+		}
+		qKeyServer := qrKeyServer
+		if qKeyServer != "" {
+
+			if err := r.SetQueryParam("key_server", qKeyServer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyStore != nil {
+
+		// query param key_store
+		var qrKeyStore string
+
+		if o.KeyStore != nil {
+			qrKeyStore = *o.KeyStore
+		}
+		qKeyStore := qrKeyStore
+		if qKeyStore != "" {
+
+			if err := r.SetQueryParam("key_store", qKeyStore); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyStoreType != nil {
+
+		// query param key_store_type
+		var qrKeyStoreType string
+
+		if o.KeyStoreType != nil {
+			qrKeyStoreType = *o.KeyStoreType
+		}
+		qKeyStoreType := qrKeyStoreType
+		if qKeyStoreType != "" {
+
+			if err := r.SetQueryParam("key_store_type", qKeyStoreType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyTag != nil {
+
+		// query param key_tag
+		var qrKeyTag string
+
+		if o.KeyTag != nil {
+			qrKeyTag = *o.KeyTag
+		}
+		qKeyTag := qrKeyTag
+		if qKeyTag != "" {
+
+			if err := r.SetQueryParam("key_tag", qKeyTag); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyType != nil {
+
+		// query param key_type
+		var qrKeyType string
+
+		if o.KeyType != nil {
+			qrKeyType = *o.KeyType
+		}
+		qKeyType := qrKeyType
+		if qKeyType != "" {
+
+			if err := r.SetQueryParam("key_type", qKeyType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeyUser != nil {
+
+		// query param key_user
+		var qrKeyUser string
+
+		if o.KeyUser != nil {
+			qrKeyUser = *o.KeyUser
+		}
+		qKeyUser := qrKeyUser
+		if qKeyUser != "" {
+
+			if err := r.SetQueryParam("key_user", qKeyUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -288,12 +679,29 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
+	if o.NodeName != nil {
+
+		// query param node.name
+		var qrNodeName string
+
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
+		}
+		qNodeName := qrNodeName
+		if qNodeName != "" {
+
+			if err := r.SetQueryParam("node.name", qNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -304,13 +712,47 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.Policy != nil {
+
+		// query param policy
+		var qrPolicy string
+
+		if o.Policy != nil {
+			qrPolicy = *o.Policy
+		}
+		qPolicy := qrPolicy
+		if qPolicy != "" {
+
+			if err := r.SetQueryParam("policy", qPolicy); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Restored != nil {
+
+		// query param restored
+		var qrRestored bool
+
+		if o.Restored != nil {
+			qrRestored = *o.Restored
+		}
+		qRestored := swag.FormatBool(qrRestored)
+		if qRestored != "" {
+
+			if err := r.SetQueryParam("restored", qRestored); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -321,13 +763,13 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -339,7 +781,7 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param security_key_manager.uuid
-	if err := r.SetPathParam("security_key_manager.uuid", o.SecurityKeyManagerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("security_key_manager.uuid", o.SecurityKeyManagerUUID); err != nil {
 		return err
 	}
 
@@ -351,7 +793,7 @@ func (o *KeyManagerKeysCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamKeyManagerKeysCollectionGet binds the parameter fields
 func (o *KeyManagerKeysCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -368,7 +810,7 @@ func (o *KeyManagerKeysCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamKeyManagerKeysCollectionGet binds the parameter order_by
 func (o *KeyManagerKeysCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

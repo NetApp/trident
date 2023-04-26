@@ -63,7 +63,7 @@ type CifsServiceOptions struct {
 	// Specifies a Windows User or Group name that should be mapped in case of a NULL user
 	// value.
 	//
-	NullUserWindowsName string `json:"null_user_windows_name,omitempty"`
+	NullUserWindowsName *string `json:"null_user_windows_name,omitempty"`
 
 	// Specifies whether or not the path component cache is enabled on the CIFS server.
 	PathComponentCache *bool `json:"path_component_cache,omitempty"`
@@ -86,12 +86,12 @@ type CifsServiceOptions struct {
 	// Example: 128
 	// Maximum: 8192
 	// Minimum: 2
-	SmbCredits int64 `json:"smb_credits,omitempty"`
+	SmbCredits *int64 `json:"smb_credits,omitempty"`
 
 	// Specifies the CIFS protocol versions for which the widelink is reported as reparse point.
 	//
 	// Example: ["smb1"]
-	WidelinkReparseVersions []string `json:"widelink_reparse_versions,omitempty"`
+	WidelinkReparseVersions []*string `json:"widelink_reparse_versions,omitempty"`
 }
 
 // Validate validates this cifs service options
@@ -117,11 +117,11 @@ func (m *CifsServiceOptions) validateSmbCredits(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("smb_credits", "body", m.SmbCredits, 2, false); err != nil {
+	if err := validate.MinimumInt("smb_credits", "body", *m.SmbCredits, 2, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("smb_credits", "body", m.SmbCredits, 8192, false); err != nil {
+	if err := validate.MaximumInt("smb_credits", "body", *m.SmbCredits, 8192, false); err != nil {
 		return err
 	}
 
@@ -153,9 +153,12 @@ func (m *CifsServiceOptions) validateWidelinkReparseVersions(formats strfmt.Regi
 	}
 
 	for i := 0; i < len(m.WidelinkReparseVersions); i++ {
+		if swag.IsZero(m.WidelinkReparseVersions[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateWidelinkReparseVersionsItemsEnum("widelink_reparse_versions"+"."+strconv.Itoa(i), "body", m.WidelinkReparseVersions[i]); err != nil {
+		if err := m.validateWidelinkReparseVersionsItemsEnum("widelink_reparse_versions"+"."+strconv.Itoa(i), "body", *m.WidelinkReparseVersions[i]); err != nil {
 			return err
 		}
 

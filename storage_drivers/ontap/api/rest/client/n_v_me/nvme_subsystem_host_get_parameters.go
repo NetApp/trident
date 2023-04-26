@@ -66,21 +66,21 @@ type NvmeSubsystemHostGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Nqn.
 
 	   The NVMe qualified name (NQN) used to identify the NVMe subsystem host.
 
 	*/
-	NqnPathParameter string
+	Nqn string
 
 	/* SubsystemUUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	SubsystemUUIDPathParameter string
+	SubsystemUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *NvmeSubsystemHostGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme subsystem host get params
-func (o *NvmeSubsystemHostGetParams) WithFieldsQueryParameter(fields []string) *NvmeSubsystemHostGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme subsystem host get params
+func (o *NvmeSubsystemHostGetParams) WithFields(fields []string) *NvmeSubsystemHostGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme subsystem host get params
-func (o *NvmeSubsystemHostGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme subsystem host get params
+func (o *NvmeSubsystemHostGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNqnPathParameter adds the nqn to the nvme subsystem host get params
-func (o *NvmeSubsystemHostGetParams) WithNqnPathParameter(nqn string) *NvmeSubsystemHostGetParams {
-	o.SetNqnPathParameter(nqn)
+// WithNqn adds the nqn to the nvme subsystem host get params
+func (o *NvmeSubsystemHostGetParams) WithNqn(nqn string) *NvmeSubsystemHostGetParams {
+	o.SetNqn(nqn)
 	return o
 }
 
-// SetNqnPathParameter adds the nqn to the nvme subsystem host get params
-func (o *NvmeSubsystemHostGetParams) SetNqnPathParameter(nqn string) {
-	o.NqnPathParameter = nqn
+// SetNqn adds the nqn to the nvme subsystem host get params
+func (o *NvmeSubsystemHostGetParams) SetNqn(nqn string) {
+	o.Nqn = nqn
 }
 
-// WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem host get params
-func (o *NvmeSubsystemHostGetParams) WithSubsystemUUIDPathParameter(subsystemUUID string) *NvmeSubsystemHostGetParams {
-	o.SetSubsystemUUIDPathParameter(subsystemUUID)
+// WithSubsystemUUID adds the subsystemUUID to the nvme subsystem host get params
+func (o *NvmeSubsystemHostGetParams) WithSubsystemUUID(subsystemUUID string) *NvmeSubsystemHostGetParams {
+	o.SetSubsystemUUID(subsystemUUID)
 	return o
 }
 
-// SetSubsystemUUIDPathParameter adds the subsystemUuid to the nvme subsystem host get params
-func (o *NvmeSubsystemHostGetParams) SetSubsystemUUIDPathParameter(subsystemUUID string) {
-	o.SubsystemUUIDPathParameter = subsystemUUID
+// SetSubsystemUUID adds the subsystemUuid to the nvme subsystem host get params
+func (o *NvmeSubsystemHostGetParams) SetSubsystemUUID(subsystemUUID string) {
+	o.SubsystemUUID = subsystemUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *NvmeSubsystemHostGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *NvmeSubsystemHostGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param nqn
-	if err := r.SetPathParam("nqn", o.NqnPathParameter); err != nil {
+	if err := r.SetPathParam("nqn", o.Nqn); err != nil {
 		return err
 	}
 
 	// path param subsystem.uuid
-	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *NvmeSubsystemHostGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamNvmeSubsystemHostGet binds the parameter fields
 func (o *NvmeSubsystemHostGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

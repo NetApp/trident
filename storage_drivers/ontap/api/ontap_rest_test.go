@@ -14,6 +14,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 var ctx = context.Background()
@@ -64,7 +65,7 @@ func TestPayload(t *testing.T) {
 }
 
 func TestMinimumONTAPVersionForREST(t *testing.T) {
-	expectedMinimumONTAPVersion := utils.MustParseSemantic("9.11.1")
+	expectedMinimumONTAPVersion := versionutils.MustParseSemantic("9.12.1")
 	assert.Equal(t, MinimumONTAPVersion, expectedMinimumONTAPVersion, "Unexpected minimum ONTAP version")
 }
 
@@ -120,47 +121,58 @@ func TestExtractErrorResponse(t *testing.T) {
 	// pass a LunModifyDefault instance, with a populated error response
 	lunModifyDefaultResponse = s_a_n.LunModifyDefault{Payload: &models.ErrorResponse{
 		Error: &models.Error{
-			Code:    "42",
-			Message: "error 42",
+			Code:    utils.Ptr("42"),
+			Message: utils.Ptr("error 42"),
 		},
 	}}
 	eeResponse, err = ExtractErrorResponse(ctx, lunModifyDefaultResponse)
 	assert.Nil(t, err)
 	assert.NotNil(t, eeResponse)
-	assert.Equal(t, eeResponse.Error.Code, "42", "Unexpected code")
-	assert.Equal(t, eeResponse.Error.Message, "error 42", "Unexpected message")
+	assert.Equal(t, *eeResponse.Error.Code, "42", "Unexpected code")
+	assert.Equal(t, *eeResponse.Error.Message, "error 42", "Unexpected message")
 }
 
 func TestVolumeEncryption(t *testing.T) {
 	// negative case:  if nil, should not be set
-	veMarshall := models.VolumeEncryption{}
+	veMarshall := models.VolumeInlineEncryption{}
 	bytes, _ := json.MarshalIndent(veMarshall, "", "  ")
 	assert.Equal(t, `{}`, string(bytes))
-	volumeEncrytion := models.VolumeEncryption{}
+	volumeEncrytion := models.VolumeInlineEncryption{}
 	json.Unmarshal(bytes, &volumeEncrytion)
 	assert.Nil(t, volumeEncrytion.Enabled)
 
 	// positive case:  if set to false, should be sent as false (not omitted)
-	veMarshall = models.VolumeEncryption{Enabled: ToBoolPointer(false)}
+	veMarshall = models.VolumeInlineEncryption{Enabled: utils.Ptr(false)}
 	bytes, _ = json.MarshalIndent(veMarshall, "", "  ")
 	assert.Equal(t,
 		`{
   "enabled": false
 }`,
 		string(bytes))
-	volumeEncrytion = models.VolumeEncryption{}
+	volumeEncrytion = models.VolumeInlineEncryption{}
 	json.Unmarshal(bytes, &volumeEncrytion)
 	assert.False(t, *volumeEncrytion.Enabled)
 
 	// positive case:  if set to true, should be sent as true
-	veMarshall = models.VolumeEncryption{Enabled: ToBoolPointer(true)}
+	veMarshall = models.VolumeInlineEncryption{Enabled: utils.Ptr(true)}
 	bytes, _ = json.MarshalIndent(veMarshall, "", "  ")
 	assert.Equal(t,
 		`{
   "enabled": true
 }`,
 		string(bytes))
-	volumeEncrytion = models.VolumeEncryption{}
+	volumeEncrytion = models.VolumeInlineEncryption{}
 	json.Unmarshal(bytes, &volumeEncrytion)
 	assert.True(t, *volumeEncrytion.Enabled)
+}
+
+func TestSnapmirrorErrorCode(t *testing.T) {
+	// ensure the error code remains a *string in the swagger definition (it was incorrectly a number)
+	messageCode := utils.Ptr("42")
+	smErr := &models.SnapmirrorError{
+		Code:    messageCode,
+		Message: messageCode,
+	}
+	assert.Equal(t, messageCode, smErr.Code)
+	assert.Equal(t, messageCode, smErr.Message)
 }

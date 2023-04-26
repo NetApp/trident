@@ -19,15 +19,15 @@ import (
 type IpspaceReference struct {
 
 	// links
-	Links *IpspaceReferenceLinks `json:"_links,omitempty"`
+	Links *IpspaceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ipspace reference
@@ -107,17 +107,17 @@ func (m *IpspaceReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpspaceReferenceLinks ipspace reference links
+// IpspaceReferenceInlineLinks ipspace reference inline links
 //
-// swagger:model IpspaceReferenceLinks
-type IpspaceReferenceLinks struct {
+// swagger:model ipspace_reference_inline__links
+type IpspaceReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipspace reference links
-func (m *IpspaceReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipspace reference inline links
+func (m *IpspaceReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *IpspaceReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpspaceReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpspaceReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *IpspaceReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipspace reference links based on the context it is used
-func (m *IpspaceReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipspace reference inline links based on the context it is used
+func (m *IpspaceReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *IpspaceReferenceLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *IpspaceReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpspaceReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *IpspaceReferenceLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *IpspaceReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *IpspaceReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *IpspaceReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpspaceReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res IpspaceReferenceLinks
+func (m *IpspaceReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpspaceReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,19 +66,19 @@ type AuditDeleteParams struct {
 
 	   Indicates to force delete audit configuration.
 	*/
-	ForceQueryParameter *bool
+	Force *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *AuditDeleteParams) WithDefaults() *AuditDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *AuditDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := AuditDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *AuditDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithForceQueryParameter adds the force to the audit delete params
-func (o *AuditDeleteParams) WithForceQueryParameter(force *bool) *AuditDeleteParams {
-	o.SetForceQueryParameter(force)
+// WithForce adds the force to the audit delete params
+func (o *AuditDeleteParams) WithForce(force *bool) *AuditDeleteParams {
+	o.SetForce(force)
 	return o
 }
 
-// SetForceQueryParameter adds the force to the audit delete params
-func (o *AuditDeleteParams) SetForceQueryParameter(force *bool) {
-	o.ForceQueryParameter = force
+// SetForce adds the force to the audit delete params
+func (o *AuditDeleteParams) SetForce(force *bool) {
+	o.Force = force
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the audit delete params
-func (o *AuditDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AuditDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the audit delete params
+func (o *AuditDeleteParams) WithReturnTimeout(returnTimeout *int64) *AuditDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the audit delete params
-func (o *AuditDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the audit delete params
+func (o *AuditDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the audit delete params
-func (o *AuditDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *AuditDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the audit delete params
+func (o *AuditDeleteParams) WithSvmUUID(svmUUID string) *AuditDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the audit delete params
-func (o *AuditDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the audit delete params
+func (o *AuditDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -185,13 +185,13 @@ func (o *AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.ForceQueryParameter != nil {
+	if o.Force != nil {
 
 		// query param force
 		var qrForce bool
 
-		if o.ForceQueryParameter != nil {
-			qrForce = *o.ForceQueryParameter
+		if o.Force != nil {
+			qrForce = *o.Force
 		}
 		qForce := swag.FormatBool(qrForce)
 		if qForce != "" {
@@ -202,13 +202,13 @@ func (o *AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -220,7 +220,7 @@ func (o *AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

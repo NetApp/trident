@@ -108,6 +108,7 @@ func NewAzureKeyVaultRestoreDefault(code int) *AzureKeyVaultRestoreDefault {
 | ---------- | ----------- |
 | 65537120 | Azure Key Vault is not configured for the given SVM. |
 | 65537515 | Failed to restore keys on some nodes in the cluster. |
+| 65537544 | Missing wrapped top-level internal key protection key (KEK) from internal database. |
 */
 type AzureKeyVaultRestoreDefault struct {
 	_statusCode int

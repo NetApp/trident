@@ -22,29 +22,29 @@ type StoragePort struct {
 
 	// board name
 	// Read Only: true
-	BoardName string `json:"board_name,omitempty"`
+	BoardName *string `json:"board_name,omitempty"`
 
 	// cable
-	Cable *StoragePortCable `json:"cable,omitempty"`
+	Cable *StoragePortInlineCable `json:"cable,omitempty"`
 
 	// description
 	// Example: SAS Host Adapter 2a (PMC-Sierra PM8072 rev. C)
 	// Read Only: true
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// enabled
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// error
-	Error *StoragePortError `json:"error,omitempty"`
+	Error *StoragePortInlineError `json:"error,omitempty"`
 
 	// firmware version
 	// Example: 03.08.09.00
 	// Read Only: true
-	FirmwareVersion string `json:"firmware_version,omitempty"`
+	FirmwareVersion *string `json:"firmware_version,omitempty"`
 
 	// force
-	Force bool `json:"force,omitempty"`
+	Force *bool `json:"force,omitempty"`
 
 	// Specifies whether any devices are connected through this port
 	// Read Only: true
@@ -52,25 +52,25 @@ type StoragePort struct {
 
 	// mac address
 	// Read Only: true
-	MacAddress string `json:"mac_address,omitempty"`
+	MacAddress *string `json:"mac_address,omitempty"`
 
 	// Operational mode of a non-dedicated Ethernet port
 	// Example: storage
 	// Enum: [network storage]
-	Mode string `json:"mode,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 
 	// name
 	// Example: 2a
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *StoragePortNode `json:"node,omitempty"`
+	Node *StoragePortInlineNode `json:"node,omitempty"`
 
 	// part number
 	// Example: 111-03801
 	// Read Only: true
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// Specifies whether all devices connected through this port have a redundant path from another port
 	// Read Only: true
@@ -79,33 +79,33 @@ type StoragePort struct {
 	// serial number
 	// Example: 7A2463CC45B
 	// Read Only: true
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 
 	// Operational port speed in Gbps
 	// Example: 6
 	// Read Only: true
-	Speed float64 `json:"speed,omitempty"`
+	Speed *float64 `json:"speed,omitempty"`
 
 	// state
 	// Example: online
 	// Read Only: true
 	// Enum: [online offline error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// type
 	// Example: sas
 	// Read Only: true
 	// Enum: [sas fc enet]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// World Wide Name
 	// Example: 50000d1703544b80
 	// Read Only: true
-	Wwn string `json:"wwn,omitempty"`
+	Wwn *string `json:"wwn,omitempty"`
 
 	// World Wide Port Name
 	// Read Only: true
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this storage port
@@ -225,7 +225,7 @@ func (m *StoragePort) validateMode(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateModeEnum("mode", "body", m.Mode); err != nil {
+	if err := m.validateModeEnum("mode", "body", *m.Mode); err != nil {
 		return err
 	}
 
@@ -308,7 +308,7 @@ func (m *StoragePort) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -374,7 +374,7 @@ func (m *StoragePort) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -461,7 +461,7 @@ func (m *StoragePort) ContextValidate(ctx context.Context, formats strfmt.Regist
 
 func (m *StoragePort) contextValidateBoardName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "board_name", "body", string(m.BoardName)); err != nil {
+	if err := validate.ReadOnly(ctx, "board_name", "body", m.BoardName); err != nil {
 		return err
 	}
 
@@ -484,7 +484,7 @@ func (m *StoragePort) contextValidateCable(ctx context.Context, formats strfmt.R
 
 func (m *StoragePort) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "description", "body", m.Description); err != nil {
 		return err
 	}
 
@@ -507,7 +507,7 @@ func (m *StoragePort) contextValidateError(ctx context.Context, formats strfmt.R
 
 func (m *StoragePort) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "firmware_version", "body", string(m.FirmwareVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "firmware_version", "body", m.FirmwareVersion); err != nil {
 		return err
 	}
 
@@ -525,7 +525,7 @@ func (m *StoragePort) contextValidateInUse(ctx context.Context, formats strfmt.R
 
 func (m *StoragePort) contextValidateMacAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mac_address", "body", string(m.MacAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "mac_address", "body", m.MacAddress); err != nil {
 		return err
 	}
 
@@ -534,7 +534,7 @@ func (m *StoragePort) contextValidateMacAddress(ctx context.Context, formats str
 
 func (m *StoragePort) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -557,7 +557,7 @@ func (m *StoragePort) contextValidateNode(ctx context.Context, formats strfmt.Re
 
 func (m *StoragePort) contextValidatePartNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "part_number", "body", string(m.PartNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "part_number", "body", m.PartNumber); err != nil {
 		return err
 	}
 
@@ -575,7 +575,7 @@ func (m *StoragePort) contextValidateRedundant(ctx context.Context, formats strf
 
 func (m *StoragePort) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
 		return err
 	}
 
@@ -584,7 +584,7 @@ func (m *StoragePort) contextValidateSerialNumber(ctx context.Context, formats s
 
 func (m *StoragePort) contextValidateSpeed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "speed", "body", float64(m.Speed)); err != nil {
+	if err := validate.ReadOnly(ctx, "speed", "body", m.Speed); err != nil {
 		return err
 	}
 
@@ -593,7 +593,7 @@ func (m *StoragePort) contextValidateSpeed(ctx context.Context, formats strfmt.R
 
 func (m *StoragePort) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -602,7 +602,7 @@ func (m *StoragePort) contextValidateState(ctx context.Context, formats strfmt.R
 
 func (m *StoragePort) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -611,7 +611,7 @@ func (m *StoragePort) contextValidateType(ctx context.Context, formats strfmt.Re
 
 func (m *StoragePort) contextValidateWwn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wwn", "body", string(m.Wwn)); err != nil {
+	if err := validate.ReadOnly(ctx, "wwn", "body", m.Wwn); err != nil {
 		return err
 	}
 
@@ -620,7 +620,7 @@ func (m *StoragePort) contextValidateWwn(ctx context.Context, formats strfmt.Reg
 
 func (m *StoragePort) contextValidateWwpn(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "wwpn", "body", string(m.Wwpn)); err != nil {
+	if err := validate.ReadOnly(ctx, "wwpn", "body", m.Wwpn); err != nil {
 		return err
 	}
 
@@ -645,40 +645,40 @@ func (m *StoragePort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortCable storage port cable
+// StoragePortInlineCable storage port inline cable
 //
-// swagger:model StoragePortCable
-type StoragePortCable struct {
+// swagger:model storage_port_inline_cable
+type StoragePortInlineCable struct {
 
 	// identifier
 	// Example: 500a0980000b6c3f-50000d1703544b80
-	Identifier string `json:"identifier,omitempty"`
+	Identifier *string `json:"identifier,omitempty"`
 
 	// length
 	// Example: 2m
-	Length string `json:"length,omitempty"`
+	Length *string `json:"length,omitempty"`
 
 	// part number
 	// Example: 112-00431+A0
-	PartNumber string `json:"part_number,omitempty"`
+	PartNumber *string `json:"part_number,omitempty"`
 
 	// serial number
 	// Example: 616930439
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this storage port cable
-func (m *StoragePortCable) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port inline cable
+func (m *StoragePortInlineCable) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage port cable based on context it is used
-func (m *StoragePortCable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage port inline cable based on context it is used
+func (m *StoragePortInlineCable) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortCable) MarshalBinary() ([]byte, error) {
+func (m *StoragePortInlineCable) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -686,8 +686,8 @@ func (m *StoragePortCable) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortCable) UnmarshalBinary(b []byte) error {
-	var res StoragePortCable
+func (m *StoragePortInlineCable) UnmarshalBinary(b []byte) error {
+	var res StoragePortInlineCable
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -695,30 +695,30 @@ func (m *StoragePortCable) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortError storage port error
+// StoragePortInlineError storage port inline error
 //
-// swagger:model StoragePortError
-type StoragePortError struct {
+// swagger:model storage_port_inline_error
+type StoragePortInlineError struct {
 
 	// Error corrective action
-	CorrectiveAction string `json:"corrective_action,omitempty"`
+	CorrectiveAction *string `json:"corrective_action,omitempty"`
 
 	// Error message
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this storage port error
-func (m *StoragePortError) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port inline error
+func (m *StoragePortInlineError) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage port error based on context it is used
-func (m *StoragePortError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this storage port inline error based on context it is used
+func (m *StoragePortInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortError) MarshalBinary() ([]byte, error) {
+func (m *StoragePortInlineError) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -726,8 +726,8 @@ func (m *StoragePortError) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortError) UnmarshalBinary(b []byte) error {
-	var res StoragePortError
+func (m *StoragePortInlineError) UnmarshalBinary(b []byte) error {
+	var res StoragePortInlineError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -735,25 +735,25 @@ func (m *StoragePortError) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortNode storage port node
+// StoragePortInlineNode storage port inline node
 //
-// swagger:model StoragePortNode
-type StoragePortNode struct {
+// swagger:model storage_port_inline_node
+type StoragePortInlineNode struct {
 
 	// links
-	Links *StoragePortNodeLinks `json:"_links,omitempty"`
+	Links *StoragePortInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this storage port node
-func (m *StoragePortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port inline node
+func (m *StoragePortInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -766,7 +766,7 @@ func (m *StoragePortNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortNode) validateLinks(formats strfmt.Registry) error {
+func (m *StoragePortInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -783,8 +783,8 @@ func (m *StoragePortNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage port node based on the context it is used
-func (m *StoragePortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage port inline node based on the context it is used
+func (m *StoragePortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -797,7 +797,7 @@ func (m *StoragePortNode) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *StoragePortNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -812,7 +812,7 @@ func (m *StoragePortNode) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortNode) MarshalBinary() ([]byte, error) {
+func (m *StoragePortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -820,8 +820,8 @@ func (m *StoragePortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortNode) UnmarshalBinary(b []byte) error {
-	var res StoragePortNode
+func (m *StoragePortInlineNode) UnmarshalBinary(b []byte) error {
+	var res StoragePortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -829,17 +829,17 @@ func (m *StoragePortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortNodeLinks storage port node links
+// StoragePortInlineNodeInlineLinks storage port inline node inline links
 //
-// swagger:model StoragePortNodeLinks
-type StoragePortNodeLinks struct {
+// swagger:model storage_port_inline_node_inline__links
+type StoragePortInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage port node links
-func (m *StoragePortNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port inline node inline links
+func (m *StoragePortInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -852,7 +852,7 @@ func (m *StoragePortNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePortInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -869,8 +869,8 @@ func (m *StoragePortNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage port node links based on the context it is used
-func (m *StoragePortNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage port inline node inline links based on the context it is used
+func (m *StoragePortInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -883,7 +883,7 @@ func (m *StoragePortNodeLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *StoragePortNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -898,7 +898,7 @@ func (m *StoragePortNodeLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePortInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -906,8 +906,8 @@ func (m *StoragePortNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortNodeLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePortNodeLinks
+func (m *StoragePortInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePortInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

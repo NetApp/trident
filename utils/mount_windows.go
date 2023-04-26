@@ -5,9 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 )
 
@@ -77,7 +75,7 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) e
 
 // mountSMBPath attaches the supplied SMB share at the supplied location with options.
 func mountSMBPath(ctx context.Context, exportPath, mountpoint, username, password string) (err error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"exportPath": exportPath,
 		"mountpoint": mountpoint,
 	}).Debug(">>>> mount_windows.mountSMBPath")
@@ -106,7 +104,7 @@ func mountSMBPath(ctx context.Context, exportPath, mountpoint, username, passwor
 }
 
 func UmountSMBPath(ctx context.Context, mappingPath, path string) (err error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"path": path,
 	}).Debug(">>>> mount_windows.UmountSMBPath")
 	defer Logc(ctx).Debug("<<<< mount_windows.UmountSMBPath")

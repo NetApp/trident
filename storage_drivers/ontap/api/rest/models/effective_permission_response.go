@@ -22,11 +22,12 @@ type EffectivePermissionResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// effective permission response inline records
+	EffectivePermissionResponseInlineRecords []*EffectivePermission `json:"records,omitempty"`
 
-	// records
-	Records []*EffectivePermission `json:"records,omitempty"`
+	// Number of records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this effective permission response
@@ -37,7 +38,7 @@ func (m *EffectivePermissionResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateEffectivePermissionResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *EffectivePermissionResponse) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *EffectivePermissionResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *EffectivePermissionResponse) validateEffectivePermissionResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.EffectivePermissionResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.EffectivePermissionResponseInlineRecords); i++ {
+		if swag.IsZero(m.EffectivePermissionResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.EffectivePermissionResponseInlineRecords[i] != nil {
+			if err := m.EffectivePermissionResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *EffectivePermissionResponse) ContextValidate(ctx context.Context, forma
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateEffectivePermissionResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *EffectivePermissionResponse) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
-func (m *EffectivePermissionResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *EffectivePermissionResponse) contextValidateEffectivePermissionResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.EffectivePermissionResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.EffectivePermissionResponseInlineRecords[i] != nil {
+			if err := m.EffectivePermissionResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

@@ -132,8 +132,8 @@ func NewEmsDestinationModifyDefault(code int) *EmsDestinationModifyDefault {
 | 983144     | The security certificate information provided is incomplete. Provide the certificate and serial number |
 | 983145     | The rest-api destination provided has an 'http://' scheme. It is invalid to provide certificate information |
 | 983150     | The type of an existing destination cannot be changed |
-| 983151     | A property provided cannot be configured on the requested destination type |
 | 983152     | Default destinations cannot be modified or removed |
+| 983184     | A provided property cannot be configured on the requested destination type |
 */
 type EmsDestinationModifyDefault struct {
 	_statusCode int

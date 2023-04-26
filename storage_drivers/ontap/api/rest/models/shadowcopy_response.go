@@ -20,13 +20,14 @@ import (
 type ShadowcopyResponse struct {
 
 	// links
-	Links *ShadowcopyResponseLinks `json:"_links,omitempty"`
+	Links *ShadowcopyResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Shadowcopy `json:"records,omitempty"`
+	// shadowcopy response inline records
+	ShadowcopyResponseInlineRecords []*Shadowcopy `json:"records,omitempty"`
 }
 
 // Validate validates this shadowcopy response
@@ -37,7 +38,7 @@ func (m *ShadowcopyResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateShadowcopyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ShadowcopyResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ShadowcopyResponse) validateShadowcopyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ShadowcopyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ShadowcopyResponseInlineRecords); i++ {
+		if swag.IsZero(m.ShadowcopyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ShadowcopyResponseInlineRecords[i] != nil {
+			if err := m.ShadowcopyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ShadowcopyResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateShadowcopyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ShadowcopyResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ShadowcopyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyResponse) contextValidateShadowcopyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ShadowcopyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ShadowcopyResponseInlineRecords[i] != nil {
+			if err := m.ShadowcopyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ShadowcopyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShadowcopyResponseLinks shadowcopy response links
+// ShadowcopyResponseInlineLinks shadowcopy response inline links
 //
-// swagger:model ShadowcopyResponseLinks
-type ShadowcopyResponseLinks struct {
+// swagger:model shadowcopy_response_inline__links
+type ShadowcopyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ShadowcopyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shadowcopy response links
-func (m *ShadowcopyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shadowcopy response inline links
+func (m *ShadowcopyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ShadowcopyResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ShadowcopyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ShadowcopyResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShadowcopyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShadowcopyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ShadowcopyResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shadowcopy response links based on the context it is used
-func (m *ShadowcopyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shadowcopy response inline links based on the context it is used
+func (m *ShadowcopyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ShadowcopyResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ShadowcopyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ShadowcopyResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *ShadowcopyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShadowcopyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ShadowcopyResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ShadowcopyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ShadowcopyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ShadowcopyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShadowcopyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ShadowcopyResponseLinks
+func (m *ShadowcopyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShadowcopyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

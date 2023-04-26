@@ -22,25 +22,25 @@ import (
 type MetroclusterDiagnostics struct {
 
 	// aggregate
-	Aggregate *MetroclusterDiagnosticsAggregate `json:"aggregate,omitempty"`
+	Aggregate *MetroclusterDiagnosticsInlineAggregate `json:"aggregate,omitempty"`
 
 	// cluster
-	Cluster *MetroclusterDiagnosticsCluster `json:"cluster,omitempty"`
+	Cluster *MetroclusterDiagnosticsInlineCluster `json:"cluster,omitempty"`
 
 	// config replication
-	ConfigReplication *MetroclusterDiagnosticsConfigReplication `json:"config-replication,omitempty"`
+	ConfigReplication *MetroclusterDiagnosticsInlineConfigReplication `json:"config-replication,omitempty"`
 
 	// connection
-	Connection *MetroclusterDiagnosticsConnection `json:"connection,omitempty"`
+	Connection *MetroclusterDiagnosticsInlineConnection `json:"connection,omitempty"`
 
 	// interface
-	Interface *MetroclusterDiagnosticsInterface `json:"interface,omitempty"`
+	Interface *MetroclusterDiagnosticsInlineInterface `json:"interface,omitempty"`
 
 	// node
-	Node *MetroclusterDiagnosticsNode `json:"node,omitempty"`
+	Node *MetroclusterDiagnosticsInlineNode `json:"node,omitempty"`
 
 	// volume
-	Volume *MetroclusterDiagnosticsVolume `json:"volume,omitempty"`
+	Volume *MetroclusterDiagnosticsInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this metrocluster diagnostics
@@ -354,10 +354,10 @@ func (m *MetroclusterDiagnostics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagnosticsAggregate metrocluster diagnostics aggregate
+// MetroclusterDiagnosticsInlineAggregate metrocluster diagnostics inline aggregate
 //
-// swagger:model MetroclusterDiagnosticsAggregate
-type MetroclusterDiagnosticsAggregate struct {
+// swagger:model metrocluster_diagnostics_inline_aggregate
+type MetroclusterDiagnosticsInlineAggregate struct {
 
 	// Display details of the MetroCluster check for aggregates.
 	// Read Only: true
@@ -366,10 +366,10 @@ type MetroclusterDiagnosticsAggregate struct {
 	// Status of diagnostic operation for this component.
 	// Read Only: true
 	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// summary
-	Summary *MetroclusterDiagnosticsAggregateSummary `json:"summary,omitempty"`
+	Summary *MetroclusterDiagnosticsInlineAggregateInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
 	// Example: 2016-03-10T14:35:16-08:00
@@ -378,8 +378,8 @@ type MetroclusterDiagnosticsAggregate struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this metrocluster diagnostics aggregate
-func (m *MetroclusterDiagnosticsAggregate) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diagnostics inline aggregate
+func (m *MetroclusterDiagnosticsInlineAggregate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDetails(formats); err != nil {
@@ -404,7 +404,7 @@ func (m *MetroclusterDiagnosticsAggregate) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) validateDetails(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) validateDetails(formats strfmt.Registry) error {
 	if swag.IsZero(m.Details) { // not required
 		return nil
 	}
@@ -428,7 +428,7 @@ func (m *MetroclusterDiagnosticsAggregate) validateDetails(formats strfmt.Regist
 	return nil
 }
 
-var metroclusterDiagnosticsAggregateTypeStatePropEnum []interface{}
+var metroclusterDiagnosticsInlineAggregateTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -436,75 +436,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterDiagnosticsAggregateTypeStatePropEnum = append(metroclusterDiagnosticsAggregateTypeStatePropEnum, v)
+		metroclusterDiagnosticsInlineAggregateTypeStatePropEnum = append(metroclusterDiagnosticsInlineAggregateTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsAggregate
-	// MetroclusterDiagnosticsAggregate
+	// metrocluster_diagnostics_inline_aggregate
+	// MetroclusterDiagnosticsInlineAggregate
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// MetroclusterDiagnosticsAggregateStateOk captures enum value "ok"
-	MetroclusterDiagnosticsAggregateStateOk string = "ok"
+	// MetroclusterDiagnosticsInlineAggregateStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineAggregateStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsAggregate
-	// MetroclusterDiagnosticsAggregate
+	// metrocluster_diagnostics_inline_aggregate
+	// MetroclusterDiagnosticsInlineAggregate
 	// state
 	// State
 	// warning
 	// END DEBUGGING
-	// MetroclusterDiagnosticsAggregateStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsAggregateStateWarning string = "warning"
+	// MetroclusterDiagnosticsInlineAggregateStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineAggregateStateWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsAggregate
-	// MetroclusterDiagnosticsAggregate
+	// metrocluster_diagnostics_inline_aggregate
+	// MetroclusterDiagnosticsInlineAggregate
 	// state
 	// State
 	// not_run
 	// END DEBUGGING
-	// MetroclusterDiagnosticsAggregateStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsAggregateStateNotRun string = "not_run"
+	// MetroclusterDiagnosticsInlineAggregateStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineAggregateStateNotRun string = "not_run"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsAggregate
-	// MetroclusterDiagnosticsAggregate
+	// metrocluster_diagnostics_inline_aggregate
+	// MetroclusterDiagnosticsInlineAggregate
 	// state
 	// State
 	// not_applicable
 	// END DEBUGGING
-	// MetroclusterDiagnosticsAggregateStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsAggregateStateNotApplicable string = "not_applicable"
+	// MetroclusterDiagnosticsInlineAggregateStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineAggregateStateNotApplicable string = "not_applicable"
 )
 
 // prop value enum
-func (m *MetroclusterDiagnosticsAggregate) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsAggregateTypeStatePropEnum, true); err != nil {
+func (m *MetroclusterDiagnosticsInlineAggregate) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineAggregateTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) validateState(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("aggregate"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("aggregate"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) validateSummary(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) validateSummary(formats strfmt.Registry) error {
 	if swag.IsZero(m.Summary) { // not required
 		return nil
 	}
@@ -521,7 +521,7 @@ func (m *MetroclusterDiagnosticsAggregate) validateSummary(formats strfmt.Regist
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) validateTimestamp(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -533,8 +533,8 @@ func (m *MetroclusterDiagnosticsAggregate) validateTimestamp(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this metrocluster diagnostics aggregate based on the context it is used
-func (m *MetroclusterDiagnosticsAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diagnostics inline aggregate based on the context it is used
+func (m *MetroclusterDiagnosticsInlineAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDetails(ctx, formats); err != nil {
@@ -559,7 +559,7 @@ func (m *MetroclusterDiagnosticsAggregate) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "aggregate"+"."+"details", "body", []*MetroclusterDiagDetails(m.Details)); err != nil {
 		return err
@@ -581,16 +581,16 @@ func (m *MetroclusterDiagnosticsAggregate) contextValidateDetails(ctx context.Co
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "aggregate"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "aggregate"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Summary != nil {
 		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
@@ -604,7 +604,7 @@ func (m *MetroclusterDiagnosticsAggregate) contextValidateSummary(ctx context.Co
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregate) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregate) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "aggregate"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -614,7 +614,7 @@ func (m *MetroclusterDiagnosticsAggregate) contextValidateTimestamp(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsAggregate) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagnosticsInlineAggregate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -622,8 +622,8 @@ func (m *MetroclusterDiagnosticsAggregate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsAggregate) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsAggregate
+func (m *MetroclusterDiagnosticsInlineAggregate) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineAggregate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -631,27 +631,27 @@ func (m *MetroclusterDiagnosticsAggregate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagnosticsAggregateSummary Additional information or recovery steps to take.
+// MetroclusterDiagnosticsInlineAggregateInlineSummary Additional information or recovery steps to take.
 //
-// swagger:model MetroclusterDiagnosticsAggregateSummary
-type MetroclusterDiagnosticsAggregateSummary struct {
+// swagger:model metrocluster_diagnostics_inline_aggregate_inline_summary
+type MetroclusterDiagnosticsInlineAggregateInlineSummary struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this metrocluster diagnostics aggregate summary
-func (m *MetroclusterDiagnosticsAggregateSummary) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diagnostics inline aggregate inline summary
+func (m *MetroclusterDiagnosticsInlineAggregateInlineSummary) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster diagnostics aggregate summary based on the context it is used
-func (m *MetroclusterDiagnosticsAggregateSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diagnostics inline aggregate inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineAggregateInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -668,237 +668,18 @@ func (m *MetroclusterDiagnosticsAggregateSummary) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregateSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregateInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "aggregate"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "aggregate"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsAggregateSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineAggregateInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "aggregate"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsAggregateSummary) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsAggregateSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsAggregateSummary
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsCluster metrocluster diagnostics cluster
-//
-// swagger:model MetroclusterDiagnosticsCluster
-type MetroclusterDiagnosticsCluster struct {
-
-	// Status of diagnostic operation for this component.
-	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
-
-	// summary
-	Summary *MetroclusterDiagnosticsClusterSummary `json:"summary,omitempty"`
-
-	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
-	// Read Only: true
-	// Format: date-time
-	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics cluster
-func (m *MetroclusterDiagnosticsCluster) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateState(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSummary(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTimestamp(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-var metroclusterDiagnosticsClusterTypeStatePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		metroclusterDiagnosticsClusterTypeStatePropEnum = append(metroclusterDiagnosticsClusterTypeStatePropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsCluster
-	// MetroclusterDiagnosticsCluster
-	// state
-	// State
-	// ok
-	// END DEBUGGING
-	// MetroclusterDiagnosticsClusterStateOk captures enum value "ok"
-	MetroclusterDiagnosticsClusterStateOk string = "ok"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsCluster
-	// MetroclusterDiagnosticsCluster
-	// state
-	// State
-	// warning
-	// END DEBUGGING
-	// MetroclusterDiagnosticsClusterStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsClusterStateWarning string = "warning"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsCluster
-	// MetroclusterDiagnosticsCluster
-	// state
-	// State
-	// not_run
-	// END DEBUGGING
-	// MetroclusterDiagnosticsClusterStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsClusterStateNotRun string = "not_run"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsCluster
-	// MetroclusterDiagnosticsCluster
-	// state
-	// State
-	// not_applicable
-	// END DEBUGGING
-	// MetroclusterDiagnosticsClusterStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsClusterStateNotApplicable string = "not_applicable"
-)
-
-// prop value enum
-func (m *MetroclusterDiagnosticsCluster) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsClusterTypeStatePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsCluster) validateState(formats strfmt.Registry) error {
-	if swag.IsZero(m.State) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateStateEnum("cluster"+"."+"state", "body", m.State); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsCluster) validateSummary(formats strfmt.Registry) error {
-	if swag.IsZero(m.Summary) { // not required
-		return nil
-	}
-
-	if m.Summary != nil {
-		if err := m.Summary.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("cluster" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsCluster) validateTimestamp(formats strfmt.Registry) error {
-	if swag.IsZero(m.Timestamp) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("cluster"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics cluster based on the context it is used
-func (m *MetroclusterDiagnosticsCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSummary(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsCluster) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "cluster"+"."+"state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsCluster) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Summary != nil {
-		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("cluster" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsCluster) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "cluster"+"."+"timestamp", "body", m.Timestamp); err != nil {
+	if err := validate.ReadOnly(ctx, "aggregate"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -906,7 +687,7 @@ func (m *MetroclusterDiagnosticsCluster) contextValidateTimestamp(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagnosticsInlineAggregateInlineSummary) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -914,8 +695,8 @@ func (m *MetroclusterDiagnosticsCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsCluster
+func (m *MetroclusterDiagnosticsInlineAggregateInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineAggregateInlineSummary
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -923,971 +704,22 @@ func (m *MetroclusterDiagnosticsCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagnosticsClusterSummary Additional information or recovery steps to take.
+// MetroclusterDiagnosticsInlineCluster metrocluster diagnostics inline cluster
 //
-// swagger:model MetroclusterDiagnosticsClusterSummary
-type MetroclusterDiagnosticsClusterSummary struct {
+// swagger:model metrocluster_diagnostics_inline_cluster
+type MetroclusterDiagnosticsInlineCluster struct {
 
-	// Argument code
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// Message argument
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics cluster summary
-func (m *MetroclusterDiagnosticsClusterSummary) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics cluster summary based on the context it is used
-func (m *MetroclusterDiagnosticsClusterSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsClusterSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "cluster"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsClusterSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "cluster"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsClusterSummary) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsClusterSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsClusterSummary
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsConfigReplication metrocluster diagnostics config replication
-//
-// swagger:model MetroclusterDiagnosticsConfigReplication
-type MetroclusterDiagnosticsConfigReplication struct {
-
-	// Status of diagnostic operation for this component.
-	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
-
-	// summary
-	Summary *MetroclusterDiagnosticsConfigReplicationSummary `json:"summary,omitempty"`
-
-	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-14T14:35:16-08:00
-	// Read Only: true
-	// Format: date-time
-	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics config replication
-func (m *MetroclusterDiagnosticsConfigReplication) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateState(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSummary(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTimestamp(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-var metroclusterDiagnosticsConfigReplicationTypeStatePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		metroclusterDiagnosticsConfigReplicationTypeStatePropEnum = append(metroclusterDiagnosticsConfigReplicationTypeStatePropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConfigReplication
-	// MetroclusterDiagnosticsConfigReplication
-	// state
-	// State
-	// ok
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConfigReplicationStateOk captures enum value "ok"
-	MetroclusterDiagnosticsConfigReplicationStateOk string = "ok"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConfigReplication
-	// MetroclusterDiagnosticsConfigReplication
-	// state
-	// State
-	// warning
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConfigReplicationStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsConfigReplicationStateWarning string = "warning"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConfigReplication
-	// MetroclusterDiagnosticsConfigReplication
-	// state
-	// State
-	// not_run
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConfigReplicationStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsConfigReplicationStateNotRun string = "not_run"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConfigReplication
-	// MetroclusterDiagnosticsConfigReplication
-	// state
-	// State
-	// not_applicable
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConfigReplicationStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsConfigReplicationStateNotApplicable string = "not_applicable"
-)
-
-// prop value enum
-func (m *MetroclusterDiagnosticsConfigReplication) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsConfigReplicationTypeStatePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplication) validateState(formats strfmt.Registry) error {
-	if swag.IsZero(m.State) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateStateEnum("config-replication"+"."+"state", "body", m.State); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplication) validateSummary(formats strfmt.Registry) error {
-	if swag.IsZero(m.Summary) { // not required
-		return nil
-	}
-
-	if m.Summary != nil {
-		if err := m.Summary.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("config-replication" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplication) validateTimestamp(formats strfmt.Registry) error {
-	if swag.IsZero(m.Timestamp) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("config-replication"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics config replication based on the context it is used
-func (m *MetroclusterDiagnosticsConfigReplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSummary(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplication) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "config-replication"+"."+"state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplication) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Summary != nil {
-		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("config-replication" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplication) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "config-replication"+"."+"timestamp", "body", m.Timestamp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConfigReplication) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConfigReplication) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsConfigReplication
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsConfigReplicationSummary Additional information or recovery steps to take.
-//
-// swagger:model MetroclusterDiagnosticsConfigReplicationSummary
-type MetroclusterDiagnosticsConfigReplicationSummary struct {
-
-	// Argument code
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// Message argument
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics config replication summary
-func (m *MetroclusterDiagnosticsConfigReplicationSummary) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics config replication summary based on the context it is used
-func (m *MetroclusterDiagnosticsConfigReplicationSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplicationSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "config-replication"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConfigReplicationSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "config-replication"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConfigReplicationSummary) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConfigReplicationSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsConfigReplicationSummary
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsConnection metrocluster diagnostics connection
-//
-// swagger:model MetroclusterDiagnosticsConnection
-type MetroclusterDiagnosticsConnection struct {
-
-	// Status of diagnostic operation for this component.
-	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
-
-	// summary
-	Summary *MetroclusterDiagnosticsConnectionSummary `json:"summary,omitempty"`
-
-	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
-	// Read Only: true
-	// Format: date-time
-	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics connection
-func (m *MetroclusterDiagnosticsConnection) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateState(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSummary(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTimestamp(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-var metroclusterDiagnosticsConnectionTypeStatePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		metroclusterDiagnosticsConnectionTypeStatePropEnum = append(metroclusterDiagnosticsConnectionTypeStatePropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConnection
-	// MetroclusterDiagnosticsConnection
-	// state
-	// State
-	// ok
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConnectionStateOk captures enum value "ok"
-	MetroclusterDiagnosticsConnectionStateOk string = "ok"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConnection
-	// MetroclusterDiagnosticsConnection
-	// state
-	// State
-	// warning
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConnectionStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsConnectionStateWarning string = "warning"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConnection
-	// MetroclusterDiagnosticsConnection
-	// state
-	// State
-	// not_run
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConnectionStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsConnectionStateNotRun string = "not_run"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsConnection
-	// MetroclusterDiagnosticsConnection
-	// state
-	// State
-	// not_applicable
-	// END DEBUGGING
-	// MetroclusterDiagnosticsConnectionStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsConnectionStateNotApplicable string = "not_applicable"
-)
-
-// prop value enum
-func (m *MetroclusterDiagnosticsConnection) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsConnectionTypeStatePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnection) validateState(formats strfmt.Registry) error {
-	if swag.IsZero(m.State) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateStateEnum("connection"+"."+"state", "body", m.State); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnection) validateSummary(formats strfmt.Registry) error {
-	if swag.IsZero(m.Summary) { // not required
-		return nil
-	}
-
-	if m.Summary != nil {
-		if err := m.Summary.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("connection" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnection) validateTimestamp(formats strfmt.Registry) error {
-	if swag.IsZero(m.Timestamp) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("connection"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics connection based on the context it is used
-func (m *MetroclusterDiagnosticsConnection) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSummary(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnection) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connection"+"."+"state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnection) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Summary != nil {
-		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("connection" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnection) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connection"+"."+"timestamp", "body", m.Timestamp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConnection) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConnection) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsConnection
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsConnectionSummary Additional information or recovery steps to take.
-//
-// swagger:model MetroclusterDiagnosticsConnectionSummary
-type MetroclusterDiagnosticsConnectionSummary struct {
-
-	// Argument code
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// Message argument
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics connection summary
-func (m *MetroclusterDiagnosticsConnectionSummary) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics connection summary based on the context it is used
-func (m *MetroclusterDiagnosticsConnectionSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnectionSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connection"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsConnectionSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connection"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConnectionSummary) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsConnectionSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsConnectionSummary
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsInterface metrocluster diagnostics interface
-//
-// swagger:model MetroclusterDiagnosticsInterface
-type MetroclusterDiagnosticsInterface struct {
-
-	// Status of diagnostic operation for this component.
-	// Read Only: true
-	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
-
-	// summary
-	Summary *MetroclusterDiagnosticsInterfaceSummary `json:"summary,omitempty"`
-
-	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10T14:35:16-08:00
-	// Read Only: true
-	// Format: date-time
-	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics interface
-func (m *MetroclusterDiagnosticsInterface) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateState(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSummary(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTimestamp(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-var metroclusterDiagnosticsInterfaceTypeStatePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		metroclusterDiagnosticsInterfaceTypeStatePropEnum = append(metroclusterDiagnosticsInterfaceTypeStatePropEnum, v)
-	}
-}
-
-const (
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsInterface
-	// MetroclusterDiagnosticsInterface
-	// state
-	// State
-	// ok
-	// END DEBUGGING
-	// MetroclusterDiagnosticsInterfaceStateOk captures enum value "ok"
-	MetroclusterDiagnosticsInterfaceStateOk string = "ok"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsInterface
-	// MetroclusterDiagnosticsInterface
-	// state
-	// State
-	// warning
-	// END DEBUGGING
-	// MetroclusterDiagnosticsInterfaceStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsInterfaceStateWarning string = "warning"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsInterface
-	// MetroclusterDiagnosticsInterface
-	// state
-	// State
-	// not_run
-	// END DEBUGGING
-	// MetroclusterDiagnosticsInterfaceStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsInterfaceStateNotRun string = "not_run"
-
-	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsInterface
-	// MetroclusterDiagnosticsInterface
-	// state
-	// State
-	// not_applicable
-	// END DEBUGGING
-	// MetroclusterDiagnosticsInterfaceStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsInterfaceStateNotApplicable string = "not_applicable"
-)
-
-// prop value enum
-func (m *MetroclusterDiagnosticsInterface) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInterfaceTypeStatePropEnum, true); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterface) validateState(formats strfmt.Registry) error {
-	if swag.IsZero(m.State) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateStateEnum("interface"+"."+"state", "body", m.State); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterface) validateSummary(formats strfmt.Registry) error {
-	if swag.IsZero(m.Summary) { // not required
-		return nil
-	}
-
-	if m.Summary != nil {
-		if err := m.Summary.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("interface" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterface) validateTimestamp(formats strfmt.Registry) error {
-	if swag.IsZero(m.Timestamp) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("interface"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics interface based on the context it is used
-func (m *MetroclusterDiagnosticsInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateState(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSummary(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterface) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interface"+"."+"state", "body", string(m.State)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterface) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Summary != nil {
-		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("interface" + "." + "summary")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterface) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interface"+"."+"timestamp", "body", m.Timestamp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsInterface) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsInterface) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsInterface
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsInterfaceSummary Additional information or recovery steps to take.
-//
-// swagger:model MetroclusterDiagnosticsInterfaceSummary
-type MetroclusterDiagnosticsInterfaceSummary struct {
-
-	// Argument code
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// Message argument
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this metrocluster diagnostics interface summary
-func (m *MetroclusterDiagnosticsInterfaceSummary) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this metrocluster diagnostics interface summary based on the context it is used
-func (m *MetroclusterDiagnosticsInterfaceSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterfaceSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interface"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MetroclusterDiagnosticsInterfaceSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interface"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsInterfaceSummary) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsInterfaceSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsInterfaceSummary
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// MetroclusterDiagnosticsNode metrocluster diagnostics node
-//
-// swagger:model MetroclusterDiagnosticsNode
-type MetroclusterDiagnosticsNode struct {
-
-	// Displays details of the MetroCluster check for nodes.
+	// Display details of the MetroCluster check for clusters.
 	// Read Only: true
 	Details []*MetroclusterDiagDetails `json:"details,omitempty"`
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
 	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// summary
-	Summary *MetroclusterDiagnosticsNodeSummary `json:"summary,omitempty"`
+	Summary *MetroclusterDiagnosticsInlineClusterInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
 	// Example: 2016-03-10T14:35:16-08:00
@@ -1896,8 +728,8 @@ type MetroclusterDiagnosticsNode struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this metrocluster diagnostics node
-func (m *MetroclusterDiagnosticsNode) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diagnostics inline cluster
+func (m *MetroclusterDiagnosticsInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDetails(formats); err != nil {
@@ -1922,7 +754,7 @@ func (m *MetroclusterDiagnosticsNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) validateDetails(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineCluster) validateDetails(formats strfmt.Registry) error {
 	if swag.IsZero(m.Details) { // not required
 		return nil
 	}
@@ -1935,7 +767,7 @@ func (m *MetroclusterDiagnosticsNode) validateDetails(formats strfmt.Registry) e
 		if m.Details[i] != nil {
 			if err := m.Details[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("node" + "." + "details" + "." + strconv.Itoa(i))
+					return ve.ValidateName("cluster" + "." + "details" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -1946,7 +778,7 @@ func (m *MetroclusterDiagnosticsNode) validateDetails(formats strfmt.Registry) e
 	return nil
 }
 
-var metroclusterDiagnosticsNodeTypeStatePropEnum []interface{}
+var metroclusterDiagnosticsInlineClusterTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1954,75 +786,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterDiagnosticsNodeTypeStatePropEnum = append(metroclusterDiagnosticsNodeTypeStatePropEnum, v)
+		metroclusterDiagnosticsInlineClusterTypeStatePropEnum = append(metroclusterDiagnosticsInlineClusterTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsNode
-	// MetroclusterDiagnosticsNode
+	// metrocluster_diagnostics_inline_cluster
+	// MetroclusterDiagnosticsInlineCluster
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// MetroclusterDiagnosticsNodeStateOk captures enum value "ok"
-	MetroclusterDiagnosticsNodeStateOk string = "ok"
+	// MetroclusterDiagnosticsInlineClusterStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineClusterStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsNode
-	// MetroclusterDiagnosticsNode
+	// metrocluster_diagnostics_inline_cluster
+	// MetroclusterDiagnosticsInlineCluster
 	// state
 	// State
 	// warning
 	// END DEBUGGING
-	// MetroclusterDiagnosticsNodeStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsNodeStateWarning string = "warning"
+	// MetroclusterDiagnosticsInlineClusterStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineClusterStateWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsNode
-	// MetroclusterDiagnosticsNode
+	// metrocluster_diagnostics_inline_cluster
+	// MetroclusterDiagnosticsInlineCluster
 	// state
 	// State
 	// not_run
 	// END DEBUGGING
-	// MetroclusterDiagnosticsNodeStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsNodeStateNotRun string = "not_run"
+	// MetroclusterDiagnosticsInlineClusterStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineClusterStateNotRun string = "not_run"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsNode
-	// MetroclusterDiagnosticsNode
+	// metrocluster_diagnostics_inline_cluster
+	// MetroclusterDiagnosticsInlineCluster
 	// state
 	// State
 	// not_applicable
 	// END DEBUGGING
-	// MetroclusterDiagnosticsNodeStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsNodeStateNotApplicable string = "not_applicable"
+	// MetroclusterDiagnosticsInlineClusterStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineClusterStateNotApplicable string = "not_applicable"
 )
 
 // prop value enum
-func (m *MetroclusterDiagnosticsNode) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsNodeTypeStatePropEnum, true); err != nil {
+func (m *MetroclusterDiagnosticsInlineCluster) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineClusterTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) validateState(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineCluster) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("node"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("cluster"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) validateSummary(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineCluster) validateSummary(formats strfmt.Registry) error {
 	if swag.IsZero(m.Summary) { // not required
 		return nil
 	}
@@ -2030,7 +862,7 @@ func (m *MetroclusterDiagnosticsNode) validateSummary(formats strfmt.Registry) e
 	if m.Summary != nil {
 		if err := m.Summary.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("node" + "." + "summary")
+				return ve.ValidateName("cluster" + "." + "summary")
 			}
 			return err
 		}
@@ -2039,20 +871,20 @@ func (m *MetroclusterDiagnosticsNode) validateSummary(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) validateTimestamp(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineCluster) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
 
-	if err := validate.FormatOf("node"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+	if err := validate.FormatOf("cluster"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this metrocluster diagnostics node based on the context it is used
-func (m *MetroclusterDiagnosticsNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diagnostics inline cluster based on the context it is used
+func (m *MetroclusterDiagnosticsInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDetails(ctx, formats); err != nil {
@@ -2077,7 +909,1291 @@ func (m *MetroclusterDiagnosticsNode) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineCluster) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cluster"+"."+"details", "body", []*MetroclusterDiagDetails(m.Details)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cluster" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineCluster) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cluster"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineCluster) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Summary != nil {
+		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cluster" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineCluster) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cluster"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineCluster) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineCluster
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineClusterInlineSummary Additional information or recovery steps to take.
+//
+// swagger:model metrocluster_diagnostics_inline_cluster_inline_summary
+type MetroclusterDiagnosticsInlineClusterInlineSummary struct {
+
+	// Argument code
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Message argument
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline cluster inline summary
+func (m *MetroclusterDiagnosticsInlineClusterInlineSummary) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline cluster inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineClusterInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineClusterInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cluster"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineClusterInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cluster"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineClusterInlineSummary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineClusterInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineClusterInlineSummary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineConfigReplication metrocluster diagnostics inline config replication
+//
+// swagger:model metrocluster_diagnostics_inline_config-replication
+type MetroclusterDiagnosticsInlineConfigReplication struct {
+
+	// Status of diagnostic operation for this component.
+	// Read Only: true
+	// Enum: [ok warning not_run not_applicable]
+	State *string `json:"state,omitempty"`
+
+	// summary
+	Summary *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary `json:"summary,omitempty"`
+
+	// Time of the most recent diagnostic operation for this component
+	// Example: 2016-03-14T14:35:16-08:00
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline config replication
+func (m *MetroclusterDiagnosticsInlineConfigReplication) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var metroclusterDiagnosticsInlineConfigReplicationTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterDiagnosticsInlineConfigReplicationTypeStatePropEnum = append(metroclusterDiagnosticsInlineConfigReplicationTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_config-replication
+	// MetroclusterDiagnosticsInlineConfigReplication
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConfigReplicationStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineConfigReplicationStateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_config-replication
+	// MetroclusterDiagnosticsInlineConfigReplication
+	// state
+	// State
+	// warning
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConfigReplicationStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineConfigReplicationStateWarning string = "warning"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_config-replication
+	// MetroclusterDiagnosticsInlineConfigReplication
+	// state
+	// State
+	// not_run
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConfigReplicationStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineConfigReplicationStateNotRun string = "not_run"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_config-replication
+	// MetroclusterDiagnosticsInlineConfigReplication
+	// state
+	// State
+	// not_applicable
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConfigReplicationStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineConfigReplicationStateNotApplicable string = "not_applicable"
+)
+
+// prop value enum
+func (m *MetroclusterDiagnosticsInlineConfigReplication) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineConfigReplicationTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplication) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("config-replication"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplication) validateSummary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Summary) { // not required
+		return nil
+	}
+
+	if m.Summary != nil {
+		if err := m.Summary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("config-replication" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplication) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("config-replication"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline config replication based on the context it is used
+func (m *MetroclusterDiagnosticsInlineConfigReplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSummary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplication) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "config-replication"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplication) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Summary != nil {
+		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("config-replication" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplication) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "config-replication"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConfigReplication) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConfigReplication) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineConfigReplication
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineConfigReplicationInlineSummary Additional information or recovery steps to take.
+//
+// swagger:model metrocluster_diagnostics_inline_config-replication_inline_summary
+type MetroclusterDiagnosticsInlineConfigReplicationInlineSummary struct {
+
+	// Argument code
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Message argument
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline config replication inline summary
+func (m *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline config replication inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "config-replication"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "config-replication"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineConfigReplicationInlineSummary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineConnection metrocluster diagnostics inline connection
+//
+// swagger:model metrocluster_diagnostics_inline_connection
+type MetroclusterDiagnosticsInlineConnection struct {
+
+	// Display details of the MetroCluster check for connections.
+	// Read Only: true
+	Details []*MetroclusterDiagConnectionDetails `json:"details,omitempty"`
+
+	// Status of diagnostic operation for this component.
+	// Read Only: true
+	// Enum: [ok warning not_run not_applicable]
+	State *string `json:"state,omitempty"`
+
+	// summary
+	Summary *MetroclusterDiagnosticsInlineConnectionInlineSummary `json:"summary,omitempty"`
+
+	// Time of the most recent diagnostic operation for this component
+	// Example: 2016-03-10T14:35:16-08:00
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline connection
+func (m *MetroclusterDiagnosticsInlineConnection) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) validateDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.Details) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+		if swag.IsZero(m.Details[i]) { // not required
+			continue
+		}
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connection" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var metroclusterDiagnosticsInlineConnectionTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterDiagnosticsInlineConnectionTypeStatePropEnum = append(metroclusterDiagnosticsInlineConnectionTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_connection
+	// MetroclusterDiagnosticsInlineConnection
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConnectionStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineConnectionStateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_connection
+	// MetroclusterDiagnosticsInlineConnection
+	// state
+	// State
+	// warning
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConnectionStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineConnectionStateWarning string = "warning"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_connection
+	// MetroclusterDiagnosticsInlineConnection
+	// state
+	// State
+	// not_run
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConnectionStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineConnectionStateNotRun string = "not_run"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_connection
+	// MetroclusterDiagnosticsInlineConnection
+	// state
+	// State
+	// not_applicable
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineConnectionStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineConnectionStateNotApplicable string = "not_applicable"
+)
+
+// prop value enum
+func (m *MetroclusterDiagnosticsInlineConnection) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineConnectionTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("connection"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) validateSummary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Summary) { // not required
+		return nil
+	}
+
+	if m.Summary != nil {
+		if err := m.Summary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connection" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("connection"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline connection based on the context it is used
+func (m *MetroclusterDiagnosticsInlineConnection) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSummary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connection"+"."+"details", "body", []*MetroclusterDiagConnectionDetails(m.Details)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connection" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connection"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Summary != nil {
+		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("connection" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnection) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connection"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConnection) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConnection) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineConnection
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineConnectionInlineSummary Additional information or recovery steps to take.
+//
+// swagger:model metrocluster_diagnostics_inline_connection_inline_summary
+type MetroclusterDiagnosticsInlineConnectionInlineSummary struct {
+
+	// Argument code
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Message argument
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline connection inline summary
+func (m *MetroclusterDiagnosticsInlineConnectionInlineSummary) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline connection inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineConnectionInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnectionInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connection"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineConnectionInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connection"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConnectionInlineSummary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineConnectionInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineConnectionInlineSummary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineInterface metrocluster diagnostics inline interface
+//
+// swagger:model metrocluster_diagnostics_inline_interface
+type MetroclusterDiagnosticsInlineInterface struct {
+
+	// Status of diagnostic operation for this component.
+	// Read Only: true
+	// Enum: [ok warning not_run not_applicable]
+	State *string `json:"state,omitempty"`
+
+	// summary
+	Summary *MetroclusterDiagnosticsInlineInterfaceInlineSummary `json:"summary,omitempty"`
+
+	// Time of the most recent diagnostic operation for this component
+	// Example: 2016-03-10T14:35:16-08:00
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline interface
+func (m *MetroclusterDiagnosticsInlineInterface) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var metroclusterDiagnosticsInlineInterfaceTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterDiagnosticsInlineInterfaceTypeStatePropEnum = append(metroclusterDiagnosticsInlineInterfaceTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_interface
+	// MetroclusterDiagnosticsInlineInterface
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineInterfaceStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineInterfaceStateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_interface
+	// MetroclusterDiagnosticsInlineInterface
+	// state
+	// State
+	// warning
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineInterfaceStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineInterfaceStateWarning string = "warning"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_interface
+	// MetroclusterDiagnosticsInlineInterface
+	// state
+	// State
+	// not_run
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineInterfaceStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineInterfaceStateNotRun string = "not_run"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_interface
+	// MetroclusterDiagnosticsInlineInterface
+	// state
+	// State
+	// not_applicable
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineInterfaceStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineInterfaceStateNotApplicable string = "not_applicable"
+)
+
+// prop value enum
+func (m *MetroclusterDiagnosticsInlineInterface) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineInterfaceTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterface) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("interface"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterface) validateSummary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Summary) { // not required
+		return nil
+	}
+
+	if m.Summary != nil {
+		if err := m.Summary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterface) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("interface"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline interface based on the context it is used
+func (m *MetroclusterDiagnosticsInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSummary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterface) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterface) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Summary != nil {
+		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterface) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineInterface) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineInterface) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineInterface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineInterfaceInlineSummary Additional information or recovery steps to take.
+//
+// swagger:model metrocluster_diagnostics_inline_interface_inline_summary
+type MetroclusterDiagnosticsInlineInterfaceInlineSummary struct {
+
+	// Argument code
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Message argument
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline interface inline summary
+func (m *MetroclusterDiagnosticsInlineInterfaceInlineSummary) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline interface inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineInterfaceInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterfaceInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineInterfaceInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineInterfaceInlineSummary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagnosticsInlineInterfaceInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineInterfaceInlineSummary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagnosticsInlineNode metrocluster diagnostics inline node
+//
+// swagger:model metrocluster_diagnostics_inline_node
+type MetroclusterDiagnosticsInlineNode struct {
+
+	// Displays details of the MetroCluster check for nodes.
+	// Read Only: true
+	Details []*MetroclusterDiagDetails `json:"details,omitempty"`
+
+	// Status of diagnostic operation for this component.
+	// Read Only: true
+	// Enum: [ok warning not_run not_applicable]
+	State *string `json:"state,omitempty"`
+
+	// summary
+	Summary *MetroclusterDiagnosticsInlineNodeInlineSummary `json:"summary,omitempty"`
+
+	// Time of the most recent diagnostic operation for this component
+	// Example: 2016-03-10T14:35:16-08:00
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this metrocluster diagnostics inline node
+func (m *MetroclusterDiagnosticsInlineNode) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDetails(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineNode) validateDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.Details) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+		if swag.IsZero(m.Details[i]) { // not required
+			continue
+		}
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("node" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var metroclusterDiagnosticsInlineNodeTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","warning","not_run","not_applicable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterDiagnosticsInlineNodeTypeStatePropEnum = append(metroclusterDiagnosticsInlineNodeTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_node
+	// MetroclusterDiagnosticsInlineNode
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineNodeStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineNodeStateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_node
+	// MetroclusterDiagnosticsInlineNode
+	// state
+	// State
+	// warning
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineNodeStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineNodeStateWarning string = "warning"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_node
+	// MetroclusterDiagnosticsInlineNode
+	// state
+	// State
+	// not_run
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineNodeStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineNodeStateNotRun string = "not_run"
+
+	// BEGIN DEBUGGING
+	// metrocluster_diagnostics_inline_node
+	// MetroclusterDiagnosticsInlineNode
+	// state
+	// State
+	// not_applicable
+	// END DEBUGGING
+	// MetroclusterDiagnosticsInlineNodeStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineNodeStateNotApplicable string = "not_applicable"
+)
+
+// prop value enum
+func (m *MetroclusterDiagnosticsInlineNode) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineNodeTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineNode) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("node"+"."+"state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineNode) validateSummary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Summary) { // not required
+		return nil
+	}
+
+	if m.Summary != nil {
+		if err := m.Summary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineNode) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("node"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster diagnostics inline node based on the context it is used
+func (m *MetroclusterDiagnosticsInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSummary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineNode) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "node"+"."+"details", "body", []*MetroclusterDiagDetails(m.Details)); err != nil {
 		return err
@@ -2099,16 +2215,16 @@ func (m *MetroclusterDiagnosticsNode) contextValidateDetails(ctx context.Context
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineNode) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "node"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "node"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineNode) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Summary != nil {
 		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
@@ -2122,7 +2238,7 @@ func (m *MetroclusterDiagnosticsNode) contextValidateSummary(ctx context.Context
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNode) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineNode) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "node"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2132,7 +2248,7 @@ func (m *MetroclusterDiagnosticsNode) contextValidateTimestamp(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsNode) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagnosticsInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2140,8 +2256,8 @@ func (m *MetroclusterDiagnosticsNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsNode) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsNode
+func (m *MetroclusterDiagnosticsInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2149,27 +2265,27 @@ func (m *MetroclusterDiagnosticsNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagnosticsNodeSummary Additional information or recovery steps to take.
+// MetroclusterDiagnosticsInlineNodeInlineSummary Additional information or recovery steps to take.
 //
-// swagger:model MetroclusterDiagnosticsNodeSummary
-type MetroclusterDiagnosticsNodeSummary struct {
+// swagger:model metrocluster_diagnostics_inline_node_inline_summary
+type MetroclusterDiagnosticsInlineNodeInlineSummary struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this metrocluster diagnostics node summary
-func (m *MetroclusterDiagnosticsNodeSummary) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diagnostics inline node inline summary
+func (m *MetroclusterDiagnosticsInlineNodeInlineSummary) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster diagnostics node summary based on the context it is used
-func (m *MetroclusterDiagnosticsNodeSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diagnostics inline node inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineNodeInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -2186,18 +2302,18 @@ func (m *MetroclusterDiagnosticsNodeSummary) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNodeSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineNodeInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "node"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "node"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsNodeSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineNodeInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "node"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "node"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -2205,7 +2321,7 @@ func (m *MetroclusterDiagnosticsNodeSummary) contextValidateMessage(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsNodeSummary) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagnosticsInlineNodeInlineSummary) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2213,8 +2329,8 @@ func (m *MetroclusterDiagnosticsNodeSummary) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsNodeSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsNodeSummary
+func (m *MetroclusterDiagnosticsInlineNodeInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineNodeInlineSummary
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2222,18 +2338,22 @@ func (m *MetroclusterDiagnosticsNodeSummary) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagnosticsVolume metrocluster diagnostics volume
+// MetroclusterDiagnosticsInlineVolume metrocluster diagnostics inline volume
 //
-// swagger:model MetroclusterDiagnosticsVolume
-type MetroclusterDiagnosticsVolume struct {
+// swagger:model metrocluster_diagnostics_inline_volume
+type MetroclusterDiagnosticsInlineVolume struct {
+
+	// Display details of the MetroCluster check for volumes.
+	// Read Only: true
+	Details []*MetroclusterDiagDetails `json:"details,omitempty"`
 
 	// Status of diagnostic operation for this component.
 	// Read Only: true
 	// Enum: [ok warning not_run not_applicable]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// summary
-	Summary *MetroclusterDiagnosticsVolumeSummary `json:"summary,omitempty"`
+	Summary *MetroclusterDiagnosticsInlineVolumeInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
 	// Example: 2016-03-10T14:35:16-08:00
@@ -2242,9 +2362,13 @@ type MetroclusterDiagnosticsVolume struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this metrocluster diagnostics volume
-func (m *MetroclusterDiagnosticsVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diagnostics inline volume
+func (m *MetroclusterDiagnosticsInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateDetails(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
@@ -2264,7 +2388,31 @@ func (m *MetroclusterDiagnosticsVolume) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-var metroclusterDiagnosticsVolumeTypeStatePropEnum []interface{}
+func (m *MetroclusterDiagnosticsInlineVolume) validateDetails(formats strfmt.Registry) error {
+	if swag.IsZero(m.Details) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+		if swag.IsZero(m.Details[i]) { // not required
+			continue
+		}
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("volume" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var metroclusterDiagnosticsInlineVolumeTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2272,75 +2420,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		metroclusterDiagnosticsVolumeTypeStatePropEnum = append(metroclusterDiagnosticsVolumeTypeStatePropEnum, v)
+		metroclusterDiagnosticsInlineVolumeTypeStatePropEnum = append(metroclusterDiagnosticsInlineVolumeTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsVolume
-	// MetroclusterDiagnosticsVolume
+	// metrocluster_diagnostics_inline_volume
+	// MetroclusterDiagnosticsInlineVolume
 	// state
 	// State
 	// ok
 	// END DEBUGGING
-	// MetroclusterDiagnosticsVolumeStateOk captures enum value "ok"
-	MetroclusterDiagnosticsVolumeStateOk string = "ok"
+	// MetroclusterDiagnosticsInlineVolumeStateOk captures enum value "ok"
+	MetroclusterDiagnosticsInlineVolumeStateOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsVolume
-	// MetroclusterDiagnosticsVolume
+	// metrocluster_diagnostics_inline_volume
+	// MetroclusterDiagnosticsInlineVolume
 	// state
 	// State
 	// warning
 	// END DEBUGGING
-	// MetroclusterDiagnosticsVolumeStateWarning captures enum value "warning"
-	MetroclusterDiagnosticsVolumeStateWarning string = "warning"
+	// MetroclusterDiagnosticsInlineVolumeStateWarning captures enum value "warning"
+	MetroclusterDiagnosticsInlineVolumeStateWarning string = "warning"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsVolume
-	// MetroclusterDiagnosticsVolume
+	// metrocluster_diagnostics_inline_volume
+	// MetroclusterDiagnosticsInlineVolume
 	// state
 	// State
 	// not_run
 	// END DEBUGGING
-	// MetroclusterDiagnosticsVolumeStateNotRun captures enum value "not_run"
-	MetroclusterDiagnosticsVolumeStateNotRun string = "not_run"
+	// MetroclusterDiagnosticsInlineVolumeStateNotRun captures enum value "not_run"
+	MetroclusterDiagnosticsInlineVolumeStateNotRun string = "not_run"
 
 	// BEGIN DEBUGGING
-	// MetroclusterDiagnosticsVolume
-	// MetroclusterDiagnosticsVolume
+	// metrocluster_diagnostics_inline_volume
+	// MetroclusterDiagnosticsInlineVolume
 	// state
 	// State
 	// not_applicable
 	// END DEBUGGING
-	// MetroclusterDiagnosticsVolumeStateNotApplicable captures enum value "not_applicable"
-	MetroclusterDiagnosticsVolumeStateNotApplicable string = "not_applicable"
+	// MetroclusterDiagnosticsInlineVolumeStateNotApplicable captures enum value "not_applicable"
+	MetroclusterDiagnosticsInlineVolumeStateNotApplicable string = "not_applicable"
 )
 
 // prop value enum
-func (m *MetroclusterDiagnosticsVolume) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsVolumeTypeStatePropEnum, true); err != nil {
+func (m *MetroclusterDiagnosticsInlineVolume) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterDiagnosticsInlineVolumeTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolume) validateState(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolume) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("volume"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("volume"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolume) validateSummary(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolume) validateSummary(formats strfmt.Registry) error {
 	if swag.IsZero(m.Summary) { // not required
 		return nil
 	}
@@ -2357,7 +2505,7 @@ func (m *MetroclusterDiagnosticsVolume) validateSummary(formats strfmt.Registry)
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolume) validateTimestamp(formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolume) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2369,9 +2517,13 @@ func (m *MetroclusterDiagnosticsVolume) validateTimestamp(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this metrocluster diagnostics volume based on the context it is used
-func (m *MetroclusterDiagnosticsVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diagnostics inline volume based on the context it is used
+func (m *MetroclusterDiagnosticsInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateDetails(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
@@ -2391,16 +2543,38 @@ func (m *MetroclusterDiagnosticsVolume) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolume) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolume) contextValidateDetails(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "volume"+"."+"state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "volume"+"."+"details", "body", []*MetroclusterDiagDetails(m.Details)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Details); i++ {
+
+		if m.Details[i] != nil {
+			if err := m.Details[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("volume" + "." + "details" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagnosticsInlineVolume) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "volume"+"."+"state", "body", m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolume) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolume) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Summary != nil {
 		if err := m.Summary.ContextValidate(ctx, formats); err != nil {
@@ -2414,7 +2588,7 @@ func (m *MetroclusterDiagnosticsVolume) contextValidateSummary(ctx context.Conte
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolume) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolume) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "volume"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -2424,7 +2598,7 @@ func (m *MetroclusterDiagnosticsVolume) contextValidateTimestamp(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsVolume) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagnosticsInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2432,8 +2606,8 @@ func (m *MetroclusterDiagnosticsVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsVolume) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsVolume
+func (m *MetroclusterDiagnosticsInlineVolume) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2441,27 +2615,27 @@ func (m *MetroclusterDiagnosticsVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagnosticsVolumeSummary Additional information or recovery steps to take.
+// MetroclusterDiagnosticsInlineVolumeInlineSummary Additional information or recovery steps to take.
 //
-// swagger:model MetroclusterDiagnosticsVolumeSummary
-type MetroclusterDiagnosticsVolumeSummary struct {
+// swagger:model metrocluster_diagnostics_inline_volume_inline_summary
+type MetroclusterDiagnosticsInlineVolumeInlineSummary struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this metrocluster diagnostics volume summary
-func (m *MetroclusterDiagnosticsVolumeSummary) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diagnostics inline volume inline summary
+func (m *MetroclusterDiagnosticsInlineVolumeInlineSummary) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster diagnostics volume summary based on the context it is used
-func (m *MetroclusterDiagnosticsVolumeSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diagnostics inline volume inline summary based on the context it is used
+func (m *MetroclusterDiagnosticsInlineVolumeInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -2478,18 +2652,18 @@ func (m *MetroclusterDiagnosticsVolumeSummary) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolumeSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolumeInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "volume"+"."+"summary"+"."+"code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "volume"+"."+"summary"+"."+"code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterDiagnosticsVolumeSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagnosticsInlineVolumeInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "volume"+"."+"summary"+"."+"message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "volume"+"."+"summary"+"."+"message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -2497,7 +2671,7 @@ func (m *MetroclusterDiagnosticsVolumeSummary) contextValidateMessage(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsVolumeSummary) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagnosticsInlineVolumeInlineSummary) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2505,8 +2679,8 @@ func (m *MetroclusterDiagnosticsVolumeSummary) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagnosticsVolumeSummary) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagnosticsVolumeSummary
+func (m *MetroclusterDiagnosticsInlineVolumeInlineSummary) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagnosticsInlineVolumeInlineSummary
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

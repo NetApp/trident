@@ -67,19 +67,19 @@ type ConsistencyGroupSnapshotDeleteParams struct {
 	   The unique identifier of the Snapshot copy of the consistency group to delete.
 
 	*/
-	ConsistencyGroupUUIDPathParameter string
+	ConsistencyGroupUUID string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Snapshot copy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -99,11 +99,11 @@ func (o *ConsistencyGroupSnapshotDeleteParams) WithDefaults() *ConsistencyGroupS
 // All values with no default are reset to their zero value.
 func (o *ConsistencyGroupSnapshotDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ConsistencyGroupSnapshotDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -145,37 +145,37 @@ func (o *ConsistencyGroupSnapshotDeleteParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithConsistencyGroupUUIDPathParameter adds the consistencyGroupUUID to the consistency group snapshot delete params
-func (o *ConsistencyGroupSnapshotDeleteParams) WithConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) *ConsistencyGroupSnapshotDeleteParams {
-	o.SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID)
+// WithConsistencyGroupUUID adds the consistencyGroupUUID to the consistency group snapshot delete params
+func (o *ConsistencyGroupSnapshotDeleteParams) WithConsistencyGroupUUID(consistencyGroupUUID string) *ConsistencyGroupSnapshotDeleteParams {
+	o.SetConsistencyGroupUUID(consistencyGroupUUID)
 	return o
 }
 
-// SetConsistencyGroupUUIDPathParameter adds the consistencyGroupUuid to the consistency group snapshot delete params
-func (o *ConsistencyGroupSnapshotDeleteParams) SetConsistencyGroupUUIDPathParameter(consistencyGroupUUID string) {
-	o.ConsistencyGroupUUIDPathParameter = consistencyGroupUUID
+// SetConsistencyGroupUUID adds the consistencyGroupUuid to the consistency group snapshot delete params
+func (o *ConsistencyGroupSnapshotDeleteParams) SetConsistencyGroupUUID(consistencyGroupUUID string) {
+	o.ConsistencyGroupUUID = consistencyGroupUUID
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the consistency group snapshot delete params
-func (o *ConsistencyGroupSnapshotDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ConsistencyGroupSnapshotDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the consistency group snapshot delete params
+func (o *ConsistencyGroupSnapshotDeleteParams) WithReturnTimeout(returnTimeout *int64) *ConsistencyGroupSnapshotDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the consistency group snapshot delete params
-func (o *ConsistencyGroupSnapshotDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the consistency group snapshot delete params
+func (o *ConsistencyGroupSnapshotDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the consistency group snapshot delete params
-func (o *ConsistencyGroupSnapshotDeleteParams) WithUUIDPathParameter(uuid string) *ConsistencyGroupSnapshotDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the consistency group snapshot delete params
+func (o *ConsistencyGroupSnapshotDeleteParams) WithUUID(uuid string) *ConsistencyGroupSnapshotDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the consistency group snapshot delete params
-func (o *ConsistencyGroupSnapshotDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the consistency group snapshot delete params
+func (o *ConsistencyGroupSnapshotDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -187,17 +187,17 @@ func (o *ConsistencyGroupSnapshotDeleteParams) WriteToRequest(r runtime.ClientRe
 	var res []error
 
 	// path param consistency_group.uuid
-	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("consistency_group.uuid", o.ConsistencyGroupUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -209,7 +209,7 @@ func (o *ConsistencyGroupSnapshotDeleteParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

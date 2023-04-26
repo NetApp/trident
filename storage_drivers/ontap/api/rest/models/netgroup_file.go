@@ -20,22 +20,22 @@ import (
 type NetgroupFile struct {
 
 	// links
-	Links *NetgroupFileLinks `json:"_links,omitempty"`
+	Links *NetgroupFileInlineLinks `json:"_links,omitempty"`
 
 	// File size of the netgroup definitions file in bytes.
 	// Example: 5118686
-	FileSize int64 `json:"file_size,omitempty"`
+	FileSize *int64 `json:"file_size,omitempty"`
 
 	// Hash value of the netgroup definitions.
 	// Example: e53ec87782356bd6786f146ce0a48449
-	HashValue string `json:"hash_value,omitempty"`
+	HashValue *string `json:"hash_value,omitempty"`
 
 	// Hash value of the netgroup-by-host database.
 	// Example: e012b7f62e4810936725ed1239018314
-	HashValueByHost string `json:"hash_value_by_host,omitempty"`
+	HashValueByHost *string `json:"hash_value_by_host,omitempty"`
 
 	// svm
-	Svm *NetgroupFileSvm `json:"svm,omitempty"`
+	Svm *NetgroupFileInlineSvm `json:"svm,omitempty"`
 
 	// Load time for netgroup definitions.
 	// Format: date-time
@@ -174,17 +174,17 @@ func (m *NetgroupFile) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupFileLinks netgroup file links
+// NetgroupFileInlineLinks netgroup file inline links
 //
-// swagger:model NetgroupFileLinks
-type NetgroupFileLinks struct {
+// swagger:model netgroup_file_inline__links
+type NetgroupFileInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netgroup file links
-func (m *NetgroupFileLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroup file inline links
+func (m *NetgroupFileInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -197,7 +197,7 @@ func (m *NetgroupFileLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetgroupFileLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetgroupFileInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -214,8 +214,8 @@ func (m *NetgroupFileLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netgroup file links based on the context it is used
-func (m *NetgroupFileLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroup file inline links based on the context it is used
+func (m *NetgroupFileInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -228,7 +228,7 @@ func (m *NetgroupFileLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NetgroupFileLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupFileInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -243,7 +243,7 @@ func (m *NetgroupFileLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupFileLinks) MarshalBinary() ([]byte, error) {
+func (m *NetgroupFileInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -251,8 +251,8 @@ func (m *NetgroupFileLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupFileLinks) UnmarshalBinary(b []byte) error {
-	var res NetgroupFileLinks
+func (m *NetgroupFileInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetgroupFileInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -260,27 +260,27 @@ func (m *NetgroupFileLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupFileSvm netgroup file svm
+// NetgroupFileInlineSvm netgroup file inline svm
 //
-// swagger:model NetgroupFileSvm
-type NetgroupFileSvm struct {
+// swagger:model netgroup_file_inline_svm
+type NetgroupFileInlineSvm struct {
 
 	// links
-	Links *NetgroupFileSvmLinks `json:"_links,omitempty"`
+	Links *NetgroupFileInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this netgroup file svm
-func (m *NetgroupFileSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroup file inline svm
+func (m *NetgroupFileInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -293,7 +293,7 @@ func (m *NetgroupFileSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetgroupFileSvm) validateLinks(formats strfmt.Registry) error {
+func (m *NetgroupFileInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -310,8 +310,8 @@ func (m *NetgroupFileSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netgroup file svm based on the context it is used
-func (m *NetgroupFileSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroup file inline svm based on the context it is used
+func (m *NetgroupFileInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -324,7 +324,7 @@ func (m *NetgroupFileSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *NetgroupFileSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupFileInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -339,7 +339,7 @@ func (m *NetgroupFileSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupFileSvm) MarshalBinary() ([]byte, error) {
+func (m *NetgroupFileInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -347,8 +347,8 @@ func (m *NetgroupFileSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupFileSvm) UnmarshalBinary(b []byte) error {
-	var res NetgroupFileSvm
+func (m *NetgroupFileInlineSvm) UnmarshalBinary(b []byte) error {
+	var res NetgroupFileInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -356,17 +356,17 @@ func (m *NetgroupFileSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupFileSvmLinks netgroup file svm links
+// NetgroupFileInlineSvmInlineLinks netgroup file inline svm inline links
 //
-// swagger:model NetgroupFileSvmLinks
-type NetgroupFileSvmLinks struct {
+// swagger:model netgroup_file_inline_svm_inline__links
+type NetgroupFileInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netgroup file svm links
-func (m *NetgroupFileSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroup file inline svm inline links
+func (m *NetgroupFileInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -379,7 +379,7 @@ func (m *NetgroupFileSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NetgroupFileSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetgroupFileInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -396,8 +396,8 @@ func (m *NetgroupFileSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this netgroup file svm links based on the context it is used
-func (m *NetgroupFileSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroup file inline svm inline links based on the context it is used
+func (m *NetgroupFileInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -410,7 +410,7 @@ func (m *NetgroupFileSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *NetgroupFileSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupFileInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -425,7 +425,7 @@ func (m *NetgroupFileSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupFileSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *NetgroupFileInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -433,8 +433,8 @@ func (m *NetgroupFileSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupFileSvmLinks) UnmarshalBinary(b []byte) error {
-	var res NetgroupFileSvmLinks
+func (m *NetgroupFileInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetgroupFileInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

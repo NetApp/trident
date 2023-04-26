@@ -11,7 +11,7 @@ import (
 func TestImages(t *testing.T) {
 	unsupportedVersion := "1.9.0"
 	invalidVersion := "1.10.12.2240"
-	supportedVersion := "1.20.0"
+	supportedVersion := "1.26.0"
 
 	K8sVersion = unsupportedVersion
 	assert.Error(t, listImages(), "Unsupported version %s should return an error.", K8sVersion)

@@ -66,13 +66,13 @@ type ClusterNtpServersGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Server.
 
 	   NTP server host name, IPv4, or IPv6 address.
 	*/
-	ServerPathParameter string
+	Server string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ClusterNtpServersGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cluster ntp servers get params
-func (o *ClusterNtpServersGetParams) WithFieldsQueryParameter(fields []string) *ClusterNtpServersGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cluster ntp servers get params
+func (o *ClusterNtpServersGetParams) WithFields(fields []string) *ClusterNtpServersGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cluster ntp servers get params
-func (o *ClusterNtpServersGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cluster ntp servers get params
+func (o *ClusterNtpServersGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithServerPathParameter adds the server to the cluster ntp servers get params
-func (o *ClusterNtpServersGetParams) WithServerPathParameter(server string) *ClusterNtpServersGetParams {
-	o.SetServerPathParameter(server)
+// WithServer adds the server to the cluster ntp servers get params
+func (o *ClusterNtpServersGetParams) WithServer(server string) *ClusterNtpServersGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerPathParameter adds the server to the cluster ntp servers get params
-func (o *ClusterNtpServersGetParams) SetServerPathParameter(server string) {
-	o.ServerPathParameter = server
+// SetServer adds the server to the cluster ntp servers get params
+func (o *ClusterNtpServersGetParams) SetServer(server string) {
+	o.Server = server
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ClusterNtpServersGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ClusterNtpServersGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param server
-	if err := r.SetPathParam("server", o.ServerPathParameter); err != nil {
+	if err := r.SetPathParam("server", o.Server); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ClusterNtpServersGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamClusterNtpServersGet binds the parameter fields
 func (o *ClusterNtpServersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

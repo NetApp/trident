@@ -52,6 +52,11 @@ VvolBindingCreateCreated describes a response with status code 201, with default
 Created
 */
 type VvolBindingCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.VvolBindingResponse
 }
 
@@ -93,6 +98,13 @@ func (o *VvolBindingCreateCreated) GetPayload() *models.VvolBindingResponse {
 }
 
 func (o *VvolBindingCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.VvolBindingResponse)
 

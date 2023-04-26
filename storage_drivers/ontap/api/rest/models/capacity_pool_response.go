@@ -23,11 +23,12 @@ type CapacityPoolResponse struct {
 	// links
 	Links *CollectionLinks `json:"_links,omitempty"`
 
-	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// capacity pool response inline records
+	CapacityPoolResponseInlineRecords []*CapacityPoolResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
-	// records
-	Records []*CapacityPoolResponseRecordsItems0 `json:"records,omitempty"`
+	// Number of records
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this capacity pool response
@@ -38,7 +39,7 @@ func (m *CapacityPoolResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCapacityPoolResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +66,18 @@ func (m *CapacityPoolResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CapacityPoolResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CapacityPoolResponse) validateCapacityPoolResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CapacityPoolResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CapacityPoolResponseInlineRecords); i++ {
+		if swag.IsZero(m.CapacityPoolResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CapacityPoolResponseInlineRecords[i] != nil {
+			if err := m.CapacityPoolResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +98,7 @@ func (m *CapacityPoolResponse) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCapacityPoolResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +122,12 @@ func (m *CapacityPoolResponse) contextValidateLinks(ctx context.Context, formats
 	return nil
 }
 
-func (m *CapacityPoolResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolResponse) contextValidateCapacityPoolResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CapacityPoolResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CapacityPoolResponseInlineRecords[i] != nil {
+			if err := m.CapacityPoolResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,27 +158,27 @@ func (m *CapacityPoolResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CapacityPoolResponseRecordsItems0 Information on a capacity pool license and how it is associated with the cluster.
+// CapacityPoolResponseInlineRecordsInlineArrayItem Information on a capacity pool license and how it is associated with the cluster.
 //
-// swagger:model CapacityPoolResponseRecordsItems0
-type CapacityPoolResponseRecordsItems0 struct {
+// swagger:model capacity_pool_response_inline_records_inline_array_item
+type CapacityPoolResponseInlineRecordsInlineArrayItem struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// license manager
-	LicenseManager *CapacityPoolResponseRecordsItems0LicenseManager `json:"license_manager,omitempty"`
+	LicenseManager *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager `json:"license_manager,omitempty"`
 
 	// Nodes in the cluster associated with this capacity pool.
-	Nodes []*CapacityPoolResponseRecordsItems0NodesItems0 `json:"nodes,omitempty"`
+	Nodes []*CapacityPoolResponseRecordsItems0NodesItems0 `json:"nodes"`
 
 	// Serial number of the capacity pool license.
 	// Example: 390000100
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this capacity pool response records items0
-func (m *CapacityPoolResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this capacity pool response inline records inline array item
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -198,7 +199,7 @@ func (m *CapacityPoolResponseRecordsItems0) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -215,7 +216,7 @@ func (m *CapacityPoolResponseRecordsItems0) validateLinks(formats strfmt.Registr
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0) validateLicenseManager(formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) validateLicenseManager(formats strfmt.Registry) error {
 	if swag.IsZero(m.LicenseManager) { // not required
 		return nil
 	}
@@ -232,7 +233,7 @@ func (m *CapacityPoolResponseRecordsItems0) validateLicenseManager(formats strfm
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0) validateNodes(formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) validateNodes(formats strfmt.Registry) error {
 	if swag.IsZero(m.Nodes) { // not required
 		return nil
 	}
@@ -256,8 +257,8 @@ func (m *CapacityPoolResponseRecordsItems0) validateNodes(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this capacity pool response records items0 based on the context it is used
-func (m *CapacityPoolResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this capacity pool response inline records inline array item based on the context it is used
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -278,7 +279,7 @@ func (m *CapacityPoolResponseRecordsItems0) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -292,7 +293,7 @@ func (m *CapacityPoolResponseRecordsItems0) contextValidateLinks(ctx context.Con
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0) contextValidateLicenseManager(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) contextValidateLicenseManager(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LicenseManager != nil {
 		if err := m.LicenseManager.ContextValidate(ctx, formats); err != nil {
@@ -306,7 +307,7 @@ func (m *CapacityPoolResponseRecordsItems0) contextValidateLicenseManager(ctx co
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0) contextValidateNodes(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) contextValidateNodes(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Nodes); i++ {
 
@@ -325,7 +326,7 @@ func (m *CapacityPoolResponseRecordsItems0) contextValidateNodes(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *CapacityPoolResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -333,8 +334,8 @@ func (m *CapacityPoolResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CapacityPoolResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res CapacityPoolResponseRecordsItems0
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res CapacityPoolResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -342,10 +343,10 @@ func (m *CapacityPoolResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CapacityPoolResponseRecordsItems0LicenseManager License manager instance where this capacity pool license in installed.
+// CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager License manager instance where this capacity pool license in installed.
 //
-// swagger:model CapacityPoolResponseRecordsItems0LicenseManager
-type CapacityPoolResponseRecordsItems0LicenseManager struct {
+// swagger:model capacity_pool_response_inline_records_inline_array_item_inline_license_manager
+type CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager struct {
 
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
@@ -353,11 +354,11 @@ type CapacityPoolResponseRecordsItems0LicenseManager struct {
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-112233445566
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this capacity pool response records items0 license manager
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) Validate(formats strfmt.Registry) error {
+// Validate validates this capacity pool response inline records inline array item inline license manager
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -374,7 +375,7 @@ func (m *CapacityPoolResponseRecordsItems0LicenseManager) Validate(formats strfm
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) validateLinks(formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -391,7 +392,7 @@ func (m *CapacityPoolResponseRecordsItems0LicenseManager) validateLinks(formats 
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) validateUUID(formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -403,8 +404,8 @@ func (m *CapacityPoolResponseRecordsItems0LicenseManager) validateUUID(formats s
 	return nil
 }
 
-// ContextValidate validate this capacity pool response records items0 license manager based on the context it is used
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this capacity pool response inline records inline array item inline license manager based on the context it is used
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -417,7 +418,7 @@ func (m *CapacityPoolResponseRecordsItems0LicenseManager) ContextValidate(ctx co
 	return nil
 }
 
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -432,7 +433,7 @@ func (m *CapacityPoolResponseRecordsItems0LicenseManager) contextValidateLinks(c
 }
 
 // MarshalBinary interface implementation
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) MarshalBinary() ([]byte, error) {
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -440,8 +441,8 @@ func (m *CapacityPoolResponseRecordsItems0LicenseManager) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *CapacityPoolResponseRecordsItems0LicenseManager) UnmarshalBinary(b []byte) error {
-	var res CapacityPoolResponseRecordsItems0LicenseManager
+func (m *CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager) UnmarshalBinary(b []byte) error {
+	var res CapacityPoolResponseInlineRecordsInlineArrayItemInlineLicenseManager
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -459,7 +460,7 @@ type CapacityPoolResponseRecordsItems0NodesItems0 struct {
 
 	// Capacity, in bytes, that is currently used by the node.
 	// Read Only: true
-	UsedSize int64 `json:"used_size,omitempty"`
+	UsedSize *int64 `json:"used_size,omitempty"`
 }
 
 // Validate validates this capacity pool response records items0 nodes items0
@@ -527,7 +528,7 @@ func (m *CapacityPoolResponseRecordsItems0NodesItems0) contextValidateNode(ctx c
 
 func (m *CapacityPoolResponseRecordsItems0NodesItems0) contextValidateUsedSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "used_size", "body", int64(m.UsedSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "used_size", "body", m.UsedSize); err != nil {
 		return err
 	}
 

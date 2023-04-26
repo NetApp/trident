@@ -51,7 +51,7 @@ func nodeList(nodeNames []string) error {
 		}
 	}
 
-	nodes := make([]utils.Node, 0, 10)
+	nodes := make([]utils.NodeExternal, 0, 10)
 
 	// Get the actual node objects
 	for _, nodeName := range nodeNames {
@@ -74,7 +74,7 @@ func nodeList(nodeNames []string) error {
 func GetNodes() ([]string, error) {
 	url := BaseURL() + "/node"
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -91,10 +91,10 @@ func GetNodes() ([]string, error) {
 	return listNodesResponse.Nodes, nil
 }
 
-func GetNode(nodeName string) (*utils.Node, error) {
+func GetNode(nodeName string) (*utils.NodeExternal, error) {
 	url := BaseURL() + "/node/" + nodeName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -117,7 +117,7 @@ func GetNode(nodeName string) (*utils.Node, error) {
 	return getNodeResponse.Node, nil
 }
 
-func WriteNodes(nodes []utils.Node) {
+func WriteNodes(nodes []utils.NodeExternal) {
 	switch OutputFormat {
 	case FormatJSON:
 		WriteJSON(api.MultipleNodeResponse{Items: nodes})
@@ -132,7 +132,7 @@ func WriteNodes(nodes []utils.Node) {
 	}
 }
 
-func writeNodeTable(nodes []utils.Node) {
+func writeNodeTable(nodes []utils.NodeExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name"})
 
@@ -145,7 +145,7 @@ func writeNodeTable(nodes []utils.Node) {
 	table.Render()
 }
 
-func writeWideNodeTable(nodes []utils.Node) {
+func writeWideNodeTable(nodes []utils.NodeExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	header := []string{
@@ -153,6 +153,7 @@ func writeWideNodeTable(nodes []utils.Node) {
 		"IQN",
 		"IPs",
 		"Services",
+		"State",
 	}
 	table.SetHeader(header)
 
@@ -166,13 +167,14 @@ func writeWideNodeTable(nodes []utils.Node) {
 			node.IQN,
 			strings.Join(node.IPs, "\n"),
 			strings.Join(services, "\n"),
+			string(node.PublicationState),
 		})
 	}
 
 	table.Render()
 }
 
-func writeNodeNames(nodes []utils.Node) {
+func writeNodeNames(nodes []utils.NodeExternal) {
 	for _, n := range nodes {
 		fmt.Println(n.Name)
 	}

@@ -62,17 +62,24 @@ VolumeDeleteParams contains all the parameters to send to the API endpoint
 */
 type VolumeDeleteParams struct {
 
+	/* Force.
+
+	   Set the force flag to "true" to bypass the recovery queue, making the deleted volume non-recoverable.
+
+	*/
+	Force *bool
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Unique identifier of the volume.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +99,14 @@ func (o *VolumeDeleteParams) WithDefaults() *VolumeDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *VolumeDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		forceDefault = bool(false)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := VolumeDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Force:         &forceDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -138,26 +148,37 @@ func (o *VolumeDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume delete params
-func (o *VolumeDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithForce adds the force to the volume delete params
+func (o *VolumeDeleteParams) WithForce(force *bool) *VolumeDeleteParams {
+	o.SetForce(force)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume delete params
-func (o *VolumeDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetForce adds the force to the volume delete params
+func (o *VolumeDeleteParams) SetForce(force *bool) {
+	o.Force = force
 }
 
-// WithUUIDPathParameter adds the uuid to the volume delete params
-func (o *VolumeDeleteParams) WithUUIDPathParameter(uuid string) *VolumeDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithReturnTimeout adds the returnTimeout to the volume delete params
+func (o *VolumeDeleteParams) WithReturnTimeout(returnTimeout *int64) *VolumeDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the volume delete params
-func (o *VolumeDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetReturnTimeout adds the returnTimeout to the volume delete params
+func (o *VolumeDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
+// WithUUID adds the uuid to the volume delete params
+func (o *VolumeDeleteParams) WithUUID(uuid string) *VolumeDeleteParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the volume delete params
+func (o *VolumeDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,13 +189,30 @@ func (o *VolumeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.Force != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.Force != nil {
+			qrForce = *o.Force
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -186,7 +224,7 @@ func (o *VolumeDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

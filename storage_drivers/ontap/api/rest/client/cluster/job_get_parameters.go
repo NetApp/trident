@@ -66,13 +66,13 @@ type JobGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Job UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *JobGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the job get params
-func (o *JobGetParams) WithFieldsQueryParameter(fields []string) *JobGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the job get params
+func (o *JobGetParams) WithFields(fields []string) *JobGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the job get params
-func (o *JobGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the job get params
+func (o *JobGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the job get params
-func (o *JobGetParams) WithUUIDPathParameter(uuid string) *JobGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the job get params
+func (o *JobGetParams) WithUUID(uuid string) *JobGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the job get params
-func (o *JobGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the job get params
+func (o *JobGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *JobGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *JobGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *JobGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 
 // bindParamJobGet binds the parameter fields
 func (o *JobGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

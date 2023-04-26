@@ -19,11 +19,11 @@ import (
 type RoleReference struct {
 
 	// links
-	Links *RoleReferenceLinks `json:"_links,omitempty"`
+	Links *RoleReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Role name
 	// Example: admin
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this role reference
@@ -103,17 +103,17 @@ func (m *RoleReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RoleReferenceLinks role reference links
+// RoleReferenceInlineLinks role reference inline links
 //
-// swagger:model RoleReferenceLinks
-type RoleReferenceLinks struct {
+// swagger:model role_reference_inline__links
+type RoleReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this role reference links
-func (m *RoleReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this role reference inline links
+func (m *RoleReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *RoleReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *RoleReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *RoleReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this role reference links based on the context it is used
-func (m *RoleReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this role reference inline links based on the context it is used
+func (m *RoleReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *RoleReferenceLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *RoleReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *RoleReferenceLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *RoleReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *RoleReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *RoleReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RoleReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res RoleReferenceLinks
+func (m *RoleReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res RoleReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -74,7 +74,7 @@ type NetworkIPBgpPeerGroupsCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -94,11 +94,11 @@ func (o *NetworkIPBgpPeerGroupsCreateParams) WithDefaults() *NetworkIPBgpPeerGro
 // All values with no default are reset to their zero value.
 func (o *NetworkIPBgpPeerGroupsCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := NetworkIPBgpPeerGroupsCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,15 +151,15 @@ func (o *NetworkIPBgpPeerGroupsCreateParams) SetInfo(info *models.BgpPeerGroup) 
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the network ip bgp peer groups create params
-func (o *NetworkIPBgpPeerGroupsCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPBgpPeerGroupsCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the network ip bgp peer groups create params
+func (o *NetworkIPBgpPeerGroupsCreateParams) WithReturnRecords(returnRecords *bool) *NetworkIPBgpPeerGroupsCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the network ip bgp peer groups create params
-func (o *NetworkIPBgpPeerGroupsCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the network ip bgp peer groups create params
+func (o *NetworkIPBgpPeerGroupsCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,13 +175,13 @@ func (o *NetworkIPBgpPeerGroupsCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

@@ -20,26 +20,26 @@ import (
 // swagger:model ems_ui_message
 type EmsUIMessage struct {
 
-	// Message arguments
-	// Read Only: true
-	Arguments []*EmsUIMessageArgumentsItems0 `json:"arguments,omitempty"`
-
 	// Unique message code.
 	// Example: 4
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
+
+	// Message arguments
+	// Read Only: true
+	EmsUIMessageInlineArguments []*EmsUIMessageInlineArgumentsInlineArrayItem `json:"arguments,omitempty"`
 
 	// User message.
 	// Example: entry doesn't exist
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this ems ui message
 func (m *EmsUIMessage) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateArguments(formats); err != nil {
+	if err := m.validateEmsUIMessageInlineArguments(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -49,18 +49,18 @@ func (m *EmsUIMessage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *EmsUIMessage) validateArguments(formats strfmt.Registry) error {
-	if swag.IsZero(m.Arguments) { // not required
+func (m *EmsUIMessage) validateEmsUIMessageInlineArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.EmsUIMessageInlineArguments) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Arguments); i++ {
-		if swag.IsZero(m.Arguments[i]) { // not required
+	for i := 0; i < len(m.EmsUIMessageInlineArguments); i++ {
+		if swag.IsZero(m.EmsUIMessageInlineArguments[i]) { // not required
 			continue
 		}
 
-		if m.Arguments[i] != nil {
-			if err := m.Arguments[i].Validate(formats); err != nil {
+		if m.EmsUIMessageInlineArguments[i] != nil {
+			if err := m.EmsUIMessageInlineArguments[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("arguments" + "." + strconv.Itoa(i))
 				}
@@ -77,11 +77,11 @@ func (m *EmsUIMessage) validateArguments(formats strfmt.Registry) error {
 func (m *EmsUIMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateArguments(ctx, formats); err != nil {
+	if err := m.contextValidateCode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCode(ctx, formats); err != nil {
+	if err := m.contextValidateEmsUIMessageInlineArguments(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,16 +95,25 @@ func (m *EmsUIMessage) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *EmsUIMessage) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsUIMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "arguments", "body", []*EmsUIMessageArgumentsItems0(m.Arguments)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Arguments); i++ {
+	return nil
+}
 
-		if m.Arguments[i] != nil {
-			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+func (m *EmsUIMessage) contextValidateEmsUIMessageInlineArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "arguments", "body", []*EmsUIMessageInlineArgumentsInlineArrayItem(m.EmsUIMessageInlineArguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.EmsUIMessageInlineArguments); i++ {
+
+		if m.EmsUIMessageInlineArguments[i] != nil {
+			if err := m.EmsUIMessageInlineArguments[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("arguments" + "." + strconv.Itoa(i))
 				}
@@ -117,18 +126,9 @@ func (m *EmsUIMessage) contextValidateArguments(ctx context.Context, formats str
 	return nil
 }
 
-func (m *EmsUIMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *EmsUIMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -153,27 +153,27 @@ func (m *EmsUIMessage) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// EmsUIMessageArgumentsItems0 ems UI message arguments items0
+// EmsUIMessageInlineArgumentsInlineArrayItem ems ui message inline arguments inline array item
 //
-// swagger:model EmsUIMessageArgumentsItems0
-type EmsUIMessageArgumentsItems0 struct {
+// swagger:model ems_ui_message_inline_arguments_inline_array_item
+type EmsUIMessageInlineArgumentsInlineArrayItem struct {
 
 	// Argument code
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Message argument
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this ems UI message arguments items0
-func (m *EmsUIMessageArgumentsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this ems ui message inline arguments inline array item
+func (m *EmsUIMessageInlineArgumentsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ems UI message arguments items0 based on the context it is used
-func (m *EmsUIMessageArgumentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ems ui message inline arguments inline array item based on the context it is used
+func (m *EmsUIMessageInlineArgumentsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateCode(ctx, formats); err != nil {
@@ -190,18 +190,18 @@ func (m *EmsUIMessageArgumentsItems0) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *EmsUIMessageArgumentsItems0) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsUIMessageInlineArgumentsInlineArrayItem) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *EmsUIMessageArgumentsItems0) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *EmsUIMessageInlineArgumentsInlineArrayItem) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -209,7 +209,7 @@ func (m *EmsUIMessageArgumentsItems0) contextValidateMessage(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *EmsUIMessageArgumentsItems0) MarshalBinary() ([]byte, error) {
+func (m *EmsUIMessageInlineArgumentsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -217,8 +217,8 @@ func (m *EmsUIMessageArgumentsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *EmsUIMessageArgumentsItems0) UnmarshalBinary(b []byte) error {
-	var res EmsUIMessageArgumentsItems0
+func (m *EmsUIMessageInlineArgumentsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res EmsUIMessageInlineArgumentsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

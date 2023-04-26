@@ -66,19 +66,19 @@ type PlexGetParams struct {
 
 	   Aggregate UUID
 	*/
-	AggregateUUIDPathParameter string
+	AggregateUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Plex name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *PlexGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregateUUIDPathParameter adds the aggregateUUID to the plex get params
-func (o *PlexGetParams) WithAggregateUUIDPathParameter(aggregateUUID string) *PlexGetParams {
-	o.SetAggregateUUIDPathParameter(aggregateUUID)
+// WithAggregateUUID adds the aggregateUUID to the plex get params
+func (o *PlexGetParams) WithAggregateUUID(aggregateUUID string) *PlexGetParams {
+	o.SetAggregateUUID(aggregateUUID)
 	return o
 }
 
-// SetAggregateUUIDPathParameter adds the aggregateUuid to the plex get params
-func (o *PlexGetParams) SetAggregateUUIDPathParameter(aggregateUUID string) {
-	o.AggregateUUIDPathParameter = aggregateUUID
+// SetAggregateUUID adds the aggregateUuid to the plex get params
+func (o *PlexGetParams) SetAggregateUUID(aggregateUUID string) {
+	o.AggregateUUID = aggregateUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the plex get params
-func (o *PlexGetParams) WithFieldsQueryParameter(fields []string) *PlexGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the plex get params
+func (o *PlexGetParams) WithFields(fields []string) *PlexGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the plex get params
-func (o *PlexGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the plex get params
+func (o *PlexGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the plex get params
-func (o *PlexGetParams) WithNamePathParameter(name string) *PlexGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the plex get params
+func (o *PlexGetParams) WithName(name string) *PlexGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the plex get params
-func (o *PlexGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the plex get params
+func (o *PlexGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *PlexGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	var res []error
 
 	// path param aggregate.uuid
-	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *PlexGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *PlexGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamPlexGet binds the parameter fields
 func (o *PlexGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

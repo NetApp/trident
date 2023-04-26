@@ -66,19 +66,19 @@ type ApplicationComponentGetParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Application component UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *ApplicationComponentGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application component get params
-func (o *ApplicationComponentGetParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationComponentGetParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application component get params
+func (o *ApplicationComponentGetParams) WithApplicationUUID(applicationUUID string) *ApplicationComponentGetParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application component get params
-func (o *ApplicationComponentGetParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application component get params
+func (o *ApplicationComponentGetParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the application component get params
-func (o *ApplicationComponentGetParams) WithFieldsQueryParameter(fields []string) *ApplicationComponentGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application component get params
+func (o *ApplicationComponentGetParams) WithFields(fields []string) *ApplicationComponentGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application component get params
-func (o *ApplicationComponentGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application component get params
+func (o *ApplicationComponentGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the application component get params
-func (o *ApplicationComponentGetParams) WithUUIDPathParameter(uuid string) *ApplicationComponentGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the application component get params
+func (o *ApplicationComponentGetParams) WithUUID(uuid string) *ApplicationComponentGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the application component get params
-func (o *ApplicationComponentGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the application component get params
+func (o *ApplicationComponentGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *ApplicationComponentGetParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *ApplicationComponentGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *ApplicationComponentGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamApplicationComponentGet binds the parameter fields
 func (o *ApplicationComponentGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

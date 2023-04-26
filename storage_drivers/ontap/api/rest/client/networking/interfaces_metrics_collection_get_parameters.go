@@ -66,13 +66,13 @@ type InterfacesMetricsCollectionGetParams struct {
 
 	   Filter by duration
 	*/
-	DurationQueryParameter *string
+	Duration *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -87,19 +87,19 @@ type InterfacesMetricsCollectionGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -107,7 +107,7 @@ type InterfacesMetricsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -115,43 +115,43 @@ type InterfacesMetricsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Status.
 
 	   Filter by status
 	*/
-	StatusQueryParameter *string
+	Status *string
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputTotal.
 
 	   Filter by throughput.total
 	*/
-	ThroughputTotalQueryParameter *int64
+	ThroughputTotal *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* UUID.
 
 	   Unique identifier of the interface.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -171,17 +171,17 @@ func (o *InterfacesMetricsCollectionGetParams) WithDefaults() *InterfacesMetrics
 // All values with no default are reset to their zero value.
 func (o *InterfacesMetricsCollectionGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := InterfacesMetricsCollectionGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,147 +223,147 @@ func (o *InterfacesMetricsCollectionGetParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithDurationQueryParameter adds the duration to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithDurationQueryParameter(duration *string) *InterfacesMetricsCollectionGetParams {
-	o.SetDurationQueryParameter(duration)
+// WithDuration adds the duration to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithDuration(duration *string) *InterfacesMetricsCollectionGetParams {
+	o.SetDuration(duration)
 	return o
 }
 
-// SetDurationQueryParameter adds the duration to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetDurationQueryParameter(duration *string) {
-	o.DurationQueryParameter = duration
+// SetDuration adds the duration to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetDuration(duration *string) {
+	o.Duration = duration
 }
 
-// WithFieldsQueryParameter adds the fields to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithFieldsQueryParameter(fields []string) *InterfacesMetricsCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithFields(fields []string) *InterfacesMetricsCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithIntervalQueryParameter(interval *string) *InterfacesMetricsCollectionGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithInterval(interval *string) *InterfacesMetricsCollectionGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *InterfacesMetricsCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithMaxRecords(maxRecords *int64) *InterfacesMetricsCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *InterfacesMetricsCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithOrderBy(orderBy []string) *InterfacesMetricsCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *InterfacesMetricsCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithReturnRecords(returnRecords *bool) *InterfacesMetricsCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *InterfacesMetricsCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *InterfacesMetricsCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatusQueryParameter adds the status to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithStatusQueryParameter(status *string) *InterfacesMetricsCollectionGetParams {
-	o.SetStatusQueryParameter(status)
+// WithStatus adds the status to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithStatus(status *string) *InterfacesMetricsCollectionGetParams {
+	o.SetStatus(status)
 	return o
 }
 
-// SetStatusQueryParameter adds the status to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetStatusQueryParameter(status *string) {
-	o.StatusQueryParameter = status
+// SetStatus adds the status to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetStatus(status *string) {
+	o.Status = status
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *InterfacesMetricsCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithThroughputRead(throughputRead *int64) *InterfacesMetricsCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputTotalQueryParameter adds the throughputTotal to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithThroughputTotalQueryParameter(throughputTotal *int64) *InterfacesMetricsCollectionGetParams {
-	o.SetThroughputTotalQueryParameter(throughputTotal)
+// WithThroughputTotal adds the throughputTotal to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithThroughputTotal(throughputTotal *int64) *InterfacesMetricsCollectionGetParams {
+	o.SetThroughputTotal(throughputTotal)
 	return o
 }
 
-// SetThroughputTotalQueryParameter adds the throughputTotal to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetThroughputTotalQueryParameter(throughputTotal *int64) {
-	o.ThroughputTotalQueryParameter = throughputTotal
+// SetThroughputTotal adds the throughputTotal to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetThroughputTotal(throughputTotal *int64) {
+	o.ThroughputTotal = throughputTotal
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *InterfacesMetricsCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *InterfacesMetricsCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTimestampQueryParameter adds the timestamp to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithTimestampQueryParameter(timestamp *string) *InterfacesMetricsCollectionGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithTimestamp(timestamp *string) *InterfacesMetricsCollectionGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithUUIDPathParameter adds the uuid to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) WithUUIDPathParameter(uuid string) *InterfacesMetricsCollectionGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) WithUUID(uuid string) *InterfacesMetricsCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the interfaces metrics collection get params
-func (o *InterfacesMetricsCollectionGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the interfaces metrics collection get params
+func (o *InterfacesMetricsCollectionGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -374,13 +374,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.DurationQueryParameter != nil {
+	if o.Duration != nil {
 
 		// query param duration
 		var qrDuration string
 
-		if o.DurationQueryParameter != nil {
-			qrDuration = *o.DurationQueryParameter
+		if o.Duration != nil {
+			qrDuration = *o.Duration
 		}
 		qDuration := qrDuration
 		if qDuration != "" {
@@ -391,7 +391,7 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -402,13 +402,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -419,13 +419,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -436,7 +436,7 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -447,13 +447,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -464,13 +464,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -481,13 +481,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.StatusQueryParameter != nil {
+	if o.Status != nil {
 
 		// query param status
 		var qrStatus string
 
-		if o.StatusQueryParameter != nil {
-			qrStatus = *o.StatusQueryParameter
+		if o.Status != nil {
+			qrStatus = *o.Status
 		}
 		qStatus := qrStatus
 		if qStatus != "" {
@@ -498,13 +498,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -515,13 +515,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ThroughputTotalQueryParameter != nil {
+	if o.ThroughputTotal != nil {
 
 		// query param throughput.total
 		var qrThroughputTotal int64
 
-		if o.ThroughputTotalQueryParameter != nil {
-			qrThroughputTotal = *o.ThroughputTotalQueryParameter
+		if o.ThroughputTotal != nil {
+			qrThroughputTotal = *o.ThroughputTotal
 		}
 		qThroughputTotal := swag.FormatInt64(qrThroughputTotal)
 		if qThroughputTotal != "" {
@@ -532,13 +532,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -549,13 +549,13 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -567,7 +567,7 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -579,7 +579,7 @@ func (o *InterfacesMetricsCollectionGetParams) WriteToRequest(r runtime.ClientRe
 
 // bindParamInterfacesMetricsCollectionGet binds the parameter fields
 func (o *InterfacesMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +596,7 @@ func (o *InterfacesMetricsCollectionGetParams) bindParamFields(formats strfmt.Re
 
 // bindParamInterfacesMetricsCollectionGet binds the parameter order_by
 func (o *InterfacesMetricsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

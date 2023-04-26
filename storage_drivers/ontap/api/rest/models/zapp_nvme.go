@@ -21,27 +21,23 @@ import (
 // swagger:model zapp_nvme
 type ZappNvme struct {
 
-	// components
+	// The name of the host OS running the application.
+	// Enum: [aix linux vmware windows]
+	OsType *string `json:"os_type,omitempty"`
+
+	// rpo
+	Rpo *ZappNvmeInlineRpo `json:"rpo,omitempty"`
+
+	// zapp nvme inline components
 	// Required: true
 	// Max Items: 10
 	// Min Items: 1
-	Components []*ZappNvmeComponentsItems0 `json:"components"`
-
-	// The name of the host OS running the application.
-	// Enum: [aix linux vmware windows]
-	OsType string `json:"os_type,omitempty"`
-
-	// rpo
-	Rpo *ZappNvmeRpo `json:"rpo,omitempty"`
+	ZappNvmeInlineComponents []*ZappNvmeInlineComponentsInlineArrayItem `json:"components"`
 }
 
 // Validate validates this zapp nvme
 func (m *ZappNvme) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateComponents(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
@@ -51,44 +47,13 @@ func (m *ZappNvme) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateZappNvmeInlineComponents(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ZappNvme) validateComponents(formats strfmt.Registry) error {
-
-	if err := validate.Required("components", "body", m.Components); err != nil {
-		return err
-	}
-
-	iComponentsSize := int64(len(m.Components))
-
-	if err := validate.MinItems("components", "body", iComponentsSize, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxItems("components", "body", iComponentsSize, 10); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Components); i++ {
-		if swag.IsZero(m.Components[i]) { // not required
-			continue
-		}
-
-		if m.Components[i] != nil {
-			if err := m.Components[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("components" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -161,7 +126,7 @@ func (m *ZappNvme) validateOsType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
@@ -185,30 +150,29 @@ func (m *ZappNvme) validateRpo(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this zapp nvme based on the context it is used
-func (m *ZappNvme) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
+func (m *ZappNvme) validateZappNvmeInlineComponents(formats strfmt.Registry) error {
 
-	if err := m.contextValidateComponents(ctx, formats); err != nil {
-		res = append(res, err)
+	if err := validate.Required("components", "body", m.ZappNvmeInlineComponents); err != nil {
+		return err
 	}
 
-	if err := m.contextValidateRpo(ctx, formats); err != nil {
-		res = append(res, err)
+	iZappNvmeInlineComponentsSize := int64(len(m.ZappNvmeInlineComponents))
+
+	if err := validate.MinItems("components", "body", iZappNvmeInlineComponentsSize, 1); err != nil {
+		return err
 	}
 
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
+	if err := validate.MaxItems("components", "body", iZappNvmeInlineComponentsSize, 10); err != nil {
+		return err
 	}
-	return nil
-}
 
-func (m *ZappNvme) contextValidateComponents(ctx context.Context, formats strfmt.Registry) error {
+	for i := 0; i < len(m.ZappNvmeInlineComponents); i++ {
+		if swag.IsZero(m.ZappNvmeInlineComponents[i]) { // not required
+			continue
+		}
 
-	for i := 0; i < len(m.Components); i++ {
-
-		if m.Components[i] != nil {
-			if err := m.Components[i].ContextValidate(ctx, formats); err != nil {
+		if m.ZappNvmeInlineComponents[i] != nil {
+			if err := m.ZappNvmeInlineComponents[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("components" + "." + strconv.Itoa(i))
 				}
@@ -221,6 +185,24 @@ func (m *ZappNvme) contextValidateComponents(ctx context.Context, formats strfmt
 	return nil
 }
 
+// ContextValidate validate this zapp nvme based on the context it is used
+func (m *ZappNvme) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateRpo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateZappNvmeInlineComponents(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
 func (m *ZappNvme) contextValidateRpo(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Rpo != nil {
@@ -230,6 +212,24 @@ func (m *ZappNvme) contextValidateRpo(ctx context.Context, formats strfmt.Regist
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ZappNvme) contextValidateZappNvmeInlineComponents(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ZappNvmeInlineComponents); i++ {
+
+		if m.ZappNvmeInlineComponents[i] != nil {
+			if err := m.ZappNvmeInlineComponents[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("components" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -253,10 +253,10 @@ func (m *ZappNvme) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeComponentsItems0 zapp nvme components items0
+// ZappNvmeInlineComponentsInlineArrayItem zapp nvme inline components inline array item
 //
-// swagger:model ZappNvmeComponentsItems0
-type ZappNvmeComponentsItems0 struct {
+// swagger:model zapp_nvme_inline_components_inline_array_item
+type ZappNvmeInlineComponentsInlineArrayItem struct {
 
 	// The name of the application component.
 	// Required: true
@@ -265,19 +265,19 @@ type ZappNvmeComponentsItems0 struct {
 	Name *string `json:"name"`
 
 	// The number of namespaces in the component.
-	// Maximum: 32
+	// Maximum: 1024
 	// Minimum: 1
-	NamespaceCount int64 `json:"namespace_count,omitempty"`
+	NamespaceCount *int64 `json:"namespace_count,omitempty"`
 
 	// The name of the host OS running the application.
 	// Enum: [aix linux vmware windows]
-	OsType string `json:"os_type,omitempty"`
+	OsType *string `json:"os_type,omitempty"`
 
 	// performance
-	Performance *ZappNvmeComponentsItems0Performance `json:"performance,omitempty"`
+	Performance *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance `json:"performance,omitempty"`
 
 	// qos
-	Qos *ZappNvmeComponentsItems0Qos `json:"qos,omitempty"`
+	Qos *ZappNvmeInlineComponentsInlineArrayItemInlineQos `json:"qos,omitempty"`
 
 	// subsystem
 	Subsystem *ZappNvmeComponentsSubsystem `json:"subsystem,omitempty"`
@@ -286,11 +286,11 @@ type ZappNvmeComponentsItems0 struct {
 	Tiering *ZappNvmeComponentsTiering `json:"tiering,omitempty"`
 
 	// The total size of the component, spread across member namespaces. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	TotalSize int64 `json:"total_size,omitempty"`
+	TotalSize *int64 `json:"total_size,omitempty"`
 }
 
-// Validate validates this zapp nvme components items0
-func (m *ZappNvmeComponentsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline components inline array item
+func (m *ZappNvmeInlineComponentsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -327,7 +327,7 @@ func (m *ZappNvmeComponentsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateName(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
@@ -344,23 +344,23 @@ func (m *ZappNvmeComponentsItems0) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateNamespaceCount(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateNamespaceCount(formats strfmt.Registry) error {
 	if swag.IsZero(m.NamespaceCount) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("namespace_count", "body", m.NamespaceCount, 1, false); err != nil {
+	if err := validate.MinimumInt("namespace_count", "body", *m.NamespaceCount, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("namespace_count", "body", m.NamespaceCount, 32, false); err != nil {
+	if err := validate.MaximumInt("namespace_count", "body", *m.NamespaceCount, 1024, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var zappNvmeComponentsItems0TypeOsTypePropEnum []interface{}
+var zappNvmeInlineComponentsInlineArrayItemTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -368,75 +368,75 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		zappNvmeComponentsItems0TypeOsTypePropEnum = append(zappNvmeComponentsItems0TypeOsTypePropEnum, v)
+		zappNvmeInlineComponentsInlineArrayItemTypeOsTypePropEnum = append(zappNvmeInlineComponentsInlineArrayItemTypeOsTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0
-	// ZappNvmeComponentsItems0
+	// zapp_nvme_inline_components_inline_array_item
+	// ZappNvmeInlineComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// aix
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0OsTypeAix captures enum value "aix"
-	ZappNvmeComponentsItems0OsTypeAix string = "aix"
+	// ZappNvmeInlineComponentsInlineArrayItemOsTypeAix captures enum value "aix"
+	ZappNvmeInlineComponentsInlineArrayItemOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0
-	// ZappNvmeComponentsItems0
+	// zapp_nvme_inline_components_inline_array_item
+	// ZappNvmeInlineComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// linux
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0OsTypeLinux captures enum value "linux"
-	ZappNvmeComponentsItems0OsTypeLinux string = "linux"
+	// ZappNvmeInlineComponentsInlineArrayItemOsTypeLinux captures enum value "linux"
+	ZappNvmeInlineComponentsInlineArrayItemOsTypeLinux string = "linux"
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0
-	// ZappNvmeComponentsItems0
+	// zapp_nvme_inline_components_inline_array_item
+	// ZappNvmeInlineComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// vmware
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0OsTypeVmware captures enum value "vmware"
-	ZappNvmeComponentsItems0OsTypeVmware string = "vmware"
+	// ZappNvmeInlineComponentsInlineArrayItemOsTypeVmware captures enum value "vmware"
+	ZappNvmeInlineComponentsInlineArrayItemOsTypeVmware string = "vmware"
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0
-	// ZappNvmeComponentsItems0
+	// zapp_nvme_inline_components_inline_array_item
+	// ZappNvmeInlineComponentsInlineArrayItem
 	// os_type
 	// OsType
 	// windows
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0OsTypeWindows captures enum value "windows"
-	ZappNvmeComponentsItems0OsTypeWindows string = "windows"
+	// ZappNvmeInlineComponentsInlineArrayItemOsTypeWindows captures enum value "windows"
+	ZappNvmeInlineComponentsInlineArrayItemOsTypeWindows string = "windows"
 )
 
 // prop value enum
-func (m *ZappNvmeComponentsItems0) validateOsTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, zappNvmeComponentsItems0TypeOsTypePropEnum, true); err != nil {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeInlineComponentsInlineArrayItemTypeOsTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateOsType(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateOsType(formats strfmt.Registry) error {
 	if swag.IsZero(m.OsType) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validatePerformance(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validatePerformance(formats strfmt.Registry) error {
 	if swag.IsZero(m.Performance) { // not required
 		return nil
 	}
@@ -453,7 +453,7 @@ func (m *ZappNvmeComponentsItems0) validatePerformance(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateQos(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateQos(formats strfmt.Registry) error {
 	if swag.IsZero(m.Qos) { // not required
 		return nil
 	}
@@ -470,7 +470,7 @@ func (m *ZappNvmeComponentsItems0) validateQos(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateSubsystem(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateSubsystem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Subsystem) { // not required
 		return nil
 	}
@@ -487,7 +487,7 @@ func (m *ZappNvmeComponentsItems0) validateSubsystem(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateTiering(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) validateTiering(formats strfmt.Registry) error {
 	if swag.IsZero(m.Tiering) { // not required
 		return nil
 	}
@@ -504,8 +504,8 @@ func (m *ZappNvmeComponentsItems0) validateTiering(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this zapp nvme components items0 based on the context it is used
-func (m *ZappNvmeComponentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this zapp nvme inline components inline array item based on the context it is used
+func (m *ZappNvmeInlineComponentsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePerformance(ctx, formats); err != nil {
@@ -530,7 +530,7 @@ func (m *ZappNvmeComponentsItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) contextValidatePerformance(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) contextValidatePerformance(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Performance != nil {
 		if err := m.Performance.ContextValidate(ctx, formats); err != nil {
@@ -544,7 +544,7 @@ func (m *ZappNvmeComponentsItems0) contextValidatePerformance(ctx context.Contex
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Qos != nil {
 		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
@@ -558,7 +558,7 @@ func (m *ZappNvmeComponentsItems0) contextValidateQos(ctx context.Context, forma
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Subsystem != nil {
 		if err := m.Subsystem.ContextValidate(ctx, formats); err != nil {
@@ -572,7 +572,7 @@ func (m *ZappNvmeComponentsItems0) contextValidateSubsystem(ctx context.Context,
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Tiering != nil {
 		if err := m.Tiering.ContextValidate(ctx, formats); err != nil {
@@ -587,7 +587,7 @@ func (m *ZappNvmeComponentsItems0) contextValidateTiering(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineComponentsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -595,8 +595,8 @@ func (m *ZappNvmeComponentsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeComponentsItems0
+func (m *ZappNvmeInlineComponentsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineComponentsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -604,17 +604,17 @@ func (m *ZappNvmeComponentsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeComponentsItems0Performance zapp nvme components items0 performance
+// ZappNvmeInlineComponentsInlineArrayItemInlinePerformance zapp nvme inline components inline array item inline performance
 //
-// swagger:model ZappNvmeComponentsItems0Performance
-type ZappNvmeComponentsItems0Performance struct {
+// swagger:model zapp_nvme_inline_components_inline_array_item_inline_performance
+type ZappNvmeInlineComponentsInlineArrayItemInlinePerformance struct {
 
 	// storage service
-	StorageService *ZappNvmeComponentsItems0PerformanceStorageService `json:"storage_service,omitempty"`
+	StorageService *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService `json:"storage_service,omitempty"`
 }
 
-// Validate validates this zapp nvme components items0 performance
-func (m *ZappNvmeComponentsItems0Performance) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline components inline array item inline performance
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStorageService(formats); err != nil {
@@ -627,7 +627,7 @@ func (m *ZappNvmeComponentsItems0Performance) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0Performance) validateStorageService(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
 	}
@@ -644,8 +644,8 @@ func (m *ZappNvmeComponentsItems0Performance) validateStorageService(formats str
 	return nil
 }
 
-// ContextValidate validate this zapp nvme components items0 performance based on the context it is used
-func (m *ZappNvmeComponentsItems0Performance) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this zapp nvme inline components inline array item inline performance based on the context it is used
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
@@ -658,7 +658,7 @@ func (m *ZappNvmeComponentsItems0Performance) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0Performance) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.StorageService != nil {
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
@@ -673,7 +673,7 @@ func (m *ZappNvmeComponentsItems0Performance) contextValidateStorageService(ctx 
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0Performance) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -681,8 +681,8 @@ func (m *ZappNvmeComponentsItems0Performance) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0Performance) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeComponentsItems0Performance
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformance) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineComponentsInlineArrayItemInlinePerformance
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -690,18 +690,18 @@ func (m *ZappNvmeComponentsItems0Performance) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeComponentsItems0PerformanceStorageService zapp nvme components items0 performance storage service
+// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService zapp nvme inline components inline array item inline performance inline storage service
 //
-// swagger:model ZappNvmeComponentsItems0PerformanceStorageService
-type ZappNvmeComponentsItems0PerformanceStorageService struct {
+// swagger:model zapp_nvme_inline_components_inline_array_item_inline_performance_inline_storage_service
+type ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService struct {
 
 	// The storage service of the application component.
 	// Enum: [extreme performance value]
 	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this zapp nvme components items0 performance storage service
-func (m *ZappNvmeComponentsItems0PerformanceStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline components inline array item inline performance inline storage service
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -714,7 +714,7 @@ func (m *ZappNvmeComponentsItems0PerformanceStorageService) Validate(formats str
 	return nil
 }
 
-var zappNvmeComponentsItems0PerformanceStorageServiceTypeNamePropEnum []interface{}
+var zappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -722,52 +722,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		zappNvmeComponentsItems0PerformanceStorageServiceTypeNamePropEnum = append(zappNvmeComponentsItems0PerformanceStorageServiceTypeNamePropEnum, v)
+		zappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceTypeNamePropEnum = append(zappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0PerformanceStorageService
-	// ZappNvmeComponentsItems0PerformanceStorageService
+	// zapp_nvme_inline_components_inline_array_item_inline_performance_inline_storage_service
+	// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService
 	// name
 	// Name
 	// extreme
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0PerformanceStorageServiceNameExtreme captures enum value "extreme"
-	ZappNvmeComponentsItems0PerformanceStorageServiceNameExtreme string = "extreme"
+	// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceNameExtreme captures enum value "extreme"
+	ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceNameExtreme string = "extreme"
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0PerformanceStorageService
-	// ZappNvmeComponentsItems0PerformanceStorageService
+	// zapp_nvme_inline_components_inline_array_item_inline_performance_inline_storage_service
+	// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService
 	// name
 	// Name
 	// performance
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0PerformanceStorageServiceNamePerformance captures enum value "performance"
-	ZappNvmeComponentsItems0PerformanceStorageServiceNamePerformance string = "performance"
+	// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceNamePerformance captures enum value "performance"
+	ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceNamePerformance string = "performance"
 
 	// BEGIN DEBUGGING
-	// ZappNvmeComponentsItems0PerformanceStorageService
-	// ZappNvmeComponentsItems0PerformanceStorageService
+	// zapp_nvme_inline_components_inline_array_item_inline_performance_inline_storage_service
+	// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService
 	// name
 	// Name
 	// value
 	// END DEBUGGING
-	// ZappNvmeComponentsItems0PerformanceStorageServiceNameValue captures enum value "value"
-	ZappNvmeComponentsItems0PerformanceStorageServiceNameValue string = "value"
+	// ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceNameValue captures enum value "value"
+	ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceNameValue string = "value"
 )
 
 // prop value enum
-func (m *ZappNvmeComponentsItems0PerformanceStorageService) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, zappNvmeComponentsItems0PerformanceStorageServiceTypeNamePropEnum, true); err != nil {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageServiceTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0PerformanceStorageService) validateName(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
@@ -780,13 +780,13 @@ func (m *ZappNvmeComponentsItems0PerformanceStorageService) validateName(formats
 	return nil
 }
 
-// ContextValidate validates this zapp nvme components items0 performance storage service based on context it is used
-func (m *ZappNvmeComponentsItems0PerformanceStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp nvme inline components inline array item inline performance inline storage service based on context it is used
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0PerformanceStorageService) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -794,8 +794,8 @@ func (m *ZappNvmeComponentsItems0PerformanceStorageService) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0PerformanceStorageService) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeComponentsItems0PerformanceStorageService
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineComponentsInlineArrayItemInlinePerformanceInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -803,17 +803,17 @@ func (m *ZappNvmeComponentsItems0PerformanceStorageService) UnmarshalBinary(b []
 	return nil
 }
 
-// ZappNvmeComponentsItems0Qos zapp nvme components items0 qos
+// ZappNvmeInlineComponentsInlineArrayItemInlineQos zapp nvme inline components inline array item inline qos
 //
-// swagger:model ZappNvmeComponentsItems0Qos
-type ZappNvmeComponentsItems0Qos struct {
+// swagger:model zapp_nvme_inline_components_inline_array_item_inline_qos
+type ZappNvmeInlineComponentsInlineArrayItemInlineQos struct {
 
 	// policy
-	Policy *ZappNvmeComponentsItems0QosPolicy `json:"policy,omitempty"`
+	Policy *ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy `json:"policy,omitempty"`
 }
 
-// Validate validates this zapp nvme components items0 qos
-func (m *ZappNvmeComponentsItems0Qos) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline components inline array item inline qos
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQos) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePolicy(formats); err != nil {
@@ -826,7 +826,7 @@ func (m *ZappNvmeComponentsItems0Qos) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0Qos) validatePolicy(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQos) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
@@ -843,8 +843,8 @@ func (m *ZappNvmeComponentsItems0Qos) validatePolicy(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this zapp nvme components items0 qos based on the context it is used
-func (m *ZappNvmeComponentsItems0Qos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this zapp nvme inline components inline array item inline qos based on the context it is used
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
@@ -857,7 +857,7 @@ func (m *ZappNvmeComponentsItems0Qos) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0Qos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
 		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
@@ -872,7 +872,7 @@ func (m *ZappNvmeComponentsItems0Qos) contextValidatePolicy(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0Qos) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQos) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -880,8 +880,8 @@ func (m *ZappNvmeComponentsItems0Qos) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0Qos) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeComponentsItems0Qos
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQos) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineComponentsInlineArrayItemInlineQos
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -889,30 +889,30 @@ func (m *ZappNvmeComponentsItems0Qos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeComponentsItems0QosPolicy zapp nvme components items0 qos policy
+// ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy zapp nvme inline components inline array item inline qos inline policy
 //
-// swagger:model ZappNvmeComponentsItems0QosPolicy
-type ZappNvmeComponentsItems0QosPolicy struct {
+// swagger:model zapp_nvme_inline_components_inline_array_item_inline_qos_inline_policy
+type ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy struct {
 
 	// The name of an existing QoS policy.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this zapp nvme components items0 qos policy
-func (m *ZappNvmeComponentsItems0QosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline components inline array item inline qos inline policy
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this zapp nvme components items0 qos policy based on context it is used
-func (m *ZappNvmeComponentsItems0QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp nvme inline components inline array item inline qos inline policy based on context it is used
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -920,8 +920,8 @@ func (m *ZappNvmeComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeComponentsItems0QosPolicy
+func (m *ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineComponentsInlineArrayItemInlineQosInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -929,17 +929,17 @@ func (m *ZappNvmeComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeRpo zapp nvme rpo
+// ZappNvmeInlineRpo zapp nvme inline rpo
 //
-// swagger:model ZappNvmeRpo
-type ZappNvmeRpo struct {
+// swagger:model zapp_nvme_inline_rpo
+type ZappNvmeInlineRpo struct {
 
 	// local
-	Local *ZappNvmeRpoLocal `json:"local,omitempty"`
+	Local *ZappNvmeInlineRpoInlineLocal `json:"local,omitempty"`
 }
 
-// Validate validates this zapp nvme rpo
-func (m *ZappNvmeRpo) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline rpo
+func (m *ZappNvmeInlineRpo) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLocal(formats); err != nil {
@@ -952,7 +952,7 @@ func (m *ZappNvmeRpo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ZappNvmeRpo) validateLocal(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineRpo) validateLocal(formats strfmt.Registry) error {
 	if swag.IsZero(m.Local) { // not required
 		return nil
 	}
@@ -969,8 +969,8 @@ func (m *ZappNvmeRpo) validateLocal(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this zapp nvme rpo based on the context it is used
-func (m *ZappNvmeRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this zapp nvme inline rpo based on the context it is used
+func (m *ZappNvmeInlineRpo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLocal(ctx, formats); err != nil {
@@ -983,7 +983,7 @@ func (m *ZappNvmeRpo) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *ZappNvmeRpo) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+func (m *ZappNvmeInlineRpo) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Local != nil {
 		if err := m.Local.ContextValidate(ctx, formats); err != nil {
@@ -998,7 +998,7 @@ func (m *ZappNvmeRpo) contextValidateLocal(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeRpo) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineRpo) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1006,8 +1006,8 @@ func (m *ZappNvmeRpo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeRpo) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeRpo
+func (m *ZappNvmeInlineRpo) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineRpo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1015,21 +1015,21 @@ func (m *ZappNvmeRpo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ZappNvmeRpoLocal zapp nvme rpo local
+// ZappNvmeInlineRpoInlineLocal zapp nvme inline rpo inline local
 //
-// swagger:model ZappNvmeRpoLocal
-type ZappNvmeRpoLocal struct {
+// swagger:model zapp_nvme_inline_rpo_inline_local
+type ZappNvmeInlineRpoInlineLocal struct {
 
 	// The local RPO of the application.
 	// Enum: [hourly none]
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
-	Policy string `json:"policy,omitempty"`
+	Policy *string `json:"policy,omitempty"`
 }
 
-// Validate validates this zapp nvme rpo local
-func (m *ZappNvmeRpoLocal) Validate(formats strfmt.Registry) error {
+// Validate validates this zapp nvme inline rpo inline local
+func (m *ZappNvmeInlineRpoInlineLocal) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1042,7 +1042,7 @@ func (m *ZappNvmeRpoLocal) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var zappNvmeRpoLocalTypeNamePropEnum []interface{}
+var zappNvmeInlineRpoInlineLocalTypeNamePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1050,61 +1050,61 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		zappNvmeRpoLocalTypeNamePropEnum = append(zappNvmeRpoLocalTypeNamePropEnum, v)
+		zappNvmeInlineRpoInlineLocalTypeNamePropEnum = append(zappNvmeInlineRpoInlineLocalTypeNamePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ZappNvmeRpoLocal
-	// ZappNvmeRpoLocal
+	// zapp_nvme_inline_rpo_inline_local
+	// ZappNvmeInlineRpoInlineLocal
 	// name
 	// Name
 	// hourly
 	// END DEBUGGING
-	// ZappNvmeRpoLocalNameHourly captures enum value "hourly"
-	ZappNvmeRpoLocalNameHourly string = "hourly"
+	// ZappNvmeInlineRpoInlineLocalNameHourly captures enum value "hourly"
+	ZappNvmeInlineRpoInlineLocalNameHourly string = "hourly"
 
 	// BEGIN DEBUGGING
-	// ZappNvmeRpoLocal
-	// ZappNvmeRpoLocal
+	// zapp_nvme_inline_rpo_inline_local
+	// ZappNvmeInlineRpoInlineLocal
 	// name
 	// Name
 	// none
 	// END DEBUGGING
-	// ZappNvmeRpoLocalNameNone captures enum value "none"
-	ZappNvmeRpoLocalNameNone string = "none"
+	// ZappNvmeInlineRpoInlineLocalNameNone captures enum value "none"
+	ZappNvmeInlineRpoInlineLocalNameNone string = "none"
 )
 
 // prop value enum
-func (m *ZappNvmeRpoLocal) validateNameEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, zappNvmeRpoLocalTypeNamePropEnum, true); err != nil {
+func (m *ZappNvmeInlineRpoInlineLocal) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeInlineRpoInlineLocalTypeNamePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ZappNvmeRpoLocal) validateName(formats strfmt.Registry) error {
+func (m *ZappNvmeInlineRpoInlineLocal) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", m.Name); err != nil {
+	if err := m.validateNameEnum("rpo"+"."+"local"+"."+"name", "body", *m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this zapp nvme rpo local based on context it is used
-func (m *ZappNvmeRpoLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this zapp nvme inline rpo inline local based on context it is used
+func (m *ZappNvmeInlineRpoInlineLocal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ZappNvmeRpoLocal) MarshalBinary() ([]byte, error) {
+func (m *ZappNvmeInlineRpoInlineLocal) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1112,8 +1112,8 @@ func (m *ZappNvmeRpoLocal) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ZappNvmeRpoLocal) UnmarshalBinary(b []byte) error {
-	var res ZappNvmeRpoLocal
+func (m *ZappNvmeInlineRpoInlineLocal) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeInlineRpoInlineLocal
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -7,9 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 type loggingResponseWriter struct {
@@ -28,7 +26,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func Logger(inner http.Handler, routeName string, logLevel log.Level) http.Handler {
+func Logger(inner http.Handler, routeName string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		requestId := ""
@@ -36,9 +34,9 @@ func Logger(inner http.Handler, routeName string, logLevel log.Level) http.Handl
 		if reqID := r.Header.Get("X-Request-ID"); reqID != "" {
 			requestId = reqID
 		}
-		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST)
+		ctx := GenerateRequestContext(r.Context(), requestId, ContextSourceREST, WorkflowTridentRESTLogger, LogLayerRESTFrontend)
 		r = r.WithContext(ctx)
-		logRestCallInfo("REST API call received.", r, start, routeName, "", logLevel)
+		logRestCallInfo("REST API call received.", r, start, routeName, "")
 
 		lrw := NewLoggingResponseWriter(w)
 		inner.ServeHTTP(lrw, r)
@@ -48,27 +46,36 @@ func Logger(inner http.Handler, routeName string, logLevel log.Level) http.Handl
 		endTime := float64(time.Since(start).Milliseconds())
 		restOpsSecondsTotal.WithLabelValues(r.Method, routeName, statusCode).Observe(endTime)
 
-		logRestCallInfo("REST API call complete.", r, start, routeName, statusCode, logLevel)
+		logRestCallInfo("REST API call complete.", r, start, routeName, statusCode)
 	})
 }
 
-func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string, logLevel log.Level) {
-	logFields := log.Fields{
-		"method":   r.Method,
-		"uri":      r.RequestURI,
-		"route":    name,
-		"duration": time.Since(start),
-	}
-	if statusCode != "" {
-		logFields["status_code"] = statusCode
+func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string) {
+	subjects := []string{}
+	if r.TLS != nil {
+		for _, certs := range r.TLS.PeerCertificates {
+			subjects = append(subjects, certs.Subject.String())
+		}
 	}
 
-	switch logLevel {
-	case log.TraceLevel:
-		Logc(r.Context()).WithFields(logFields).Trace(msg)
-	case log.DebugLevel:
-		fallthrough
-	default:
-		Logc(r.Context()).WithFields(logFields).Debug(msg)
+	logFields := LogFields{
+		"Method":     r.Method,
+		"Route":      name,
+		"RequestURL": r.URL,
+		"Duration":   time.Since(start),
 	}
+
+	if statusCode != "" {
+		logFields["StatusCode"] = statusCode
+	}
+
+	Logc(r.Context()).WithFields(logFields).Debug(msg)
+
+	logFields["ClientCertSubjects"] = subjects
+	logFields["SourceIP"] = r.RemoteAddr
+	logFields["Referer"] = r.Referer()
+	logFields["UserAgent"] = r.UserAgent()
+	logFields["Host"] = r.Host
+
+	Audit().Logf(r.Context(), AuditRESTAccess, logFields, msg)
 }

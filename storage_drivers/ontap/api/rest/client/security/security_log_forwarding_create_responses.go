@@ -52,6 +52,11 @@ SecurityLogForwardingCreateAccepted describes a response with status code 202, w
 Accepted
 */
 type SecurityLogForwardingCreateAccepted struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.SecurityAuditLogForwardResponse
 }
 
@@ -93,6 +98,13 @@ func (o *SecurityLogForwardingCreateAccepted) GetPayload() *models.SecurityAudit
 }
 
 func (o *SecurityLogForwardingCreateAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.SecurityAuditLogForwardResponse)
 

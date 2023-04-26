@@ -22,28 +22,28 @@ type VolumeProtocolRawPerformanceStatRw struct {
 	// Number of operations of the given type performed on this volume.
 	// Example: 1000
 	// Read Only: true
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The raw data component latency in microseconds measured within ONTAP for all operations of the given type.
 	// Example: 200
 	// Read Only: true
-	TotalTime int64 `json:"total_time,omitempty"`
+	TotalTime *int64 `json:"total_time,omitempty"`
 
-	// volume protocol latency histogram counts
-	// Example: ["0","0","0","0","0","15","35","100","200","200","300","500","500","500","1000","1000","800","500","500","300","200","50","40","15","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
-	VolumeProtocolLatencyHistogramCounts []int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
+	// volume protocol raw performance stat rw inline volume protocol latency histogram counts
+	// Example: [0,0,0,0,0,15,35,100,200,200,300,500,500,500,1000,1000,800,500,500,300,200,50,40,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramCounts []*int64 `json:"volume_protocol_latency_histogram_counts,omitempty"`
 
 	// Labels for the latency histogram, ranging from <2us to >20s.
 	// Example: ["\u003c2us","\u003c6us","\u003c10us","\u003c14us","\u003c20us","\u003c40us","\u003c60us","\u003c80us","\u003c100us","\u003c200us","\u003c400us","\u003c600us","\u003c800us","\u003c1ms","\u003c2ms","\u003c4ms","\u003c6ms","\u003c8ms","\u003c10ms","\u003c12ms","\u003c14ms","\u003c16ms","\u003c18ms","\u003c20ms","\u003c40ms","\u003c60ms","\u003c80ms","\u003c100ms","\u003c200ms","\u003c400ms","\u003c600ms","\u003c800ms","\u003c1s","\u003c2s","\u003c4s","\u003c6s","\u003c8s","\u003c10s","\u003c20s","\u003e20s"]
-	VolumeProtocolLatencyHistogramLabels []string `json:"volume_protocol_latency_histogram_labels,omitempty"`
+	VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolLatencyHistogramLabels []*string `json:"volume_protocol_latency_histogram_labels,omitempty"`
 
-	// volume protocol size histogram counts
-	// Example: ["2400","1055","1100","700","500","300","200","100","100","50","50","75","25","0","0"]
-	VolumeProtocolSizeHistogramCounts []int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
+	// volume protocol raw performance stat rw inline volume protocol size histogram counts
+	// Example: [2400,1055,1100,700,500,300,200,100,100,50,50,75,25,0,0]
+	VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramCounts []*int64 `json:"volume_protocol_size_histogram_counts,omitempty"`
 
 	// Labels for the size histogram, ranging from <4KB to >1024KB.
 	// Example: ["\u003c    4KB","=    4KB","\u003c    8KB","=    8KB","\u003c   16KB","=   16KB","\u003c   32KB","=   32KB","\u003c   64KB","=   64KB","\u003c  256KB","=  256KB","\u003c 1024KB","= 1024KB","\u003e 1024KB"]
-	VolumeProtocolSizeHistogramLabels []string `json:"volume_protocol_size_histogram_labels,omitempty"`
+	VolumeProtocolRawPerformanceStatRwInlineVolumeProtocolSizeHistogramLabels []*string `json:"volume_protocol_size_histogram_labels,omitempty"`
 }
 
 // Validate validates this volume protocol raw performance stat rw
@@ -71,7 +71,7 @@ func (m *VolumeProtocolRawPerformanceStatRw) ContextValidate(ctx context.Context
 
 func (m *VolumeProtocolRawPerformanceStatRw) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "count", "body", int64(m.Count)); err != nil {
+	if err := validate.ReadOnly(ctx, "count", "body", m.Count); err != nil {
 		return err
 	}
 
@@ -80,7 +80,7 @@ func (m *VolumeProtocolRawPerformanceStatRw) contextValidateCount(ctx context.Co
 
 func (m *VolumeProtocolRawPerformanceStatRw) contextValidateTotalTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "total_time", "body", int64(m.TotalTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "total_time", "body", m.TotalTime); err != nil {
 		return err
 	}
 

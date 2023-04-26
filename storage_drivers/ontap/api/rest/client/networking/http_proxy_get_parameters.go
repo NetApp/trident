@@ -66,13 +66,13 @@ type HTTPProxyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   HTTP proxy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *HTTPProxyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the http proxy get params
-func (o *HTTPProxyGetParams) WithFieldsQueryParameter(fields []string) *HTTPProxyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the http proxy get params
+func (o *HTTPProxyGetParams) WithFields(fields []string) *HTTPProxyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the http proxy get params
-func (o *HTTPProxyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the http proxy get params
+func (o *HTTPProxyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the http proxy get params
-func (o *HTTPProxyGetParams) WithUUIDPathParameter(uuid string) *HTTPProxyGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the http proxy get params
+func (o *HTTPProxyGetParams) WithUUID(uuid string) *HTTPProxyGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the http proxy get params
-func (o *HTTPProxyGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the http proxy get params
+func (o *HTTPProxyGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *HTTPProxyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *HTTPProxyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *HTTPProxyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamHTTPProxyGet binds the parameter fields
 func (o *HTTPProxyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

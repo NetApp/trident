@@ -22,55 +22,55 @@ import (
 type ApplicationComponent struct {
 
 	// links
-	Links *ApplicationComponentLinks `json:"_links,omitempty"`
+	Links *ApplicationComponentInlineLinks `json:"_links,omitempty"`
 
 	// application
-	Application *ApplicationComponentApplication `json:"application,omitempty"`
+	Application *ApplicationComponentInlineApplication `json:"application,omitempty"`
+
+	// application component inline cifs access
+	ApplicationComponentInlineCifsAccess []*ApplicationCifsProperties `json:"cifs_access,omitempty"`
+
+	// application component inline nfs access
+	ApplicationComponentInlineNfsAccess []*ApplicationNfsProperties `json:"nfs_access,omitempty"`
+
+	// application component inline nvme access
+	ApplicationComponentInlineNvmeAccess []*ApplicationNvmeAccess `json:"nvme_access,omitempty"`
+
+	// application component inline protection groups
+	ApplicationComponentInlineProtectionGroups []*ApplicationProtectionGroups `json:"protection_groups,omitempty"`
+
+	// application component inline san access
+	ApplicationComponentInlineSanAccess []*ApplicationSanAccess `json:"san_access,omitempty"`
 
 	// backing storage
 	BackingStorage *ApplicationBackingStorage `json:"backing_storage,omitempty"`
 
-	// cifs access
-	CifsAccess []*ApplicationCifsProperties `json:"cifs_access,omitempty"`
-
 	// Defines the type of file system that will be installed on this application component.
 	// Read Only: true
 	// Enum: [m1fs xfs generic]
-	FileSystem string `json:"file_system,omitempty"`
+	FileSystem *string `json:"file_system,omitempty"`
 
 	// Host management URL
 	// Read Only: true
-	HostManagementURL string `json:"host_management_url,omitempty"`
+	HostManagementURL *string `json:"host_management_url,omitempty"`
 
 	// L2 Host FQDN
 	// Read Only: true
-	HostName string `json:"host_name,omitempty"`
+	HostName *string `json:"host_name,omitempty"`
 
 	// Application component name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
-
-	// nfs access
-	NfsAccess []*ApplicationNfsProperties `json:"nfs_access,omitempty"`
-
-	// nvme access
-	NvmeAccess []*ApplicationNvmeAccess `json:"nvme_access,omitempty"`
-
-	// protection groups
-	ProtectionGroups []*ApplicationProtectionGroups `json:"protection_groups,omitempty"`
-
-	// san access
-	SanAccess []*ApplicationSanAccess `json:"san_access,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// storage service
-	StorageService *ApplicationComponentStorageService `json:"storage_service,omitempty"`
+	StorageService *ApplicationComponentInlineStorageService `json:"storage_service,omitempty"`
 
 	// svm
-	Svm *ApplicationComponentSvm `json:"svm,omitempty"`
+	Svm *ApplicationComponentInlineSvm `json:"svm,omitempty"`
 
 	// The application component UUID. Valid in URL.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application component
@@ -85,31 +85,31 @@ func (m *ApplicationComponent) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateApplicationComponentInlineCifsAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateApplicationComponentInlineNfsAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateApplicationComponentInlineNvmeAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateApplicationComponentInlineProtectionGroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateApplicationComponentInlineSanAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBackingStorage(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateCifsAccess(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateFileSystem(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateNfsAccess(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateNvmeAccess(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateProtectionGroups(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSanAccess(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -161,6 +161,126 @@ func (m *ApplicationComponent) validateApplication(formats strfmt.Registry) erro
 	return nil
 }
 
+func (m *ApplicationComponent) validateApplicationComponentInlineCifsAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationComponentInlineCifsAccess) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationComponentInlineCifsAccess); i++ {
+		if swag.IsZero(m.ApplicationComponentInlineCifsAccess[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationComponentInlineCifsAccess[i] != nil {
+			if err := m.ApplicationComponentInlineCifsAccess[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) validateApplicationComponentInlineNfsAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationComponentInlineNfsAccess) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationComponentInlineNfsAccess); i++ {
+		if swag.IsZero(m.ApplicationComponentInlineNfsAccess[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationComponentInlineNfsAccess[i] != nil {
+			if err := m.ApplicationComponentInlineNfsAccess[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) validateApplicationComponentInlineNvmeAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationComponentInlineNvmeAccess) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationComponentInlineNvmeAccess); i++ {
+		if swag.IsZero(m.ApplicationComponentInlineNvmeAccess[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationComponentInlineNvmeAccess[i] != nil {
+			if err := m.ApplicationComponentInlineNvmeAccess[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nvme_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) validateApplicationComponentInlineProtectionGroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationComponentInlineProtectionGroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationComponentInlineProtectionGroups); i++ {
+		if swag.IsZero(m.ApplicationComponentInlineProtectionGroups[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationComponentInlineProtectionGroups[i] != nil {
+			if err := m.ApplicationComponentInlineProtectionGroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("protection_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) validateApplicationComponentInlineSanAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationComponentInlineSanAccess) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationComponentInlineSanAccess); i++ {
+		if swag.IsZero(m.ApplicationComponentInlineSanAccess[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationComponentInlineSanAccess[i] != nil {
+			if err := m.ApplicationComponentInlineSanAccess[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("san_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ApplicationComponent) validateBackingStorage(formats strfmt.Registry) error {
 	if swag.IsZero(m.BackingStorage) { // not required
 		return nil
@@ -173,30 +293,6 @@ func (m *ApplicationComponent) validateBackingStorage(formats strfmt.Registry) e
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) validateCifsAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.CifsAccess) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.CifsAccess); i++ {
-		if swag.IsZero(m.CifsAccess[i]) { // not required
-			continue
-		}
-
-		if m.CifsAccess[i] != nil {
-			if err := m.CifsAccess[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -261,104 +357,8 @@ func (m *ApplicationComponent) validateFileSystem(formats strfmt.Registry) error
 	}
 
 	// value enum
-	if err := m.validateFileSystemEnum("file_system", "body", m.FileSystem); err != nil {
+	if err := m.validateFileSystemEnum("file_system", "body", *m.FileSystem); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) validateNfsAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.NfsAccess) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.NfsAccess); i++ {
-		if swag.IsZero(m.NfsAccess[i]) { // not required
-			continue
-		}
-
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) validateNvmeAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.NvmeAccess) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.NvmeAccess); i++ {
-		if swag.IsZero(m.NvmeAccess[i]) { // not required
-			continue
-		}
-
-		if m.NvmeAccess[i] != nil {
-			if err := m.NvmeAccess[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nvme_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) validateProtectionGroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.ProtectionGroups) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.ProtectionGroups); i++ {
-		if swag.IsZero(m.ProtectionGroups[i]) { // not required
-			continue
-		}
-
-		if m.ProtectionGroups[i] != nil {
-			if err := m.ProtectionGroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("protection_groups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) validateSanAccess(formats strfmt.Registry) error {
-	if swag.IsZero(m.SanAccess) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.SanAccess); i++ {
-		if swag.IsZero(m.SanAccess[i]) { // not required
-			continue
-		}
-
-		if m.SanAccess[i] != nil {
-			if err := m.SanAccess[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("san_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -410,11 +410,27 @@ func (m *ApplicationComponent) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateBackingStorage(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationComponentInlineCifsAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCifsAccess(ctx, formats); err != nil {
+	if err := m.contextValidateApplicationComponentInlineNfsAccess(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateApplicationComponentInlineNvmeAccess(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateApplicationComponentInlineProtectionGroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateApplicationComponentInlineSanAccess(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBackingStorage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -431,22 +447,6 @@ func (m *ApplicationComponent) ContextValidate(ctx context.Context, formats strf
 	}
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateNfsAccess(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateNvmeAccess(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateProtectionGroups(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSanAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -496,6 +496,96 @@ func (m *ApplicationComponent) contextValidateApplication(ctx context.Context, f
 	return nil
 }
 
+func (m *ApplicationComponent) contextValidateApplicationComponentInlineCifsAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationComponentInlineCifsAccess); i++ {
+
+		if m.ApplicationComponentInlineCifsAccess[i] != nil {
+			if err := m.ApplicationComponentInlineCifsAccess[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) contextValidateApplicationComponentInlineNfsAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationComponentInlineNfsAccess); i++ {
+
+		if m.ApplicationComponentInlineNfsAccess[i] != nil {
+			if err := m.ApplicationComponentInlineNfsAccess[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) contextValidateApplicationComponentInlineNvmeAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationComponentInlineNvmeAccess); i++ {
+
+		if m.ApplicationComponentInlineNvmeAccess[i] != nil {
+			if err := m.ApplicationComponentInlineNvmeAccess[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nvme_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) contextValidateApplicationComponentInlineProtectionGroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationComponentInlineProtectionGroups); i++ {
+
+		if m.ApplicationComponentInlineProtectionGroups[i] != nil {
+			if err := m.ApplicationComponentInlineProtectionGroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("protection_groups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationComponent) contextValidateApplicationComponentInlineSanAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationComponentInlineSanAccess); i++ {
+
+		if m.ApplicationComponentInlineSanAccess[i] != nil {
+			if err := m.ApplicationComponentInlineSanAccess[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("san_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ApplicationComponent) contextValidateBackingStorage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BackingStorage != nil {
@@ -510,27 +600,9 @@ func (m *ApplicationComponent) contextValidateBackingStorage(ctx context.Context
 	return nil
 }
 
-func (m *ApplicationComponent) contextValidateCifsAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.CifsAccess); i++ {
-
-		if m.CifsAccess[i] != nil {
-			if err := m.CifsAccess[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationComponent) contextValidateFileSystem(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "file_system", "body", string(m.FileSystem)); err != nil {
+	if err := validate.ReadOnly(ctx, "file_system", "body", m.FileSystem); err != nil {
 		return err
 	}
 
@@ -539,7 +611,7 @@ func (m *ApplicationComponent) contextValidateFileSystem(ctx context.Context, fo
 
 func (m *ApplicationComponent) contextValidateHostManagementURL(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "host_management_url", "body", string(m.HostManagementURL)); err != nil {
+	if err := validate.ReadOnly(ctx, "host_management_url", "body", m.HostManagementURL); err != nil {
 		return err
 	}
 
@@ -548,7 +620,7 @@ func (m *ApplicationComponent) contextValidateHostManagementURL(ctx context.Cont
 
 func (m *ApplicationComponent) contextValidateHostName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "host_name", "body", string(m.HostName)); err != nil {
+	if err := validate.ReadOnly(ctx, "host_name", "body", m.HostName); err != nil {
 		return err
 	}
 
@@ -557,80 +629,8 @@ func (m *ApplicationComponent) contextValidateHostName(ctx context.Context, form
 
 func (m *ApplicationComponent) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) contextValidateNfsAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NfsAccess); i++ {
-
-		if m.NfsAccess[i] != nil {
-			if err := m.NfsAccess[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nfs_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) contextValidateNvmeAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.NvmeAccess); i++ {
-
-		if m.NvmeAccess[i] != nil {
-			if err := m.NvmeAccess[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("nvme_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) contextValidateProtectionGroups(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.ProtectionGroups); i++ {
-
-		if m.ProtectionGroups[i] != nil {
-			if err := m.ProtectionGroups[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("protection_groups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ApplicationComponent) contextValidateSanAccess(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.SanAccess); i++ {
-
-		if m.SanAccess[i] != nil {
-			if err := m.SanAccess[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("san_access" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -666,7 +666,7 @@ func (m *ApplicationComponent) contextValidateSvm(ctx context.Context, formats s
 
 func (m *ApplicationComponent) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -691,26 +691,26 @@ func (m *ApplicationComponent) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentApplication application component application
+// ApplicationComponentInlineApplication application component inline application
 //
-// swagger:model ApplicationComponentApplication
-type ApplicationComponentApplication struct {
+// swagger:model application_component_inline_application
+type ApplicationComponentInlineApplication struct {
 
 	// links
-	Links *ApplicationComponentApplicationLinks `json:"_links,omitempty"`
+	Links *ApplicationComponentInlineApplicationInlineLinks `json:"_links,omitempty"`
 
 	// Application name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The application UUID. Valid in URL.
 	// Required: true
 	// Read Only: true
-	UUID string `json:"uuid"`
+	UUID *string `json:"uuid"`
 }
 
-// Validate validates this application component application
-func (m *ApplicationComponentApplication) Validate(formats strfmt.Registry) error {
+// Validate validates this application component inline application
+func (m *ApplicationComponentInlineApplication) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -727,7 +727,7 @@ func (m *ApplicationComponentApplication) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ApplicationComponentApplication) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplication) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -744,17 +744,17 @@ func (m *ApplicationComponentApplication) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *ApplicationComponentApplication) validateUUID(formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplication) validateUUID(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("application"+"."+"uuid", "body", m.UUID); err != nil {
+	if err := validate.Required("application"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application component application based on the context it is used
-func (m *ApplicationComponentApplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component inline application based on the context it is used
+func (m *ApplicationComponentInlineApplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -775,7 +775,7 @@ func (m *ApplicationComponentApplication) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *ApplicationComponentApplication) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplication) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -789,18 +789,18 @@ func (m *ApplicationComponentApplication) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *ApplicationComponentApplication) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplication) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "application"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "application"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationComponentApplication) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplication) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "application"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "application"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -808,7 +808,7 @@ func (m *ApplicationComponentApplication) contextValidateUUID(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentApplication) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentInlineApplication) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -816,8 +816,8 @@ func (m *ApplicationComponentApplication) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentApplication) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentApplication
+func (m *ApplicationComponentInlineApplication) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentInlineApplication
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -825,17 +825,17 @@ func (m *ApplicationComponentApplication) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentApplicationLinks application component application links
+// ApplicationComponentInlineApplicationInlineLinks application component inline application inline links
 //
-// swagger:model ApplicationComponentApplicationLinks
-type ApplicationComponentApplicationLinks struct {
+// swagger:model application_component_inline_application_inline__links
+type ApplicationComponentInlineApplicationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application component application links
-func (m *ApplicationComponentApplicationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application component inline application inline links
+func (m *ApplicationComponentInlineApplicationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -848,7 +848,7 @@ func (m *ApplicationComponentApplicationLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *ApplicationComponentApplicationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplicationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -865,8 +865,8 @@ func (m *ApplicationComponentApplicationLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this application component application links based on the context it is used
-func (m *ApplicationComponentApplicationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component inline application inline links based on the context it is used
+func (m *ApplicationComponentInlineApplicationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -879,7 +879,7 @@ func (m *ApplicationComponentApplicationLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *ApplicationComponentApplicationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineApplicationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -894,7 +894,7 @@ func (m *ApplicationComponentApplicationLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentApplicationLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentInlineApplicationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -902,8 +902,8 @@ func (m *ApplicationComponentApplicationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentApplicationLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentApplicationLinks
+func (m *ApplicationComponentInlineApplicationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentInlineApplicationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -911,17 +911,17 @@ func (m *ApplicationComponentApplicationLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentLinks application component links
+// ApplicationComponentInlineLinks application component inline links
 //
-// swagger:model ApplicationComponentLinks
-type ApplicationComponentLinks struct {
+// swagger:model application_component_inline__links
+type ApplicationComponentInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application component links
-func (m *ApplicationComponentLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application component inline links
+func (m *ApplicationComponentInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -934,7 +934,7 @@ func (m *ApplicationComponentLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationComponentLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -951,8 +951,8 @@ func (m *ApplicationComponentLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this application component links based on the context it is used
-func (m *ApplicationComponentLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component inline links based on the context it is used
+func (m *ApplicationComponentInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -965,7 +965,7 @@ func (m *ApplicationComponentLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *ApplicationComponentLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -980,7 +980,7 @@ func (m *ApplicationComponentLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -988,8 +988,8 @@ func (m *ApplicationComponentLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentLinks
+func (m *ApplicationComponentInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -997,27 +997,27 @@ func (m *ApplicationComponentLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentStorageService application component storage service
+// ApplicationComponentInlineStorageService application component inline storage service
 //
-// swagger:model ApplicationComponentStorageService
-type ApplicationComponentStorageService struct {
+// swagger:model application_component_inline_storage_service
+type ApplicationComponentInlineStorageService struct {
 
 	// Storage service name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Storage service UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application component storage service
-func (m *ApplicationComponentStorageService) Validate(formats strfmt.Registry) error {
+// Validate validates this application component inline storage service
+func (m *ApplicationComponentInlineStorageService) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application component storage service based on the context it is used
-func (m *ApplicationComponentStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component inline storage service based on the context it is used
+func (m *ApplicationComponentInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -1034,18 +1034,18 @@ func (m *ApplicationComponentStorageService) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *ApplicationComponentStorageService) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineStorageService) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_service"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_service"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationComponentStorageService) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineStorageService) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_service"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_service"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1053,7 +1053,7 @@ func (m *ApplicationComponentStorageService) contextValidateUUID(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentStorageService) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentInlineStorageService) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1061,8 +1061,8 @@ func (m *ApplicationComponentStorageService) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentStorageService) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentStorageService
+func (m *ApplicationComponentInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentInlineStorageService
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1070,27 +1070,27 @@ func (m *ApplicationComponentStorageService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentSvm application component svm
+// ApplicationComponentInlineSvm application component inline svm
 //
-// swagger:model ApplicationComponentSvm
-type ApplicationComponentSvm struct {
+// swagger:model application_component_inline_svm
+type ApplicationComponentInlineSvm struct {
 
 	// SVM name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// SVM UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application component svm
-func (m *ApplicationComponentSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this application component inline svm
+func (m *ApplicationComponentInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application component svm based on the context it is used
-func (m *ApplicationComponentSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component inline svm based on the context it is used
+func (m *ApplicationComponentInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -1107,18 +1107,18 @@ func (m *ApplicationComponentSvm) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ApplicationComponentSvm) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineSvm) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "svm"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "svm"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationComponentSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentInlineSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -1126,7 +1126,7 @@ func (m *ApplicationComponentSvm) contextValidateUUID(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSvm) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1134,8 +1134,8 @@ func (m *ApplicationComponentSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSvm) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSvm
+func (m *ApplicationComponentInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

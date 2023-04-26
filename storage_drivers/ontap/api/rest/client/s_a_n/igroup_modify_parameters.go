@@ -75,7 +75,7 @@ type IgroupModifyParams struct {
 	   The unique identifier of the initiator group.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *IgroupModifyParams) SetInfo(info *models.Igroup) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the igroup modify params
-func (o *IgroupModifyParams) WithUUIDPathParameter(uuid string) *IgroupModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the igroup modify params
+func (o *IgroupModifyParams) WithUUID(uuid string) *IgroupModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the igroup modify params
-func (o *IgroupModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the igroup modify params
+func (o *IgroupModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *IgroupModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

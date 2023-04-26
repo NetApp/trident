@@ -20,13 +20,14 @@ import (
 type UserGroupPrivilegesResponse struct {
 
 	// links
-	Links *UserGroupPrivilegesResponseLinks `json:"_links,omitempty"`
+	Links *UserGroupPrivilegesResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of local or Active Directory user or group records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*UserGroupPrivileges `json:"records,omitempty"`
+	// user group privileges response inline records
+	UserGroupPrivilegesResponseInlineRecords []*UserGroupPrivileges `json:"records,omitempty"`
 }
 
 // Validate validates this user group privileges response
@@ -37,7 +38,7 @@ func (m *UserGroupPrivilegesResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateUserGroupPrivilegesResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *UserGroupPrivilegesResponse) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *UserGroupPrivilegesResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *UserGroupPrivilegesResponse) validateUserGroupPrivilegesResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.UserGroupPrivilegesResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.UserGroupPrivilegesResponseInlineRecords); i++ {
+		if swag.IsZero(m.UserGroupPrivilegesResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.UserGroupPrivilegesResponseInlineRecords[i] != nil {
+			if err := m.UserGroupPrivilegesResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *UserGroupPrivilegesResponse) ContextValidate(ctx context.Context, forma
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateUserGroupPrivilegesResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *UserGroupPrivilegesResponse) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
-func (m *UserGroupPrivilegesResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesResponse) contextValidateUserGroupPrivilegesResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.UserGroupPrivilegesResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.UserGroupPrivilegesResponseInlineRecords[i] != nil {
+			if err := m.UserGroupPrivilegesResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *UserGroupPrivilegesResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UserGroupPrivilegesResponseLinks user group privileges response links
+// UserGroupPrivilegesResponseInlineLinks user group privileges response inline links
 //
-// swagger:model UserGroupPrivilegesResponseLinks
-type UserGroupPrivilegesResponseLinks struct {
+// swagger:model user_group_privileges_response_inline__links
+type UserGroupPrivilegesResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type UserGroupPrivilegesResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this user group privileges response links
-func (m *UserGroupPrivilegesResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this user group privileges response inline links
+func (m *UserGroupPrivilegesResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *UserGroupPrivilegesResponseLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *UserGroupPrivilegesResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *UserGroupPrivilegesResponseLinks) validateNext(formats strfmt.Registry)
 	return nil
 }
 
-func (m *UserGroupPrivilegesResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *UserGroupPrivilegesResponseLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this user group privileges response links based on the context it is used
-func (m *UserGroupPrivilegesResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this user group privileges response inline links based on the context it is used
+func (m *UserGroupPrivilegesResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *UserGroupPrivilegesResponseLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *UserGroupPrivilegesResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *UserGroupPrivilegesResponseLinks) contextValidateNext(ctx context.Conte
 	return nil
 }
 
-func (m *UserGroupPrivilegesResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *UserGroupPrivilegesResponseLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *UserGroupPrivilegesResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *UserGroupPrivilegesResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *UserGroupPrivilegesResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UserGroupPrivilegesResponseLinks) UnmarshalBinary(b []byte) error {
-	var res UserGroupPrivilegesResponseLinks
+func (m *UserGroupPrivilegesResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UserGroupPrivilegesResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

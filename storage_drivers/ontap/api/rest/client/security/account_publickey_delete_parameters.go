@@ -66,19 +66,19 @@ type AccountPublickeyDeleteParams struct {
 
 	   User account name
 	*/
-	AccountNamePathParameter string
+	AccountName string
 
 	/* Index.
 
 	   Index number for the public key (where there are multiple keys for the same account).
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* OwnerUUID.
 
 	   Account owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *AccountPublickeyDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAccountNamePathParameter adds the accountName to the account publickey delete params
-func (o *AccountPublickeyDeleteParams) WithAccountNamePathParameter(accountName string) *AccountPublickeyDeleteParams {
-	o.SetAccountNamePathParameter(accountName)
+// WithAccountName adds the accountName to the account publickey delete params
+func (o *AccountPublickeyDeleteParams) WithAccountName(accountName string) *AccountPublickeyDeleteParams {
+	o.SetAccountName(accountName)
 	return o
 }
 
-// SetAccountNamePathParameter adds the accountName to the account publickey delete params
-func (o *AccountPublickeyDeleteParams) SetAccountNamePathParameter(accountName string) {
-	o.AccountNamePathParameter = accountName
+// SetAccountName adds the accountName to the account publickey delete params
+func (o *AccountPublickeyDeleteParams) SetAccountName(accountName string) {
+	o.AccountName = accountName
 }
 
-// WithIndexPathParameter adds the index to the account publickey delete params
-func (o *AccountPublickeyDeleteParams) WithIndexPathParameter(index int64) *AccountPublickeyDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the account publickey delete params
+func (o *AccountPublickeyDeleteParams) WithIndex(index int64) *AccountPublickeyDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the account publickey delete params
-func (o *AccountPublickeyDeleteParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the account publickey delete params
+func (o *AccountPublickeyDeleteParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the account publickey delete params
-func (o *AccountPublickeyDeleteParams) WithOwnerUUIDPathParameter(ownerUUID string) *AccountPublickeyDeleteParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the account publickey delete params
+func (o *AccountPublickeyDeleteParams) WithOwnerUUID(ownerUUID string) *AccountPublickeyDeleteParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the account publickey delete params
-func (o *AccountPublickeyDeleteParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the account publickey delete params
+func (o *AccountPublickeyDeleteParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,17 +175,17 @@ func (o *AccountPublickeyDeleteParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param account.name
-	if err := r.SetPathParam("account.name", o.AccountNamePathParameter); err != nil {
+	if err := r.SetPathParam("account.name", o.AccountName); err != nil {
 		return err
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

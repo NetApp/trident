@@ -21,42 +21,42 @@ import (
 type QosPolicy struct {
 
 	// links
-	Links *QosPolicyLinks `json:"_links,omitempty"`
+	Links *QosPolicyInlineLinks `json:"_links,omitempty"`
 
 	// adaptive
-	Adaptive *QosPolicyAdaptive `json:"adaptive,omitempty"`
+	Adaptive *QosPolicyInlineAdaptive `json:"adaptive,omitempty"`
 
 	// fixed
-	Fixed *QosPolicyFixed `json:"fixed,omitempty"`
+	Fixed *QosPolicyInlineFixed `json:"fixed,omitempty"`
 
 	// Name of the QoS policy.
 	// Example: extreme
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Number of objects attached to this policy.
 	// Read Only: true
-	ObjectCount int64 `json:"object_count,omitempty"`
+	ObjectCount *int64 `json:"object_count,omitempty"`
 
 	// Policy group ID of the QoS policy.
 	// Read Only: true
-	Pgid int64 `json:"pgid,omitempty"`
+	Pgid *int64 `json:"pgid,omitempty"`
 
 	// Class of the QoS policy.
 	// Read Only: true
 	// Enum: [undefined preset user_defined system_defined autovolume load_control]
-	PolicyClass string `json:"policy_class,omitempty"`
+	PolicyClass *string `json:"policy_class,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// svm
-	Svm *QosPolicySvm `json:"svm,omitempty"`
+	Svm *QosPolicyInlineSvm `json:"svm,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this qos policy
@@ -233,7 +233,7 @@ func (m *QosPolicy) validatePolicyClass(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePolicyClassEnum("policy_class", "body", m.PolicyClass); err != nil {
+	if err := m.validatePolicyClassEnum("policy_class", "body", *m.PolicyClass); err != nil {
 		return err
 	}
 
@@ -289,7 +289,7 @@ func (m *QosPolicy) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -399,7 +399,7 @@ func (m *QosPolicy) contextValidateFixed(ctx context.Context, formats strfmt.Reg
 
 func (m *QosPolicy) contextValidateObjectCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "object_count", "body", int64(m.ObjectCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "object_count", "body", m.ObjectCount); err != nil {
 		return err
 	}
 
@@ -408,7 +408,7 @@ func (m *QosPolicy) contextValidateObjectCount(ctx context.Context, formats strf
 
 func (m *QosPolicy) contextValidatePgid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "pgid", "body", int64(m.Pgid)); err != nil {
+	if err := validate.ReadOnly(ctx, "pgid", "body", m.Pgid); err != nil {
 		return err
 	}
 
@@ -417,7 +417,7 @@ func (m *QosPolicy) contextValidatePgid(ctx context.Context, formats strfmt.Regi
 
 func (m *QosPolicy) contextValidatePolicyClass(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "policy_class", "body", string(m.PolicyClass)); err != nil {
+	if err := validate.ReadOnly(ctx, "policy_class", "body", m.PolicyClass); err != nil {
 		return err
 	}
 
@@ -440,7 +440,7 @@ func (m *QosPolicy) contextValidateSvm(ctx context.Context, formats strfmt.Regis
 
 func (m *QosPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -465,35 +465,35 @@ func (m *QosPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyAdaptive Adaptive QoS policy-groups define measurable service level objectives (SLOs) that adjust based on the storage object used space and the storage object allocated space.
+// QosPolicyInlineAdaptive Adaptive QoS policy-groups define measurable service level objectives (SLOs) that adjust based on the storage object used space and the storage object allocated space.
 //
-// swagger:model QosPolicyAdaptive
-type QosPolicyAdaptive struct {
+// swagger:model qos_policy_inline_adaptive
+type QosPolicyInlineAdaptive struct {
 
 	// Specifies the absolute minimum IOPS that is used as an override when the expected_iops is less than this value. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
-	AbsoluteMinIops int64 `json:"absolute_min_iops,omitempty"`
+	AbsoluteMinIops *int64 `json:"absolute_min_iops,omitempty"`
 
 	// Specifies the block size
 	// Enum: [any 4k 8k 16k 32k 64k 128k]
 	BlockSize *string `json:"block_size,omitempty"`
 
 	// Expected IOPS. Specifies the minimum expected IOPS per TB allocated based on the storage object allocated size. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
-	ExpectedIops int64 `json:"expected_iops,omitempty"`
+	ExpectedIops *int64 `json:"expected_iops,omitempty"`
 
 	// Specifies the size to be used to calculate expected IOPS per TB. The size options are either the storage object allocated space or the storage object used space.
 	// Enum: [used_space allocated_space]
 	ExpectedIopsAllocation *string `json:"expected_iops_allocation,omitempty"`
 
 	// Peak IOPS. Specifies the maximum possible IOPS per TB allocated based on the storage object allocated size or the storage object used size.
-	PeakIops int64 `json:"peak_iops,omitempty"`
+	PeakIops *int64 `json:"peak_iops,omitempty"`
 
 	// Specifies the size to be used to calculate peak IOPS per TB. The size options are either the storage object allocated space or the storage object used space.
 	// Enum: [used_space allocated_space]
 	PeakIopsAllocation *string `json:"peak_iops_allocation,omitempty"`
 }
 
-// Validate validates this qos policy adaptive
-func (m *QosPolicyAdaptive) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy inline adaptive
+func (m *QosPolicyInlineAdaptive) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBlockSize(formats); err != nil {
@@ -514,7 +514,7 @@ func (m *QosPolicyAdaptive) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var qosPolicyAdaptiveTypeBlockSizePropEnum []interface{}
+var qosPolicyInlineAdaptiveTypeBlockSizePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -522,92 +522,92 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		qosPolicyAdaptiveTypeBlockSizePropEnum = append(qosPolicyAdaptiveTypeBlockSizePropEnum, v)
+		qosPolicyInlineAdaptiveTypeBlockSizePropEnum = append(qosPolicyInlineAdaptiveTypeBlockSizePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// any
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeAny captures enum value "any"
-	QosPolicyAdaptiveBlockSizeAny string = "any"
+	// QosPolicyInlineAdaptiveBlockSizeAny captures enum value "any"
+	QosPolicyInlineAdaptiveBlockSizeAny string = "any"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// 4k
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeNr4k captures enum value "4k"
-	QosPolicyAdaptiveBlockSizeNr4k string = "4k"
+	// QosPolicyInlineAdaptiveBlockSizeNr4k captures enum value "4k"
+	QosPolicyInlineAdaptiveBlockSizeNr4k string = "4k"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// 8k
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeNr8k captures enum value "8k"
-	QosPolicyAdaptiveBlockSizeNr8k string = "8k"
+	// QosPolicyInlineAdaptiveBlockSizeNr8k captures enum value "8k"
+	QosPolicyInlineAdaptiveBlockSizeNr8k string = "8k"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// 16k
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeNr16k captures enum value "16k"
-	QosPolicyAdaptiveBlockSizeNr16k string = "16k"
+	// QosPolicyInlineAdaptiveBlockSizeNr16k captures enum value "16k"
+	QosPolicyInlineAdaptiveBlockSizeNr16k string = "16k"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// 32k
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeNr32k captures enum value "32k"
-	QosPolicyAdaptiveBlockSizeNr32k string = "32k"
+	// QosPolicyInlineAdaptiveBlockSizeNr32k captures enum value "32k"
+	QosPolicyInlineAdaptiveBlockSizeNr32k string = "32k"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// 64k
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeNr64k captures enum value "64k"
-	QosPolicyAdaptiveBlockSizeNr64k string = "64k"
+	// QosPolicyInlineAdaptiveBlockSizeNr64k captures enum value "64k"
+	QosPolicyInlineAdaptiveBlockSizeNr64k string = "64k"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// block_size
 	// BlockSize
 	// 128k
 	// END DEBUGGING
-	// QosPolicyAdaptiveBlockSizeNr128k captures enum value "128k"
-	QosPolicyAdaptiveBlockSizeNr128k string = "128k"
+	// QosPolicyInlineAdaptiveBlockSizeNr128k captures enum value "128k"
+	QosPolicyInlineAdaptiveBlockSizeNr128k string = "128k"
 )
 
 // prop value enum
-func (m *QosPolicyAdaptive) validateBlockSizeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, qosPolicyAdaptiveTypeBlockSizePropEnum, true); err != nil {
+func (m *QosPolicyInlineAdaptive) validateBlockSizeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyInlineAdaptiveTypeBlockSizePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *QosPolicyAdaptive) validateBlockSize(formats strfmt.Registry) error {
+func (m *QosPolicyInlineAdaptive) validateBlockSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.BlockSize) { // not required
 		return nil
 	}
@@ -620,7 +620,7 @@ func (m *QosPolicyAdaptive) validateBlockSize(formats strfmt.Registry) error {
 	return nil
 }
 
-var qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum []interface{}
+var qosPolicyInlineAdaptiveTypeExpectedIopsAllocationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -628,42 +628,42 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum = append(qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum, v)
+		qosPolicyInlineAdaptiveTypeExpectedIopsAllocationPropEnum = append(qosPolicyInlineAdaptiveTypeExpectedIopsAllocationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// expected_iops_allocation
 	// ExpectedIopsAllocation
 	// used_space
 	// END DEBUGGING
-	// QosPolicyAdaptiveExpectedIopsAllocationUsedSpace captures enum value "used_space"
-	QosPolicyAdaptiveExpectedIopsAllocationUsedSpace string = "used_space"
+	// QosPolicyInlineAdaptiveExpectedIopsAllocationUsedSpace captures enum value "used_space"
+	QosPolicyInlineAdaptiveExpectedIopsAllocationUsedSpace string = "used_space"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// expected_iops_allocation
 	// ExpectedIopsAllocation
 	// allocated_space
 	// END DEBUGGING
-	// QosPolicyAdaptiveExpectedIopsAllocationAllocatedSpace captures enum value "allocated_space"
-	QosPolicyAdaptiveExpectedIopsAllocationAllocatedSpace string = "allocated_space"
+	// QosPolicyInlineAdaptiveExpectedIopsAllocationAllocatedSpace captures enum value "allocated_space"
+	QosPolicyInlineAdaptiveExpectedIopsAllocationAllocatedSpace string = "allocated_space"
 )
 
 // prop value enum
-func (m *QosPolicyAdaptive) validateExpectedIopsAllocationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum, true); err != nil {
+func (m *QosPolicyInlineAdaptive) validateExpectedIopsAllocationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyInlineAdaptiveTypeExpectedIopsAllocationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *QosPolicyAdaptive) validateExpectedIopsAllocation(formats strfmt.Registry) error {
+func (m *QosPolicyInlineAdaptive) validateExpectedIopsAllocation(formats strfmt.Registry) error {
 	if swag.IsZero(m.ExpectedIopsAllocation) { // not required
 		return nil
 	}
@@ -676,7 +676,7 @@ func (m *QosPolicyAdaptive) validateExpectedIopsAllocation(formats strfmt.Regist
 	return nil
 }
 
-var qosPolicyAdaptiveTypePeakIopsAllocationPropEnum []interface{}
+var qosPolicyInlineAdaptiveTypePeakIopsAllocationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -684,42 +684,42 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		qosPolicyAdaptiveTypePeakIopsAllocationPropEnum = append(qosPolicyAdaptiveTypePeakIopsAllocationPropEnum, v)
+		qosPolicyInlineAdaptiveTypePeakIopsAllocationPropEnum = append(qosPolicyInlineAdaptiveTypePeakIopsAllocationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// peak_iops_allocation
 	// PeakIopsAllocation
 	// used_space
 	// END DEBUGGING
-	// QosPolicyAdaptivePeakIopsAllocationUsedSpace captures enum value "used_space"
-	QosPolicyAdaptivePeakIopsAllocationUsedSpace string = "used_space"
+	// QosPolicyInlineAdaptivePeakIopsAllocationUsedSpace captures enum value "used_space"
+	QosPolicyInlineAdaptivePeakIopsAllocationUsedSpace string = "used_space"
 
 	// BEGIN DEBUGGING
-	// QosPolicyAdaptive
-	// QosPolicyAdaptive
+	// qos_policy_inline_adaptive
+	// QosPolicyInlineAdaptive
 	// peak_iops_allocation
 	// PeakIopsAllocation
 	// allocated_space
 	// END DEBUGGING
-	// QosPolicyAdaptivePeakIopsAllocationAllocatedSpace captures enum value "allocated_space"
-	QosPolicyAdaptivePeakIopsAllocationAllocatedSpace string = "allocated_space"
+	// QosPolicyInlineAdaptivePeakIopsAllocationAllocatedSpace captures enum value "allocated_space"
+	QosPolicyInlineAdaptivePeakIopsAllocationAllocatedSpace string = "allocated_space"
 )
 
 // prop value enum
-func (m *QosPolicyAdaptive) validatePeakIopsAllocationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, qosPolicyAdaptiveTypePeakIopsAllocationPropEnum, true); err != nil {
+func (m *QosPolicyInlineAdaptive) validatePeakIopsAllocationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyInlineAdaptiveTypePeakIopsAllocationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *QosPolicyAdaptive) validatePeakIopsAllocation(formats strfmt.Registry) error {
+func (m *QosPolicyInlineAdaptive) validatePeakIopsAllocation(formats strfmt.Registry) error {
 	if swag.IsZero(m.PeakIopsAllocation) { // not required
 		return nil
 	}
@@ -732,13 +732,13 @@ func (m *QosPolicyAdaptive) validatePeakIopsAllocation(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validates this qos policy adaptive based on context it is used
-func (m *QosPolicyAdaptive) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this qos policy inline adaptive based on context it is used
+func (m *QosPolicyInlineAdaptive) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicyAdaptive) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyInlineAdaptive) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -746,8 +746,8 @@ func (m *QosPolicyAdaptive) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicyAdaptive) UnmarshalBinary(b []byte) error {
-	var res QosPolicyAdaptive
+func (m *QosPolicyInlineAdaptive) UnmarshalBinary(b []byte) error {
+	var res QosPolicyInlineAdaptive
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -755,39 +755,39 @@ func (m *QosPolicyAdaptive) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyFixed QoS policy-groups define a fixed service level objective (SLO) for a storage object.
+// QosPolicyInlineFixed QoS policy-groups define a fixed service level objective (SLO) for a storage object.
 //
-// swagger:model QosPolicyFixed
-type QosPolicyFixed struct {
+// swagger:model qos_policy_inline_fixed
+type QosPolicyInlineFixed struct {
 
 	// Specifies whether the capacities are shared across all objects that use this QoS policy-group. Default is false.
 	CapacityShared *bool `json:"capacity_shared,omitempty"`
 
 	// Maximum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no maximum throughput is enforced.
-	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Maximum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no maximum throughput is enforced.
-	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Minimum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no minimum throughput is enforced. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
-	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Minimum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no minimum throughput is enforced.
-	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 }
 
-// Validate validates this qos policy fixed
-func (m *QosPolicyFixed) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy inline fixed
+func (m *QosPolicyInlineFixed) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this qos policy fixed based on context it is used
-func (m *QosPolicyFixed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this qos policy inline fixed based on context it is used
+func (m *QosPolicyInlineFixed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicyFixed) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyInlineFixed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -795,8 +795,8 @@ func (m *QosPolicyFixed) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicyFixed) UnmarshalBinary(b []byte) error {
-	var res QosPolicyFixed
+func (m *QosPolicyInlineFixed) UnmarshalBinary(b []byte) error {
+	var res QosPolicyInlineFixed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -804,17 +804,17 @@ func (m *QosPolicyFixed) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyLinks qos policy links
+// QosPolicyInlineLinks qos policy inline links
 //
-// swagger:model QosPolicyLinks
-type QosPolicyLinks struct {
+// swagger:model qos_policy_inline__links
+type QosPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos policy links
-func (m *QosPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy inline links
+func (m *QosPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -827,7 +827,7 @@ func (m *QosPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -844,8 +844,8 @@ func (m *QosPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos policy links based on the context it is used
-func (m *QosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos policy inline links based on the context it is used
+func (m *QosPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -858,7 +858,7 @@ func (m *QosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *QosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -873,7 +873,7 @@ func (m *QosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -881,8 +881,8 @@ func (m *QosPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res QosPolicyLinks
+func (m *QosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -890,27 +890,27 @@ func (m *QosPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicySvm qos policy svm
+// QosPolicyInlineSvm qos policy inline svm
 //
-// swagger:model QosPolicySvm
-type QosPolicySvm struct {
+// swagger:model qos_policy_inline_svm
+type QosPolicyInlineSvm struct {
 
 	// links
-	Links *QosPolicySvmLinks `json:"_links,omitempty"`
+	Links *QosPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this qos policy svm
-func (m *QosPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy inline svm
+func (m *QosPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -923,7 +923,7 @@ func (m *QosPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *QosPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -940,8 +940,8 @@ func (m *QosPolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos policy svm based on the context it is used
-func (m *QosPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos policy inline svm based on the context it is used
+func (m *QosPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -954,7 +954,7 @@ func (m *QosPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *QosPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -969,7 +969,7 @@ func (m *QosPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -977,8 +977,8 @@ func (m *QosPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicySvm) UnmarshalBinary(b []byte) error {
-	var res QosPolicySvm
+func (m *QosPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res QosPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -986,17 +986,17 @@ func (m *QosPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicySvmLinks qos policy svm links
+// QosPolicyInlineSvmInlineLinks qos policy inline svm inline links
 //
-// swagger:model QosPolicySvmLinks
-type QosPolicySvmLinks struct {
+// swagger:model qos_policy_inline_svm_inline__links
+type QosPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos policy svm links
-func (m *QosPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy inline svm inline links
+func (m *QosPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1009,7 +1009,7 @@ func (m *QosPolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1026,8 +1026,8 @@ func (m *QosPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos policy svm links based on the context it is used
-func (m *QosPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos policy inline svm inline links based on the context it is used
+func (m *QosPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1040,7 +1040,7 @@ func (m *QosPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *QosPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1055,7 +1055,7 @@ func (m *QosPolicySvmLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1063,8 +1063,8 @@ func (m *QosPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res QosPolicySvmLinks
+func (m *QosPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

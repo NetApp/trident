@@ -27,7 +27,7 @@ func getFakeBackendWithName(name string) *storage.StorageBackend {
 	fakeConfig := drivers.FakeStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           drivers.ConfigVersion,
-			StorageDriverName: drivers.FakeStorageDriverName,
+			StorageDriverName: config.FakeStorageDriverName,
 		},
 		Protocol:     config.File,
 		Pools:        testutils.GenerateFakePools(2),
@@ -374,9 +374,8 @@ func TestPassthroughClient_DeleteBackendNonexistent(t *testing.T) {
 	fakeBackend := getFakeBackend()
 
 	err := p.DeleteBackend(ctx(), fakeBackend)
-
-	if err == nil {
-		t.Error("Backend delete should have failed on passthrough client!")
+	if err != nil {
+		t.Error("Backend delete should have succeeded on passthrough client!")
 	}
 }
 
@@ -561,7 +560,7 @@ func TestPassthroughClient_DeleteVolumeNonexistent(t *testing.T) {
 	}
 }
 
-func TestPassthroughClient_DeleteVolumeIgnoreNotFound(t *testing.T) {
+func TestPassthroughClient_DeleteVolumes(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	if err := p.AddBackend(ctx(), fakeBackend); err != nil {
@@ -571,23 +570,21 @@ func TestPassthroughClient_DeleteVolumeIgnoreNotFound(t *testing.T) {
 	if err := p.AddVolume(ctx(), fakeVolume); err != nil {
 		t.Errorf("Error adding volume: %v %v", fakeVolume, err)
 	}
-	err := p.DeleteVolumeIgnoreNotFound(ctx(), fakeVolume)
+	err := p.DeleteVolumes(ctx())
 	if err != nil {
-		t.Error("Could not delete volume from passthrough client!")
+		t.Error("Could not delete volumes on passthrough client!")
 	}
 }
 
-func TestPassthroughClient_DeleteVolumeIgnoreNotFoundNonexistent(t *testing.T) {
+func TestPassthroughClient_DeleteVolumesNonexistent(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
 	if err := p.AddBackend(ctx(), fakeBackend); err != nil {
 		t.Errorf("Failure adding backend: %v %v", fakeBackend, err)
 	}
-	fakeVolume := getFakeVolume(fakeBackend)
-
-	err := p.DeleteVolumeIgnoreNotFound(ctx(), fakeVolume)
+	err := p.DeleteVolumes(ctx())
 	if err != nil {
-		t.Error("Could not delete volume on passthrough client!")
+		t.Error("Could not delete volumes on passthrough client!")
 	}
 }
 
@@ -652,34 +649,6 @@ func TestPassthroughClient_GetVolumesNonexistent(t *testing.T) {
 	}
 }
 
-func TestPassthroughClient_DeleteVolumes(t *testing.T) {
-	p := newPassthroughClient()
-	fakeBackend := getFakeBackend()
-	if err := p.AddBackend(ctx(), fakeBackend); err != nil {
-		t.Errorf("Failure adding backend: %v %v", fakeBackend, err)
-	}
-	fakeVolume := getFakeVolume(fakeBackend)
-	if err := p.AddVolume(ctx(), fakeVolume); err != nil {
-		t.Errorf("Error adding volume: %v %v", fakeVolume, err)
-	}
-	err := p.DeleteVolumes(ctx())
-	if err != nil {
-		t.Error("Could not delete volumes on passthrough client!")
-	}
-}
-
-func TestPassthroughClient_DeleteVolumesNonexistent(t *testing.T) {
-	p := newPassthroughClient()
-	fakeBackend := getFakeBackend()
-	if err := p.AddBackend(ctx(), fakeBackend); err != nil {
-		t.Errorf("Failure adding backend: %v %v", fakeBackend, err)
-	}
-	err := p.DeleteVolumes(ctx())
-	if err != nil {
-		t.Error("Could not delete volumes on passthrough client!")
-	}
-}
-
 func TestPassthroughClient_AddVolumeTransaction(t *testing.T) {
 	p := newPassthroughClient()
 	fakeBackend := getFakeBackend()
@@ -723,7 +692,7 @@ func TestPassthroughClient_GetExistingVolumeTransaction(t *testing.T) {
 	if err := p.AddVolumeTransaction(ctx(), fakeTransaction); err != nil {
 		t.Errorf("Error adding volume transaction: %v %v", fakeTransaction, err)
 	}
-	result, err := p.GetExistingVolumeTransaction(ctx(), fakeTransaction)
+	result, err := p.GetVolumeTransaction(ctx(), fakeTransaction)
 	if err != nil {
 		t.Error("Could not get volume transaction from passthrough client!")
 	}
@@ -909,17 +878,6 @@ func TestPassthroughClient_DeleteSnapshot(t *testing.T) {
 	_ = p.AddSnapshot(ctx(), fakeSnapshot)
 
 	err := p.DeleteSnapshot(ctx(), fakeSnapshot)
-	if err != nil {
-		t.Error("Could not delete snapshot from passthrough client!")
-	}
-}
-
-func TestPassthroughClient_DeleteSnapshotIgnoreNotFound(t *testing.T) {
-	p := newPassthroughClient()
-	fakeSnapshot := getFakeSnapshot()
-	_ = p.AddSnapshot(ctx(), fakeSnapshot)
-
-	err := p.DeleteSnapshotIgnoreNotFound(ctx(), fakeSnapshot)
 	if err != nil {
 		t.Error("Could not delete snapshot from passthrough client!")
 	}

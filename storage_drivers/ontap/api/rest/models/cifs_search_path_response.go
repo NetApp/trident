@@ -20,13 +20,14 @@ import (
 type CifsSearchPathResponse struct {
 
 	// links
-	Links *CifsSearchPathResponseLinks `json:"_links,omitempty"`
+	Links *CifsSearchPathResponseInlineLinks `json:"_links,omitempty"`
+
+	// cifs search path response inline records
+	CifsSearchPathResponseInlineRecords []*CifsSearchPath `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*CifsSearchPath `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this cifs search path response
@@ -37,7 +38,7 @@ func (m *CifsSearchPathResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateCifsSearchPathResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *CifsSearchPathResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSearchPathResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *CifsSearchPathResponse) validateCifsSearchPathResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsSearchPathResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.CifsSearchPathResponseInlineRecords); i++ {
+		if swag.IsZero(m.CifsSearchPathResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.CifsSearchPathResponseInlineRecords[i] != nil {
+			if err := m.CifsSearchPathResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *CifsSearchPathResponse) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateCifsSearchPathResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *CifsSearchPathResponse) contextValidateLinks(ctx context.Context, forma
 	return nil
 }
 
-func (m *CifsSearchPathResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSearchPathResponse) contextValidateCifsSearchPathResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.CifsSearchPathResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.CifsSearchPathResponseInlineRecords[i] != nil {
+			if err := m.CifsSearchPathResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *CifsSearchPathResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsSearchPathResponseLinks cifs search path response links
+// CifsSearchPathResponseInlineLinks cifs search path response inline links
 //
-// swagger:model CifsSearchPathResponseLinks
-type CifsSearchPathResponseLinks struct {
+// swagger:model cifs_search_path_response_inline__links
+type CifsSearchPathResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type CifsSearchPathResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs search path response links
-func (m *CifsSearchPathResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs search path response inline links
+func (m *CifsSearchPathResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *CifsSearchPathResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsSearchPathResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *CifsSearchPathResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *CifsSearchPathResponseLinks) validateNext(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *CifsSearchPathResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsSearchPathResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *CifsSearchPathResponseLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this cifs search path response links based on the context it is used
-func (m *CifsSearchPathResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs search path response inline links based on the context it is used
+func (m *CifsSearchPathResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *CifsSearchPathResponseLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *CifsSearchPathResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSearchPathResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *CifsSearchPathResponseLinks) contextValidateNext(ctx context.Context, f
 	return nil
 }
 
-func (m *CifsSearchPathResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsSearchPathResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *CifsSearchPathResponseLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *CifsSearchPathResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsSearchPathResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *CifsSearchPathResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsSearchPathResponseLinks) UnmarshalBinary(b []byte) error {
-	var res CifsSearchPathResponseLinks
+func (m *CifsSearchPathResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsSearchPathResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

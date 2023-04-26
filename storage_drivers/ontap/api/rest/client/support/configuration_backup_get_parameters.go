@@ -66,7 +66,7 @@ type ConfigurationBackupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *ConfigurationBackupGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the configuration backup get params
-func (o *ConfigurationBackupGetParams) WithFieldsQueryParameter(fields []string) *ConfigurationBackupGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the configuration backup get params
+func (o *ConfigurationBackupGetParams) WithFields(fields []string) *ConfigurationBackupGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the configuration backup get params
-func (o *ConfigurationBackupGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the configuration backup get params
+func (o *ConfigurationBackupGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *ConfigurationBackupGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *ConfigurationBackupGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamConfigurationBackupGet binds the parameter fields
 func (o *ConfigurationBackupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

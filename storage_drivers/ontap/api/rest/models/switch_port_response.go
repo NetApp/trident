@@ -23,10 +23,11 @@ type SwitchPortResponse struct {
 	Links *CollectionLinks `json:"_links,omitempty"`
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SwitchPort `json:"records,omitempty"`
+	// switch port response inline records
+	SwitchPortResponseInlineRecords []*SwitchPort `json:"records,omitempty"`
 }
 
 // Validate validates this switch port response
@@ -37,7 +38,7 @@ func (m *SwitchPortResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSwitchPortResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SwitchPortResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SwitchPortResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SwitchPortResponse) validateSwitchPortResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SwitchPortResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SwitchPortResponseInlineRecords); i++ {
+		if swag.IsZero(m.SwitchPortResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SwitchPortResponseInlineRecords[i] != nil {
+			if err := m.SwitchPortResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SwitchPortResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSwitchPortResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SwitchPortResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *SwitchPortResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SwitchPortResponse) contextValidateSwitchPortResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SwitchPortResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SwitchPortResponseInlineRecords[i] != nil {
+			if err := m.SwitchPortResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}

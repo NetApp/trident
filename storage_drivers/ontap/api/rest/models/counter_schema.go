@@ -24,19 +24,19 @@ type CounterSchema struct {
 	Denominator *CounterDenominator `json:"denominator,omitempty"`
 
 	// Counter or property description.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// Counter or property name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Type of counter or property. Properties will always set this field to 'string'.
 	//
 	// Enum: [average rate raw delta percent string]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Counter unit.
 	// Enum: [per_sec b_per_sec kb_per_sec mb_per_sec percent millisec microsec nanosec sec none]
-	Unit string `json:"unit,omitempty"`
+	Unit *string `json:"unit,omitempty"`
 }
 
 // Validate validates this counter schema
@@ -167,7 +167,7 @@ func (m *CounterSchema) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -303,7 +303,7 @@ func (m *CounterSchema) validateUnit(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateUnitEnum("unit", "body", m.Unit); err != nil {
+	if err := m.validateUnitEnum("unit", "body", *m.Unit); err != nil {
 		return err
 	}
 

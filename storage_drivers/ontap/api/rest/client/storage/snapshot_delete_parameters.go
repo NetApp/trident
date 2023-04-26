@@ -66,19 +66,19 @@ type SnapshotDeleteParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Snapshot copy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	/* VolumeUUID.
 
 	   Volume UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *SnapshotDeleteParams) WithDefaults() *SnapshotDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *SnapshotDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnapshotDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *SnapshotDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapshot delete params
-func (o *SnapshotDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapshotDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snapshot delete params
+func (o *SnapshotDeleteParams) WithReturnTimeout(returnTimeout *int64) *SnapshotDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapshot delete params
-func (o *SnapshotDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snapshot delete params
+func (o *SnapshotDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDPathParameter adds the uuid to the snapshot delete params
-func (o *SnapshotDeleteParams) WithUUIDPathParameter(uuid string) *SnapshotDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapshot delete params
+func (o *SnapshotDeleteParams) WithUUID(uuid string) *SnapshotDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapshot delete params
-func (o *SnapshotDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapshot delete params
+func (o *SnapshotDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the snapshot delete params
-func (o *SnapshotDeleteParams) WithVolumeUUIDPathParameter(volumeUUID string) *SnapshotDeleteParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the snapshot delete params
+func (o *SnapshotDeleteParams) WithVolumeUUID(volumeUUID string) *SnapshotDeleteParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the snapshot delete params
-func (o *SnapshotDeleteParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the snapshot delete params
+func (o *SnapshotDeleteParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -185,13 +185,13 @@ func (o *SnapshotDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -203,12 +203,12 @@ func (o *SnapshotDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 

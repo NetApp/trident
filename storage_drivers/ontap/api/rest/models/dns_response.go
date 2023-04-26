@@ -20,13 +20,14 @@ import (
 type DNSResponse struct {
 
 	// links
-	Links *DNSResponseLinks `json:"_links,omitempty"`
+	Links *DNSResponseInlineLinks `json:"_links,omitempty"`
+
+	// dns response inline records
+	DNSResponseInlineRecords []*DNS `json:"records,omitempty"`
 
 	// Number of DNS domain records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*DNS `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this dns response
@@ -37,7 +38,7 @@ func (m *DNSResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateDNSResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *DNSResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNSResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *DNSResponse) validateDNSResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.DNSResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.DNSResponseInlineRecords); i++ {
+		if swag.IsZero(m.DNSResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.DNSResponseInlineRecords[i] != nil {
+			if err := m.DNSResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *DNSResponse) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateDNSResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *DNSResponse) contextValidateLinks(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *DNSResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *DNSResponse) contextValidateDNSResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.DNSResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.DNSResponseInlineRecords[i] != nil {
+			if err := m.DNSResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *DNSResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DNSResponseLinks DNS response links
+// DNSResponseInlineLinks dns response inline links
 //
-// swagger:model DNSResponseLinks
-type DNSResponseLinks struct {
+// swagger:model dns_response_inline__links
+type DNSResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type DNSResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this DNS response links
-func (m *DNSResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this dns response inline links
+func (m *DNSResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *DNSResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNSResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *DNSResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *DNSResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNSResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DNSResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *DNSResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this DNS response links based on the context it is used
-func (m *DNSResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dns response inline links based on the context it is used
+func (m *DNSResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *DNSResponseLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *DNSResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *DNSResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *DNSResponseLinks) contextValidateNext(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *DNSResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DNSResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *DNSResponseLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *DNSResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *DNSResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *DNSResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DNSResponseLinks) UnmarshalBinary(b []byte) error {
-	var res DNSResponseLinks
+func (m *DNSResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DNSResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

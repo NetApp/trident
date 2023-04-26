@@ -4,18 +4,19 @@ package plain
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi"
 	controller_helpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	. "github.com/netapp/trident/logging"
 	mock "github.com/netapp/trident/mocks/mock_core"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -23,17 +24,28 @@ import (
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output
-	log.SetOutput(ioutil.Discard)
+	InitLogOutput(io.Discard)
 	os.Exit(m.Run())
 }
 
 func TestPluginActivate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
+	orchestrator.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.Any()).Return(nil)
 	plugin := NewHelper(orchestrator)
 
 	err := plugin.Activate()
-	assert.NoError(t, err, "Error is not nil")
+	assert.NoError(t, err, "Expected Activate to succeed when ReconcileVolumePublications succeeds")
+}
+
+func TestPluginActivate_FailsWithReconcileError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mock.NewMockOrchestrator(mockCtrl)
+	orchestrator.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.Any()).Return(errors.New("core error"))
+	plugin := NewHelper(orchestrator)
+
+	err := plugin.Activate()
+	assert.Error(t, err, "Expected Activate to fail when ReconcileVolumePublications fails")
 }
 
 func TestPluginDeactivate(t *testing.T) {
@@ -54,7 +66,7 @@ func TestGetName(t *testing.T) {
 	assert.Equal(t, "plain_csi_helper", pluginName, "Plugin name does not match")
 }
 
-func TestPluginVersion(t *testing.T) {
+func TestVersion(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
 	plugin := NewHelper(orchestrator)
@@ -131,7 +143,7 @@ func TestGetVolumeConfig(t *testing.T) {
 	}
 }
 
-func TestPluginGetSnapshotConfig(t *testing.T) {
+func TestGetSnapshotConfig(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
 	p := NewHelper(orchestrator)
@@ -166,7 +178,7 @@ func TestPluginGetSnapshotConfig(t *testing.T) {
 	}
 }
 
-func TestPluginGetNodeTopologies(t *testing.T) {
+func TestGetNodeTopologyLabels(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
@@ -181,7 +193,22 @@ func TestPluginGetNodeTopologies(t *testing.T) {
 	assert.NotNil(t, nodeTopologylabels, "unable to get node topologies")
 }
 
-func TestPluginRecordVolumeEvent(t *testing.T) {
+func TestGetNodePublicationState(t *testing.T) {
+	ctx := context.TODO()
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mock.NewMockOrchestrator(mockCtrl)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
+
+	flags, err := plugin.GetNodePublicationState(ctx, "node")
+	assert.Nil(t, flags, "Flags are not nil")
+	assert.Nil(t, err, "Error is not nil")
+}
+
+func TestRecordVolumeEvent(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
@@ -195,7 +222,7 @@ func TestPluginRecordVolumeEvent(t *testing.T) {
 		"provisioned a volume")
 }
 
-func TestPluginRecordNodeEvent(t *testing.T) {
+func TestRecordNodeEvent(t *testing.T) {
 	ctx := context.TODO()
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)

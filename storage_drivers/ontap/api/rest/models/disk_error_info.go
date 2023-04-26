@@ -27,7 +27,7 @@ type DiskErrorInfo struct {
 	// Example: notallflashdisk
 	// Read Only: true
 	// Enum: [onepath onedomain control foreign toobig toosmall invalidblocksize targetasymmap deviceassymmap failovermisconfig unknown netapp fwdownrev qualfail diskfail notallflashdisk]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this disk error info
@@ -254,7 +254,7 @@ func (m *DiskErrorInfo) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -295,7 +295,7 @@ func (m *DiskErrorInfo) contextValidateReason(ctx context.Context, formats strfm
 
 func (m *DiskErrorInfo) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 

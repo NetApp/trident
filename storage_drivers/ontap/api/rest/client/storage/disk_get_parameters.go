@@ -66,13 +66,13 @@ type DiskGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Disk name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *DiskGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the disk get params
-func (o *DiskGetParams) WithFieldsQueryParameter(fields []string) *DiskGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the disk get params
+func (o *DiskGetParams) WithFields(fields []string) *DiskGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the disk get params
-func (o *DiskGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the disk get params
+func (o *DiskGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the disk get params
-func (o *DiskGetParams) WithNamePathParameter(name string) *DiskGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the disk get params
+func (o *DiskGetParams) WithName(name string) *DiskGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the disk get params
-func (o *DiskGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the disk get params
+func (o *DiskGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *DiskGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *DiskGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *DiskGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamDiskGet binds the parameter fields
 func (o *DiskGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

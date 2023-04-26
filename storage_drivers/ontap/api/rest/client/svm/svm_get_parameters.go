@@ -66,13 +66,13 @@ type SvmGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Filter by UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SvmGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the svm get params
-func (o *SvmGetParams) WithFieldsQueryParameter(fields []string) *SvmGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm get params
+func (o *SvmGetParams) WithFields(fields []string) *SvmGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm get params
-func (o *SvmGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm get params
+func (o *SvmGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the svm get params
-func (o *SvmGetParams) WithUUIDPathParameter(uuid string) *SvmGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the svm get params
+func (o *SvmGetParams) WithUUID(uuid string) *SvmGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the svm get params
-func (o *SvmGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the svm get params
+func (o *SvmGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 
 // bindParamSvmGet binds the parameter fields
 func (o *SvmGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -52,6 +52,10 @@ SnapshotPolicyCreateCreated describes a response with status code 201, with defa
 Created
 */
 type SnapshotPolicyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this snapshot policy create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *SnapshotPolicyCreateCreated) String() string {
 }
 
 func (o *SnapshotPolicyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

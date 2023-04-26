@@ -66,49 +66,49 @@ type CloudStoreCollectionGetParams struct {
 
 	   Filter by aggregate.name
 	*/
-	AggregateNameQueryParameter *string
+	AggregateName *string
 
 	/* AggregateUUID.
 
 	   Aggregate UUID
 	*/
-	AggregateUUIDPathParameter string
+	AggregateUUID string
 
 	/* Availability.
 
 	   Filter by availability
 	*/
-	AvailabilityQueryParameter *string
+	Availability *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MirrorDegraded.
 
 	   Filter by mirror_degraded
 	*/
-	MirrorDegradedQueryParameter *bool
+	MirrorDegraded *bool
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Primary.
 
 	   Filter by primary
 	*/
-	PrimaryQueryParameter *bool
+	Primary *bool
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type CloudStoreCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,37 +124,37 @@ type CloudStoreCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* TargetName.
 
 	   Filter by target.name
 	*/
-	TargetNameQueryParameter *string
+	TargetName *string
 
 	/* TargetUUID.
 
 	   Filter by target.uuid
 	*/
-	TargetUUIDQueryParameter *string
+	TargetUUID *string
 
 	/* UnavailableReasonMessage.
 
 	   Filter by unavailable_reason.message
 	*/
-	UnavailableReasonMessageQueryParameter *string
+	UnavailableReasonMessage *string
 
 	/* UnreclaimedSpaceThreshold.
 
 	   Filter by unreclaimed_space_threshold
 	*/
-	UnreclaimedSpaceThresholdQueryParameter *int64
+	UnreclaimedSpaceThreshold *int64
 
 	/* Used.
 
 	   Filter by used
 	*/
-	UsedQueryParameter *int64
+	Used *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *CloudStoreCollectionGetParams) WithDefaults() *CloudStoreCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *CloudStoreCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CloudStoreCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *CloudStoreCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregateNameQueryParameter adds the aggregateName to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithAggregateNameQueryParameter(aggregateName *string) *CloudStoreCollectionGetParams {
-	o.SetAggregateNameQueryParameter(aggregateName)
+// WithAggregateName adds the aggregateName to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithAggregateName(aggregateName *string) *CloudStoreCollectionGetParams {
+	o.SetAggregateName(aggregateName)
 	return o
 }
 
-// SetAggregateNameQueryParameter adds the aggregateName to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetAggregateNameQueryParameter(aggregateName *string) {
-	o.AggregateNameQueryParameter = aggregateName
+// SetAggregateName adds the aggregateName to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetAggregateName(aggregateName *string) {
+	o.AggregateName = aggregateName
 }
 
-// WithAggregateUUIDPathParameter adds the aggregateUUID to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithAggregateUUIDPathParameter(aggregateUUID string) *CloudStoreCollectionGetParams {
-	o.SetAggregateUUIDPathParameter(aggregateUUID)
+// WithAggregateUUID adds the aggregateUUID to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithAggregateUUID(aggregateUUID string) *CloudStoreCollectionGetParams {
+	o.SetAggregateUUID(aggregateUUID)
 	return o
 }
 
-// SetAggregateUUIDPathParameter adds the aggregateUuid to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetAggregateUUIDPathParameter(aggregateUUID string) {
-	o.AggregateUUIDPathParameter = aggregateUUID
+// SetAggregateUUID adds the aggregateUuid to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetAggregateUUID(aggregateUUID string) {
+	o.AggregateUUID = aggregateUUID
 }
 
-// WithAvailabilityQueryParameter adds the availability to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithAvailabilityQueryParameter(availability *string) *CloudStoreCollectionGetParams {
-	o.SetAvailabilityQueryParameter(availability)
+// WithAvailability adds the availability to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithAvailability(availability *string) *CloudStoreCollectionGetParams {
+	o.SetAvailability(availability)
 	return o
 }
 
-// SetAvailabilityQueryParameter adds the availability to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetAvailabilityQueryParameter(availability *string) {
-	o.AvailabilityQueryParameter = availability
+// SetAvailability adds the availability to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetAvailability(availability *string) {
+	o.Availability = availability
 }
 
-// WithFieldsQueryParameter adds the fields to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithFieldsQueryParameter(fields []string) *CloudStoreCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithFields(fields []string) *CloudStoreCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CloudStoreCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithMaxRecords(maxRecords *int64) *CloudStoreCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMirrorDegradedQueryParameter adds the mirrorDegraded to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithMirrorDegradedQueryParameter(mirrorDegraded *bool) *CloudStoreCollectionGetParams {
-	o.SetMirrorDegradedQueryParameter(mirrorDegraded)
+// WithMirrorDegraded adds the mirrorDegraded to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithMirrorDegraded(mirrorDegraded *bool) *CloudStoreCollectionGetParams {
+	o.SetMirrorDegraded(mirrorDegraded)
 	return o
 }
 
-// SetMirrorDegradedQueryParameter adds the mirrorDegraded to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetMirrorDegradedQueryParameter(mirrorDegraded *bool) {
-	o.MirrorDegradedQueryParameter = mirrorDegraded
+// SetMirrorDegraded adds the mirrorDegraded to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetMirrorDegraded(mirrorDegraded *bool) {
+	o.MirrorDegraded = mirrorDegraded
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CloudStoreCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithOrderBy(orderBy []string) *CloudStoreCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPrimaryQueryParameter adds the primary to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithPrimaryQueryParameter(primary *bool) *CloudStoreCollectionGetParams {
-	o.SetPrimaryQueryParameter(primary)
+// WithPrimary adds the primary to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithPrimary(primary *bool) *CloudStoreCollectionGetParams {
+	o.SetPrimary(primary)
 	return o
 }
 
-// SetPrimaryQueryParameter adds the primary to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetPrimaryQueryParameter(primary *bool) {
-	o.PrimaryQueryParameter = primary
+// SetPrimary adds the primary to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetPrimary(primary *bool) {
+	o.Primary = primary
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CloudStoreCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithReturnRecords(returnRecords *bool) *CloudStoreCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CloudStoreCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CloudStoreCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithTargetNameQueryParameter adds the targetName to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithTargetNameQueryParameter(targetName *string) *CloudStoreCollectionGetParams {
-	o.SetTargetNameQueryParameter(targetName)
+// WithTargetName adds the targetName to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithTargetName(targetName *string) *CloudStoreCollectionGetParams {
+	o.SetTargetName(targetName)
 	return o
 }
 
-// SetTargetNameQueryParameter adds the targetName to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetTargetNameQueryParameter(targetName *string) {
-	o.TargetNameQueryParameter = targetName
+// SetTargetName adds the targetName to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetTargetName(targetName *string) {
+	o.TargetName = targetName
 }
 
-// WithTargetUUIDQueryParameter adds the targetUUID to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithTargetUUIDQueryParameter(targetUUID *string) *CloudStoreCollectionGetParams {
-	o.SetTargetUUIDQueryParameter(targetUUID)
+// WithTargetUUID adds the targetUUID to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithTargetUUID(targetUUID *string) *CloudStoreCollectionGetParams {
+	o.SetTargetUUID(targetUUID)
 	return o
 }
 
-// SetTargetUUIDQueryParameter adds the targetUuid to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetTargetUUIDQueryParameter(targetUUID *string) {
-	o.TargetUUIDQueryParameter = targetUUID
+// SetTargetUUID adds the targetUuid to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetTargetUUID(targetUUID *string) {
+	o.TargetUUID = targetUUID
 }
 
-// WithUnavailableReasonMessageQueryParameter adds the unavailableReasonMessage to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithUnavailableReasonMessageQueryParameter(unavailableReasonMessage *string) *CloudStoreCollectionGetParams {
-	o.SetUnavailableReasonMessageQueryParameter(unavailableReasonMessage)
+// WithUnavailableReasonMessage adds the unavailableReasonMessage to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithUnavailableReasonMessage(unavailableReasonMessage *string) *CloudStoreCollectionGetParams {
+	o.SetUnavailableReasonMessage(unavailableReasonMessage)
 	return o
 }
 
-// SetUnavailableReasonMessageQueryParameter adds the unavailableReasonMessage to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetUnavailableReasonMessageQueryParameter(unavailableReasonMessage *string) {
-	o.UnavailableReasonMessageQueryParameter = unavailableReasonMessage
+// SetUnavailableReasonMessage adds the unavailableReasonMessage to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetUnavailableReasonMessage(unavailableReasonMessage *string) {
+	o.UnavailableReasonMessage = unavailableReasonMessage
 }
 
-// WithUnreclaimedSpaceThresholdQueryParameter adds the unreclaimedSpaceThreshold to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithUnreclaimedSpaceThresholdQueryParameter(unreclaimedSpaceThreshold *int64) *CloudStoreCollectionGetParams {
-	o.SetUnreclaimedSpaceThresholdQueryParameter(unreclaimedSpaceThreshold)
+// WithUnreclaimedSpaceThreshold adds the unreclaimedSpaceThreshold to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithUnreclaimedSpaceThreshold(unreclaimedSpaceThreshold *int64) *CloudStoreCollectionGetParams {
+	o.SetUnreclaimedSpaceThreshold(unreclaimedSpaceThreshold)
 	return o
 }
 
-// SetUnreclaimedSpaceThresholdQueryParameter adds the unreclaimedSpaceThreshold to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetUnreclaimedSpaceThresholdQueryParameter(unreclaimedSpaceThreshold *int64) {
-	o.UnreclaimedSpaceThresholdQueryParameter = unreclaimedSpaceThreshold
+// SetUnreclaimedSpaceThreshold adds the unreclaimedSpaceThreshold to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetUnreclaimedSpaceThreshold(unreclaimedSpaceThreshold *int64) {
+	o.UnreclaimedSpaceThreshold = unreclaimedSpaceThreshold
 }
 
-// WithUsedQueryParameter adds the used to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithUsedQueryParameter(used *int64) *CloudStoreCollectionGetParams {
-	o.SetUsedQueryParameter(used)
+// WithUsed adds the used to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithUsed(used *int64) *CloudStoreCollectionGetParams {
+	o.SetUsed(used)
 	return o
 }
 
-// SetUsedQueryParameter adds the used to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetUsedQueryParameter(used *int64) {
-	o.UsedQueryParameter = used
+// SetUsed adds the used to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetUsed(used *int64) {
+	o.Used = used
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.AggregateNameQueryParameter != nil {
+	if o.AggregateName != nil {
 
 		// query param aggregate.name
 		var qrAggregateName string
 
-		if o.AggregateNameQueryParameter != nil {
-			qrAggregateName = *o.AggregateNameQueryParameter
+		if o.AggregateName != nil {
+			qrAggregateName = *o.AggregateName
 		}
 		qAggregateName := qrAggregateName
 		if qAggregateName != "" {
@@ -414,17 +414,17 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 
 	// path param aggregate.uuid
-	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUID); err != nil {
 		return err
 	}
 
-	if o.AvailabilityQueryParameter != nil {
+	if o.Availability != nil {
 
 		// query param availability
 		var qrAvailability string
 
-		if o.AvailabilityQueryParameter != nil {
-			qrAvailability = *o.AvailabilityQueryParameter
+		if o.Availability != nil {
+			qrAvailability = *o.Availability
 		}
 		qAvailability := qrAvailability
 		if qAvailability != "" {
@@ -435,7 +435,7 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -446,13 +446,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -463,13 +463,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MirrorDegradedQueryParameter != nil {
+	if o.MirrorDegraded != nil {
 
 		// query param mirror_degraded
 		var qrMirrorDegraded bool
 
-		if o.MirrorDegradedQueryParameter != nil {
-			qrMirrorDegraded = *o.MirrorDegradedQueryParameter
+		if o.MirrorDegraded != nil {
+			qrMirrorDegraded = *o.MirrorDegraded
 		}
 		qMirrorDegraded := swag.FormatBool(qrMirrorDegraded)
 		if qMirrorDegraded != "" {
@@ -480,7 +480,7 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -491,13 +491,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.PrimaryQueryParameter != nil {
+	if o.Primary != nil {
 
 		// query param primary
 		var qrPrimary bool
 
-		if o.PrimaryQueryParameter != nil {
-			qrPrimary = *o.PrimaryQueryParameter
+		if o.Primary != nil {
+			qrPrimary = *o.Primary
 		}
 		qPrimary := swag.FormatBool(qrPrimary)
 		if qPrimary != "" {
@@ -508,13 +508,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -525,13 +525,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -542,13 +542,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TargetNameQueryParameter != nil {
+	if o.TargetName != nil {
 
 		// query param target.name
 		var qrTargetName string
 
-		if o.TargetNameQueryParameter != nil {
-			qrTargetName = *o.TargetNameQueryParameter
+		if o.TargetName != nil {
+			qrTargetName = *o.TargetName
 		}
 		qTargetName := qrTargetName
 		if qTargetName != "" {
@@ -559,13 +559,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TargetUUIDQueryParameter != nil {
+	if o.TargetUUID != nil {
 
 		// query param target.uuid
 		var qrTargetUUID string
 
-		if o.TargetUUIDQueryParameter != nil {
-			qrTargetUUID = *o.TargetUUIDQueryParameter
+		if o.TargetUUID != nil {
+			qrTargetUUID = *o.TargetUUID
 		}
 		qTargetUUID := qrTargetUUID
 		if qTargetUUID != "" {
@@ -576,13 +576,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.UnavailableReasonMessageQueryParameter != nil {
+	if o.UnavailableReasonMessage != nil {
 
 		// query param unavailable_reason.message
 		var qrUnavailableReasonMessage string
 
-		if o.UnavailableReasonMessageQueryParameter != nil {
-			qrUnavailableReasonMessage = *o.UnavailableReasonMessageQueryParameter
+		if o.UnavailableReasonMessage != nil {
+			qrUnavailableReasonMessage = *o.UnavailableReasonMessage
 		}
 		qUnavailableReasonMessage := qrUnavailableReasonMessage
 		if qUnavailableReasonMessage != "" {
@@ -593,13 +593,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.UnreclaimedSpaceThresholdQueryParameter != nil {
+	if o.UnreclaimedSpaceThreshold != nil {
 
 		// query param unreclaimed_space_threshold
 		var qrUnreclaimedSpaceThreshold int64
 
-		if o.UnreclaimedSpaceThresholdQueryParameter != nil {
-			qrUnreclaimedSpaceThreshold = *o.UnreclaimedSpaceThresholdQueryParameter
+		if o.UnreclaimedSpaceThreshold != nil {
+			qrUnreclaimedSpaceThreshold = *o.UnreclaimedSpaceThreshold
 		}
 		qUnreclaimedSpaceThreshold := swag.FormatInt64(qrUnreclaimedSpaceThreshold)
 		if qUnreclaimedSpaceThreshold != "" {
@@ -610,13 +610,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.UsedQueryParameter != nil {
+	if o.Used != nil {
 
 		// query param used
 		var qrUsed int64
 
-		if o.UsedQueryParameter != nil {
-			qrUsed = *o.UsedQueryParameter
+		if o.Used != nil {
+			qrUsed = *o.Used
 		}
 		qUsed := swag.FormatInt64(qrUsed)
 		if qUsed != "" {
@@ -635,7 +635,7 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamCloudStoreCollectionGet binds the parameter fields
 func (o *CloudStoreCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -652,7 +652,7 @@ func (o *CloudStoreCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamCloudStoreCollectionGet binds the parameter order_by
 func (o *CloudStoreCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

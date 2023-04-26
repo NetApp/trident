@@ -66,103 +66,103 @@ type NvmeInterfaceCollectionGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* FcInterfacePortName.
 
 	   Filter by fc_interface.port.name
 	*/
-	FcInterfacePortNameQueryParameter *string
+	FcInterfacePortName *string
 
 	/* FcInterfacePortNodeName.
 
 	   Filter by fc_interface.port.node.name
 	*/
-	FcInterfacePortNodeNameQueryParameter *string
+	FcInterfacePortNodeName *string
 
 	/* FcInterfacePortUUID.
 
 	   Filter by fc_interface.port.uuid
 	*/
-	FcInterfacePortUUIDQueryParameter *string
+	FcInterfacePortUUID *string
 
 	/* FcInterfaceWwnn.
 
 	   Filter by fc_interface.wwnn
 	*/
-	FcInterfaceWwnnQueryParameter *string
+	FcInterfaceWwnn *string
 
 	/* FcInterfaceWwpn.
 
 	   Filter by fc_interface.wwpn
 	*/
-	FcInterfaceWwpnQueryParameter *string
+	FcInterfaceWwpn *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfaceType.
 
 	   Filter by interface_type
 	*/
-	InterfaceTypeQueryParameter *string
+	InterfaceType *string
 
 	/* IPInterfaceIPAddress.
 
 	   Filter by ip_interface.ip.address
 	*/
-	IPInterfaceIPAddressQueryParameter *string
+	IPInterfaceIPAddress *string
 
 	/* IPInterfaceLocationPortName.
 
 	   Filter by ip_interface.location.port.name
 	*/
-	IPInterfaceLocationPortNameQueryParameter *string
+	IPInterfaceLocationPortName *string
 
 	/* IPInterfaceLocationPortNodeName.
 
 	   Filter by ip_interface.location.port.node.name
 	*/
-	IPInterfaceLocationPortNodeNameQueryParameter *string
+	IPInterfaceLocationPortNodeName *string
 
 	/* IPInterfaceLocationPortUUID.
 
 	   Filter by ip_interface.location.port.uuid
 	*/
-	IPInterfaceLocationPortUUIDQueryParameter *string
+	IPInterfaceLocationPortUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -170,7 +170,7 @@ type NvmeInterfaceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -178,37 +178,37 @@ type NvmeInterfaceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TransportAddress.
 
 	   Filter by transport_address
 	*/
-	TransportAddressQueryParameter *string
+	TransportAddress *string
 
 	/* TransportProtocols.
 
 	   Filter by transport_protocols
 	*/
-	TransportProtocolsQueryParameter *string
+	TransportProtocols *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -228,14 +228,14 @@ func (o *NvmeInterfaceCollectionGetParams) WithDefaults() *NvmeInterfaceCollecti
 // All values with no default are reset to their zero value.
 func (o *NvmeInterfaceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NvmeInterfaceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,268 +277,268 @@ func (o *NvmeInterfaceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *NvmeInterfaceCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithEnabled(enabled *bool) *NvmeInterfaceCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFcInterfacePortNameQueryParameter adds the fcInterfacePortName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithFcInterfacePortNameQueryParameter(fcInterfacePortName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetFcInterfacePortNameQueryParameter(fcInterfacePortName)
+// WithFcInterfacePortName adds the fcInterfacePortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithFcInterfacePortName(fcInterfacePortName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetFcInterfacePortName(fcInterfacePortName)
 	return o
 }
 
-// SetFcInterfacePortNameQueryParameter adds the fcInterfacePortName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetFcInterfacePortNameQueryParameter(fcInterfacePortName *string) {
-	o.FcInterfacePortNameQueryParameter = fcInterfacePortName
+// SetFcInterfacePortName adds the fcInterfacePortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetFcInterfacePortName(fcInterfacePortName *string) {
+	o.FcInterfacePortName = fcInterfacePortName
 }
 
-// WithFcInterfacePortNodeNameQueryParameter adds the fcInterfacePortNodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithFcInterfacePortNodeNameQueryParameter(fcInterfacePortNodeName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetFcInterfacePortNodeNameQueryParameter(fcInterfacePortNodeName)
+// WithFcInterfacePortNodeName adds the fcInterfacePortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithFcInterfacePortNodeName(fcInterfacePortNodeName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetFcInterfacePortNodeName(fcInterfacePortNodeName)
 	return o
 }
 
-// SetFcInterfacePortNodeNameQueryParameter adds the fcInterfacePortNodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetFcInterfacePortNodeNameQueryParameter(fcInterfacePortNodeName *string) {
-	o.FcInterfacePortNodeNameQueryParameter = fcInterfacePortNodeName
+// SetFcInterfacePortNodeName adds the fcInterfacePortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetFcInterfacePortNodeName(fcInterfacePortNodeName *string) {
+	o.FcInterfacePortNodeName = fcInterfacePortNodeName
 }
 
-// WithFcInterfacePortUUIDQueryParameter adds the fcInterfacePortUUID to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithFcInterfacePortUUIDQueryParameter(fcInterfacePortUUID *string) *NvmeInterfaceCollectionGetParams {
-	o.SetFcInterfacePortUUIDQueryParameter(fcInterfacePortUUID)
+// WithFcInterfacePortUUID adds the fcInterfacePortUUID to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithFcInterfacePortUUID(fcInterfacePortUUID *string) *NvmeInterfaceCollectionGetParams {
+	o.SetFcInterfacePortUUID(fcInterfacePortUUID)
 	return o
 }
 
-// SetFcInterfacePortUUIDQueryParameter adds the fcInterfacePortUuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetFcInterfacePortUUIDQueryParameter(fcInterfacePortUUID *string) {
-	o.FcInterfacePortUUIDQueryParameter = fcInterfacePortUUID
+// SetFcInterfacePortUUID adds the fcInterfacePortUuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetFcInterfacePortUUID(fcInterfacePortUUID *string) {
+	o.FcInterfacePortUUID = fcInterfacePortUUID
 }
 
-// WithFcInterfaceWwnnQueryParameter adds the fcInterfaceWwnn to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithFcInterfaceWwnnQueryParameter(fcInterfaceWwnn *string) *NvmeInterfaceCollectionGetParams {
-	o.SetFcInterfaceWwnnQueryParameter(fcInterfaceWwnn)
+// WithFcInterfaceWwnn adds the fcInterfaceWwnn to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithFcInterfaceWwnn(fcInterfaceWwnn *string) *NvmeInterfaceCollectionGetParams {
+	o.SetFcInterfaceWwnn(fcInterfaceWwnn)
 	return o
 }
 
-// SetFcInterfaceWwnnQueryParameter adds the fcInterfaceWwnn to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetFcInterfaceWwnnQueryParameter(fcInterfaceWwnn *string) {
-	o.FcInterfaceWwnnQueryParameter = fcInterfaceWwnn
+// SetFcInterfaceWwnn adds the fcInterfaceWwnn to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetFcInterfaceWwnn(fcInterfaceWwnn *string) {
+	o.FcInterfaceWwnn = fcInterfaceWwnn
 }
 
-// WithFcInterfaceWwpnQueryParameter adds the fcInterfaceWwpn to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithFcInterfaceWwpnQueryParameter(fcInterfaceWwpn *string) *NvmeInterfaceCollectionGetParams {
-	o.SetFcInterfaceWwpnQueryParameter(fcInterfaceWwpn)
+// WithFcInterfaceWwpn adds the fcInterfaceWwpn to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithFcInterfaceWwpn(fcInterfaceWwpn *string) *NvmeInterfaceCollectionGetParams {
+	o.SetFcInterfaceWwpn(fcInterfaceWwpn)
 	return o
 }
 
-// SetFcInterfaceWwpnQueryParameter adds the fcInterfaceWwpn to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetFcInterfaceWwpnQueryParameter(fcInterfaceWwpn *string) {
-	o.FcInterfaceWwpnQueryParameter = fcInterfaceWwpn
+// SetFcInterfaceWwpn adds the fcInterfaceWwpn to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetFcInterfaceWwpn(fcInterfaceWwpn *string) {
+	o.FcInterfaceWwpn = fcInterfaceWwpn
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeInterfaceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithFields(fields []string) *NvmeInterfaceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfaceTypeQueryParameter adds the interfaceType to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithInterfaceTypeQueryParameter(interfaceType *string) *NvmeInterfaceCollectionGetParams {
-	o.SetInterfaceTypeQueryParameter(interfaceType)
+// WithInterfaceType adds the interfaceType to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithInterfaceType(interfaceType *string) *NvmeInterfaceCollectionGetParams {
+	o.SetInterfaceType(interfaceType)
 	return o
 }
 
-// SetInterfaceTypeQueryParameter adds the interfaceType to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetInterfaceTypeQueryParameter(interfaceType *string) {
-	o.InterfaceTypeQueryParameter = interfaceType
+// SetInterfaceType adds the interfaceType to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetInterfaceType(interfaceType *string) {
+	o.InterfaceType = interfaceType
 }
 
-// WithIPInterfaceIPAddressQueryParameter adds the iPInterfaceIPAddress to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceIPAddressQueryParameter(iPInterfaceIPAddress *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceIPAddressQueryParameter(iPInterfaceIPAddress)
+// WithIPInterfaceIPAddress adds the iPInterfaceIPAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceIPAddress(iPInterfaceIPAddress *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceIPAddress(iPInterfaceIPAddress)
 	return o
 }
 
-// SetIPInterfaceIPAddressQueryParameter adds the ipInterfaceIpAddress to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceIPAddressQueryParameter(iPInterfaceIPAddress *string) {
-	o.IPInterfaceIPAddressQueryParameter = iPInterfaceIPAddress
+// SetIPInterfaceIPAddress adds the ipInterfaceIpAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceIPAddress(iPInterfaceIPAddress *string) {
+	o.IPInterfaceIPAddress = iPInterfaceIPAddress
 }
 
-// WithIPInterfaceLocationPortNameQueryParameter adds the iPInterfaceLocationPortName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNameQueryParameter(iPInterfaceLocationPortName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceLocationPortNameQueryParameter(iPInterfaceLocationPortName)
+// WithIPInterfaceLocationPortName adds the iPInterfaceLocationPortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortName(iPInterfaceLocationPortName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortName(iPInterfaceLocationPortName)
 	return o
 }
 
-// SetIPInterfaceLocationPortNameQueryParameter adds the ipInterfaceLocationPortName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNameQueryParameter(iPInterfaceLocationPortName *string) {
-	o.IPInterfaceLocationPortNameQueryParameter = iPInterfaceLocationPortName
+// SetIPInterfaceLocationPortName adds the ipInterfaceLocationPortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortName(iPInterfaceLocationPortName *string) {
+	o.IPInterfaceLocationPortName = iPInterfaceLocationPortName
 }
 
-// WithIPInterfaceLocationPortNodeNameQueryParameter adds the iPInterfaceLocationPortNodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNodeNameQueryParameter(iPInterfaceLocationPortNodeName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceLocationPortNodeNameQueryParameter(iPInterfaceLocationPortNodeName)
+// WithIPInterfaceLocationPortNodeName adds the iPInterfaceLocationPortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNodeName(iPInterfaceLocationPortNodeName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortNodeName(iPInterfaceLocationPortNodeName)
 	return o
 }
 
-// SetIPInterfaceLocationPortNodeNameQueryParameter adds the ipInterfaceLocationPortNodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNodeNameQueryParameter(iPInterfaceLocationPortNodeName *string) {
-	o.IPInterfaceLocationPortNodeNameQueryParameter = iPInterfaceLocationPortNodeName
+// SetIPInterfaceLocationPortNodeName adds the ipInterfaceLocationPortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNodeName(iPInterfaceLocationPortNodeName *string) {
+	o.IPInterfaceLocationPortNodeName = iPInterfaceLocationPortNodeName
 }
 
-// WithIPInterfaceLocationPortUUIDQueryParameter adds the iPInterfaceLocationPortUUID to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortUUIDQueryParameter(iPInterfaceLocationPortUUID *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceLocationPortUUIDQueryParameter(iPInterfaceLocationPortUUID)
+// WithIPInterfaceLocationPortUUID adds the iPInterfaceLocationPortUUID to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortUUID(iPInterfaceLocationPortUUID *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortUUID(iPInterfaceLocationPortUUID)
 	return o
 }
 
-// SetIPInterfaceLocationPortUUIDQueryParameter adds the ipInterfaceLocationPortUuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortUUIDQueryParameter(iPInterfaceLocationPortUUID *string) {
-	o.IPInterfaceLocationPortUUIDQueryParameter = iPInterfaceLocationPortUUID
+// SetIPInterfaceLocationPortUUID adds the ipInterfaceLocationPortUuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortUUID(iPInterfaceLocationPortUUID *string) {
+	o.IPInterfaceLocationPortUUID = iPInterfaceLocationPortUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeInterfaceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeInterfaceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithNameQueryParameter(name *string) *NvmeInterfaceCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithName(name *string) *NvmeInterfaceCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithNodeName(nodeName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *NvmeInterfaceCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithNodeUUID(nodeUUID *string) *NvmeInterfaceCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeInterfaceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithOrderBy(orderBy []string) *NvmeInterfaceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeInterfaceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeInterfaceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeInterfaceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeInterfaceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithSvmName(svmName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *NvmeInterfaceCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithSvmUUID(svmUUID *string) *NvmeInterfaceCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTransportAddressQueryParameter adds the transportAddress to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithTransportAddressQueryParameter(transportAddress *string) *NvmeInterfaceCollectionGetParams {
-	o.SetTransportAddressQueryParameter(transportAddress)
+// WithTransportAddress adds the transportAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithTransportAddress(transportAddress *string) *NvmeInterfaceCollectionGetParams {
+	o.SetTransportAddress(transportAddress)
 	return o
 }
 
-// SetTransportAddressQueryParameter adds the transportAddress to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetTransportAddressQueryParameter(transportAddress *string) {
-	o.TransportAddressQueryParameter = transportAddress
+// SetTransportAddress adds the transportAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetTransportAddress(transportAddress *string) {
+	o.TransportAddress = transportAddress
 }
 
-// WithTransportProtocolsQueryParameter adds the transportProtocols to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithTransportProtocolsQueryParameter(transportProtocols *string) *NvmeInterfaceCollectionGetParams {
-	o.SetTransportProtocolsQueryParameter(transportProtocols)
+// WithTransportProtocols adds the transportProtocols to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithTransportProtocols(transportProtocols *string) *NvmeInterfaceCollectionGetParams {
+	o.SetTransportProtocols(transportProtocols)
 	return o
 }
 
-// SetTransportProtocolsQueryParameter adds the transportProtocols to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetTransportProtocolsQueryParameter(transportProtocols *string) {
-	o.TransportProtocolsQueryParameter = transportProtocols
+// SetTransportProtocols adds the transportProtocols to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetTransportProtocols(transportProtocols *string) {
+	o.TransportProtocols = transportProtocols
 }
 
-// WithUUIDQueryParameter adds the uuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithUUIDQueryParameter(uuid *string) *NvmeInterfaceCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithUUID(uuid *string) *NvmeInterfaceCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -549,13 +549,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -566,13 +566,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcInterfacePortNameQueryParameter != nil {
+	if o.FcInterfacePortName != nil {
 
 		// query param fc_interface.port.name
 		var qrFcInterfacePortName string
 
-		if o.FcInterfacePortNameQueryParameter != nil {
-			qrFcInterfacePortName = *o.FcInterfacePortNameQueryParameter
+		if o.FcInterfacePortName != nil {
+			qrFcInterfacePortName = *o.FcInterfacePortName
 		}
 		qFcInterfacePortName := qrFcInterfacePortName
 		if qFcInterfacePortName != "" {
@@ -583,13 +583,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcInterfacePortNodeNameQueryParameter != nil {
+	if o.FcInterfacePortNodeName != nil {
 
 		// query param fc_interface.port.node.name
 		var qrFcInterfacePortNodeName string
 
-		if o.FcInterfacePortNodeNameQueryParameter != nil {
-			qrFcInterfacePortNodeName = *o.FcInterfacePortNodeNameQueryParameter
+		if o.FcInterfacePortNodeName != nil {
+			qrFcInterfacePortNodeName = *o.FcInterfacePortNodeName
 		}
 		qFcInterfacePortNodeName := qrFcInterfacePortNodeName
 		if qFcInterfacePortNodeName != "" {
@@ -600,13 +600,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcInterfacePortUUIDQueryParameter != nil {
+	if o.FcInterfacePortUUID != nil {
 
 		// query param fc_interface.port.uuid
 		var qrFcInterfacePortUUID string
 
-		if o.FcInterfacePortUUIDQueryParameter != nil {
-			qrFcInterfacePortUUID = *o.FcInterfacePortUUIDQueryParameter
+		if o.FcInterfacePortUUID != nil {
+			qrFcInterfacePortUUID = *o.FcInterfacePortUUID
 		}
 		qFcInterfacePortUUID := qrFcInterfacePortUUID
 		if qFcInterfacePortUUID != "" {
@@ -617,13 +617,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcInterfaceWwnnQueryParameter != nil {
+	if o.FcInterfaceWwnn != nil {
 
 		// query param fc_interface.wwnn
 		var qrFcInterfaceWwnn string
 
-		if o.FcInterfaceWwnnQueryParameter != nil {
-			qrFcInterfaceWwnn = *o.FcInterfaceWwnnQueryParameter
+		if o.FcInterfaceWwnn != nil {
+			qrFcInterfaceWwnn = *o.FcInterfaceWwnn
 		}
 		qFcInterfaceWwnn := qrFcInterfaceWwnn
 		if qFcInterfaceWwnn != "" {
@@ -634,13 +634,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FcInterfaceWwpnQueryParameter != nil {
+	if o.FcInterfaceWwpn != nil {
 
 		// query param fc_interface.wwpn
 		var qrFcInterfaceWwpn string
 
-		if o.FcInterfaceWwpnQueryParameter != nil {
-			qrFcInterfaceWwpn = *o.FcInterfaceWwpnQueryParameter
+		if o.FcInterfaceWwpn != nil {
+			qrFcInterfaceWwpn = *o.FcInterfaceWwpn
 		}
 		qFcInterfaceWwpn := qrFcInterfaceWwpn
 		if qFcInterfaceWwpn != "" {
@@ -651,7 +651,7 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -662,13 +662,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.InterfaceTypeQueryParameter != nil {
+	if o.InterfaceType != nil {
 
 		// query param interface_type
 		var qrInterfaceType string
 
-		if o.InterfaceTypeQueryParameter != nil {
-			qrInterfaceType = *o.InterfaceTypeQueryParameter
+		if o.InterfaceType != nil {
+			qrInterfaceType = *o.InterfaceType
 		}
 		qInterfaceType := qrInterfaceType
 		if qInterfaceType != "" {
@@ -679,13 +679,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IPInterfaceIPAddressQueryParameter != nil {
+	if o.IPInterfaceIPAddress != nil {
 
 		// query param ip_interface.ip.address
 		var qrIPInterfaceIPAddress string
 
-		if o.IPInterfaceIPAddressQueryParameter != nil {
-			qrIPInterfaceIPAddress = *o.IPInterfaceIPAddressQueryParameter
+		if o.IPInterfaceIPAddress != nil {
+			qrIPInterfaceIPAddress = *o.IPInterfaceIPAddress
 		}
 		qIPInterfaceIPAddress := qrIPInterfaceIPAddress
 		if qIPInterfaceIPAddress != "" {
@@ -696,13 +696,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IPInterfaceLocationPortNameQueryParameter != nil {
+	if o.IPInterfaceLocationPortName != nil {
 
 		// query param ip_interface.location.port.name
 		var qrIPInterfaceLocationPortName string
 
-		if o.IPInterfaceLocationPortNameQueryParameter != nil {
-			qrIPInterfaceLocationPortName = *o.IPInterfaceLocationPortNameQueryParameter
+		if o.IPInterfaceLocationPortName != nil {
+			qrIPInterfaceLocationPortName = *o.IPInterfaceLocationPortName
 		}
 		qIPInterfaceLocationPortName := qrIPInterfaceLocationPortName
 		if qIPInterfaceLocationPortName != "" {
@@ -713,13 +713,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IPInterfaceLocationPortNodeNameQueryParameter != nil {
+	if o.IPInterfaceLocationPortNodeName != nil {
 
 		// query param ip_interface.location.port.node.name
 		var qrIPInterfaceLocationPortNodeName string
 
-		if o.IPInterfaceLocationPortNodeNameQueryParameter != nil {
-			qrIPInterfaceLocationPortNodeName = *o.IPInterfaceLocationPortNodeNameQueryParameter
+		if o.IPInterfaceLocationPortNodeName != nil {
+			qrIPInterfaceLocationPortNodeName = *o.IPInterfaceLocationPortNodeName
 		}
 		qIPInterfaceLocationPortNodeName := qrIPInterfaceLocationPortNodeName
 		if qIPInterfaceLocationPortNodeName != "" {
@@ -730,13 +730,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IPInterfaceLocationPortUUIDQueryParameter != nil {
+	if o.IPInterfaceLocationPortUUID != nil {
 
 		// query param ip_interface.location.port.uuid
 		var qrIPInterfaceLocationPortUUID string
 
-		if o.IPInterfaceLocationPortUUIDQueryParameter != nil {
-			qrIPInterfaceLocationPortUUID = *o.IPInterfaceLocationPortUUIDQueryParameter
+		if o.IPInterfaceLocationPortUUID != nil {
+			qrIPInterfaceLocationPortUUID = *o.IPInterfaceLocationPortUUID
 		}
 		qIPInterfaceLocationPortUUID := qrIPInterfaceLocationPortUUID
 		if qIPInterfaceLocationPortUUID != "" {
@@ -747,13 +747,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -764,13 +764,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -781,13 +781,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -798,13 +798,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -815,7 +815,7 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -826,13 +826,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -843,13 +843,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -860,13 +860,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -877,13 +877,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -894,13 +894,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransportAddressQueryParameter != nil {
+	if o.TransportAddress != nil {
 
 		// query param transport_address
 		var qrTransportAddress string
 
-		if o.TransportAddressQueryParameter != nil {
-			qrTransportAddress = *o.TransportAddressQueryParameter
+		if o.TransportAddress != nil {
+			qrTransportAddress = *o.TransportAddress
 		}
 		qTransportAddress := qrTransportAddress
 		if qTransportAddress != "" {
@@ -911,13 +911,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransportProtocolsQueryParameter != nil {
+	if o.TransportProtocols != nil {
 
 		// query param transport_protocols
 		var qrTransportProtocols string
 
-		if o.TransportProtocolsQueryParameter != nil {
-			qrTransportProtocols = *o.TransportProtocolsQueryParameter
+		if o.TransportProtocols != nil {
+			qrTransportProtocols = *o.TransportProtocols
 		}
 		qTransportProtocols := qrTransportProtocols
 		if qTransportProtocols != "" {
@@ -928,13 +928,13 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -953,7 +953,7 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamNvmeInterfaceCollectionGet binds the parameter fields
 func (o *NvmeInterfaceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -970,7 +970,7 @@ func (o *NvmeInterfaceCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamNvmeInterfaceCollectionGet binds the parameter order_by
 func (o *NvmeInterfaceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

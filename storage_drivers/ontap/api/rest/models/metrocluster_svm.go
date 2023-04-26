@@ -24,12 +24,12 @@ type MetroclusterSvm struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// cluster
-	Cluster *MetroclusterSvmCluster `json:"cluster,omitempty"`
+	Cluster *MetroclusterSvmInlineCluster `json:"cluster,omitempty"`
 
 	// Configuration state.
 	// Read Only: true
 	// Enum: [degraded healthy pending_setup pending_switchback replication_paused syncing unhealthy]
-	ConfigurationState string `json:"configuration_state,omitempty"`
+	ConfigurationState *string `json:"configuration_state,omitempty"`
 
 	// Reason for SVM object replication failure.
 	// Example: Apply failed for Object: volume Method: volume_method. Reason: invalid operation
@@ -37,10 +37,10 @@ type MetroclusterSvm struct {
 	FailedReason *Error `json:"failed_reason,omitempty"`
 
 	// partner svm
-	PartnerSvm *MetroclusterSvmPartnerSvm `json:"partner_svm,omitempty"`
+	PartnerSvm *MetroclusterSvmInlinePartnerSvm `json:"partner_svm,omitempty"`
 
 	// svm
-	Svm *MetroclusterSvmSvm `json:"svm,omitempty"`
+	Svm *MetroclusterSvmInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this metrocluster svm
@@ -210,7 +210,7 @@ func (m *MetroclusterSvm) validateConfigurationState(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateConfigurationStateEnum("configuration_state", "body", m.ConfigurationState); err != nil {
+	if err := m.validateConfigurationStateEnum("configuration_state", "body", *m.ConfigurationState); err != nil {
 		return err
 	}
 
@@ -332,7 +332,7 @@ func (m *MetroclusterSvm) contextValidateCluster(ctx context.Context, formats st
 
 func (m *MetroclusterSvm) contextValidateConfigurationState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "configuration_state", "body", string(m.ConfigurationState)); err != nil {
+	if err := validate.ReadOnly(ctx, "configuration_state", "body", m.ConfigurationState); err != nil {
 		return err
 	}
 
@@ -399,17 +399,17 @@ func (m *MetroclusterSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterSvmCluster metrocluster svm cluster
+// MetroclusterSvmInlineCluster metrocluster svm inline cluster
 //
-// swagger:model MetroclusterSvmCluster
-type MetroclusterSvmCluster struct {
+// swagger:model metrocluster_svm_inline_cluster
+type MetroclusterSvmInlineCluster struct {
 
 	// links
-	Links *MetroclusterSvmClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterSvmInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -418,8 +418,8 @@ type MetroclusterSvmCluster struct {
 	UUID *strfmt.UUID `json:"uuid"`
 }
 
-// Validate validates this metrocluster svm cluster
-func (m *MetroclusterSvmCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster svm inline cluster
+func (m *MetroclusterSvmInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -436,7 +436,7 @@ func (m *MetroclusterSvmCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterSvmCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -453,7 +453,7 @@ func (m *MetroclusterSvmCluster) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterSvmCluster) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineCluster) validateUUID(formats strfmt.Registry) error {
 
 	if err := validate.Required("cluster"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
@@ -466,8 +466,8 @@ func (m *MetroclusterSvmCluster) validateUUID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster svm cluster based on the context it is used
-func (m *MetroclusterSvmCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster svm inline cluster based on the context it is used
+func (m *MetroclusterSvmInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -480,7 +480,7 @@ func (m *MetroclusterSvmCluster) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *MetroclusterSvmCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -495,7 +495,7 @@ func (m *MetroclusterSvmCluster) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterSvmCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterSvmInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -503,8 +503,8 @@ func (m *MetroclusterSvmCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterSvmCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterSvmCluster
+func (m *MetroclusterSvmInlineCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterSvmInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -512,17 +512,17 @@ func (m *MetroclusterSvmCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterSvmClusterLinks metrocluster svm cluster links
+// MetroclusterSvmInlineClusterInlineLinks metrocluster svm inline cluster inline links
 //
-// swagger:model MetroclusterSvmClusterLinks
-type MetroclusterSvmClusterLinks struct {
+// swagger:model metrocluster_svm_inline_cluster_inline__links
+type MetroclusterSvmInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster svm cluster links
-func (m *MetroclusterSvmClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster svm inline cluster inline links
+func (m *MetroclusterSvmInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -535,7 +535,7 @@ func (m *MetroclusterSvmClusterLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterSvmClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -552,8 +552,8 @@ func (m *MetroclusterSvmClusterLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this metrocluster svm cluster links based on the context it is used
-func (m *MetroclusterSvmClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster svm inline cluster inline links based on the context it is used
+func (m *MetroclusterSvmInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -566,7 +566,7 @@ func (m *MetroclusterSvmClusterLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *MetroclusterSvmClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -581,7 +581,7 @@ func (m *MetroclusterSvmClusterLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterSvmClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterSvmInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -589,8 +589,8 @@ func (m *MetroclusterSvmClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterSvmClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterSvmClusterLinks
+func (m *MetroclusterSvmInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterSvmInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -598,27 +598,27 @@ func (m *MetroclusterSvmClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterSvmPartnerSvm metrocluster svm partner svm
+// MetroclusterSvmInlinePartnerSvm metrocluster svm inline partner svm
 //
-// swagger:model MetroclusterSvmPartnerSvm
-type MetroclusterSvmPartnerSvm struct {
+// swagger:model metrocluster_svm_inline_partner_svm
+type MetroclusterSvmInlinePartnerSvm struct {
 
 	// MetroCluster partner SVM name.
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// MetroCluster partner SVM UUID.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster svm partner svm
-func (m *MetroclusterSvmPartnerSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster svm inline partner svm
+func (m *MetroclusterSvmInlinePartnerSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster svm partner svm based on the context it is used
-func (m *MetroclusterSvmPartnerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster svm inline partner svm based on the context it is used
+func (m *MetroclusterSvmInlinePartnerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -635,18 +635,18 @@ func (m *MetroclusterSvmPartnerSvm) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *MetroclusterSvmPartnerSvm) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlinePartnerSvm) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "partner_svm"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "partner_svm"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *MetroclusterSvmPartnerSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlinePartnerSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "partner_svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "partner_svm"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -654,7 +654,7 @@ func (m *MetroclusterSvmPartnerSvm) contextValidateUUID(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterSvmPartnerSvm) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterSvmInlinePartnerSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -662,8 +662,8 @@ func (m *MetroclusterSvmPartnerSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterSvmPartnerSvm) UnmarshalBinary(b []byte) error {
-	var res MetroclusterSvmPartnerSvm
+func (m *MetroclusterSvmInlinePartnerSvm) UnmarshalBinary(b []byte) error {
+	var res MetroclusterSvmInlinePartnerSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -671,18 +671,18 @@ func (m *MetroclusterSvmPartnerSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterSvmSvm metrocluster svm svm
+// MetroclusterSvmInlineSvm metrocluster svm inline svm
 //
-// swagger:model MetroclusterSvmSvm
-type MetroclusterSvmSvm struct {
+// swagger:model metrocluster_svm_inline_svm
+type MetroclusterSvmInlineSvm struct {
 
 	// links
-	Links *MetroclusterSvmSvmLinks `json:"_links,omitempty"`
+	Links *MetroclusterSvmInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
@@ -691,8 +691,8 @@ type MetroclusterSvmSvm struct {
 	UUID *string `json:"uuid"`
 }
 
-// Validate validates this metrocluster svm svm
-func (m *MetroclusterSvmSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster svm inline svm
+func (m *MetroclusterSvmInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -709,7 +709,7 @@ func (m *MetroclusterSvmSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterSvmSvm) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -726,7 +726,7 @@ func (m *MetroclusterSvmSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterSvmSvm) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineSvm) validateUUID(formats strfmt.Registry) error {
 
 	if err := validate.Required("svm"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
@@ -735,8 +735,8 @@ func (m *MetroclusterSvmSvm) validateUUID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster svm svm based on the context it is used
-func (m *MetroclusterSvmSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster svm inline svm based on the context it is used
+func (m *MetroclusterSvmInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -749,7 +749,7 @@ func (m *MetroclusterSvmSvm) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *MetroclusterSvmSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -764,7 +764,7 @@ func (m *MetroclusterSvmSvm) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterSvmSvm) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterSvmInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -772,8 +772,8 @@ func (m *MetroclusterSvmSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterSvmSvm) UnmarshalBinary(b []byte) error {
-	var res MetroclusterSvmSvm
+func (m *MetroclusterSvmInlineSvm) UnmarshalBinary(b []byte) error {
+	var res MetroclusterSvmInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -781,17 +781,17 @@ func (m *MetroclusterSvmSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterSvmSvmLinks metrocluster svm svm links
+// MetroclusterSvmInlineSvmInlineLinks metrocluster svm inline svm inline links
 //
-// swagger:model MetroclusterSvmSvmLinks
-type MetroclusterSvmSvmLinks struct {
+// swagger:model metrocluster_svm_inline_svm_inline__links
+type MetroclusterSvmInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster svm svm links
-func (m *MetroclusterSvmSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster svm inline svm inline links
+func (m *MetroclusterSvmInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -804,7 +804,7 @@ func (m *MetroclusterSvmSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterSvmSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -821,8 +821,8 @@ func (m *MetroclusterSvmSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this metrocluster svm svm links based on the context it is used
-func (m *MetroclusterSvmSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster svm inline svm inline links based on the context it is used
+func (m *MetroclusterSvmInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -835,7 +835,7 @@ func (m *MetroclusterSvmSvmLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *MetroclusterSvmSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterSvmInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -850,7 +850,7 @@ func (m *MetroclusterSvmSvmLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterSvmSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterSvmInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -858,8 +858,8 @@ func (m *MetroclusterSvmSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterSvmSvmLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterSvmSvmLinks
+func (m *MetroclusterSvmInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterSvmInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

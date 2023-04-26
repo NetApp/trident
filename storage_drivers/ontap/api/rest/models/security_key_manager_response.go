@@ -20,13 +20,14 @@ import (
 type SecurityKeyManagerResponse struct {
 
 	// links
-	Links *SecurityKeyManagerResponseLinks `json:"_links,omitempty"`
+	Links *SecurityKeyManagerResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SecurityKeyManager `json:"records,omitempty"`
+	// security key manager response inline records
+	SecurityKeyManagerResponseInlineRecords []*SecurityKeyManager `json:"records,omitempty"`
 }
 
 // Validate validates this security key manager response
@@ -37,7 +38,7 @@ func (m *SecurityKeyManagerResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSecurityKeyManagerResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SecurityKeyManagerResponse) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SecurityKeyManagerResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SecurityKeyManagerResponse) validateSecurityKeyManagerResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SecurityKeyManagerResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SecurityKeyManagerResponseInlineRecords); i++ {
+		if swag.IsZero(m.SecurityKeyManagerResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SecurityKeyManagerResponseInlineRecords[i] != nil {
+			if err := m.SecurityKeyManagerResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SecurityKeyManagerResponse) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSecurityKeyManagerResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SecurityKeyManagerResponse) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *SecurityKeyManagerResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerResponse) contextValidateSecurityKeyManagerResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SecurityKeyManagerResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SecurityKeyManagerResponseInlineRecords[i] != nil {
+			if err := m.SecurityKeyManagerResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SecurityKeyManagerResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeyManagerResponseLinks security key manager response links
+// SecurityKeyManagerResponseInlineLinks security key manager response inline links
 //
-// swagger:model SecurityKeyManagerResponseLinks
-type SecurityKeyManagerResponseLinks struct {
+// swagger:model security_key_manager_response_inline__links
+type SecurityKeyManagerResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SecurityKeyManagerResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security key manager response links
-func (m *SecurityKeyManagerResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security key manager response inline links
+func (m *SecurityKeyManagerResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SecurityKeyManagerResponseLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SecurityKeyManagerResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SecurityKeyManagerResponseLinks) validateNext(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SecurityKeyManagerResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeyManagerResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SecurityKeyManagerResponseLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this security key manager response links based on the context it is used
-func (m *SecurityKeyManagerResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security key manager response inline links based on the context it is used
+func (m *SecurityKeyManagerResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SecurityKeyManagerResponseLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SecurityKeyManagerResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SecurityKeyManagerResponseLinks) contextValidateNext(ctx context.Contex
 	return nil
 }
 
-func (m *SecurityKeyManagerResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeyManagerResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SecurityKeyManagerResponseLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeyManagerResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeyManagerResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SecurityKeyManagerResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeyManagerResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeyManagerResponseLinks
+func (m *SecurityKeyManagerResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeyManagerResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -12,11 +12,10 @@ import (
 	"runtime"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -53,7 +52,7 @@ func (v *VolumePublishManager) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
 func (v *VolumePublishManager) WriteTrackingInfo(
 	ctx context.Context, volumeID string, trackingInfo *utils.VolumeTrackingInfo,
 ) error {
-	fields := log.Fields{"volumeID": volumeID}
+	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Debug(">>>> WriteTrackingInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< WriteTrackingInfo")
 
@@ -80,10 +79,16 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 func (v *VolumePublishManager) ReadTrackingInfo(
 	ctx context.Context, volumeID string,
 ) (*utils.VolumeTrackingInfo, error) {
-	fields := log.Fields{"volumeID": volumeID}
+	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Debug(">>>> ReadTrackingInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ReadTrackingInfo")
 
+	return v.readTrackingInfo(ctx, volumeID)
+}
+
+func (v *VolumePublishManager) readTrackingInfo(
+	ctx context.Context, volumeID string,
+) (*utils.VolumeTrackingInfo, error) {
 	var volumeTrackingInfo utils.VolumeTrackingInfo
 	filename := volumeID + ".json"
 	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
@@ -96,11 +101,41 @@ func (v *VolumePublishManager) ReadTrackingInfo(
 	return &volumeTrackingInfo, nil
 }
 
+// ListVolumeTrackingInfo returns a map of tracking files to their contents (volume tracking information).
+func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+	Logc(ctx).Debug(">>>> ListVolumeTrackingInfo")
+	defer Logc(ctx).Debug("<<<< ListVolumeTrackingInfo")
+
+	// Volumes have a 1-1 relationship with a tracking file. A tracking file may contain 1-many published paths.
+	files, err := v.GetVolumeTrackingFiles()
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume tracking info files; %s", err)
+	}
+
+	if len(files) == 0 {
+		Logc(ctx).Debug("No tracking files found.")
+		return nil, utils.NotFoundError("no tracking files found")
+	}
+
+	// Discover the tracking files and their volume tracking info.
+	trackingFiles := make(map[string]*utils.VolumeTrackingInfo, len(files))
+	for _, file := range files {
+		volumeID := strings.ReplaceAll(file.Name(), ".json", "")
+		trackingInfo, err := v.readTrackingInfo(ctx, volumeID)
+		if err != nil {
+			return nil, err
+		}
+		trackingFiles[volumeID] = trackingInfo
+	}
+
+	return trackingFiles, nil
+}
+
 // DeleteTrackingInfo deletes the tracking info staging target path info for a volume from Trident's own
 // volume tracking location (/var/lib/trident/tracking). This method is idempotent, in that if the file doesn't exist,
 // no error is generated.
 func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID string) error {
-	fields := log.Fields{"volumeID": volumeID}
+	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Debug(">>>> DeleteTrackingInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteTrackingInfo")
 
@@ -121,7 +156,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	ctx context.Context, volumeId string, publishedPaths map[string]struct{},
 ) (bool, error) {
 	var err error
-	fields := log.Fields{"volumeId": volumeId}
+	fields := LogFields{"volumeId": volumeId}
 	Logc(ctx).WithFields(fields).Debug(">>>> UpgradeVolumeTrackingFile")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< UpgradeVolumeTrackingFile")
 
@@ -184,7 +219,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 // ValidateTrackingFile checks whether a tracking file needs to be deleted.
 func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeId string) (bool, error) {
 	var trackingInfo utils.VolumeTrackingInfo
-	fields := log.Fields{"volumeId": volumeId}
+	fields := LogFields{"volumeId": volumeId}
 	Logc(ctx).WithFields(fields).Debug(">>>> ValidateTrackingFile")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateTrackingFile")
 	filename := path.Join(v.volumeTrackingInfoPath, volumeId+".json")
@@ -250,7 +285,7 @@ func (v *VolumePublishManager) DeleteFailedUpgradeTrackingFile(ctx context.Conte
 // clearStagedDeviceInfo removes the volume info at the staging target path.  This method is idempotent,
 // in that if the file doesn't exist, no error is generated.
 func clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId string) error {
-	fields := log.Fields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
+	fields := LogFields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
 	Logc(ctx).WithFields(fields).Debug(">>>> clearStagedDeviceInfo")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< clearStagedDeviceInfo")
 
@@ -281,7 +316,7 @@ func isFileValidJSON(err error) bool {
 func deleteStagedDeviceInfo(ctx context.Context, stagingPath, volumeId string) {
 	err := clearStagedDeviceInfo(ctx, stagingPath, volumeId)
 	if err != nil {
-		fields := log.Fields{"volumeId": volumeId, "stagingPath": stagingPath}
+		fields := LogFields{"volumeId": volumeId, "stagingPath": stagingPath}
 		Logc(ctx).WithFields(fields).Warning(fmt.Sprintf("Error deleting staged device info: %v", err))
 	}
 }

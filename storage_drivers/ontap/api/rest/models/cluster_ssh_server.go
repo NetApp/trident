@@ -21,39 +21,39 @@ import (
 type ClusterSSHServer struct {
 
 	// links
-	Links *ClusterSSHServerLinks `json:"_links,omitempty"`
+	Links *ClusterSSHServerInlineLinks `json:"_links,omitempty"`
 
 	// Ciphers for encrypting the data.
 	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
-	Ciphers []Cipher `json:"ciphers,omitempty"`
+	ClusterSSHServerInlineCiphers []*Cipher `json:"ciphers,omitempty"`
+
+	// Key exchange algorithms.
+	// Example: ["diffie_hellman_group_exchange_sha256","diffie_hellman_group14_sha1"]
+	ClusterSSHServerInlineKeyExchangeAlgorithms []*KeyExchangeAlgorithm `json:"key_exchange_algorithms,omitempty"`
+
+	// MAC algorithms.
+	// Example: ["hmac_sha1","hmac_sha2_512_etm"]
+	ClusterSSHServerInlineMacAlgorithms []*MacAlgorithm `json:"mac_algorithms,omitempty"`
 
 	// Maximum connections allowed per second.
 	// Maximum: 70
 	// Minimum: 1
-	ConnectionsPerSecond int64 `json:"connections_per_second,omitempty"`
-
-	// Key exchange algorithms.
-	// Example: ["diffie_hellman_group_exchange_sha256","diffie_hellman_group14_sha1"]
-	KeyExchangeAlgorithms []KeyExchangeAlgorithm `json:"key_exchange_algorithms,omitempty"`
-
-	// MAC algorithms.
-	// Example: ["hmac_sha1","hmac_sha2_512_etm"]
-	MacAlgorithms []MacAlgorithm `json:"mac_algorithms,omitempty"`
+	ConnectionsPerSecond *int64 `json:"connections_per_second,omitempty"`
 
 	// Maximum authentication retries allowed before closing the connection.
 	// Maximum: 6
 	// Minimum: 2
-	MaxAuthenticationRetryCount int64 `json:"max_authentication_retry_count,omitempty"`
+	MaxAuthenticationRetryCount *int64 `json:"max_authentication_retry_count,omitempty"`
 
 	// Maximum possible simultaneous connections.
 	// Maximum: 128
 	// Minimum: 1
-	MaxInstances int64 `json:"max_instances,omitempty"`
+	MaxInstances *int64 `json:"max_instances,omitempty"`
 
 	// Maximum connections from the same client host.
 	// Maximum: 64
 	// Minimum: 1
-	PerSourceLimit int64 `json:"per_source_limit,omitempty"`
+	PerSourceLimit *int64 `json:"per_source_limit,omitempty"`
 }
 
 // Validate validates this cluster ssh server
@@ -64,19 +64,19 @@ func (m *ClusterSSHServer) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateCiphers(formats); err != nil {
+	if err := m.validateClusterSSHServerInlineCiphers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClusterSSHServerInlineKeyExchangeAlgorithms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClusterSSHServerInlineMacAlgorithms(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateConnectionsPerSecond(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateKeyExchangeAlgorithms(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateMacAlgorithms(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -115,18 +115,71 @@ func (m *ClusterSSHServer) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterSSHServer) validateCiphers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Ciphers) { // not required
+func (m *ClusterSSHServer) validateClusterSSHServerInlineCiphers(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterSSHServerInlineCiphers) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Ciphers); i++ {
+	for i := 0; i < len(m.ClusterSSHServerInlineCiphers); i++ {
+		if swag.IsZero(m.ClusterSSHServerInlineCiphers[i]) { // not required
+			continue
+		}
 
-		if err := m.Ciphers[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+		if m.ClusterSSHServerInlineCiphers[i] != nil {
+			if err := m.ClusterSSHServerInlineCiphers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterSSHServer) validateClusterSSHServerInlineKeyExchangeAlgorithms(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterSSHServerInlineKeyExchangeAlgorithms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ClusterSSHServerInlineKeyExchangeAlgorithms); i++ {
+		if swag.IsZero(m.ClusterSSHServerInlineKeyExchangeAlgorithms[i]) { // not required
+			continue
+		}
+
+		if m.ClusterSSHServerInlineKeyExchangeAlgorithms[i] != nil {
+			if err := m.ClusterSSHServerInlineKeyExchangeAlgorithms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterSSHServer) validateClusterSSHServerInlineMacAlgorithms(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClusterSSHServerInlineMacAlgorithms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ClusterSSHServerInlineMacAlgorithms); i++ {
+		if swag.IsZero(m.ClusterSSHServerInlineMacAlgorithms[i]) { // not required
+			continue
+		}
+
+		if m.ClusterSSHServerInlineMacAlgorithms[i] != nil {
+			if err := m.ClusterSSHServerInlineMacAlgorithms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
 		}
 
 	}
@@ -139,50 +192,12 @@ func (m *ClusterSSHServer) validateConnectionsPerSecond(formats strfmt.Registry)
 		return nil
 	}
 
-	if err := validate.MinimumInt("connections_per_second", "body", m.ConnectionsPerSecond, 1, false); err != nil {
+	if err := validate.MinimumInt("connections_per_second", "body", *m.ConnectionsPerSecond, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("connections_per_second", "body", m.ConnectionsPerSecond, 70, false); err != nil {
+	if err := validate.MaximumInt("connections_per_second", "body", *m.ConnectionsPerSecond, 70, false); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ClusterSSHServer) validateKeyExchangeAlgorithms(formats strfmt.Registry) error {
-	if swag.IsZero(m.KeyExchangeAlgorithms) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.KeyExchangeAlgorithms); i++ {
-
-		if err := m.KeyExchangeAlgorithms[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ClusterSSHServer) validateMacAlgorithms(formats strfmt.Registry) error {
-	if swag.IsZero(m.MacAlgorithms) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.MacAlgorithms); i++ {
-
-		if err := m.MacAlgorithms[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -193,11 +208,11 @@ func (m *ClusterSSHServer) validateMaxAuthenticationRetryCount(formats strfmt.Re
 		return nil
 	}
 
-	if err := validate.MinimumInt("max_authentication_retry_count", "body", m.MaxAuthenticationRetryCount, 2, false); err != nil {
+	if err := validate.MinimumInt("max_authentication_retry_count", "body", *m.MaxAuthenticationRetryCount, 2, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("max_authentication_retry_count", "body", m.MaxAuthenticationRetryCount, 6, false); err != nil {
+	if err := validate.MaximumInt("max_authentication_retry_count", "body", *m.MaxAuthenticationRetryCount, 6, false); err != nil {
 		return err
 	}
 
@@ -209,11 +224,11 @@ func (m *ClusterSSHServer) validateMaxInstances(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("max_instances", "body", m.MaxInstances, 1, false); err != nil {
+	if err := validate.MinimumInt("max_instances", "body", *m.MaxInstances, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("max_instances", "body", m.MaxInstances, 128, false); err != nil {
+	if err := validate.MaximumInt("max_instances", "body", *m.MaxInstances, 128, false); err != nil {
 		return err
 	}
 
@@ -225,11 +240,11 @@ func (m *ClusterSSHServer) validatePerSourceLimit(formats strfmt.Registry) error
 		return nil
 	}
 
-	if err := validate.MinimumInt("per_source_limit", "body", m.PerSourceLimit, 1, false); err != nil {
+	if err := validate.MinimumInt("per_source_limit", "body", *m.PerSourceLimit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("per_source_limit", "body", m.PerSourceLimit, 64, false); err != nil {
+	if err := validate.MaximumInt("per_source_limit", "body", *m.PerSourceLimit, 64, false); err != nil {
 		return err
 	}
 
@@ -244,15 +259,15 @@ func (m *ClusterSSHServer) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCiphers(ctx, formats); err != nil {
+	if err := m.contextValidateClusterSSHServerInlineCiphers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateKeyExchangeAlgorithms(ctx, formats); err != nil {
+	if err := m.contextValidateClusterSSHServerInlineKeyExchangeAlgorithms(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMacAlgorithms(ctx, formats); err != nil {
+	if err := m.contextValidateClusterSSHServerInlineMacAlgorithms(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -276,15 +291,17 @@ func (m *ClusterSSHServer) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ClusterSSHServer) contextValidateCiphers(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterSSHServer) contextValidateClusterSSHServerInlineCiphers(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Ciphers); i++ {
+	for i := 0; i < len(m.ClusterSSHServerInlineCiphers); i++ {
 
-		if err := m.Ciphers[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+		if m.ClusterSSHServerInlineCiphers[i] != nil {
+			if err := m.ClusterSSHServerInlineCiphers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ciphers" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -292,15 +309,17 @@ func (m *ClusterSSHServer) contextValidateCiphers(ctx context.Context, formats s
 	return nil
 }
 
-func (m *ClusterSSHServer) contextValidateKeyExchangeAlgorithms(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterSSHServer) contextValidateClusterSSHServerInlineKeyExchangeAlgorithms(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.KeyExchangeAlgorithms); i++ {
+	for i := 0; i < len(m.ClusterSSHServerInlineKeyExchangeAlgorithms); i++ {
 
-		if err := m.KeyExchangeAlgorithms[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
+		if m.ClusterSSHServerInlineKeyExchangeAlgorithms[i] != nil {
+			if err := m.ClusterSSHServerInlineKeyExchangeAlgorithms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("key_exchange_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -308,15 +327,17 @@ func (m *ClusterSSHServer) contextValidateKeyExchangeAlgorithms(ctx context.Cont
 	return nil
 }
 
-func (m *ClusterSSHServer) contextValidateMacAlgorithms(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterSSHServer) contextValidateClusterSSHServerInlineMacAlgorithms(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.MacAlgorithms); i++ {
+	for i := 0; i < len(m.ClusterSSHServerInlineMacAlgorithms); i++ {
 
-		if err := m.MacAlgorithms[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
+		if m.ClusterSSHServerInlineMacAlgorithms[i] != nil {
+			if err := m.ClusterSSHServerInlineMacAlgorithms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("mac_algorithms" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -342,17 +363,17 @@ func (m *ClusterSSHServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterSSHServerLinks cluster SSH server links
+// ClusterSSHServerInlineLinks cluster ssh server inline links
 //
-// swagger:model ClusterSSHServerLinks
-type ClusterSSHServerLinks struct {
+// swagger:model cluster_ssh_server_inline__links
+type ClusterSSHServerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster SSH server links
-func (m *ClusterSSHServerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ssh server inline links
+func (m *ClusterSSHServerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -365,7 +386,7 @@ func (m *ClusterSSHServerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterSSHServerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterSSHServerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -382,8 +403,8 @@ func (m *ClusterSSHServerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster SSH server links based on the context it is used
-func (m *ClusterSSHServerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ssh server inline links based on the context it is used
+func (m *ClusterSSHServerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -396,7 +417,7 @@ func (m *ClusterSSHServerLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *ClusterSSHServerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterSSHServerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -411,7 +432,7 @@ func (m *ClusterSSHServerLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterSSHServerLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterSSHServerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -419,8 +440,8 @@ func (m *ClusterSSHServerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterSSHServerLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterSSHServerLinks
+func (m *ClusterSSHServerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterSSHServerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

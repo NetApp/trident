@@ -22,7 +22,7 @@ spec:
       serviceAccountName: trident-operator
       containers:
         - name: trident-operator
-          image: docker.io/netapp/trident-operator:23.01.0
+          image: docker.io/netapp/trident-operator:23.04.0
           command:
           - "/trident-operator"
           - "--debug"
@@ -34,6 +34,17 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "trident-operator"
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - arm64
+                      - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux

@@ -20,27 +20,27 @@ import (
 type Mediator struct {
 
 	// CA certificate for ONTAP Mediator. This is optional if the certificate is already installed.
-	CaCertificate string `json:"ca_certificate,omitempty"`
+	CaCertificate *string `json:"ca_certificate,omitempty"`
 
 	// dr group
-	DrGroup *MediatorDrGroup `json:"dr_group,omitempty"`
+	DrGroup *MediatorInlineDrGroup `json:"dr_group,omitempty"`
 
 	// The IP address of the mediator.
 	// Example: 10.10.10.7
-	IPAddress string `json:"ip_address,omitempty"`
+	IPAddress *string `json:"ip_address,omitempty"`
 
 	// The password used to connect to the REST server on the mediator.
 	// Example: mypassword
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// peer cluster
-	PeerCluster *MediatorPeerCluster `json:"peer_cluster,omitempty"`
+	PeerCluster *MediatorInlinePeerCluster `json:"peer_cluster,omitempty"`
 
 	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
 	// Example: connected
 	// Read Only: true
-	PeerMediatorConnectivity string `json:"peer_mediator_connectivity,omitempty"`
+	PeerMediatorConnectivity *string `json:"peer_mediator_connectivity,omitempty"`
 
 	// The REST server's port number on the mediator.
 	// Example: 31784
@@ -53,11 +53,11 @@ type Mediator struct {
 
 	// The username used to connect to the REST server on the mediator.
 	// Example: myusername
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 
 	// The unique identifier for the mediator service.
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this mediator
@@ -188,7 +188,7 @@ func (m *Mediator) contextValidatePeerCluster(ctx context.Context, formats strfm
 
 func (m *Mediator) contextValidatePeerMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "peer_mediator_connectivity", "body", string(m.PeerMediatorConnectivity)); err != nil {
+	if err := validate.ReadOnly(ctx, "peer_mediator_connectivity", "body", m.PeerMediatorConnectivity); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ func (m *Mediator) contextValidateReachable(ctx context.Context, formats strfmt.
 
 func (m *Mediator) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -231,23 +231,23 @@ func (m *Mediator) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MediatorDrGroup DR group reference.
+// MediatorInlineDrGroup DR group reference.
 //
-// swagger:model MediatorDrGroup
-type MediatorDrGroup struct {
+// swagger:model mediator_inline_dr_group
+type MediatorInlineDrGroup struct {
 
 	// DR Group ID
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
-// Validate validates this mediator dr group
-func (m *MediatorDrGroup) Validate(formats strfmt.Registry) error {
+// Validate validates this mediator inline dr group
+func (m *MediatorInlineDrGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this mediator dr group based on the context it is used
-func (m *MediatorDrGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mediator inline dr group based on the context it is used
+func (m *MediatorInlineDrGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateID(ctx, formats); err != nil {
@@ -260,9 +260,9 @@ func (m *MediatorDrGroup) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *MediatorDrGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *MediatorInlineDrGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "dr_group"+"."+"id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "dr_group"+"."+"id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -270,7 +270,7 @@ func (m *MediatorDrGroup) contextValidateID(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *MediatorDrGroup) MarshalBinary() ([]byte, error) {
+func (m *MediatorInlineDrGroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -278,8 +278,8 @@ func (m *MediatorDrGroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MediatorDrGroup) UnmarshalBinary(b []byte) error {
-	var res MediatorDrGroup
+func (m *MediatorInlineDrGroup) UnmarshalBinary(b []byte) error {
+	var res MediatorInlineDrGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -287,25 +287,25 @@ func (m *MediatorDrGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MediatorPeerCluster The peer cluster that the mediator service is used for.
+// MediatorInlinePeerCluster The peer cluster that the mediator service is used for.
 //
-// swagger:model MediatorPeerCluster
-type MediatorPeerCluster struct {
+// swagger:model mediator_inline_peer_cluster
+type MediatorInlinePeerCluster struct {
 
 	// links
-	Links *MediatorPeerClusterLinks `json:"_links,omitempty"`
+	Links *MediatorInlinePeerClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster2
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: ebe27c49-1adf-4496-8335-ab862aebebf2
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this mediator peer cluster
-func (m *MediatorPeerCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this mediator inline peer cluster
+func (m *MediatorInlinePeerCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -318,7 +318,7 @@ func (m *MediatorPeerCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MediatorPeerCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MediatorInlinePeerCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -335,8 +335,8 @@ func (m *MediatorPeerCluster) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this mediator peer cluster based on the context it is used
-func (m *MediatorPeerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mediator inline peer cluster based on the context it is used
+func (m *MediatorInlinePeerCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -349,7 +349,7 @@ func (m *MediatorPeerCluster) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *MediatorPeerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MediatorInlinePeerCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -364,7 +364,7 @@ func (m *MediatorPeerCluster) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *MediatorPeerCluster) MarshalBinary() ([]byte, error) {
+func (m *MediatorInlinePeerCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -372,8 +372,8 @@ func (m *MediatorPeerCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MediatorPeerCluster) UnmarshalBinary(b []byte) error {
-	var res MediatorPeerCluster
+func (m *MediatorInlinePeerCluster) UnmarshalBinary(b []byte) error {
+	var res MediatorInlinePeerCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -381,17 +381,17 @@ func (m *MediatorPeerCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MediatorPeerClusterLinks mediator peer cluster links
+// MediatorInlinePeerClusterInlineLinks mediator inline peer cluster inline links
 //
-// swagger:model MediatorPeerClusterLinks
-type MediatorPeerClusterLinks struct {
+// swagger:model mediator_inline_peer_cluster_inline__links
+type MediatorInlinePeerClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this mediator peer cluster links
-func (m *MediatorPeerClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this mediator inline peer cluster inline links
+func (m *MediatorInlinePeerClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -404,7 +404,7 @@ func (m *MediatorPeerClusterLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MediatorPeerClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MediatorInlinePeerClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -421,8 +421,8 @@ func (m *MediatorPeerClusterLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this mediator peer cluster links based on the context it is used
-func (m *MediatorPeerClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this mediator inline peer cluster inline links based on the context it is used
+func (m *MediatorInlinePeerClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -435,7 +435,7 @@ func (m *MediatorPeerClusterLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *MediatorPeerClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MediatorInlinePeerClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -450,7 +450,7 @@ func (m *MediatorPeerClusterLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *MediatorPeerClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MediatorInlinePeerClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -458,8 +458,8 @@ func (m *MediatorPeerClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MediatorPeerClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MediatorPeerClusterLinks
+func (m *MediatorInlinePeerClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MediatorInlinePeerClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

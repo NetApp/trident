@@ -36,35 +36,26 @@ type Client interface {
 	Stop() error
 
 	AddBackend(ctx context.Context, b storage.Backend) error
-	AddBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
 	GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error)
 	UpdateBackend(ctx context.Context, b storage.Backend) error
-	UpdateBackendPersistent(ctx context.Context, b *storage.BackendPersistent) error
 	DeleteBackend(ctx context.Context, backend storage.Backend) error
 	IsBackendDeleting(ctx context.Context, backend storage.Backend) bool
 	GetBackends(ctx context.Context) ([]*storage.BackendPersistent, error)
 	DeleteBackends(ctx context.Context) error
-	ReplaceBackendAndUpdateVolumes(
-		ctx context.Context, origBackend, newBackend storage.Backend,
-	) error
+	ReplaceBackendAndUpdateVolumes(ctx context.Context, origBackend, newBackend storage.Backend) error
 	GetBackendSecret(ctx context.Context, secretName string) (map[string]string, error)
 
 	AddVolume(ctx context.Context, vol *storage.Volume) error
-	AddVolumePersistent(ctx context.Context, vol *storage.VolumeExternal) error
 	GetVolume(ctx context.Context, volName string) (*storage.VolumeExternal, error)
-	UpdateVolume(ctx context.Context, vol *storage.Volume) error
-	UpdateVolumePersistent(ctx context.Context, vol *storage.VolumeExternal) error
-	DeleteVolume(ctx context.Context, vol *storage.Volume) error
-	DeleteVolumeIgnoreNotFound(ctx context.Context, vol *storage.Volume) error
 	GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
+	UpdateVolume(ctx context.Context, vol *storage.Volume) error
+	DeleteVolume(ctx context.Context, vol *storage.Volume) error
 	DeleteVolumes(ctx context.Context) error
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
+	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	GetVolumeTransactions(ctx context.Context) ([]*storage.VolumeTransaction, error)
 	UpdateVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
-	GetExistingVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (
-		*storage.VolumeTransaction, error,
-	)
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 
 	AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error
@@ -88,14 +79,12 @@ type Client interface {
 	GetSnapshots(ctx context.Context) ([]*storage.SnapshotPersistent, error)
 	UpdateSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
-	DeleteSnapshotIgnoreNotFound(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshots(ctx context.Context) error
 }
 
 type CRDClient interface {
 	Client
 	HasBackends(ctx context.Context) (bool, error)
-	AddStorageClassPersistent(ctx context.Context, b *storageclass.Persistent) error
 	HasStorageClasses(ctx context.Context) (bool, error)
 	HasVolumes(ctx context.Context) (bool, error)
 	HasVolumeTransactions(ctx context.Context) (bool, error)

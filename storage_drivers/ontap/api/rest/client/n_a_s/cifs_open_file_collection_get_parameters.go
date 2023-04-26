@@ -66,73 +66,73 @@ type CifsOpenFileCollectionGetParams struct {
 
 	   Filter by connection.count
 	*/
-	ConnectionCountQueryParameter *int64
+	ConnectionCount *int64
 
 	/* ConnectionIdentifier.
 
 	   Filter by connection.identifier
 	*/
-	ConnectionIDentifierQueryParameter *int64
+	ConnectionIdentifier *int64
 
 	/* ContinuouslyAvailable.
 
 	   Filter by continuously_available
 	*/
-	ContinuouslyAvailableQueryParameter *string
+	ContinuouslyAvailable *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Identifier.
 
 	   Filter by identifier
 	*/
-	IdentifierQueryParameter *int64
+	Identifier *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OpenMode.
 
 	   Filter by open_mode
 	*/
-	OpenModeQueryParameter *string
+	OpenMode *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Path.
 
 	   Filter by path
 	*/
-	PathQueryParameter *string
+	Path *string
 
 	/* RangeLocksCount.
 
 	   Filter by range_locks_count
 	*/
-	RangeLocksCountQueryParameter *int64
+	RangeLocksCount *int64
 
 	/* ReturnRecords.
 
@@ -140,7 +140,7 @@ type CifsOpenFileCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -148,55 +148,55 @@ type CifsOpenFileCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SessionIdentifier.
 
 	   Filter by session.identifier
 	*/
-	SessionIDentifierQueryParameter *int64
+	SessionIdentifier *int64
 
 	/* ShareMode.
 
 	   Filter by share.mode
 	*/
-	ShareModeQueryParameter *string
+	ShareMode *string
 
 	/* ShareName.
 
 	   Filter by share.name
 	*/
-	ShareNameQueryParameter *string
+	ShareName *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -216,14 +216,14 @@ func (o *CifsOpenFileCollectionGetParams) WithDefaults() *CifsOpenFileCollection
 // All values with no default are reset to their zero value.
 func (o *CifsOpenFileCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsOpenFileCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -265,246 +265,246 @@ func (o *CifsOpenFileCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConnectionCountQueryParameter adds the connectionCount to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithConnectionCountQueryParameter(connectionCount *int64) *CifsOpenFileCollectionGetParams {
-	o.SetConnectionCountQueryParameter(connectionCount)
+// WithConnectionCount adds the connectionCount to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithConnectionCount(connectionCount *int64) *CifsOpenFileCollectionGetParams {
+	o.SetConnectionCount(connectionCount)
 	return o
 }
 
-// SetConnectionCountQueryParameter adds the connectionCount to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetConnectionCountQueryParameter(connectionCount *int64) {
-	o.ConnectionCountQueryParameter = connectionCount
+// SetConnectionCount adds the connectionCount to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetConnectionCount(connectionCount *int64) {
+	o.ConnectionCount = connectionCount
 }
 
-// WithConnectionIDentifierQueryParameter adds the connectionIdentifier to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithConnectionIDentifierQueryParameter(connectionIdentifier *int64) *CifsOpenFileCollectionGetParams {
-	o.SetConnectionIDentifierQueryParameter(connectionIdentifier)
+// WithConnectionIdentifier adds the connectionIdentifier to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithConnectionIdentifier(connectionIdentifier *int64) *CifsOpenFileCollectionGetParams {
+	o.SetConnectionIdentifier(connectionIdentifier)
 	return o
 }
 
-// SetConnectionIDentifierQueryParameter adds the connectionIdentifier to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetConnectionIDentifierQueryParameter(connectionIdentifier *int64) {
-	o.ConnectionIDentifierQueryParameter = connectionIdentifier
+// SetConnectionIdentifier adds the connectionIdentifier to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetConnectionIdentifier(connectionIdentifier *int64) {
+	o.ConnectionIdentifier = connectionIdentifier
 }
 
-// WithContinuouslyAvailableQueryParameter adds the continuouslyAvailable to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithContinuouslyAvailableQueryParameter(continuouslyAvailable *string) *CifsOpenFileCollectionGetParams {
-	o.SetContinuouslyAvailableQueryParameter(continuouslyAvailable)
+// WithContinuouslyAvailable adds the continuouslyAvailable to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithContinuouslyAvailable(continuouslyAvailable *string) *CifsOpenFileCollectionGetParams {
+	o.SetContinuouslyAvailable(continuouslyAvailable)
 	return o
 }
 
-// SetContinuouslyAvailableQueryParameter adds the continuouslyAvailable to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetContinuouslyAvailableQueryParameter(continuouslyAvailable *string) {
-	o.ContinuouslyAvailableQueryParameter = continuouslyAvailable
+// SetContinuouslyAvailable adds the continuouslyAvailable to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetContinuouslyAvailable(continuouslyAvailable *string) {
+	o.ContinuouslyAvailable = continuouslyAvailable
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsOpenFileCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithFields(fields []string) *CifsOpenFileCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentifierQueryParameter adds the identifier to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithIdentifierQueryParameter(identifier *int64) *CifsOpenFileCollectionGetParams {
-	o.SetIdentifierQueryParameter(identifier)
+// WithIdentifier adds the identifier to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithIdentifier(identifier *int64) *CifsOpenFileCollectionGetParams {
+	o.SetIdentifier(identifier)
 	return o
 }
 
-// SetIdentifierQueryParameter adds the identifier to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetIdentifierQueryParameter(identifier *int64) {
-	o.IdentifierQueryParameter = identifier
+// SetIdentifier adds the identifier to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetIdentifier(identifier *int64) {
+	o.Identifier = identifier
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsOpenFileCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsOpenFileCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *CifsOpenFileCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithNodeName(nodeName *string) *CifsOpenFileCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *CifsOpenFileCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithNodeUUID(nodeUUID *string) *CifsOpenFileCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOpenModeQueryParameter adds the openMode to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithOpenModeQueryParameter(openMode *string) *CifsOpenFileCollectionGetParams {
-	o.SetOpenModeQueryParameter(openMode)
+// WithOpenMode adds the openMode to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithOpenMode(openMode *string) *CifsOpenFileCollectionGetParams {
+	o.SetOpenMode(openMode)
 	return o
 }
 
-// SetOpenModeQueryParameter adds the openMode to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetOpenModeQueryParameter(openMode *string) {
-	o.OpenModeQueryParameter = openMode
+// SetOpenMode adds the openMode to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetOpenMode(openMode *string) {
+	o.OpenMode = openMode
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsOpenFileCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithOrderBy(orderBy []string) *CifsOpenFileCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPathQueryParameter adds the path to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithPathQueryParameter(path *string) *CifsOpenFileCollectionGetParams {
-	o.SetPathQueryParameter(path)
+// WithPath adds the path to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithPath(path *string) *CifsOpenFileCollectionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathQueryParameter adds the path to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetPathQueryParameter(path *string) {
-	o.PathQueryParameter = path
+// SetPath adds the path to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetPath(path *string) {
+	o.Path = path
 }
 
-// WithRangeLocksCountQueryParameter adds the rangeLocksCount to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithRangeLocksCountQueryParameter(rangeLocksCount *int64) *CifsOpenFileCollectionGetParams {
-	o.SetRangeLocksCountQueryParameter(rangeLocksCount)
+// WithRangeLocksCount adds the rangeLocksCount to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithRangeLocksCount(rangeLocksCount *int64) *CifsOpenFileCollectionGetParams {
+	o.SetRangeLocksCount(rangeLocksCount)
 	return o
 }
 
-// SetRangeLocksCountQueryParameter adds the rangeLocksCount to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetRangeLocksCountQueryParameter(rangeLocksCount *int64) {
-	o.RangeLocksCountQueryParameter = rangeLocksCount
+// SetRangeLocksCount adds the rangeLocksCount to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetRangeLocksCount(rangeLocksCount *int64) {
+	o.RangeLocksCount = rangeLocksCount
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsOpenFileCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsOpenFileCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsOpenFileCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsOpenFileCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSessionIDentifierQueryParameter adds the sessionIdentifier to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithSessionIDentifierQueryParameter(sessionIdentifier *int64) *CifsOpenFileCollectionGetParams {
-	o.SetSessionIDentifierQueryParameter(sessionIdentifier)
+// WithSessionIdentifier adds the sessionIdentifier to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithSessionIdentifier(sessionIdentifier *int64) *CifsOpenFileCollectionGetParams {
+	o.SetSessionIdentifier(sessionIdentifier)
 	return o
 }
 
-// SetSessionIDentifierQueryParameter adds the sessionIdentifier to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetSessionIDentifierQueryParameter(sessionIdentifier *int64) {
-	o.SessionIDentifierQueryParameter = sessionIdentifier
+// SetSessionIdentifier adds the sessionIdentifier to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetSessionIdentifier(sessionIdentifier *int64) {
+	o.SessionIdentifier = sessionIdentifier
 }
 
-// WithShareModeQueryParameter adds the shareMode to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithShareModeQueryParameter(shareMode *string) *CifsOpenFileCollectionGetParams {
-	o.SetShareModeQueryParameter(shareMode)
+// WithShareMode adds the shareMode to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithShareMode(shareMode *string) *CifsOpenFileCollectionGetParams {
+	o.SetShareMode(shareMode)
 	return o
 }
 
-// SetShareModeQueryParameter adds the shareMode to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetShareModeQueryParameter(shareMode *string) {
-	o.ShareModeQueryParameter = shareMode
+// SetShareMode adds the shareMode to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetShareMode(shareMode *string) {
+	o.ShareMode = shareMode
 }
 
-// WithShareNameQueryParameter adds the shareName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithShareNameQueryParameter(shareName *string) *CifsOpenFileCollectionGetParams {
-	o.SetShareNameQueryParameter(shareName)
+// WithShareName adds the shareName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithShareName(shareName *string) *CifsOpenFileCollectionGetParams {
+	o.SetShareName(shareName)
 	return o
 }
 
-// SetShareNameQueryParameter adds the shareName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetShareNameQueryParameter(shareName *string) {
-	o.ShareNameQueryParameter = shareName
+// SetShareName adds the shareName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetShareName(shareName *string) {
+	o.ShareName = shareName
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsOpenFileCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithSvmName(svmName *string) *CifsOpenFileCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsOpenFileCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithSvmUUID(svmUUID *string) *CifsOpenFileCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithTypeQueryParameter(typeVar *string) *CifsOpenFileCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithType(typeVar *string) *CifsOpenFileCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *CifsOpenFileCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithVolumeName(volumeName *string) *CifsOpenFileCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *CifsOpenFileCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) WithVolumeUUID(volumeUUID *string) *CifsOpenFileCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the cifs open file collection get params
-func (o *CifsOpenFileCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the cifs open file collection get params
+func (o *CifsOpenFileCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -515,13 +515,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.ConnectionCountQueryParameter != nil {
+	if o.ConnectionCount != nil {
 
 		// query param connection.count
 		var qrConnectionCount int64
 
-		if o.ConnectionCountQueryParameter != nil {
-			qrConnectionCount = *o.ConnectionCountQueryParameter
+		if o.ConnectionCount != nil {
+			qrConnectionCount = *o.ConnectionCount
 		}
 		qConnectionCount := swag.FormatInt64(qrConnectionCount)
 		if qConnectionCount != "" {
@@ -532,13 +532,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionIDentifierQueryParameter != nil {
+	if o.ConnectionIdentifier != nil {
 
 		// query param connection.identifier
 		var qrConnectionIdentifier int64
 
-		if o.ConnectionIDentifierQueryParameter != nil {
-			qrConnectionIdentifier = *o.ConnectionIDentifierQueryParameter
+		if o.ConnectionIdentifier != nil {
+			qrConnectionIdentifier = *o.ConnectionIdentifier
 		}
 		qConnectionIdentifier := swag.FormatInt64(qrConnectionIdentifier)
 		if qConnectionIdentifier != "" {
@@ -549,13 +549,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ContinuouslyAvailableQueryParameter != nil {
+	if o.ContinuouslyAvailable != nil {
 
 		// query param continuously_available
 		var qrContinuouslyAvailable string
 
-		if o.ContinuouslyAvailableQueryParameter != nil {
-			qrContinuouslyAvailable = *o.ContinuouslyAvailableQueryParameter
+		if o.ContinuouslyAvailable != nil {
+			qrContinuouslyAvailable = *o.ContinuouslyAvailable
 		}
 		qContinuouslyAvailable := qrContinuouslyAvailable
 		if qContinuouslyAvailable != "" {
@@ -566,7 +566,7 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -577,13 +577,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.IdentifierQueryParameter != nil {
+	if o.Identifier != nil {
 
 		// query param identifier
 		var qrIdentifier int64
 
-		if o.IdentifierQueryParameter != nil {
-			qrIdentifier = *o.IdentifierQueryParameter
+		if o.Identifier != nil {
+			qrIdentifier = *o.Identifier
 		}
 		qIdentifier := swag.FormatInt64(qrIdentifier)
 		if qIdentifier != "" {
@@ -594,13 +594,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -611,13 +611,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -628,13 +628,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -645,13 +645,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OpenModeQueryParameter != nil {
+	if o.OpenMode != nil {
 
 		// query param open_mode
 		var qrOpenMode string
 
-		if o.OpenModeQueryParameter != nil {
-			qrOpenMode = *o.OpenModeQueryParameter
+		if o.OpenMode != nil {
+			qrOpenMode = *o.OpenMode
 		}
 		qOpenMode := qrOpenMode
 		if qOpenMode != "" {
@@ -662,7 +662,7 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -673,13 +673,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PathQueryParameter != nil {
+	if o.Path != nil {
 
 		// query param path
 		var qrPath string
 
-		if o.PathQueryParameter != nil {
-			qrPath = *o.PathQueryParameter
+		if o.Path != nil {
+			qrPath = *o.Path
 		}
 		qPath := qrPath
 		if qPath != "" {
@@ -690,13 +690,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.RangeLocksCountQueryParameter != nil {
+	if o.RangeLocksCount != nil {
 
 		// query param range_locks_count
 		var qrRangeLocksCount int64
 
-		if o.RangeLocksCountQueryParameter != nil {
-			qrRangeLocksCount = *o.RangeLocksCountQueryParameter
+		if o.RangeLocksCount != nil {
+			qrRangeLocksCount = *o.RangeLocksCount
 		}
 		qRangeLocksCount := swag.FormatInt64(qrRangeLocksCount)
 		if qRangeLocksCount != "" {
@@ -707,13 +707,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -724,13 +724,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -741,13 +741,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SessionIDentifierQueryParameter != nil {
+	if o.SessionIdentifier != nil {
 
 		// query param session.identifier
 		var qrSessionIdentifier int64
 
-		if o.SessionIDentifierQueryParameter != nil {
-			qrSessionIdentifier = *o.SessionIDentifierQueryParameter
+		if o.SessionIdentifier != nil {
+			qrSessionIdentifier = *o.SessionIdentifier
 		}
 		qSessionIdentifier := swag.FormatInt64(qrSessionIdentifier)
 		if qSessionIdentifier != "" {
@@ -758,13 +758,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ShareModeQueryParameter != nil {
+	if o.ShareMode != nil {
 
 		// query param share.mode
 		var qrShareMode string
 
-		if o.ShareModeQueryParameter != nil {
-			qrShareMode = *o.ShareModeQueryParameter
+		if o.ShareMode != nil {
+			qrShareMode = *o.ShareMode
 		}
 		qShareMode := qrShareMode
 		if qShareMode != "" {
@@ -775,13 +775,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ShareNameQueryParameter != nil {
+	if o.ShareName != nil {
 
 		// query param share.name
 		var qrShareName string
 
-		if o.ShareNameQueryParameter != nil {
-			qrShareName = *o.ShareNameQueryParameter
+		if o.ShareName != nil {
+			qrShareName = *o.ShareName
 		}
 		qShareName := qrShareName
 		if qShareName != "" {
@@ -792,13 +792,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -809,13 +809,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -826,13 +826,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -843,13 +843,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -860,13 +860,13 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -885,7 +885,7 @@ func (o *CifsOpenFileCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamCifsOpenFileCollectionGet binds the parameter fields
 func (o *CifsOpenFileCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -902,7 +902,7 @@ func (o *CifsOpenFileCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamCifsOpenFileCollectionGet binds the parameter order_by
 func (o *CifsOpenFileCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

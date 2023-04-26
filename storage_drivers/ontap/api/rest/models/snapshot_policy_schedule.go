@@ -19,22 +19,25 @@ import (
 type SnapshotPolicySchedule struct {
 
 	// links
-	Links *SnapshotPolicyScheduleLinks `json:"_links,omitempty"`
+	Links *SnapshotPolicyScheduleInlineLinks `json:"_links,omitempty"`
 
 	// The number of Snapshot copies to maintain for this schedule.
-	Count int64 `json:"count,omitempty"`
+	Count *int64 `json:"count,omitempty"`
 
 	// The prefix to use while creating Snapshot copies at regular intervals.
-	Prefix string `json:"prefix,omitempty"`
+	Prefix *string `json:"prefix,omitempty"`
+
+	// The retention period of Snapshot copies for this schedule.
+	RetentionPeriod *string `json:"retention_period,omitempty"`
 
 	// schedule
-	Schedule *SnapshotPolicyScheduleSchedule `json:"schedule,omitempty"`
+	Schedule *SnapshotPolicyScheduleInlineSchedule `json:"schedule,omitempty"`
 
 	// Label for SnapMirror operations
-	SnapmirrorLabel string `json:"snapmirror_label,omitempty"`
+	SnapmirrorLabel *string `json:"snapmirror_label,omitempty"`
 
 	// snapshot policy
-	SnapshotPolicy *SnapshotPolicyScheduleSnapshotPolicy `json:"snapshot_policy,omitempty"`
+	SnapshotPolicy *SnapshotPolicyScheduleInlineSnapshotPolicy `json:"snapshot_policy,omitempty"`
 }
 
 // Validate validates this snapshot policy schedule
@@ -192,17 +195,17 @@ func (m *SnapshotPolicySchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyScheduleLinks snapshot policy schedule links
+// SnapshotPolicyScheduleInlineLinks snapshot policy schedule inline links
 //
-// swagger:model SnapshotPolicyScheduleLinks
-type SnapshotPolicyScheduleLinks struct {
+// swagger:model snapshot_policy_schedule_inline__links
+type SnapshotPolicyScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot policy schedule links
-func (m *SnapshotPolicyScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy schedule inline links
+func (m *SnapshotPolicyScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -215,7 +218,7 @@ func (m *SnapshotPolicyScheduleLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -232,8 +235,8 @@ func (m *SnapshotPolicyScheduleLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this snapshot policy schedule links based on the context it is used
-func (m *SnapshotPolicyScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy schedule inline links based on the context it is used
+func (m *SnapshotPolicyScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -246,7 +249,7 @@ func (m *SnapshotPolicyScheduleLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -261,7 +264,7 @@ func (m *SnapshotPolicyScheduleLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -269,8 +272,8 @@ func (m *SnapshotPolicyScheduleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyScheduleLinks
+func (m *SnapshotPolicyScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -278,25 +281,25 @@ func (m *SnapshotPolicyScheduleLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyScheduleSchedule snapshot policy schedule schedule
+// SnapshotPolicyScheduleInlineSchedule snapshot policy schedule inline schedule
 //
-// swagger:model SnapshotPolicyScheduleSchedule
-type SnapshotPolicyScheduleSchedule struct {
+// swagger:model snapshot_policy_schedule_inline_schedule
+type SnapshotPolicyScheduleInlineSchedule struct {
 
 	// links
-	Links *SnapshotPolicyScheduleScheduleLinks `json:"_links,omitempty"`
+	Links *SnapshotPolicyScheduleInlineScheduleInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapshot policy schedule schedule
-func (m *SnapshotPolicyScheduleSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy schedule inline schedule
+func (m *SnapshotPolicyScheduleInlineSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -309,7 +312,7 @@ func (m *SnapshotPolicyScheduleSchedule) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleSchedule) validateLinks(formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineSchedule) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -326,8 +329,8 @@ func (m *SnapshotPolicyScheduleSchedule) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this snapshot policy schedule schedule based on the context it is used
-func (m *SnapshotPolicyScheduleSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy schedule inline schedule based on the context it is used
+func (m *SnapshotPolicyScheduleInlineSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -340,7 +343,7 @@ func (m *SnapshotPolicyScheduleSchedule) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -355,7 +358,7 @@ func (m *SnapshotPolicyScheduleSchedule) contextValidateLinks(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleSchedule) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyScheduleInlineSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -363,8 +366,8 @@ func (m *SnapshotPolicyScheduleSchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleSchedule) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyScheduleSchedule
+func (m *SnapshotPolicyScheduleInlineSchedule) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyScheduleInlineSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -372,17 +375,17 @@ func (m *SnapshotPolicyScheduleSchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyScheduleScheduleLinks snapshot policy schedule schedule links
+// SnapshotPolicyScheduleInlineScheduleInlineLinks snapshot policy schedule inline schedule inline links
 //
-// swagger:model SnapshotPolicyScheduleScheduleLinks
-type SnapshotPolicyScheduleScheduleLinks struct {
+// swagger:model snapshot_policy_schedule_inline_schedule_inline__links
+type SnapshotPolicyScheduleInlineScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot policy schedule schedule links
-func (m *SnapshotPolicyScheduleScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy schedule inline schedule inline links
+func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -395,7 +398,7 @@ func (m *SnapshotPolicyScheduleScheduleLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -412,8 +415,8 @@ func (m *SnapshotPolicyScheduleScheduleLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this snapshot policy schedule schedule links based on the context it is used
-func (m *SnapshotPolicyScheduleScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy schedule inline schedule inline links based on the context it is used
+func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -426,7 +429,7 @@ func (m *SnapshotPolicyScheduleScheduleLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -441,7 +444,7 @@ func (m *SnapshotPolicyScheduleScheduleLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -449,8 +452,8 @@ func (m *SnapshotPolicyScheduleScheduleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyScheduleScheduleLinks
+func (m *SnapshotPolicyScheduleInlineScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyScheduleInlineScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -458,25 +461,25 @@ func (m *SnapshotPolicyScheduleScheduleLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyScheduleSnapshotPolicy This is a reference to the Snapshot copy policy.
+// SnapshotPolicyScheduleInlineSnapshotPolicy This is a reference to the Snapshot copy policy.
 //
-// swagger:model SnapshotPolicyScheduleSnapshotPolicy
-type SnapshotPolicyScheduleSnapshotPolicy struct {
+// swagger:model snapshot_policy_schedule_inline_snapshot_policy
+type SnapshotPolicyScheduleInlineSnapshotPolicy struct {
 
 	// links
-	Links *SnapshotPolicyScheduleSnapshotPolicyLinks `json:"_links,omitempty"`
+	Links *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: default
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this snapshot policy schedule snapshot policy
-func (m *SnapshotPolicyScheduleSnapshotPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy schedule inline snapshot policy
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -489,7 +492,7 @@ func (m *SnapshotPolicyScheduleSnapshotPolicy) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleSnapshotPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -506,8 +509,8 @@ func (m *SnapshotPolicyScheduleSnapshotPolicy) validateLinks(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this snapshot policy schedule snapshot policy based on the context it is used
-func (m *SnapshotPolicyScheduleSnapshotPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy schedule inline snapshot policy based on the context it is used
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -520,7 +523,7 @@ func (m *SnapshotPolicyScheduleSnapshotPolicy) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleSnapshotPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -535,7 +538,7 @@ func (m *SnapshotPolicyScheduleSnapshotPolicy) contextValidateLinks(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleSnapshotPolicy) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -543,8 +546,8 @@ func (m *SnapshotPolicyScheduleSnapshotPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleSnapshotPolicy) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyScheduleSnapshotPolicy
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicy) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyScheduleInlineSnapshotPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -552,17 +555,17 @@ func (m *SnapshotPolicyScheduleSnapshotPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotPolicyScheduleSnapshotPolicyLinks snapshot policy schedule snapshot policy links
+// SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks snapshot policy schedule inline snapshot policy inline links
 //
-// swagger:model SnapshotPolicyScheduleSnapshotPolicyLinks
-type SnapshotPolicyScheduleSnapshotPolicyLinks struct {
+// swagger:model snapshot_policy_schedule_inline_snapshot_policy_inline__links
+type SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot policy schedule snapshot policy links
-func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot policy schedule inline snapshot policy inline links
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -575,7 +578,7 @@ func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -592,8 +595,8 @@ func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) validateSelf(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this snapshot policy schedule snapshot policy links based on the context it is used
-func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot policy schedule inline snapshot policy inline links based on the context it is used
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -606,7 +609,7 @@ func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -621,7 +624,7 @@ func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) contextValidateSelf(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -629,8 +632,8 @@ func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotPolicyScheduleSnapshotPolicyLinks
+func (m *SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotPolicyScheduleInlineSnapshotPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

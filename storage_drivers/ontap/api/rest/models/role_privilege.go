@@ -13,24 +13,37 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// RolePrivilege A tuple containing a REST endpoint or a command/command directory path and the access level assigned to that endpoint or command/command directory. If the "path" attribute refers to a command/command directory path, the tuple could additionally contain an optional query. The REST endpoint can be a resource-qualified endpoint. At present, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\*/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
+// RolePrivilege A tuple containing a REST endpoint or a command/command directory path and the access level assigned to that endpoint or command/command directory. If the "path" attribute refers to a command/command directory path, the tuple could additionally contain an optional query. The REST endpoint can be a resource-qualified endpoint. At present, the only supported resource-qualified endpoints are the following<br/>
+// Snapshots APIs<br/><ul>
+// <li><i>/api/storage/volumes/{volume.uuid}/snapshots</i></li></ul><br/>
+// File System Analytics APIs<br/><ul>
+// <li><i>/api/storage/volumes/{volume.uuid}/files</i></li>
+// <li><i>/api/storage/volumes/{volume.uuid}/top-metrics/clients</i></li>
+// <li><i>/api/storage/volumes/{volume.uuid}/top-metrics/directories</i></li>
+// <li><i>/api/storage/volumes/{volume.uuid}/top-metrics/files</i></li>
+// <li><i>/api/storage/volumes/{volume.uuid}/top-metrics/users</i></li>
+// <li><i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i></li>
+// <li><i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i></li>
+// <li><i>/api/svm/svms/{svm.uuid}/top-metrics/files</i></li>
+// <li><i>/api/svm/svms/{svm.uuid}/top-metrics/users</i></li><br/></ul><br/>
+// In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs.
 //
 // swagger:model role_privilege
 type RolePrivilege struct {
 
 	// links
-	Links *RolePrivilegeLinks `json:"_links,omitempty"`
+	Links *RolePrivilegeInlineLinks `json:"_links,omitempty"`
 
 	// access
-	Access RolePrivilegeLevel `json:"access,omitempty"`
+	Access *RolePrivilegeLevel `json:"access,omitempty"`
 
 	// Either of REST URI/endpoint OR command/command directory path.
-	// Example: ['/api/cluster/jobs', '/api/storage/volumes', 'job schedule interval', 'volume move']
-	Path string `json:"path,omitempty"`
+	// Example: volume move start
+	Path *string `json:"path,omitempty"`
 
 	// Optional attribute that can be specified only if the "path" attribute refers to a command/command directory path. The privilege tuple implicitly defines a set of objects the role can or cannot access at the specified access level. The query further reduces this set of objects to a subset of objects that the role is allowed to access. The query attribute must be applicable to the command/command directory specified by the "path" attribute. It is defined using one or more parameters of the command/command directory path specified by the "path" attribute.
-	// Example: ['-days \u003c1 -hours \u003e12', '-vserver vs1|vs2|vs3 -destination-aggregate aggr1|aggr2']
-	Query string `json:"query,omitempty"`
+	// Example: -vserver vs1|vs2|vs3 -destination-aggregate aggr1|aggr2
+	Query *string `json:"query,omitempty"`
 }
 
 // Validate validates this role privilege
@@ -73,11 +86,13 @@ func (m *RolePrivilege) validateAccess(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Access.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("access")
+	if m.Access != nil {
+		if err := m.Access.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -117,11 +132,13 @@ func (m *RolePrivilege) contextValidateLinks(ctx context.Context, formats strfmt
 
 func (m *RolePrivilege) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Access.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("access")
+	if m.Access != nil {
+		if err := m.Access.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -145,17 +162,17 @@ func (m *RolePrivilege) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RolePrivilegeLinks role privilege links
+// RolePrivilegeInlineLinks role privilege inline links
 //
-// swagger:model RolePrivilegeLinks
-type RolePrivilegeLinks struct {
+// swagger:model role_privilege_inline__links
+type RolePrivilegeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this role privilege links
-func (m *RolePrivilegeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this role privilege inline links
+func (m *RolePrivilegeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -168,7 +185,7 @@ func (m *RolePrivilegeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RolePrivilegeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *RolePrivilegeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -185,8 +202,8 @@ func (m *RolePrivilegeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this role privilege links based on the context it is used
-func (m *RolePrivilegeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this role privilege inline links based on the context it is used
+func (m *RolePrivilegeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -199,7 +216,7 @@ func (m *RolePrivilegeLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *RolePrivilegeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *RolePrivilegeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -214,7 +231,7 @@ func (m *RolePrivilegeLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *RolePrivilegeLinks) MarshalBinary() ([]byte, error) {
+func (m *RolePrivilegeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -222,8 +239,8 @@ func (m *RolePrivilegeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RolePrivilegeLinks) UnmarshalBinary(b []byte) error {
-	var res RolePrivilegeLinks
+func (m *RolePrivilegeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res RolePrivilegeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

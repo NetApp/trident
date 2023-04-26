@@ -22,55 +22,55 @@ type IpsecPolicy struct {
 
 	// Action for the IPsec policy.
 	// Enum: [bypass discard esp_transport esp_udp]
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 
 	// Authentication method for the IPsec policy.
 	// Enum: [none psk pki]
-	AuthenticationMethod string `json:"authentication_method,omitempty"`
+	AuthenticationMethod *string `json:"authentication_method,omitempty"`
 
 	// certificate
-	Certificate *IpsecPolicyCertificate `json:"certificate,omitempty"`
+	Certificate *IpsecPolicyInlineCertificate `json:"certificate,omitempty"`
 
 	// Indicates whether or not the policy is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// ipspace
-	Ipspace *IpsecPolicyIpspace `json:"ipspace,omitempty"`
+	Ipspace *IpsecPolicyInlineIpspace `json:"ipspace,omitempty"`
 
 	// local endpoint
-	LocalEndpoint *IpsecPolicyLocalEndpoint `json:"local_endpoint,omitempty"`
+	LocalEndpoint *IpsecPolicyInlineLocalEndpoint `json:"local_endpoint,omitempty"`
 
 	// Local Identity
-	LocalIdentity string `json:"local_identity,omitempty"`
+	LocalIdentity *string `json:"local_identity,omitempty"`
 
 	// IPsec policy name.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Lower layer protocol to be covered by the IPsec policy.
 	// Example: 17
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// remote endpoint
-	RemoteEndpoint *IpsecPolicyRemoteEndpoint `json:"remote_endpoint,omitempty"`
+	RemoteEndpoint *IpsecPolicyInlineRemoteEndpoint `json:"remote_endpoint,omitempty"`
 
 	// Remote Identity
-	RemoteIdentity string `json:"remote_identity,omitempty"`
+	RemoteIdentity *string `json:"remote_identity,omitempty"`
 
 	// scope
-	Scope NetworkScopeReadonly `json:"scope,omitempty"`
+	Scope *NetworkScopeReadonly `json:"scope,omitempty"`
 
 	// Pre-shared key for IKE negotiation.
 	// Max Length: 128
 	// Min Length: 18
-	SecretKey string `json:"secret_key,omitempty"`
+	SecretKey *string `json:"secret_key,omitempty"`
 
 	// svm
-	Svm *IpsecPolicySvm `json:"svm,omitempty"`
+	Svm *IpsecPolicyInlineSvm `json:"svm,omitempty"`
 
 	// Unique identifier of the IPsec policy.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ipsec policy
@@ -188,7 +188,7 @@ func (m *IpsecPolicy) validateAction(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateActionEnum("action", "body", m.Action); err != nil {
+	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
 		return err
 	}
 
@@ -254,7 +254,7 @@ func (m *IpsecPolicy) validateAuthenticationMethod(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateAuthenticationMethodEnum("authentication_method", "body", m.AuthenticationMethod); err != nil {
+	if err := m.validateAuthenticationMethodEnum("authentication_method", "body", *m.AuthenticationMethod); err != nil {
 		return err
 	}
 
@@ -334,11 +334,13 @@ func (m *IpsecPolicy) validateScope(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -349,11 +351,11 @@ func (m *IpsecPolicy) validateSecretKey(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("secret_key", "body", m.SecretKey, 18); err != nil {
+	if err := validate.MinLength("secret_key", "body", *m.SecretKey, 18); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("secret_key", "body", m.SecretKey, 128); err != nil {
+	if err := validate.MaxLength("secret_key", "body", *m.SecretKey, 128); err != nil {
 		return err
 	}
 
@@ -473,11 +475,13 @@ func (m *IpsecPolicy) contextValidateRemoteEndpoint(ctx context.Context, formats
 
 func (m *IpsecPolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
+	if m.Scope != nil {
+		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scope")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -499,7 +503,7 @@ func (m *IpsecPolicy) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *IpsecPolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -524,25 +528,25 @@ func (m *IpsecPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyCertificate Certificate for the IPsec policy.
+// IpsecPolicyInlineCertificate Certificate for the IPsec policy.
 //
-// swagger:model IpsecPolicyCertificate
-type IpsecPolicyCertificate struct {
+// swagger:model ipsec_policy_inline_certificate
+type IpsecPolicyInlineCertificate struct {
 
 	// links
-	Links *IpsecPolicyCertificateLinks `json:"_links,omitempty"`
+	Links *IpsecPolicyInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
 	// Example: cert1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ipsec policy certificate
-func (m *IpsecPolicyCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline certificate
+func (m *IpsecPolicyInlineCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -555,7 +559,7 @@ func (m *IpsecPolicyCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicyCertificate) validateLinks(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineCertificate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -572,8 +576,8 @@ func (m *IpsecPolicyCertificate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipsec policy certificate based on the context it is used
-func (m *IpsecPolicyCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline certificate based on the context it is used
+func (m *IpsecPolicyInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -586,7 +590,7 @@ func (m *IpsecPolicyCertificate) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IpsecPolicyCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -601,7 +605,7 @@ func (m *IpsecPolicyCertificate) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicyCertificate) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -609,8 +613,8 @@ func (m *IpsecPolicyCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicyCertificate) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicyCertificate
+func (m *IpsecPolicyInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -618,17 +622,17 @@ func (m *IpsecPolicyCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyCertificateLinks ipsec policy certificate links
+// IpsecPolicyInlineCertificateInlineLinks ipsec policy inline certificate inline links
 //
-// swagger:model IpsecPolicyCertificateLinks
-type IpsecPolicyCertificateLinks struct {
+// swagger:model ipsec_policy_inline_certificate_inline__links
+type IpsecPolicyInlineCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipsec policy certificate links
-func (m *IpsecPolicyCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline certificate inline links
+func (m *IpsecPolicyInlineCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -641,7 +645,7 @@ func (m *IpsecPolicyCertificateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicyCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -658,8 +662,8 @@ func (m *IpsecPolicyCertificateLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this ipsec policy certificate links based on the context it is used
-func (m *IpsecPolicyCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline certificate inline links based on the context it is used
+func (m *IpsecPolicyInlineCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -672,7 +676,7 @@ func (m *IpsecPolicyCertificateLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *IpsecPolicyCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -687,7 +691,7 @@ func (m *IpsecPolicyCertificateLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicyCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -695,8 +699,8 @@ func (m *IpsecPolicyCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicyCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicyCertificateLinks
+func (m *IpsecPolicyInlineCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -704,25 +708,25 @@ func (m *IpsecPolicyCertificateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name may be supplied on input.
+// IpsecPolicyInlineIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name may be supplied on input.
 //
-// swagger:model IpsecPolicyIpspace
-type IpsecPolicyIpspace struct {
+// swagger:model ipsec_policy_inline_ipspace
+type IpsecPolicyInlineIpspace struct {
 
 	// links
-	Links *IpsecPolicyIpspaceLinks `json:"_links,omitempty"`
+	Links *IpsecPolicyInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ipsec policy ipspace
-func (m *IpsecPolicyIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline ipspace
+func (m *IpsecPolicyInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -735,7 +739,7 @@ func (m *IpsecPolicyIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicyIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -752,8 +756,8 @@ func (m *IpsecPolicyIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipsec policy ipspace based on the context it is used
-func (m *IpsecPolicyIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline ipspace based on the context it is used
+func (m *IpsecPolicyInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -766,7 +770,7 @@ func (m *IpsecPolicyIpspace) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IpsecPolicyIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -781,7 +785,7 @@ func (m *IpsecPolicyIpspace) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicyIpspace) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -789,8 +793,8 @@ func (m *IpsecPolicyIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicyIpspace) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicyIpspace
+func (m *IpsecPolicyInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -798,17 +802,17 @@ func (m *IpsecPolicyIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyIpspaceLinks ipsec policy ipspace links
+// IpsecPolicyInlineIpspaceInlineLinks ipsec policy inline ipspace inline links
 //
-// swagger:model IpsecPolicyIpspaceLinks
-type IpsecPolicyIpspaceLinks struct {
+// swagger:model ipsec_policy_inline_ipspace_inline__links
+type IpsecPolicyInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipsec policy ipspace links
-func (m *IpsecPolicyIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline ipspace inline links
+func (m *IpsecPolicyInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -821,7 +825,7 @@ func (m *IpsecPolicyIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicyIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -838,8 +842,8 @@ func (m *IpsecPolicyIpspaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipsec policy ipspace links based on the context it is used
-func (m *IpsecPolicyIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline ipspace inline links based on the context it is used
+func (m *IpsecPolicyInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -852,7 +856,7 @@ func (m *IpsecPolicyIpspaceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IpsecPolicyIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -867,7 +871,7 @@ func (m *IpsecPolicyIpspaceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicyIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -875,8 +879,8 @@ func (m *IpsecPolicyIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicyIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicyIpspaceLinks
+func (m *IpsecPolicyInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -884,27 +888,27 @@ func (m *IpsecPolicyIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyLocalEndpoint Local endpoint for the IPsec policy.
+// IpsecPolicyInlineLocalEndpoint Local endpoint for the IPsec policy.
 //
-// swagger:model IpsecPolicyLocalEndpoint
-type IpsecPolicyLocalEndpoint struct {
+// swagger:model ipsec_policy_inline_local_endpoint
+type IpsecPolicyInlineLocalEndpoint struct {
 
 	// address
-	Address IPAddress `json:"address,omitempty"`
+	Address *IPAddress `json:"address,omitempty"`
 
 	// family
-	Family IPAddressFamily `json:"family,omitempty"`
+	Family *IPAddressFamily `json:"family,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 
 	// Application port to be covered by the IPsec policy
 	// Example: 23
-	Port string `json:"port,omitempty"`
+	Port *string `json:"port,omitempty"`
 }
 
-// Validate validates this ipsec policy local endpoint
-func (m *IpsecPolicyLocalEndpoint) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline local endpoint
+func (m *IpsecPolicyInlineLocalEndpoint) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -925,53 +929,59 @@ func (m *IpsecPolicyLocalEndpoint) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicyLocalEndpoint) validateAddress(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineLocalEndpoint) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local_endpoint" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local_endpoint" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyLocalEndpoint) validateFamily(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineLocalEndpoint) validateFamily(formats strfmt.Registry) error {
 	if swag.IsZero(m.Family) { // not required
 		return nil
 	}
 
-	if err := m.Family.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local_endpoint" + "." + "family")
+	if m.Family != nil {
+		if err := m.Family.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local_endpoint" + "." + "family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyLocalEndpoint) validateNetmask(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineLocalEndpoint) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local_endpoint" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local_endpoint" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ipsec policy local endpoint based on the context it is used
-func (m *IpsecPolicyLocalEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline local endpoint based on the context it is used
+func (m *IpsecPolicyInlineLocalEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -992,44 +1002,50 @@ func (m *IpsecPolicyLocalEndpoint) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IpsecPolicyLocalEndpoint) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineLocalEndpoint) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local_endpoint" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local_endpoint" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyLocalEndpoint) contextValidateFamily(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineLocalEndpoint) contextValidateFamily(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Family.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local_endpoint" + "." + "family")
+	if m.Family != nil {
+		if err := m.Family.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local_endpoint" + "." + "family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyLocalEndpoint) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineLocalEndpoint) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("local_endpoint" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("local_endpoint" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicyLocalEndpoint) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineLocalEndpoint) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1037,8 +1053,8 @@ func (m *IpsecPolicyLocalEndpoint) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicyLocalEndpoint) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicyLocalEndpoint
+func (m *IpsecPolicyInlineLocalEndpoint) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineLocalEndpoint
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1046,27 +1062,27 @@ func (m *IpsecPolicyLocalEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicyRemoteEndpoint Remote endpoint for the IPsec policy.
+// IpsecPolicyInlineRemoteEndpoint Remote endpoint for the IPsec policy.
 //
-// swagger:model IpsecPolicyRemoteEndpoint
-type IpsecPolicyRemoteEndpoint struct {
+// swagger:model ipsec_policy_inline_remote_endpoint
+type IpsecPolicyInlineRemoteEndpoint struct {
 
 	// address
-	Address IPAddress `json:"address,omitempty"`
+	Address *IPAddress `json:"address,omitempty"`
 
 	// family
-	Family IPAddressFamily `json:"family,omitempty"`
+	Family *IPAddressFamily `json:"family,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 
 	// Application port to be covered by the IPsec policy
 	// Example: 23
-	Port string `json:"port,omitempty"`
+	Port *string `json:"port,omitempty"`
 }
 
-// Validate validates this ipsec policy remote endpoint
-func (m *IpsecPolicyRemoteEndpoint) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline remote endpoint
+func (m *IpsecPolicyInlineRemoteEndpoint) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -1087,53 +1103,59 @@ func (m *IpsecPolicyRemoteEndpoint) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicyRemoteEndpoint) validateAddress(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineRemoteEndpoint) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("remote_endpoint" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_endpoint" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyRemoteEndpoint) validateFamily(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineRemoteEndpoint) validateFamily(formats strfmt.Registry) error {
 	if swag.IsZero(m.Family) { // not required
 		return nil
 	}
 
-	if err := m.Family.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("remote_endpoint" + "." + "family")
+	if m.Family != nil {
+		if err := m.Family.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_endpoint" + "." + "family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyRemoteEndpoint) validateNetmask(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineRemoteEndpoint) validateNetmask(formats strfmt.Registry) error {
 	if swag.IsZero(m.Netmask) { // not required
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("remote_endpoint" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_endpoint" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ipsec policy remote endpoint based on the context it is used
-func (m *IpsecPolicyRemoteEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline remote endpoint based on the context it is used
+func (m *IpsecPolicyInlineRemoteEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -1154,44 +1176,50 @@ func (m *IpsecPolicyRemoteEndpoint) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *IpsecPolicyRemoteEndpoint) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineRemoteEndpoint) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("remote_endpoint" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_endpoint" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyRemoteEndpoint) contextValidateFamily(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineRemoteEndpoint) contextValidateFamily(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Family.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("remote_endpoint" + "." + "family")
+	if m.Family != nil {
+		if err := m.Family.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_endpoint" + "." + "family")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IpsecPolicyRemoteEndpoint) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineRemoteEndpoint) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("remote_endpoint" + "." + "netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_endpoint" + "." + "netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicyRemoteEndpoint) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineRemoteEndpoint) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1199,8 +1227,8 @@ func (m *IpsecPolicyRemoteEndpoint) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicyRemoteEndpoint) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicyRemoteEndpoint
+func (m *IpsecPolicyInlineRemoteEndpoint) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineRemoteEndpoint
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1208,27 +1236,27 @@ func (m *IpsecPolicyRemoteEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicySvm ipsec policy svm
+// IpsecPolicyInlineSvm ipsec policy inline svm
 //
-// swagger:model IpsecPolicySvm
-type IpsecPolicySvm struct {
+// swagger:model ipsec_policy_inline_svm
+type IpsecPolicyInlineSvm struct {
 
 	// links
-	Links *IpsecPolicySvmLinks `json:"_links,omitempty"`
+	Links *IpsecPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ipsec policy svm
-func (m *IpsecPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline svm
+func (m *IpsecPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1241,7 +1269,7 @@ func (m *IpsecPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1258,8 +1286,8 @@ func (m *IpsecPolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipsec policy svm based on the context it is used
-func (m *IpsecPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline svm based on the context it is used
+func (m *IpsecPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1272,7 +1300,7 @@ func (m *IpsecPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *IpsecPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1287,7 +1315,7 @@ func (m *IpsecPolicySvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1295,8 +1323,8 @@ func (m *IpsecPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicySvm) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicySvm
+func (m *IpsecPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1304,17 +1332,17 @@ func (m *IpsecPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IpsecPolicySvmLinks ipsec policy svm links
+// IpsecPolicyInlineSvmInlineLinks ipsec policy inline svm inline links
 //
-// swagger:model IpsecPolicySvmLinks
-type IpsecPolicySvmLinks struct {
+// swagger:model ipsec_policy_inline_svm_inline__links
+type IpsecPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ipsec policy svm links
-func (m *IpsecPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ipsec policy inline svm inline links
+func (m *IpsecPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1327,7 +1355,7 @@ func (m *IpsecPolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IpsecPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1344,8 +1372,8 @@ func (m *IpsecPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ipsec policy svm links based on the context it is used
-func (m *IpsecPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ipsec policy inline svm inline links based on the context it is used
+func (m *IpsecPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1358,7 +1386,7 @@ func (m *IpsecPolicySvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *IpsecPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IpsecPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1373,7 +1401,7 @@ func (m *IpsecPolicySvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *IpsecPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *IpsecPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1381,8 +1409,8 @@ func (m *IpsecPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IpsecPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res IpsecPolicySvmLinks
+func (m *IpsecPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

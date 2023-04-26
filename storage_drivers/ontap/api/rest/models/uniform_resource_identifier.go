@@ -21,16 +21,16 @@ type UniformResourceIdentifier struct {
 
 	// Password of the specified URI.
 	// Max Length: 128
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// URI from which to load the input file containing the CIFS local users and groups. The file must be encrypted using the 7zip utility. URI can be FTP or HTTP.
 	// Example: http://web.sample.com/web1/file1.7z
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Username of the specified URI.
 	// Example: user1
 	// Max Length: 128
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // Validate validates this uniform resource identifier
@@ -56,7 +56,7 @@ func (m *UniformResourceIdentifier) validatePassword(formats strfmt.Registry) er
 		return nil
 	}
 
-	if err := validate.MaxLength("password", "body", m.Password, 128); err != nil {
+	if err := validate.MaxLength("password", "body", *m.Password, 128); err != nil {
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (m *UniformResourceIdentifier) validateUsername(formats strfmt.Registry) er
 		return nil
 	}
 
-	if err := validate.MaxLength("username", "body", m.Username, 128); err != nil {
+	if err := validate.MaxLength("username", "body", *m.Username, 128); err != nil {
 		return err
 	}
 

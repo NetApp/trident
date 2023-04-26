@@ -22,7 +22,7 @@ type FirmwareSpBmc struct {
 
 	// autoupdte
 	// Example: false
-	Autoupdte bool `json:"autoupdte,omitempty"`
+	Autoupdte *bool `json:"autoupdte,omitempty"`
 
 	// end time
 	// Example: 2020-05-17T20:00:00Z
@@ -34,13 +34,13 @@ type FirmwareSpBmc struct {
 	// Example: SP
 	// Read Only: true
 	// Enum: [SP BMC]
-	FwType string `json:"fw_type,omitempty"`
+	FwType *string `json:"fw_type,omitempty"`
 
 	// image
 	// Example: primary
 	// Read Only: true
 	// Enum: [primary backup]
-	Image string `json:"image,omitempty"`
+	Image *string `json:"image,omitempty"`
 
 	// in progress
 	// Read Only: true
@@ -55,19 +55,19 @@ type FirmwareSpBmc struct {
 	// Example: passed
 	// Read Only: true
 	// Enum: [passed failed]
-	LastUpdateState string `json:"last_update_state,omitempty"`
+	LastUpdateState *string `json:"last_update_state,omitempty"`
 
 	// percent done
 	// Example: 100
 	// Read Only: true
 	// Maximum: 100
 	// Minimum: 0
-	PercentDone int64 `json:"percent_done,omitempty"`
+	PercentDone *int64 `json:"percent_done,omitempty"`
 
 	// running version
 	// Example: 1.2.3.4
 	// Read Only: true
-	RunningVersion string `json:"running_version,omitempty"`
+	RunningVersion *string `json:"running_version,omitempty"`
 
 	// start time
 	// Example: 2020-05-17T20:00:00Z
@@ -79,7 +79,7 @@ type FirmwareSpBmc struct {
 	// Example: installed
 	// Read Only: true
 	// Enum: [installed corrupt updating autoupdating none]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this firmware sp bmc
@@ -181,7 +181,7 @@ func (m *FirmwareSpBmc) validateFwType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateFwTypeEnum("fw_type", "body", m.FwType); err != nil {
+	if err := m.validateFwTypeEnum("fw_type", "body", *m.FwType); err != nil {
 		return err
 	}
 
@@ -237,7 +237,7 @@ func (m *FirmwareSpBmc) validateImage(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateImageEnum("image", "body", m.Image); err != nil {
+	if err := m.validateImageEnum("image", "body", *m.Image); err != nil {
 		return err
 	}
 
@@ -293,7 +293,7 @@ func (m *FirmwareSpBmc) validateLastUpdateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateLastUpdateStateEnum("last_update_state", "body", m.LastUpdateState); err != nil {
+	if err := m.validateLastUpdateStateEnum("last_update_state", "body", *m.LastUpdateState); err != nil {
 		return err
 	}
 
@@ -305,11 +305,11 @@ func (m *FirmwareSpBmc) validatePercentDone(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("percent_done", "body", m.PercentDone, 0, false); err != nil {
+	if err := validate.MinimumInt("percent_done", "body", *m.PercentDone, 0, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("percent_done", "body", m.PercentDone, 100, false); err != nil {
+	if err := validate.MaximumInt("percent_done", "body", *m.PercentDone, 100, false); err != nil {
 		return err
 	}
 
@@ -407,7 +407,7 @@ func (m *FirmwareSpBmc) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -475,7 +475,7 @@ func (m *FirmwareSpBmc) contextValidateEndTime(ctx context.Context, formats strf
 
 func (m *FirmwareSpBmc) contextValidateFwType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "fw_type", "body", string(m.FwType)); err != nil {
+	if err := validate.ReadOnly(ctx, "fw_type", "body", m.FwType); err != nil {
 		return err
 	}
 
@@ -484,7 +484,7 @@ func (m *FirmwareSpBmc) contextValidateFwType(ctx context.Context, formats strfm
 
 func (m *FirmwareSpBmc) contextValidateImage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "image", "body", string(m.Image)); err != nil {
+	if err := validate.ReadOnly(ctx, "image", "body", m.Image); err != nil {
 		return err
 	}
 
@@ -511,7 +511,7 @@ func (m *FirmwareSpBmc) contextValidateIsCurrent(ctx context.Context, formats st
 
 func (m *FirmwareSpBmc) contextValidateLastUpdateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "last_update_state", "body", string(m.LastUpdateState)); err != nil {
+	if err := validate.ReadOnly(ctx, "last_update_state", "body", m.LastUpdateState); err != nil {
 		return err
 	}
 
@@ -520,7 +520,7 @@ func (m *FirmwareSpBmc) contextValidateLastUpdateState(ctx context.Context, form
 
 func (m *FirmwareSpBmc) contextValidatePercentDone(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "percent_done", "body", int64(m.PercentDone)); err != nil {
+	if err := validate.ReadOnly(ctx, "percent_done", "body", m.PercentDone); err != nil {
 		return err
 	}
 
@@ -529,7 +529,7 @@ func (m *FirmwareSpBmc) contextValidatePercentDone(ctx context.Context, formats 
 
 func (m *FirmwareSpBmc) contextValidateRunningVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "running_version", "body", string(m.RunningVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "running_version", "body", m.RunningVersion); err != nil {
 		return err
 	}
 
@@ -547,7 +547,7 @@ func (m *FirmwareSpBmc) contextValidateStartTime(ctx context.Context, formats st
 
 func (m *FirmwareSpBmc) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 

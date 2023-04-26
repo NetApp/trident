@@ -21,7 +21,7 @@ import (
 type NtpServer struct {
 
 	// links
-	Links *NtpServerLinks `json:"_links,omitempty"`
+	Links *NtpServerInlineLinks `json:"_links,omitempty"`
 
 	// Set NTP symmetric authentication on (true) or off (false).
 	// Example: true
@@ -32,7 +32,7 @@ type NtpServer struct {
 
 	// NTP server host name, IPv4, or IPv6 address.
 	// Example: time.nist.gov
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// NTP protocol version for server. Valid versions are 3, 4, or auto.
 	// Example: auto
@@ -226,17 +226,17 @@ func (m *NtpServer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NtpServerLinks ntp server links
+// NtpServerInlineLinks ntp server inline links
 //
-// swagger:model NtpServerLinks
-type NtpServerLinks struct {
+// swagger:model ntp_server_inline__links
+type NtpServerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ntp server links
-func (m *NtpServerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ntp server inline links
+func (m *NtpServerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -249,7 +249,7 @@ func (m *NtpServerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NtpServerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NtpServerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -266,8 +266,8 @@ func (m *NtpServerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ntp server links based on the context it is used
-func (m *NtpServerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ntp server inline links based on the context it is used
+func (m *NtpServerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -280,7 +280,7 @@ func (m *NtpServerLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *NtpServerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NtpServerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -295,7 +295,7 @@ func (m *NtpServerLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *NtpServerLinks) MarshalBinary() ([]byte, error) {
+func (m *NtpServerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -303,8 +303,8 @@ func (m *NtpServerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NtpServerLinks) UnmarshalBinary(b []byte) error {
-	var res NtpServerLinks
+func (m *NtpServerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NtpServerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,55 +66,55 @@ type SnmpUsersCollectionGetParams struct {
 
 	   Filter by authentication_method
 	*/
-	AuthenticationMethodQueryParameter *string
+	AuthenticationMethod *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* EngineID.
 
 	   Filter by engine_id
 	*/
-	EngineIDQueryParameter *string
+	EngineID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerName.
 
 	   Filter by owner.name
 	*/
-	OwnerNameQueryParameter *string
+	OwnerName *string
 
 	/* OwnerUUID.
 
 	   Filter by owner.uuid
 	*/
-	OwnerUUIDQueryParameter *string
+	OwnerUUID *string
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type SnmpUsersCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,31 +130,31 @@ type SnmpUsersCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* Snmpv3AuthenticationProtocol.
 
 	   Filter by snmpv3.authentication_protocol
 	*/
-	Snmpv3AuthenticationProtocolQueryParameter *string
+	Snmpv3AuthenticationProtocol *string
 
 	/* Snmpv3PrivacyProtocol.
 
 	   Filter by snmpv3.privacy_protocol
 	*/
-	Snmpv3PrivacyProtocolQueryParameter *string
+	Snmpv3PrivacyProtocol *string
 
 	/* SwitchAddress.
 
 	   Filter by switch_address
 	*/
-	SwitchAddressQueryParameter *string
+	SwitchAddress *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *SnmpUsersCollectionGetParams) WithDefaults() *SnmpUsersCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *SnmpUsersCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnmpUsersCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *SnmpUsersCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationMethodQueryParameter adds the authenticationMethod to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithAuthenticationMethodQueryParameter(authenticationMethod *string) *SnmpUsersCollectionGetParams {
-	o.SetAuthenticationMethodQueryParameter(authenticationMethod)
+// WithAuthenticationMethod adds the authenticationMethod to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithAuthenticationMethod(authenticationMethod *string) *SnmpUsersCollectionGetParams {
+	o.SetAuthenticationMethod(authenticationMethod)
 	return o
 }
 
-// SetAuthenticationMethodQueryParameter adds the authenticationMethod to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetAuthenticationMethodQueryParameter(authenticationMethod *string) {
-	o.AuthenticationMethodQueryParameter = authenticationMethod
+// SetAuthenticationMethod adds the authenticationMethod to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetAuthenticationMethod(authenticationMethod *string) {
+	o.AuthenticationMethod = authenticationMethod
 }
 
-// WithCommentQueryParameter adds the comment to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithCommentQueryParameter(comment *string) *SnmpUsersCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithComment(comment *string) *SnmpUsersCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithEngineIDQueryParameter adds the engineID to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithEngineIDQueryParameter(engineID *string) *SnmpUsersCollectionGetParams {
-	o.SetEngineIDQueryParameter(engineID)
+// WithEngineID adds the engineID to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithEngineID(engineID *string) *SnmpUsersCollectionGetParams {
+	o.SetEngineID(engineID)
 	return o
 }
 
-// SetEngineIDQueryParameter adds the engineId to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetEngineIDQueryParameter(engineID *string) {
-	o.EngineIDQueryParameter = engineID
+// SetEngineID adds the engineId to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetEngineID(engineID *string) {
+	o.EngineID = engineID
 }
 
-// WithFieldsQueryParameter adds the fields to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnmpUsersCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithFields(fields []string) *SnmpUsersCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnmpUsersCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnmpUsersCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithNameQueryParameter(name *string) *SnmpUsersCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithName(name *string) *SnmpUsersCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnmpUsersCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithOrderBy(orderBy []string) *SnmpUsersCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerNameQueryParameter adds the ownerName to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithOwnerNameQueryParameter(ownerName *string) *SnmpUsersCollectionGetParams {
-	o.SetOwnerNameQueryParameter(ownerName)
+// WithOwnerName adds the ownerName to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithOwnerName(ownerName *string) *SnmpUsersCollectionGetParams {
+	o.SetOwnerName(ownerName)
 	return o
 }
 
-// SetOwnerNameQueryParameter adds the ownerName to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetOwnerNameQueryParameter(ownerName *string) {
-	o.OwnerNameQueryParameter = ownerName
+// SetOwnerName adds the ownerName to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetOwnerName(ownerName *string) {
+	o.OwnerName = ownerName
 }
 
-// WithOwnerUUIDQueryParameter adds the ownerUUID to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithOwnerUUIDQueryParameter(ownerUUID *string) *SnmpUsersCollectionGetParams {
-	o.SetOwnerUUIDQueryParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithOwnerUUID(ownerUUID *string) *SnmpUsersCollectionGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDQueryParameter adds the ownerUuid to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetOwnerUUIDQueryParameter(ownerUUID *string) {
-	o.OwnerUUIDQueryParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetOwnerUUID(ownerUUID *string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnmpUsersCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnmpUsersCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpUsersCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnmpUsersCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithScopeQueryParameter(scope *string) *SnmpUsersCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithScope(scope *string) *SnmpUsersCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSnmpv3AuthenticationProtocolQueryParameter adds the snmpv3AuthenticationProtocol to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithSnmpv3AuthenticationProtocolQueryParameter(snmpv3AuthenticationProtocol *string) *SnmpUsersCollectionGetParams {
-	o.SetSnmpv3AuthenticationProtocolQueryParameter(snmpv3AuthenticationProtocol)
+// WithSnmpv3AuthenticationProtocol adds the snmpv3AuthenticationProtocol to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithSnmpv3AuthenticationProtocol(snmpv3AuthenticationProtocol *string) *SnmpUsersCollectionGetParams {
+	o.SetSnmpv3AuthenticationProtocol(snmpv3AuthenticationProtocol)
 	return o
 }
 
-// SetSnmpv3AuthenticationProtocolQueryParameter adds the snmpv3AuthenticationProtocol to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetSnmpv3AuthenticationProtocolQueryParameter(snmpv3AuthenticationProtocol *string) {
-	o.Snmpv3AuthenticationProtocolQueryParameter = snmpv3AuthenticationProtocol
+// SetSnmpv3AuthenticationProtocol adds the snmpv3AuthenticationProtocol to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetSnmpv3AuthenticationProtocol(snmpv3AuthenticationProtocol *string) {
+	o.Snmpv3AuthenticationProtocol = snmpv3AuthenticationProtocol
 }
 
-// WithSnmpv3PrivacyProtocolQueryParameter adds the snmpv3PrivacyProtocol to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithSnmpv3PrivacyProtocolQueryParameter(snmpv3PrivacyProtocol *string) *SnmpUsersCollectionGetParams {
-	o.SetSnmpv3PrivacyProtocolQueryParameter(snmpv3PrivacyProtocol)
+// WithSnmpv3PrivacyProtocol adds the snmpv3PrivacyProtocol to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithSnmpv3PrivacyProtocol(snmpv3PrivacyProtocol *string) *SnmpUsersCollectionGetParams {
+	o.SetSnmpv3PrivacyProtocol(snmpv3PrivacyProtocol)
 	return o
 }
 
-// SetSnmpv3PrivacyProtocolQueryParameter adds the snmpv3PrivacyProtocol to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetSnmpv3PrivacyProtocolQueryParameter(snmpv3PrivacyProtocol *string) {
-	o.Snmpv3PrivacyProtocolQueryParameter = snmpv3PrivacyProtocol
+// SetSnmpv3PrivacyProtocol adds the snmpv3PrivacyProtocol to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetSnmpv3PrivacyProtocol(snmpv3PrivacyProtocol *string) {
+	o.Snmpv3PrivacyProtocol = snmpv3PrivacyProtocol
 }
 
-// WithSwitchAddressQueryParameter adds the switchAddress to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) WithSwitchAddressQueryParameter(switchAddress *string) *SnmpUsersCollectionGetParams {
-	o.SetSwitchAddressQueryParameter(switchAddress)
+// WithSwitchAddress adds the switchAddress to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) WithSwitchAddress(switchAddress *string) *SnmpUsersCollectionGetParams {
+	o.SetSwitchAddress(switchAddress)
 	return o
 }
 
-// SetSwitchAddressQueryParameter adds the switchAddress to the snmp users collection get params
-func (o *SnmpUsersCollectionGetParams) SetSwitchAddressQueryParameter(switchAddress *string) {
-	o.SwitchAddressQueryParameter = switchAddress
+// SetSwitchAddress adds the switchAddress to the snmp users collection get params
+func (o *SnmpUsersCollectionGetParams) SetSwitchAddress(switchAddress *string) {
+	o.SwitchAddress = switchAddress
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.AuthenticationMethodQueryParameter != nil {
+	if o.AuthenticationMethod != nil {
 
 		// query param authentication_method
 		var qrAuthenticationMethod string
 
-		if o.AuthenticationMethodQueryParameter != nil {
-			qrAuthenticationMethod = *o.AuthenticationMethodQueryParameter
+		if o.AuthenticationMethod != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethod
 		}
 		qAuthenticationMethod := qrAuthenticationMethod
 		if qAuthenticationMethod != "" {
@@ -413,13 +413,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -430,13 +430,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.EngineIDQueryParameter != nil {
+	if o.EngineID != nil {
 
 		// query param engine_id
 		var qrEngineID string
 
-		if o.EngineIDQueryParameter != nil {
-			qrEngineID = *o.EngineIDQueryParameter
+		if o.EngineID != nil {
+			qrEngineID = *o.EngineID
 		}
 		qEngineID := qrEngineID
 		if qEngineID != "" {
@@ -447,7 +447,7 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -458,13 +458,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,13 +475,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -492,7 +492,7 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -503,13 +503,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OwnerNameQueryParameter != nil {
+	if o.OwnerName != nil {
 
 		// query param owner.name
 		var qrOwnerName string
 
-		if o.OwnerNameQueryParameter != nil {
-			qrOwnerName = *o.OwnerNameQueryParameter
+		if o.OwnerName != nil {
+			qrOwnerName = *o.OwnerName
 		}
 		qOwnerName := qrOwnerName
 		if qOwnerName != "" {
@@ -520,13 +520,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OwnerUUIDQueryParameter != nil {
+	if o.OwnerUUID != nil {
 
 		// query param owner.uuid
 		var qrOwnerUUID string
 
-		if o.OwnerUUIDQueryParameter != nil {
-			qrOwnerUUID = *o.OwnerUUIDQueryParameter
+		if o.OwnerUUID != nil {
+			qrOwnerUUID = *o.OwnerUUID
 		}
 		qOwnerUUID := qrOwnerUUID
 		if qOwnerUUID != "" {
@@ -537,13 +537,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -554,13 +554,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -571,13 +571,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -588,13 +588,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Snmpv3AuthenticationProtocolQueryParameter != nil {
+	if o.Snmpv3AuthenticationProtocol != nil {
 
 		// query param snmpv3.authentication_protocol
 		var qrSnmpv3AuthenticationProtocol string
 
-		if o.Snmpv3AuthenticationProtocolQueryParameter != nil {
-			qrSnmpv3AuthenticationProtocol = *o.Snmpv3AuthenticationProtocolQueryParameter
+		if o.Snmpv3AuthenticationProtocol != nil {
+			qrSnmpv3AuthenticationProtocol = *o.Snmpv3AuthenticationProtocol
 		}
 		qSnmpv3AuthenticationProtocol := qrSnmpv3AuthenticationProtocol
 		if qSnmpv3AuthenticationProtocol != "" {
@@ -605,13 +605,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Snmpv3PrivacyProtocolQueryParameter != nil {
+	if o.Snmpv3PrivacyProtocol != nil {
 
 		// query param snmpv3.privacy_protocol
 		var qrSnmpv3PrivacyProtocol string
 
-		if o.Snmpv3PrivacyProtocolQueryParameter != nil {
-			qrSnmpv3PrivacyProtocol = *o.Snmpv3PrivacyProtocolQueryParameter
+		if o.Snmpv3PrivacyProtocol != nil {
+			qrSnmpv3PrivacyProtocol = *o.Snmpv3PrivacyProtocol
 		}
 		qSnmpv3PrivacyProtocol := qrSnmpv3PrivacyProtocol
 		if qSnmpv3PrivacyProtocol != "" {
@@ -622,13 +622,13 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SwitchAddressQueryParameter != nil {
+	if o.SwitchAddress != nil {
 
 		// query param switch_address
 		var qrSwitchAddress string
 
-		if o.SwitchAddressQueryParameter != nil {
-			qrSwitchAddress = *o.SwitchAddressQueryParameter
+		if o.SwitchAddress != nil {
+			qrSwitchAddress = *o.SwitchAddress
 		}
 		qSwitchAddress := qrSwitchAddress
 		if qSwitchAddress != "" {
@@ -647,7 +647,7 @@ func (o *SnmpUsersCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamSnmpUsersCollectionGet binds the parameter fields
 func (o *SnmpUsersCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -664,7 +664,7 @@ func (o *SnmpUsersCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamSnmpUsersCollectionGet binds the parameter order_by
 func (o *SnmpUsersCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

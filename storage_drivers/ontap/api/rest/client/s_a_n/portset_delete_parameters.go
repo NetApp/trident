@@ -68,14 +68,14 @@ type PortsetDeleteParams struct {
 	Deleting a portset can expand the set of LIFs through which a LUN is available.
 
 	*/
-	AllowDeleteWhileBoundQueryParameter *bool
+	AllowDeleteWhileBound *bool
 
 	/* UUID.
 
 	   The unique identifier of the portset.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -95,11 +95,11 @@ func (o *PortsetDeleteParams) WithDefaults() *PortsetDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *PortsetDeleteParams) SetDefaults() {
 	var (
-		allowDeleteWhileBoundQueryParameterDefault = bool(false)
+		allowDeleteWhileBoundDefault = bool(false)
 	)
 
 	val := PortsetDeleteParams{
-		AllowDeleteWhileBoundQueryParameter: &allowDeleteWhileBoundQueryParameterDefault,
+		AllowDeleteWhileBound: &allowDeleteWhileBoundDefault,
 	}
 
 	val.timeout = o.timeout
@@ -141,26 +141,26 @@ func (o *PortsetDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAllowDeleteWhileBoundQueryParameter adds the allowDeleteWhileBound to the portset delete params
-func (o *PortsetDeleteParams) WithAllowDeleteWhileBoundQueryParameter(allowDeleteWhileBound *bool) *PortsetDeleteParams {
-	o.SetAllowDeleteWhileBoundQueryParameter(allowDeleteWhileBound)
+// WithAllowDeleteWhileBound adds the allowDeleteWhileBound to the portset delete params
+func (o *PortsetDeleteParams) WithAllowDeleteWhileBound(allowDeleteWhileBound *bool) *PortsetDeleteParams {
+	o.SetAllowDeleteWhileBound(allowDeleteWhileBound)
 	return o
 }
 
-// SetAllowDeleteWhileBoundQueryParameter adds the allowDeleteWhileBound to the portset delete params
-func (o *PortsetDeleteParams) SetAllowDeleteWhileBoundQueryParameter(allowDeleteWhileBound *bool) {
-	o.AllowDeleteWhileBoundQueryParameter = allowDeleteWhileBound
+// SetAllowDeleteWhileBound adds the allowDeleteWhileBound to the portset delete params
+func (o *PortsetDeleteParams) SetAllowDeleteWhileBound(allowDeleteWhileBound *bool) {
+	o.AllowDeleteWhileBound = allowDeleteWhileBound
 }
 
-// WithUUIDPathParameter adds the uuid to the portset delete params
-func (o *PortsetDeleteParams) WithUUIDPathParameter(uuid string) *PortsetDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the portset delete params
+func (o *PortsetDeleteParams) WithUUID(uuid string) *PortsetDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the portset delete params
-func (o *PortsetDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the portset delete params
+func (o *PortsetDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -171,13 +171,13 @@ func (o *PortsetDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.AllowDeleteWhileBoundQueryParameter != nil {
+	if o.AllowDeleteWhileBound != nil {
 
 		// query param allow_delete_while_bound
 		var qrAllowDeleteWhileBound bool
 
-		if o.AllowDeleteWhileBoundQueryParameter != nil {
-			qrAllowDeleteWhileBound = *o.AllowDeleteWhileBoundQueryParameter
+		if o.AllowDeleteWhileBound != nil {
+			qrAllowDeleteWhileBound = *o.AllowDeleteWhileBound
 		}
 		qAllowDeleteWhileBound := swag.FormatBool(qrAllowDeleteWhileBound)
 		if qAllowDeleteWhileBound != "" {
@@ -189,7 +189,7 @@ func (o *PortsetDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

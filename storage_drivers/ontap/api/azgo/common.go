@@ -22,7 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -48,7 +48,8 @@ type ZapiRunner struct {
 }
 
 // GetZAPIName returns the name of the ZAPI request; it must parse the XML because ZAPIRequest is an interface
-//   See also: https://play.golang.org/p/IqHhgVB3Q7x
+//
+//	See also: https://play.golang.org/p/IqHhgVB3Q7x
 func GetZAPIName(zr ZAPIRequest) (string, error) {
 	zapiXML, err := zr.ToXML()
 	if err != nil {

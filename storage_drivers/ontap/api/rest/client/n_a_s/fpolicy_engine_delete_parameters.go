@@ -62,13 +62,13 @@ FpolicyEngineDeleteParams contains all the parameters to send to the API endpoin
 type FpolicyEngineDeleteParams struct {
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,26 +123,26 @@ func (o *FpolicyEngineDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the fpolicy engine delete params
-func (o *FpolicyEngineDeleteParams) WithNamePathParameter(name string) *FpolicyEngineDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the fpolicy engine delete params
+func (o *FpolicyEngineDeleteParams) WithName(name string) *FpolicyEngineDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the fpolicy engine delete params
-func (o *FpolicyEngineDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the fpolicy engine delete params
+func (o *FpolicyEngineDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy engine delete params
-func (o *FpolicyEngineDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyEngineDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy engine delete params
+func (o *FpolicyEngineDeleteParams) WithSvmUUID(svmUUID string) *FpolicyEngineDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy engine delete params
-func (o *FpolicyEngineDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy engine delete params
+func (o *FpolicyEngineDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,12 +154,12 @@ func (o *FpolicyEngineDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

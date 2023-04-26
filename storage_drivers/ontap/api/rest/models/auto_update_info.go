@@ -20,14 +20,14 @@ import (
 type AutoUpdateInfo struct {
 
 	// links
-	Links *AutoUpdateInfoLinks `json:"_links,omitempty"`
+	Links *AutoUpdateInfoInlineLinks `json:"_links,omitempty"`
 
 	// Flag indicating feature state.
 	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// eula
-	Eula *AutoUpdateInfoEula `json:"eula,omitempty"`
+	Eula *AutoUpdateInfoInlineEula `json:"eula,omitempty"`
 }
 
 // Validate validates this auto update info
@@ -146,10 +146,10 @@ func (m *AutoUpdateInfo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateInfoEula auto update info eula
+// AutoUpdateInfoInlineEula auto update info inline eula
 //
-// swagger:model AutoUpdateInfoEula
-type AutoUpdateInfoEula struct {
+// swagger:model auto_update_info_inline_eula
+type AutoUpdateInfoInlineEula struct {
 
 	// Flag indicating the End User License Agreement (EULA) acceptance. When the feature is enabled, it is assumed that the EULA is accepted.
 	// Example: true
@@ -159,7 +159,7 @@ type AutoUpdateInfoEula struct {
 	// IP Address from where the EULA was accepted.
 	// Example: 192.168.1.125
 	// Read Only: true
-	AcceptedIPAddress string `json:"accepted_ip_address,omitempty"`
+	AcceptedIPAddress *string `json:"accepted_ip_address,omitempty"`
 
 	// Date and time when the EULA was accepted.
 	// Example: 2020-12-01T09:12:23-04:00
@@ -170,11 +170,11 @@ type AutoUpdateInfoEula struct {
 	// User ID that provided the EULA acceptance.
 	// Example: admin
 	// Read Only: true
-	UserIDAccepted string `json:"user_id_accepted,omitempty"`
+	UserIDAccepted *string `json:"user_id_accepted,omitempty"`
 }
 
-// Validate validates this auto update info eula
-func (m *AutoUpdateInfoEula) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update info inline eula
+func (m *AutoUpdateInfoInlineEula) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAcceptedTimestamp(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *AutoUpdateInfoEula) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateInfoEula) validateAcceptedTimestamp(formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineEula) validateAcceptedTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.AcceptedTimestamp) { // not required
 		return nil
 	}
@@ -199,8 +199,8 @@ func (m *AutoUpdateInfoEula) validateAcceptedTimestamp(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this auto update info eula based on the context it is used
-func (m *AutoUpdateInfoEula) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update info inline eula based on the context it is used
+func (m *AutoUpdateInfoInlineEula) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAccepted(ctx, formats); err != nil {
@@ -225,7 +225,7 @@ func (m *AutoUpdateInfoEula) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *AutoUpdateInfoEula) contextValidateAccepted(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineEula) contextValidateAccepted(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "eula"+"."+"accepted", "body", m.Accepted); err != nil {
 		return err
@@ -234,16 +234,16 @@ func (m *AutoUpdateInfoEula) contextValidateAccepted(ctx context.Context, format
 	return nil
 }
 
-func (m *AutoUpdateInfoEula) contextValidateAcceptedIPAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineEula) contextValidateAcceptedIPAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "eula"+"."+"accepted_ip_address", "body", string(m.AcceptedIPAddress)); err != nil {
+	if err := validate.ReadOnly(ctx, "eula"+"."+"accepted_ip_address", "body", m.AcceptedIPAddress); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *AutoUpdateInfoEula) contextValidateAcceptedTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineEula) contextValidateAcceptedTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "eula"+"."+"accepted_timestamp", "body", m.AcceptedTimestamp); err != nil {
 		return err
@@ -252,9 +252,9 @@ func (m *AutoUpdateInfoEula) contextValidateAcceptedTimestamp(ctx context.Contex
 	return nil
 }
 
-func (m *AutoUpdateInfoEula) contextValidateUserIDAccepted(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineEula) contextValidateUserIDAccepted(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "eula"+"."+"user_id_accepted", "body", string(m.UserIDAccepted)); err != nil {
+	if err := validate.ReadOnly(ctx, "eula"+"."+"user_id_accepted", "body", m.UserIDAccepted); err != nil {
 		return err
 	}
 
@@ -262,7 +262,7 @@ func (m *AutoUpdateInfoEula) contextValidateUserIDAccepted(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateInfoEula) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateInfoInlineEula) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -270,8 +270,8 @@ func (m *AutoUpdateInfoEula) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateInfoEula) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateInfoEula
+func (m *AutoUpdateInfoInlineEula) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateInfoInlineEula
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -279,17 +279,17 @@ func (m *AutoUpdateInfoEula) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateInfoLinks auto update info links
+// AutoUpdateInfoInlineLinks auto update info inline links
 //
-// swagger:model AutoUpdateInfoLinks
-type AutoUpdateInfoLinks struct {
+// swagger:model auto_update_info_inline__links
+type AutoUpdateInfoInlineLinks struct {
 
 	// self
-	Self *AutoUpdateInfoLinksSelf `json:"self,omitempty"`
+	Self *AutoUpdateInfoInlineLinksInlineSelf `json:"self,omitempty"`
 }
 
-// Validate validates this auto update info links
-func (m *AutoUpdateInfoLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update info inline links
+func (m *AutoUpdateInfoInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -302,7 +302,7 @@ func (m *AutoUpdateInfoLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateInfoLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -319,8 +319,8 @@ func (m *AutoUpdateInfoLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this auto update info links based on the context it is used
-func (m *AutoUpdateInfoLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update info inline links based on the context it is used
+func (m *AutoUpdateInfoInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -333,7 +333,7 @@ func (m *AutoUpdateInfoLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *AutoUpdateInfoLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -348,7 +348,7 @@ func (m *AutoUpdateInfoLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateInfoLinks) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateInfoInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -356,8 +356,8 @@ func (m *AutoUpdateInfoLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateInfoLinks) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateInfoLinks
+func (m *AutoUpdateInfoInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateInfoInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -365,17 +365,17 @@ func (m *AutoUpdateInfoLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutoUpdateInfoLinksSelf auto update info links self
+// AutoUpdateInfoInlineLinksInlineSelf auto update info inline links inline self
 //
-// swagger:model AutoUpdateInfoLinksSelf
-type AutoUpdateInfoLinksSelf struct {
+// swagger:model auto_update_info_inline__links_inline_self
+type AutoUpdateInfoInlineLinksInlineSelf struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this auto update info links self
-func (m *AutoUpdateInfoLinksSelf) Validate(formats strfmt.Registry) error {
+// Validate validates this auto update info inline links inline self
+func (m *AutoUpdateInfoInlineLinksInlineSelf) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -388,7 +388,7 @@ func (m *AutoUpdateInfoLinksSelf) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutoUpdateInfoLinksSelf) validateSelf(formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineLinksInlineSelf) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -405,8 +405,8 @@ func (m *AutoUpdateInfoLinksSelf) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this auto update info links self based on the context it is used
-func (m *AutoUpdateInfoLinksSelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this auto update info inline links inline self based on the context it is used
+func (m *AutoUpdateInfoInlineLinksInlineSelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -419,7 +419,7 @@ func (m *AutoUpdateInfoLinksSelf) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *AutoUpdateInfoLinksSelf) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutoUpdateInfoInlineLinksInlineSelf) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -434,7 +434,7 @@ func (m *AutoUpdateInfoLinksSelf) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *AutoUpdateInfoLinksSelf) MarshalBinary() ([]byte, error) {
+func (m *AutoUpdateInfoInlineLinksInlineSelf) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -442,8 +442,8 @@ func (m *AutoUpdateInfoLinksSelf) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutoUpdateInfoLinksSelf) UnmarshalBinary(b []byte) error {
-	var res AutoUpdateInfoLinksSelf
+func (m *AutoUpdateInfoInlineLinksInlineSelf) UnmarshalBinary(b []byte) error {
+	var res AutoUpdateInfoInlineLinksInlineSelf
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

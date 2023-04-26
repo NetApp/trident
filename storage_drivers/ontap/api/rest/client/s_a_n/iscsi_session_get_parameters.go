@@ -66,28 +66,28 @@ type IscsiSessionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM of the iSCSI session.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Tpgroup.
 
 	   The target portal group of the iSCSI session.
 
 	*/
-	TpgroupPathParameter string
+	Tpgroup string
 
 	/* Tsih.
 
 	   The target session identifying handle.
 
 	*/
-	TsihPathParameter int64
+	Tsih int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -142,48 +142,48 @@ func (o *IscsiSessionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the iscsi session get params
-func (o *IscsiSessionGetParams) WithFieldsQueryParameter(fields []string) *IscsiSessionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the iscsi session get params
+func (o *IscsiSessionGetParams) WithFields(fields []string) *IscsiSessionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the iscsi session get params
-func (o *IscsiSessionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the iscsi session get params
+func (o *IscsiSessionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi session get params
-func (o *IscsiSessionGetParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiSessionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi session get params
+func (o *IscsiSessionGetParams) WithSvmUUID(svmUUID string) *IscsiSessionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi session get params
-func (o *IscsiSessionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi session get params
+func (o *IscsiSessionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTpgroupPathParameter adds the tpgroup to the iscsi session get params
-func (o *IscsiSessionGetParams) WithTpgroupPathParameter(tpgroup string) *IscsiSessionGetParams {
-	o.SetTpgroupPathParameter(tpgroup)
+// WithTpgroup adds the tpgroup to the iscsi session get params
+func (o *IscsiSessionGetParams) WithTpgroup(tpgroup string) *IscsiSessionGetParams {
+	o.SetTpgroup(tpgroup)
 	return o
 }
 
-// SetTpgroupPathParameter adds the tpgroup to the iscsi session get params
-func (o *IscsiSessionGetParams) SetTpgroupPathParameter(tpgroup string) {
-	o.TpgroupPathParameter = tpgroup
+// SetTpgroup adds the tpgroup to the iscsi session get params
+func (o *IscsiSessionGetParams) SetTpgroup(tpgroup string) {
+	o.Tpgroup = tpgroup
 }
 
-// WithTsihPathParameter adds the tsih to the iscsi session get params
-func (o *IscsiSessionGetParams) WithTsihPathParameter(tsih int64) *IscsiSessionGetParams {
-	o.SetTsihPathParameter(tsih)
+// WithTsih adds the tsih to the iscsi session get params
+func (o *IscsiSessionGetParams) WithTsih(tsih int64) *IscsiSessionGetParams {
+	o.SetTsih(tsih)
 	return o
 }
 
-// SetTsihPathParameter adds the tsih to the iscsi session get params
-func (o *IscsiSessionGetParams) SetTsihPathParameter(tsih int64) {
-	o.TsihPathParameter = tsih
+// SetTsih adds the tsih to the iscsi session get params
+func (o *IscsiSessionGetParams) SetTsih(tsih int64) {
+	o.Tsih = tsih
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -194,7 +194,7 @@ func (o *IscsiSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -206,17 +206,17 @@ func (o *IscsiSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param tpgroup
-	if err := r.SetPathParam("tpgroup", o.TpgroupPathParameter); err != nil {
+	if err := r.SetPathParam("tpgroup", o.Tpgroup); err != nil {
 		return err
 	}
 
 	// path param tsih
-	if err := r.SetPathParam("tsih", swag.FormatInt64(o.TsihPathParameter)); err != nil {
+	if err := r.SetPathParam("tsih", swag.FormatInt64(o.Tsih)); err != nil {
 		return err
 	}
 
@@ -228,7 +228,7 @@ func (o *IscsiSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamIscsiSessionGet binds the parameter fields
 func (o *IscsiSessionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

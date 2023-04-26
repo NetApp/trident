@@ -64,7 +64,7 @@ MultiAdminVerifyRequestModifyParams contains all the parameters to send to the A
 type MultiAdminVerifyRequestModifyParams struct {
 
 	// Index.
-	IndexPathParameter string
+	Index string
 
 	/* Info.
 
@@ -125,15 +125,15 @@ func (o *MultiAdminVerifyRequestModifyParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithIndexPathParameter adds the index to the multi admin verify request modify params
-func (o *MultiAdminVerifyRequestModifyParams) WithIndexPathParameter(index string) *MultiAdminVerifyRequestModifyParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the multi admin verify request modify params
+func (o *MultiAdminVerifyRequestModifyParams) WithIndex(index string) *MultiAdminVerifyRequestModifyParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the multi admin verify request modify params
-func (o *MultiAdminVerifyRequestModifyParams) SetIndexPathParameter(index string) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the multi admin verify request modify params
+func (o *MultiAdminVerifyRequestModifyParams) SetIndex(index string) {
+	o.Index = index
 }
 
 // WithInfo adds the info to the multi admin verify request modify params
@@ -156,7 +156,7 @@ func (o *MultiAdminVerifyRequestModifyParams) WriteToRequest(r runtime.ClientReq
 	var res []error
 
 	// path param index
-	if err := r.SetPathParam("index", o.IndexPathParameter); err != nil {
+	if err := r.SetPathParam("index", o.Index); err != nil {
 		return err
 	}
 	if o.Info != nil {

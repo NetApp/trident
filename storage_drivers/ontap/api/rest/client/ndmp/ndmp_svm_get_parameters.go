@@ -66,13 +66,13 @@ type NdmpSvmGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *NdmpSvmGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ndmp svm get params
-func (o *NdmpSvmGetParams) WithFieldsQueryParameter(fields []string) *NdmpSvmGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ndmp svm get params
+func (o *NdmpSvmGetParams) WithFields(fields []string) *NdmpSvmGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ndmp svm get params
-func (o *NdmpSvmGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ndmp svm get params
+func (o *NdmpSvmGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the ndmp svm get params
-func (o *NdmpSvmGetParams) WithSVMUUIDPathParameter(svmUUID string) *NdmpSvmGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ndmp svm get params
+func (o *NdmpSvmGetParams) WithSvmUUID(svmUUID string) *NdmpSvmGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the ndmp svm get params
-func (o *NdmpSvmGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ndmp svm get params
+func (o *NdmpSvmGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *NdmpSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *NdmpSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *NdmpSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamNdmpSvmGet binds the parameter fields
 func (o *NdmpSvmGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

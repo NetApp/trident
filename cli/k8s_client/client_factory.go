@@ -3,6 +3,7 @@
 package k8sclient
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -13,13 +14,13 @@ import (
 	"time"
 
 	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
-	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	torc "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
 	tprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -51,6 +52,15 @@ var cachedClients *Clients
 // using `kubectl config view --raw` and we attempt to discern the namespace from the kubeconfig context.  The
 // namespace may be overridden, and if the namespace may not be determined by any other means, it is set to 'default'.
 func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
+	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowK8sClientFactory,
+		LogLayerNone)
+	Logc(ctx).WithFields(LogFields{
+		"MasterURL":         masterURL,
+		"KubeConfigPath":    kubeConfigPath,
+		"OverrideNamespace": overrideNamespace,
+	}).Trace(">>>> CreateK8SClients")
+	defer Logc(ctx).Trace("<<<< CreateK8SClients")
+
 	// Return a cached copy if available
 	if cachedClients != nil {
 		return cachedClients, nil
@@ -66,11 +76,11 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 
 	// Get the API config based on whether we are running in or out of cluster
 	if !inK8SPod {
-		log.Debug("Creating ex-cluster Kubernetes clients.")
-		clients, err = createK8SClientsExCluster(masterURL, kubeConfigPath, overrideNamespace)
+		Logc(ctx).Debug("Creating ex-cluster Kubernetes clients.")
+		clients, err = createK8SClientsExCluster(ctx, masterURL, kubeConfigPath, overrideNamespace)
 	} else {
-		log.Debug("Creating in-cluster Kubernetes clients.")
-		clients, err = createK8SClientsInCluster(overrideNamespace)
+		Logc(ctx).Debug("Creating in-cluster Kubernetes clients.")
+		clients, err = createK8SClientsInCluster(ctx, overrideNamespace)
 	}
 	if err != nil {
 		return nil, err
@@ -109,22 +119,32 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 
 	clients.InK8SPod = inK8SPod
 
-	log.WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"namespace": clients.Namespace,
 		"version":   clients.K8SVersion.String(),
-	}).Info("Created Kubernetes clients.")
+	}).Debug("Created Kubernetes clients.")
 
 	cachedClients = clients
 
 	return cachedClients, nil
 }
 
-func createK8SClientsExCluster(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
+func createK8SClientsExCluster(
+	ctx context.Context, masterURL, kubeConfigPath, overrideNamespace string,
+) (*Clients, error) {
 	var namespace string
 	var restConfig *rest.Config
 	var err error
 
+	Logc(ctx).WithFields(LogFields{
+		"MasterURL":         masterURL,
+		"KubeConfigPath":    kubeConfigPath,
+		"OverrideNamespace": overrideNamespace,
+	}).Trace(">>>> createK8SClientsExCluster")
+	defer Logc(ctx).Trace("<<<< createK8SClientsExCluster")
+
 	if kubeConfigPath != "" {
+		Logc(ctx).Trace("Provided kubeConfigPath not empty.")
 
 		if restConfig, err = clientcmd.BuildConfigFromFlags(masterURL, kubeConfigPath); err != nil {
 			return nil, err
@@ -147,9 +167,9 @@ func createK8SClientsExCluster(masterURL, kubeConfigPath, overrideNamespace stri
 		namespace = currentContext.Namespace
 
 	} else {
-
+		Logc(ctx).Trace("Provided kubeConfigPath empty.")
 		// Get K8S CLI
-		kubernetesCLI, err := discoverKubernetesCLI()
+		kubernetesCLI, err := discoverKubernetesCLI(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -198,7 +218,12 @@ func createK8SClientsExCluster(masterURL, kubeConfigPath, overrideNamespace stri
 	}, nil
 }
 
-func createK8SClientsInCluster(overrideNamespace string) (*Clients, error) {
+func createK8SClientsInCluster(ctx context.Context, overrideNamespace string) (*Clients, error) {
+	Logc(ctx).WithFields(LogFields{
+		"OverrideNamespace": overrideNamespace,
+	}).Trace(">>>> createK8SClientsInCluster")
+	defer Logc(ctx).Trace("<<<< createK8SClientsInCluster")
+
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -228,7 +253,9 @@ func createK8SClientsInCluster(overrideNamespace string) (*Clients, error) {
 	}, nil
 }
 
-func discoverKubernetesCLI() (string, error) {
+func discoverKubernetesCLI(ctx context.Context) (string, error) {
+	Logc(ctx).Trace(">>>> discoverKubernetesCLI")
+	defer Logc(ctx).Trace("<<<< discoverKubernetesCLI")
 	// Try the OpenShift CLI first
 	_, err := exec.Command(CLIOpenShift, "version").Output()
 	if getExitCodeFromError(err) == ExitCodeSuccess {

@@ -66,115 +66,115 @@ type LicenseGetParams struct {
 
 	   Filter by description
 	*/
-	DescriptionQueryParameter *string
+	Description *string
 
 	/* EntitlementAction.
 
 	   Filter by entitlement.action
 	*/
-	EntitlementActionQueryParameter *string
+	EntitlementAction *string
 
 	/* EntitlementRisk.
 
 	   Filter by entitlement.risk
 	*/
-	EntitlementRiskQueryParameter *string
+	EntitlementRisk *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LicensesActive.
 
 	   Filter by licenses.active
 	*/
-	LicensesActiveQueryParameter *bool
+	LicensesActive *bool
 
 	/* LicensesCapacityMaximumSize.
 
 	   Filter by licenses.capacity.maximum_size
 	*/
-	LicensesCapacityMaximumSizeQueryParameter *int64
+	LicensesCapacityMaximumSize *int64
 
 	/* LicensesCapacityUsedSize.
 
 	   Filter by licenses.capacity.used_size
 	*/
-	LicensesCapacityUsedSizeQueryParameter *int64
+	LicensesCapacityUsedSize *int64
 
 	/* LicensesComplianceState.
 
 	   Filter by licenses.compliance.state
 	*/
-	LicensesComplianceStateQueryParameter *string
+	LicensesComplianceState *string
 
 	/* LicensesEvaluation.
 
 	   Filter by licenses.evaluation
 	*/
-	LicensesEvaluationQueryParameter *bool
+	LicensesEvaluation *bool
 
 	/* LicensesExpiryTime.
 
 	   Filter by licenses.expiry_time
 	*/
-	LicensesExpiryTimeQueryParameter *string
+	LicensesExpiryTime *string
 
 	/* LicensesHostID.
 
 	   Filter by licenses.host_id
 	*/
-	LicensesHostIDQueryParameter *string
+	LicensesHostID *string
 
 	/* LicensesInstalledLicense.
 
 	   Filter by licenses.installed_license
 	*/
-	LicensesInstalledLicenseQueryParameter *string
+	LicensesInstalledLicense *string
 
 	/* LicensesOwner.
 
 	   Filter by licenses.owner
 	*/
-	LicensesOwnerQueryParameter *string
+	LicensesOwner *string
 
 	/* LicensesSerialNumber.
 
 	   Filter by licenses.serial_number
 	*/
-	LicensesSerialNumberQueryParameter *string
+	LicensesSerialNumber *string
 
 	/* LicensesShutdownImminent.
 
 	   Filter by licenses.shutdown_imminent
 	*/
-	LicensesShutdownImminentQueryParameter *bool
+	LicensesShutdownImminent *bool
 
 	/* LicensesStartTime.
 
 	   Filter by licenses.start_time
 	*/
-	LicensesStartTimeQueryParameter *string
+	LicensesStartTime *string
 
 	/* Name.
 
 	   Name of the license package.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -229,213 +229,213 @@ func (o *LicenseGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDescriptionQueryParameter adds the description to the license get params
-func (o *LicenseGetParams) WithDescriptionQueryParameter(description *string) *LicenseGetParams {
-	o.SetDescriptionQueryParameter(description)
+// WithDescription adds the description to the license get params
+func (o *LicenseGetParams) WithDescription(description *string) *LicenseGetParams {
+	o.SetDescription(description)
 	return o
 }
 
-// SetDescriptionQueryParameter adds the description to the license get params
-func (o *LicenseGetParams) SetDescriptionQueryParameter(description *string) {
-	o.DescriptionQueryParameter = description
+// SetDescription adds the description to the license get params
+func (o *LicenseGetParams) SetDescription(description *string) {
+	o.Description = description
 }
 
-// WithEntitlementActionQueryParameter adds the entitlementAction to the license get params
-func (o *LicenseGetParams) WithEntitlementActionQueryParameter(entitlementAction *string) *LicenseGetParams {
-	o.SetEntitlementActionQueryParameter(entitlementAction)
+// WithEntitlementAction adds the entitlementAction to the license get params
+func (o *LicenseGetParams) WithEntitlementAction(entitlementAction *string) *LicenseGetParams {
+	o.SetEntitlementAction(entitlementAction)
 	return o
 }
 
-// SetEntitlementActionQueryParameter adds the entitlementAction to the license get params
-func (o *LicenseGetParams) SetEntitlementActionQueryParameter(entitlementAction *string) {
-	o.EntitlementActionQueryParameter = entitlementAction
+// SetEntitlementAction adds the entitlementAction to the license get params
+func (o *LicenseGetParams) SetEntitlementAction(entitlementAction *string) {
+	o.EntitlementAction = entitlementAction
 }
 
-// WithEntitlementRiskQueryParameter adds the entitlementRisk to the license get params
-func (o *LicenseGetParams) WithEntitlementRiskQueryParameter(entitlementRisk *string) *LicenseGetParams {
-	o.SetEntitlementRiskQueryParameter(entitlementRisk)
+// WithEntitlementRisk adds the entitlementRisk to the license get params
+func (o *LicenseGetParams) WithEntitlementRisk(entitlementRisk *string) *LicenseGetParams {
+	o.SetEntitlementRisk(entitlementRisk)
 	return o
 }
 
-// SetEntitlementRiskQueryParameter adds the entitlementRisk to the license get params
-func (o *LicenseGetParams) SetEntitlementRiskQueryParameter(entitlementRisk *string) {
-	o.EntitlementRiskQueryParameter = entitlementRisk
+// SetEntitlementRisk adds the entitlementRisk to the license get params
+func (o *LicenseGetParams) SetEntitlementRisk(entitlementRisk *string) {
+	o.EntitlementRisk = entitlementRisk
 }
 
-// WithFieldsQueryParameter adds the fields to the license get params
-func (o *LicenseGetParams) WithFieldsQueryParameter(fields []string) *LicenseGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the license get params
+func (o *LicenseGetParams) WithFields(fields []string) *LicenseGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the license get params
-func (o *LicenseGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the license get params
+func (o *LicenseGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLicensesActiveQueryParameter adds the licensesActive to the license get params
-func (o *LicenseGetParams) WithLicensesActiveQueryParameter(licensesActive *bool) *LicenseGetParams {
-	o.SetLicensesActiveQueryParameter(licensesActive)
+// WithLicensesActive adds the licensesActive to the license get params
+func (o *LicenseGetParams) WithLicensesActive(licensesActive *bool) *LicenseGetParams {
+	o.SetLicensesActive(licensesActive)
 	return o
 }
 
-// SetLicensesActiveQueryParameter adds the licensesActive to the license get params
-func (o *LicenseGetParams) SetLicensesActiveQueryParameter(licensesActive *bool) {
-	o.LicensesActiveQueryParameter = licensesActive
+// SetLicensesActive adds the licensesActive to the license get params
+func (o *LicenseGetParams) SetLicensesActive(licensesActive *bool) {
+	o.LicensesActive = licensesActive
 }
 
-// WithLicensesCapacityMaximumSizeQueryParameter adds the licensesCapacityMaximumSize to the license get params
-func (o *LicenseGetParams) WithLicensesCapacityMaximumSizeQueryParameter(licensesCapacityMaximumSize *int64) *LicenseGetParams {
-	o.SetLicensesCapacityMaximumSizeQueryParameter(licensesCapacityMaximumSize)
+// WithLicensesCapacityMaximumSize adds the licensesCapacityMaximumSize to the license get params
+func (o *LicenseGetParams) WithLicensesCapacityMaximumSize(licensesCapacityMaximumSize *int64) *LicenseGetParams {
+	o.SetLicensesCapacityMaximumSize(licensesCapacityMaximumSize)
 	return o
 }
 
-// SetLicensesCapacityMaximumSizeQueryParameter adds the licensesCapacityMaximumSize to the license get params
-func (o *LicenseGetParams) SetLicensesCapacityMaximumSizeQueryParameter(licensesCapacityMaximumSize *int64) {
-	o.LicensesCapacityMaximumSizeQueryParameter = licensesCapacityMaximumSize
+// SetLicensesCapacityMaximumSize adds the licensesCapacityMaximumSize to the license get params
+func (o *LicenseGetParams) SetLicensesCapacityMaximumSize(licensesCapacityMaximumSize *int64) {
+	o.LicensesCapacityMaximumSize = licensesCapacityMaximumSize
 }
 
-// WithLicensesCapacityUsedSizeQueryParameter adds the licensesCapacityUsedSize to the license get params
-func (o *LicenseGetParams) WithLicensesCapacityUsedSizeQueryParameter(licensesCapacityUsedSize *int64) *LicenseGetParams {
-	o.SetLicensesCapacityUsedSizeQueryParameter(licensesCapacityUsedSize)
+// WithLicensesCapacityUsedSize adds the licensesCapacityUsedSize to the license get params
+func (o *LicenseGetParams) WithLicensesCapacityUsedSize(licensesCapacityUsedSize *int64) *LicenseGetParams {
+	o.SetLicensesCapacityUsedSize(licensesCapacityUsedSize)
 	return o
 }
 
-// SetLicensesCapacityUsedSizeQueryParameter adds the licensesCapacityUsedSize to the license get params
-func (o *LicenseGetParams) SetLicensesCapacityUsedSizeQueryParameter(licensesCapacityUsedSize *int64) {
-	o.LicensesCapacityUsedSizeQueryParameter = licensesCapacityUsedSize
+// SetLicensesCapacityUsedSize adds the licensesCapacityUsedSize to the license get params
+func (o *LicenseGetParams) SetLicensesCapacityUsedSize(licensesCapacityUsedSize *int64) {
+	o.LicensesCapacityUsedSize = licensesCapacityUsedSize
 }
 
-// WithLicensesComplianceStateQueryParameter adds the licensesComplianceState to the license get params
-func (o *LicenseGetParams) WithLicensesComplianceStateQueryParameter(licensesComplianceState *string) *LicenseGetParams {
-	o.SetLicensesComplianceStateQueryParameter(licensesComplianceState)
+// WithLicensesComplianceState adds the licensesComplianceState to the license get params
+func (o *LicenseGetParams) WithLicensesComplianceState(licensesComplianceState *string) *LicenseGetParams {
+	o.SetLicensesComplianceState(licensesComplianceState)
 	return o
 }
 
-// SetLicensesComplianceStateQueryParameter adds the licensesComplianceState to the license get params
-func (o *LicenseGetParams) SetLicensesComplianceStateQueryParameter(licensesComplianceState *string) {
-	o.LicensesComplianceStateQueryParameter = licensesComplianceState
+// SetLicensesComplianceState adds the licensesComplianceState to the license get params
+func (o *LicenseGetParams) SetLicensesComplianceState(licensesComplianceState *string) {
+	o.LicensesComplianceState = licensesComplianceState
 }
 
-// WithLicensesEvaluationQueryParameter adds the licensesEvaluation to the license get params
-func (o *LicenseGetParams) WithLicensesEvaluationQueryParameter(licensesEvaluation *bool) *LicenseGetParams {
-	o.SetLicensesEvaluationQueryParameter(licensesEvaluation)
+// WithLicensesEvaluation adds the licensesEvaluation to the license get params
+func (o *LicenseGetParams) WithLicensesEvaluation(licensesEvaluation *bool) *LicenseGetParams {
+	o.SetLicensesEvaluation(licensesEvaluation)
 	return o
 }
 
-// SetLicensesEvaluationQueryParameter adds the licensesEvaluation to the license get params
-func (o *LicenseGetParams) SetLicensesEvaluationQueryParameter(licensesEvaluation *bool) {
-	o.LicensesEvaluationQueryParameter = licensesEvaluation
+// SetLicensesEvaluation adds the licensesEvaluation to the license get params
+func (o *LicenseGetParams) SetLicensesEvaluation(licensesEvaluation *bool) {
+	o.LicensesEvaluation = licensesEvaluation
 }
 
-// WithLicensesExpiryTimeQueryParameter adds the licensesExpiryTime to the license get params
-func (o *LicenseGetParams) WithLicensesExpiryTimeQueryParameter(licensesExpiryTime *string) *LicenseGetParams {
-	o.SetLicensesExpiryTimeQueryParameter(licensesExpiryTime)
+// WithLicensesExpiryTime adds the licensesExpiryTime to the license get params
+func (o *LicenseGetParams) WithLicensesExpiryTime(licensesExpiryTime *string) *LicenseGetParams {
+	o.SetLicensesExpiryTime(licensesExpiryTime)
 	return o
 }
 
-// SetLicensesExpiryTimeQueryParameter adds the licensesExpiryTime to the license get params
-func (o *LicenseGetParams) SetLicensesExpiryTimeQueryParameter(licensesExpiryTime *string) {
-	o.LicensesExpiryTimeQueryParameter = licensesExpiryTime
+// SetLicensesExpiryTime adds the licensesExpiryTime to the license get params
+func (o *LicenseGetParams) SetLicensesExpiryTime(licensesExpiryTime *string) {
+	o.LicensesExpiryTime = licensesExpiryTime
 }
 
-// WithLicensesHostIDQueryParameter adds the licensesHostID to the license get params
-func (o *LicenseGetParams) WithLicensesHostIDQueryParameter(licensesHostID *string) *LicenseGetParams {
-	o.SetLicensesHostIDQueryParameter(licensesHostID)
+// WithLicensesHostID adds the licensesHostID to the license get params
+func (o *LicenseGetParams) WithLicensesHostID(licensesHostID *string) *LicenseGetParams {
+	o.SetLicensesHostID(licensesHostID)
 	return o
 }
 
-// SetLicensesHostIDQueryParameter adds the licensesHostId to the license get params
-func (o *LicenseGetParams) SetLicensesHostIDQueryParameter(licensesHostID *string) {
-	o.LicensesHostIDQueryParameter = licensesHostID
+// SetLicensesHostID adds the licensesHostId to the license get params
+func (o *LicenseGetParams) SetLicensesHostID(licensesHostID *string) {
+	o.LicensesHostID = licensesHostID
 }
 
-// WithLicensesInstalledLicenseQueryParameter adds the licensesInstalledLicense to the license get params
-func (o *LicenseGetParams) WithLicensesInstalledLicenseQueryParameter(licensesInstalledLicense *string) *LicenseGetParams {
-	o.SetLicensesInstalledLicenseQueryParameter(licensesInstalledLicense)
+// WithLicensesInstalledLicense adds the licensesInstalledLicense to the license get params
+func (o *LicenseGetParams) WithLicensesInstalledLicense(licensesInstalledLicense *string) *LicenseGetParams {
+	o.SetLicensesInstalledLicense(licensesInstalledLicense)
 	return o
 }
 
-// SetLicensesInstalledLicenseQueryParameter adds the licensesInstalledLicense to the license get params
-func (o *LicenseGetParams) SetLicensesInstalledLicenseQueryParameter(licensesInstalledLicense *string) {
-	o.LicensesInstalledLicenseQueryParameter = licensesInstalledLicense
+// SetLicensesInstalledLicense adds the licensesInstalledLicense to the license get params
+func (o *LicenseGetParams) SetLicensesInstalledLicense(licensesInstalledLicense *string) {
+	o.LicensesInstalledLicense = licensesInstalledLicense
 }
 
-// WithLicensesOwnerQueryParameter adds the licensesOwner to the license get params
-func (o *LicenseGetParams) WithLicensesOwnerQueryParameter(licensesOwner *string) *LicenseGetParams {
-	o.SetLicensesOwnerQueryParameter(licensesOwner)
+// WithLicensesOwner adds the licensesOwner to the license get params
+func (o *LicenseGetParams) WithLicensesOwner(licensesOwner *string) *LicenseGetParams {
+	o.SetLicensesOwner(licensesOwner)
 	return o
 }
 
-// SetLicensesOwnerQueryParameter adds the licensesOwner to the license get params
-func (o *LicenseGetParams) SetLicensesOwnerQueryParameter(licensesOwner *string) {
-	o.LicensesOwnerQueryParameter = licensesOwner
+// SetLicensesOwner adds the licensesOwner to the license get params
+func (o *LicenseGetParams) SetLicensesOwner(licensesOwner *string) {
+	o.LicensesOwner = licensesOwner
 }
 
-// WithLicensesSerialNumberQueryParameter adds the licensesSerialNumber to the license get params
-func (o *LicenseGetParams) WithLicensesSerialNumberQueryParameter(licensesSerialNumber *string) *LicenseGetParams {
-	o.SetLicensesSerialNumberQueryParameter(licensesSerialNumber)
+// WithLicensesSerialNumber adds the licensesSerialNumber to the license get params
+func (o *LicenseGetParams) WithLicensesSerialNumber(licensesSerialNumber *string) *LicenseGetParams {
+	o.SetLicensesSerialNumber(licensesSerialNumber)
 	return o
 }
 
-// SetLicensesSerialNumberQueryParameter adds the licensesSerialNumber to the license get params
-func (o *LicenseGetParams) SetLicensesSerialNumberQueryParameter(licensesSerialNumber *string) {
-	o.LicensesSerialNumberQueryParameter = licensesSerialNumber
+// SetLicensesSerialNumber adds the licensesSerialNumber to the license get params
+func (o *LicenseGetParams) SetLicensesSerialNumber(licensesSerialNumber *string) {
+	o.LicensesSerialNumber = licensesSerialNumber
 }
 
-// WithLicensesShutdownImminentQueryParameter adds the licensesShutdownImminent to the license get params
-func (o *LicenseGetParams) WithLicensesShutdownImminentQueryParameter(licensesShutdownImminent *bool) *LicenseGetParams {
-	o.SetLicensesShutdownImminentQueryParameter(licensesShutdownImminent)
+// WithLicensesShutdownImminent adds the licensesShutdownImminent to the license get params
+func (o *LicenseGetParams) WithLicensesShutdownImminent(licensesShutdownImminent *bool) *LicenseGetParams {
+	o.SetLicensesShutdownImminent(licensesShutdownImminent)
 	return o
 }
 
-// SetLicensesShutdownImminentQueryParameter adds the licensesShutdownImminent to the license get params
-func (o *LicenseGetParams) SetLicensesShutdownImminentQueryParameter(licensesShutdownImminent *bool) {
-	o.LicensesShutdownImminentQueryParameter = licensesShutdownImminent
+// SetLicensesShutdownImminent adds the licensesShutdownImminent to the license get params
+func (o *LicenseGetParams) SetLicensesShutdownImminent(licensesShutdownImminent *bool) {
+	o.LicensesShutdownImminent = licensesShutdownImminent
 }
 
-// WithLicensesStartTimeQueryParameter adds the licensesStartTime to the license get params
-func (o *LicenseGetParams) WithLicensesStartTimeQueryParameter(licensesStartTime *string) *LicenseGetParams {
-	o.SetLicensesStartTimeQueryParameter(licensesStartTime)
+// WithLicensesStartTime adds the licensesStartTime to the license get params
+func (o *LicenseGetParams) WithLicensesStartTime(licensesStartTime *string) *LicenseGetParams {
+	o.SetLicensesStartTime(licensesStartTime)
 	return o
 }
 
-// SetLicensesStartTimeQueryParameter adds the licensesStartTime to the license get params
-func (o *LicenseGetParams) SetLicensesStartTimeQueryParameter(licensesStartTime *string) {
-	o.LicensesStartTimeQueryParameter = licensesStartTime
+// SetLicensesStartTime adds the licensesStartTime to the license get params
+func (o *LicenseGetParams) SetLicensesStartTime(licensesStartTime *string) {
+	o.LicensesStartTime = licensesStartTime
 }
 
-// WithNamePathParameter adds the name to the license get params
-func (o *LicenseGetParams) WithNamePathParameter(name string) *LicenseGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the license get params
+func (o *LicenseGetParams) WithName(name string) *LicenseGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the license get params
-func (o *LicenseGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the license get params
+func (o *LicenseGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithScopeQueryParameter adds the scope to the license get params
-func (o *LicenseGetParams) WithScopeQueryParameter(scope *string) *LicenseGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the license get params
+func (o *LicenseGetParams) WithScope(scope *string) *LicenseGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the license get params
-func (o *LicenseGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the license get params
+func (o *LicenseGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithStateQueryParameter adds the state to the license get params
-func (o *LicenseGetParams) WithStateQueryParameter(state *string) *LicenseGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the license get params
+func (o *LicenseGetParams) WithState(state *string) *LicenseGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the license get params
-func (o *LicenseGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the license get params
+func (o *LicenseGetParams) SetState(state *string) {
+	o.State = state
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -446,13 +446,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.DescriptionQueryParameter != nil {
+	if o.Description != nil {
 
 		// query param description
 		var qrDescription string
 
-		if o.DescriptionQueryParameter != nil {
-			qrDescription = *o.DescriptionQueryParameter
+		if o.Description != nil {
+			qrDescription = *o.Description
 		}
 		qDescription := qrDescription
 		if qDescription != "" {
@@ -463,13 +463,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.EntitlementActionQueryParameter != nil {
+	if o.EntitlementAction != nil {
 
 		// query param entitlement.action
 		var qrEntitlementAction string
 
-		if o.EntitlementActionQueryParameter != nil {
-			qrEntitlementAction = *o.EntitlementActionQueryParameter
+		if o.EntitlementAction != nil {
+			qrEntitlementAction = *o.EntitlementAction
 		}
 		qEntitlementAction := qrEntitlementAction
 		if qEntitlementAction != "" {
@@ -480,13 +480,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.EntitlementRiskQueryParameter != nil {
+	if o.EntitlementRisk != nil {
 
 		// query param entitlement.risk
 		var qrEntitlementRisk string
 
-		if o.EntitlementRiskQueryParameter != nil {
-			qrEntitlementRisk = *o.EntitlementRiskQueryParameter
+		if o.EntitlementRisk != nil {
+			qrEntitlementRisk = *o.EntitlementRisk
 		}
 		qEntitlementRisk := qrEntitlementRisk
 		if qEntitlementRisk != "" {
@@ -497,7 +497,7 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -508,13 +508,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesActiveQueryParameter != nil {
+	if o.LicensesActive != nil {
 
 		// query param licenses.active
 		var qrLicensesActive bool
 
-		if o.LicensesActiveQueryParameter != nil {
-			qrLicensesActive = *o.LicensesActiveQueryParameter
+		if o.LicensesActive != nil {
+			qrLicensesActive = *o.LicensesActive
 		}
 		qLicensesActive := swag.FormatBool(qrLicensesActive)
 		if qLicensesActive != "" {
@@ -525,13 +525,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesCapacityMaximumSizeQueryParameter != nil {
+	if o.LicensesCapacityMaximumSize != nil {
 
 		// query param licenses.capacity.maximum_size
 		var qrLicensesCapacityMaximumSize int64
 
-		if o.LicensesCapacityMaximumSizeQueryParameter != nil {
-			qrLicensesCapacityMaximumSize = *o.LicensesCapacityMaximumSizeQueryParameter
+		if o.LicensesCapacityMaximumSize != nil {
+			qrLicensesCapacityMaximumSize = *o.LicensesCapacityMaximumSize
 		}
 		qLicensesCapacityMaximumSize := swag.FormatInt64(qrLicensesCapacityMaximumSize)
 		if qLicensesCapacityMaximumSize != "" {
@@ -542,13 +542,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesCapacityUsedSizeQueryParameter != nil {
+	if o.LicensesCapacityUsedSize != nil {
 
 		// query param licenses.capacity.used_size
 		var qrLicensesCapacityUsedSize int64
 
-		if o.LicensesCapacityUsedSizeQueryParameter != nil {
-			qrLicensesCapacityUsedSize = *o.LicensesCapacityUsedSizeQueryParameter
+		if o.LicensesCapacityUsedSize != nil {
+			qrLicensesCapacityUsedSize = *o.LicensesCapacityUsedSize
 		}
 		qLicensesCapacityUsedSize := swag.FormatInt64(qrLicensesCapacityUsedSize)
 		if qLicensesCapacityUsedSize != "" {
@@ -559,13 +559,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesComplianceStateQueryParameter != nil {
+	if o.LicensesComplianceState != nil {
 
 		// query param licenses.compliance.state
 		var qrLicensesComplianceState string
 
-		if o.LicensesComplianceStateQueryParameter != nil {
-			qrLicensesComplianceState = *o.LicensesComplianceStateQueryParameter
+		if o.LicensesComplianceState != nil {
+			qrLicensesComplianceState = *o.LicensesComplianceState
 		}
 		qLicensesComplianceState := qrLicensesComplianceState
 		if qLicensesComplianceState != "" {
@@ -576,13 +576,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesEvaluationQueryParameter != nil {
+	if o.LicensesEvaluation != nil {
 
 		// query param licenses.evaluation
 		var qrLicensesEvaluation bool
 
-		if o.LicensesEvaluationQueryParameter != nil {
-			qrLicensesEvaluation = *o.LicensesEvaluationQueryParameter
+		if o.LicensesEvaluation != nil {
+			qrLicensesEvaluation = *o.LicensesEvaluation
 		}
 		qLicensesEvaluation := swag.FormatBool(qrLicensesEvaluation)
 		if qLicensesEvaluation != "" {
@@ -593,13 +593,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesExpiryTimeQueryParameter != nil {
+	if o.LicensesExpiryTime != nil {
 
 		// query param licenses.expiry_time
 		var qrLicensesExpiryTime string
 
-		if o.LicensesExpiryTimeQueryParameter != nil {
-			qrLicensesExpiryTime = *o.LicensesExpiryTimeQueryParameter
+		if o.LicensesExpiryTime != nil {
+			qrLicensesExpiryTime = *o.LicensesExpiryTime
 		}
 		qLicensesExpiryTime := qrLicensesExpiryTime
 		if qLicensesExpiryTime != "" {
@@ -610,13 +610,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesHostIDQueryParameter != nil {
+	if o.LicensesHostID != nil {
 
 		// query param licenses.host_id
 		var qrLicensesHostID string
 
-		if o.LicensesHostIDQueryParameter != nil {
-			qrLicensesHostID = *o.LicensesHostIDQueryParameter
+		if o.LicensesHostID != nil {
+			qrLicensesHostID = *o.LicensesHostID
 		}
 		qLicensesHostID := qrLicensesHostID
 		if qLicensesHostID != "" {
@@ -627,13 +627,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesInstalledLicenseQueryParameter != nil {
+	if o.LicensesInstalledLicense != nil {
 
 		// query param licenses.installed_license
 		var qrLicensesInstalledLicense string
 
-		if o.LicensesInstalledLicenseQueryParameter != nil {
-			qrLicensesInstalledLicense = *o.LicensesInstalledLicenseQueryParameter
+		if o.LicensesInstalledLicense != nil {
+			qrLicensesInstalledLicense = *o.LicensesInstalledLicense
 		}
 		qLicensesInstalledLicense := qrLicensesInstalledLicense
 		if qLicensesInstalledLicense != "" {
@@ -644,13 +644,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesOwnerQueryParameter != nil {
+	if o.LicensesOwner != nil {
 
 		// query param licenses.owner
 		var qrLicensesOwner string
 
-		if o.LicensesOwnerQueryParameter != nil {
-			qrLicensesOwner = *o.LicensesOwnerQueryParameter
+		if o.LicensesOwner != nil {
+			qrLicensesOwner = *o.LicensesOwner
 		}
 		qLicensesOwner := qrLicensesOwner
 		if qLicensesOwner != "" {
@@ -661,13 +661,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesSerialNumberQueryParameter != nil {
+	if o.LicensesSerialNumber != nil {
 
 		// query param licenses.serial_number
 		var qrLicensesSerialNumber string
 
-		if o.LicensesSerialNumberQueryParameter != nil {
-			qrLicensesSerialNumber = *o.LicensesSerialNumberQueryParameter
+		if o.LicensesSerialNumber != nil {
+			qrLicensesSerialNumber = *o.LicensesSerialNumber
 		}
 		qLicensesSerialNumber := qrLicensesSerialNumber
 		if qLicensesSerialNumber != "" {
@@ -678,13 +678,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesShutdownImminentQueryParameter != nil {
+	if o.LicensesShutdownImminent != nil {
 
 		// query param licenses.shutdown_imminent
 		var qrLicensesShutdownImminent bool
 
-		if o.LicensesShutdownImminentQueryParameter != nil {
-			qrLicensesShutdownImminent = *o.LicensesShutdownImminentQueryParameter
+		if o.LicensesShutdownImminent != nil {
+			qrLicensesShutdownImminent = *o.LicensesShutdownImminent
 		}
 		qLicensesShutdownImminent := swag.FormatBool(qrLicensesShutdownImminent)
 		if qLicensesShutdownImminent != "" {
@@ -695,13 +695,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.LicensesStartTimeQueryParameter != nil {
+	if o.LicensesStartTime != nil {
 
 		// query param licenses.start_time
 		var qrLicensesStartTime string
 
-		if o.LicensesStartTimeQueryParameter != nil {
-			qrLicensesStartTime = *o.LicensesStartTimeQueryParameter
+		if o.LicensesStartTime != nil {
+			qrLicensesStartTime = *o.LicensesStartTime
 		}
 		qLicensesStartTime := qrLicensesStartTime
 		if qLicensesStartTime != "" {
@@ -713,17 +713,17 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -734,13 +734,13 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -759,7 +759,7 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamLicenseGet binds the parameter fields
 func (o *LicenseGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

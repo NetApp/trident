@@ -21,7 +21,7 @@ type MetroclusterDrGroupReference struct {
 
 	// DR Group ID
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
 // Validate validates this metrocluster dr group reference
@@ -45,7 +45,7 @@ func (m *MetroclusterDrGroupReference) ContextValidate(ctx context.Context, form
 
 func (m *MetroclusterDrGroupReference) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 

@@ -66,14 +66,14 @@ type IscsiCredentialsDeleteParams struct {
 	   The iSCSI initiator of the credentials object.
 
 	*/
-	InitiatorPathParameter string
+	Initiator string
 
 	/* SvmUUID.
 
 	   The unique identifier of an SVM.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *IscsiCredentialsDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithInitiatorPathParameter adds the initiator to the iscsi credentials delete params
-func (o *IscsiCredentialsDeleteParams) WithInitiatorPathParameter(initiator string) *IscsiCredentialsDeleteParams {
-	o.SetInitiatorPathParameter(initiator)
+// WithInitiator adds the initiator to the iscsi credentials delete params
+func (o *IscsiCredentialsDeleteParams) WithInitiator(initiator string) *IscsiCredentialsDeleteParams {
+	o.SetInitiator(initiator)
 	return o
 }
 
-// SetInitiatorPathParameter adds the initiator to the iscsi credentials delete params
-func (o *IscsiCredentialsDeleteParams) SetInitiatorPathParameter(initiator string) {
-	o.InitiatorPathParameter = initiator
+// SetInitiator adds the initiator to the iscsi credentials delete params
+func (o *IscsiCredentialsDeleteParams) SetInitiator(initiator string) {
+	o.Initiator = initiator
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi credentials delete params
-func (o *IscsiCredentialsDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiCredentialsDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi credentials delete params
+func (o *IscsiCredentialsDeleteParams) WithSvmUUID(svmUUID string) *IscsiCredentialsDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi credentials delete params
-func (o *IscsiCredentialsDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi credentials delete params
+func (o *IscsiCredentialsDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -159,12 +159,12 @@ func (o *IscsiCredentialsDeleteParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param initiator
-	if err := r.SetPathParam("initiator", o.InitiatorPathParameter); err != nil {
+	if err := r.SetPathParam("initiator", o.Initiator); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

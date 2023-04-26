@@ -13,11 +13,10 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"go.uber.org/multierr"
 
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 )
 
 const (
@@ -47,6 +46,8 @@ type DFInfo struct {
 
 // GetDFOutput returns parsed DF output
 func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	Logc(ctx).Debug(">>>> filesystem.GetDFOutput")
 	defer Logc(ctx).Debug("<<<< filesystem.GetDFOutput")
 
@@ -81,7 +82,7 @@ func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
 func formatVolume(ctx context.Context, device, fstype string) error {
-	logFields := log.Fields{"device": device, "fsType": fstype}
+	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolume")
 	var err error
@@ -102,7 +103,7 @@ func formatVolume(ctx context.Context, device, fstype string) error {
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
 func formatVolumeRetry(ctx context.Context, device, fstype string) error {
-	logFields := log.Fields{"device": device, "fsType": fstype}
+	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolumeRetry")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolumeRetry")
 
@@ -134,7 +135,7 @@ func formatVolumeRetry(ctx context.Context, device, fstype string) error {
 
 // repairVolume runs fsck on a volume.
 func repairVolume(ctx context.Context, device, fstype string) (err error) {
-	logFields := log.Fields{"device": device, "fsType": fstype}
+	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.repairVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.repairVolume")
 
@@ -156,12 +157,14 @@ func repairVolume(ctx context.Context, device, fstype string) (err error) {
 func ExpandFilesystemOnNode(
 	ctx context.Context, publishInfo *VolumePublishInfo, stagedTargetPath, fsType, mountOptions string,
 ) (int64, error) {
+	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+
 	var err error
 	devicePath := publishInfo.DevicePath
 	expansionMountPoint := publishInfo.StagingMountpoint
 
-	logFields := log.Fields{
-		"devicePath":        devicePath,
+	logFields := LogFields{
+		"rawDevicePath":     devicePath,
 		"stagedTargetPath":  stagedTargetPath,
 		"mountOptions":      mountOptions,
 		"filesystemType":    fsType,
@@ -198,7 +201,7 @@ func ExpandFilesystemOnNode(
 }
 
 func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint string) (int64, error) {
-	logFields := log.Fields{
+	logFields := LogFields{
 		"cmd":           cmd,
 		"cmdArguments":  cmdArguments,
 		"tmpMountPoint": tmpMountPoint,
@@ -239,7 +242,7 @@ func (j jsonReaderWriter) WriteJSONFile(
 	defer func() { _ = file.Close() }()
 
 	if err = json.NewEncoder(file).Encode(fileContents); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"filename": filepath,
 			"error":    err.Error(),
 		}).Error(fmt.Sprintf("Unable to write %s file.", fileDescription))
@@ -257,6 +260,10 @@ func (j *jsonReaderWriter) ReadJSONFile(
 	file, err := osFs.Open(filepath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
+			Logc(ctx).WithFields(LogFields{
+				"filepath": filepath,
+				"error":    err.Error(),
+			}).Warningf("Could not find JSON file: %s.", filepath)
 			return NotFoundError(err.Error())
 		}
 		return err
@@ -274,7 +281,7 @@ func (j *jsonReaderWriter) ReadJSONFile(
 
 	err = json.NewDecoder(file).Decode(fileContents)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"filename": filepath,
 			"error":    err.Error(),
 		}).Error(fmt.Sprintf("Could not parse %s file.", fileDescription))
@@ -289,7 +296,7 @@ func (j *jsonReaderWriter) ReadJSONFile(
 // DeleteFile deletes the file at the provided path, and provides additional logging.
 func DeleteFile(ctx context.Context, filepath, fileDescription string) (string, error) {
 	if err := osFs.Remove(filepath); err != nil {
-		logFields := log.Fields{strings.ReplaceAll(fileDescription, " ", ""): filepath, "error": err}
+		logFields := LogFields{strings.ReplaceAll(fileDescription, " ", ""): filepath, "error": err}
 
 		if os.IsNotExist(err) {
 			Logc(ctx).WithFields(logFields).Warning(fmt.Sprintf("%s file does not exist.", Title(fileDescription)))

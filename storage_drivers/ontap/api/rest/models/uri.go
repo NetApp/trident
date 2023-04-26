@@ -19,31 +19,31 @@ type URI struct {
 
 	// fragment
 	// Example: top
-	Fragment string `json:"fragment,omitempty"`
+	Fragment *string `json:"fragment,omitempty"`
 
 	// host
 	// Example: 10.1.1.1
-	Host string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 
 	// path
 	// Example: /api/cluster
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// port
 	// Example: 433
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// query
 	// Example: key1=value1
-	Query string `json:"query,omitempty"`
+	Query *string `json:"query,omitempty"`
 
 	// scheme
 	// Example: https
-	Scheme string `json:"scheme,omitempty"`
+	Scheme *string `json:"scheme,omitempty"`
 
 	// userinfo
 	// Example: john.doe
-	Userinfo string `json:"userinfo,omitempty"`
+	Userinfo *string `json:"userinfo,omitempty"`
 }
 
 // Validate validates this uri

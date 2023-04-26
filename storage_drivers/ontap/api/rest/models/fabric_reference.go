@@ -19,12 +19,12 @@ import (
 type FabricReference struct {
 
 	// links
-	Links *FabricReferenceLinks `json:"_links,omitempty"`
+	Links *FabricReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The world wide name (WWN) of the primary switch of the Fibre Channel (FC) fabric. This is used as a unique identifier for the FC fabric.
 	//
 	// Example: 10:00:d1:d2:d3:d4:d5:d6
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this fabric reference
@@ -104,17 +104,17 @@ func (m *FabricReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FabricReferenceLinks fabric reference links
+// FabricReferenceInlineLinks fabric reference inline links
 //
-// swagger:model FabricReferenceLinks
-type FabricReferenceLinks struct {
+// swagger:model fabric_reference_inline__links
+type FabricReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fabric reference links
-func (m *FabricReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fabric reference inline links
+func (m *FabricReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -127,7 +127,7 @@ func (m *FabricReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FabricReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FabricReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -144,8 +144,8 @@ func (m *FabricReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fabric reference links based on the context it is used
-func (m *FabricReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fabric reference inline links based on the context it is used
+func (m *FabricReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -158,7 +158,7 @@ func (m *FabricReferenceLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FabricReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FabricReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -173,7 +173,7 @@ func (m *FabricReferenceLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FabricReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *FabricReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -181,8 +181,8 @@ func (m *FabricReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FabricReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res FabricReferenceLinks
+func (m *FabricReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FabricReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

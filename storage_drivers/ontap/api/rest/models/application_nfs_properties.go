@@ -21,27 +21,31 @@ import (
 // swagger:model application_nfs_properties
 type ApplicationNfsProperties struct {
 
+	// application nfs properties inline ips
+	ApplicationNfsPropertiesInlineIps []*string `json:"ips,omitempty"`
+
+	// application nfs properties inline permissions
+	// Read Only: true
+	ApplicationNfsPropertiesInlinePermissions []*ApplicationNfsPropertiesInlinePermissionsInlineArrayItem `json:"permissions,omitempty"`
+
 	// backing storage
-	BackingStorage *ApplicationNfsPropertiesBackingStorage `json:"backing_storage,omitempty"`
+	BackingStorage *ApplicationNfsPropertiesInlineBackingStorage `json:"backing_storage,omitempty"`
 
 	// export policy
-	ExportPolicy *ApplicationNfsPropertiesExportPolicy `json:"export_policy,omitempty"`
-
-	// ips
-	Ips []string `json:"ips,omitempty"`
+	ExportPolicy *ApplicationNfsPropertiesInlineExportPolicy `json:"export_policy,omitempty"`
 
 	// Junction path
 	// Read Only: true
-	Path string `json:"path,omitempty"`
-
-	// permissions
-	// Read Only: true
-	Permissions []*ApplicationNfsPropertiesPermissionsItems0 `json:"permissions,omitempty"`
+	Path *string `json:"path,omitempty"`
 }
 
 // Validate validates this application nfs properties
 func (m *ApplicationNfsProperties) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateApplicationNfsPropertiesInlinePermissions(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateBackingStorage(formats); err != nil {
 		res = append(res, err)
@@ -51,13 +55,33 @@ func (m *ApplicationNfsProperties) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePermissions(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ApplicationNfsProperties) validateApplicationNfsPropertiesInlinePermissions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationNfsPropertiesInlinePermissions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ApplicationNfsPropertiesInlinePermissions); i++ {
+		if swag.IsZero(m.ApplicationNfsPropertiesInlinePermissions[i]) { // not required
+			continue
+		}
+
+		if m.ApplicationNfsPropertiesInlinePermissions[i] != nil {
+			if err := m.ApplicationNfsPropertiesInlinePermissions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -95,33 +119,17 @@ func (m *ApplicationNfsProperties) validateExportPolicy(formats strfmt.Registry)
 	return nil
 }
 
-func (m *ApplicationNfsProperties) validatePermissions(formats strfmt.Registry) error {
-	if swag.IsZero(m.Permissions) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Permissions); i++ {
-		if swag.IsZero(m.Permissions[i]) { // not required
-			continue
-		}
-
-		if m.Permissions[i] != nil {
-			if err := m.Permissions[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this application nfs properties based on the context it is used
 func (m *ApplicationNfsProperties) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateApplicationNfsPropertiesInlineIps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateApplicationNfsPropertiesInlinePermissions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateBackingStorage(ctx, formats); err != nil {
 		res = append(res, err)
@@ -131,21 +139,48 @@ func (m *ApplicationNfsProperties) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIps(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidatePath(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidatePermissions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ApplicationNfsProperties) contextValidateApplicationNfsPropertiesInlineIps(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ApplicationNfsPropertiesInlineIps); i++ {
+
+		if err := validate.ReadOnly(ctx, "ips"+"."+strconv.Itoa(i), "body", m.ApplicationNfsPropertiesInlineIps[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ApplicationNfsProperties) contextValidateApplicationNfsPropertiesInlinePermissions(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "permissions", "body", []*ApplicationNfsPropertiesInlinePermissionsInlineArrayItem(m.ApplicationNfsPropertiesInlinePermissions)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ApplicationNfsPropertiesInlinePermissions); i++ {
+
+		if m.ApplicationNfsPropertiesInlinePermissions[i] != nil {
+			if err := m.ApplicationNfsPropertiesInlinePermissions[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -177,45 +212,10 @@ func (m *ApplicationNfsProperties) contextValidateExportPolicy(ctx context.Conte
 	return nil
 }
 
-func (m *ApplicationNfsProperties) contextValidateIps(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Ips); i++ {
-
-		if err := validate.ReadOnly(ctx, "ips"+"."+strconv.Itoa(i), "body", string(m.Ips[i])); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 func (m *ApplicationNfsProperties) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
+	if err := validate.ReadOnly(ctx, "path", "body", m.Path); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ApplicationNfsProperties) contextValidatePermissions(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "permissions", "body", []*ApplicationNfsPropertiesPermissionsItems0(m.Permissions)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Permissions); i++ {
-
-		if m.Permissions[i] != nil {
-			if err := m.Permissions[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("permissions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -239,23 +239,23 @@ func (m *ApplicationNfsProperties) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationNfsPropertiesBackingStorage application nfs properties backing storage
+// ApplicationNfsPropertiesInlineBackingStorage application nfs properties inline backing storage
 //
-// swagger:model ApplicationNfsPropertiesBackingStorage
-type ApplicationNfsPropertiesBackingStorage struct {
+// swagger:model application_nfs_properties_inline_backing_storage
+type ApplicationNfsPropertiesInlineBackingStorage struct {
 
 	// Backing storage type
 	// Read Only: true
 	// Enum: [volume]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Backing storage UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application nfs properties backing storage
-func (m *ApplicationNfsPropertiesBackingStorage) Validate(formats strfmt.Registry) error {
+// Validate validates this application nfs properties inline backing storage
+func (m *ApplicationNfsPropertiesInlineBackingStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
@@ -268,7 +268,7 @@ func (m *ApplicationNfsPropertiesBackingStorage) Validate(formats strfmt.Registr
 	return nil
 }
 
-var applicationNfsPropertiesBackingStorageTypeTypePropEnum []interface{}
+var applicationNfsPropertiesInlineBackingStorageTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -276,46 +276,46 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		applicationNfsPropertiesBackingStorageTypeTypePropEnum = append(applicationNfsPropertiesBackingStorageTypeTypePropEnum, v)
+		applicationNfsPropertiesInlineBackingStorageTypeTypePropEnum = append(applicationNfsPropertiesInlineBackingStorageTypeTypePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ApplicationNfsPropertiesBackingStorage
-	// ApplicationNfsPropertiesBackingStorage
+	// application_nfs_properties_inline_backing_storage
+	// ApplicationNfsPropertiesInlineBackingStorage
 	// type
 	// Type
 	// volume
 	// END DEBUGGING
-	// ApplicationNfsPropertiesBackingStorageTypeVolume captures enum value "volume"
-	ApplicationNfsPropertiesBackingStorageTypeVolume string = "volume"
+	// ApplicationNfsPropertiesInlineBackingStorageTypeVolume captures enum value "volume"
+	ApplicationNfsPropertiesInlineBackingStorageTypeVolume string = "volume"
 )
 
 // prop value enum
-func (m *ApplicationNfsPropertiesBackingStorage) validateTypeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, applicationNfsPropertiesBackingStorageTypeTypePropEnum, true); err != nil {
+func (m *ApplicationNfsPropertiesInlineBackingStorage) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, applicationNfsPropertiesInlineBackingStorageTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ApplicationNfsPropertiesBackingStorage) validateType(formats strfmt.Registry) error {
+func (m *ApplicationNfsPropertiesInlineBackingStorage) validateType(formats strfmt.Registry) error {
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("backing_storage"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application nfs properties backing storage based on the context it is used
-func (m *ApplicationNfsPropertiesBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nfs properties inline backing storage based on the context it is used
+func (m *ApplicationNfsPropertiesInlineBackingStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
@@ -332,18 +332,18 @@ func (m *ApplicationNfsPropertiesBackingStorage) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *ApplicationNfsPropertiesBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNfsPropertiesInlineBackingStorage) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"type", "body", m.Type); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationNfsPropertiesBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNfsPropertiesInlineBackingStorage) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "backing_storage"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -351,7 +351,7 @@ func (m *ApplicationNfsPropertiesBackingStorage) contextValidateUUID(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNfsPropertiesBackingStorage) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNfsPropertiesInlineBackingStorage) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -359,8 +359,8 @@ func (m *ApplicationNfsPropertiesBackingStorage) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNfsPropertiesBackingStorage) UnmarshalBinary(b []byte) error {
-	var res ApplicationNfsPropertiesBackingStorage
+func (m *ApplicationNfsPropertiesInlineBackingStorage) UnmarshalBinary(b []byte) error {
+	var res ApplicationNfsPropertiesInlineBackingStorage
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -368,23 +368,23 @@ func (m *ApplicationNfsPropertiesBackingStorage) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// ApplicationNfsPropertiesExportPolicy application nfs properties export policy
+// ApplicationNfsPropertiesInlineExportPolicy application nfs properties inline export policy
 //
-// swagger:model ApplicationNfsPropertiesExportPolicy
-type ApplicationNfsPropertiesExportPolicy struct {
+// swagger:model application_nfs_properties_inline_export_policy
+type ApplicationNfsPropertiesInlineExportPolicy struct {
 
 	// Export policy name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this application nfs properties export policy
-func (m *ApplicationNfsPropertiesExportPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this application nfs properties inline export policy
+func (m *ApplicationNfsPropertiesInlineExportPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application nfs properties export policy based on the context it is used
-func (m *ApplicationNfsPropertiesExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nfs properties inline export policy based on the context it is used
+func (m *ApplicationNfsPropertiesInlineExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -397,9 +397,9 @@ func (m *ApplicationNfsPropertiesExportPolicy) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *ApplicationNfsPropertiesExportPolicy) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNfsPropertiesInlineExportPolicy) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "export_policy"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "export_policy"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -407,7 +407,7 @@ func (m *ApplicationNfsPropertiesExportPolicy) contextValidateName(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNfsPropertiesExportPolicy) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNfsPropertiesInlineExportPolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -415,8 +415,8 @@ func (m *ApplicationNfsPropertiesExportPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNfsPropertiesExportPolicy) UnmarshalBinary(b []byte) error {
-	var res ApplicationNfsPropertiesExportPolicy
+func (m *ApplicationNfsPropertiesInlineExportPolicy) UnmarshalBinary(b []byte) error {
+	var res ApplicationNfsPropertiesInlineExportPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -424,27 +424,27 @@ func (m *ApplicationNfsPropertiesExportPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationNfsPropertiesPermissionsItems0 application nfs properties permissions items0
+// ApplicationNfsPropertiesInlinePermissionsInlineArrayItem application nfs properties inline permissions inline array item
 //
-// swagger:model ApplicationNfsPropertiesPermissionsItems0
-type ApplicationNfsPropertiesPermissionsItems0 struct {
+// swagger:model application_nfs_properties_inline_permissions_inline_array_item
+type ApplicationNfsPropertiesInlinePermissionsInlineArrayItem struct {
 
 	// Access granted to the host
 	// Read Only: true
-	Access string `json:"access,omitempty"`
+	Access *string `json:"access,omitempty"`
 
 	// Host granted access
 	// Read Only: true
-	Host string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 }
 
-// Validate validates this application nfs properties permissions items0
-func (m *ApplicationNfsPropertiesPermissionsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this application nfs properties inline permissions inline array item
+func (m *ApplicationNfsPropertiesInlinePermissionsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application nfs properties permissions items0 based on the context it is used
-func (m *ApplicationNfsPropertiesPermissionsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application nfs properties inline permissions inline array item based on the context it is used
+func (m *ApplicationNfsPropertiesInlinePermissionsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAccess(ctx, formats); err != nil {
@@ -461,18 +461,18 @@ func (m *ApplicationNfsPropertiesPermissionsItems0) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *ApplicationNfsPropertiesPermissionsItems0) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNfsPropertiesInlinePermissionsInlineArrayItem) contextValidateAccess(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "access", "body", string(m.Access)); err != nil {
+	if err := validate.ReadOnly(ctx, "access", "body", m.Access); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationNfsPropertiesPermissionsItems0) contextValidateHost(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNfsPropertiesInlinePermissionsInlineArrayItem) contextValidateHost(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "host", "body", string(m.Host)); err != nil {
+	if err := validate.ReadOnly(ctx, "host", "body", m.Host); err != nil {
 		return err
 	}
 
@@ -480,7 +480,7 @@ func (m *ApplicationNfsPropertiesPermissionsItems0) contextValidateHost(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNfsPropertiesPermissionsItems0) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNfsPropertiesInlinePermissionsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -488,8 +488,8 @@ func (m *ApplicationNfsPropertiesPermissionsItems0) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNfsPropertiesPermissionsItems0) UnmarshalBinary(b []byte) error {
-	var res ApplicationNfsPropertiesPermissionsItems0
+func (m *ApplicationNfsPropertiesInlinePermissionsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ApplicationNfsPropertiesInlinePermissionsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

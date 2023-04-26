@@ -180,6 +180,28 @@ func IsVolumeDeletingError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// volumeStateError
+// ///////////////////////////////////////////////////////////////////////////
+
+type volumeStateError struct {
+	message string
+}
+
+func (e *volumeStateError) Error() string { return e.message }
+
+func VolumeStateError(message string) error {
+	return &volumeStateError{message}
+}
+
+func IsVolumeStateError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*volumeStateError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // timeoutError
 // ///////////////////////////////////////////////////////////////////////////
 
@@ -198,30 +220,6 @@ func IsTimeoutError(err error) bool {
 		return false
 	}
 	_, ok := err.(*timeoutError)
-	return ok
-}
-
-// ///////////////////////////////////////////////////////////////////////////
-// unsupportedKubernetesVersionError
-// ///////////////////////////////////////////////////////////////////////////
-
-type unsupportedKubernetesVersionError struct {
-	message string
-}
-
-func (e *unsupportedKubernetesVersionError) Error() string { return e.message }
-
-func UnsupportedKubernetesVersionError(err error) error {
-	return &unsupportedKubernetesVersionError{
-		message: fmt.Sprintf("unsupported Kubernetes version; %s", err.Error()),
-	}
-}
-
-func IsUnsupportedKubernetesVersionError(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(*unsupportedKubernetesVersionError)
 	return ok
 }
 
@@ -462,9 +460,31 @@ func IsAuthError(err error) bool {
 	return ok
 }
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
+// iSCSIDeviceFlushError
+// ///////////////////////////////////////////////////////////////////////////
+
+type iSCSIDeviceFlushError struct {
+	message string
+}
+
+func (e *iSCSIDeviceFlushError) Error() string { return e.message }
+
+func ISCSIDeviceFlushError(message string) error {
+	return &iSCSIDeviceFlushError{message}
+}
+
+func IsISCSIDeviceFlushError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*iSCSIDeviceFlushError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // tooManyRequestsError (HTTP 429)
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
 type tooManyRequestsError struct {
 	message string
@@ -484,9 +504,31 @@ func IsTooManyRequestsError(err error) bool {
 	return ok
 }
 
-//////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////
+// incorrectLUKSPassphrase
+// ////////////////////////////////////////////////////////////////////////////
+
+type incorrectLUKSPassphrase struct {
+	message string
+}
+
+func (e *incorrectLUKSPassphrase) Error() string { return e.message }
+
+func IncorrectLUKSPassphraseError(message string) error {
+	return &incorrectLUKSPassphrase{message}
+}
+
+func IsIncorrectLUKSPassphraseError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*incorrectLUKSPassphrase)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // invalidJSONError (if could not unmarshal JSON for any non-retryable reason)
-//////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
 type invalidJSONError struct {
 	message string
@@ -539,4 +581,55 @@ func AsInvalidJSONError(err error) (error, bool) {
 	}
 
 	return err, false
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// nodeNotSafeToPublishForBackend
+// ///////////////////////////////////////////////////////////////////////////
+
+type nodeNotSafeToPublishForBackend struct {
+	node        string
+	backendType string
+}
+
+func (e *nodeNotSafeToPublishForBackend) Error() string {
+	return fmt.Sprintf("not safe to publish %s volume to node %s", e.backendType, e.node)
+}
+
+func NodeNotSafeToPublishForBackendError(node, backendType string) error {
+	return &nodeNotSafeToPublishForBackend{node, backendType}
+}
+
+func IsNodeNotSafeToPublishForBackendError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*nodeNotSafeToPublishForBackend)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// resourceExhaustedError
+// ///////////////////////////////////////////////////////////////////////////
+
+type resourceExhaustedError struct {
+	err     error
+	message string
+}
+
+func (e *resourceExhaustedError) Unwrap() error { return e.err }
+
+func (e *resourceExhaustedError) Error() string { return e.message }
+
+func ResourceExhaustedError(err error) error {
+	return &resourceExhaustedError{err, fmt.Sprintf("insufficient resources; %v", err)}
+}
+
+func HasResourceExhaustedError(err error) (bool, *resourceExhaustedError) {
+	if err == nil {
+		return false, nil
+	}
+	var resourceExhaustedErrorPtr *resourceExhaustedError
+	ok := errors.As(err, &resourceExhaustedErrorPtr)
+	return ok, resourceExhaustedErrorPtr
 }

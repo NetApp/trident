@@ -15,7 +15,7 @@ import (
 
 type Orchestrator interface {
 	Bootstrap(monitorTransactions bool) error
-	AddFrontend(f frontend.Plugin)
+	AddFrontend(ctx context.Context, f frontend.Plugin)
 	GetFrontend(ctx context.Context, name string) (frontend.Plugin, error)
 	GetVersion(ctx context.Context) (string, error)
 
@@ -37,12 +37,13 @@ type Orchestrator interface {
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
+	UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error
 	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
 	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error
 	DeleteVolume(ctx context.Context, volume string) error
 	GetVolume(ctx context.Context, volumeName string) (*storage.VolumeExternal, error)
-	GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string, err error)
+	GetVolumeByInternalName(ctx context.Context, volumeInternal string) (volume string, err error)
 	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
 	LegacyImportVolume(
 		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
@@ -73,20 +74,20 @@ type Orchestrator interface {
 	ListStorageClasses(ctx context.Context) ([]*storageclass.External, error)
 
 	AddNode(ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback) error
-	GetNode(ctx context.Context, nName string) (*utils.Node, error)
-	ListNodes(ctx context.Context) ([]*utils.Node, error)
-	DeleteNode(ctx context.Context, nName string) error
+	UpdateNode(ctx context.Context, nodeName string, flags *utils.NodePublicationStateFlags) error
+	GetNode(ctx context.Context, nodeName string) (*utils.NodeExternal, error)
+	ListNodes(ctx context.Context) ([]*utils.NodeExternal, error)
+	DeleteNode(ctx context.Context, nodeName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
 
-	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
-	UpdateVolumePublication(ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool) error
+	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*utils.VolumePublicationExternal) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
-	ListVolumePublications(ctx context.Context, notSafeToAttach *bool) ([]*utils.VolumePublicationExternal, error)
+	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(
-		ctx context.Context, volumeName string, notSafeToAttach *bool,
+		ctx context.Context, volumeName string,
 	) (publications []*utils.VolumePublicationExternal, err error)
 	ListVolumePublicationsForNode(
-		ctx context.Context, nodeName string, notSafeToAttach *bool,
+		ctx context.Context, nodeName string,
 	) (publications []*utils.VolumePublicationExternal, err error)
 	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
 
@@ -94,25 +95,27 @@ type Orchestrator interface {
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 
-	EstablishMirror(
-		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
-		replicationSchedule string,
-	) error
-	ReestablishMirror(
-		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
-		replicationSchedule string,
-	) error
-	PromoteMirror(
-		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
-	) (bool, error)
-	GetMirrorStatus(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) (string, error)
+	EstablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule string) error
+	ReestablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle,
+		replicationPolicy, replicationSchedule string) error
+	PromoteMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle,
+		snapshotHandle string) (bool, error)
+	GetMirrorStatus(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, error)
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
-	ReleaseMirror(ctx context.Context, backendUUID, localVolumeHandle string) error
-	GetReplicationDetails(
-		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
-	) (string, string, error)
+	ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) error
+	GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
+
+	GetLogLevel(ctx context.Context) (string, error)
+	SetLogLevel(ctx context.Context, level string) error
+	GetSelectedLoggingWorkflows(ctx context.Context) (string, error)
+	ListLoggingWorkflows(ctx context.Context) ([]string, error)
+	SetLoggingWorkflows(ctx context.Context, workflows string) error
+	GetSelectedLogLayers(ctx context.Context) (string, error)
+	ListLogLayers(ctx context.Context) ([]string, error)
+	SetLogLayers(ctx context.Context, workflows string) error
 }
 
 type (

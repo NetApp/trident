@@ -74,13 +74,13 @@ type LocalCifsUsersAndGroupsImportModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -100,11 +100,11 @@ func (o *LocalCifsUsersAndGroupsImportModifyParams) WithDefaults() *LocalCifsUse
 // All values with no default are reset to their zero value.
 func (o *LocalCifsUsersAndGroupsImportModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := LocalCifsUsersAndGroupsImportModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,26 +157,26 @@ func (o *LocalCifsUsersAndGroupsImportModifyParams) SetInfo(info *models.LocalCi
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the local cifs users and groups import modify params
-func (o *LocalCifsUsersAndGroupsImportModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LocalCifsUsersAndGroupsImportModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the local cifs users and groups import modify params
+func (o *LocalCifsUsersAndGroupsImportModifyParams) WithReturnTimeout(returnTimeout *int64) *LocalCifsUsersAndGroupsImportModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the local cifs users and groups import modify params
-func (o *LocalCifsUsersAndGroupsImportModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the local cifs users and groups import modify params
+func (o *LocalCifsUsersAndGroupsImportModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs users and groups import modify params
-func (o *LocalCifsUsersAndGroupsImportModifyParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsUsersAndGroupsImportModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs users and groups import modify params
+func (o *LocalCifsUsersAndGroupsImportModifyParams) WithSvmUUID(svmUUID string) *LocalCifsUsersAndGroupsImportModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs users and groups import modify params
-func (o *LocalCifsUsersAndGroupsImportModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs users and groups import modify params
+func (o *LocalCifsUsersAndGroupsImportModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,13 +192,13 @@ func (o *LocalCifsUsersAndGroupsImportModifyParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -210,7 +210,7 @@ func (o *LocalCifsUsersAndGroupsImportModifyParams) WriteToRequest(r runtime.Cli
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

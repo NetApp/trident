@@ -66,103 +66,103 @@ type CloudTargetCollectionGetParams struct {
 
 	   Filter by access_key
 	*/
-	AccessKeyQueryParameter *string
+	AccessKey *string
 
 	/* AuthenticationType.
 
 	   Filter by authentication_type
 	*/
-	AuthenticationTypeQueryParameter *string
+	AuthenticationType *string
 
 	/* AzureAccount.
 
 	   Filter by azure_account
 	*/
-	AzureAccountQueryParameter *string
+	AzureAccount *string
 
 	/* CapURL.
 
 	   Filter by cap_url
 	*/
-	CapURLQueryParameter *string
+	CapURL *string
 
 	/* CertificateValidationEnabled.
 
 	   Filter by certificate_validation_enabled
 	*/
-	CertificateValidationEnabledQueryParameter *bool
+	CertificateValidationEnabled *bool
 
 	/* ClusterName.
 
 	   Filter by cluster.name
 	*/
-	ClusterNameQueryParameter *string
+	ClusterName *string
 
 	/* ClusterUUID.
 
 	   Filter by cluster.uuid
 	*/
-	ClusterUUIDQueryParameter *string
+	ClusterUUID *string
 
 	/* Container.
 
 	   Filter by container
 	*/
-	ContainerQueryParameter *string
+	Container *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Owner.
 
 	   Filter by owner
 	*/
-	OwnerQueryParameter *string
+	Owner *string
 
 	/* Port.
 
 	   Filter by port
 	*/
-	PortQueryParameter *int64
+	Port *int64
 
 	/* ProviderType.
 
 	   Filter by provider_type
 	*/
-	ProviderTypeQueryParameter *string
+	ProviderType *string
 
 	/* ReturnRecords.
 
@@ -170,7 +170,7 @@ type CloudTargetCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -178,67 +178,73 @@ type CloudTargetCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
+
+	/* Scope.
+
+	   Filter by scope
+	*/
+	Scope *string
 
 	/* Server.
 
 	   Filter by server
 	*/
-	ServerQueryParameter *string
+	Server *string
 
 	/* ServerSideEncryption.
 
 	   Filter by server_side_encryption
 	*/
-	ServerSideEncryptionQueryParameter *string
+	ServerSideEncryption *string
 
 	/* SnapmirrorUse.
 
 	   Filter by snapmirror_use
 	*/
-	SnapmirrorUseQueryParameter *string
+	SnapmirrorUse *string
 
 	/* SslEnabled.
 
 	   Filter by ssl_enabled
 	*/
-	SslEnabledQueryParameter *bool
+	SslEnabled *bool
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* URLStyle.
 
 	   Filter by url_style
 	*/
-	URLStyleQueryParameter *string
+	URLStyle *string
 
 	/* UseHTTPProxy.
 
 	   Filter by use_http_proxy
 	*/
-	UseHTTPProxyQueryParameter *bool
+	UseHTTPProxy *bool
 
 	/* Used.
 
 	   Filter by used
 	*/
-	UsedQueryParameter *int64
+	Used *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -258,14 +264,14 @@ func (o *CloudTargetCollectionGetParams) WithDefaults() *CloudTargetCollectionGe
 // All values with no default are reset to their zero value.
 func (o *CloudTargetCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CloudTargetCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -307,323 +313,334 @@ func (o *CloudTargetCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAccessKeyQueryParameter adds the accessKey to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithAccessKeyQueryParameter(accessKey *string) *CloudTargetCollectionGetParams {
-	o.SetAccessKeyQueryParameter(accessKey)
+// WithAccessKey adds the accessKey to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithAccessKey(accessKey *string) *CloudTargetCollectionGetParams {
+	o.SetAccessKey(accessKey)
 	return o
 }
 
-// SetAccessKeyQueryParameter adds the accessKey to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetAccessKeyQueryParameter(accessKey *string) {
-	o.AccessKeyQueryParameter = accessKey
+// SetAccessKey adds the accessKey to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetAccessKey(accessKey *string) {
+	o.AccessKey = accessKey
 }
 
-// WithAuthenticationTypeQueryParameter adds the authenticationType to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithAuthenticationTypeQueryParameter(authenticationType *string) *CloudTargetCollectionGetParams {
-	o.SetAuthenticationTypeQueryParameter(authenticationType)
+// WithAuthenticationType adds the authenticationType to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithAuthenticationType(authenticationType *string) *CloudTargetCollectionGetParams {
+	o.SetAuthenticationType(authenticationType)
 	return o
 }
 
-// SetAuthenticationTypeQueryParameter adds the authenticationType to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetAuthenticationTypeQueryParameter(authenticationType *string) {
-	o.AuthenticationTypeQueryParameter = authenticationType
+// SetAuthenticationType adds the authenticationType to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetAuthenticationType(authenticationType *string) {
+	o.AuthenticationType = authenticationType
 }
 
-// WithAzureAccountQueryParameter adds the azureAccount to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithAzureAccountQueryParameter(azureAccount *string) *CloudTargetCollectionGetParams {
-	o.SetAzureAccountQueryParameter(azureAccount)
+// WithAzureAccount adds the azureAccount to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithAzureAccount(azureAccount *string) *CloudTargetCollectionGetParams {
+	o.SetAzureAccount(azureAccount)
 	return o
 }
 
-// SetAzureAccountQueryParameter adds the azureAccount to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetAzureAccountQueryParameter(azureAccount *string) {
-	o.AzureAccountQueryParameter = azureAccount
+// SetAzureAccount adds the azureAccount to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetAzureAccount(azureAccount *string) {
+	o.AzureAccount = azureAccount
 }
 
-// WithCapURLQueryParameter adds the capURL to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithCapURLQueryParameter(capURL *string) *CloudTargetCollectionGetParams {
-	o.SetCapURLQueryParameter(capURL)
+// WithCapURL adds the capURL to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithCapURL(capURL *string) *CloudTargetCollectionGetParams {
+	o.SetCapURL(capURL)
 	return o
 }
 
-// SetCapURLQueryParameter adds the capUrl to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetCapURLQueryParameter(capURL *string) {
-	o.CapURLQueryParameter = capURL
+// SetCapURL adds the capUrl to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetCapURL(capURL *string) {
+	o.CapURL = capURL
 }
 
-// WithCertificateValidationEnabledQueryParameter adds the certificateValidationEnabled to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithCertificateValidationEnabledQueryParameter(certificateValidationEnabled *bool) *CloudTargetCollectionGetParams {
-	o.SetCertificateValidationEnabledQueryParameter(certificateValidationEnabled)
+// WithCertificateValidationEnabled adds the certificateValidationEnabled to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithCertificateValidationEnabled(certificateValidationEnabled *bool) *CloudTargetCollectionGetParams {
+	o.SetCertificateValidationEnabled(certificateValidationEnabled)
 	return o
 }
 
-// SetCertificateValidationEnabledQueryParameter adds the certificateValidationEnabled to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetCertificateValidationEnabledQueryParameter(certificateValidationEnabled *bool) {
-	o.CertificateValidationEnabledQueryParameter = certificateValidationEnabled
+// SetCertificateValidationEnabled adds the certificateValidationEnabled to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetCertificateValidationEnabled(certificateValidationEnabled *bool) {
+	o.CertificateValidationEnabled = certificateValidationEnabled
 }
 
-// WithClusterNameQueryParameter adds the clusterName to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithClusterNameQueryParameter(clusterName *string) *CloudTargetCollectionGetParams {
-	o.SetClusterNameQueryParameter(clusterName)
+// WithClusterName adds the clusterName to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithClusterName(clusterName *string) *CloudTargetCollectionGetParams {
+	o.SetClusterName(clusterName)
 	return o
 }
 
-// SetClusterNameQueryParameter adds the clusterName to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetClusterNameQueryParameter(clusterName *string) {
-	o.ClusterNameQueryParameter = clusterName
+// SetClusterName adds the clusterName to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetClusterName(clusterName *string) {
+	o.ClusterName = clusterName
 }
 
-// WithClusterUUIDQueryParameter adds the clusterUUID to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithClusterUUIDQueryParameter(clusterUUID *string) *CloudTargetCollectionGetParams {
-	o.SetClusterUUIDQueryParameter(clusterUUID)
+// WithClusterUUID adds the clusterUUID to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithClusterUUID(clusterUUID *string) *CloudTargetCollectionGetParams {
+	o.SetClusterUUID(clusterUUID)
 	return o
 }
 
-// SetClusterUUIDQueryParameter adds the clusterUuid to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetClusterUUIDQueryParameter(clusterUUID *string) {
-	o.ClusterUUIDQueryParameter = clusterUUID
+// SetClusterUUID adds the clusterUuid to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetClusterUUID(clusterUUID *string) {
+	o.ClusterUUID = clusterUUID
 }
 
-// WithContainerQueryParameter adds the container to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithContainerQueryParameter(container *string) *CloudTargetCollectionGetParams {
-	o.SetContainerQueryParameter(container)
+// WithContainer adds the container to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithContainer(container *string) *CloudTargetCollectionGetParams {
+	o.SetContainer(container)
 	return o
 }
 
-// SetContainerQueryParameter adds the container to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetContainerQueryParameter(container *string) {
-	o.ContainerQueryParameter = container
+// SetContainer adds the container to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetContainer(container *string) {
+	o.Container = container
 }
 
-// WithFieldsQueryParameter adds the fields to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithFieldsQueryParameter(fields []string) *CloudTargetCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithFields(fields []string) *CloudTargetCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *CloudTargetCollectionGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithIpspaceName(ipspaceName *string) *CloudTargetCollectionGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *CloudTargetCollectionGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithIpspaceUUID(ipspaceUUID *string) *CloudTargetCollectionGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CloudTargetCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithMaxRecords(maxRecords *int64) *CloudTargetCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithNameQueryParameter(name *string) *CloudTargetCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithName(name *string) *CloudTargetCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CloudTargetCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithOrderBy(orderBy []string) *CloudTargetCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerQueryParameter adds the owner to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithOwnerQueryParameter(owner *string) *CloudTargetCollectionGetParams {
-	o.SetOwnerQueryParameter(owner)
+// WithOwner adds the owner to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithOwner(owner *string) *CloudTargetCollectionGetParams {
+	o.SetOwner(owner)
 	return o
 }
 
-// SetOwnerQueryParameter adds the owner to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetOwnerQueryParameter(owner *string) {
-	o.OwnerQueryParameter = owner
+// SetOwner adds the owner to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetOwner(owner *string) {
+	o.Owner = owner
 }
 
-// WithPortQueryParameter adds the port to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithPortQueryParameter(port *int64) *CloudTargetCollectionGetParams {
-	o.SetPortQueryParameter(port)
+// WithPort adds the port to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithPort(port *int64) *CloudTargetCollectionGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetPortQueryParameter adds the port to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetPortQueryParameter(port *int64) {
-	o.PortQueryParameter = port
+// SetPort adds the port to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
-// WithProviderTypeQueryParameter adds the providerType to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithProviderTypeQueryParameter(providerType *string) *CloudTargetCollectionGetParams {
-	o.SetProviderTypeQueryParameter(providerType)
+// WithProviderType adds the providerType to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithProviderType(providerType *string) *CloudTargetCollectionGetParams {
+	o.SetProviderType(providerType)
 	return o
 }
 
-// SetProviderTypeQueryParameter adds the providerType to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetProviderTypeQueryParameter(providerType *string) {
-	o.ProviderTypeQueryParameter = providerType
+// SetProviderType adds the providerType to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetProviderType(providerType *string) {
+	o.ProviderType = providerType
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CloudTargetCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithReturnRecords(returnRecords *bool) *CloudTargetCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CloudTargetCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CloudTargetCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithServerQueryParameter adds the server to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithServerQueryParameter(server *string) *CloudTargetCollectionGetParams {
-	o.SetServerQueryParameter(server)
+// WithScope adds the scope to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithScope(scope *string) *CloudTargetCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetServerQueryParameter adds the server to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetServerQueryParameter(server *string) {
-	o.ServerQueryParameter = server
+// SetScope adds the scope to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithServerSideEncryptionQueryParameter adds the serverSideEncryption to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithServerSideEncryptionQueryParameter(serverSideEncryption *string) *CloudTargetCollectionGetParams {
-	o.SetServerSideEncryptionQueryParameter(serverSideEncryption)
+// WithServer adds the server to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithServer(server *string) *CloudTargetCollectionGetParams {
+	o.SetServer(server)
 	return o
 }
 
-// SetServerSideEncryptionQueryParameter adds the serverSideEncryption to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetServerSideEncryptionQueryParameter(serverSideEncryption *string) {
-	o.ServerSideEncryptionQueryParameter = serverSideEncryption
+// SetServer adds the server to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetServer(server *string) {
+	o.Server = server
 }
 
-// WithSnapmirrorUseQueryParameter adds the snapmirrorUse to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithSnapmirrorUseQueryParameter(snapmirrorUse *string) *CloudTargetCollectionGetParams {
-	o.SetSnapmirrorUseQueryParameter(snapmirrorUse)
+// WithServerSideEncryption adds the serverSideEncryption to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithServerSideEncryption(serverSideEncryption *string) *CloudTargetCollectionGetParams {
+	o.SetServerSideEncryption(serverSideEncryption)
 	return o
 }
 
-// SetSnapmirrorUseQueryParameter adds the snapmirrorUse to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetSnapmirrorUseQueryParameter(snapmirrorUse *string) {
-	o.SnapmirrorUseQueryParameter = snapmirrorUse
+// SetServerSideEncryption adds the serverSideEncryption to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetServerSideEncryption(serverSideEncryption *string) {
+	o.ServerSideEncryption = serverSideEncryption
 }
 
-// WithSslEnabledQueryParameter adds the sslEnabled to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithSslEnabledQueryParameter(sslEnabled *bool) *CloudTargetCollectionGetParams {
-	o.SetSslEnabledQueryParameter(sslEnabled)
+// WithSnapmirrorUse adds the snapmirrorUse to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithSnapmirrorUse(snapmirrorUse *string) *CloudTargetCollectionGetParams {
+	o.SetSnapmirrorUse(snapmirrorUse)
 	return o
 }
 
-// SetSslEnabledQueryParameter adds the sslEnabled to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetSslEnabledQueryParameter(sslEnabled *bool) {
-	o.SslEnabledQueryParameter = sslEnabled
+// SetSnapmirrorUse adds the snapmirrorUse to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetSnapmirrorUse(snapmirrorUse *string) {
+	o.SnapmirrorUse = snapmirrorUse
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CloudTargetCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSslEnabled adds the sslEnabled to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithSslEnabled(sslEnabled *bool) *CloudTargetCollectionGetParams {
+	o.SetSslEnabled(sslEnabled)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSslEnabled adds the sslEnabled to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetSslEnabled(sslEnabled *bool) {
+	o.SslEnabled = sslEnabled
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CloudTargetCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmName adds the svmName to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithSvmName(svmName *string) *CloudTargetCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmName adds the svmName to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithURLStyleQueryParameter adds the uRLStyle to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithURLStyleQueryParameter(uRLStyle *string) *CloudTargetCollectionGetParams {
-	o.SetURLStyleQueryParameter(uRLStyle)
+// WithSvmUUID adds the svmUUID to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithSvmUUID(svmUUID *string) *CloudTargetCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetURLStyleQueryParameter adds the urlStyle to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetURLStyleQueryParameter(uRLStyle *string) {
-	o.URLStyleQueryParameter = uRLStyle
+// SetSvmUUID adds the svmUuid to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUseHTTPProxyQueryParameter adds the useHTTPProxy to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithUseHTTPProxyQueryParameter(useHTTPProxy *bool) *CloudTargetCollectionGetParams {
-	o.SetUseHTTPProxyQueryParameter(useHTTPProxy)
+// WithURLStyle adds the uRLStyle to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithURLStyle(uRLStyle *string) *CloudTargetCollectionGetParams {
+	o.SetURLStyle(uRLStyle)
 	return o
 }
 
-// SetUseHTTPProxyQueryParameter adds the useHttpProxy to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetUseHTTPProxyQueryParameter(useHTTPProxy *bool) {
-	o.UseHTTPProxyQueryParameter = useHTTPProxy
+// SetURLStyle adds the urlStyle to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetURLStyle(uRLStyle *string) {
+	o.URLStyle = uRLStyle
 }
 
-// WithUsedQueryParameter adds the used to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithUsedQueryParameter(used *int64) *CloudTargetCollectionGetParams {
-	o.SetUsedQueryParameter(used)
+// WithUseHTTPProxy adds the useHTTPProxy to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithUseHTTPProxy(useHTTPProxy *bool) *CloudTargetCollectionGetParams {
+	o.SetUseHTTPProxy(useHTTPProxy)
 	return o
 }
 
-// SetUsedQueryParameter adds the used to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetUsedQueryParameter(used *int64) {
-	o.UsedQueryParameter = used
+// SetUseHTTPProxy adds the useHttpProxy to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetUseHTTPProxy(useHTTPProxy *bool) {
+	o.UseHTTPProxy = useHTTPProxy
 }
 
-// WithUUIDQueryParameter adds the uuid to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithUUIDQueryParameter(uuid *string) *CloudTargetCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUsed adds the used to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithUsed(used *int64) *CloudTargetCollectionGetParams {
+	o.SetUsed(used)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUsed adds the used to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetUsed(used *int64) {
+	o.Used = used
+}
+
+// WithUUID adds the uuid to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithUUID(uuid *string) *CloudTargetCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -634,13 +651,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.AccessKeyQueryParameter != nil {
+	if o.AccessKey != nil {
 
 		// query param access_key
 		var qrAccessKey string
 
-		if o.AccessKeyQueryParameter != nil {
-			qrAccessKey = *o.AccessKeyQueryParameter
+		if o.AccessKey != nil {
+			qrAccessKey = *o.AccessKey
 		}
 		qAccessKey := qrAccessKey
 		if qAccessKey != "" {
@@ -651,13 +668,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.AuthenticationTypeQueryParameter != nil {
+	if o.AuthenticationType != nil {
 
 		// query param authentication_type
 		var qrAuthenticationType string
 
-		if o.AuthenticationTypeQueryParameter != nil {
-			qrAuthenticationType = *o.AuthenticationTypeQueryParameter
+		if o.AuthenticationType != nil {
+			qrAuthenticationType = *o.AuthenticationType
 		}
 		qAuthenticationType := qrAuthenticationType
 		if qAuthenticationType != "" {
@@ -668,13 +685,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.AzureAccountQueryParameter != nil {
+	if o.AzureAccount != nil {
 
 		// query param azure_account
 		var qrAzureAccount string
 
-		if o.AzureAccountQueryParameter != nil {
-			qrAzureAccount = *o.AzureAccountQueryParameter
+		if o.AzureAccount != nil {
+			qrAzureAccount = *o.AzureAccount
 		}
 		qAzureAccount := qrAzureAccount
 		if qAzureAccount != "" {
@@ -685,13 +702,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapURLQueryParameter != nil {
+	if o.CapURL != nil {
 
 		// query param cap_url
 		var qrCapURL string
 
-		if o.CapURLQueryParameter != nil {
-			qrCapURL = *o.CapURLQueryParameter
+		if o.CapURL != nil {
+			qrCapURL = *o.CapURL
 		}
 		qCapURL := qrCapURL
 		if qCapURL != "" {
@@ -702,13 +719,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CertificateValidationEnabledQueryParameter != nil {
+	if o.CertificateValidationEnabled != nil {
 
 		// query param certificate_validation_enabled
 		var qrCertificateValidationEnabled bool
 
-		if o.CertificateValidationEnabledQueryParameter != nil {
-			qrCertificateValidationEnabled = *o.CertificateValidationEnabledQueryParameter
+		if o.CertificateValidationEnabled != nil {
+			qrCertificateValidationEnabled = *o.CertificateValidationEnabled
 		}
 		qCertificateValidationEnabled := swag.FormatBool(qrCertificateValidationEnabled)
 		if qCertificateValidationEnabled != "" {
@@ -719,13 +736,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ClusterNameQueryParameter != nil {
+	if o.ClusterName != nil {
 
 		// query param cluster.name
 		var qrClusterName string
 
-		if o.ClusterNameQueryParameter != nil {
-			qrClusterName = *o.ClusterNameQueryParameter
+		if o.ClusterName != nil {
+			qrClusterName = *o.ClusterName
 		}
 		qClusterName := qrClusterName
 		if qClusterName != "" {
@@ -736,13 +753,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ClusterUUIDQueryParameter != nil {
+	if o.ClusterUUID != nil {
 
 		// query param cluster.uuid
 		var qrClusterUUID string
 
-		if o.ClusterUUIDQueryParameter != nil {
-			qrClusterUUID = *o.ClusterUUIDQueryParameter
+		if o.ClusterUUID != nil {
+			qrClusterUUID = *o.ClusterUUID
 		}
 		qClusterUUID := qrClusterUUID
 		if qClusterUUID != "" {
@@ -753,13 +770,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ContainerQueryParameter != nil {
+	if o.Container != nil {
 
 		// query param container
 		var qrContainer string
 
-		if o.ContainerQueryParameter != nil {
-			qrContainer = *o.ContainerQueryParameter
+		if o.Container != nil {
+			qrContainer = *o.Container
 		}
 		qContainer := qrContainer
 		if qContainer != "" {
@@ -770,7 +787,7 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -781,13 +798,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -798,13 +815,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -815,13 +832,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -832,13 +849,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -849,7 +866,7 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -860,13 +877,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OwnerQueryParameter != nil {
+	if o.Owner != nil {
 
 		// query param owner
 		var qrOwner string
 
-		if o.OwnerQueryParameter != nil {
-			qrOwner = *o.OwnerQueryParameter
+		if o.Owner != nil {
+			qrOwner = *o.Owner
 		}
 		qOwner := qrOwner
 		if qOwner != "" {
@@ -877,13 +894,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.PortQueryParameter != nil {
+	if o.Port != nil {
 
 		// query param port
 		var qrPort int64
 
-		if o.PortQueryParameter != nil {
-			qrPort = *o.PortQueryParameter
+		if o.Port != nil {
+			qrPort = *o.Port
 		}
 		qPort := swag.FormatInt64(qrPort)
 		if qPort != "" {
@@ -894,13 +911,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProviderTypeQueryParameter != nil {
+	if o.ProviderType != nil {
 
 		// query param provider_type
 		var qrProviderType string
 
-		if o.ProviderTypeQueryParameter != nil {
-			qrProviderType = *o.ProviderTypeQueryParameter
+		if o.ProviderType != nil {
+			qrProviderType = *o.ProviderType
 		}
 		qProviderType := qrProviderType
 		if qProviderType != "" {
@@ -911,13 +928,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -928,13 +945,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -945,13 +962,30 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ServerQueryParameter != nil {
+	if o.Scope != nil {
+
+		// query param scope
+		var qrScope string
+
+		if o.Scope != nil {
+			qrScope = *o.Scope
+		}
+		qScope := qrScope
+		if qScope != "" {
+
+			if err := r.SetQueryParam("scope", qScope); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Server != nil {
 
 		// query param server
 		var qrServer string
 
-		if o.ServerQueryParameter != nil {
-			qrServer = *o.ServerQueryParameter
+		if o.Server != nil {
+			qrServer = *o.Server
 		}
 		qServer := qrServer
 		if qServer != "" {
@@ -962,13 +996,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ServerSideEncryptionQueryParameter != nil {
+	if o.ServerSideEncryption != nil {
 
 		// query param server_side_encryption
 		var qrServerSideEncryption string
 
-		if o.ServerSideEncryptionQueryParameter != nil {
-			qrServerSideEncryption = *o.ServerSideEncryptionQueryParameter
+		if o.ServerSideEncryption != nil {
+			qrServerSideEncryption = *o.ServerSideEncryption
 		}
 		qServerSideEncryption := qrServerSideEncryption
 		if qServerSideEncryption != "" {
@@ -979,13 +1013,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SnapmirrorUseQueryParameter != nil {
+	if o.SnapmirrorUse != nil {
 
 		// query param snapmirror_use
 		var qrSnapmirrorUse string
 
-		if o.SnapmirrorUseQueryParameter != nil {
-			qrSnapmirrorUse = *o.SnapmirrorUseQueryParameter
+		if o.SnapmirrorUse != nil {
+			qrSnapmirrorUse = *o.SnapmirrorUse
 		}
 		qSnapmirrorUse := qrSnapmirrorUse
 		if qSnapmirrorUse != "" {
@@ -996,13 +1030,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SslEnabledQueryParameter != nil {
+	if o.SslEnabled != nil {
 
 		// query param ssl_enabled
 		var qrSslEnabled bool
 
-		if o.SslEnabledQueryParameter != nil {
-			qrSslEnabled = *o.SslEnabledQueryParameter
+		if o.SslEnabled != nil {
+			qrSslEnabled = *o.SslEnabled
 		}
 		qSslEnabled := swag.FormatBool(qrSslEnabled)
 		if qSslEnabled != "" {
@@ -1013,13 +1047,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1030,13 +1064,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1047,13 +1081,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.URLStyleQueryParameter != nil {
+	if o.URLStyle != nil {
 
 		// query param url_style
 		var qrURLStyle string
 
-		if o.URLStyleQueryParameter != nil {
-			qrURLStyle = *o.URLStyleQueryParameter
+		if o.URLStyle != nil {
+			qrURLStyle = *o.URLStyle
 		}
 		qURLStyle := qrURLStyle
 		if qURLStyle != "" {
@@ -1064,13 +1098,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UseHTTPProxyQueryParameter != nil {
+	if o.UseHTTPProxy != nil {
 
 		// query param use_http_proxy
 		var qrUseHTTPProxy bool
 
-		if o.UseHTTPProxyQueryParameter != nil {
-			qrUseHTTPProxy = *o.UseHTTPProxyQueryParameter
+		if o.UseHTTPProxy != nil {
+			qrUseHTTPProxy = *o.UseHTTPProxy
 		}
 		qUseHTTPProxy := swag.FormatBool(qrUseHTTPProxy)
 		if qUseHTTPProxy != "" {
@@ -1081,13 +1115,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UsedQueryParameter != nil {
+	if o.Used != nil {
 
 		// query param used
 		var qrUsed int64
 
-		if o.UsedQueryParameter != nil {
-			qrUsed = *o.UsedQueryParameter
+		if o.Used != nil {
+			qrUsed = *o.Used
 		}
 		qUsed := swag.FormatInt64(qrUsed)
 		if qUsed != "" {
@@ -1098,13 +1132,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1123,7 +1157,7 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCloudTargetCollectionGet binds the parameter fields
 func (o *CloudTargetCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1140,7 +1174,7 @@ func (o *CloudTargetCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamCloudTargetCollectionGet binds the parameter order_by
 func (o *CloudTargetCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

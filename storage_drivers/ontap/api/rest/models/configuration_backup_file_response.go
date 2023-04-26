@@ -20,13 +20,14 @@ import (
 type ConfigurationBackupFileResponse struct {
 
 	// links
-	Links *ConfigurationBackupFileResponseLinks `json:"_links,omitempty"`
+	Links *ConfigurationBackupFileResponseInlineLinks `json:"_links,omitempty"`
+
+	// configuration backup file response inline records
+	ConfigurationBackupFileResponseInlineRecords []*ConfigurationBackupFile `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*ConfigurationBackupFile `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this configuration backup file response
@@ -37,7 +38,7 @@ func (m *ConfigurationBackupFileResponse) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateConfigurationBackupFileResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *ConfigurationBackupFileResponse) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *ConfigurationBackupFileResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *ConfigurationBackupFileResponse) validateConfigurationBackupFileResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConfigurationBackupFileResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.ConfigurationBackupFileResponseInlineRecords); i++ {
+		if swag.IsZero(m.ConfigurationBackupFileResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.ConfigurationBackupFileResponseInlineRecords[i] != nil {
+			if err := m.ConfigurationBackupFileResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *ConfigurationBackupFileResponse) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateConfigurationBackupFileResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *ConfigurationBackupFileResponse) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *ConfigurationBackupFileResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileResponse) contextValidateConfigurationBackupFileResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.ConfigurationBackupFileResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.ConfigurationBackupFileResponseInlineRecords[i] != nil {
+			if err := m.ConfigurationBackupFileResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *ConfigurationBackupFileResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConfigurationBackupFileResponseLinks configuration backup file response links
+// ConfigurationBackupFileResponseInlineLinks configuration backup file response inline links
 //
-// swagger:model ConfigurationBackupFileResponseLinks
-type ConfigurationBackupFileResponseLinks struct {
+// swagger:model configuration_backup_file_response_inline__links
+type ConfigurationBackupFileResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type ConfigurationBackupFileResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this configuration backup file response links
-func (m *ConfigurationBackupFileResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this configuration backup file response inline links
+func (m *ConfigurationBackupFileResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *ConfigurationBackupFileResponseLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *ConfigurationBackupFileResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *ConfigurationBackupFileResponseLinks) validateNext(formats strfmt.Regis
 	return nil
 }
 
-func (m *ConfigurationBackupFileResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *ConfigurationBackupFileResponseLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this configuration backup file response links based on the context it is used
-func (m *ConfigurationBackupFileResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this configuration backup file response inline links based on the context it is used
+func (m *ConfigurationBackupFileResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *ConfigurationBackupFileResponseLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *ConfigurationBackupFileResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *ConfigurationBackupFileResponseLinks) contextValidateNext(ctx context.C
 	return nil
 }
 
-func (m *ConfigurationBackupFileResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ConfigurationBackupFileResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *ConfigurationBackupFileResponseLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *ConfigurationBackupFileResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *ConfigurationBackupFileResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *ConfigurationBackupFileResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ConfigurationBackupFileResponseLinks) UnmarshalBinary(b []byte) error {
-	var res ConfigurationBackupFileResponseLinks
+func (m *ConfigurationBackupFileResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ConfigurationBackupFileResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -65,13 +65,13 @@ type AccountDeleteParams struct {
 
 	   User account name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Account owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *AccountDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the account delete params
-func (o *AccountDeleteParams) WithNamePathParameter(name string) *AccountDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the account delete params
+func (o *AccountDeleteParams) WithName(name string) *AccountDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the account delete params
-func (o *AccountDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the account delete params
+func (o *AccountDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the account delete params
-func (o *AccountDeleteParams) WithOwnerUUIDPathParameter(ownerUUID string) *AccountDeleteParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the account delete params
+func (o *AccountDeleteParams) WithOwnerUUID(ownerUUID string) *AccountDeleteParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the account delete params
-func (o *AccountDeleteParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the account delete params
+func (o *AccountDeleteParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *AccountDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

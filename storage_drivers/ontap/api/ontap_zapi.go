@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,15 +61,16 @@ type ClientConfig struct {
 
 // Client is the object to use for interacting with ONTAP controllers
 type Client struct {
-	config  ClientConfig
-	zr      *azgo.ZapiRunner
-	m       *sync.Mutex
-	svmUUID string
-	svmMCC  bool
+	config     ClientConfig
+	zr         *azgo.ZapiRunner
+	m          *sync.Mutex
+	driverName string
+	svmUUID    string
+	svmMCC     bool
 }
 
 // NewClient is a factory method for creating a new instance
-func NewClient(config ClientConfig, SVM string) *Client {
+func NewClient(config ClientConfig, SVM, driverName string) *Client {
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	config.ContextBasedZapiRecords = DefaultZapiRecords
 	if config.DriverContext == tridentconfig.ContextDocker {
@@ -77,7 +78,8 @@ func NewClient(config ClientConfig, SVM string) *Client {
 	}
 
 	d := &Client{
-		config: config,
+		driverName: driverName,
+		config:     config,
 		zr: &azgo.ZapiRunner{
 			ManagementLIF:        config.ManagementLIF,
 			SVM:                  SVM,
@@ -191,29 +193,29 @@ const (
 )
 
 // Indicate the minimum Ontapi version for each feature here
-var features = map[Feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("1.130.0"), // cDOT 9.3.0
-	NetAppFlexGroups:          utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
-	NetAppFlexGroupsClone:     utils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
-	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
-	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	LunGeometrySkip:           utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	FabricPoolForSVMDR:        utils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	QosPolicies:               utils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
-	LIFServices:               utils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
+var features = map[Feature]*versionutils.Version{
+	MinimumONTAPIVersion:      versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	NetAppFlexGroups:          versionutils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
+	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
+	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	LunGeometrySkip:           versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	FabricPoolForSVMDR:        versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
+	QosPolicies:               versionutils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
+	LIFServices:               versionutils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
 }
 
 // Indicate the minimum Ontap version for each feature here (non-API specific)
-var featuresByVersion = map[Feature]*utils.Version{
-	MinimumONTAPIVersion:      utils.MustParseSemantic("9.3.0"),
-	NetAppFlexGroups:          utils.MustParseSemantic("9.2.0"),
-	NetAppFlexGroupsClone:     utils.MustParseSemantic("9.7.0"),
-	NetAppFabricPoolFlexVol:   utils.MustParseSemantic("9.2.0"),
-	NetAppFabricPoolFlexGroup: utils.MustParseSemantic("9.5.0"),
-	LunGeometrySkip:           utils.MustParseSemantic("9.5.0"),
-	FabricPoolForSVMDR:        utils.MustParseSemantic("9.5.0"),
-	QosPolicies:               utils.MustParseSemantic("9.8.0"),
-	LIFServices:               utils.MustParseSemantic("9.6.0"),
+var featuresByVersion = map[Feature]*versionutils.Version{
+	MinimumONTAPIVersion:      versionutils.MustParseSemantic("9.5.0"),
+	NetAppFlexGroups:          versionutils.MustParseSemantic("9.2.0"),
+	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("9.7.0"),
+	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("9.2.0"),
+	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("9.5.0"),
+	LunGeometrySkip:           versionutils.MustParseSemantic("9.5.0"),
+	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
+	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
+	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -223,7 +225,7 @@ func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
 		return false
 	}
 
-	ontapiSemVer, err := utils.ParseSemantic(fmt.Sprintf("%s.0", ontapiVersion))
+	ontapiSemVer, err := versionutils.ParseSemantic(fmt.Sprintf("%s.0", ontapiVersion))
 	if err != nil {
 		return false
 	}
@@ -467,23 +469,26 @@ func (c Client) LunMapIfNotMapped(
 		return -1, fmt.Errorf("problem reading maps for LUN %s: %+v", lunPath, lunMapListResponse.Result)
 	}
 
+	Logc(ctx).WithFields(
+		LogFields{
+			"lun":    lunPath,
+			"igroup": initiatorGroupName,
+		},
+	).Debug("Checking if LUN is mapped to igroup.")
+
 	lunID := 0
 	alreadyMapped := false
 	if lunMapListResponse.Result.InitiatorGroupsPtr != nil {
 		for _, igroup := range lunMapListResponse.Result.InitiatorGroupsPtr.InitiatorGroupInfoPtr {
-			if igroup.InitiatorGroupName() != initiatorGroupName && !importNotManaged {
-				Logc(ctx).Debugf("deleting existing LUN mapping")
-				lunUnmapResponse, err := c.LunUnmap(igroup.InitiatorGroupName(), lunPath)
-				if err != nil {
-					return -1, fmt.Errorf("problem deleting map for LUN %s: %+v", lunPath, lunUnmapResponse.Result)
-				}
+			if igroup.InitiatorGroupName() != initiatorGroupName {
+				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, igroup.InitiatorGroupName())
 			}
 			if igroup.InitiatorGroupName() == initiatorGroupName || importNotManaged {
 
 				lunID = igroup.LunId()
 				alreadyMapped = true
 
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"lun":    lunPath,
 					"igroup": initiatorGroupName,
 					"id":     lunID,
@@ -505,7 +510,7 @@ func (c Client) LunMapIfNotMapped(
 
 		lunID = lunMapResponse.Result.LunIdAssigned()
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"lun":    lunPath,
 			"igroup": initiatorGroupName,
 			"id":     lunID,
@@ -566,12 +571,32 @@ func (c Client) LunSetAttribute(lunPath, name, value string) (*azgo.LunSetAttrib
 }
 
 // LunGetAttribute gets a named attribute for a given LUN.
-func (c Client) LunGetAttribute(lunPath, name string) (*azgo.LunGetAttributeResponse, error) {
+func (c Client) LunGetAttribute(ctx context.Context, lunPath, name string) (string, error) {
 	response, err := azgo.NewLunGetAttributeRequest().
 		SetPath(lunPath).
 		SetName(name).
 		ExecuteUsing(c.zr)
-	return response, err
+
+	if err = azgo.GetError(ctx, response, err); err != nil {
+		return "", err
+	}
+	return response.Result.Value(), err
+}
+
+// LunGetComment gets the comment for a given LUN.
+func (c Client) LunGetComment(ctx context.Context, lunPath string) (string, error) {
+	lun, err := c.LunGet(lunPath)
+	if err != nil {
+		return "", err
+	}
+	if lun == nil {
+		return "", fmt.Errorf("could not find LUN with name %v", lunPath)
+	}
+	if lun.CommentPtr == nil {
+		return "", fmt.Errorf("LUN did not have a comment")
+	}
+
+	return *lun.CommentPtr, nil
 }
 
 // LunGet returns all relevant details for a single LUN
@@ -780,13 +805,16 @@ func (c Client) FlexGroupCreate(
 		SetSize(size).
 		SetSnapshotPolicy(snapshotPolicy).
 		SetSpaceReserve(spaceReserve).
-		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
 		SetAggrList(aggrList).
 		SetJunctionPath(junctionPath).
 		SetVolumeComment(comment)
 
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		request.SetUnixPermissions(unixPermissions)
+	}
 	// For encrypt == nil - we don't explicitely set the encrypt argument.
 	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
 	// else it will be volume encrypted as per Ontap's default behaviour.
@@ -977,7 +1005,11 @@ func (c Client) FlexGroupModifyUnixPermissions(
 	ctx context.Context, volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	volAttr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
-	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType()
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		volSecurityUnixAttrs.SetPermissions(unixPermissions)
+	}
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
 	securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
 	volAttr.SetVolumeAttributes(*securityAttributes)
@@ -1089,7 +1121,7 @@ func (c *Client) checkForJobCompletion(ctx context.Context, jobId int, maxWaitTi
 		}
 
 		jobState := jobResponse.Result.AttributesListPtr.JobInfoPtr[0].JobState()
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"jobId":    jobId,
 			"jobState": jobState,
 		}).Debug("Job status for job ID")
@@ -1179,7 +1211,7 @@ func (c Client) VolumeCreate(
 
 	if dpVolume {
 		request.SetVolumeType("DP")
-	} else {
+	} else if unixPermissions != "" {
 		request.SetUnixPermissions(unixPermissions)
 	}
 
@@ -1243,7 +1275,12 @@ func (c Client) VolumeModifyUnixPermissions(
 	volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterResponse, error) {
 	volAttr := &azgo.VolumeModifyIterRequestAttributes{}
-	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
+	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType()
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		volSecurityUnixAttrs.SetPermissions(unixPermissions)
+	}
+
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
 	securityAttributes := azgo.NewVolumeAttributesType().SetVolumeSecurityAttributes(*volSecurityAttrs)
 	volAttr.SetVolumeAttributes(*securityAttributes)
@@ -1565,7 +1602,8 @@ func (c Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 // VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 func (c Client) VolumeListByAttrs(
-	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool, snapReserve int,
+	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool,
+	snapReserve int,
 ) (*azgo.VolumeGetIterResponse, error) {
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
@@ -1698,9 +1736,13 @@ func (c Client) QtreeCreate(
 	request := azgo.NewQtreeCreateRequest().
 		SetQtree(name).
 		SetVolume(volumeName).
-		SetMode(unixPermissions).
 		SetSecurityStyle(securityStyle).
 		SetExportPolicy(exportPolicy)
+
+	// Set Unix permission for NFS volume only.
+	if unixPermissions != "" {
+		request.SetMode(unixPermissions)
+	}
 
 	if qosPolicy != "" {
 		request.SetQosPolicyGroup(qosPolicy)
@@ -2358,7 +2400,7 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 			volSisAttrs := volAttrs.VolumeSisAttributes()
 			volAllocated := float64(volSpaceAttrs.SizeTotal())
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"volName":         volName,
 				"SizeTotal":       volSpaceAttrs.SizeTotal(),
 				"TotalSpaceSaved": volSisAttrs.TotalSpaceSaved(),
@@ -2379,7 +2421,7 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 				for _, lun := range lunsResponse.Result.AttributesListPtr.LunInfoPtr {
 					lunPath := lun.Path()
 					lunSize := lun.Size()
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"lunPath": lunPath,
 						"lunSize": lunSize,
 					}).Info("Dumping LUN")
@@ -2408,6 +2450,11 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 
 // ///////////////////////////////////////////////////////////////////////////
 // SNAPMIRROR operations BEGIN
+
+// ToSnapmirrorLocation returns a string in the form "svmName:volumeName" for use in snapmirror calls
+func ToSnapmirrorLocation(svmName, volumeName string) string {
+	return fmt.Sprintf("%s:%s", svmName, volumeName)
+}
 
 // SnapmirrorGetIterRequest returns the snapmirror operations on the destination cluster
 // equivalent to filer::> snapmirror show
@@ -2506,6 +2553,7 @@ func (c Client) IsVserverDRSource(ctx context.Context) (bool, error) {
 	}
 
 	// for each of the aggregate's volumes, compute its potential storage usage
+	// TODO: need to change to DR Source
 	if response.Result.AttributesListPtr != nil {
 		for _, volAttrs := range response.Result.AttributesListPtr.SnapmirrorDestinationInfoPtr {
 			destinationLocation := volAttrs.DestinationLocation()
@@ -2528,25 +2576,21 @@ func (c Client) isVserverInSVMDR(ctx context.Context) bool {
 }
 
 func (c Client) SnapmirrorGet(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorGetResponse, error) {
 	query := azgo.NewSnapmirrorGetRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
 
 func (c Client) SnapmirrorCreate(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
 ) (*azgo.SnapmirrorCreateResponse, error) {
 	query := azgo.NewSnapmirrorCreateRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	if repPolicy != "" {
 		query.SetPolicy(repPolicy)
@@ -2559,42 +2603,37 @@ func (c Client) SnapmirrorCreate(
 }
 
 func (c Client) SnapmirrorInitialize(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorInitializeResponse, error) {
 	query := azgo.NewSnapmirrorInitializeRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
 
 func (c Client) SnapmirrorResync(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorResyncResponse, error) {
 	query := azgo.NewSnapmirrorResyncRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	response, err := query.ExecuteUsing(c.zr)
 	if err != nil {
 		return response, err
 	}
-	err = c.WaitForAsyncResponse(GenerateRequestContext(context.Background(), "", ""), *response, 60)
+	err = c.WaitForAsyncResponse(GenerateRequestContext(context.Background(), "", "",
+		WorkflowNone, LogLayer(c.driverName)), *response, 60)
 	return response, err
 }
 
 func (c Client) SnapmirrorBreak(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
 ) (*azgo.SnapmirrorBreakResponse, error) {
 	query := azgo.NewSnapmirrorBreakRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	if snapshotName != "" {
 		query.SetRestoreDestinationToSnapshot(snapshotName)
@@ -2604,25 +2643,21 @@ func (c Client) SnapmirrorBreak(
 }
 
 func (c Client) SnapmirrorQuiesce(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorQuiesceResponse, error) {
 	query := azgo.NewSnapmirrorQuiesceRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
 
 func (c Client) SnapmirrorAbort(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorAbortResponse, error) {
 	query := azgo.NewSnapmirrorAbortRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2632,8 +2667,7 @@ func (c Client) SnapmirrorAbort(
 func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
 	query := azgo.SnapmirrorGetDestinationIterRequestQuery{}
 	params := azgo.NewSnapmirrorDestinationInfoType()
-	params.SetSourceVserver(sourceSVMName)
-	params.SetSourceVolume(sourceFlexvolName)
+	params.SetSourceLocation(ToSnapmirrorLocation(sourceSVMName, sourceFlexvolName))
 	query.SetSnapmirrorDestinationInfo(*params)
 	request := azgo.NewSnapmirrorGetDestinationIterRequest()
 	request.SetQuery(query)
@@ -2646,14 +2680,34 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 	list := response.Result.AttributesList()
 	relationships := list.SnapmirrorDestinationInfo()
 
-	for idx := range relationships {
-		requestQuery := azgo.SnapmirrorReleaseIterRequestQuery{
-			SnapmirrorDestinationInfoPtr: &relationships[idx],
+	for _, destinationInfo := range relationships {
+
+		var destinationLocation *string
+		destinationVserver := destinationInfo.DestinationVserverPtr
+		destinationVolume := destinationInfo.DestinationVolumePtr
+		if destinationInfo.DestinationLocationPtr != nil {
+			destinationLocation = destinationInfo.DestinationLocationPtr
+		} else if destinationVserver != nil && destinationVolume != nil {
+			destinationLocation = utils.Ptr(ToSnapmirrorLocation(*destinationVserver, *destinationVolume))
+		} else {
+			destinationLocation = nil
 		}
-		releaseRequest := azgo.SnapmirrorReleaseIterRequest{QueryPtr: &requestQuery}
-		_, err = releaseRequest.ExecuteUsing(c.zr)
-		if err != nil {
-			return err
+
+		if destinationLocation != nil && *destinationLocation != "" {
+			requestQuery := azgo.SnapmirrorReleaseIterRequestQuery{
+				SnapmirrorDestinationInfoPtr: &azgo.SnapmirrorDestinationInfoType{
+					DestinationLocationPtr: destinationLocation,
+				},
+			}
+			releaseRequest := azgo.SnapmirrorReleaseIterRequest{QueryPtr: &requestQuery}
+			_, err = releaseRequest.ExecuteUsing(c.zr)
+			if err != nil {
+				return err
+			}
+		} else {
+			Logc(context.Background()).WithFields(LogFields{
+				"destinationInfo": destinationInfo,
+			}).Warn("Missing destination location.")
 		}
 	}
 	return nil
@@ -2661,24 +2715,21 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 
 // Intended to be from the destination vserver
 func (c Client) SnapmirrorDeleteViaDestination(
-	localFlexvolName, localSVMName string,
+	localInternalVolumeName, localSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
 
 	return query.ExecuteUsing(c.zr)
 }
 
 // Intended to be from the destination vserver
 func (c Client) SnapmirrorDelete(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
-	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(c.SVMName())
-	query.SetSourceVolume(remoteFlexvolName)
-	query.SetSourceVserver(remoteSVMName)
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2790,36 +2841,10 @@ func (c Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 	response, err := azgo.NewNetInterfaceGetIterRequest().
 		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(azgo.NetInterfaceGetIterRequestQuery{
-			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{
-				OperationalStatusPtr: &LifOperationalStatusUp,
-			},
+			NetInterfaceInfoPtr: &azgo.NetInterfaceInfoType{},
 		}).ExecuteUsing(c.zr)
 
 	return response, err
-}
-
-func (c Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (string, error) {
-	lifResponse, err := c.NetInterfaceGet()
-	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
-		return "", fmt.Errorf("error checking network interfaces: %v", err)
-	}
-	var nodeName string
-
-	if lifResponse.Result.AttributesListPtr != nil {
-		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
-			if ip == attrs.Address() {
-				nodeName = attrs.CurrentNode()
-				break
-			}
-		}
-	}
-
-	if nodeName == "" {
-		Logc(ctx).Warningf("No node found; no node meets the criteria (IP address: "+
-			"%s with at least one data LIF operational status of up)", ip)
-	}
-
-	return nodeName, nil
 }
 
 func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
@@ -2831,9 +2856,11 @@ func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([
 	dataLIFs := make([]string, 0)
 	if lifResponse.Result.AttributesListPtr != nil {
 		for _, attrs := range lifResponse.Result.AttributesListPtr.NetInterfaceInfoPtr {
-			for _, proto := range attrs.DataProtocols().DataProtocolPtr {
-				if proto == protocol {
-					dataLIFs = append(dataLIFs, attrs.Address())
+			if attrs.OperationalStatus() == LifOperationalStatusUp {
+				for _, proto := range attrs.DataProtocols().DataProtocolPtr {
+					if proto == protocol {
+						dataLIFs = append(dataLIFs, attrs.Address())
+					}
 				}
 			}
 		}
@@ -2884,7 +2911,7 @@ func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(zr)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"response":          response,
 		"info":              info,
 		"desiredAttributes": desiredAttributes,
@@ -2915,7 +2942,7 @@ func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 		return serialNumbers, errors.New("could not get node serial numbers")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"Count":         len(serialNumbers),
 		"SerialNumbers": strings.Join(serialNumbers, ","),
 	}).Debug("Read serial numbers.")
@@ -3114,4 +3141,62 @@ func (c Client) IscsiInitiatorSetDefaultAuth(
 
 // iSCSI initiator operations END
 
-/////////////////////////////////////////////////////////////////////////////
+// SMBShareCreate creates an SMB share with the specified name and path.
+// Equivalent to filer::> vserver cifs share create -share-name <shareName> -path <path>
+func (c Client) SMBShareCreate(shareName, path string) (*azgo.CifsShareCreateResponse, error) {
+	response, err := azgo.NewCifsShareCreateRequest().
+		SetShareName(shareName).
+		SetPath(path).
+		ExecuteUsing(c.zr)
+
+	return response, err
+}
+
+// getSMBShareByName gets an SMB share with the given name.
+func (c Client) getSMBShareByName(shareName string) (*azgo.CifsShareType, error) {
+	query := &azgo.CifsShareGetIterRequestQuery{}
+	shareAttrs := azgo.NewCifsShareType().
+		SetShareName(shareName)
+	query.SetCifsShare(*shareAttrs)
+
+	response, err := azgo.NewCifsShareGetIterRequest().
+		SetMaxRecords(c.config.ContextBasedZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+
+	if err != nil {
+		return nil, err
+	} else if response.Result.NumRecords() == 0 {
+		return nil, nil
+	} else if response.Result.AttributesListPtr != nil &&
+		response.Result.AttributesListPtr.CifsSharePtr != nil {
+		return &response.Result.AttributesListPtr.CifsSharePtr[0], nil
+	}
+
+	return nil, fmt.Errorf("SMB share %s not found", shareName)
+}
+
+// SMBShareExists checks for the existence of an SMB share with the given name.
+// Equivalent to filer::> cifs share show <shareName>
+func (c Client) SMBShareExists(shareName string) (bool, error) {
+	share, err := c.getSMBShareByName(shareName)
+	if err != nil {
+		return false, err
+	}
+	if share == nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// SMBShareDestroy destroys an SMB share
+// Equivalent to filer::> cifs share delete shareName
+func (c Client) SMBShareDestroy(shareName string) (*azgo.CifsShareDeleteResponse, error) {
+	response, err := azgo.NewCifsShareDeleteRequest().
+		SetShareName(shareName).
+		ExecuteUsing(c.zr)
+
+	return response, err
+}
+
+// ///////////////////////////////////////////////////////////////////////////

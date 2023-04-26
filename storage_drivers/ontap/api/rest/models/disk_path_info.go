@@ -22,36 +22,36 @@ type DiskPathInfo struct {
 
 	// Initiator port.
 	// Example: 3a
-	Initiator string `json:"initiator,omitempty"`
+	Initiator *string `json:"initiator,omitempty"`
 
 	// Controller with the initiator port for this path.
 	// Example: vsim4
-	NodeName string `json:"node.name,omitempty"`
+	NodeName *string `json:"node.name,omitempty"`
 
 	// Controller UUID, to identify node for this path.
 	// Example: cf7fe057-526d-11ec-af4e-0050568e9df0
-	NodeUUID string `json:"node.uuid,omitempty"`
+	NodeUUID *string `json:"node.uuid,omitempty"`
 
 	// Name of the disk port.
 	// Example: A
-	PortName string `json:"port_name,omitempty"`
+	PortName *string `json:"port_name,omitempty"`
 
 	// Disk port type.
 	// Example: sas
 	// Enum: [sas fc nvme]
-	PortType string `json:"port_type,omitempty"`
+	PortType *string `json:"port_type,omitempty"`
 
 	// Virtual disk hypervisor file name.
 	// Example: xvds vol0a0567ae156ca59f6
-	VmdiskHypervisorFileName string `json:"vmdisk_hypervisor_file_name,omitempty"`
+	VmdiskHypervisorFileName *string `json:"vmdisk_hypervisor_file_name,omitempty"`
 
 	// Target device's World Wide Node Name.
 	// Example: 5000c2971c1b2b8c
-	Wwnn string `json:"wwnn,omitempty"`
+	Wwnn *string `json:"wwnn,omitempty"`
 
 	// Target device's World Wide Port Name.
 	// Example: 5000c2971c1b2b8d
-	Wwpn string `json:"wwpn,omitempty"`
+	Wwpn *string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this disk path info
@@ -127,7 +127,7 @@ func (m *DiskPathInfo) validatePortType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePortTypeEnum("port_type", "body", m.PortType); err != nil {
+	if err := m.validatePortTypeEnum("port_type", "body", *m.PortType); err != nil {
 		return err
 	}
 

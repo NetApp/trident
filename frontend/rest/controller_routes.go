@@ -23,8 +23,10 @@ type Routes []Route
 
 const (
 	// arbitrarily large number to limit maximum routines waiting for global lock
-	updateVolumePublicationRateLimit = 10000.0 // requests per second
-	updateVolumePublicationBurst     = 10000   // maximum request burst
+	updateNodeRateLimit = 10000.0 // requests per second
+	updateNodeBurst     = 10000   // maximum request burst
+	getNodeRateLimit    = 10000.0 // requests per second
+	getNodeBurst        = 10000   // maximum request burst
 )
 
 var controllerRoutes = Routes{
@@ -113,6 +115,13 @@ var controllerRoutes = Routes{
 		DeleteVolume,
 	},
 	Route{
+		"UpdateVolume",
+		"PUT",
+		config.VolumeURL + "/{volume}/luksPassphraseNames",
+		nil,
+		UpdateVolumeLUKSPassphraseNames,
+	},
+	Route{
 		"ImportVolume",
 		"POST",
 		config.VolumeURL + "/import",
@@ -162,10 +171,21 @@ var controllerRoutes = Routes{
 		AddNode,
 	},
 	Route{
+		"UpdateNode",
+		"PUT",
+		config.NodeURL + "/{node}/publicationState",
+		[]mux.MiddlewareFunc{
+			rateLimiterMiddleware(updateNodeRateLimit, updateNodeBurst),
+		},
+		UpdateNode,
+	},
+	Route{
 		"GetNode",
 		"GET",
 		config.NodeURL + "/{node}",
-		nil,
+		[]mux.MiddlewareFunc{
+			rateLimiterMiddleware(getNodeRateLimit, getNodeBurst),
+		},
 		GetNode,
 	},
 	Route{
@@ -211,15 +231,6 @@ var controllerRoutes = Routes{
 		ListVolumePublicationsForNode,
 	},
 	Route{
-		"UpdateVolumePublication",
-		"PUT",
-		config.PublicationURL + "/{volume}/{node}",
-		[]mux.MiddlewareFunc{
-			rateLimiterMiddleware(updateVolumePublicationRateLimit, updateVolumePublicationBurst),
-		},
-		UpdateVolumePublication,
-	},
-	Route{
 		"ListSnapshots",
 		"GET",
 		config.SnapshotURL,
@@ -260,5 +271,61 @@ var controllerRoutes = Routes{
 		config.ChapURL + "/{volume}/{node}",
 		nil,
 		GetCHAP,
+	},
+	Route{
+		"GetCurrentLogLevel",
+		"GET",
+		config.LoggingConfigURL + "/level",
+		nil,
+		GetCurrentLogLevel,
+	},
+	Route{
+		"SetLogLevel",
+		"POST",
+		config.LoggingConfigURL + "/level/{level}",
+		nil,
+		SetLogLevel,
+	},
+	Route{
+		"GetLoggingWorkflows",
+		"GET",
+		config.LoggingConfigURL + "/workflows/selected",
+		nil,
+		GetLoggingWorkflows,
+	},
+	Route{
+		"ListLoggingWorkflows",
+		"GET",
+		config.LoggingConfigURL + "/workflows",
+		nil,
+		ListLoggingWorkflows,
+	},
+	Route{
+		"SetLoggingWorkflows",
+		"POST",
+		config.LoggingConfigURL + "/workflows",
+		nil,
+		SetLoggingWorkflows,
+	},
+	Route{
+		"GetLogLayers",
+		"GET",
+		config.LoggingConfigURL + "/layers/selected",
+		nil,
+		GetLoggingLayers,
+	},
+	Route{
+		"ListLogLayers",
+		"GET",
+		config.LoggingConfigURL + "/layers",
+		nil,
+		ListLoggingLayers,
+	},
+	Route{
+		"SetLoggingLayers",
+		"POST",
+		config.LoggingConfigURL + "/layers",
+		nil,
+		SetLoggingLayers,
 	},
 }

@@ -74,19 +74,19 @@ type UnixGroupUsersCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UnixGroupName.
 
 	   UNIX group name.
 	*/
-	UnixGroupNamePathParameter string
+	UnixGroupName string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *UnixGroupUsersCreateParams) WithDefaults() *UnixGroupUsersCreateParams 
 // All values with no default are reset to their zero value.
 func (o *UnixGroupUsersCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := UnixGroupUsersCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -163,37 +163,37 @@ func (o *UnixGroupUsersCreateParams) SetInfo(info *models.UnixGroupUsers) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the unix group users create params
-func (o *UnixGroupUsersCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *UnixGroupUsersCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the unix group users create params
+func (o *UnixGroupUsersCreateParams) WithReturnRecords(returnRecords *bool) *UnixGroupUsersCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the unix group users create params
-func (o *UnixGroupUsersCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the unix group users create params
+func (o *UnixGroupUsersCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the unix group users create params
-func (o *UnixGroupUsersCreateParams) WithSVMUUIDPathParameter(svmUUID string) *UnixGroupUsersCreateParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix group users create params
+func (o *UnixGroupUsersCreateParams) WithSvmUUID(svmUUID string) *UnixGroupUsersCreateParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the unix group users create params
-func (o *UnixGroupUsersCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix group users create params
+func (o *UnixGroupUsersCreateParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixGroupNamePathParameter adds the unixGroupName to the unix group users create params
-func (o *UnixGroupUsersCreateParams) WithUnixGroupNamePathParameter(unixGroupName string) *UnixGroupUsersCreateParams {
-	o.SetUnixGroupNamePathParameter(unixGroupName)
+// WithUnixGroupName adds the unixGroupName to the unix group users create params
+func (o *UnixGroupUsersCreateParams) WithUnixGroupName(unixGroupName string) *UnixGroupUsersCreateParams {
+	o.SetUnixGroupName(unixGroupName)
 	return o
 }
 
-// SetUnixGroupNamePathParameter adds the unixGroupName to the unix group users create params
-func (o *UnixGroupUsersCreateParams) SetUnixGroupNamePathParameter(unixGroupName string) {
-	o.UnixGroupNamePathParameter = unixGroupName
+// SetUnixGroupName adds the unixGroupName to the unix group users create params
+func (o *UnixGroupUsersCreateParams) SetUnixGroupName(unixGroupName string) {
+	o.UnixGroupName = unixGroupName
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -209,13 +209,13 @@ func (o *UnixGroupUsersCreateParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -227,12 +227,12 @@ func (o *UnixGroupUsersCreateParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param unix_group.name
-	if err := r.SetPathParam("unix_group.name", o.UnixGroupNamePathParameter); err != nil {
+	if err := r.SetPathParam("unix_group.name", o.UnixGroupName); err != nil {
 		return err
 	}
 

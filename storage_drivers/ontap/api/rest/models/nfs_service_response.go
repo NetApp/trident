@@ -20,13 +20,14 @@ import (
 type NfsServiceResponse struct {
 
 	// links
-	Links *NfsServiceResponseLinks `json:"_links,omitempty"`
+	Links *NfsServiceResponseInlineLinks `json:"_links,omitempty"`
+
+	// nfs service response inline records
+	NfsServiceResponseInlineRecords []*NfsService `json:"records,omitempty"`
 
 	// Number of NFS Server Records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NfsService `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this nfs service response
@@ -37,7 +38,7 @@ func (m *NfsServiceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNfsServiceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *NfsServiceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsServiceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NfsServiceResponse) validateNfsServiceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NfsServiceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NfsServiceResponseInlineRecords); i++ {
+		if swag.IsZero(m.NfsServiceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NfsServiceResponseInlineRecords[i] != nil {
+			if err := m.NfsServiceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *NfsServiceResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNfsServiceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *NfsServiceResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NfsServiceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsServiceResponse) contextValidateNfsServiceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NfsServiceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NfsServiceResponseInlineRecords[i] != nil {
+			if err := m.NfsServiceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *NfsServiceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NfsServiceResponseLinks nfs service response links
+// NfsServiceResponseInlineLinks nfs service response inline links
 //
-// swagger:model NfsServiceResponseLinks
-type NfsServiceResponseLinks struct {
+// swagger:model nfs_service_response_inline__links
+type NfsServiceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type NfsServiceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nfs service response links
-func (m *NfsServiceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nfs service response inline links
+func (m *NfsServiceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *NfsServiceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsServiceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NfsServiceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *NfsServiceResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NfsServiceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NfsServiceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *NfsServiceResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this nfs service response links based on the context it is used
-func (m *NfsServiceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nfs service response inline links based on the context it is used
+func (m *NfsServiceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *NfsServiceResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *NfsServiceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsServiceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *NfsServiceResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *NfsServiceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NfsServiceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *NfsServiceResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *NfsServiceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NfsServiceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *NfsServiceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NfsServiceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NfsServiceResponseLinks
+func (m *NfsServiceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NfsServiceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

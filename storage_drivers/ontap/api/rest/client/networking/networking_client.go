@@ -175,7 +175,7 @@ type ClientService interface {
 	FabricCollectionGet Retrieves Fibre Channel fabrics.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connections`
 * `zoneset`
 ### Related ONTAP commands
@@ -223,7 +223,7 @@ func (a *Client) FabricCollectionGet(params *FabricCollectionGetParams, authInfo
 	FabricGet Retrieves a Fibre Channel fabric.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `connections`
 * `zoneset`
 ### Related ONTAP commands
@@ -409,7 +409,7 @@ func (a *Client) FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo run
 	FcInterfaceGet Retrieves an FC interface.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -500,7 +500,7 @@ func (a *Client) FcInterfaceModify(params *FcInterfaceModifyParams, authInfo run
 	FcPortCollectionGet Retrieves FC ports.<br/>
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `fabric.name`
 * `statistics.*`
 * `metric.*`
@@ -548,7 +548,7 @@ func (a *Client) FcPortCollectionGet(params *FcPortCollectionGetParams, authInfo
 	FcPortGet Retrieves an FC port.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `fabric.name`
 * `statistics.*`
 * `metric.*`
@@ -639,7 +639,7 @@ func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.Clien
 	FcSwitchCollectionGet Retrieves the Fibre Channel switches of a Fibre Channel fabric.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `ports`
 ### Related ONTAP commands
 * `network fcp topology show`
@@ -685,7 +685,7 @@ func (a *Client) FcSwitchCollectionGet(params *FcSwitchCollectionGetParams, auth
 	FcSwitchGet Retrieves a Fibre Channel switch.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `ports`
 ### Related ONTAP commands
 * `network fcp topology show`
@@ -731,7 +731,7 @@ func (a *Client) FcSwitchGet(params *FcSwitchGetParams, authInfo runtime.ClientA
 	FcZoneCollectionGet Retrieves the zones of the active zoneset of a Fibre Channel fabric.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `members`
 ### Related ONTAP commands
 * `network fcp zone show`
@@ -777,7 +777,7 @@ func (a *Client) FcZoneCollectionGet(params *FcZoneCollectionGetParams, authInfo
 	FcZoneGet Retrieves a zone of the active zoneset of a Fibre Channel fabric.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `members`
 ### Related ONTAP commands
 * `network fcp zone show`
@@ -2715,7 +2715,7 @@ func (a *Client) NetworkIPRoutesCreate(params *NetworkIPRoutesCreateParams, auth
 	NetworkIPRoutesGet Retrieves the collection of IP routes.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `interfaces.*`
 ### Related ONTAP commands
 * `network route show`

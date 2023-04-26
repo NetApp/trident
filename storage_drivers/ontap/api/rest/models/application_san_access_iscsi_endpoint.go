@@ -20,17 +20,17 @@ import (
 type ApplicationSanAccessIscsiEndpoint struct {
 
 	// links
-	Links *ApplicationSanAccessIscsiEndpointLinks `json:"_links,omitempty"`
+	Links *ApplicationSanAccessIscsiEndpointInlineLinks `json:"_links,omitempty"`
 
 	// interface
-	Interface *ApplicationSanAccessIscsiEndpointInterface `json:"interface,omitempty"`
+	Interface *ApplicationSanAccessIscsiEndpointInlineInterface `json:"interface,omitempty"`
 
 	// The TCP port number of the iSCSI access endpoint.
 	// Example: 3260
 	// Read Only: true
 	// Maximum: 65536
 	// Minimum: 1
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 }
 
 // Validate validates this application san access iscsi endpoint
@@ -94,11 +94,11 @@ func (m *ApplicationSanAccessIscsiEndpoint) validatePort(formats strfmt.Registry
 		return nil
 	}
 
-	if err := validate.MinimumInt("port", "body", m.Port, 1, false); err != nil {
+	if err := validate.MinimumInt("port", "body", *m.Port, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("port", "body", m.Port, 65536, false); err != nil {
+	if err := validate.MaximumInt("port", "body", *m.Port, 65536, false); err != nil {
 		return err
 	}
 
@@ -157,7 +157,7 @@ func (m *ApplicationSanAccessIscsiEndpoint) contextValidateInterface(ctx context
 
 func (m *ApplicationSanAccessIscsiEndpoint) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "port", "body", int64(m.Port)); err != nil {
+	if err := validate.ReadOnly(ctx, "port", "body", m.Port); err != nil {
 		return err
 	}
 
@@ -182,30 +182,30 @@ func (m *ApplicationSanAccessIscsiEndpoint) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationSanAccessIscsiEndpointInterface application san access iscsi endpoint interface
+// ApplicationSanAccessIscsiEndpointInlineInterface application san access iscsi endpoint inline interface
 //
-// swagger:model ApplicationSanAccessIscsiEndpointInterface
-type ApplicationSanAccessIscsiEndpointInterface struct {
+// swagger:model application_san_access_iscsi_endpoint_inline_interface
+type ApplicationSanAccessIscsiEndpointInlineInterface struct {
 
 	// links
-	Links *ApplicationSanAccessIscsiEndpointInterfaceLinks `json:"_links,omitempty"`
+	Links *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *ApplicationSanAccessIscsiEndpointInterfaceIP `json:"ip,omitempty"`
+	IP *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application san access iscsi endpoint interface
-func (m *ApplicationSanAccessIscsiEndpointInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this application san access iscsi endpoint inline interface
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -222,7 +222,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterface) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -239,7 +239,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) validateLinks(formats strfm
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterface) validateIP(formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -256,8 +256,8 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) validateIP(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this application san access iscsi endpoint interface based on the context it is used
-func (m *ApplicationSanAccessIscsiEndpointInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application san access iscsi endpoint inline interface based on the context it is used
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -274,7 +274,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) ContextValidate(ctx context
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -288,7 +288,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) contextValidateLinks(ctx co
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -303,7 +303,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) contextValidateIP(ctx conte
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointInterface) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -311,8 +311,8 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointInterface) UnmarshalBinary(b []byte) error {
-	var res ApplicationSanAccessIscsiEndpointInterface
+func (m *ApplicationSanAccessIscsiEndpointInlineInterface) UnmarshalBinary(b []byte) error {
+	var res ApplicationSanAccessIscsiEndpointInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -320,17 +320,17 @@ func (m *ApplicationSanAccessIscsiEndpointInterface) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// ApplicationSanAccessIscsiEndpointInterfaceIP IP information
+// ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP IP information
 //
-// swagger:model ApplicationSanAccessIscsiEndpointInterfaceIP
-type ApplicationSanAccessIscsiEndpointInterfaceIP struct {
+// swagger:model application_san_access_iscsi_endpoint_inline_interface_inline_ip
+type ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this application san access iscsi endpoint interface IP
-func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this application san access iscsi endpoint inline interface inline ip
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -343,23 +343,25 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) Validate(formats strfmt.R
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this application san access iscsi endpoint interface IP based on the context it is used
-func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application san access iscsi endpoint inline interface inline ip based on the context it is used
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -372,20 +374,22 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) ContextValidate(ctx conte
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -393,8 +397,8 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res ApplicationSanAccessIscsiEndpointInterfaceIP
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res ApplicationSanAccessIscsiEndpointInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -402,17 +406,17 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceIP) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// ApplicationSanAccessIscsiEndpointInterfaceLinks application san access iscsi endpoint interface links
+// ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks application san access iscsi endpoint inline interface inline links
 //
-// swagger:model ApplicationSanAccessIscsiEndpointInterfaceLinks
-type ApplicationSanAccessIscsiEndpointInterfaceLinks struct {
+// swagger:model application_san_access_iscsi_endpoint_inline_interface_inline__links
+type ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application san access iscsi endpoint interface links
-func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application san access iscsi endpoint inline interface inline links
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -425,7 +429,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) Validate(formats strfm
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -442,8 +446,8 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) validateSelf(formats s
 	return nil
 }
 
-// ContextValidate validate this application san access iscsi endpoint interface links based on the context it is used
-func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application san access iscsi endpoint inline interface inline links based on the context it is used
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -456,7 +460,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) ContextValidate(ctx co
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -471,7 +475,7 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) contextValidateSelf(ct
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -479,8 +483,8 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) MarshalBinary() ([]byt
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationSanAccessIscsiEndpointInterfaceLinks
+func (m *ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationSanAccessIscsiEndpointInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -488,17 +492,17 @@ func (m *ApplicationSanAccessIscsiEndpointInterfaceLinks) UnmarshalBinary(b []by
 	return nil
 }
 
-// ApplicationSanAccessIscsiEndpointLinks application san access iscsi endpoint links
+// ApplicationSanAccessIscsiEndpointInlineLinks application san access iscsi endpoint inline links
 //
-// swagger:model ApplicationSanAccessIscsiEndpointLinks
-type ApplicationSanAccessIscsiEndpointLinks struct {
+// swagger:model application_san_access_iscsi_endpoint_inline__links
+type ApplicationSanAccessIscsiEndpointInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application san access iscsi endpoint links
-func (m *ApplicationSanAccessIscsiEndpointLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application san access iscsi endpoint inline links
+func (m *ApplicationSanAccessIscsiEndpointInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -511,7 +515,7 @@ func (m *ApplicationSanAccessIscsiEndpointLinks) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -528,8 +532,8 @@ func (m *ApplicationSanAccessIscsiEndpointLinks) validateSelf(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this application san access iscsi endpoint links based on the context it is used
-func (m *ApplicationSanAccessIscsiEndpointLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application san access iscsi endpoint inline links based on the context it is used
+func (m *ApplicationSanAccessIscsiEndpointInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -542,7 +546,7 @@ func (m *ApplicationSanAccessIscsiEndpointLinks) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *ApplicationSanAccessIscsiEndpointLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationSanAccessIscsiEndpointInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -557,7 +561,7 @@ func (m *ApplicationSanAccessIscsiEndpointLinks) contextValidateSelf(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationSanAccessIscsiEndpointInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -565,8 +569,8 @@ func (m *ApplicationSanAccessIscsiEndpointLinks) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationSanAccessIscsiEndpointLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationSanAccessIscsiEndpointLinks
+func (m *ApplicationSanAccessIscsiEndpointInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationSanAccessIscsiEndpointInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

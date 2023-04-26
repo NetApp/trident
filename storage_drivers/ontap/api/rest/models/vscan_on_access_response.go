@@ -20,13 +20,14 @@ import (
 type VscanOnAccessResponse struct {
 
 	// links
-	Links *VscanOnAccessResponseLinks `json:"_links,omitempty"`
+	Links *VscanOnAccessResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*VscanOnAccess `json:"records,omitempty"`
+	// vscan on access response inline records
+	VscanOnAccessResponseInlineRecords []*VscanOnAccess `json:"records,omitempty"`
 }
 
 // Validate validates this vscan on access response
@@ -37,7 +38,7 @@ func (m *VscanOnAccessResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateVscanOnAccessResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *VscanOnAccessResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnAccessResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *VscanOnAccessResponse) validateVscanOnAccessResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanOnAccessResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.VscanOnAccessResponseInlineRecords); i++ {
+		if swag.IsZero(m.VscanOnAccessResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.VscanOnAccessResponseInlineRecords[i] != nil {
+			if err := m.VscanOnAccessResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *VscanOnAccessResponse) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateVscanOnAccessResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *VscanOnAccessResponse) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanOnAccessResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnAccessResponse) contextValidateVscanOnAccessResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.VscanOnAccessResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.VscanOnAccessResponseInlineRecords[i] != nil {
+			if err := m.VscanOnAccessResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *VscanOnAccessResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnAccessResponseLinks vscan on access response links
+// VscanOnAccessResponseInlineLinks vscan on access response inline links
 //
-// swagger:model VscanOnAccessResponseLinks
-type VscanOnAccessResponseLinks struct {
+// swagger:model vscan_on_access_response_inline__links
+type VscanOnAccessResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type VscanOnAccessResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan on access response links
-func (m *VscanOnAccessResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on access response inline links
+func (m *VscanOnAccessResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *VscanOnAccessResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnAccessResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *VscanOnAccessResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *VscanOnAccessResponseLinks) validateNext(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *VscanOnAccessResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanOnAccessResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *VscanOnAccessResponseLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this vscan on access response links based on the context it is used
-func (m *VscanOnAccessResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on access response inline links based on the context it is used
+func (m *VscanOnAccessResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *VscanOnAccessResponseLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanOnAccessResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnAccessResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *VscanOnAccessResponseLinks) contextValidateNext(ctx context.Context, fo
 	return nil
 }
 
-func (m *VscanOnAccessResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnAccessResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *VscanOnAccessResponseLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnAccessResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanOnAccessResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *VscanOnAccessResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnAccessResponseLinks) UnmarshalBinary(b []byte) error {
-	var res VscanOnAccessResponseLinks
+func (m *VscanOnAccessResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanOnAccessResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

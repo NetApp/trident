@@ -25,14 +25,11 @@ type ApplicationTemplate struct {
 
 	// Description.
 	// Read Only: true
-	Description string `json:"description,omitempty"`
-
-	// maxdata on san
-	MaxdataOnSan *MaxdataOnSan `json:"maxdata_on_san,omitempty"`
+	Description *string `json:"description,omitempty"`
 
 	// Missing prerequisites.
 	// Read Only: true
-	MissingPrerequisites string `json:"missing_prerequisites,omitempty"`
+	MissingPrerequisites *string `json:"missing_prerequisites,omitempty"`
 
 	// mongo db on san
 	MongoDbOnSan *MongoDbOnSan `json:"mongo_db_on_san,omitempty"`
@@ -40,7 +37,7 @@ type ApplicationTemplate struct {
 	// Template name.
 	// Required: true
 	// Read Only: true
-	Name string `json:"name"`
+	Name *string `json:"name"`
 
 	// nas
 	Nas *Nas `json:"nas,omitempty"`
@@ -63,7 +60,7 @@ type ApplicationTemplate struct {
 	// Access protocol.
 	// Read Only: true
 	// Enum: [nas nvme s3 san]
-	Protocol string `json:"protocol,omitempty"`
+	Protocol *string `json:"protocol,omitempty"`
 
 	// s3 bucket
 	S3Bucket *ZappS3Bucket `json:"s3_bucket,omitempty"`
@@ -95,10 +92,6 @@ func (m *ApplicationTemplate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateMaxdataOnSan(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -193,23 +186,6 @@ func (m *ApplicationTemplate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ApplicationTemplate) validateMaxdataOnSan(formats strfmt.Registry) error {
-	if swag.IsZero(m.MaxdataOnSan) { // not required
-		return nil
-	}
-
-	if m.MaxdataOnSan != nil {
-		if err := m.MaxdataOnSan.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("maxdata_on_san")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (m *ApplicationTemplate) validateMongoDbOnSan(formats strfmt.Registry) error {
 	if swag.IsZero(m.MongoDbOnSan) { // not required
 		return nil
@@ -229,7 +205,7 @@ func (m *ApplicationTemplate) validateMongoDbOnSan(formats strfmt.Registry) erro
 
 func (m *ApplicationTemplate) validateName(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("name", "body", m.Name); err != nil {
+	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -407,7 +383,7 @@ func (m *ApplicationTemplate) validateProtocol(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 
@@ -562,10 +538,6 @@ func (m *ApplicationTemplate) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateMaxdataOnSan(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateMissingPrerequisites(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -660,22 +632,8 @@ func (m *ApplicationTemplate) contextValidateLinks(ctx context.Context, formats 
 
 func (m *ApplicationTemplate) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+	if err := validate.ReadOnly(ctx, "description", "body", m.Description); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ApplicationTemplate) contextValidateMaxdataOnSan(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.MaxdataOnSan != nil {
-		if err := m.MaxdataOnSan.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("maxdata_on_san")
-			}
-			return err
-		}
 	}
 
 	return nil
@@ -683,7 +641,7 @@ func (m *ApplicationTemplate) contextValidateMaxdataOnSan(ctx context.Context, f
 
 func (m *ApplicationTemplate) contextValidateMissingPrerequisites(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "missing_prerequisites", "body", string(m.MissingPrerequisites)); err != nil {
+	if err := validate.ReadOnly(ctx, "missing_prerequisites", "body", m.MissingPrerequisites); err != nil {
 		return err
 	}
 
@@ -706,7 +664,7 @@ func (m *ApplicationTemplate) contextValidateMongoDbOnSan(ctx context.Context, f
 
 func (m *ApplicationTemplate) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -799,7 +757,7 @@ func (m *ApplicationTemplate) contextValidateOracleRacOnSan(ctx context.Context,
 
 func (m *ApplicationTemplate) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+	if err := validate.ReadOnly(ctx, "protocol", "body", m.Protocol); err != nil {
 		return err
 	}
 

@@ -46,8 +46,12 @@ imagePullSecrets: []
 kubeletDir: ""
 
 
-# operatorDebug allows enabling debug logging in trident-operator.
-operatorDebug: false
+# operatorLogLevel allows the log level of the Trident operator to be set to one of these: 
+# trace, debug, info, warn, error, fatal.
+# operatorLogLevel: "info"
+
+# operatorDebug allows the log level of the Trident operator to be set to debug
+operatorDebug: true
 
 # operatorImage allows the complete override of the image for trident-operator.
 operatorImage: ""
@@ -55,9 +59,6 @@ operatorImage: ""
 # operatorImageTag allows overriding the tag of the trident-operator image.
 operatorImageTag: ""
 
-
-# tridentDebug allows enabling debug logging from the Trident deployment.
-tridentDebug: false
 
 # tridentIPv6 allows enabling Trident to work in IPv6 clusters.
 tridentIPv6: false
@@ -76,7 +77,7 @@ tridentSilenceAutosupport: false
 tridentAutosupportImage: ""
 
 # tridentAutosupportImageTag allows overriding the tag of the image for Trident's Autosupport container.
-tridentAutosupportImageTag: "22.10"
+tridentAutosupportImageTag: "23.01"
 
 # tridentAutosupportProxy allows Trident's autosupport container to phone home via an HTTP proxy.
 tridentAutosupportProxy: ""
@@ -86,6 +87,18 @@ tridentLogFormat: "text"
 
 # tridentDisableAuditLog disables Trident's audit logger.
 tridentDisableAuditLog: true
+
+# tridentLogLevel allows the log level of Trident to be set to one of these: trace, debug, info, warn, error, fatal.
+#tridentLogLevel: "info"
+
+# tridentDebug allows the log level of Trident to be set to debug
+tridentDebug: false
+
+# tridentLogWorkflows allows specific Trident workflows to be enabled for trace logging or log suppression.
+tridentLogWorkflows: ""
+
+# tridentLogLayers allows specific Trident layers to be enabled for trace logging or log suppression.
+tridentLogLayers: ""
 
 # tridentImage allows the complete override of the image for Trident.
 tridentImage: ""
@@ -110,3 +123,6 @@ windows: false
 
 # enableForceDetach allows enabling the force detach feature.
 enableForceDetach: false
+
+# excludePodSecurityPolicy excludes the operator pod security policy from creation.
+excludePodSecurityPolicy: false

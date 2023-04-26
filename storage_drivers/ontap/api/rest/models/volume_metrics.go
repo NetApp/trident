@@ -21,35 +21,35 @@ import (
 type VolumeMetrics struct {
 
 	// links
-	Links *VolumeMetricsLinks `json:"_links,omitempty"`
+	Links *VolumeMetricsInlineLinks `json:"_links,omitempty"`
 
 	// cloud
-	Cloud *VolumeMetricsCloud `json:"cloud,omitempty"`
+	Cloud *VolumeMetricsInlineCloud `json:"cloud,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// flexcache
-	Flexcache *VolumeMetricsFlexcache `json:"flexcache,omitempty"`
+	Flexcache *VolumeMetricsInlineFlexcache `json:"flexcache,omitempty"`
 
 	// iops
-	Iops *VolumeMetricsIops `json:"iops,omitempty"`
+	Iops *VolumeMetricsInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *VolumeMetricsLatency `json:"latency,omitempty"`
+	Latency *VolumeMetricsInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *VolumeMetricsThroughput `json:"throughput,omitempty"`
+	Throughput *VolumeMetricsInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -227,7 +227,7 @@ func (m *VolumeMetrics) validateDuration(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -414,7 +414,7 @@ func (m *VolumeMetrics) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -526,7 +526,7 @@ func (m *VolumeMetrics) contextValidateCloud(ctx context.Context, formats strfmt
 
 func (m *VolumeMetrics) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -577,7 +577,7 @@ func (m *VolumeMetrics) contextValidateLatency(ctx context.Context, formats strf
 
 func (m *VolumeMetrics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -625,29 +625,29 @@ func (m *VolumeMetrics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsCloud Performance numbers (IOPS and latency) for cloud store. These numbers are relevant only for volumes hosted on FabricPools.
+// VolumeMetricsInlineCloud Performance numbers (IOPS and latency) for cloud store. These numbers are relevant only for volumes hosted on FabricPools.
 //
-// swagger:model VolumeMetricsCloud
-type VolumeMetricsCloud struct {
+// swagger:model volume_metrics_inline_cloud
+type VolumeMetricsInlineCloud struct {
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *VolumeMetricsCloudIops `json:"iops,omitempty"`
+	Iops *VolumeMetricsInlineCloudInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *VolumeMetricsCloudLatency `json:"latency,omitempty"`
+	Latency *VolumeMetricsInlineCloudInlineLatency `json:"latency,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -656,8 +656,8 @@ type VolumeMetricsCloud struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this volume metrics cloud
-func (m *VolumeMetricsCloud) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline cloud
+func (m *VolumeMetricsInlineCloud) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDuration(formats); err != nil {
@@ -686,7 +686,7 @@ func (m *VolumeMetricsCloud) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var volumeMetricsCloudTypeDurationPropEnum []interface{}
+var volumeMetricsInlineCloudTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -694,95 +694,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeMetricsCloudTypeDurationPropEnum = append(volumeMetricsCloudTypeDurationPropEnum, v)
+		volumeMetricsInlineCloudTypeDurationPropEnum = append(volumeMetricsInlineCloudTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// VolumeMetricsCloudDurationPT15S captures enum value "PT15S"
-	VolumeMetricsCloudDurationPT15S string = "PT15S"
+	// VolumeMetricsInlineCloudDurationPT15S captures enum value "PT15S"
+	VolumeMetricsInlineCloudDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// VolumeMetricsCloudDurationPT4M captures enum value "PT4M"
-	VolumeMetricsCloudDurationPT4M string = "PT4M"
+	// VolumeMetricsInlineCloudDurationPT4M captures enum value "PT4M"
+	VolumeMetricsInlineCloudDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// VolumeMetricsCloudDurationPT30M captures enum value "PT30M"
-	VolumeMetricsCloudDurationPT30M string = "PT30M"
+	// VolumeMetricsInlineCloudDurationPT30M captures enum value "PT30M"
+	VolumeMetricsInlineCloudDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// VolumeMetricsCloudDurationPT2H captures enum value "PT2H"
-	VolumeMetricsCloudDurationPT2H string = "PT2H"
+	// VolumeMetricsInlineCloudDurationPT2H captures enum value "PT2H"
+	VolumeMetricsInlineCloudDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// VolumeMetricsCloudDurationP1D captures enum value "P1D"
-	VolumeMetricsCloudDurationP1D string = "P1D"
+	// VolumeMetricsInlineCloudDurationP1D captures enum value "P1D"
+	VolumeMetricsInlineCloudDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// VolumeMetricsCloudDurationPT5M captures enum value "PT5M"
-	VolumeMetricsCloudDurationPT5M string = "PT5M"
+	// VolumeMetricsInlineCloudDurationPT5M captures enum value "PT5M"
+	VolumeMetricsInlineCloudDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *VolumeMetricsCloud) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeMetricsCloudTypeDurationPropEnum, true); err != nil {
+func (m *VolumeMetricsInlineCloud) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricsInlineCloudTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeMetricsCloud) validateDuration(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("cloud"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("cloud"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsCloud) validateIops(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -799,7 +799,7 @@ func (m *VolumeMetricsCloud) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumeMetricsCloud) validateLatency(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -816,7 +816,7 @@ func (m *VolumeMetricsCloud) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var volumeMetricsCloudTypeStatusPropEnum []interface{}
+var volumeMetricsInlineCloudTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -824,135 +824,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeMetricsCloudTypeStatusPropEnum = append(volumeMetricsCloudTypeStatusPropEnum, v)
+		volumeMetricsInlineCloudTypeStatusPropEnum = append(volumeMetricsInlineCloudTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusOk captures enum value "ok"
-	VolumeMetricsCloudStatusOk string = "ok"
+	// VolumeMetricsInlineCloudStatusOk captures enum value "ok"
+	VolumeMetricsInlineCloudStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusError captures enum value "error"
-	VolumeMetricsCloudStatusError string = "error"
+	// VolumeMetricsInlineCloudStatusError captures enum value "error"
+	VolumeMetricsInlineCloudStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusPartialNoData captures enum value "partial_no_data"
-	VolumeMetricsCloudStatusPartialNoData string = "partial_no_data"
+	// VolumeMetricsInlineCloudStatusPartialNoData captures enum value "partial_no_data"
+	VolumeMetricsInlineCloudStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
-	VolumeMetricsCloudStatusPartialNoUUID string = "partial_no_uuid"
+	// VolumeMetricsInlineCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeMetricsInlineCloudStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusPartialNoResponse captures enum value "partial_no_response"
-	VolumeMetricsCloudStatusPartialNoResponse string = "partial_no_response"
+	// VolumeMetricsInlineCloudStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeMetricsInlineCloudStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusPartialOtherError captures enum value "partial_other_error"
-	VolumeMetricsCloudStatusPartialOtherError string = "partial_other_error"
+	// VolumeMetricsInlineCloudStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeMetricsInlineCloudStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusNegativeDelta captures enum value "negative_delta"
-	VolumeMetricsCloudStatusNegativeDelta string = "negative_delta"
+	// VolumeMetricsInlineCloudStatusNegativeDelta captures enum value "negative_delta"
+	VolumeMetricsInlineCloudStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusBackfilledData captures enum value "backfilled_data"
-	VolumeMetricsCloudStatusBackfilledData string = "backfilled_data"
+	// VolumeMetricsInlineCloudStatusBackfilledData captures enum value "backfilled_data"
+	VolumeMetricsInlineCloudStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	VolumeMetricsCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// VolumeMetricsInlineCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeMetricsInlineCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsCloud
-	// VolumeMetricsCloud
+	// volume_metrics_inline_cloud
+	// VolumeMetricsInlineCloud
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// VolumeMetricsCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	VolumeMetricsCloudStatusInconsistentOldData string = "inconsistent_old_data"
+	// VolumeMetricsInlineCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeMetricsInlineCloudStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *VolumeMetricsCloud) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeMetricsCloudTypeStatusPropEnum, true); err != nil {
+func (m *VolumeMetricsInlineCloud) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricsInlineCloudTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeMetricsCloud) validateStatus(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("cloud"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("cloud"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsCloud) validateTimestamp(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -964,8 +964,8 @@ func (m *VolumeMetricsCloud) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics cloud based on the context it is used
-func (m *VolumeMetricsCloud) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline cloud based on the context it is used
+func (m *VolumeMetricsInlineCloud) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDuration(ctx, formats); err != nil {
@@ -994,16 +994,16 @@ func (m *VolumeMetricsCloud) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *VolumeMetricsCloud) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cloud"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "cloud"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsCloud) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1017,7 +1017,7 @@ func (m *VolumeMetricsCloud) contextValidateIops(ctx context.Context, formats st
 	return nil
 }
 
-func (m *VolumeMetricsCloud) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1031,16 +1031,16 @@ func (m *VolumeMetricsCloud) contextValidateLatency(ctx context.Context, formats
 	return nil
 }
 
-func (m *VolumeMetricsCloud) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cloud"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "cloud"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsCloud) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineCloud) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "cloud"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1050,7 +1050,7 @@ func (m *VolumeMetricsCloud) contextValidateTimestamp(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsCloud) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineCloud) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1058,8 +1058,8 @@ func (m *VolumeMetricsCloud) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsCloud) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsCloud
+func (m *VolumeMetricsInlineCloud) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineCloud
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1067,34 +1067,34 @@ func (m *VolumeMetricsCloud) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsCloudIops The rate of I/O operations observed at the storage object.
+// VolumeMetricsInlineCloudInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model VolumeMetricsCloudIops
-type VolumeMetricsCloudIops struct {
+// swagger:model volume_metrics_inline_cloud_inline_iops
+type VolumeMetricsInlineCloudInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume metrics cloud iops
-func (m *VolumeMetricsCloudIops) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline cloud inline iops
+func (m *VolumeMetricsInlineCloudInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics cloud iops based on the context it is used
-func (m *VolumeMetricsCloudIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline cloud inline iops based on the context it is used
+func (m *VolumeMetricsInlineCloudInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1104,7 +1104,7 @@ func (m *VolumeMetricsCloudIops) ContextValidate(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsCloudIops) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineCloudInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1112,8 +1112,8 @@ func (m *VolumeMetricsCloudIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsCloudIops) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsCloudIops
+func (m *VolumeMetricsInlineCloudInlineIops) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineCloudInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1121,34 +1121,34 @@ func (m *VolumeMetricsCloudIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsCloudLatency The round trip latency in microseconds observed at the storage object.
+// VolumeMetricsInlineCloudInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model VolumeMetricsCloudLatency
-type VolumeMetricsCloudLatency struct {
+// swagger:model volume_metrics_inline_cloud_inline_latency
+type VolumeMetricsInlineCloudInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume metrics cloud latency
-func (m *VolumeMetricsCloudLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline cloud inline latency
+func (m *VolumeMetricsInlineCloudInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics cloud latency based on the context it is used
-func (m *VolumeMetricsCloudLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline cloud inline latency based on the context it is used
+func (m *VolumeMetricsInlineCloudInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1158,7 +1158,7 @@ func (m *VolumeMetricsCloudLatency) ContextValidate(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsCloudLatency) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineCloudInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1166,8 +1166,8 @@ func (m *VolumeMetricsCloudLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsCloudLatency) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsCloudLatency
+func (m *VolumeMetricsInlineCloudInlineLatency) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineCloudInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1175,31 +1175,31 @@ func (m *VolumeMetricsCloudLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsFlexcache Performance number for FlexCache used to measure cache effectiveness.
+// VolumeMetricsInlineFlexcache Performance number for FlexCache used to measure cache effectiveness.
 //
-// swagger:model VolumeMetricsFlexcache
-type VolumeMetricsFlexcache struct {
+// swagger:model volume_metrics_inline_flexcache
+type VolumeMetricsInlineFlexcache struct {
 
 	// Bandwidth savings denoting the amount of data served locally by the cache, in bytes.
 	// Example: 4096
-	BandwidthSavings int64 `json:"bandwidth_savings,omitempty"`
+	BandwidthSavings *int64 `json:"bandwidth_savings,omitempty"`
 
 	// Cache miss percentage.
 	// Example: 20
-	CacheMissPercent int64 `json:"cache_miss_percent,omitempty"`
+	CacheMissPercent *int64 `json:"cache_miss_percent,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT1D
 	// Read Only: true
 	// Enum: [PT15S PT5M PT30M PT2H PT1D]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1208,8 +1208,8 @@ type VolumeMetricsFlexcache struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this volume metrics flexcache
-func (m *VolumeMetricsFlexcache) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline flexcache
+func (m *VolumeMetricsInlineFlexcache) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDuration(formats); err != nil {
@@ -1230,7 +1230,7 @@ func (m *VolumeMetricsFlexcache) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var volumeMetricsFlexcacheTypeDurationPropEnum []interface{}
+var volumeMetricsInlineFlexcacheTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1238,85 +1238,85 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeMetricsFlexcacheTypeDurationPropEnum = append(volumeMetricsFlexcacheTypeDurationPropEnum, v)
+		volumeMetricsInlineFlexcacheTypeDurationPropEnum = append(volumeMetricsInlineFlexcacheTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheDurationPT15S captures enum value "PT15S"
-	VolumeMetricsFlexcacheDurationPT15S string = "PT15S"
+	// VolumeMetricsInlineFlexcacheDurationPT15S captures enum value "PT15S"
+	VolumeMetricsInlineFlexcacheDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheDurationPT5M captures enum value "PT5M"
-	VolumeMetricsFlexcacheDurationPT5M string = "PT5M"
+	// VolumeMetricsInlineFlexcacheDurationPT5M captures enum value "PT5M"
+	VolumeMetricsInlineFlexcacheDurationPT5M string = "PT5M"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheDurationPT30M captures enum value "PT30M"
-	VolumeMetricsFlexcacheDurationPT30M string = "PT30M"
+	// VolumeMetricsInlineFlexcacheDurationPT30M captures enum value "PT30M"
+	VolumeMetricsInlineFlexcacheDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheDurationPT2H captures enum value "PT2H"
-	VolumeMetricsFlexcacheDurationPT2H string = "PT2H"
+	// VolumeMetricsInlineFlexcacheDurationPT2H captures enum value "PT2H"
+	VolumeMetricsInlineFlexcacheDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// duration
 	// Duration
 	// PT1D
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheDurationPT1D captures enum value "PT1D"
-	VolumeMetricsFlexcacheDurationPT1D string = "PT1D"
+	// VolumeMetricsInlineFlexcacheDurationPT1D captures enum value "PT1D"
+	VolumeMetricsInlineFlexcacheDurationPT1D string = "PT1D"
 )
 
 // prop value enum
-func (m *VolumeMetricsFlexcache) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeMetricsFlexcacheTypeDurationPropEnum, true); err != nil {
+func (m *VolumeMetricsInlineFlexcache) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricsInlineFlexcacheTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeMetricsFlexcache) validateDuration(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineFlexcache) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("flexcache"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("flexcache"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var volumeMetricsFlexcacheTypeStatusPropEnum []interface{}
+var volumeMetricsInlineFlexcacheTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1324,135 +1324,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeMetricsFlexcacheTypeStatusPropEnum = append(volumeMetricsFlexcacheTypeStatusPropEnum, v)
+		volumeMetricsInlineFlexcacheTypeStatusPropEnum = append(volumeMetricsInlineFlexcacheTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusOk captures enum value "ok"
-	VolumeMetricsFlexcacheStatusOk string = "ok"
+	// VolumeMetricsInlineFlexcacheStatusOk captures enum value "ok"
+	VolumeMetricsInlineFlexcacheStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusError captures enum value "error"
-	VolumeMetricsFlexcacheStatusError string = "error"
+	// VolumeMetricsInlineFlexcacheStatusError captures enum value "error"
+	VolumeMetricsInlineFlexcacheStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusPartialNoData captures enum value "partial_no_data"
-	VolumeMetricsFlexcacheStatusPartialNoData string = "partial_no_data"
+	// VolumeMetricsInlineFlexcacheStatusPartialNoData captures enum value "partial_no_data"
+	VolumeMetricsInlineFlexcacheStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusPartialNoUUID captures enum value "partial_no_uuid"
-	VolumeMetricsFlexcacheStatusPartialNoUUID string = "partial_no_uuid"
+	// VolumeMetricsInlineFlexcacheStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeMetricsInlineFlexcacheStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusPartialNoResponse captures enum value "partial_no_response"
-	VolumeMetricsFlexcacheStatusPartialNoResponse string = "partial_no_response"
+	// VolumeMetricsInlineFlexcacheStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeMetricsInlineFlexcacheStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusPartialOtherError captures enum value "partial_other_error"
-	VolumeMetricsFlexcacheStatusPartialOtherError string = "partial_other_error"
+	// VolumeMetricsInlineFlexcacheStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeMetricsInlineFlexcacheStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusNegativeDelta captures enum value "negative_delta"
-	VolumeMetricsFlexcacheStatusNegativeDelta string = "negative_delta"
+	// VolumeMetricsInlineFlexcacheStatusNegativeDelta captures enum value "negative_delta"
+	VolumeMetricsInlineFlexcacheStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusBackfilledData captures enum value "backfilled_data"
-	VolumeMetricsFlexcacheStatusBackfilledData string = "backfilled_data"
+	// VolumeMetricsInlineFlexcacheStatusBackfilledData captures enum value "backfilled_data"
+	VolumeMetricsInlineFlexcacheStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	VolumeMetricsFlexcacheStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// VolumeMetricsInlineFlexcacheStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeMetricsInlineFlexcacheStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// VolumeMetricsFlexcache
-	// VolumeMetricsFlexcache
+	// volume_metrics_inline_flexcache
+	// VolumeMetricsInlineFlexcache
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// VolumeMetricsFlexcacheStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	VolumeMetricsFlexcacheStatusInconsistentOldData string = "inconsistent_old_data"
+	// VolumeMetricsInlineFlexcacheStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeMetricsInlineFlexcacheStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *VolumeMetricsFlexcache) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeMetricsFlexcacheTypeStatusPropEnum, true); err != nil {
+func (m *VolumeMetricsInlineFlexcache) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricsInlineFlexcacheTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeMetricsFlexcache) validateStatus(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineFlexcache) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("flexcache"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("flexcache"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsFlexcache) validateTimestamp(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineFlexcache) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1464,8 +1464,8 @@ func (m *VolumeMetricsFlexcache) validateTimestamp(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this volume metrics flexcache based on the context it is used
-func (m *VolumeMetricsFlexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline flexcache based on the context it is used
+func (m *VolumeMetricsInlineFlexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDuration(ctx, formats); err != nil {
@@ -1486,25 +1486,25 @@ func (m *VolumeMetricsFlexcache) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *VolumeMetricsFlexcache) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineFlexcache) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "flexcache"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "flexcache"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsFlexcache) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineFlexcache) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "flexcache"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "flexcache"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *VolumeMetricsFlexcache) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineFlexcache) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "flexcache"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1514,7 +1514,7 @@ func (m *VolumeMetricsFlexcache) contextValidateTimestamp(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsFlexcache) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineFlexcache) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1522,8 +1522,8 @@ func (m *VolumeMetricsFlexcache) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsFlexcache) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsFlexcache
+func (m *VolumeMetricsInlineFlexcache) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineFlexcache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1531,34 +1531,34 @@ func (m *VolumeMetricsFlexcache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsIops The rate of I/O operations observed at the storage object.
+// VolumeMetricsInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model VolumeMetricsIops
-type VolumeMetricsIops struct {
+// swagger:model volume_metrics_inline_iops
+type VolumeMetricsInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume metrics iops
-func (m *VolumeMetricsIops) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline iops
+func (m *VolumeMetricsInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics iops based on the context it is used
-func (m *VolumeMetricsIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline iops based on the context it is used
+func (m *VolumeMetricsInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1568,7 +1568,7 @@ func (m *VolumeMetricsIops) ContextValidate(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsIops) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1576,8 +1576,8 @@ func (m *VolumeMetricsIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsIops) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsIops
+func (m *VolumeMetricsInlineIops) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1585,34 +1585,34 @@ func (m *VolumeMetricsIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsLatency The round trip latency in microseconds observed at the storage object.
+// VolumeMetricsInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model VolumeMetricsLatency
-type VolumeMetricsLatency struct {
+// swagger:model volume_metrics_inline_latency
+type VolumeMetricsInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume metrics latency
-func (m *VolumeMetricsLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline latency
+func (m *VolumeMetricsInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics latency based on the context it is used
-func (m *VolumeMetricsLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline latency based on the context it is used
+func (m *VolumeMetricsInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1622,7 +1622,7 @@ func (m *VolumeMetricsLatency) ContextValidate(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsLatency) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1630,8 +1630,8 @@ func (m *VolumeMetricsLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsLatency) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsLatency
+func (m *VolumeMetricsInlineLatency) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1639,17 +1639,17 @@ func (m *VolumeMetricsLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsLinks volume metrics links
+// VolumeMetricsInlineLinks volume metrics inline links
 //
-// swagger:model VolumeMetricsLinks
-type VolumeMetricsLinks struct {
+// swagger:model volume_metrics_inline__links
+type VolumeMetricsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this volume metrics links
-func (m *VolumeMetricsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline links
+func (m *VolumeMetricsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1662,7 +1662,7 @@ func (m *VolumeMetricsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumeMetricsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1679,8 +1679,8 @@ func (m *VolumeMetricsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics links based on the context it is used
-func (m *VolumeMetricsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline links based on the context it is used
+func (m *VolumeMetricsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1693,7 +1693,7 @@ func (m *VolumeMetricsLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *VolumeMetricsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeMetricsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1708,7 +1708,7 @@ func (m *VolumeMetricsLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsLinks) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1716,8 +1716,8 @@ func (m *VolumeMetricsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsLinks) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsLinks
+func (m *VolumeMetricsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1725,34 +1725,34 @@ func (m *VolumeMetricsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeMetricsThroughput The rate of throughput bytes per second observed at the storage object.
+// VolumeMetricsInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model VolumeMetricsThroughput
-type VolumeMetricsThroughput struct {
+// swagger:model volume_metrics_inline_throughput
+type VolumeMetricsInlineThroughput struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this volume metrics throughput
-func (m *VolumeMetricsThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this volume metrics inline throughput
+func (m *VolumeMetricsInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume metrics throughput based on the context it is used
-func (m *VolumeMetricsThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume metrics inline throughput based on the context it is used
+func (m *VolumeMetricsInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1762,7 +1762,7 @@ func (m *VolumeMetricsThroughput) ContextValidate(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeMetricsThroughput) MarshalBinary() ([]byte, error) {
+func (m *VolumeMetricsInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1770,8 +1770,8 @@ func (m *VolumeMetricsThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeMetricsThroughput) UnmarshalBinary(b []byte) error {
-	var res VolumeMetricsThroughput
+func (m *VolumeMetricsInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,25 +66,25 @@ type CifsShareACLCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Permission.
 
 	   Filter by permission
 	*/
-	PermissionQueryParameter *string
+	Permission *string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type CifsShareACLCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,37 +100,37 @@ type CifsShareACLCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Share.
 
 	   CIFS Share Name
 	*/
-	SharePathParameter string
+	Share string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UserOrGroup.
 
 	   Filter by user_or_group
 	*/
-	UserOrGroupQueryParameter *string
+	UserOrGroup *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,14 +150,14 @@ func (o *CifsShareACLCollectionGetParams) WithDefaults() *CifsShareACLCollection
 // All values with no default are reset to their zero value.
 func (o *CifsShareACLCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := CifsShareACLCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,125 +199,125 @@ func (o *CifsShareACLCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsShareACLCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithFields(fields []string) *CifsShareACLCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsShareACLCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsShareACLCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsShareACLCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithOrderBy(orderBy []string) *CifsShareACLCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPermissionQueryParameter adds the permission to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithPermissionQueryParameter(permission *string) *CifsShareACLCollectionGetParams {
-	o.SetPermissionQueryParameter(permission)
+// WithPermission adds the permission to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithPermission(permission *string) *CifsShareACLCollectionGetParams {
+	o.SetPermission(permission)
 	return o
 }
 
-// SetPermissionQueryParameter adds the permission to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetPermissionQueryParameter(permission *string) {
-	o.PermissionQueryParameter = permission
+// SetPermission adds the permission to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetPermission(permission *string) {
+	o.Permission = permission
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsShareACLCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsShareACLCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsShareACLCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsShareACLCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSharePathParameter adds the share to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithSharePathParameter(share string) *CifsShareACLCollectionGetParams {
-	o.SetSharePathParameter(share)
+// WithShare adds the share to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithShare(share string) *CifsShareACLCollectionGetParams {
+	o.SetShare(share)
 	return o
 }
 
-// SetSharePathParameter adds the share to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetSharePathParameter(share string) {
-	o.SharePathParameter = share
+// SetShare adds the share to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetShare(share string) {
+	o.Share = share
 }
 
-// WithSVMNameQueryParameter adds the svmName to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsShareACLCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithSvmName(svmName *string) *CifsShareACLCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithSvmUUID(svmUUID string) *CifsShareACLCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithTypeQueryParameter(typeVar *string) *CifsShareACLCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithType(typeVar *string) *CifsShareACLCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUserOrGroupQueryParameter adds the userOrGroup to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithUserOrGroupQueryParameter(userOrGroup *string) *CifsShareACLCollectionGetParams {
-	o.SetUserOrGroupQueryParameter(userOrGroup)
+// WithUserOrGroup adds the userOrGroup to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) WithUserOrGroup(userOrGroup *string) *CifsShareACLCollectionGetParams {
+	o.SetUserOrGroup(userOrGroup)
 	return o
 }
 
-// SetUserOrGroupQueryParameter adds the userOrGroup to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetUserOrGroupQueryParameter(userOrGroup *string) {
-	o.UserOrGroupQueryParameter = userOrGroup
+// SetUserOrGroup adds the userOrGroup to the cifs share acl collection get params
+func (o *CifsShareACLCollectionGetParams) SetUserOrGroup(userOrGroup *string) {
+	o.UserOrGroup = userOrGroup
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -328,7 +328,7 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -339,13 +339,13 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -356,7 +356,7 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -367,13 +367,13 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.PermissionQueryParameter != nil {
+	if o.Permission != nil {
 
 		// query param permission
 		var qrPermission string
 
-		if o.PermissionQueryParameter != nil {
-			qrPermission = *o.PermissionQueryParameter
+		if o.Permission != nil {
+			qrPermission = *o.Permission
 		}
 		qPermission := qrPermission
 		if qPermission != "" {
@@ -384,13 +384,13 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -401,13 +401,13 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -419,17 +419,17 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param share
-	if err := r.SetPathParam("share", o.SharePathParameter); err != nil {
+	if err := r.SetPathParam("share", o.Share); err != nil {
 		return err
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -441,17 +441,17 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -462,13 +462,13 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.UserOrGroupQueryParameter != nil {
+	if o.UserOrGroup != nil {
 
 		// query param user_or_group
 		var qrUserOrGroup string
 
-		if o.UserOrGroupQueryParameter != nil {
-			qrUserOrGroup = *o.UserOrGroupQueryParameter
+		if o.UserOrGroup != nil {
+			qrUserOrGroup = *o.UserOrGroup
 		}
 		qUserOrGroup := qrUserOrGroup
 		if qUserOrGroup != "" {
@@ -487,7 +487,7 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamCifsShareACLCollectionGet binds the parameter fields
 func (o *CifsShareACLCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -504,7 +504,7 @@ func (o *CifsShareACLCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamCifsShareACLCollectionGet binds the parameter order_by
 func (o *CifsShareACLCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

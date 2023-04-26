@@ -66,13 +66,13 @@ type NetworkIPBgpPeerGroupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   UUID of the peer group
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *NetworkIPBgpPeerGroupGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the network ip bgp peer group get params
-func (o *NetworkIPBgpPeerGroupGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPBgpPeerGroupGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ip bgp peer group get params
+func (o *NetworkIPBgpPeerGroupGetParams) WithFields(fields []string) *NetworkIPBgpPeerGroupGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ip bgp peer group get params
-func (o *NetworkIPBgpPeerGroupGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ip bgp peer group get params
+func (o *NetworkIPBgpPeerGroupGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the network ip bgp peer group get params
-func (o *NetworkIPBgpPeerGroupGetParams) WithUUIDPathParameter(uuid string) *NetworkIPBgpPeerGroupGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ip bgp peer group get params
+func (o *NetworkIPBgpPeerGroupGetParams) WithUUID(uuid string) *NetworkIPBgpPeerGroupGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ip bgp peer group get params
-func (o *NetworkIPBgpPeerGroupGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ip bgp peer group get params
+func (o *NetworkIPBgpPeerGroupGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *NetworkIPBgpPeerGroupGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *NetworkIPBgpPeerGroupGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *NetworkIPBgpPeerGroupGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamNetworkIPBgpPeerGroupGet binds the parameter fields
 func (o *NetworkIPBgpPeerGroupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

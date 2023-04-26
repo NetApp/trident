@@ -22,70 +22,71 @@ import (
 type GcpKms struct {
 
 	// links
-	Links *GcpKmsLinks `json:"_links,omitempty"`
+	Links *GcpKmsInlineLinks `json:"_links,omitempty"`
 
 	// Google Cloud application's service account credentials required to access the specified KMS. It is a JSON file containing an email address and the private key of the service account holder.
 	// Example: { type: service_account, project_id: project-id, private_key_id: key-id, private_key: -----BEGIN PRIVATE KEY-----\nprivate-key\n-----END PRIVATE KEY-----\n, client_email: service-account-email, client_id: client-id, auth_uri: https://accounts.google.com/o/oauth2/auth, token_uri: https://accounts.google.com/o/oauth2/token, auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs, client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/service-account-email }
 	// Format: password
-	ApplicationCredentials strfmt.Password `json:"application_credentials,omitempty"`
+	ApplicationCredentials *strfmt.Password `json:"application_credentials,omitempty"`
 
-	// ekmip reachability
-	EkmipReachability []*GcpKmsEkmipReachabilityItems0 `json:"ekmip_reachability,omitempty"`
+	// gcp kms inline ekmip reachability
+	GcpKmsInlineEkmipReachability []*GcpKmsInlineEkmipReachabilityInlineArrayItem `json:"ekmip_reachability,omitempty"`
 
 	// google reachability
-	GoogleReachability *GcpKmsGoogleReachability `json:"google_reachability,omitempty"`
+	GoogleReachability *GcpKmsInlineGoogleReachability `json:"google_reachability,omitempty"`
 
 	// Key Identifier of Google Cloud KMS key encryption key.
 	// Example: cryptokey1
-	KeyName string `json:"key_name,omitempty"`
+	KeyName *string `json:"key_name,omitempty"`
 
 	// Google Cloud KMS key ring location.
 	// Example: global
-	KeyRingLocation string `json:"key_ring_location,omitempty"`
+	KeyRingLocation *string `json:"key_ring_location,omitempty"`
 
 	// Google Cloud KMS key ring name of the deployed Google Cloud application.
 	// Example: gcpapp1-keyring
-	KeyRingName string `json:"key_ring_name,omitempty"`
+	KeyRingName *string `json:"key_ring_name,omitempty"`
 
 	// Google Cloud project (application) ID of the deployed Google Cloud application that has appropriate access to the Google Cloud KMS.
 	// Example: gcpapp1
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 
 	// Proxy host name.
 	// Example: proxy.eng.com
-	ProxyHost string `json:"proxy_host,omitempty"`
+	ProxyHost *string `json:"proxy_host,omitempty"`
 
 	// Proxy password. Password is not audited.
 	// Example: proxypassword
-	ProxyPassword string `json:"proxy_password,omitempty"`
+	ProxyPassword *string `json:"proxy_password,omitempty"`
 
 	// Proxy port number.
 	// Example: 1234
-	ProxyPort int64 `json:"proxy_port,omitempty"`
+	ProxyPort *int64 `json:"proxy_port,omitempty"`
 
 	// Type of proxy.
 	// Example: http
 	// Enum: [http https]
-	ProxyType string `json:"proxy_type,omitempty"`
+	ProxyType *string `json:"proxy_type,omitempty"`
 
 	// Proxy username.
 	// Example: proxyuser
-	ProxyUsername string `json:"proxy_username,omitempty"`
+	ProxyUsername *string `json:"proxy_username,omitempty"`
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
+	// Read Only: true
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// state
-	State *GcpKmsStateType `json:"state,omitempty"`
+	State *GcpKmsInlineState `json:"state,omitempty"`
 
 	// svm
-	Svm *GcpKmsSvm `json:"svm,omitempty"`
+	Svm *GcpKmsInlineSvm `json:"svm,omitempty"`
 
 	// A unique identifier for the Google Cloud KMS.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this gcp kms
@@ -100,7 +101,7 @@ func (m *GcpKms) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateEkmipReachability(formats); err != nil {
+	if err := m.validateGcpKmsInlineEkmipReachability(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -159,18 +160,18 @@ func (m *GcpKms) validateApplicationCredentials(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GcpKms) validateEkmipReachability(formats strfmt.Registry) error {
-	if swag.IsZero(m.EkmipReachability) { // not required
+func (m *GcpKms) validateGcpKmsInlineEkmipReachability(formats strfmt.Registry) error {
+	if swag.IsZero(m.GcpKmsInlineEkmipReachability) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.EkmipReachability); i++ {
-		if swag.IsZero(m.EkmipReachability[i]) { // not required
+	for i := 0; i < len(m.GcpKmsInlineEkmipReachability); i++ {
+		if swag.IsZero(m.GcpKmsInlineEkmipReachability[i]) { // not required
 			continue
 		}
 
-		if m.EkmipReachability[i] != nil {
-			if err := m.EkmipReachability[i].Validate(formats); err != nil {
+		if m.GcpKmsInlineEkmipReachability[i] != nil {
+			if err := m.GcpKmsInlineEkmipReachability[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ekmip_reachability" + "." + strconv.Itoa(i))
 				}
@@ -249,7 +250,7 @@ func (m *GcpKms) validateProxyType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateProxyTypeEnum("proxy_type", "body", m.ProxyType); err != nil {
+	if err := m.validateProxyTypeEnum("proxy_type", "body", *m.ProxyType); err != nil {
 		return err
 	}
 
@@ -305,7 +306,7 @@ func (m *GcpKms) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -354,11 +355,15 @@ func (m *GcpKms) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateEkmipReachability(ctx, formats); err != nil {
+	if err := m.contextValidateGcpKmsInlineEkmipReachability(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateGoogleReachability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScope(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -394,12 +399,12 @@ func (m *GcpKms) contextValidateLinks(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *GcpKms) contextValidateEkmipReachability(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKms) contextValidateGcpKmsInlineEkmipReachability(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.EkmipReachability); i++ {
+	for i := 0; i < len(m.GcpKmsInlineEkmipReachability); i++ {
 
-		if m.EkmipReachability[i] != nil {
-			if err := m.EkmipReachability[i].ContextValidate(ctx, formats); err != nil {
+		if m.GcpKmsInlineEkmipReachability[i] != nil {
+			if err := m.GcpKmsInlineEkmipReachability[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("ekmip_reachability" + "." + strconv.Itoa(i))
 				}
@@ -421,6 +426,15 @@ func (m *GcpKms) contextValidateGoogleReachability(ctx context.Context, formats 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *GcpKms) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
 	}
 
 	return nil
@@ -456,7 +470,7 @@ func (m *GcpKms) contextValidateSvm(ctx context.Context, formats strfmt.Registry
 
 func (m *GcpKms) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -481,29 +495,29 @@ func (m *GcpKms) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsEkmipReachabilityItems0 Provides the connectivity status for the given SVM on the given node to all EKMIP servers configured on all nodes of the cluster.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// GcpKmsInlineEkmipReachabilityInlineArrayItem Provides the connectivity status for the given SVM on the given node to all EKMIP servers configured on all nodes of the cluster.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-// swagger:model GcpKmsEkmipReachabilityItems0
-type GcpKmsEkmipReachabilityItems0 struct {
+// swagger:model gcp_kms_inline_ekmip_reachability_inline_array_item
+type GcpKmsInlineEkmipReachabilityInlineArrayItem struct {
 
 	// Code corresponding to the error message. Returns a 0 if a given SVM is able to communicate to the EKMIP servers of all of the nodes in the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message set when cluster-wide EKMIP server availability from the given SVM and node is false.
 	// Example: embedded KMIP server status unavailable on node.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// node
-	Node *GcpKmsEkmipReachabilityItems0Node `json:"node,omitempty"`
+	Node *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode `json:"node,omitempty"`
 
 	// Set to true if the given SVM on the given node is able to communicate to all EKMIP servers configured on all nodes in the cluster.
-	Reachable bool `json:"reachable,omitempty"`
+	Reachable *bool `json:"reachable,omitempty"`
 }
 
-// Validate validates this gcp kms ekmip reachability items0
-func (m *GcpKmsEkmipReachabilityItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline ekmip reachability inline array item
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNode(formats); err != nil {
@@ -516,7 +530,7 @@ func (m *GcpKmsEkmipReachabilityItems0) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *GcpKmsEkmipReachabilityItems0) validateNode(formats strfmt.Registry) error {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItem) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -533,8 +547,8 @@ func (m *GcpKmsEkmipReachabilityItems0) validateNode(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this gcp kms ekmip reachability items0 based on the context it is used
-func (m *GcpKmsEkmipReachabilityItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms inline ekmip reachability inline array item based on the context it is used
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
@@ -547,7 +561,7 @@ func (m *GcpKmsEkmipReachabilityItems0) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *GcpKmsEkmipReachabilityItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -562,7 +576,7 @@ func (m *GcpKmsEkmipReachabilityItems0) contextValidateNode(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsEkmipReachabilityItems0) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -570,8 +584,8 @@ func (m *GcpKmsEkmipReachabilityItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsEkmipReachabilityItems0) UnmarshalBinary(b []byte) error {
-	var res GcpKmsEkmipReachabilityItems0
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineEkmipReachabilityInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -579,25 +593,25 @@ func (m *GcpKmsEkmipReachabilityItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsEkmipReachabilityItems0Node gcp kms ekmip reachability items0 node
+// GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode gcp kms inline ekmip reachability inline array item inline node
 //
-// swagger:model GcpKmsEkmipReachabilityItems0Node
-type GcpKmsEkmipReachabilityItems0Node struct {
+// swagger:model gcp_kms_inline_ekmip_reachability_inline_array_item_inline_node
+type GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode struct {
 
 	// links
-	Links *GcpKmsEkmipReachabilityItems0NodeLinks `json:"_links,omitempty"`
+	Links *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this gcp kms ekmip reachability items0 node
-func (m *GcpKmsEkmipReachabilityItems0Node) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline ekmip reachability inline array item inline node
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -610,7 +624,7 @@ func (m *GcpKmsEkmipReachabilityItems0Node) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *GcpKmsEkmipReachabilityItems0Node) validateLinks(formats strfmt.Registry) error {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -627,8 +641,8 @@ func (m *GcpKmsEkmipReachabilityItems0Node) validateLinks(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this gcp kms ekmip reachability items0 node based on the context it is used
-func (m *GcpKmsEkmipReachabilityItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms inline ekmip reachability inline array item inline node based on the context it is used
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -641,7 +655,7 @@ func (m *GcpKmsEkmipReachabilityItems0Node) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *GcpKmsEkmipReachabilityItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -656,7 +670,7 @@ func (m *GcpKmsEkmipReachabilityItems0Node) contextValidateLinks(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsEkmipReachabilityItems0Node) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -664,8 +678,8 @@ func (m *GcpKmsEkmipReachabilityItems0Node) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsEkmipReachabilityItems0Node) UnmarshalBinary(b []byte) error {
-	var res GcpKmsEkmipReachabilityItems0Node
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -673,17 +687,17 @@ func (m *GcpKmsEkmipReachabilityItems0Node) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsEkmipReachabilityItems0NodeLinks gcp kms ekmip reachability items0 node links
+// GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks gcp kms inline ekmip reachability inline array item inline node inline links
 //
-// swagger:model GcpKmsEkmipReachabilityItems0NodeLinks
-type GcpKmsEkmipReachabilityItems0NodeLinks struct {
+// swagger:model gcp_kms_inline_ekmip_reachability_inline_array_item_inline_node_inline__links
+type GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this gcp kms ekmip reachability items0 node links
-func (m *GcpKmsEkmipReachabilityItems0NodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline ekmip reachability inline array item inline node inline links
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -696,7 +710,7 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) Validate(formats strfmt.Registr
 	return nil
 }
 
-func (m *GcpKmsEkmipReachabilityItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -713,8 +727,8 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) validateSelf(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this gcp kms ekmip reachability items0 node links based on the context it is used
-func (m *GcpKmsEkmipReachabilityItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms inline ekmip reachability inline array item inline node inline links based on the context it is used
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -727,7 +741,7 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) ContextValidate(ctx context.Con
 	return nil
 }
 
-func (m *GcpKmsEkmipReachabilityItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -742,7 +756,7 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) contextValidateSelf(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsEkmipReachabilityItems0NodeLinks) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -750,8 +764,8 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsEkmipReachabilityItems0NodeLinks) UnmarshalBinary(b []byte) error {
-	var res GcpKmsEkmipReachabilityItems0NodeLinks
+func (m *GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineEkmipReachabilityInlineArrayItemInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -759,36 +773,36 @@ func (m *GcpKmsEkmipReachabilityItems0NodeLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// GcpKmsGoogleReachability Indicates whether or not the Google Cloud KMS service is reachable from all nodes in the cluster.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// GcpKmsInlineGoogleReachability Indicates whether or not the Google Cloud KMS is reachable from all nodes in the cluster.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-// swagger:model GcpKmsGoogleReachability
-type GcpKmsGoogleReachability struct {
+// swagger:model gcp_kms_inline_google_reachability
+type GcpKmsInlineGoogleReachability struct {
 
-	// Code corresponding to the error message. Returns a 0 if Google Cloud KMS service is reachable from all nodes in the cluster.
+	// Code corresponding to the error message. Returns a 0 if Google Cloud KMS is reachable from all nodes in the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Set to the error message when 'reachable' is false.
-	// Example: Google Cloud KMS service is not reachable from all nodes - \u003creason\u003e.
-	Message string `json:"message,omitempty"`
+	// Example: Google Cloud KMS is not reachable from all nodes - \u003creason\u003e.
+	Message *string `json:"message,omitempty"`
 
-	// Set to true if the Google Cloud KMS service is reachable from all nodes of the cluster.
-	Reachable bool `json:"reachable,omitempty"`
+	// Set to true if the Google Cloud KMS is reachable from all nodes of the cluster.
+	Reachable *bool `json:"reachable,omitempty"`
 }
 
-// Validate validates this gcp kms google reachability
-func (m *GcpKmsGoogleReachability) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline google reachability
+func (m *GcpKmsInlineGoogleReachability) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this gcp kms google reachability based on context it is used
-func (m *GcpKmsGoogleReachability) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this gcp kms inline google reachability based on context it is used
+func (m *GcpKmsInlineGoogleReachability) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsGoogleReachability) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineGoogleReachability) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -796,8 +810,8 @@ func (m *GcpKmsGoogleReachability) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsGoogleReachability) UnmarshalBinary(b []byte) error {
-	var res GcpKmsGoogleReachability
+func (m *GcpKmsInlineGoogleReachability) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineGoogleReachability
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -805,17 +819,17 @@ func (m *GcpKmsGoogleReachability) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsLinks gcp kms links
+// GcpKmsInlineLinks gcp kms inline links
 //
-// swagger:model GcpKmsLinks
-type GcpKmsLinks struct {
+// swagger:model gcp_kms_inline__links
+type GcpKmsInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this gcp kms links
-func (m *GcpKmsLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline links
+func (m *GcpKmsInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -828,7 +842,7 @@ func (m *GcpKmsLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GcpKmsLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GcpKmsInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -845,8 +859,8 @@ func (m *GcpKmsLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this gcp kms links based on the context it is used
-func (m *GcpKmsLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms inline links based on the context it is used
+func (m *GcpKmsInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -859,7 +873,7 @@ func (m *GcpKmsLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *GcpKmsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -874,7 +888,7 @@ func (m *GcpKmsLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsLinks) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -882,8 +896,8 @@ func (m *GcpKmsLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsLinks) UnmarshalBinary(b []byte) error {
-	var res GcpKmsLinks
+func (m *GcpKmsInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -891,36 +905,36 @@ func (m *GcpKmsLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsStateType Google Cloud Key Management Services is a cloud key management service (KMS) that provides a secure store for encryption keys. This object indicates whether or not the Google Cloud KMS key protection is available on all nodes in the cluster.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// GcpKmsInlineState Google Cloud Key Management Services is a cloud key management service (KMS) that provides a secure store for encryption keys. This object indicates whether or not the Google Cloud KMS key protection is available on all nodes in the cluster.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
-// swagger:model GcpKmsStateType
-type GcpKmsStateType struct {
+// swagger:model gcp_kms_inline_state
+type GcpKmsInlineState struct {
 
 	// Set to true when Google Cloud KMS key protection is available on all nodes of the cluster.
-	ClusterState bool `json:"cluster_state,omitempty"`
+	ClusterState *bool `json:"cluster_state,omitempty"`
 
 	// Error code corresponding to the status message. Returns 0 if Google Cloud KMS key protection is available in all nodes of the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message set when top-level internal key protection key (KEK) availability on cluster is false.
 	// Example: Top-level internal key protection key (KEK) is unavailable on the following nodes with the associated reasons: Node: node1. Reason: No volumes created yet for the SVM. Wrapped KEK status will be available after creating encrypted volumes.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this gcp kms state type
-func (m *GcpKmsStateType) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline state
+func (m *GcpKmsInlineState) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this gcp kms state type based on context it is used
-func (m *GcpKmsStateType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this gcp kms inline state based on context it is used
+func (m *GcpKmsInlineState) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsStateType) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineState) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -928,8 +942,8 @@ func (m *GcpKmsStateType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsStateType) UnmarshalBinary(b []byte) error {
-	var res GcpKmsStateType
+func (m *GcpKmsInlineState) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineState
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -937,27 +951,27 @@ func (m *GcpKmsStateType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsSvm gcp kms svm
+// GcpKmsInlineSvm gcp kms inline svm
 //
-// swagger:model GcpKmsSvm
-type GcpKmsSvm struct {
+// swagger:model gcp_kms_inline_svm
+type GcpKmsInlineSvm struct {
 
 	// links
-	Links *GcpKmsSvmLinks `json:"_links,omitempty"`
+	Links *GcpKmsInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this gcp kms svm
-func (m *GcpKmsSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline svm
+func (m *GcpKmsInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -970,7 +984,7 @@ func (m *GcpKmsSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GcpKmsSvm) validateLinks(formats strfmt.Registry) error {
+func (m *GcpKmsInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -987,8 +1001,8 @@ func (m *GcpKmsSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this gcp kms svm based on the context it is used
-func (m *GcpKmsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms inline svm based on the context it is used
+func (m *GcpKmsInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1001,7 +1015,7 @@ func (m *GcpKmsSvm) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *GcpKmsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1016,7 +1030,7 @@ func (m *GcpKmsSvm) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsSvm) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1024,8 +1038,8 @@ func (m *GcpKmsSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsSvm) UnmarshalBinary(b []byte) error {
-	var res GcpKmsSvm
+func (m *GcpKmsInlineSvm) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1033,17 +1047,17 @@ func (m *GcpKmsSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// GcpKmsSvmLinks gcp kms svm links
+// GcpKmsInlineSvmInlineLinks gcp kms inline svm inline links
 //
-// swagger:model GcpKmsSvmLinks
-type GcpKmsSvmLinks struct {
+// swagger:model gcp_kms_inline_svm_inline__links
+type GcpKmsInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this gcp kms svm links
-func (m *GcpKmsSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this gcp kms inline svm inline links
+func (m *GcpKmsInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1056,7 +1070,7 @@ func (m *GcpKmsSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *GcpKmsSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *GcpKmsInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1073,8 +1087,8 @@ func (m *GcpKmsSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this gcp kms svm links based on the context it is used
-func (m *GcpKmsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this gcp kms inline svm inline links based on the context it is used
+func (m *GcpKmsInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1087,7 +1101,7 @@ func (m *GcpKmsSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *GcpKmsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *GcpKmsInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1102,7 +1116,7 @@ func (m *GcpKmsSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *GcpKmsSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *GcpKmsInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1110,8 +1124,8 @@ func (m *GcpKmsSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GcpKmsSvmLinks) UnmarshalBinary(b []byte) error {
-	var res GcpKmsSvmLinks
+func (m *GcpKmsInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res GcpKmsInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -21,10 +21,10 @@ type PortStatisticsDevice struct {
 
 	// The number of link state changes from up to down seen on the device.
 	// Example: 3
-	LinkDownCountRaw int64 `json:"link_down_count_raw,omitempty"`
+	LinkDownCountRaw *int64 `json:"link_down_count_raw,omitempty"`
 
 	// receive raw
-	ReceiveRaw *PortStatisticsDeviceReceiveRaw `json:"receive_raw,omitempty"`
+	ReceiveRaw *PortStatisticsDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
 	// Example: 2017-01-25T11:20:13Z
@@ -32,7 +32,7 @@ type PortStatisticsDevice struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// transmit raw
-	TransmitRaw *PortStatisticsDeviceTransmitRaw `json:"transmit_raw,omitempty"`
+	TransmitRaw *PortStatisticsDeviceInlineTransmitRaw `json:"transmit_raw,omitempty"`
 }
 
 // Validate validates this port statistics device
@@ -167,36 +167,36 @@ func (m *PortStatisticsDevice) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortStatisticsDeviceReceiveRaw Packet receive counters for the Ethernet port.
+// PortStatisticsDeviceInlineReceiveRaw Packet receive counters for the Ethernet port.
 //
-// swagger:model PortStatisticsDeviceReceiveRaw
-type PortStatisticsDeviceReceiveRaw struct {
+// swagger:model port_statistics_device_inline_receive_raw
+type PortStatisticsDeviceInlineReceiveRaw struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
-// Validate validates this port statistics device receive raw
-func (m *PortStatisticsDeviceReceiveRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this port statistics device inline receive raw
+func (m *PortStatisticsDeviceInlineReceiveRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port statistics device receive raw based on context it is used
-func (m *PortStatisticsDeviceReceiveRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port statistics device inline receive raw based on context it is used
+func (m *PortStatisticsDeviceInlineReceiveRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsDeviceReceiveRaw) MarshalBinary() ([]byte, error) {
+func (m *PortStatisticsDeviceInlineReceiveRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -204,8 +204,8 @@ func (m *PortStatisticsDeviceReceiveRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsDeviceReceiveRaw) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsDeviceReceiveRaw
+func (m *PortStatisticsDeviceInlineReceiveRaw) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsDeviceInlineReceiveRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -213,36 +213,36 @@ func (m *PortStatisticsDeviceReceiveRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortStatisticsDeviceTransmitRaw Packet transmit counters for the Ethernet port.
+// PortStatisticsDeviceInlineTransmitRaw Packet transmit counters for the Ethernet port.
 //
-// swagger:model PortStatisticsDeviceTransmitRaw
-type PortStatisticsDeviceTransmitRaw struct {
+// swagger:model port_statistics_device_inline_transmit_raw
+type PortStatisticsDeviceInlineTransmitRaw struct {
 
 	// Total number of discarded packets.
 	// Example: 100
-	Discards int64 `json:"discards,omitempty"`
+	Discards *int64 `json:"discards,omitempty"`
 
 	// Number of packet errors.
 	// Example: 200
-	Errors int64 `json:"errors,omitempty"`
+	Errors *int64 `json:"errors,omitempty"`
 
 	// Total packet count.
 	// Example: 500
-	Packets int64 `json:"packets,omitempty"`
+	Packets *int64 `json:"packets,omitempty"`
 }
 
-// Validate validates this port statistics device transmit raw
-func (m *PortStatisticsDeviceTransmitRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this port statistics device inline transmit raw
+func (m *PortStatisticsDeviceInlineTransmitRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this port statistics device transmit raw based on context it is used
-func (m *PortStatisticsDeviceTransmitRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this port statistics device inline transmit raw based on context it is used
+func (m *PortStatisticsDeviceInlineTransmitRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PortStatisticsDeviceTransmitRaw) MarshalBinary() ([]byte, error) {
+func (m *PortStatisticsDeviceInlineTransmitRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -250,8 +250,8 @@ func (m *PortStatisticsDeviceTransmitRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PortStatisticsDeviceTransmitRaw) UnmarshalBinary(b []byte) error {
-	var res PortStatisticsDeviceTransmitRaw
+func (m *PortStatisticsDeviceInlineTransmitRaw) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsDeviceInlineTransmitRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

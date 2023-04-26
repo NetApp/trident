@@ -2,15 +2,40 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v22.10.0
+## Changes since v23.01.0
 
 **Enhancements**
-- Improved performance for ontap-nas-economy storage drivers managing multiple FlexVols.
-- Enabled dataLIF updates for all ONTAP NAS storage drivers.
 - **Kubernetes:** Added `--trident-image-registry` switch to installer
   and value tridentImageRegistry to Helm chart. (Issue [#772](https://github.com/NetApp/trident/issues/772))
 
-## Changes since v22.07.0
+## Changes since v22.10.0
+
+- **IMPORTANT**: Kubernetes 1.26 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.
+
+**Fixes:**
+
+- **Kubernetes:** Added options to exclude Pod Security Policy creation to fix Trident installations via Helm (Issues [#783](https://github.com/NetApp/trident/issues/783), [#794](https://github.com/NetApp/trident/issues/794)).
+
+**Enhancements**
+- **Kubernetes:** Added support for Kubernetes 1.26.
+- **Kubernetes:** Improved overall Trident RBAC resource utilization (Issue [#757](https://github.com/NetApp/trident/issues/757)).
+- **Kubernetes:** Added automation to detect and fix broken or stale iSCSI sessions on host nodes.
+- **Kubernetes:** Added support for expanding LUKS encrypted volumes.
+- **Kubernetes:** Added credential rotation support for LUKS encrypted volumes.
+- Added support for SMB volumes with Amazon FSx to the ontap-nas storage driver.
+- Added support for NTFS permissions when using SMB volumes.
+- Added support for storage pools for GCP volumes with CVS service level.
+- Added support for optional use of `flexgroupAggregateList` when creating FlexGroups with the ontap-nas-flexgroup storage driver.
+- Improved performance for the ontap-nas-economy storage driver when managing multiple FlexVols.
+- Enabled dataLIF updates for all ONTAP NAS storage drivers.
+- Updated the Trident Deployment and DaemonSet naming convention to reflect the host node OS.
+
+**Deprecations:**
+
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.21.
+- Data LIFs should no longer be specified when configuring ontap-san or ontap-san-economy drivers.
+
+## v22.10.0
 
 - **IMPORTANT**: Kubernetes 1.25 is now supported in Trident. Please upgrade Trident prior to upgrading Kubernetes.
 - **IMPORTANT**: Trident will now strictly enforce the use of multipathing configuration in SAN environments, with a recommended value of `find_multipaths: no` in multipath.conf file. Use of non-multipathing configuration or use of `find_multipaths: yes` or `find_multipaths: smart` value in multipath.conf file will result in mount failures. Trident has recommended the use of `find_multipaths: no` since the 21.07 release.

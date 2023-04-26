@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
+
+	. "github.com/netapp/trident/logging"
 )
 
 const HTTPClientTimeout = time.Second * 300
 
-func InvokeRESTAPI(method, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
+func InvokeRESTAPI(method, url string, requestBody []byte) (*http.Response, []byte, error) {
 	var request *http.Request
 	var err error
 
@@ -28,9 +29,7 @@ func InvokeRESTAPI(method, url string, requestBody []byte, debug bool) (*http.Re
 
 	request.Header.Set("Content-Type", "application/json")
 
-	if debug {
-		LogHTTPRequest(request, requestBody)
-	}
+	LogHTTPRequest(request, requestBody)
 
 	client := &http.Client{Timeout: HTTPClientTimeout}
 	response, err := client.Do(request)
@@ -42,41 +41,39 @@ func InvokeRESTAPI(method, url string, requestBody []byte, debug bool) (*http.Re
 	var responseBody []byte
 
 	if response != nil {
-		defer response.Body.Close()
+		defer func() { _ = response.Body.Close() }()
 		responseBody, err = ioutil.ReadAll(response.Body)
 		if err != nil {
 			return response, responseBody, fmt.Errorf("error reading response body; %v", err)
 		}
 	}
 
-	if debug {
-		LogHTTPResponse(response, responseBody)
-	}
+	LogHTTPResponse(response, responseBody)
 
 	return response, responseBody, err
 }
 
 func LogHTTPRequest(request *http.Request, requestBody []byte) {
-	fmt.Fprint(os.Stdout, "--------------------------------------------------------------------------------\n")
-	fmt.Fprintf(os.Stdout, "Request Method: %s\n", request.Method)
-	fmt.Fprintf(os.Stdout, "Request URL: %v\n", request.URL)
-	fmt.Fprintf(os.Stdout, "Request headers: %v\n", request.Header)
+	Log().Debug("--------------------------------------------------------------------------------\n")
+	Log().Debugf("Request Method: %s\n", request.Method)
+	Log().Debugf("Request URL: %v\n", request.URL)
+	Log().Debugf("Request headers: %v\n", request.Header)
 	if requestBody == nil {
 		requestBody = []byte{}
 	}
-	fmt.Fprintf(os.Stdout, "Request body: %s\n", string(requestBody))
-	fmt.Fprint(os.Stdout, "................................................................................\n")
+	Log().Debugf("Request body: %s\n", string(requestBody))
+	Log().Debug("................................................................................\n")
 }
 
 func LogHTTPResponse(response *http.Response, responseBody []byte) {
 	if response != nil {
-		fmt.Fprintf(os.Stdout, "Response status: %s\n", response.Status)
-		fmt.Fprintf(os.Stdout, "Response headers: %v\n", response.Header)
+		Log().Debugf("Response status: %s\n", response.Status)
+		Log().Debugf("Response headers: %v\n", response.Header)
 	}
 
 	if responseBody != nil {
-		fmt.Fprintf(os.Stdout, "Response body: %s\n", string(responseBody))
+		Log().Debugf("Response body: %s\n", string(responseBody))
 	}
 
-	fmt.Fprint(os.Stdout, "================================================================================\n")
+	Log().Debug("================================================================================\n")
 }

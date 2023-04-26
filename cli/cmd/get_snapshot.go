@@ -88,7 +88,7 @@ func GetSnapshots(volume string) ([]string, error) {
 		url = BaseURL() + "/volume/" + volume + "/snapshot"
 	}
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -111,7 +111,7 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	}
 
 	url := BaseURL() + "/snapshot/" + snapshotID
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return storage.SnapshotExternal{}, err
 	} else if response.StatusCode != http.StatusOK {

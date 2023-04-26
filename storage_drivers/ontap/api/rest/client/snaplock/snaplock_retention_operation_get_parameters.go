@@ -66,13 +66,13 @@ type SnaplockRetentionOperationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   Unique identifier of an EBR operation
 	*/
-	IDPathParameter string
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SnaplockRetentionOperationGetParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the snaplock retention operation get params
-func (o *SnaplockRetentionOperationGetParams) WithFieldsQueryParameter(fields []string) *SnaplockRetentionOperationGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the snaplock retention operation get params
+func (o *SnaplockRetentionOperationGetParams) WithFields(fields []string) *SnaplockRetentionOperationGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snaplock retention operation get params
-func (o *SnaplockRetentionOperationGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the snaplock retention operation get params
+func (o *SnaplockRetentionOperationGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the snaplock retention operation get params
-func (o *SnaplockRetentionOperationGetParams) WithIDPathParameter(id string) *SnaplockRetentionOperationGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the snaplock retention operation get params
+func (o *SnaplockRetentionOperationGetParams) WithID(id string) *SnaplockRetentionOperationGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the snaplock retention operation get params
-func (o *SnaplockRetentionOperationGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the snaplock retention operation get params
+func (o *SnaplockRetentionOperationGetParams) SetID(id string) {
+	o.ID = id
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SnaplockRetentionOperationGetParams) WriteToRequest(r runtime.ClientReq
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SnaplockRetentionOperationGetParams) WriteToRequest(r runtime.ClientReq
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SnaplockRetentionOperationGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamSnaplockRetentionOperationGet binds the parameter fields
 func (o *SnaplockRetentionOperationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

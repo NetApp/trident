@@ -73,7 +73,7 @@ type VolumeEfficiencyPolicyModifyParams struct {
 
 	   Volume efficiency policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *VolumeEfficiencyPolicyModifyParams) SetInfo(info *models.VolumeEfficien
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the volume efficiency policy modify params
-func (o *VolumeEfficiencyPolicyModifyParams) WithUUIDPathParameter(uuid string) *VolumeEfficiencyPolicyModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the volume efficiency policy modify params
+func (o *VolumeEfficiencyPolicyModifyParams) WithUUID(uuid string) *VolumeEfficiencyPolicyModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the volume efficiency policy modify params
-func (o *VolumeEfficiencyPolicyModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the volume efficiency policy modify params
+func (o *VolumeEfficiencyPolicyModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *VolumeEfficiencyPolicyModifyParams) WriteToRequest(r runtime.ClientRequ
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

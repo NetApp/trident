@@ -21,19 +21,19 @@ import (
 type SecurityKeystore struct {
 
 	// Indicates whether the keystore is onboard or external.
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 
 	// svm
-	Svm *SecurityKeystoreSvm `json:"svm,omitempty"`
+	Svm *SecurityKeystoreInlineSvm `json:"svm,omitempty"`
 
-	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service
+	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service * 'ikp' - IBM Key Protect Key Management Service
 	//
-	// Enum: [okm kmip akv gcp aws]
-	Type string `json:"type,omitempty"`
+	// Enum: [okm kmip akv gcp aws ikp]
+	Type *string `json:"type,omitempty"`
 
 	// uuid
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this security keystore
@@ -75,7 +75,7 @@ var securityKeystoreTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["okm","kmip","akv","gcp","aws"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["okm","kmip","akv","gcp","aws","ikp"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -134,6 +134,16 @@ const (
 	// END DEBUGGING
 	// SecurityKeystoreTypeAws captures enum value "aws"
 	SecurityKeystoreTypeAws string = "aws"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// type
+	// Type
+	// ikp
+	// END DEBUGGING
+	// SecurityKeystoreTypeIkp captures enum value "ikp"
+	SecurityKeystoreTypeIkp string = "ikp"
 )
 
 // prop value enum
@@ -150,7 +160,7 @@ func (m *SecurityKeystore) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -191,7 +201,7 @@ func (m *SecurityKeystore) contextValidateSvm(ctx context.Context, formats strfm
 
 func (m *SecurityKeystore) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -216,27 +226,27 @@ func (m *SecurityKeystore) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeystoreSvm security keystore svm
+// SecurityKeystoreInlineSvm security keystore inline svm
 //
-// swagger:model SecurityKeystoreSvm
-type SecurityKeystoreSvm struct {
+// swagger:model security_keystore_inline_svm
+type SecurityKeystoreInlineSvm struct {
 
 	// links
-	Links *SecurityKeystoreSvmLinks `json:"_links,omitempty"`
+	Links *SecurityKeystoreInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this security keystore svm
-func (m *SecurityKeystoreSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this security keystore inline svm
+func (m *SecurityKeystoreInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -249,7 +259,7 @@ func (m *SecurityKeystoreSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeystoreSvm) validateLinks(formats strfmt.Registry) error {
+func (m *SecurityKeystoreInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -266,8 +276,8 @@ func (m *SecurityKeystoreSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security keystore svm based on the context it is used
-func (m *SecurityKeystoreSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security keystore inline svm based on the context it is used
+func (m *SecurityKeystoreInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -280,7 +290,7 @@ func (m *SecurityKeystoreSvm) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SecurityKeystoreSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeystoreInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -295,7 +305,7 @@ func (m *SecurityKeystoreSvm) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeystoreSvm) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeystoreInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -303,8 +313,8 @@ func (m *SecurityKeystoreSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeystoreSvm) UnmarshalBinary(b []byte) error {
-	var res SecurityKeystoreSvm
+func (m *SecurityKeystoreInlineSvm) UnmarshalBinary(b []byte) error {
+	var res SecurityKeystoreInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -312,17 +322,17 @@ func (m *SecurityKeystoreSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityKeystoreSvmLinks security keystore svm links
+// SecurityKeystoreInlineSvmInlineLinks security keystore inline svm inline links
 //
-// swagger:model SecurityKeystoreSvmLinks
-type SecurityKeystoreSvmLinks struct {
+// swagger:model security_keystore_inline_svm_inline__links
+type SecurityKeystoreInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security keystore svm links
-func (m *SecurityKeystoreSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security keystore inline svm inline links
+func (m *SecurityKeystoreInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -335,7 +345,7 @@ func (m *SecurityKeystoreSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityKeystoreSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityKeystoreInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -352,8 +362,8 @@ func (m *SecurityKeystoreSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security keystore svm links based on the context it is used
-func (m *SecurityKeystoreSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security keystore inline svm inline links based on the context it is used
+func (m *SecurityKeystoreInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -366,7 +376,7 @@ func (m *SecurityKeystoreSvmLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SecurityKeystoreSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityKeystoreInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -381,7 +391,7 @@ func (m *SecurityKeystoreSvmLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityKeystoreSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityKeystoreInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -389,8 +399,8 @@ func (m *SecurityKeystoreSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityKeystoreSvmLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityKeystoreSvmLinks
+func (m *SecurityKeystoreInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityKeystoreInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

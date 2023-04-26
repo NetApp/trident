@@ -22,7 +22,7 @@ import (
 type FcpService struct {
 
 	// links
-	Links *FcpServiceLinks `json:"_links,omitempty"`
+	Links *FcpServiceInlineLinks `json:"_links,omitempty"`
 
 	// The administrative state of the FC Protocol service. The FC Protocol service can be disabled to block all FC Protocol connectivity to the SVM.<br/>
 	// This is optional in POST and PATCH. The default setting is _true_ (enabled) in POST.
@@ -30,16 +30,16 @@ type FcpService struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// metric
-	Metric *FcpServiceMetric `json:"metric,omitempty"`
+	Metric *FcpServiceInlineMetric `json:"metric,omitempty"`
 
 	// statistics
-	Statistics *FcpServiceStatistics `json:"statistics,omitempty"`
+	Statistics *FcpServiceInlineStatistics `json:"statistics,omitempty"`
 
 	// svm
-	Svm *FcpServiceSvm `json:"svm,omitempty"`
+	Svm *FcpServiceInlineSvm `json:"svm,omitempty"`
 
 	// target
-	Target *FcpServiceTarget `json:"target,omitempty"`
+	Target *FcpServiceInlineTarget `json:"target,omitempty"`
 }
 
 // Validate validates this fcp service
@@ -275,17 +275,17 @@ func (m *FcpService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceLinks fcp service links
+// FcpServiceInlineLinks fcp service inline links
 //
-// swagger:model FcpServiceLinks
-type FcpServiceLinks struct {
+// swagger:model fcp_service_inline__links
+type FcpServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fcp service links
-func (m *FcpServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline links
+func (m *FcpServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -298,7 +298,7 @@ func (m *FcpServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcpServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -315,8 +315,8 @@ func (m *FcpServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service links based on the context it is used
-func (m *FcpServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline links based on the context it is used
+func (m *FcpServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -329,7 +329,7 @@ func (m *FcpServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FcpServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -344,7 +344,7 @@ func (m *FcpServiceLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -352,8 +352,8 @@ func (m *FcpServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceLinks) UnmarshalBinary(b []byte) error {
-	var res FcpServiceLinks
+func (m *FcpServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -361,35 +361,35 @@ func (m *FcpServiceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceMetric fcp service metric
+// FcpServiceInlineMetric fcp service inline metric
 //
-// swagger:model FcpServiceMetric
-type FcpServiceMetric struct {
+// swagger:model fcp_service_inline_metric
+type FcpServiceInlineMetric struct {
 
 	// links
-	Links *FcpServiceMetricLinks `json:"_links,omitempty"`
+	Links *FcpServiceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *FcpServiceMetricIops `json:"iops,omitempty"`
+	Iops *FcpServiceInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *FcpServiceMetricLatency `json:"latency,omitempty"`
+	Latency *FcpServiceInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *FcpServiceMetricThroughput `json:"throughput,omitempty"`
+	Throughput *FcpServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -398,8 +398,8 @@ type FcpServiceMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this fcp service metric
-func (m *FcpServiceMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline metric
+func (m *FcpServiceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -436,7 +436,7 @@ func (m *FcpServiceMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceMetric) validateLinks(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -453,7 +453,7 @@ func (m *FcpServiceMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcpServiceMetricTypeDurationPropEnum []interface{}
+var fcpServiceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -461,95 +461,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcpServiceMetricTypeDurationPropEnum = append(fcpServiceMetricTypeDurationPropEnum, v)
+		fcpServiceInlineMetricTypeDurationPropEnum = append(fcpServiceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// FcpServiceMetricDurationPT15S captures enum value "PT15S"
-	FcpServiceMetricDurationPT15S string = "PT15S"
+	// FcpServiceInlineMetricDurationPT15S captures enum value "PT15S"
+	FcpServiceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// FcpServiceMetricDurationPT4M captures enum value "PT4M"
-	FcpServiceMetricDurationPT4M string = "PT4M"
+	// FcpServiceInlineMetricDurationPT4M captures enum value "PT4M"
+	FcpServiceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// FcpServiceMetricDurationPT30M captures enum value "PT30M"
-	FcpServiceMetricDurationPT30M string = "PT30M"
+	// FcpServiceInlineMetricDurationPT30M captures enum value "PT30M"
+	FcpServiceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// FcpServiceMetricDurationPT2H captures enum value "PT2H"
-	FcpServiceMetricDurationPT2H string = "PT2H"
+	// FcpServiceInlineMetricDurationPT2H captures enum value "PT2H"
+	FcpServiceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// FcpServiceMetricDurationP1D captures enum value "P1D"
-	FcpServiceMetricDurationP1D string = "P1D"
+	// FcpServiceInlineMetricDurationP1D captures enum value "P1D"
+	FcpServiceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// FcpServiceMetricDurationPT5M captures enum value "PT5M"
-	FcpServiceMetricDurationPT5M string = "PT5M"
+	// FcpServiceInlineMetricDurationPT5M captures enum value "PT5M"
+	FcpServiceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *FcpServiceMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcpServiceMetricTypeDurationPropEnum, true); err != nil {
+func (m *FcpServiceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcpServiceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcpServiceMetric) validateDuration(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcpServiceMetric) validateIops(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -566,7 +566,7 @@ func (m *FcpServiceMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceMetric) validateLatency(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -583,7 +583,7 @@ func (m *FcpServiceMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var fcpServiceMetricTypeStatusPropEnum []interface{}
+var fcpServiceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -591,145 +591,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcpServiceMetricTypeStatusPropEnum = append(fcpServiceMetricTypeStatusPropEnum, v)
+		fcpServiceInlineMetricTypeStatusPropEnum = append(fcpServiceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// FcpServiceMetricStatusOk captures enum value "ok"
-	FcpServiceMetricStatusOk string = "ok"
+	// FcpServiceInlineMetricStatusOk captures enum value "ok"
+	FcpServiceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// FcpServiceMetricStatusError captures enum value "error"
-	FcpServiceMetricStatusError string = "error"
+	// FcpServiceInlineMetricStatusError captures enum value "error"
+	FcpServiceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// FcpServiceMetricStatusPartialNoData captures enum value "partial_no_data"
-	FcpServiceMetricStatusPartialNoData string = "partial_no_data"
+	// FcpServiceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	FcpServiceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// FcpServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	FcpServiceMetricStatusPartialNoResponse string = "partial_no_response"
+	// FcpServiceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	FcpServiceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// FcpServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
-	FcpServiceMetricStatusPartialOtherError string = "partial_other_error"
+	// FcpServiceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	FcpServiceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// FcpServiceMetricStatusNegativeDelta captures enum value "negative_delta"
-	FcpServiceMetricStatusNegativeDelta string = "negative_delta"
+	// FcpServiceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	FcpServiceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// FcpServiceMetricStatusNotFound captures enum value "not_found"
-	FcpServiceMetricStatusNotFound string = "not_found"
+	// FcpServiceInlineMetricStatusNotFound captures enum value "not_found"
+	FcpServiceInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// FcpServiceMetricStatusBackfilledData captures enum value "backfilled_data"
-	FcpServiceMetricStatusBackfilledData string = "backfilled_data"
+	// FcpServiceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	FcpServiceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// FcpServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	FcpServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// FcpServiceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	FcpServiceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// FcpServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	FcpServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// FcpServiceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	FcpServiceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// FcpServiceMetric
-	// FcpServiceMetric
+	// fcp_service_inline_metric
+	// FcpServiceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// FcpServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	FcpServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// FcpServiceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	FcpServiceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *FcpServiceMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcpServiceMetricTypeStatusPropEnum, true); err != nil {
+func (m *FcpServiceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcpServiceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcpServiceMetric) validateStatus(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcpServiceMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -746,7 +746,7 @@ func (m *FcpServiceMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -758,8 +758,8 @@ func (m *FcpServiceMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service metric based on the context it is used
-func (m *FcpServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline metric based on the context it is used
+func (m *FcpServiceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -796,7 +796,7 @@ func (m *FcpServiceMetric) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -810,16 +810,16 @@ func (m *FcpServiceMetric) contextValidateLinks(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -833,7 +833,7 @@ func (m *FcpServiceMetric) contextValidateIops(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -847,16 +847,16 @@ func (m *FcpServiceMetric) contextValidateLatency(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -870,7 +870,7 @@ func (m *FcpServiceMetric) contextValidateThroughput(ctx context.Context, format
 	return nil
 }
 
-func (m *FcpServiceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -880,7 +880,7 @@ func (m *FcpServiceMetric) contextValidateTimestamp(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceMetric) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -888,8 +888,8 @@ func (m *FcpServiceMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceMetric) UnmarshalBinary(b []byte) error {
-	var res FcpServiceMetric
+func (m *FcpServiceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -897,34 +897,34 @@ func (m *FcpServiceMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceMetricIops The rate of I/O operations observed at the storage object.
+// FcpServiceInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model FcpServiceMetricIops
-type FcpServiceMetricIops struct {
+// swagger:model fcp_service_inline_metric_inline_iops
+type FcpServiceInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fcp service metric iops
-func (m *FcpServiceMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline metric inline iops
+func (m *FcpServiceInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service metric iops based on the context it is used
-func (m *FcpServiceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline metric inline iops based on the context it is used
+func (m *FcpServiceInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -934,7 +934,7 @@ func (m *FcpServiceMetricIops) ContextValidate(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceMetricIops) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -942,8 +942,8 @@ func (m *FcpServiceMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceMetricIops) UnmarshalBinary(b []byte) error {
-	var res FcpServiceMetricIops
+func (m *FcpServiceInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -951,34 +951,34 @@ func (m *FcpServiceMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceMetricLatency The round trip latency in microseconds observed at the storage object.
+// FcpServiceInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model FcpServiceMetricLatency
-type FcpServiceMetricLatency struct {
+// swagger:model fcp_service_inline_metric_inline_latency
+type FcpServiceInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fcp service metric latency
-func (m *FcpServiceMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline metric inline latency
+func (m *FcpServiceInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service metric latency based on the context it is used
-func (m *FcpServiceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline metric inline latency based on the context it is used
+func (m *FcpServiceInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -988,7 +988,7 @@ func (m *FcpServiceMetricLatency) ContextValidate(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -996,8 +996,8 @@ func (m *FcpServiceMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceMetricLatency) UnmarshalBinary(b []byte) error {
-	var res FcpServiceMetricLatency
+func (m *FcpServiceInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1005,17 +1005,17 @@ func (m *FcpServiceMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceMetricLinks fcp service metric links
+// FcpServiceInlineMetricInlineLinks fcp service inline metric inline links
 //
-// swagger:model FcpServiceMetricLinks
-type FcpServiceMetricLinks struct {
+// swagger:model fcp_service_inline_metric_inline__links
+type FcpServiceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fcp service metric links
-func (m *FcpServiceMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline metric inline links
+func (m *FcpServiceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1028,7 +1028,7 @@ func (m *FcpServiceMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1045,8 +1045,8 @@ func (m *FcpServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service metric links based on the context it is used
-func (m *FcpServiceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline metric inline links based on the context it is used
+func (m *FcpServiceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1059,7 +1059,7 @@ func (m *FcpServiceMetricLinks) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FcpServiceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1074,7 +1074,7 @@ func (m *FcpServiceMetricLinks) contextValidateSelf(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1082,8 +1082,8 @@ func (m *FcpServiceMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceMetricLinks) UnmarshalBinary(b []byte) error {
-	var res FcpServiceMetricLinks
+func (m *FcpServiceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1091,31 +1091,31 @@ func (m *FcpServiceMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// FcpServiceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model FcpServiceMetricThroughput
-type FcpServiceMetricThroughput struct {
+// swagger:model fcp_service_inline_metric_inline_throughput
+type FcpServiceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fcp service metric throughput
-func (m *FcpServiceMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline metric inline throughput
+func (m *FcpServiceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service metric throughput based on the context it is used
-func (m *FcpServiceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline metric inline throughput based on the context it is used
+func (m *FcpServiceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1125,7 +1125,7 @@ func (m *FcpServiceMetricThroughput) ContextValidate(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1133,8 +1133,8 @@ func (m *FcpServiceMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res FcpServiceMetricThroughput
+func (m *FcpServiceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1142,25 +1142,25 @@ func (m *FcpServiceMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceStatistics fcp service statistics
+// FcpServiceInlineStatistics fcp service inline statistics
 //
-// swagger:model FcpServiceStatistics
-type FcpServiceStatistics struct {
+// swagger:model fcp_service_inline_statistics
+type FcpServiceInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *FcpServiceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *FcpServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *FcpServiceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *FcpServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *FcpServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *FcpServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1169,8 +1169,8 @@ type FcpServiceStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this fcp service statistics
-func (m *FcpServiceStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline statistics
+func (m *FcpServiceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -1199,7 +1199,7 @@ func (m *FcpServiceStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -1216,7 +1216,7 @@ func (m *FcpServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -1233,7 +1233,7 @@ func (m *FcpServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error
 	return nil
 }
 
-var fcpServiceStatisticsTypeStatusPropEnum []interface{}
+var fcpServiceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1241,145 +1241,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		fcpServiceStatisticsTypeStatusPropEnum = append(fcpServiceStatisticsTypeStatusPropEnum, v)
+		fcpServiceInlineStatisticsTypeStatusPropEnum = append(fcpServiceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusOk captures enum value "ok"
-	FcpServiceStatisticsStatusOk string = "ok"
+	// FcpServiceInlineStatisticsStatusOk captures enum value "ok"
+	FcpServiceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusError captures enum value "error"
-	FcpServiceStatisticsStatusError string = "error"
+	// FcpServiceInlineStatisticsStatusError captures enum value "error"
+	FcpServiceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	FcpServiceStatisticsStatusPartialNoData string = "partial_no_data"
+	// FcpServiceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	FcpServiceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	FcpServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// FcpServiceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	FcpServiceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	FcpServiceStatisticsStatusPartialOtherError string = "partial_other_error"
+	// FcpServiceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	FcpServiceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	FcpServiceStatisticsStatusNegativeDelta string = "negative_delta"
+	// FcpServiceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	FcpServiceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusNotFound captures enum value "not_found"
-	FcpServiceStatisticsStatusNotFound string = "not_found"
+	// FcpServiceInlineStatisticsStatusNotFound captures enum value "not_found"
+	FcpServiceInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	FcpServiceStatisticsStatusBackfilledData string = "backfilled_data"
+	// FcpServiceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	FcpServiceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	FcpServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// FcpServiceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	FcpServiceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	FcpServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// FcpServiceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	FcpServiceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// FcpServiceStatistics
-	// FcpServiceStatistics
+	// fcp_service_inline_statistics
+	// FcpServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// FcpServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	FcpServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// FcpServiceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	FcpServiceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *FcpServiceStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, fcpServiceStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *FcpServiceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fcpServiceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *FcpServiceStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcpServiceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -1396,7 +1396,7 @@ func (m *FcpServiceStatistics) validateThroughputRaw(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *FcpServiceStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1408,8 +1408,8 @@ func (m *FcpServiceStatistics) validateTimestamp(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this fcp service statistics based on the context it is used
-func (m *FcpServiceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline statistics based on the context it is used
+func (m *FcpServiceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -1438,7 +1438,7 @@ func (m *FcpServiceStatistics) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FcpServiceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -1452,7 +1452,7 @@ func (m *FcpServiceStatistics) contextValidateIopsRaw(ctx context.Context, forma
 	return nil
 }
 
-func (m *FcpServiceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -1466,16 +1466,16 @@ func (m *FcpServiceStatistics) contextValidateLatencyRaw(ctx context.Context, fo
 	return nil
 }
 
-func (m *FcpServiceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *FcpServiceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -1489,7 +1489,7 @@ func (m *FcpServiceStatistics) contextValidateThroughputRaw(ctx context.Context,
 	return nil
 }
 
-func (m *FcpServiceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1499,7 +1499,7 @@ func (m *FcpServiceStatistics) contextValidateTimestamp(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceStatistics) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1507,8 +1507,8 @@ func (m *FcpServiceStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceStatistics) UnmarshalBinary(b []byte) error {
-	var res FcpServiceStatistics
+func (m *FcpServiceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1516,34 +1516,34 @@ func (m *FcpServiceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// FcpServiceInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model FcpServiceStatisticsIopsRaw
-type FcpServiceStatisticsIopsRaw struct {
+// swagger:model fcp_service_inline_statistics_inline_iops_raw
+type FcpServiceInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fcp service statistics iops raw
-func (m *FcpServiceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline statistics inline iops raw
+func (m *FcpServiceInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service statistics iops raw based on the context it is used
-func (m *FcpServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline statistics inline iops raw based on the context it is used
+func (m *FcpServiceInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1553,7 +1553,7 @@ func (m *FcpServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1561,8 +1561,8 @@ func (m *FcpServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res FcpServiceStatisticsIopsRaw
+func (m *FcpServiceInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1570,34 +1570,34 @@ func (m *FcpServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// FcpServiceInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model FcpServiceStatisticsLatencyRaw
-type FcpServiceStatisticsLatencyRaw struct {
+// swagger:model fcp_service_inline_statistics_inline_latency_raw
+type FcpServiceInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fcp service statistics latency raw
-func (m *FcpServiceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline statistics inline latency raw
+func (m *FcpServiceInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service statistics latency raw based on the context it is used
-func (m *FcpServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline statistics inline latency raw based on the context it is used
+func (m *FcpServiceInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1607,7 +1607,7 @@ func (m *FcpServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1615,8 +1615,8 @@ func (m *FcpServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res FcpServiceStatisticsLatencyRaw
+func (m *FcpServiceInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1624,31 +1624,31 @@ func (m *FcpServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// FcpServiceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model FcpServiceStatisticsThroughputRaw
-type FcpServiceStatisticsThroughputRaw struct {
+// swagger:model fcp_service_inline_statistics_inline_throughput_raw
+type FcpServiceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this fcp service statistics throughput raw
-func (m *FcpServiceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline statistics inline throughput raw
+func (m *FcpServiceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service statistics throughput raw based on the context it is used
-func (m *FcpServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline statistics inline throughput raw based on the context it is used
+func (m *FcpServiceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1658,7 +1658,7 @@ func (m *FcpServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1666,8 +1666,8 @@ func (m *FcpServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res FcpServiceStatisticsThroughputRaw
+func (m *FcpServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1675,27 +1675,27 @@ func (m *FcpServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceSvm fcp service svm
+// FcpServiceInlineSvm fcp service inline svm
 //
-// swagger:model FcpServiceSvm
-type FcpServiceSvm struct {
+// swagger:model fcp_service_inline_svm
+type FcpServiceInlineSvm struct {
 
 	// links
-	Links *FcpServiceSvmLinks `json:"_links,omitempty"`
+	Links *FcpServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this fcp service svm
-func (m *FcpServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline svm
+func (m *FcpServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1708,7 +1708,7 @@ func (m *FcpServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FcpServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1725,8 +1725,8 @@ func (m *FcpServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service svm based on the context it is used
-func (m *FcpServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline svm based on the context it is used
+func (m *FcpServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1739,7 +1739,7 @@ func (m *FcpServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *FcpServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1754,7 +1754,7 @@ func (m *FcpServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1762,8 +1762,8 @@ func (m *FcpServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceSvm) UnmarshalBinary(b []byte) error {
-	var res FcpServiceSvm
+func (m *FcpServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1771,17 +1771,17 @@ func (m *FcpServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceSvmLinks fcp service svm links
+// FcpServiceInlineSvmInlineLinks fcp service inline svm inline links
 //
-// swagger:model FcpServiceSvmLinks
-type FcpServiceSvmLinks struct {
+// swagger:model fcp_service_inline_svm_inline__links
+type FcpServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fcp service svm links
-func (m *FcpServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline svm inline links
+func (m *FcpServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1794,7 +1794,7 @@ func (m *FcpServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FcpServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1811,8 +1811,8 @@ func (m *FcpServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this fcp service svm links based on the context it is used
-func (m *FcpServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline svm inline links based on the context it is used
+func (m *FcpServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1825,7 +1825,7 @@ func (m *FcpServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *FcpServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1840,7 +1840,7 @@ func (m *FcpServiceSvmLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1848,8 +1848,8 @@ func (m *FcpServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FcpServiceSvmLinks
+func (m *FcpServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1857,10 +1857,10 @@ func (m *FcpServiceSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FcpServiceTarget fcp service target
+// FcpServiceInlineTarget fcp service inline target
 //
-// swagger:model FcpServiceTarget
-type FcpServiceTarget struct {
+// swagger:model fcp_service_inline_target
+type FcpServiceInlineTarget struct {
 
 	// The target name of the FC Protocol service. This is generated for the SVM during POST.<br/>
 	// The FC Protocol target name is a world wide node name (WWNN).<br/>
@@ -1870,11 +1870,11 @@ type FcpServiceTarget struct {
 	// Read Only: true
 	// Max Length: 128
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this fcp service target
-func (m *FcpServiceTarget) Validate(formats strfmt.Registry) error {
+// Validate validates this fcp service inline target
+func (m *FcpServiceInlineTarget) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -1887,24 +1887,24 @@ func (m *FcpServiceTarget) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcpServiceTarget) validateName(formats strfmt.Registry) error {
+func (m *FcpServiceInlineTarget) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("target"+"."+"name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("target"+"."+"name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("target"+"."+"name", "body", m.Name, 128); err != nil {
+	if err := validate.MaxLength("target"+"."+"name", "body", *m.Name, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this fcp service target based on the context it is used
-func (m *FcpServiceTarget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fcp service inline target based on the context it is used
+func (m *FcpServiceInlineTarget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -1917,9 +1917,9 @@ func (m *FcpServiceTarget) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *FcpServiceTarget) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcpServiceInlineTarget) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "target"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "target"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1927,7 +1927,7 @@ func (m *FcpServiceTarget) contextValidateName(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *FcpServiceTarget) MarshalBinary() ([]byte, error) {
+func (m *FcpServiceInlineTarget) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1935,8 +1935,8 @@ func (m *FcpServiceTarget) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FcpServiceTarget) UnmarshalBinary(b []byte) error {
-	var res FcpServiceTarget
+func (m *FcpServiceInlineTarget) UnmarshalBinary(b []byte) error {
+	var res FcpServiceInlineTarget
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

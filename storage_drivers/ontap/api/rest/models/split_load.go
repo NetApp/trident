@@ -23,7 +23,7 @@ type SplitLoad struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// load
-	Load *SplitLoadLoad `json:"load,omitempty"`
+	Load *SplitLoadInlineLoad `json:"load,omitempty"`
 
 	// node
 	Node *NodeReference `json:"node,omitempty"`
@@ -184,34 +184,34 @@ func (m *SplitLoad) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SplitLoadLoad split load load
+// SplitLoadInlineLoad split load inline load
 //
-// swagger:model SplitLoadLoad
-type SplitLoadLoad struct {
+// swagger:model split_load_inline_load
+type SplitLoadInlineLoad struct {
 
 	// Specifies the available file clone split load on the node.
 	// Read Only: true
-	Allowable int64 `json:"allowable,omitempty"`
+	Allowable *int64 `json:"allowable,omitempty"`
 
 	// Specifies the current on-going file clone split load on the node.
 	// Read Only: true
-	Current int64 `json:"current,omitempty"`
+	Current *int64 `json:"current,omitempty"`
 
 	// Specifies the maximum allowable file clone split load on the node at any point in time.
-	Maximum int64 `json:"maximum,omitempty"`
+	Maximum *int64 `json:"maximum,omitempty"`
 
 	// Specifies the file clone split load on the node reserved for tokens.
 	// Read Only: true
-	TokenReserved int64 `json:"token_reserved,omitempty"`
+	TokenReserved *int64 `json:"token_reserved,omitempty"`
 }
 
-// Validate validates this split load load
-func (m *SplitLoadLoad) Validate(formats strfmt.Registry) error {
+// Validate validates this split load inline load
+func (m *SplitLoadInlineLoad) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this split load load based on the context it is used
-func (m *SplitLoadLoad) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this split load inline load based on the context it is used
+func (m *SplitLoadInlineLoad) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAllowable(ctx, formats); err != nil {
@@ -232,27 +232,27 @@ func (m *SplitLoadLoad) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *SplitLoadLoad) contextValidateAllowable(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitLoadInlineLoad) contextValidateAllowable(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "load"+"."+"allowable", "body", int64(m.Allowable)); err != nil {
+	if err := validate.ReadOnly(ctx, "load"+"."+"allowable", "body", m.Allowable); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SplitLoadLoad) contextValidateCurrent(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitLoadInlineLoad) contextValidateCurrent(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "load"+"."+"current", "body", int64(m.Current)); err != nil {
+	if err := validate.ReadOnly(ctx, "load"+"."+"current", "body", m.Current); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SplitLoadLoad) contextValidateTokenReserved(ctx context.Context, formats strfmt.Registry) error {
+func (m *SplitLoadInlineLoad) contextValidateTokenReserved(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "load"+"."+"token_reserved", "body", int64(m.TokenReserved)); err != nil {
+	if err := validate.ReadOnly(ctx, "load"+"."+"token_reserved", "body", m.TokenReserved); err != nil {
 		return err
 	}
 
@@ -260,7 +260,7 @@ func (m *SplitLoadLoad) contextValidateTokenReserved(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SplitLoadLoad) MarshalBinary() ([]byte, error) {
+func (m *SplitLoadInlineLoad) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -268,8 +268,8 @@ func (m *SplitLoadLoad) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SplitLoadLoad) UnmarshalBinary(b []byte) error {
-	var res SplitLoadLoad
+func (m *SplitLoadInlineLoad) UnmarshalBinary(b []byte) error {
+	var res SplitLoadInlineLoad
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

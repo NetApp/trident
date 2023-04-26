@@ -21,7 +21,7 @@ import (
 type SoftwareStatusDetailsReference struct {
 
 	// action
-	Action *SoftwareStatusDetailsReferenceAction `json:"action,omitempty"`
+	Action *SoftwareStatusDetailsReferenceInlineAction `json:"action,omitempty"`
 
 	// End time for each status phase.
 	// Example: 2019-02-02T19:00:00Z
@@ -30,15 +30,15 @@ type SoftwareStatusDetailsReference struct {
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// issue
-	Issue *SoftwareStatusDetailsReferenceIssue `json:"issue,omitempty"`
+	Issue *SoftwareStatusDetailsReferenceInlineIssue `json:"issue,omitempty"`
 
 	// Name of the phase to be retrieved for status details.
 	// Example: initialize
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *SoftwareStatusDetailsReferenceNode `json:"node,omitempty"`
+	Node *SoftwareStatusDetailsReferenceInlineNode `json:"node,omitempty"`
 
 	// Start time for each status phase.
 	// Example: 2019-02-02T19:00:00Z
@@ -50,7 +50,7 @@ type SoftwareStatusDetailsReference struct {
 	// Example: failed
 	// Read Only: true
 	// Enum: [in_progress waiting paused_by_user paused_on_error completed canceled failed pause_pending cancel_pending]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this software status details reference
@@ -281,7 +281,7 @@ func (m *SoftwareStatusDetailsReference) validateState(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -365,7 +365,7 @@ func (m *SoftwareStatusDetailsReference) contextValidateIssue(ctx context.Contex
 
 func (m *SoftwareStatusDetailsReference) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -397,7 +397,7 @@ func (m *SoftwareStatusDetailsReference) contextValidateStartTime(ctx context.Co
 
 func (m *SoftwareStatusDetailsReference) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -422,25 +422,25 @@ func (m *SoftwareStatusDetailsReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareStatusDetailsReferenceAction software status details reference action
+// SoftwareStatusDetailsReferenceInlineAction software status details reference inline action
 //
-// swagger:model SoftwareStatusDetailsReferenceAction
-type SoftwareStatusDetailsReferenceAction struct {
+// swagger:model software_status_details_reference_inline_action
+type SoftwareStatusDetailsReferenceInlineAction struct {
 
 	// Error code corresponding the status error
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Corrective action to be taken to resolve the status error.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this software status details reference action
-func (m *SoftwareStatusDetailsReferenceAction) Validate(formats strfmt.Registry) error {
+// Validate validates this software status details reference inline action
+func (m *SoftwareStatusDetailsReferenceInlineAction) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software status details reference action based on the context it is used
-func (m *SoftwareStatusDetailsReferenceAction) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software status details reference inline action based on the context it is used
+func (m *SoftwareStatusDetailsReferenceInlineAction) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -450,7 +450,7 @@ func (m *SoftwareStatusDetailsReferenceAction) ContextValidate(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareStatusDetailsReferenceAction) MarshalBinary() ([]byte, error) {
+func (m *SoftwareStatusDetailsReferenceInlineAction) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -458,8 +458,8 @@ func (m *SoftwareStatusDetailsReferenceAction) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareStatusDetailsReferenceAction) UnmarshalBinary(b []byte) error {
-	var res SoftwareStatusDetailsReferenceAction
+func (m *SoftwareStatusDetailsReferenceInlineAction) UnmarshalBinary(b []byte) error {
+	var res SoftwareStatusDetailsReferenceInlineAction
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -467,27 +467,27 @@ func (m *SoftwareStatusDetailsReferenceAction) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareStatusDetailsReferenceIssue software status details reference issue
+// SoftwareStatusDetailsReferenceInlineIssue software status details reference inline issue
 //
-// swagger:model SoftwareStatusDetailsReferenceIssue
-type SoftwareStatusDetailsReferenceIssue struct {
+// swagger:model software_status_details_reference_inline_issue
+type SoftwareStatusDetailsReferenceInlineIssue struct {
 
 	// Error code corresponding to update status
 	// Example: 10551399
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// Update status details
 	// Example: Image update complete
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-// Validate validates this software status details reference issue
-func (m *SoftwareStatusDetailsReferenceIssue) Validate(formats strfmt.Registry) error {
+// Validate validates this software status details reference inline issue
+func (m *SoftwareStatusDetailsReferenceInlineIssue) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software status details reference issue based on the context it is used
-func (m *SoftwareStatusDetailsReferenceIssue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software status details reference inline issue based on the context it is used
+func (m *SoftwareStatusDetailsReferenceInlineIssue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -497,7 +497,7 @@ func (m *SoftwareStatusDetailsReferenceIssue) ContextValidate(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareStatusDetailsReferenceIssue) MarshalBinary() ([]byte, error) {
+func (m *SoftwareStatusDetailsReferenceInlineIssue) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -505,8 +505,8 @@ func (m *SoftwareStatusDetailsReferenceIssue) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareStatusDetailsReferenceIssue) UnmarshalBinary(b []byte) error {
-	var res SoftwareStatusDetailsReferenceIssue
+func (m *SoftwareStatusDetailsReferenceInlineIssue) UnmarshalBinary(b []byte) error {
+	var res SoftwareStatusDetailsReferenceInlineIssue
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -514,24 +514,24 @@ func (m *SoftwareStatusDetailsReferenceIssue) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareStatusDetailsReferenceNode software status details reference node
+// SoftwareStatusDetailsReferenceInlineNode software status details reference inline node
 //
-// swagger:model SoftwareStatusDetailsReferenceNode
-type SoftwareStatusDetailsReferenceNode struct {
+// swagger:model software_status_details_reference_inline_node
+type SoftwareStatusDetailsReferenceInlineNode struct {
 
 	// Name of the node to be retrieved for status details.
 	// Example: node1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this software status details reference node
-func (m *SoftwareStatusDetailsReferenceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this software status details reference inline node
+func (m *SoftwareStatusDetailsReferenceInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software status details reference node based on the context it is used
-func (m *SoftwareStatusDetailsReferenceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software status details reference inline node based on the context it is used
+func (m *SoftwareStatusDetailsReferenceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -544,9 +544,9 @@ func (m *SoftwareStatusDetailsReferenceNode) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *SoftwareStatusDetailsReferenceNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareStatusDetailsReferenceInlineNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "node"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "node"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -554,7 +554,7 @@ func (m *SoftwareStatusDetailsReferenceNode) contextValidateName(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareStatusDetailsReferenceNode) MarshalBinary() ([]byte, error) {
+func (m *SoftwareStatusDetailsReferenceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -562,8 +562,8 @@ func (m *SoftwareStatusDetailsReferenceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareStatusDetailsReferenceNode) UnmarshalBinary(b []byte) error {
-	var res SoftwareStatusDetailsReferenceNode
+func (m *SoftwareStatusDetailsReferenceInlineNode) UnmarshalBinary(b []byte) error {
+	var res SoftwareStatusDetailsReferenceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -70,13 +70,13 @@ type VscanOnAccessModifyParams struct {
 	Info *models.VscanOnAccess
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -142,26 +142,26 @@ func (o *VscanOnAccessModifyParams) SetInfo(info *models.VscanOnAccess) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the vscan on access modify params
-func (o *VscanOnAccessModifyParams) WithNamePathParameter(name string) *VscanOnAccessModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the vscan on access modify params
+func (o *VscanOnAccessModifyParams) WithName(name string) *VscanOnAccessModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the vscan on access modify params
-func (o *VscanOnAccessModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the vscan on access modify params
+func (o *VscanOnAccessModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the vscan on access modify params
-func (o *VscanOnAccessModifyParams) WithSVMUUIDPathParameter(svmUUID string) *VscanOnAccessModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the vscan on access modify params
+func (o *VscanOnAccessModifyParams) WithSvmUUID(svmUUID string) *VscanOnAccessModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the vscan on access modify params
-func (o *VscanOnAccessModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the vscan on access modify params
+func (o *VscanOnAccessModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -178,12 +178,12 @@ func (o *VscanOnAccessModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

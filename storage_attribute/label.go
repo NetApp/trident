@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	. "github.com/netapp/trident/logging"
 )
 
 var (
@@ -34,7 +34,7 @@ func NewLabelOffer(labelMaps ...map[string]string) Offer {
 		}
 	}
 
-	log.WithField("offers", offers).Debug("NewLabelOffer")
+	Log().WithField("offers", offers).Debug("NewLabelOffer")
 
 	return &labelOffer{
 		Offers: offers,
@@ -42,7 +42,7 @@ func NewLabelOffer(labelMaps ...map[string]string) Offer {
 }
 
 func (o *labelOffer) Matches(r Request) bool {
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"request": r,
 		"offers":  o.Offers,
 	}).Debug("Matches")
@@ -80,7 +80,7 @@ func (o *labelOffer) Labels() map[string]string {
 }
 
 func NewLabelRequest(request string) (Request, error) {
-	log.WithField("request", request).Debug("NewLabelRequest")
+	Log().WithField("request", request).Debug("NewLabelRequest")
 
 	if len(request) == 0 {
 		return nil, fmt.Errorf("label selector may not be empty")

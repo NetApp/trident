@@ -21,45 +21,45 @@ import (
 type IscsiSession struct {
 
 	// links
-	Links *IscsiSessionLinks `json:"_links,omitempty"`
+	Links *IscsiSessionInlineLinks `json:"_links,omitempty"`
+
+	// initiator
+	Initiator *IscsiSessionInlineInitiator `json:"initiator,omitempty"`
 
 	// The iSCSI connections that make up the iSCSI session.
 	//
 	// Read Only: true
-	Connections []*IscsiConnection `json:"connections,omitempty"`
+	IscsiSessionInlineConnections []*IscsiConnection `json:"connections,omitempty"`
 
 	// The initiator groups in which the initiator is a member.
 	//
 	// Read Only: true
-	Igroups []*IscsiSessionIgroupsItems0 `json:"igroups,omitempty"`
-
-	// initiator
-	Initiator *IscsiSessionInitiator `json:"initiator,omitempty"`
+	IscsiSessionInlineIgroups []*IscsiSessionInlineIgroupsInlineArrayItem `json:"igroups,omitempty"`
 
 	// The initiator portion of the session identifier specified by the initiator during login.
 	//
 	// Example: 61:62:63:64:65:00
 	// Read Only: true
-	Isid string `json:"isid,omitempty"`
+	Isid *string `json:"isid,omitempty"`
 
 	// svm
-	Svm *IscsiSessionSvm `json:"svm,omitempty"`
+	Svm *IscsiSessionInlineSvm `json:"svm,omitempty"`
 
 	// The target portal group to which the session belongs.
 	//
 	// Example: tpgroup1
 	// Read Only: true
-	TargetPortalGroup string `json:"target_portal_group,omitempty"`
+	TargetPortalGroup *string `json:"target_portal_group,omitempty"`
 
 	// The target portal group tag of the session.
 	//
 	// Read Only: true
-	TargetPortalGroupTag int64 `json:"target_portal_group_tag,omitempty"`
+	TargetPortalGroupTag *int64 `json:"target_portal_group_tag,omitempty"`
 
 	// The target session identifier handle (TSIH) of the session.
 	//
 	// Read Only: true
-	Tsih int64 `json:"tsih,omitempty"`
+	Tsih *int64 `json:"tsih,omitempty"`
 }
 
 // Validate validates this iscsi session
@@ -70,15 +70,15 @@ func (m *IscsiSession) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateConnections(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateIgroups(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateInitiator(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIscsiSessionInlineConnections(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIscsiSessionInlineIgroups(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -109,54 +109,6 @@ func (m *IscsiSession) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiSession) validateConnections(formats strfmt.Registry) error {
-	if swag.IsZero(m.Connections) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Connections); i++ {
-		if swag.IsZero(m.Connections[i]) { // not required
-			continue
-		}
-
-		if m.Connections[i] != nil {
-			if err := m.Connections[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *IscsiSession) validateIgroups(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroups) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Igroups); i++ {
-		if swag.IsZero(m.Igroups[i]) { // not required
-			continue
-		}
-
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *IscsiSession) validateInitiator(formats strfmt.Registry) error {
 	if swag.IsZero(m.Initiator) { // not required
 		return nil
@@ -169,6 +121,54 @@ func (m *IscsiSession) validateInitiator(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *IscsiSession) validateIscsiSessionInlineConnections(formats strfmt.Registry) error {
+	if swag.IsZero(m.IscsiSessionInlineConnections) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.IscsiSessionInlineConnections); i++ {
+		if swag.IsZero(m.IscsiSessionInlineConnections[i]) { // not required
+			continue
+		}
+
+		if m.IscsiSessionInlineConnections[i] != nil {
+			if err := m.IscsiSessionInlineConnections[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *IscsiSession) validateIscsiSessionInlineIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.IscsiSessionInlineIgroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.IscsiSessionInlineIgroups); i++ {
+		if swag.IsZero(m.IscsiSessionInlineIgroups[i]) { // not required
+			continue
+		}
+
+		if m.IscsiSessionInlineIgroups[i] != nil {
+			if err := m.IscsiSessionInlineIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -199,15 +199,15 @@ func (m *IscsiSession) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateConnections(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateIgroups(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateInitiator(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIscsiSessionInlineConnections(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIscsiSessionInlineIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -251,50 +251,6 @@ func (m *IscsiSession) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *IscsiSession) contextValidateConnections(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connections", "body", []*IscsiConnection(m.Connections)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Connections); i++ {
-
-		if m.Connections[i] != nil {
-			if err := m.Connections[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *IscsiSession) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "igroups", "body", []*IscsiSessionIgroupsItems0(m.Igroups)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Igroups); i++ {
-
-		if m.Igroups[i] != nil {
-			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *IscsiSession) contextValidateInitiator(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Initiator != nil {
@@ -309,9 +265,53 @@ func (m *IscsiSession) contextValidateInitiator(ctx context.Context, formats str
 	return nil
 }
 
+func (m *IscsiSession) contextValidateIscsiSessionInlineConnections(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connections", "body", []*IscsiConnection(m.IscsiSessionInlineConnections)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.IscsiSessionInlineConnections); i++ {
+
+		if m.IscsiSessionInlineConnections[i] != nil {
+			if err := m.IscsiSessionInlineConnections[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("connections" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *IscsiSession) contextValidateIscsiSessionInlineIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "igroups", "body", []*IscsiSessionInlineIgroupsInlineArrayItem(m.IscsiSessionInlineIgroups)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.IscsiSessionInlineIgroups); i++ {
+
+		if m.IscsiSessionInlineIgroups[i] != nil {
+			if err := m.IscsiSessionInlineIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *IscsiSession) contextValidateIsid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "isid", "body", string(m.Isid)); err != nil {
+	if err := validate.ReadOnly(ctx, "isid", "body", m.Isid); err != nil {
 		return err
 	}
 
@@ -334,7 +334,7 @@ func (m *IscsiSession) contextValidateSvm(ctx context.Context, formats strfmt.Re
 
 func (m *IscsiSession) contextValidateTargetPortalGroup(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "target_portal_group", "body", string(m.TargetPortalGroup)); err != nil {
+	if err := validate.ReadOnly(ctx, "target_portal_group", "body", m.TargetPortalGroup); err != nil {
 		return err
 	}
 
@@ -343,7 +343,7 @@ func (m *IscsiSession) contextValidateTargetPortalGroup(ctx context.Context, for
 
 func (m *IscsiSession) contextValidateTargetPortalGroupTag(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "target_portal_group_tag", "body", int64(m.TargetPortalGroupTag)); err != nil {
+	if err := validate.ReadOnly(ctx, "target_portal_group_tag", "body", m.TargetPortalGroupTag); err != nil {
 		return err
 	}
 
@@ -352,7 +352,7 @@ func (m *IscsiSession) contextValidateTargetPortalGroupTag(ctx context.Context, 
 
 func (m *IscsiSession) contextValidateTsih(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "tsih", "body", int64(m.Tsih)); err != nil {
+	if err := validate.ReadOnly(ctx, "tsih", "body", m.Tsih); err != nil {
 		return err
 	}
 
@@ -377,29 +377,29 @@ func (m *IscsiSession) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiSessionIgroupsItems0 iscsi session igroups items0
+// IscsiSessionInlineIgroupsInlineArrayItem iscsi session inline igroups inline array item
 //
-// swagger:model IscsiSessionIgroupsItems0
-type IscsiSessionIgroupsItems0 struct {
+// swagger:model iscsi_session_inline_igroups_inline_array_item
+type IscsiSessionInlineIgroupsInlineArrayItem struct {
 
 	// links
-	Links *IscsiSessionIgroupsItems0Links `json:"_links,omitempty"`
+	Links *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The name of the initiator group.
 	//
 	// Example: igroup1
 	// Max Length: 96
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this iscsi session igroups items0
-func (m *IscsiSessionIgroupsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi session inline igroups inline array item
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -416,7 +416,7 @@ func (m *IscsiSessionIgroupsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiSessionIgroupsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -433,24 +433,24 @@ func (m *IscsiSessionIgroupsItems0) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *IscsiSessionIgroupsItems0) validateName(formats strfmt.Registry) error {
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 96); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this iscsi session igroups items0 based on the context it is used
-func (m *IscsiSessionIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi session inline igroups inline array item based on the context it is used
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -463,7 +463,7 @@ func (m *IscsiSessionIgroupsItems0) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *IscsiSessionIgroupsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -478,7 +478,7 @@ func (m *IscsiSessionIgroupsItems0) contextValidateLinks(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiSessionIgroupsItems0) MarshalBinary() ([]byte, error) {
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -486,8 +486,8 @@ func (m *IscsiSessionIgroupsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiSessionIgroupsItems0) UnmarshalBinary(b []byte) error {
-	var res IscsiSessionIgroupsItems0
+func (m *IscsiSessionInlineIgroupsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res IscsiSessionInlineIgroupsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -495,17 +495,17 @@ func (m *IscsiSessionIgroupsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiSessionIgroupsItems0Links iscsi session igroups items0 links
+// IscsiSessionInlineIgroupsInlineArrayItemInlineLinks iscsi session inline igroups inline array item inline links
 //
-// swagger:model IscsiSessionIgroupsItems0Links
-type IscsiSessionIgroupsItems0Links struct {
+// swagger:model iscsi_session_inline_igroups_inline_array_item_inline__links
+type IscsiSessionInlineIgroupsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi session igroups items0 links
-func (m *IscsiSessionIgroupsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi session inline igroups inline array item inline links
+func (m *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -518,7 +518,7 @@ func (m *IscsiSessionIgroupsItems0Links) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *IscsiSessionIgroupsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -535,8 +535,8 @@ func (m *IscsiSessionIgroupsItems0Links) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this iscsi session igroups items0 links based on the context it is used
-func (m *IscsiSessionIgroupsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi session inline igroups inline array item inline links based on the context it is used
+func (m *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -549,7 +549,7 @@ func (m *IscsiSessionIgroupsItems0Links) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *IscsiSessionIgroupsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -564,7 +564,7 @@ func (m *IscsiSessionIgroupsItems0Links) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiSessionIgroupsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -572,8 +572,8 @@ func (m *IscsiSessionIgroupsItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiSessionIgroupsItems0Links) UnmarshalBinary(b []byte) error {
-	var res IscsiSessionIgroupsItems0Links
+func (m *IscsiSessionInlineIgroupsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiSessionInlineIgroupsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -581,37 +581,37 @@ func (m *IscsiSessionIgroupsItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiSessionInitiator The initiator that created the session.
+// IscsiSessionInlineInitiator The initiator that created the session.
 //
-// swagger:model IscsiSessionInitiator
-type IscsiSessionInitiator struct {
+// swagger:model iscsi_session_inline_initiator
+type IscsiSessionInlineInitiator struct {
 
 	// The initiator alias.
 	//
 	// Example: initiator_alias1
 	// Read Only: true
-	Alias string `json:"alias,omitempty"`
+	Alias *string `json:"alias,omitempty"`
 
 	// A comment available for use by the administrator. This is modifiable from the initiator REST endpoint directly. See [`PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_modify).
 	//
 	// Example: This is an iSCSI initiator for host 5
 	// Read Only: true
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// The world wide unique name of the initiator.
 	//
 	// Example: iqn.1992-01.example.com:string
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this iscsi session initiator
-func (m *IscsiSessionInitiator) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi session inline initiator
+func (m *IscsiSessionInlineInitiator) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi session initiator based on the context it is used
-func (m *IscsiSessionInitiator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi session inline initiator based on the context it is used
+func (m *IscsiSessionInlineInitiator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAlias(ctx, formats); err != nil {
@@ -632,27 +632,27 @@ func (m *IscsiSessionInitiator) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *IscsiSessionInitiator) contextValidateAlias(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineInitiator) contextValidateAlias(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"alias", "body", string(m.Alias)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"alias", "body", m.Alias); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiSessionInitiator) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineInitiator) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"comment", "body", string(m.Comment)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"comment", "body", m.Comment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiSessionInitiator) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineInitiator) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -660,7 +660,7 @@ func (m *IscsiSessionInitiator) contextValidateName(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiSessionInitiator) MarshalBinary() ([]byte, error) {
+func (m *IscsiSessionInlineInitiator) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -668,8 +668,8 @@ func (m *IscsiSessionInitiator) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiSessionInitiator) UnmarshalBinary(b []byte) error {
-	var res IscsiSessionInitiator
+func (m *IscsiSessionInlineInitiator) UnmarshalBinary(b []byte) error {
+	var res IscsiSessionInlineInitiator
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -677,17 +677,17 @@ func (m *IscsiSessionInitiator) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiSessionLinks iscsi session links
+// IscsiSessionInlineLinks iscsi session inline links
 //
-// swagger:model IscsiSessionLinks
-type IscsiSessionLinks struct {
+// swagger:model iscsi_session_inline__links
+type IscsiSessionInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi session links
-func (m *IscsiSessionLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi session inline links
+func (m *IscsiSessionInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -700,7 +700,7 @@ func (m *IscsiSessionLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiSessionLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiSessionInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -717,8 +717,8 @@ func (m *IscsiSessionLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi session links based on the context it is used
-func (m *IscsiSessionLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi session inline links based on the context it is used
+func (m *IscsiSessionInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -731,7 +731,7 @@ func (m *IscsiSessionLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *IscsiSessionLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -746,7 +746,7 @@ func (m *IscsiSessionLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiSessionLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiSessionInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -754,8 +754,8 @@ func (m *IscsiSessionLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiSessionLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiSessionLinks
+func (m *IscsiSessionInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiSessionInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -763,27 +763,27 @@ func (m *IscsiSessionLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiSessionSvm iscsi session svm
+// IscsiSessionInlineSvm iscsi session inline svm
 //
-// swagger:model IscsiSessionSvm
-type IscsiSessionSvm struct {
+// swagger:model iscsi_session_inline_svm
+type IscsiSessionInlineSvm struct {
 
 	// links
-	Links *IscsiSessionSvmLinks `json:"_links,omitempty"`
+	Links *IscsiSessionInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this iscsi session svm
-func (m *IscsiSessionSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi session inline svm
+func (m *IscsiSessionInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -796,7 +796,7 @@ func (m *IscsiSessionSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiSessionSvm) validateLinks(formats strfmt.Registry) error {
+func (m *IscsiSessionInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -813,8 +813,8 @@ func (m *IscsiSessionSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi session svm based on the context it is used
-func (m *IscsiSessionSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi session inline svm based on the context it is used
+func (m *IscsiSessionInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -827,7 +827,7 @@ func (m *IscsiSessionSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *IscsiSessionSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -842,7 +842,7 @@ func (m *IscsiSessionSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiSessionSvm) MarshalBinary() ([]byte, error) {
+func (m *IscsiSessionInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -850,8 +850,8 @@ func (m *IscsiSessionSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiSessionSvm) UnmarshalBinary(b []byte) error {
-	var res IscsiSessionSvm
+func (m *IscsiSessionInlineSvm) UnmarshalBinary(b []byte) error {
+	var res IscsiSessionInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -859,17 +859,17 @@ func (m *IscsiSessionSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiSessionSvmLinks iscsi session svm links
+// IscsiSessionInlineSvmInlineLinks iscsi session inline svm inline links
 //
-// swagger:model IscsiSessionSvmLinks
-type IscsiSessionSvmLinks struct {
+// swagger:model iscsi_session_inline_svm_inline__links
+type IscsiSessionInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi session svm links
-func (m *IscsiSessionSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi session inline svm inline links
+func (m *IscsiSessionInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -882,7 +882,7 @@ func (m *IscsiSessionSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiSessionSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiSessionInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -899,8 +899,8 @@ func (m *IscsiSessionSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi session svm links based on the context it is used
-func (m *IscsiSessionSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi session inline svm inline links based on the context it is used
+func (m *IscsiSessionInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -913,7 +913,7 @@ func (m *IscsiSessionSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IscsiSessionSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiSessionInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -928,7 +928,7 @@ func (m *IscsiSessionSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiSessionSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiSessionInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -936,8 +936,8 @@ func (m *IscsiSessionSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiSessionSvmLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiSessionSvmLinks
+func (m *IscsiSessionInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiSessionInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

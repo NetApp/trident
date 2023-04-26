@@ -70,13 +70,13 @@ type FpolicyEngineModifyParams struct {
 	Info *models.FpolicyEngine
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -142,26 +142,26 @@ func (o *FpolicyEngineModifyParams) SetInfo(info *models.FpolicyEngine) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the fpolicy engine modify params
-func (o *FpolicyEngineModifyParams) WithNamePathParameter(name string) *FpolicyEngineModifyParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the fpolicy engine modify params
+func (o *FpolicyEngineModifyParams) WithName(name string) *FpolicyEngineModifyParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the fpolicy engine modify params
-func (o *FpolicyEngineModifyParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the fpolicy engine modify params
+func (o *FpolicyEngineModifyParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy engine modify params
-func (o *FpolicyEngineModifyParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyEngineModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy engine modify params
+func (o *FpolicyEngineModifyParams) WithSvmUUID(svmUUID string) *FpolicyEngineModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy engine modify params
-func (o *FpolicyEngineModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy engine modify params
+func (o *FpolicyEngineModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -178,12 +178,12 @@ func (o *FpolicyEngineModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

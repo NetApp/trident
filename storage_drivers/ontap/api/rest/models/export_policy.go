@@ -21,20 +21,20 @@ import (
 type ExportPolicy struct {
 
 	// links
-	Links *ExportPolicyLinks `json:"_links,omitempty"`
+	Links *ExportPolicyInlineLinks `json:"_links,omitempty"`
+
+	// Rules of the Export Policy.
+	ExportPolicyInlineRules []*ExportRules `json:"rules,omitempty"`
 
 	// Export Policy ID
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Export Policy Name
-	Name string `json:"name,omitempty"`
-
-	// Rules of the Export Policy.
-	Rules []*ExportRules `json:"rules,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// svm
-	Svm *ExportPolicySvm `json:"svm,omitempty"`
+	Svm *ExportPolicyInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this export policy
@@ -45,7 +45,7 @@ func (m *ExportPolicy) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRules(formats); err != nil {
+	if err := m.validateExportPolicyInlineRules(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -76,18 +76,18 @@ func (m *ExportPolicy) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportPolicy) validateRules(formats strfmt.Registry) error {
-	if swag.IsZero(m.Rules) { // not required
+func (m *ExportPolicy) validateExportPolicyInlineRules(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportPolicyInlineRules) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Rules); i++ {
-		if swag.IsZero(m.Rules[i]) { // not required
+	for i := 0; i < len(m.ExportPolicyInlineRules); i++ {
+		if swag.IsZero(m.ExportPolicyInlineRules[i]) { // not required
 			continue
 		}
 
-		if m.Rules[i] != nil {
-			if err := m.Rules[i].Validate(formats); err != nil {
+		if m.ExportPolicyInlineRules[i] != nil {
+			if err := m.ExportPolicyInlineRules[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("rules" + "." + strconv.Itoa(i))
 				}
@@ -125,11 +125,11 @@ func (m *ExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateID(ctx, formats); err != nil {
+	if err := m.contextValidateExportPolicyInlineRules(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRules(ctx, formats); err != nil {
+	if err := m.contextValidateID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -157,21 +157,12 @@ func (m *ExportPolicy) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *ExportPolicy) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportPolicy) contextValidateExportPolicyInlineRules(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
-		return err
-	}
+	for i := 0; i < len(m.ExportPolicyInlineRules); i++ {
 
-	return nil
-}
-
-func (m *ExportPolicy) contextValidateRules(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Rules); i++ {
-
-		if m.Rules[i] != nil {
-			if err := m.Rules[i].ContextValidate(ctx, formats); err != nil {
+		if m.ExportPolicyInlineRules[i] != nil {
+			if err := m.ExportPolicyInlineRules[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("rules" + "." + strconv.Itoa(i))
 				}
@@ -179,6 +170,15 @@ func (m *ExportPolicy) contextValidateRules(ctx context.Context, formats strfmt.
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ExportPolicy) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
+		return err
 	}
 
 	return nil
@@ -216,17 +216,17 @@ func (m *ExportPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportPolicyLinks export policy links
+// ExportPolicyInlineLinks export policy inline links
 //
-// swagger:model ExportPolicyLinks
-type ExportPolicyLinks struct {
+// swagger:model export_policy_inline__links
+type ExportPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this export policy links
-func (m *ExportPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this export policy inline links
+func (m *ExportPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -239,7 +239,7 @@ func (m *ExportPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ExportPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -256,8 +256,8 @@ func (m *ExportPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export policy links based on the context it is used
-func (m *ExportPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export policy inline links based on the context it is used
+func (m *ExportPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -270,7 +270,7 @@ func (m *ExportPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *ExportPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -285,7 +285,7 @@ func (m *ExportPolicyLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *ExportPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *ExportPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -293,8 +293,8 @@ func (m *ExportPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res ExportPolicyLinks
+func (m *ExportPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ExportPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -302,27 +302,27 @@ func (m *ExportPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportPolicySvm export policy svm
+// ExportPolicyInlineSvm export policy inline svm
 //
-// swagger:model ExportPolicySvm
-type ExportPolicySvm struct {
+// swagger:model export_policy_inline_svm
+type ExportPolicyInlineSvm struct {
 
 	// links
-	Links *ExportPolicySvmLinks `json:"_links,omitempty"`
+	Links *ExportPolicyInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this export policy svm
-func (m *ExportPolicySvm) Validate(formats strfmt.Registry) error {
+// Validate validates this export policy inline svm
+func (m *ExportPolicyInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -335,7 +335,7 @@ func (m *ExportPolicySvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportPolicySvm) validateLinks(formats strfmt.Registry) error {
+func (m *ExportPolicyInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -352,8 +352,8 @@ func (m *ExportPolicySvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export policy svm based on the context it is used
-func (m *ExportPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export policy inline svm based on the context it is used
+func (m *ExportPolicyInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -366,7 +366,7 @@ func (m *ExportPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ExportPolicySvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportPolicyInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -381,7 +381,7 @@ func (m *ExportPolicySvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ExportPolicySvm) MarshalBinary() ([]byte, error) {
+func (m *ExportPolicyInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -389,8 +389,8 @@ func (m *ExportPolicySvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportPolicySvm) UnmarshalBinary(b []byte) error {
-	var res ExportPolicySvm
+func (m *ExportPolicyInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ExportPolicyInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -398,17 +398,17 @@ func (m *ExportPolicySvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportPolicySvmLinks export policy svm links
+// ExportPolicyInlineSvmInlineLinks export policy inline svm inline links
 //
-// swagger:model ExportPolicySvmLinks
-type ExportPolicySvmLinks struct {
+// swagger:model export_policy_inline_svm_inline__links
+type ExportPolicyInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this export policy svm links
-func (m *ExportPolicySvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this export policy inline svm inline links
+func (m *ExportPolicyInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -421,7 +421,7 @@ func (m *ExportPolicySvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ExportPolicyInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -438,8 +438,8 @@ func (m *ExportPolicySvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export policy svm links based on the context it is used
-func (m *ExportPolicySvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export policy inline svm inline links based on the context it is used
+func (m *ExportPolicyInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -452,7 +452,7 @@ func (m *ExportPolicySvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ExportPolicySvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportPolicyInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -467,7 +467,7 @@ func (m *ExportPolicySvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *ExportPolicySvmLinks) MarshalBinary() ([]byte, error) {
+func (m *ExportPolicyInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -475,8 +475,8 @@ func (m *ExportPolicySvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportPolicySvmLinks) UnmarshalBinary(b []byte) error {
-	var res ExportPolicySvmLinks
+func (m *ExportPolicyInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ExportPolicyInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

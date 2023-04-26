@@ -70,10 +70,10 @@ type MultiAdminVerifyRuleModifyParams struct {
 	Info *models.MultiAdminVerifyRule
 
 	// Operation.
-	OperationPathParameter string
+	Operation string
 
 	// OwnerUUID.
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,26 +139,26 @@ func (o *MultiAdminVerifyRuleModifyParams) SetInfo(info *models.MultiAdminVerify
 	o.Info = info
 }
 
-// WithOperationPathParameter adds the operation to the multi admin verify rule modify params
-func (o *MultiAdminVerifyRuleModifyParams) WithOperationPathParameter(operation string) *MultiAdminVerifyRuleModifyParams {
-	o.SetOperationPathParameter(operation)
+// WithOperation adds the operation to the multi admin verify rule modify params
+func (o *MultiAdminVerifyRuleModifyParams) WithOperation(operation string) *MultiAdminVerifyRuleModifyParams {
+	o.SetOperation(operation)
 	return o
 }
 
-// SetOperationPathParameter adds the operation to the multi admin verify rule modify params
-func (o *MultiAdminVerifyRuleModifyParams) SetOperationPathParameter(operation string) {
-	o.OperationPathParameter = operation
+// SetOperation adds the operation to the multi admin verify rule modify params
+func (o *MultiAdminVerifyRuleModifyParams) SetOperation(operation string) {
+	o.Operation = operation
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the multi admin verify rule modify params
-func (o *MultiAdminVerifyRuleModifyParams) WithOwnerUUIDPathParameter(ownerUUID string) *MultiAdminVerifyRuleModifyParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify rule modify params
+func (o *MultiAdminVerifyRuleModifyParams) WithOwnerUUID(ownerUUID string) *MultiAdminVerifyRuleModifyParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the multi admin verify rule modify params
-func (o *MultiAdminVerifyRuleModifyParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify rule modify params
+func (o *MultiAdminVerifyRuleModifyParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,12 +175,12 @@ func (o *MultiAdminVerifyRuleModifyParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param operation
-	if err := r.SetPathParam("operation", o.OperationPathParameter); err != nil {
+	if err := r.SetPathParam("operation", o.Operation); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 

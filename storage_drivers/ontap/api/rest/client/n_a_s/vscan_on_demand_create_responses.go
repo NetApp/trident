@@ -52,6 +52,11 @@ VscanOnDemandCreateCreated describes a response with status code 201, with defau
 Created
 */
 type VscanOnDemandCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.VscanOnDemandResponse
 }
 
@@ -93,6 +98,13 @@ func (o *VscanOnDemandCreateCreated) GetPayload() *models.VscanOnDemandResponse 
 }
 
 func (o *VscanOnDemandCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.VscanOnDemandResponse)
 

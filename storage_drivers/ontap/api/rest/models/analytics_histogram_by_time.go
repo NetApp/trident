@@ -19,22 +19,22 @@ import (
 // swagger:model analytics_histogram_by_time
 type AnalyticsHistogramByTime struct {
 
-	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
-
-	// The newest time label with a non-zero histogram value.
-	NewestLabel AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
-
-	// The oldest time label with a non-zero histogram value.
-	OldestLabel AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
-
 	// Percentages for this histogram
-	// Example: ["0.1","11.24","0.18","15.75","0.75","83.5","0"]
-	Percentages []float64 `json:"percentages,omitempty"`
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	AnalyticsHistogramByTimeInlinePercentages []*float64 `json:"percentages,omitempty"`
 
 	// Values for this histogram
-	// Example: ["15925248","1735569408","27672576","2430595072","116105216","12889948160","0"]
-	Values []int64 `json:"values,omitempty"`
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	AnalyticsHistogramByTimeInlineValues []*int64 `json:"values,omitempty"`
+
+	// labels
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
+
+	// The newest time label with a non-zero histogram value.
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+
+	// The oldest time label with a non-zero histogram value.
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
 }
 
 // Validate validates this analytics histogram by time
@@ -79,11 +79,13 @@ func (m *AnalyticsHistogramByTime) validateNewestLabel(formats strfmt.Registry) 
 		return nil
 	}
 
-	if err := m.NewestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -94,11 +96,13 @@ func (m *AnalyticsHistogramByTime) validateOldestLabel(formats strfmt.Registry) 
 		return nil
 	}
 
-	if err := m.OldestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -140,11 +144,13 @@ func (m *AnalyticsHistogramByTime) contextValidateLabels(ctx context.Context, fo
 
 func (m *AnalyticsHistogramByTime) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -152,11 +158,13 @@ func (m *AnalyticsHistogramByTime) contextValidateNewestLabel(ctx context.Contex
 
 func (m *AnalyticsHistogramByTime) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

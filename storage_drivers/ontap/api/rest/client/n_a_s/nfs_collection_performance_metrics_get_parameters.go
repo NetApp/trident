@@ -66,7 +66,7 @@ type NfsCollectionPerformanceMetricsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Interval.
 
@@ -81,19 +81,19 @@ type NfsCollectionPerformanceMetricsGetParams struct {
 
 	     Default: "1h"
 	*/
-	IntervalQueryParameter *string
+	Interval *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -101,7 +101,7 @@ type NfsCollectionPerformanceMetricsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -109,253 +109,253 @@ type NfsCollectionPerformanceMetricsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   Unique identifier of the SVM.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Timestamp.
 
 	   Filter by timestamp
 	*/
-	TimestampQueryParameter *string
+	Timestamp *string
 
 	/* V3Duration.
 
 	   Filter by v3.duration
 	*/
-	V3DurationQueryParameter *string
+	V3Duration *string
 
 	/* V3IopsOther.
 
 	   Filter by v3.iops.other
 	*/
-	V3IopsOtherQueryParameter *int64
+	V3IopsOther *int64
 
 	/* V3IopsRead.
 
 	   Filter by v3.iops.read
 	*/
-	V3IopsReadQueryParameter *int64
+	V3IopsRead *int64
 
 	/* V3IopsTotal.
 
 	   Filter by v3.iops.total
 	*/
-	V3IopsTotalQueryParameter *int64
+	V3IopsTotal *int64
 
 	/* V3IopsWrite.
 
 	   Filter by v3.iops.write
 	*/
-	V3IopsWriteQueryParameter *int64
+	V3IopsWrite *int64
 
 	/* V3LatencyOther.
 
 	   Filter by v3.latency.other
 	*/
-	V3LatencyOtherQueryParameter *int64
+	V3LatencyOther *int64
 
 	/* V3LatencyRead.
 
 	   Filter by v3.latency.read
 	*/
-	V3LatencyReadQueryParameter *int64
+	V3LatencyRead *int64
 
 	/* V3LatencyTotal.
 
 	   Filter by v3.latency.total
 	*/
-	V3LatencyTotalQueryParameter *int64
+	V3LatencyTotal *int64
 
 	/* V3LatencyWrite.
 
 	   Filter by v3.latency.write
 	*/
-	V3LatencyWriteQueryParameter *int64
+	V3LatencyWrite *int64
 
 	/* V3Status.
 
 	   Filter by v3.status
 	*/
-	V3StatusQueryParameter *string
+	V3Status *string
 
 	/* V3ThroughputRead.
 
 	   Filter by v3.throughput.read
 	*/
-	V3ThroughputReadQueryParameter *int64
+	V3ThroughputRead *int64
 
 	/* V3ThroughputTotal.
 
 	   Filter by v3.throughput.total
 	*/
-	V3ThroughputTotalQueryParameter *int64
+	V3ThroughputTotal *int64
 
 	/* V3ThroughputWrite.
 
 	   Filter by v3.throughput.write
 	*/
-	V3ThroughputWriteQueryParameter *int64
+	V3ThroughputWrite *int64
 
 	/* V4Duration.
 
 	   Filter by v4.duration
 	*/
-	V4DurationQueryParameter *string
+	V4Duration *string
 
 	/* V4IopsOther.
 
 	   Filter by v4.iops.other
 	*/
-	V4IopsOtherQueryParameter *int64
+	V4IopsOther *int64
 
 	/* V4IopsRead.
 
 	   Filter by v4.iops.read
 	*/
-	V4IopsReadQueryParameter *int64
+	V4IopsRead *int64
 
 	/* V4IopsTotal.
 
 	   Filter by v4.iops.total
 	*/
-	V4IopsTotalQueryParameter *int64
+	V4IopsTotal *int64
 
 	/* V4IopsWrite.
 
 	   Filter by v4.iops.write
 	*/
-	V4IopsWriteQueryParameter *int64
+	V4IopsWrite *int64
 
 	/* V4LatencyOther.
 
 	   Filter by v4.latency.other
 	*/
-	V4LatencyOtherQueryParameter *int64
+	V4LatencyOther *int64
 
 	/* V4LatencyRead.
 
 	   Filter by v4.latency.read
 	*/
-	V4LatencyReadQueryParameter *int64
+	V4LatencyRead *int64
 
 	/* V4LatencyTotal.
 
 	   Filter by v4.latency.total
 	*/
-	V4LatencyTotalQueryParameter *int64
+	V4LatencyTotal *int64
 
 	/* V4LatencyWrite.
 
 	   Filter by v4.latency.write
 	*/
-	V4LatencyWriteQueryParameter *int64
+	V4LatencyWrite *int64
 
 	/* V4Status.
 
 	   Filter by v4.status
 	*/
-	V4StatusQueryParameter *string
+	V4Status *string
 
 	/* V4ThroughputRead.
 
 	   Filter by v4.throughput.read
 	*/
-	V4ThroughputReadQueryParameter *int64
+	V4ThroughputRead *int64
 
 	/* V4ThroughputTotal.
 
 	   Filter by v4.throughput.total
 	*/
-	V4ThroughputTotalQueryParameter *int64
+	V4ThroughputTotal *int64
 
 	/* V4ThroughputWrite.
 
 	   Filter by v4.throughput.write
 	*/
-	V4ThroughputWriteQueryParameter *int64
+	V4ThroughputWrite *int64
 
 	/* V41Duration.
 
 	   Filter by v41.duration
 	*/
-	V41DurationQueryParameter *string
+	V41Duration *string
 
 	/* V41IopsOther.
 
 	   Filter by v41.iops.other
 	*/
-	V41IopsOtherQueryParameter *int64
+	V41IopsOther *int64
 
 	/* V41IopsRead.
 
 	   Filter by v41.iops.read
 	*/
-	V41IopsReadQueryParameter *int64
+	V41IopsRead *int64
 
 	/* V41IopsTotal.
 
 	   Filter by v41.iops.total
 	*/
-	V41IopsTotalQueryParameter *int64
+	V41IopsTotal *int64
 
 	/* V41IopsWrite.
 
 	   Filter by v41.iops.write
 	*/
-	V41IopsWriteQueryParameter *int64
+	V41IopsWrite *int64
 
 	/* V41LatencyOther.
 
 	   Filter by v41.latency.other
 	*/
-	V41LatencyOtherQueryParameter *int64
+	V41LatencyOther *int64
 
 	/* V41LatencyRead.
 
 	   Filter by v41.latency.read
 	*/
-	V41LatencyReadQueryParameter *int64
+	V41LatencyRead *int64
 
 	/* V41LatencyTotal.
 
 	   Filter by v41.latency.total
 	*/
-	V41LatencyTotalQueryParameter *int64
+	V41LatencyTotal *int64
 
 	/* V41LatencyWrite.
 
 	   Filter by v41.latency.write
 	*/
-	V41LatencyWriteQueryParameter *int64
+	V41LatencyWrite *int64
 
 	/* V41Status.
 
 	   Filter by v41.status
 	*/
-	V41StatusQueryParameter *string
+	V41Status *string
 
 	/* V41ThroughputRead.
 
 	   Filter by v41.throughput.read
 	*/
-	V41ThroughputReadQueryParameter *int64
+	V41ThroughputRead *int64
 
 	/* V41ThroughputTotal.
 
 	   Filter by v41.throughput.total
 	*/
-	V41ThroughputTotalQueryParameter *int64
+	V41ThroughputTotal *int64
 
 	/* V41ThroughputWrite.
 
 	   Filter by v41.throughput.write
 	*/
-	V41ThroughputWriteQueryParameter *int64
+	V41ThroughputWrite *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -375,17 +375,17 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WithDefaults() *NfsCollection
 // All values with no default are reset to their zero value.
 func (o *NfsCollectionPerformanceMetricsGetParams) SetDefaults() {
 	var (
-		intervalQueryParameterDefault = string("1h")
+		intervalDefault = string("1h")
 
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := NfsCollectionPerformanceMetricsGetParams{
-		IntervalQueryParameter:      &intervalQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		Interval:      &intervalDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -427,521 +427,521 @@ func (o *NfsCollectionPerformanceMetricsGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithFieldsQueryParameter(fields []string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithFields(fields []string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIntervalQueryParameter adds the interval to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithIntervalQueryParameter(interval *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetIntervalQueryParameter(interval)
+// WithInterval adds the interval to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithInterval(interval *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetInterval(interval)
 	return o
 }
 
-// SetIntervalQueryParameter adds the interval to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetIntervalQueryParameter(interval *string) {
-	o.IntervalQueryParameter = interval
+// SetInterval adds the interval to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetInterval(interval *string) {
+	o.Interval = interval
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithMaxRecords(maxRecords *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithOrderByQueryParameter(orderBy []string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithOrderBy(orderBy []string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithReturnRecords(returnRecords *bool) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithReturnTimeout(returnTimeout *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithSVMUUIDPathParameter(svmUUID string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithSvmUUID(svmUUID string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTimestampQueryParameter adds the timestamp to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithTimestampQueryParameter(timestamp *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetTimestampQueryParameter(timestamp)
+// WithTimestamp adds the timestamp to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithTimestamp(timestamp *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetTimestamp(timestamp)
 	return o
 }
 
-// SetTimestampQueryParameter adds the timestamp to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetTimestampQueryParameter(timestamp *string) {
-	o.TimestampQueryParameter = timestamp
+// SetTimestamp adds the timestamp to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetTimestamp(timestamp *string) {
+	o.Timestamp = timestamp
 }
 
-// WithV3DurationQueryParameter adds the v3Duration to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3DurationQueryParameter(v3Duration *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3DurationQueryParameter(v3Duration)
+// WithV3Duration adds the v3Duration to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3Duration(v3Duration *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3Duration(v3Duration)
 	return o
 }
 
-// SetV3DurationQueryParameter adds the v3Duration to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3DurationQueryParameter(v3Duration *string) {
-	o.V3DurationQueryParameter = v3Duration
+// SetV3Duration adds the v3Duration to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3Duration(v3Duration *string) {
+	o.V3Duration = v3Duration
 }
 
-// WithV3IopsOtherQueryParameter adds the v3IopsOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsOtherQueryParameter(v3IopsOther *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3IopsOtherQueryParameter(v3IopsOther)
+// WithV3IopsOther adds the v3IopsOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsOther(v3IopsOther *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3IopsOther(v3IopsOther)
 	return o
 }
 
-// SetV3IopsOtherQueryParameter adds the v3IopsOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsOtherQueryParameter(v3IopsOther *int64) {
-	o.V3IopsOtherQueryParameter = v3IopsOther
+// SetV3IopsOther adds the v3IopsOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsOther(v3IopsOther *int64) {
+	o.V3IopsOther = v3IopsOther
 }
 
-// WithV3IopsReadQueryParameter adds the v3IopsRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsReadQueryParameter(v3IopsRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3IopsReadQueryParameter(v3IopsRead)
+// WithV3IopsRead adds the v3IopsRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsRead(v3IopsRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3IopsRead(v3IopsRead)
 	return o
 }
 
-// SetV3IopsReadQueryParameter adds the v3IopsRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsReadQueryParameter(v3IopsRead *int64) {
-	o.V3IopsReadQueryParameter = v3IopsRead
+// SetV3IopsRead adds the v3IopsRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsRead(v3IopsRead *int64) {
+	o.V3IopsRead = v3IopsRead
 }
 
-// WithV3IopsTotalQueryParameter adds the v3IopsTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsTotalQueryParameter(v3IopsTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3IopsTotalQueryParameter(v3IopsTotal)
+// WithV3IopsTotal adds the v3IopsTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsTotal(v3IopsTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3IopsTotal(v3IopsTotal)
 	return o
 }
 
-// SetV3IopsTotalQueryParameter adds the v3IopsTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsTotalQueryParameter(v3IopsTotal *int64) {
-	o.V3IopsTotalQueryParameter = v3IopsTotal
+// SetV3IopsTotal adds the v3IopsTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsTotal(v3IopsTotal *int64) {
+	o.V3IopsTotal = v3IopsTotal
 }
 
-// WithV3IopsWriteQueryParameter adds the v3IopsWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsWriteQueryParameter(v3IopsWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3IopsWriteQueryParameter(v3IopsWrite)
+// WithV3IopsWrite adds the v3IopsWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3IopsWrite(v3IopsWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3IopsWrite(v3IopsWrite)
 	return o
 }
 
-// SetV3IopsWriteQueryParameter adds the v3IopsWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsWriteQueryParameter(v3IopsWrite *int64) {
-	o.V3IopsWriteQueryParameter = v3IopsWrite
+// SetV3IopsWrite adds the v3IopsWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3IopsWrite(v3IopsWrite *int64) {
+	o.V3IopsWrite = v3IopsWrite
 }
 
-// WithV3LatencyOtherQueryParameter adds the v3LatencyOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyOtherQueryParameter(v3LatencyOther *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3LatencyOtherQueryParameter(v3LatencyOther)
+// WithV3LatencyOther adds the v3LatencyOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyOther(v3LatencyOther *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3LatencyOther(v3LatencyOther)
 	return o
 }
 
-// SetV3LatencyOtherQueryParameter adds the v3LatencyOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyOtherQueryParameter(v3LatencyOther *int64) {
-	o.V3LatencyOtherQueryParameter = v3LatencyOther
+// SetV3LatencyOther adds the v3LatencyOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyOther(v3LatencyOther *int64) {
+	o.V3LatencyOther = v3LatencyOther
 }
 
-// WithV3LatencyReadQueryParameter adds the v3LatencyRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyReadQueryParameter(v3LatencyRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3LatencyReadQueryParameter(v3LatencyRead)
+// WithV3LatencyRead adds the v3LatencyRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyRead(v3LatencyRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3LatencyRead(v3LatencyRead)
 	return o
 }
 
-// SetV3LatencyReadQueryParameter adds the v3LatencyRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyReadQueryParameter(v3LatencyRead *int64) {
-	o.V3LatencyReadQueryParameter = v3LatencyRead
+// SetV3LatencyRead adds the v3LatencyRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyRead(v3LatencyRead *int64) {
+	o.V3LatencyRead = v3LatencyRead
 }
 
-// WithV3LatencyTotalQueryParameter adds the v3LatencyTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyTotalQueryParameter(v3LatencyTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3LatencyTotalQueryParameter(v3LatencyTotal)
+// WithV3LatencyTotal adds the v3LatencyTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyTotal(v3LatencyTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3LatencyTotal(v3LatencyTotal)
 	return o
 }
 
-// SetV3LatencyTotalQueryParameter adds the v3LatencyTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyTotalQueryParameter(v3LatencyTotal *int64) {
-	o.V3LatencyTotalQueryParameter = v3LatencyTotal
+// SetV3LatencyTotal adds the v3LatencyTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyTotal(v3LatencyTotal *int64) {
+	o.V3LatencyTotal = v3LatencyTotal
 }
 
-// WithV3LatencyWriteQueryParameter adds the v3LatencyWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyWriteQueryParameter(v3LatencyWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3LatencyWriteQueryParameter(v3LatencyWrite)
+// WithV3LatencyWrite adds the v3LatencyWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3LatencyWrite(v3LatencyWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3LatencyWrite(v3LatencyWrite)
 	return o
 }
 
-// SetV3LatencyWriteQueryParameter adds the v3LatencyWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyWriteQueryParameter(v3LatencyWrite *int64) {
-	o.V3LatencyWriteQueryParameter = v3LatencyWrite
+// SetV3LatencyWrite adds the v3LatencyWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3LatencyWrite(v3LatencyWrite *int64) {
+	o.V3LatencyWrite = v3LatencyWrite
 }
 
-// WithV3StatusQueryParameter adds the v3Status to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3StatusQueryParameter(v3Status *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3StatusQueryParameter(v3Status)
+// WithV3Status adds the v3Status to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3Status(v3Status *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3Status(v3Status)
 	return o
 }
 
-// SetV3StatusQueryParameter adds the v3Status to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3StatusQueryParameter(v3Status *string) {
-	o.V3StatusQueryParameter = v3Status
+// SetV3Status adds the v3Status to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3Status(v3Status *string) {
+	o.V3Status = v3Status
 }
 
-// WithV3ThroughputReadQueryParameter adds the v3ThroughputRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3ThroughputReadQueryParameter(v3ThroughputRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3ThroughputReadQueryParameter(v3ThroughputRead)
+// WithV3ThroughputRead adds the v3ThroughputRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3ThroughputRead(v3ThroughputRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3ThroughputRead(v3ThroughputRead)
 	return o
 }
 
-// SetV3ThroughputReadQueryParameter adds the v3ThroughputRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3ThroughputReadQueryParameter(v3ThroughputRead *int64) {
-	o.V3ThroughputReadQueryParameter = v3ThroughputRead
+// SetV3ThroughputRead adds the v3ThroughputRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3ThroughputRead(v3ThroughputRead *int64) {
+	o.V3ThroughputRead = v3ThroughputRead
 }
 
-// WithV3ThroughputTotalQueryParameter adds the v3ThroughputTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3ThroughputTotalQueryParameter(v3ThroughputTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3ThroughputTotalQueryParameter(v3ThroughputTotal)
+// WithV3ThroughputTotal adds the v3ThroughputTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3ThroughputTotal(v3ThroughputTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3ThroughputTotal(v3ThroughputTotal)
 	return o
 }
 
-// SetV3ThroughputTotalQueryParameter adds the v3ThroughputTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3ThroughputTotalQueryParameter(v3ThroughputTotal *int64) {
-	o.V3ThroughputTotalQueryParameter = v3ThroughputTotal
+// SetV3ThroughputTotal adds the v3ThroughputTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3ThroughputTotal(v3ThroughputTotal *int64) {
+	o.V3ThroughputTotal = v3ThroughputTotal
 }
 
-// WithV3ThroughputWriteQueryParameter adds the v3ThroughputWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV3ThroughputWriteQueryParameter(v3ThroughputWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV3ThroughputWriteQueryParameter(v3ThroughputWrite)
+// WithV3ThroughputWrite adds the v3ThroughputWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV3ThroughputWrite(v3ThroughputWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV3ThroughputWrite(v3ThroughputWrite)
 	return o
 }
 
-// SetV3ThroughputWriteQueryParameter adds the v3ThroughputWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV3ThroughputWriteQueryParameter(v3ThroughputWrite *int64) {
-	o.V3ThroughputWriteQueryParameter = v3ThroughputWrite
+// SetV3ThroughputWrite adds the v3ThroughputWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV3ThroughputWrite(v3ThroughputWrite *int64) {
+	o.V3ThroughputWrite = v3ThroughputWrite
 }
 
-// WithV4DurationQueryParameter adds the v4Duration to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4DurationQueryParameter(v4Duration *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4DurationQueryParameter(v4Duration)
+// WithV4Duration adds the v4Duration to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4Duration(v4Duration *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4Duration(v4Duration)
 	return o
 }
 
-// SetV4DurationQueryParameter adds the v4Duration to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4DurationQueryParameter(v4Duration *string) {
-	o.V4DurationQueryParameter = v4Duration
+// SetV4Duration adds the v4Duration to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4Duration(v4Duration *string) {
+	o.V4Duration = v4Duration
 }
 
-// WithV4IopsOtherQueryParameter adds the v4IopsOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsOtherQueryParameter(v4IopsOther *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4IopsOtherQueryParameter(v4IopsOther)
+// WithV4IopsOther adds the v4IopsOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsOther(v4IopsOther *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4IopsOther(v4IopsOther)
 	return o
 }
 
-// SetV4IopsOtherQueryParameter adds the v4IopsOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsOtherQueryParameter(v4IopsOther *int64) {
-	o.V4IopsOtherQueryParameter = v4IopsOther
+// SetV4IopsOther adds the v4IopsOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsOther(v4IopsOther *int64) {
+	o.V4IopsOther = v4IopsOther
 }
 
-// WithV4IopsReadQueryParameter adds the v4IopsRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsReadQueryParameter(v4IopsRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4IopsReadQueryParameter(v4IopsRead)
+// WithV4IopsRead adds the v4IopsRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsRead(v4IopsRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4IopsRead(v4IopsRead)
 	return o
 }
 
-// SetV4IopsReadQueryParameter adds the v4IopsRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsReadQueryParameter(v4IopsRead *int64) {
-	o.V4IopsReadQueryParameter = v4IopsRead
+// SetV4IopsRead adds the v4IopsRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsRead(v4IopsRead *int64) {
+	o.V4IopsRead = v4IopsRead
 }
 
-// WithV4IopsTotalQueryParameter adds the v4IopsTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsTotalQueryParameter(v4IopsTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4IopsTotalQueryParameter(v4IopsTotal)
+// WithV4IopsTotal adds the v4IopsTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsTotal(v4IopsTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4IopsTotal(v4IopsTotal)
 	return o
 }
 
-// SetV4IopsTotalQueryParameter adds the v4IopsTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsTotalQueryParameter(v4IopsTotal *int64) {
-	o.V4IopsTotalQueryParameter = v4IopsTotal
+// SetV4IopsTotal adds the v4IopsTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsTotal(v4IopsTotal *int64) {
+	o.V4IopsTotal = v4IopsTotal
 }
 
-// WithV4IopsWriteQueryParameter adds the v4IopsWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsWriteQueryParameter(v4IopsWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4IopsWriteQueryParameter(v4IopsWrite)
+// WithV4IopsWrite adds the v4IopsWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4IopsWrite(v4IopsWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4IopsWrite(v4IopsWrite)
 	return o
 }
 
-// SetV4IopsWriteQueryParameter adds the v4IopsWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsWriteQueryParameter(v4IopsWrite *int64) {
-	o.V4IopsWriteQueryParameter = v4IopsWrite
+// SetV4IopsWrite adds the v4IopsWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4IopsWrite(v4IopsWrite *int64) {
+	o.V4IopsWrite = v4IopsWrite
 }
 
-// WithV4LatencyOtherQueryParameter adds the v4LatencyOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyOtherQueryParameter(v4LatencyOther *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4LatencyOtherQueryParameter(v4LatencyOther)
+// WithV4LatencyOther adds the v4LatencyOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyOther(v4LatencyOther *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4LatencyOther(v4LatencyOther)
 	return o
 }
 
-// SetV4LatencyOtherQueryParameter adds the v4LatencyOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyOtherQueryParameter(v4LatencyOther *int64) {
-	o.V4LatencyOtherQueryParameter = v4LatencyOther
+// SetV4LatencyOther adds the v4LatencyOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyOther(v4LatencyOther *int64) {
+	o.V4LatencyOther = v4LatencyOther
 }
 
-// WithV4LatencyReadQueryParameter adds the v4LatencyRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyReadQueryParameter(v4LatencyRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4LatencyReadQueryParameter(v4LatencyRead)
+// WithV4LatencyRead adds the v4LatencyRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyRead(v4LatencyRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4LatencyRead(v4LatencyRead)
 	return o
 }
 
-// SetV4LatencyReadQueryParameter adds the v4LatencyRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyReadQueryParameter(v4LatencyRead *int64) {
-	o.V4LatencyReadQueryParameter = v4LatencyRead
+// SetV4LatencyRead adds the v4LatencyRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyRead(v4LatencyRead *int64) {
+	o.V4LatencyRead = v4LatencyRead
 }
 
-// WithV4LatencyTotalQueryParameter adds the v4LatencyTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyTotalQueryParameter(v4LatencyTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4LatencyTotalQueryParameter(v4LatencyTotal)
+// WithV4LatencyTotal adds the v4LatencyTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyTotal(v4LatencyTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4LatencyTotal(v4LatencyTotal)
 	return o
 }
 
-// SetV4LatencyTotalQueryParameter adds the v4LatencyTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyTotalQueryParameter(v4LatencyTotal *int64) {
-	o.V4LatencyTotalQueryParameter = v4LatencyTotal
+// SetV4LatencyTotal adds the v4LatencyTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyTotal(v4LatencyTotal *int64) {
+	o.V4LatencyTotal = v4LatencyTotal
 }
 
-// WithV4LatencyWriteQueryParameter adds the v4LatencyWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyWriteQueryParameter(v4LatencyWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4LatencyWriteQueryParameter(v4LatencyWrite)
+// WithV4LatencyWrite adds the v4LatencyWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4LatencyWrite(v4LatencyWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4LatencyWrite(v4LatencyWrite)
 	return o
 }
 
-// SetV4LatencyWriteQueryParameter adds the v4LatencyWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyWriteQueryParameter(v4LatencyWrite *int64) {
-	o.V4LatencyWriteQueryParameter = v4LatencyWrite
+// SetV4LatencyWrite adds the v4LatencyWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4LatencyWrite(v4LatencyWrite *int64) {
+	o.V4LatencyWrite = v4LatencyWrite
 }
 
-// WithV4StatusQueryParameter adds the v4Status to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4StatusQueryParameter(v4Status *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4StatusQueryParameter(v4Status)
+// WithV4Status adds the v4Status to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4Status(v4Status *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4Status(v4Status)
 	return o
 }
 
-// SetV4StatusQueryParameter adds the v4Status to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4StatusQueryParameter(v4Status *string) {
-	o.V4StatusQueryParameter = v4Status
+// SetV4Status adds the v4Status to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4Status(v4Status *string) {
+	o.V4Status = v4Status
 }
 
-// WithV4ThroughputReadQueryParameter adds the v4ThroughputRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4ThroughputReadQueryParameter(v4ThroughputRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4ThroughputReadQueryParameter(v4ThroughputRead)
+// WithV4ThroughputRead adds the v4ThroughputRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4ThroughputRead(v4ThroughputRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4ThroughputRead(v4ThroughputRead)
 	return o
 }
 
-// SetV4ThroughputReadQueryParameter adds the v4ThroughputRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4ThroughputReadQueryParameter(v4ThroughputRead *int64) {
-	o.V4ThroughputReadQueryParameter = v4ThroughputRead
+// SetV4ThroughputRead adds the v4ThroughputRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4ThroughputRead(v4ThroughputRead *int64) {
+	o.V4ThroughputRead = v4ThroughputRead
 }
 
-// WithV4ThroughputTotalQueryParameter adds the v4ThroughputTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4ThroughputTotalQueryParameter(v4ThroughputTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4ThroughputTotalQueryParameter(v4ThroughputTotal)
+// WithV4ThroughputTotal adds the v4ThroughputTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4ThroughputTotal(v4ThroughputTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4ThroughputTotal(v4ThroughputTotal)
 	return o
 }
 
-// SetV4ThroughputTotalQueryParameter adds the v4ThroughputTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4ThroughputTotalQueryParameter(v4ThroughputTotal *int64) {
-	o.V4ThroughputTotalQueryParameter = v4ThroughputTotal
+// SetV4ThroughputTotal adds the v4ThroughputTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4ThroughputTotal(v4ThroughputTotal *int64) {
+	o.V4ThroughputTotal = v4ThroughputTotal
 }
 
-// WithV4ThroughputWriteQueryParameter adds the v4ThroughputWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV4ThroughputWriteQueryParameter(v4ThroughputWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV4ThroughputWriteQueryParameter(v4ThroughputWrite)
+// WithV4ThroughputWrite adds the v4ThroughputWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV4ThroughputWrite(v4ThroughputWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV4ThroughputWrite(v4ThroughputWrite)
 	return o
 }
 
-// SetV4ThroughputWriteQueryParameter adds the v4ThroughputWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV4ThroughputWriteQueryParameter(v4ThroughputWrite *int64) {
-	o.V4ThroughputWriteQueryParameter = v4ThroughputWrite
+// SetV4ThroughputWrite adds the v4ThroughputWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV4ThroughputWrite(v4ThroughputWrite *int64) {
+	o.V4ThroughputWrite = v4ThroughputWrite
 }
 
-// WithV41DurationQueryParameter adds the v41Duration to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41DurationQueryParameter(v41Duration *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41DurationQueryParameter(v41Duration)
+// WithV41Duration adds the v41Duration to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41Duration(v41Duration *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41Duration(v41Duration)
 	return o
 }
 
-// SetV41DurationQueryParameter adds the v41Duration to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41DurationQueryParameter(v41Duration *string) {
-	o.V41DurationQueryParameter = v41Duration
+// SetV41Duration adds the v41Duration to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41Duration(v41Duration *string) {
+	o.V41Duration = v41Duration
 }
 
-// WithV41IopsOtherQueryParameter adds the v41IopsOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsOtherQueryParameter(v41IopsOther *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41IopsOtherQueryParameter(v41IopsOther)
+// WithV41IopsOther adds the v41IopsOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsOther(v41IopsOther *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41IopsOther(v41IopsOther)
 	return o
 }
 
-// SetV41IopsOtherQueryParameter adds the v41IopsOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsOtherQueryParameter(v41IopsOther *int64) {
-	o.V41IopsOtherQueryParameter = v41IopsOther
+// SetV41IopsOther adds the v41IopsOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsOther(v41IopsOther *int64) {
+	o.V41IopsOther = v41IopsOther
 }
 
-// WithV41IopsReadQueryParameter adds the v41IopsRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsReadQueryParameter(v41IopsRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41IopsReadQueryParameter(v41IopsRead)
+// WithV41IopsRead adds the v41IopsRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsRead(v41IopsRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41IopsRead(v41IopsRead)
 	return o
 }
 
-// SetV41IopsReadQueryParameter adds the v41IopsRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsReadQueryParameter(v41IopsRead *int64) {
-	o.V41IopsReadQueryParameter = v41IopsRead
+// SetV41IopsRead adds the v41IopsRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsRead(v41IopsRead *int64) {
+	o.V41IopsRead = v41IopsRead
 }
 
-// WithV41IopsTotalQueryParameter adds the v41IopsTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsTotalQueryParameter(v41IopsTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41IopsTotalQueryParameter(v41IopsTotal)
+// WithV41IopsTotal adds the v41IopsTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsTotal(v41IopsTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41IopsTotal(v41IopsTotal)
 	return o
 }
 
-// SetV41IopsTotalQueryParameter adds the v41IopsTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsTotalQueryParameter(v41IopsTotal *int64) {
-	o.V41IopsTotalQueryParameter = v41IopsTotal
+// SetV41IopsTotal adds the v41IopsTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsTotal(v41IopsTotal *int64) {
+	o.V41IopsTotal = v41IopsTotal
 }
 
-// WithV41IopsWriteQueryParameter adds the v41IopsWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsWriteQueryParameter(v41IopsWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41IopsWriteQueryParameter(v41IopsWrite)
+// WithV41IopsWrite adds the v41IopsWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41IopsWrite(v41IopsWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41IopsWrite(v41IopsWrite)
 	return o
 }
 
-// SetV41IopsWriteQueryParameter adds the v41IopsWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsWriteQueryParameter(v41IopsWrite *int64) {
-	o.V41IopsWriteQueryParameter = v41IopsWrite
+// SetV41IopsWrite adds the v41IopsWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41IopsWrite(v41IopsWrite *int64) {
+	o.V41IopsWrite = v41IopsWrite
 }
 
-// WithV41LatencyOtherQueryParameter adds the v41LatencyOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyOtherQueryParameter(v41LatencyOther *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41LatencyOtherQueryParameter(v41LatencyOther)
+// WithV41LatencyOther adds the v41LatencyOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyOther(v41LatencyOther *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41LatencyOther(v41LatencyOther)
 	return o
 }
 
-// SetV41LatencyOtherQueryParameter adds the v41LatencyOther to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyOtherQueryParameter(v41LatencyOther *int64) {
-	o.V41LatencyOtherQueryParameter = v41LatencyOther
+// SetV41LatencyOther adds the v41LatencyOther to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyOther(v41LatencyOther *int64) {
+	o.V41LatencyOther = v41LatencyOther
 }
 
-// WithV41LatencyReadQueryParameter adds the v41LatencyRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyReadQueryParameter(v41LatencyRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41LatencyReadQueryParameter(v41LatencyRead)
+// WithV41LatencyRead adds the v41LatencyRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyRead(v41LatencyRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41LatencyRead(v41LatencyRead)
 	return o
 }
 
-// SetV41LatencyReadQueryParameter adds the v41LatencyRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyReadQueryParameter(v41LatencyRead *int64) {
-	o.V41LatencyReadQueryParameter = v41LatencyRead
+// SetV41LatencyRead adds the v41LatencyRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyRead(v41LatencyRead *int64) {
+	o.V41LatencyRead = v41LatencyRead
 }
 
-// WithV41LatencyTotalQueryParameter adds the v41LatencyTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyTotalQueryParameter(v41LatencyTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41LatencyTotalQueryParameter(v41LatencyTotal)
+// WithV41LatencyTotal adds the v41LatencyTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyTotal(v41LatencyTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41LatencyTotal(v41LatencyTotal)
 	return o
 }
 
-// SetV41LatencyTotalQueryParameter adds the v41LatencyTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyTotalQueryParameter(v41LatencyTotal *int64) {
-	o.V41LatencyTotalQueryParameter = v41LatencyTotal
+// SetV41LatencyTotal adds the v41LatencyTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyTotal(v41LatencyTotal *int64) {
+	o.V41LatencyTotal = v41LatencyTotal
 }
 
-// WithV41LatencyWriteQueryParameter adds the v41LatencyWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyWriteQueryParameter(v41LatencyWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41LatencyWriteQueryParameter(v41LatencyWrite)
+// WithV41LatencyWrite adds the v41LatencyWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41LatencyWrite(v41LatencyWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41LatencyWrite(v41LatencyWrite)
 	return o
 }
 
-// SetV41LatencyWriteQueryParameter adds the v41LatencyWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyWriteQueryParameter(v41LatencyWrite *int64) {
-	o.V41LatencyWriteQueryParameter = v41LatencyWrite
+// SetV41LatencyWrite adds the v41LatencyWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41LatencyWrite(v41LatencyWrite *int64) {
+	o.V41LatencyWrite = v41LatencyWrite
 }
 
-// WithV41StatusQueryParameter adds the v41Status to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41StatusQueryParameter(v41Status *string) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41StatusQueryParameter(v41Status)
+// WithV41Status adds the v41Status to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41Status(v41Status *string) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41Status(v41Status)
 	return o
 }
 
-// SetV41StatusQueryParameter adds the v41Status to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41StatusQueryParameter(v41Status *string) {
-	o.V41StatusQueryParameter = v41Status
+// SetV41Status adds the v41Status to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41Status(v41Status *string) {
+	o.V41Status = v41Status
 }
 
-// WithV41ThroughputReadQueryParameter adds the v41ThroughputRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41ThroughputReadQueryParameter(v41ThroughputRead *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41ThroughputReadQueryParameter(v41ThroughputRead)
+// WithV41ThroughputRead adds the v41ThroughputRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41ThroughputRead(v41ThroughputRead *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41ThroughputRead(v41ThroughputRead)
 	return o
 }
 
-// SetV41ThroughputReadQueryParameter adds the v41ThroughputRead to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41ThroughputReadQueryParameter(v41ThroughputRead *int64) {
-	o.V41ThroughputReadQueryParameter = v41ThroughputRead
+// SetV41ThroughputRead adds the v41ThroughputRead to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41ThroughputRead(v41ThroughputRead *int64) {
+	o.V41ThroughputRead = v41ThroughputRead
 }
 
-// WithV41ThroughputTotalQueryParameter adds the v41ThroughputTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41ThroughputTotalQueryParameter(v41ThroughputTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41ThroughputTotalQueryParameter(v41ThroughputTotal)
+// WithV41ThroughputTotal adds the v41ThroughputTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41ThroughputTotal(v41ThroughputTotal *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41ThroughputTotal(v41ThroughputTotal)
 	return o
 }
 
-// SetV41ThroughputTotalQueryParameter adds the v41ThroughputTotal to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41ThroughputTotalQueryParameter(v41ThroughputTotal *int64) {
-	o.V41ThroughputTotalQueryParameter = v41ThroughputTotal
+// SetV41ThroughputTotal adds the v41ThroughputTotal to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41ThroughputTotal(v41ThroughputTotal *int64) {
+	o.V41ThroughputTotal = v41ThroughputTotal
 }
 
-// WithV41ThroughputWriteQueryParameter adds the v41ThroughputWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) WithV41ThroughputWriteQueryParameter(v41ThroughputWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
-	o.SetV41ThroughputWriteQueryParameter(v41ThroughputWrite)
+// WithV41ThroughputWrite adds the v41ThroughputWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) WithV41ThroughputWrite(v41ThroughputWrite *int64) *NfsCollectionPerformanceMetricsGetParams {
+	o.SetV41ThroughputWrite(v41ThroughputWrite)
 	return o
 }
 
-// SetV41ThroughputWriteQueryParameter adds the v41ThroughputWrite to the nfs collection performance metrics get params
-func (o *NfsCollectionPerformanceMetricsGetParams) SetV41ThroughputWriteQueryParameter(v41ThroughputWrite *int64) {
-	o.V41ThroughputWriteQueryParameter = v41ThroughputWrite
+// SetV41ThroughputWrite adds the v41ThroughputWrite to the nfs collection performance metrics get params
+func (o *NfsCollectionPerformanceMetricsGetParams) SetV41ThroughputWrite(v41ThroughputWrite *int64) {
+	o.V41ThroughputWrite = v41ThroughputWrite
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -952,7 +952,7 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -963,13 +963,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.IntervalQueryParameter != nil {
+	if o.Interval != nil {
 
 		// query param interval
 		var qrInterval string
 
-		if o.IntervalQueryParameter != nil {
-			qrInterval = *o.IntervalQueryParameter
+		if o.Interval != nil {
+			qrInterval = *o.Interval
 		}
 		qInterval := qrInterval
 		if qInterval != "" {
@@ -980,13 +980,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -997,7 +997,7 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1008,13 +1008,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1025,13 +1025,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1043,17 +1043,17 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.TimestampQueryParameter != nil {
+	if o.Timestamp != nil {
 
 		// query param timestamp
 		var qrTimestamp string
 
-		if o.TimestampQueryParameter != nil {
-			qrTimestamp = *o.TimestampQueryParameter
+		if o.Timestamp != nil {
+			qrTimestamp = *o.Timestamp
 		}
 		qTimestamp := qrTimestamp
 		if qTimestamp != "" {
@@ -1064,13 +1064,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3DurationQueryParameter != nil {
+	if o.V3Duration != nil {
 
 		// query param v3.duration
 		var qrV3Duration string
 
-		if o.V3DurationQueryParameter != nil {
-			qrV3Duration = *o.V3DurationQueryParameter
+		if o.V3Duration != nil {
+			qrV3Duration = *o.V3Duration
 		}
 		qV3Duration := qrV3Duration
 		if qV3Duration != "" {
@@ -1081,13 +1081,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3IopsOtherQueryParameter != nil {
+	if o.V3IopsOther != nil {
 
 		// query param v3.iops.other
 		var qrV3IopsOther int64
 
-		if o.V3IopsOtherQueryParameter != nil {
-			qrV3IopsOther = *o.V3IopsOtherQueryParameter
+		if o.V3IopsOther != nil {
+			qrV3IopsOther = *o.V3IopsOther
 		}
 		qV3IopsOther := swag.FormatInt64(qrV3IopsOther)
 		if qV3IopsOther != "" {
@@ -1098,13 +1098,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3IopsReadQueryParameter != nil {
+	if o.V3IopsRead != nil {
 
 		// query param v3.iops.read
 		var qrV3IopsRead int64
 
-		if o.V3IopsReadQueryParameter != nil {
-			qrV3IopsRead = *o.V3IopsReadQueryParameter
+		if o.V3IopsRead != nil {
+			qrV3IopsRead = *o.V3IopsRead
 		}
 		qV3IopsRead := swag.FormatInt64(qrV3IopsRead)
 		if qV3IopsRead != "" {
@@ -1115,13 +1115,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3IopsTotalQueryParameter != nil {
+	if o.V3IopsTotal != nil {
 
 		// query param v3.iops.total
 		var qrV3IopsTotal int64
 
-		if o.V3IopsTotalQueryParameter != nil {
-			qrV3IopsTotal = *o.V3IopsTotalQueryParameter
+		if o.V3IopsTotal != nil {
+			qrV3IopsTotal = *o.V3IopsTotal
 		}
 		qV3IopsTotal := swag.FormatInt64(qrV3IopsTotal)
 		if qV3IopsTotal != "" {
@@ -1132,13 +1132,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3IopsWriteQueryParameter != nil {
+	if o.V3IopsWrite != nil {
 
 		// query param v3.iops.write
 		var qrV3IopsWrite int64
 
-		if o.V3IopsWriteQueryParameter != nil {
-			qrV3IopsWrite = *o.V3IopsWriteQueryParameter
+		if o.V3IopsWrite != nil {
+			qrV3IopsWrite = *o.V3IopsWrite
 		}
 		qV3IopsWrite := swag.FormatInt64(qrV3IopsWrite)
 		if qV3IopsWrite != "" {
@@ -1149,13 +1149,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3LatencyOtherQueryParameter != nil {
+	if o.V3LatencyOther != nil {
 
 		// query param v3.latency.other
 		var qrV3LatencyOther int64
 
-		if o.V3LatencyOtherQueryParameter != nil {
-			qrV3LatencyOther = *o.V3LatencyOtherQueryParameter
+		if o.V3LatencyOther != nil {
+			qrV3LatencyOther = *o.V3LatencyOther
 		}
 		qV3LatencyOther := swag.FormatInt64(qrV3LatencyOther)
 		if qV3LatencyOther != "" {
@@ -1166,13 +1166,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3LatencyReadQueryParameter != nil {
+	if o.V3LatencyRead != nil {
 
 		// query param v3.latency.read
 		var qrV3LatencyRead int64
 
-		if o.V3LatencyReadQueryParameter != nil {
-			qrV3LatencyRead = *o.V3LatencyReadQueryParameter
+		if o.V3LatencyRead != nil {
+			qrV3LatencyRead = *o.V3LatencyRead
 		}
 		qV3LatencyRead := swag.FormatInt64(qrV3LatencyRead)
 		if qV3LatencyRead != "" {
@@ -1183,13 +1183,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3LatencyTotalQueryParameter != nil {
+	if o.V3LatencyTotal != nil {
 
 		// query param v3.latency.total
 		var qrV3LatencyTotal int64
 
-		if o.V3LatencyTotalQueryParameter != nil {
-			qrV3LatencyTotal = *o.V3LatencyTotalQueryParameter
+		if o.V3LatencyTotal != nil {
+			qrV3LatencyTotal = *o.V3LatencyTotal
 		}
 		qV3LatencyTotal := swag.FormatInt64(qrV3LatencyTotal)
 		if qV3LatencyTotal != "" {
@@ -1200,13 +1200,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3LatencyWriteQueryParameter != nil {
+	if o.V3LatencyWrite != nil {
 
 		// query param v3.latency.write
 		var qrV3LatencyWrite int64
 
-		if o.V3LatencyWriteQueryParameter != nil {
-			qrV3LatencyWrite = *o.V3LatencyWriteQueryParameter
+		if o.V3LatencyWrite != nil {
+			qrV3LatencyWrite = *o.V3LatencyWrite
 		}
 		qV3LatencyWrite := swag.FormatInt64(qrV3LatencyWrite)
 		if qV3LatencyWrite != "" {
@@ -1217,13 +1217,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3StatusQueryParameter != nil {
+	if o.V3Status != nil {
 
 		// query param v3.status
 		var qrV3Status string
 
-		if o.V3StatusQueryParameter != nil {
-			qrV3Status = *o.V3StatusQueryParameter
+		if o.V3Status != nil {
+			qrV3Status = *o.V3Status
 		}
 		qV3Status := qrV3Status
 		if qV3Status != "" {
@@ -1234,13 +1234,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3ThroughputReadQueryParameter != nil {
+	if o.V3ThroughputRead != nil {
 
 		// query param v3.throughput.read
 		var qrV3ThroughputRead int64
 
-		if o.V3ThroughputReadQueryParameter != nil {
-			qrV3ThroughputRead = *o.V3ThroughputReadQueryParameter
+		if o.V3ThroughputRead != nil {
+			qrV3ThroughputRead = *o.V3ThroughputRead
 		}
 		qV3ThroughputRead := swag.FormatInt64(qrV3ThroughputRead)
 		if qV3ThroughputRead != "" {
@@ -1251,13 +1251,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3ThroughputTotalQueryParameter != nil {
+	if o.V3ThroughputTotal != nil {
 
 		// query param v3.throughput.total
 		var qrV3ThroughputTotal int64
 
-		if o.V3ThroughputTotalQueryParameter != nil {
-			qrV3ThroughputTotal = *o.V3ThroughputTotalQueryParameter
+		if o.V3ThroughputTotal != nil {
+			qrV3ThroughputTotal = *o.V3ThroughputTotal
 		}
 		qV3ThroughputTotal := swag.FormatInt64(qrV3ThroughputTotal)
 		if qV3ThroughputTotal != "" {
@@ -1268,13 +1268,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V3ThroughputWriteQueryParameter != nil {
+	if o.V3ThroughputWrite != nil {
 
 		// query param v3.throughput.write
 		var qrV3ThroughputWrite int64
 
-		if o.V3ThroughputWriteQueryParameter != nil {
-			qrV3ThroughputWrite = *o.V3ThroughputWriteQueryParameter
+		if o.V3ThroughputWrite != nil {
+			qrV3ThroughputWrite = *o.V3ThroughputWrite
 		}
 		qV3ThroughputWrite := swag.FormatInt64(qrV3ThroughputWrite)
 		if qV3ThroughputWrite != "" {
@@ -1285,13 +1285,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4DurationQueryParameter != nil {
+	if o.V4Duration != nil {
 
 		// query param v4.duration
 		var qrV4Duration string
 
-		if o.V4DurationQueryParameter != nil {
-			qrV4Duration = *o.V4DurationQueryParameter
+		if o.V4Duration != nil {
+			qrV4Duration = *o.V4Duration
 		}
 		qV4Duration := qrV4Duration
 		if qV4Duration != "" {
@@ -1302,13 +1302,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4IopsOtherQueryParameter != nil {
+	if o.V4IopsOther != nil {
 
 		// query param v4.iops.other
 		var qrV4IopsOther int64
 
-		if o.V4IopsOtherQueryParameter != nil {
-			qrV4IopsOther = *o.V4IopsOtherQueryParameter
+		if o.V4IopsOther != nil {
+			qrV4IopsOther = *o.V4IopsOther
 		}
 		qV4IopsOther := swag.FormatInt64(qrV4IopsOther)
 		if qV4IopsOther != "" {
@@ -1319,13 +1319,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4IopsReadQueryParameter != nil {
+	if o.V4IopsRead != nil {
 
 		// query param v4.iops.read
 		var qrV4IopsRead int64
 
-		if o.V4IopsReadQueryParameter != nil {
-			qrV4IopsRead = *o.V4IopsReadQueryParameter
+		if o.V4IopsRead != nil {
+			qrV4IopsRead = *o.V4IopsRead
 		}
 		qV4IopsRead := swag.FormatInt64(qrV4IopsRead)
 		if qV4IopsRead != "" {
@@ -1336,13 +1336,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4IopsTotalQueryParameter != nil {
+	if o.V4IopsTotal != nil {
 
 		// query param v4.iops.total
 		var qrV4IopsTotal int64
 
-		if o.V4IopsTotalQueryParameter != nil {
-			qrV4IopsTotal = *o.V4IopsTotalQueryParameter
+		if o.V4IopsTotal != nil {
+			qrV4IopsTotal = *o.V4IopsTotal
 		}
 		qV4IopsTotal := swag.FormatInt64(qrV4IopsTotal)
 		if qV4IopsTotal != "" {
@@ -1353,13 +1353,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4IopsWriteQueryParameter != nil {
+	if o.V4IopsWrite != nil {
 
 		// query param v4.iops.write
 		var qrV4IopsWrite int64
 
-		if o.V4IopsWriteQueryParameter != nil {
-			qrV4IopsWrite = *o.V4IopsWriteQueryParameter
+		if o.V4IopsWrite != nil {
+			qrV4IopsWrite = *o.V4IopsWrite
 		}
 		qV4IopsWrite := swag.FormatInt64(qrV4IopsWrite)
 		if qV4IopsWrite != "" {
@@ -1370,13 +1370,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4LatencyOtherQueryParameter != nil {
+	if o.V4LatencyOther != nil {
 
 		// query param v4.latency.other
 		var qrV4LatencyOther int64
 
-		if o.V4LatencyOtherQueryParameter != nil {
-			qrV4LatencyOther = *o.V4LatencyOtherQueryParameter
+		if o.V4LatencyOther != nil {
+			qrV4LatencyOther = *o.V4LatencyOther
 		}
 		qV4LatencyOther := swag.FormatInt64(qrV4LatencyOther)
 		if qV4LatencyOther != "" {
@@ -1387,13 +1387,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4LatencyReadQueryParameter != nil {
+	if o.V4LatencyRead != nil {
 
 		// query param v4.latency.read
 		var qrV4LatencyRead int64
 
-		if o.V4LatencyReadQueryParameter != nil {
-			qrV4LatencyRead = *o.V4LatencyReadQueryParameter
+		if o.V4LatencyRead != nil {
+			qrV4LatencyRead = *o.V4LatencyRead
 		}
 		qV4LatencyRead := swag.FormatInt64(qrV4LatencyRead)
 		if qV4LatencyRead != "" {
@@ -1404,13 +1404,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4LatencyTotalQueryParameter != nil {
+	if o.V4LatencyTotal != nil {
 
 		// query param v4.latency.total
 		var qrV4LatencyTotal int64
 
-		if o.V4LatencyTotalQueryParameter != nil {
-			qrV4LatencyTotal = *o.V4LatencyTotalQueryParameter
+		if o.V4LatencyTotal != nil {
+			qrV4LatencyTotal = *o.V4LatencyTotal
 		}
 		qV4LatencyTotal := swag.FormatInt64(qrV4LatencyTotal)
 		if qV4LatencyTotal != "" {
@@ -1421,13 +1421,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4LatencyWriteQueryParameter != nil {
+	if o.V4LatencyWrite != nil {
 
 		// query param v4.latency.write
 		var qrV4LatencyWrite int64
 
-		if o.V4LatencyWriteQueryParameter != nil {
-			qrV4LatencyWrite = *o.V4LatencyWriteQueryParameter
+		if o.V4LatencyWrite != nil {
+			qrV4LatencyWrite = *o.V4LatencyWrite
 		}
 		qV4LatencyWrite := swag.FormatInt64(qrV4LatencyWrite)
 		if qV4LatencyWrite != "" {
@@ -1438,13 +1438,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4StatusQueryParameter != nil {
+	if o.V4Status != nil {
 
 		// query param v4.status
 		var qrV4Status string
 
-		if o.V4StatusQueryParameter != nil {
-			qrV4Status = *o.V4StatusQueryParameter
+		if o.V4Status != nil {
+			qrV4Status = *o.V4Status
 		}
 		qV4Status := qrV4Status
 		if qV4Status != "" {
@@ -1455,13 +1455,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4ThroughputReadQueryParameter != nil {
+	if o.V4ThroughputRead != nil {
 
 		// query param v4.throughput.read
 		var qrV4ThroughputRead int64
 
-		if o.V4ThroughputReadQueryParameter != nil {
-			qrV4ThroughputRead = *o.V4ThroughputReadQueryParameter
+		if o.V4ThroughputRead != nil {
+			qrV4ThroughputRead = *o.V4ThroughputRead
 		}
 		qV4ThroughputRead := swag.FormatInt64(qrV4ThroughputRead)
 		if qV4ThroughputRead != "" {
@@ -1472,13 +1472,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4ThroughputTotalQueryParameter != nil {
+	if o.V4ThroughputTotal != nil {
 
 		// query param v4.throughput.total
 		var qrV4ThroughputTotal int64
 
-		if o.V4ThroughputTotalQueryParameter != nil {
-			qrV4ThroughputTotal = *o.V4ThroughputTotalQueryParameter
+		if o.V4ThroughputTotal != nil {
+			qrV4ThroughputTotal = *o.V4ThroughputTotal
 		}
 		qV4ThroughputTotal := swag.FormatInt64(qrV4ThroughputTotal)
 		if qV4ThroughputTotal != "" {
@@ -1489,13 +1489,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V4ThroughputWriteQueryParameter != nil {
+	if o.V4ThroughputWrite != nil {
 
 		// query param v4.throughput.write
 		var qrV4ThroughputWrite int64
 
-		if o.V4ThroughputWriteQueryParameter != nil {
-			qrV4ThroughputWrite = *o.V4ThroughputWriteQueryParameter
+		if o.V4ThroughputWrite != nil {
+			qrV4ThroughputWrite = *o.V4ThroughputWrite
 		}
 		qV4ThroughputWrite := swag.FormatInt64(qrV4ThroughputWrite)
 		if qV4ThroughputWrite != "" {
@@ -1506,13 +1506,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41DurationQueryParameter != nil {
+	if o.V41Duration != nil {
 
 		// query param v41.duration
 		var qrV41Duration string
 
-		if o.V41DurationQueryParameter != nil {
-			qrV41Duration = *o.V41DurationQueryParameter
+		if o.V41Duration != nil {
+			qrV41Duration = *o.V41Duration
 		}
 		qV41Duration := qrV41Duration
 		if qV41Duration != "" {
@@ -1523,13 +1523,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41IopsOtherQueryParameter != nil {
+	if o.V41IopsOther != nil {
 
 		// query param v41.iops.other
 		var qrV41IopsOther int64
 
-		if o.V41IopsOtherQueryParameter != nil {
-			qrV41IopsOther = *o.V41IopsOtherQueryParameter
+		if o.V41IopsOther != nil {
+			qrV41IopsOther = *o.V41IopsOther
 		}
 		qV41IopsOther := swag.FormatInt64(qrV41IopsOther)
 		if qV41IopsOther != "" {
@@ -1540,13 +1540,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41IopsReadQueryParameter != nil {
+	if o.V41IopsRead != nil {
 
 		// query param v41.iops.read
 		var qrV41IopsRead int64
 
-		if o.V41IopsReadQueryParameter != nil {
-			qrV41IopsRead = *o.V41IopsReadQueryParameter
+		if o.V41IopsRead != nil {
+			qrV41IopsRead = *o.V41IopsRead
 		}
 		qV41IopsRead := swag.FormatInt64(qrV41IopsRead)
 		if qV41IopsRead != "" {
@@ -1557,13 +1557,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41IopsTotalQueryParameter != nil {
+	if o.V41IopsTotal != nil {
 
 		// query param v41.iops.total
 		var qrV41IopsTotal int64
 
-		if o.V41IopsTotalQueryParameter != nil {
-			qrV41IopsTotal = *o.V41IopsTotalQueryParameter
+		if o.V41IopsTotal != nil {
+			qrV41IopsTotal = *o.V41IopsTotal
 		}
 		qV41IopsTotal := swag.FormatInt64(qrV41IopsTotal)
 		if qV41IopsTotal != "" {
@@ -1574,13 +1574,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41IopsWriteQueryParameter != nil {
+	if o.V41IopsWrite != nil {
 
 		// query param v41.iops.write
 		var qrV41IopsWrite int64
 
-		if o.V41IopsWriteQueryParameter != nil {
-			qrV41IopsWrite = *o.V41IopsWriteQueryParameter
+		if o.V41IopsWrite != nil {
+			qrV41IopsWrite = *o.V41IopsWrite
 		}
 		qV41IopsWrite := swag.FormatInt64(qrV41IopsWrite)
 		if qV41IopsWrite != "" {
@@ -1591,13 +1591,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41LatencyOtherQueryParameter != nil {
+	if o.V41LatencyOther != nil {
 
 		// query param v41.latency.other
 		var qrV41LatencyOther int64
 
-		if o.V41LatencyOtherQueryParameter != nil {
-			qrV41LatencyOther = *o.V41LatencyOtherQueryParameter
+		if o.V41LatencyOther != nil {
+			qrV41LatencyOther = *o.V41LatencyOther
 		}
 		qV41LatencyOther := swag.FormatInt64(qrV41LatencyOther)
 		if qV41LatencyOther != "" {
@@ -1608,13 +1608,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41LatencyReadQueryParameter != nil {
+	if o.V41LatencyRead != nil {
 
 		// query param v41.latency.read
 		var qrV41LatencyRead int64
 
-		if o.V41LatencyReadQueryParameter != nil {
-			qrV41LatencyRead = *o.V41LatencyReadQueryParameter
+		if o.V41LatencyRead != nil {
+			qrV41LatencyRead = *o.V41LatencyRead
 		}
 		qV41LatencyRead := swag.FormatInt64(qrV41LatencyRead)
 		if qV41LatencyRead != "" {
@@ -1625,13 +1625,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41LatencyTotalQueryParameter != nil {
+	if o.V41LatencyTotal != nil {
 
 		// query param v41.latency.total
 		var qrV41LatencyTotal int64
 
-		if o.V41LatencyTotalQueryParameter != nil {
-			qrV41LatencyTotal = *o.V41LatencyTotalQueryParameter
+		if o.V41LatencyTotal != nil {
+			qrV41LatencyTotal = *o.V41LatencyTotal
 		}
 		qV41LatencyTotal := swag.FormatInt64(qrV41LatencyTotal)
 		if qV41LatencyTotal != "" {
@@ -1642,13 +1642,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41LatencyWriteQueryParameter != nil {
+	if o.V41LatencyWrite != nil {
 
 		// query param v41.latency.write
 		var qrV41LatencyWrite int64
 
-		if o.V41LatencyWriteQueryParameter != nil {
-			qrV41LatencyWrite = *o.V41LatencyWriteQueryParameter
+		if o.V41LatencyWrite != nil {
+			qrV41LatencyWrite = *o.V41LatencyWrite
 		}
 		qV41LatencyWrite := swag.FormatInt64(qrV41LatencyWrite)
 		if qV41LatencyWrite != "" {
@@ -1659,13 +1659,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41StatusQueryParameter != nil {
+	if o.V41Status != nil {
 
 		// query param v41.status
 		var qrV41Status string
 
-		if o.V41StatusQueryParameter != nil {
-			qrV41Status = *o.V41StatusQueryParameter
+		if o.V41Status != nil {
+			qrV41Status = *o.V41Status
 		}
 		qV41Status := qrV41Status
 		if qV41Status != "" {
@@ -1676,13 +1676,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41ThroughputReadQueryParameter != nil {
+	if o.V41ThroughputRead != nil {
 
 		// query param v41.throughput.read
 		var qrV41ThroughputRead int64
 
-		if o.V41ThroughputReadQueryParameter != nil {
-			qrV41ThroughputRead = *o.V41ThroughputReadQueryParameter
+		if o.V41ThroughputRead != nil {
+			qrV41ThroughputRead = *o.V41ThroughputRead
 		}
 		qV41ThroughputRead := swag.FormatInt64(qrV41ThroughputRead)
 		if qV41ThroughputRead != "" {
@@ -1693,13 +1693,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41ThroughputTotalQueryParameter != nil {
+	if o.V41ThroughputTotal != nil {
 
 		// query param v41.throughput.total
 		var qrV41ThroughputTotal int64
 
-		if o.V41ThroughputTotalQueryParameter != nil {
-			qrV41ThroughputTotal = *o.V41ThroughputTotalQueryParameter
+		if o.V41ThroughputTotal != nil {
+			qrV41ThroughputTotal = *o.V41ThroughputTotal
 		}
 		qV41ThroughputTotal := swag.FormatInt64(qrV41ThroughputTotal)
 		if qV41ThroughputTotal != "" {
@@ -1710,13 +1710,13 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.V41ThroughputWriteQueryParameter != nil {
+	if o.V41ThroughputWrite != nil {
 
 		// query param v41.throughput.write
 		var qrV41ThroughputWrite int64
 
-		if o.V41ThroughputWriteQueryParameter != nil {
-			qrV41ThroughputWrite = *o.V41ThroughputWriteQueryParameter
+		if o.V41ThroughputWrite != nil {
+			qrV41ThroughputWrite = *o.V41ThroughputWrite
 		}
 		qV41ThroughputWrite := swag.FormatInt64(qrV41ThroughputWrite)
 		if qV41ThroughputWrite != "" {
@@ -1735,7 +1735,7 @@ func (o *NfsCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamNfsCollectionPerformanceMetricsGet binds the parameter fields
 func (o *NfsCollectionPerformanceMetricsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1752,7 +1752,7 @@ func (o *NfsCollectionPerformanceMetricsGetParams) bindParamFields(formats strfm
 
 // bindParamNfsCollectionPerformanceMetricsGet binds the parameter order_by
 func (o *NfsCollectionPerformanceMetricsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

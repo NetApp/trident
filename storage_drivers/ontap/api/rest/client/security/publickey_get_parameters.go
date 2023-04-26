@@ -66,37 +66,37 @@ type PublickeyGetParams struct {
 
 	   User account name
 	*/
-	AccountNamePathParameter string
+	AccountName string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Index.
 
 	   Index number for the public key (where there are multiple keys for the same account).
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OwnerUUID.
 
 	   Account owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type PublickeyGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,7 +112,7 @@ type PublickeyGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,14 +132,14 @@ func (o *PublickeyGetParams) WithDefaults() *PublickeyGetParams {
 // All values with no default are reset to their zero value.
 func (o *PublickeyGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := PublickeyGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -181,92 +181,92 @@ func (o *PublickeyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAccountNamePathParameter adds the accountName to the publickey get params
-func (o *PublickeyGetParams) WithAccountNamePathParameter(accountName string) *PublickeyGetParams {
-	o.SetAccountNamePathParameter(accountName)
+// WithAccountName adds the accountName to the publickey get params
+func (o *PublickeyGetParams) WithAccountName(accountName string) *PublickeyGetParams {
+	o.SetAccountName(accountName)
 	return o
 }
 
-// SetAccountNamePathParameter adds the accountName to the publickey get params
-func (o *PublickeyGetParams) SetAccountNamePathParameter(accountName string) {
-	o.AccountNamePathParameter = accountName
+// SetAccountName adds the accountName to the publickey get params
+func (o *PublickeyGetParams) SetAccountName(accountName string) {
+	o.AccountName = accountName
 }
 
-// WithFieldsQueryParameter adds the fields to the publickey get params
-func (o *PublickeyGetParams) WithFieldsQueryParameter(fields []string) *PublickeyGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the publickey get params
+func (o *PublickeyGetParams) WithFields(fields []string) *PublickeyGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the publickey get params
-func (o *PublickeyGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the publickey get params
+func (o *PublickeyGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIndexPathParameter adds the index to the publickey get params
-func (o *PublickeyGetParams) WithIndexPathParameter(index int64) *PublickeyGetParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the publickey get params
+func (o *PublickeyGetParams) WithIndex(index int64) *PublickeyGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the publickey get params
-func (o *PublickeyGetParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the publickey get params
+func (o *PublickeyGetParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the publickey get params
-func (o *PublickeyGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PublickeyGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the publickey get params
+func (o *PublickeyGetParams) WithMaxRecords(maxRecords *int64) *PublickeyGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the publickey get params
-func (o *PublickeyGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the publickey get params
+func (o *PublickeyGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the publickey get params
-func (o *PublickeyGetParams) WithOrderByQueryParameter(orderBy []string) *PublickeyGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the publickey get params
+func (o *PublickeyGetParams) WithOrderBy(orderBy []string) *PublickeyGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the publickey get params
-func (o *PublickeyGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the publickey get params
+func (o *PublickeyGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the publickey get params
-func (o *PublickeyGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *PublickeyGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the publickey get params
+func (o *PublickeyGetParams) WithOwnerUUID(ownerUUID string) *PublickeyGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the publickey get params
-func (o *PublickeyGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the publickey get params
+func (o *PublickeyGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the publickey get params
-func (o *PublickeyGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PublickeyGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the publickey get params
+func (o *PublickeyGetParams) WithReturnRecords(returnRecords *bool) *PublickeyGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the publickey get params
-func (o *PublickeyGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the publickey get params
+func (o *PublickeyGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the publickey get params
-func (o *PublickeyGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PublickeyGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the publickey get params
+func (o *PublickeyGetParams) WithReturnTimeout(returnTimeout *int64) *PublickeyGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the publickey get params
-func (o *PublickeyGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the publickey get params
+func (o *PublickeyGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -278,11 +278,11 @@ func (o *PublickeyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	var res []error
 
 	// path param account.name
-	if err := r.SetPathParam("account.name", o.AccountNamePathParameter); err != nil {
+	if err := r.SetPathParam("account.name", o.AccountName); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -294,17 +294,17 @@ func (o *PublickeyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -315,7 +315,7 @@ func (o *PublickeyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -327,17 +327,17 @@ func (o *PublickeyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -348,13 +348,13 @@ func (o *PublickeyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -373,7 +373,7 @@ func (o *PublickeyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamPublickeyGet binds the parameter fields
 func (o *PublickeyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -390,7 +390,7 @@ func (o *PublickeyGetParams) bindParamFields(formats strfmt.Registry) []string {
 
 // bindParamPublickeyGet binds the parameter order_by
 func (o *PublickeyGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

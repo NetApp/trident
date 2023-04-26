@@ -3,7 +3,7 @@ package logging
 import (
 	"regexp"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type redactedPattern struct {
@@ -19,10 +19,10 @@ var redactedPatterns = []redactedPattern{
 
 // Redactor is a formatter that redacts pre-defined regex patterns
 type Redactor struct {
-	BaseFormatter logrus.Formatter
+	BaseFormatter log.Formatter
 }
 
-func (r *Redactor) Format(entry *logrus.Entry) ([]byte, error) {
+func (r *Redactor) Format(entry *log.Entry) ([]byte, error) {
 	line, err := r.BaseFormatter.Format(entry)
 	return redactAllPatterns(line), err
 }

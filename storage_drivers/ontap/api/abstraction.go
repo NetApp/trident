@@ -8,9 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-
-	. "github.com/netapp/trident/logger"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +53,7 @@ type OntapAPI interface {
 	ExportPolicyCreate(ctx context.Context, policy string) error
 	ExportPolicyDestroy(ctx context.Context, policy string) error
 	ExportPolicyExists(ctx context.Context, policyName string) (bool, error)
-	ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule string) error
+	ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule, nasProtocol string) error
 	ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) error
 	ExportRuleList(ctx context.Context, policyName string) (map[string]int, error)
 
@@ -85,9 +84,8 @@ type OntapAPI interface {
 	LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error
 	LunDestroy(ctx context.Context, lunPath string) error
 	LunGetGeometry(ctx context.Context, lunPath string) (uint64, error)
-	LunGetComment(ctx context.Context, lunPath string) (string, bool, error)
+	LunGetFSType(ctx context.Context, lunPath string) (string, error)
 	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error
-	ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error)
 	LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
@@ -148,30 +146,40 @@ type OntapAPI interface {
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
 
 	SnapmirrorCreate(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule string,
 	) error
-	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-		*Snapmirror, error)
+	SnapmirrorResync(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string,
+	) error
+	SnapmirrorDelete(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string,
+	) error
+	SnapmirrorGet(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName string,
+	) (*Snapmirror, error)
 	SnapmirrorInitialize(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 	) error
 	SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error)
 	SnapmirrorQuiesce(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
 	) error
-	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) error
 	SnapmirrorBreak(
-		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
 		snapshotName string,
 	) error
-	JobScheduleExists(ctx context.Context, replicationSchedule string) error
+	JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error)
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error
-	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error
-	SnapmirrorRelease(localFlexvolName, localSVMName string) error
+	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
+	SnapmirrorRelease(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
@@ -199,6 +207,9 @@ type OntapAPI interface {
 	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+	SMBShareCreate(ctx context.Context, shareName, path string) error
+	SMBShareExists(ctx context.Context, shareName string) (bool, error)
+	SMBShareDestroy(ctx context.Context, shareName string) error
 
 	TieringPolicyValue(ctx context.Context) string
 }

@@ -68,7 +68,7 @@ type ClusterCreateParams struct {
 
 	   Create aggregates based on an optimal layout recommended by the system.
 	*/
-	CreateRecommendedAggregatesQueryParameter *bool
+	CreateRecommendedAggregates *bool
 
 	/* Info.
 
@@ -76,17 +76,25 @@ type ClusterCreateParams struct {
 	*/
 	Info *models.Cluster
 
+	/* KeepPreclusterConfig.
+
+	     This is used to keep temporary configuration settings that allow initial setup including a node scoped certificate and possibly an automatically created node management interface. This is useful when creating a GUI that does not replace the node management interface using POST on /api/cluster, but instead creates the interface at another time. The certificate also relates to creating a web based GUI so that the certificate lasts through the entire workflow and is not replaced by the cluster scoped certificate during POST on /api/cluster.
+	To remove the temporary configuration settings when a custom setup workflow is complete, set the remove_precluster_config query parameter in a PATCH on /api/cluster.
+
+	*/
+	KeepPreclusterConfig *bool
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SingleNodeCluster.
 
 	   Configures a single node cluster.  All cluster ports are reassigned to the default network. The storage failover settings are configured to non-HA. The node reboots during this operation.
 	*/
-	SingleNodeClusterQueryParameter *bool
+	SingleNodeCluster *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,14 +114,17 @@ func (o *ClusterCreateParams) WithDefaults() *ClusterCreateParams {
 // All values with no default are reset to their zero value.
 func (o *ClusterCreateParams) SetDefaults() {
 	var (
-		createRecommendedAggregatesQueryParameterDefault = bool(false)
+		createRecommendedAggregatesDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		keepPreclusterConfigDefault = bool(false)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ClusterCreateParams{
-		CreateRecommendedAggregatesQueryParameter: &createRecommendedAggregatesQueryParameterDefault,
-		ReturnTimeoutQueryParameter:               &returnTimeoutQueryParameterDefault,
+		CreateRecommendedAggregates: &createRecommendedAggregatesDefault,
+		KeepPreclusterConfig:        &keepPreclusterConfigDefault,
+		ReturnTimeout:               &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,15 +166,15 @@ func (o *ClusterCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCreateRecommendedAggregatesQueryParameter adds the createRecommendedAggregates to the cluster create params
-func (o *ClusterCreateParams) WithCreateRecommendedAggregatesQueryParameter(createRecommendedAggregates *bool) *ClusterCreateParams {
-	o.SetCreateRecommendedAggregatesQueryParameter(createRecommendedAggregates)
+// WithCreateRecommendedAggregates adds the createRecommendedAggregates to the cluster create params
+func (o *ClusterCreateParams) WithCreateRecommendedAggregates(createRecommendedAggregates *bool) *ClusterCreateParams {
+	o.SetCreateRecommendedAggregates(createRecommendedAggregates)
 	return o
 }
 
-// SetCreateRecommendedAggregatesQueryParameter adds the createRecommendedAggregates to the cluster create params
-func (o *ClusterCreateParams) SetCreateRecommendedAggregatesQueryParameter(createRecommendedAggregates *bool) {
-	o.CreateRecommendedAggregatesQueryParameter = createRecommendedAggregates
+// SetCreateRecommendedAggregates adds the createRecommendedAggregates to the cluster create params
+func (o *ClusterCreateParams) SetCreateRecommendedAggregates(createRecommendedAggregates *bool) {
+	o.CreateRecommendedAggregates = createRecommendedAggregates
 }
 
 // WithInfo adds the info to the cluster create params
@@ -177,26 +188,37 @@ func (o *ClusterCreateParams) SetInfo(info *models.Cluster) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cluster create params
-func (o *ClusterCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ClusterCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithKeepPreclusterConfig adds the keepPreclusterConfig to the cluster create params
+func (o *ClusterCreateParams) WithKeepPreclusterConfig(keepPreclusterConfig *bool) *ClusterCreateParams {
+	o.SetKeepPreclusterConfig(keepPreclusterConfig)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cluster create params
-func (o *ClusterCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetKeepPreclusterConfig adds the keepPreclusterConfig to the cluster create params
+func (o *ClusterCreateParams) SetKeepPreclusterConfig(keepPreclusterConfig *bool) {
+	o.KeepPreclusterConfig = keepPreclusterConfig
 }
 
-// WithSingleNodeClusterQueryParameter adds the singleNodeCluster to the cluster create params
-func (o *ClusterCreateParams) WithSingleNodeClusterQueryParameter(singleNodeCluster *bool) *ClusterCreateParams {
-	o.SetSingleNodeClusterQueryParameter(singleNodeCluster)
+// WithReturnTimeout adds the returnTimeout to the cluster create params
+func (o *ClusterCreateParams) WithReturnTimeout(returnTimeout *int64) *ClusterCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSingleNodeClusterQueryParameter adds the singleNodeCluster to the cluster create params
-func (o *ClusterCreateParams) SetSingleNodeClusterQueryParameter(singleNodeCluster *bool) {
-	o.SingleNodeClusterQueryParameter = singleNodeCluster
+// SetReturnTimeout adds the returnTimeout to the cluster create params
+func (o *ClusterCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
+// WithSingleNodeCluster adds the singleNodeCluster to the cluster create params
+func (o *ClusterCreateParams) WithSingleNodeCluster(singleNodeCluster *bool) *ClusterCreateParams {
+	o.SetSingleNodeCluster(singleNodeCluster)
+	return o
+}
+
+// SetSingleNodeCluster adds the singleNodeCluster to the cluster create params
+func (o *ClusterCreateParams) SetSingleNodeCluster(singleNodeCluster *bool) {
+	o.SingleNodeCluster = singleNodeCluster
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -207,13 +229,13 @@ func (o *ClusterCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.CreateRecommendedAggregatesQueryParameter != nil {
+	if o.CreateRecommendedAggregates != nil {
 
 		// query param create_recommended_aggregates
 		var qrCreateRecommendedAggregates bool
 
-		if o.CreateRecommendedAggregatesQueryParameter != nil {
-			qrCreateRecommendedAggregates = *o.CreateRecommendedAggregatesQueryParameter
+		if o.CreateRecommendedAggregates != nil {
+			qrCreateRecommendedAggregates = *o.CreateRecommendedAggregates
 		}
 		qCreateRecommendedAggregates := swag.FormatBool(qrCreateRecommendedAggregates)
 		if qCreateRecommendedAggregates != "" {
@@ -229,13 +251,30 @@ func (o *ClusterCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.KeepPreclusterConfig != nil {
+
+		// query param keep_precluster_config
+		var qrKeepPreclusterConfig bool
+
+		if o.KeepPreclusterConfig != nil {
+			qrKeepPreclusterConfig = *o.KeepPreclusterConfig
+		}
+		qKeepPreclusterConfig := swag.FormatBool(qrKeepPreclusterConfig)
+		if qKeepPreclusterConfig != "" {
+
+			if err := r.SetQueryParam("keep_precluster_config", qKeepPreclusterConfig); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -246,13 +285,13 @@ func (o *ClusterCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.SingleNodeClusterQueryParameter != nil {
+	if o.SingleNodeCluster != nil {
 
 		// query param single_node_cluster
 		var qrSingleNodeCluster bool
 
-		if o.SingleNodeClusterQueryParameter != nil {
-			qrSingleNodeCluster = *o.SingleNodeClusterQueryParameter
+		if o.SingleNodeCluster != nil {
+			qrSingleNodeCluster = *o.SingleNodeCluster
 		}
 		qSingleNodeCluster := swag.FormatBool(qrSingleNodeCluster)
 		if qSingleNodeCluster != "" {

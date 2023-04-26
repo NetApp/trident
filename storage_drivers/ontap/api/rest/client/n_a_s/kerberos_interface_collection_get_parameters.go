@@ -66,49 +66,55 @@ type KerberosInterfaceCollectionGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* EncryptionTypes.
 
 	   Filter by encryption_types
 	*/
-	EncryptionTypesQueryParameter *string
+	EncryptionTypes *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* InterfaceIPAddress.
 
 	   Filter by interface.ip.address
 	*/
-	InterfaceIPAddressQueryParameter *string
+	InterfaceIPAddress *string
 
 	/* InterfaceName.
 
 	   Filter by interface.name
 	*/
-	InterfaceNameQueryParameter *string
+	InterfaceName *string
 
 	/* InterfaceUUID.
 
 	   Filter by interface.uuid
 	*/
-	InterfaceUUIDQueryParameter *string
+	InterfaceUUID *string
+
+	/* MachineAccount.
+
+	   Filter by machine_account
+	*/
+	MachineAccount *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -116,7 +122,7 @@ type KerberosInterfaceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,25 +130,25 @@ type KerberosInterfaceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Spn.
 
 	   Filter by spn
 	*/
-	SpnQueryParameter *string
+	Spn *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -162,14 +168,14 @@ func (o *KerberosInterfaceCollectionGetParams) WithDefaults() *KerberosInterface
 // All values with no default are reset to their zero value.
 func (o *KerberosInterfaceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := KerberosInterfaceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -211,147 +217,158 @@ func (o *KerberosInterfaceCollectionGetParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *KerberosInterfaceCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithEnabled(enabled *bool) *KerberosInterfaceCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithEncryptionTypesQueryParameter adds the encryptionTypes to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithEncryptionTypesQueryParameter(encryptionTypes *string) *KerberosInterfaceCollectionGetParams {
-	o.SetEncryptionTypesQueryParameter(encryptionTypes)
+// WithEncryptionTypes adds the encryptionTypes to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithEncryptionTypes(encryptionTypes *string) *KerberosInterfaceCollectionGetParams {
+	o.SetEncryptionTypes(encryptionTypes)
 	return o
 }
 
-// SetEncryptionTypesQueryParameter adds the encryptionTypes to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetEncryptionTypesQueryParameter(encryptionTypes *string) {
-	o.EncryptionTypesQueryParameter = encryptionTypes
+// SetEncryptionTypes adds the encryptionTypes to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetEncryptionTypes(encryptionTypes *string) {
+	o.EncryptionTypes = encryptionTypes
 }
 
-// WithFieldsQueryParameter adds the fields to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithFieldsQueryParameter(fields []string) *KerberosInterfaceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithFields(fields []string) *KerberosInterfaceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithInterfaceIPAddressQueryParameter adds the interfaceIPAddress to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithInterfaceIPAddressQueryParameter(interfaceIPAddress *string) *KerberosInterfaceCollectionGetParams {
-	o.SetInterfaceIPAddressQueryParameter(interfaceIPAddress)
+// WithInterfaceIPAddress adds the interfaceIPAddress to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithInterfaceIPAddress(interfaceIPAddress *string) *KerberosInterfaceCollectionGetParams {
+	o.SetInterfaceIPAddress(interfaceIPAddress)
 	return o
 }
 
-// SetInterfaceIPAddressQueryParameter adds the interfaceIpAddress to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetInterfaceIPAddressQueryParameter(interfaceIPAddress *string) {
-	o.InterfaceIPAddressQueryParameter = interfaceIPAddress
+// SetInterfaceIPAddress adds the interfaceIpAddress to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetInterfaceIPAddress(interfaceIPAddress *string) {
+	o.InterfaceIPAddress = interfaceIPAddress
 }
 
-// WithInterfaceNameQueryParameter adds the interfaceName to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithInterfaceNameQueryParameter(interfaceName *string) *KerberosInterfaceCollectionGetParams {
-	o.SetInterfaceNameQueryParameter(interfaceName)
+// WithInterfaceName adds the interfaceName to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithInterfaceName(interfaceName *string) *KerberosInterfaceCollectionGetParams {
+	o.SetInterfaceName(interfaceName)
 	return o
 }
 
-// SetInterfaceNameQueryParameter adds the interfaceName to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetInterfaceNameQueryParameter(interfaceName *string) {
-	o.InterfaceNameQueryParameter = interfaceName
+// SetInterfaceName adds the interfaceName to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetInterfaceName(interfaceName *string) {
+	o.InterfaceName = interfaceName
 }
 
-// WithInterfaceUUIDQueryParameter adds the interfaceUUID to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithInterfaceUUIDQueryParameter(interfaceUUID *string) *KerberosInterfaceCollectionGetParams {
-	o.SetInterfaceUUIDQueryParameter(interfaceUUID)
+// WithInterfaceUUID adds the interfaceUUID to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithInterfaceUUID(interfaceUUID *string) *KerberosInterfaceCollectionGetParams {
+	o.SetInterfaceUUID(interfaceUUID)
 	return o
 }
 
-// SetInterfaceUUIDQueryParameter adds the interfaceUuid to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetInterfaceUUIDQueryParameter(interfaceUUID *string) {
-	o.InterfaceUUIDQueryParameter = interfaceUUID
+// SetInterfaceUUID adds the interfaceUuid to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetInterfaceUUID(interfaceUUID *string) {
+	o.InterfaceUUID = interfaceUUID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *KerberosInterfaceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMachineAccount adds the machineAccount to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithMachineAccount(machineAccount *string) *KerberosInterfaceCollectionGetParams {
+	o.SetMachineAccount(machineAccount)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMachineAccount adds the machineAccount to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetMachineAccount(machineAccount *string) {
+	o.MachineAccount = machineAccount
 }
 
-// WithOrderByQueryParameter adds the orderBy to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *KerberosInterfaceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithMaxRecords adds the maxRecords to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithMaxRecords(maxRecords *int64) *KerberosInterfaceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetMaxRecords adds the maxRecords to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *KerberosInterfaceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithOrderBy adds the orderBy to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithOrderBy(orderBy []string) *KerberosInterfaceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetOrderBy adds the orderBy to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *KerberosInterfaceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnRecords adds the returnRecords to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithReturnRecords(returnRecords *bool) *KerberosInterfaceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnRecords adds the returnRecords to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSpnQueryParameter adds the spn to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithSpnQueryParameter(spn *string) *KerberosInterfaceCollectionGetParams {
-	o.SetSpnQueryParameter(spn)
+// WithReturnTimeout adds the returnTimeout to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *KerberosInterfaceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetSpnQueryParameter adds the spn to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetSpnQueryParameter(spn *string) {
-	o.SpnQueryParameter = spn
+// SetReturnTimeout adds the returnTimeout to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *KerberosInterfaceCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSpn adds the spn to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithSpn(spn *string) *KerberosInterfaceCollectionGetParams {
+	o.SetSpn(spn)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSpn adds the spn to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetSpn(spn *string) {
+	o.Spn = spn
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *KerberosInterfaceCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmName adds the svmName to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithSvmName(svmName *string) *KerberosInterfaceCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the kerberos interface collection get params
-func (o *KerberosInterfaceCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmName adds the svmName to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
+// WithSvmUUID adds the svmUUID to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) WithSvmUUID(svmUUID *string) *KerberosInterfaceCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the kerberos interface collection get params
+func (o *KerberosInterfaceCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -362,13 +379,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -379,13 +396,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.EncryptionTypesQueryParameter != nil {
+	if o.EncryptionTypes != nil {
 
 		// query param encryption_types
 		var qrEncryptionTypes string
 
-		if o.EncryptionTypesQueryParameter != nil {
-			qrEncryptionTypes = *o.EncryptionTypesQueryParameter
+		if o.EncryptionTypes != nil {
+			qrEncryptionTypes = *o.EncryptionTypes
 		}
 		qEncryptionTypes := qrEncryptionTypes
 		if qEncryptionTypes != "" {
@@ -396,7 +413,7 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -407,13 +424,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.InterfaceIPAddressQueryParameter != nil {
+	if o.InterfaceIPAddress != nil {
 
 		// query param interface.ip.address
 		var qrInterfaceIPAddress string
 
-		if o.InterfaceIPAddressQueryParameter != nil {
-			qrInterfaceIPAddress = *o.InterfaceIPAddressQueryParameter
+		if o.InterfaceIPAddress != nil {
+			qrInterfaceIPAddress = *o.InterfaceIPAddress
 		}
 		qInterfaceIPAddress := qrInterfaceIPAddress
 		if qInterfaceIPAddress != "" {
@@ -424,13 +441,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.InterfaceNameQueryParameter != nil {
+	if o.InterfaceName != nil {
 
 		// query param interface.name
 		var qrInterfaceName string
 
-		if o.InterfaceNameQueryParameter != nil {
-			qrInterfaceName = *o.InterfaceNameQueryParameter
+		if o.InterfaceName != nil {
+			qrInterfaceName = *o.InterfaceName
 		}
 		qInterfaceName := qrInterfaceName
 		if qInterfaceName != "" {
@@ -441,13 +458,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.InterfaceUUIDQueryParameter != nil {
+	if o.InterfaceUUID != nil {
 
 		// query param interface.uuid
 		var qrInterfaceUUID string
 
-		if o.InterfaceUUIDQueryParameter != nil {
-			qrInterfaceUUID = *o.InterfaceUUIDQueryParameter
+		if o.InterfaceUUID != nil {
+			qrInterfaceUUID = *o.InterfaceUUID
 		}
 		qInterfaceUUID := qrInterfaceUUID
 		if qInterfaceUUID != "" {
@@ -458,13 +475,30 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MachineAccount != nil {
+
+		// query param machine_account
+		var qrMachineAccount string
+
+		if o.MachineAccount != nil {
+			qrMachineAccount = *o.MachineAccount
+		}
+		qMachineAccount := qrMachineAccount
+		if qMachineAccount != "" {
+
+			if err := r.SetQueryParam("machine_account", qMachineAccount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -475,7 +509,7 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -486,13 +520,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -503,13 +537,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -520,13 +554,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SpnQueryParameter != nil {
+	if o.Spn != nil {
 
 		// query param spn
 		var qrSpn string
 
-		if o.SpnQueryParameter != nil {
-			qrSpn = *o.SpnQueryParameter
+		if o.Spn != nil {
+			qrSpn = *o.Spn
 		}
 		qSpn := qrSpn
 		if qSpn != "" {
@@ -537,13 +571,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -554,13 +588,13 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -579,7 +613,7 @@ func (o *KerberosInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRe
 
 // bindParamKerberosInterfaceCollectionGet binds the parameter fields
 func (o *KerberosInterfaceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -596,7 +630,7 @@ func (o *KerberosInterfaceCollectionGetParams) bindParamFields(formats strfmt.Re
 
 // bindParamKerberosInterfaceCollectionGet binds the parameter order_by
 func (o *KerberosInterfaceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

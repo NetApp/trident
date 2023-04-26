@@ -112,9 +112,17 @@ func NewTopMetricsDirectoryCollectionGetDefault(code int) *TopMetricsDirectoryCo
 }
 
 /*
-TopMetricsDirectoryCollectionGetDefault describes a response with status code -1, with default header values.
+	TopMetricsDirectoryCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 124518415 | Failed to get the volume activity tracking report on volume volume.name in Vserver svm.name. Reason:<Reason for failure>. |
+| 124518416 | Internal error. Volume activity tracking report timed out for volume volume.name in SVM svm.name. |
+| 124518417 | Volume wildcard queries are not supported for activity tracking reports. |
+| 124518418 | The activity tracking report for volume volume.name in Vserver svm.name returned zero records. Check whether the volume has read/write traffic. Refer to the REST API documentation for more information on why there might be no records. |
+| 124519410 | The large directory report for volume volume.name in Vserver svm.name is not available because the file system analytics database version doesn\'t support this report. Use the \"volume analytics off\" command to disable analytics on the volume, then use the \"volume analytics on\" command to re-enable analytics. |
 */
 type TopMetricsDirectoryCollectionGetDefault struct {
 	_statusCode int

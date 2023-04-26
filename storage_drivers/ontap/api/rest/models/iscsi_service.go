@@ -22,7 +22,7 @@ import (
 type IscsiService struct {
 
 	// links
-	Links *IscsiServiceLinks `json:"_links,omitempty"`
+	Links *IscsiServiceInlineLinks `json:"_links,omitempty"`
 
 	// The administrative state of the iSCSI service. The iSCSI service can be disabled to block all iSCSI connectivity to the SVM.<br/>
 	// Optional in POST and PATCH. The default setting is _true_ (enabled) in POST.
@@ -30,16 +30,16 @@ type IscsiService struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// metric
-	Metric *IscsiServiceMetric `json:"metric,omitempty"`
+	Metric *IscsiServiceInlineMetric `json:"metric,omitempty"`
 
 	// statistics
-	Statistics *IscsiServiceStatistics `json:"statistics,omitempty"`
+	Statistics *IscsiServiceInlineStatistics `json:"statistics,omitempty"`
 
 	// svm
-	Svm *IscsiServiceSvm `json:"svm,omitempty"`
+	Svm *IscsiServiceInlineSvm `json:"svm,omitempty"`
 
 	// target
-	Target *IscsiServiceTarget `json:"target,omitempty"`
+	Target *IscsiServiceInlineTarget `json:"target,omitempty"`
 }
 
 // Validate validates this iscsi service
@@ -275,17 +275,17 @@ func (m *IscsiService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceLinks iscsi service links
+// IscsiServiceInlineLinks iscsi service inline links
 //
-// swagger:model IscsiServiceLinks
-type IscsiServiceLinks struct {
+// swagger:model iscsi_service_inline__links
+type IscsiServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi service links
-func (m *IscsiServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline links
+func (m *IscsiServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -298,7 +298,7 @@ func (m *IscsiServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -315,8 +315,8 @@ func (m *IscsiServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service links based on the context it is used
-func (m *IscsiServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline links based on the context it is used
+func (m *IscsiServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -329,7 +329,7 @@ func (m *IscsiServiceLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *IscsiServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -344,7 +344,7 @@ func (m *IscsiServiceLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -352,8 +352,8 @@ func (m *IscsiServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceLinks
+func (m *IscsiServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -361,35 +361,35 @@ func (m *IscsiServiceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceMetric iscsi service metric
+// IscsiServiceInlineMetric iscsi service inline metric
 //
-// swagger:model IscsiServiceMetric
-type IscsiServiceMetric struct {
+// swagger:model iscsi_service_inline_metric
+type IscsiServiceInlineMetric struct {
 
 	// links
-	Links *IscsiServiceMetricLinks `json:"_links,omitempty"`
+	Links *IscsiServiceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *IscsiServiceMetricIops `json:"iops,omitempty"`
+	Iops *IscsiServiceInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *IscsiServiceMetricLatency `json:"latency,omitempty"`
+	Latency *IscsiServiceInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *IscsiServiceMetricThroughput `json:"throughput,omitempty"`
+	Throughput *IscsiServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -398,8 +398,8 @@ type IscsiServiceMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this iscsi service metric
-func (m *IscsiServiceMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline metric
+func (m *IscsiServiceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -436,7 +436,7 @@ func (m *IscsiServiceMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateLinks(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -453,7 +453,7 @@ func (m *IscsiServiceMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var iscsiServiceMetricTypeDurationPropEnum []interface{}
+var iscsiServiceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -461,95 +461,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		iscsiServiceMetricTypeDurationPropEnum = append(iscsiServiceMetricTypeDurationPropEnum, v)
+		iscsiServiceInlineMetricTypeDurationPropEnum = append(iscsiServiceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// IscsiServiceMetricDurationPT15S captures enum value "PT15S"
-	IscsiServiceMetricDurationPT15S string = "PT15S"
+	// IscsiServiceInlineMetricDurationPT15S captures enum value "PT15S"
+	IscsiServiceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// IscsiServiceMetricDurationPT4M captures enum value "PT4M"
-	IscsiServiceMetricDurationPT4M string = "PT4M"
+	// IscsiServiceInlineMetricDurationPT4M captures enum value "PT4M"
+	IscsiServiceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// IscsiServiceMetricDurationPT30M captures enum value "PT30M"
-	IscsiServiceMetricDurationPT30M string = "PT30M"
+	// IscsiServiceInlineMetricDurationPT30M captures enum value "PT30M"
+	IscsiServiceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// IscsiServiceMetricDurationPT2H captures enum value "PT2H"
-	IscsiServiceMetricDurationPT2H string = "PT2H"
+	// IscsiServiceInlineMetricDurationPT2H captures enum value "PT2H"
+	IscsiServiceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// IscsiServiceMetricDurationP1D captures enum value "P1D"
-	IscsiServiceMetricDurationP1D string = "P1D"
+	// IscsiServiceInlineMetricDurationP1D captures enum value "P1D"
+	IscsiServiceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// IscsiServiceMetricDurationPT5M captures enum value "PT5M"
-	IscsiServiceMetricDurationPT5M string = "PT5M"
+	// IscsiServiceInlineMetricDurationPT5M captures enum value "PT5M"
+	IscsiServiceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *IscsiServiceMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, iscsiServiceMetricTypeDurationPropEnum, true); err != nil {
+func (m *IscsiServiceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, iscsiServiceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateDuration(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateIops(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -566,7 +566,7 @@ func (m *IscsiServiceMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateLatency(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -583,7 +583,7 @@ func (m *IscsiServiceMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var iscsiServiceMetricTypeStatusPropEnum []interface{}
+var iscsiServiceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -591,145 +591,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		iscsiServiceMetricTypeStatusPropEnum = append(iscsiServiceMetricTypeStatusPropEnum, v)
+		iscsiServiceInlineMetricTypeStatusPropEnum = append(iscsiServiceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// IscsiServiceMetricStatusOk captures enum value "ok"
-	IscsiServiceMetricStatusOk string = "ok"
+	// IscsiServiceInlineMetricStatusOk captures enum value "ok"
+	IscsiServiceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// IscsiServiceMetricStatusError captures enum value "error"
-	IscsiServiceMetricStatusError string = "error"
+	// IscsiServiceInlineMetricStatusError captures enum value "error"
+	IscsiServiceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// IscsiServiceMetricStatusPartialNoData captures enum value "partial_no_data"
-	IscsiServiceMetricStatusPartialNoData string = "partial_no_data"
+	// IscsiServiceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	IscsiServiceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// IscsiServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	IscsiServiceMetricStatusPartialNoResponse string = "partial_no_response"
+	// IscsiServiceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	IscsiServiceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// IscsiServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
-	IscsiServiceMetricStatusPartialOtherError string = "partial_other_error"
+	// IscsiServiceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	IscsiServiceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// IscsiServiceMetricStatusNegativeDelta captures enum value "negative_delta"
-	IscsiServiceMetricStatusNegativeDelta string = "negative_delta"
+	// IscsiServiceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	IscsiServiceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// IscsiServiceMetricStatusNotFound captures enum value "not_found"
-	IscsiServiceMetricStatusNotFound string = "not_found"
+	// IscsiServiceInlineMetricStatusNotFound captures enum value "not_found"
+	IscsiServiceInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// IscsiServiceMetricStatusBackfilledData captures enum value "backfilled_data"
-	IscsiServiceMetricStatusBackfilledData string = "backfilled_data"
+	// IscsiServiceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	IscsiServiceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// IscsiServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	IscsiServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// IscsiServiceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	IscsiServiceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// IscsiServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	IscsiServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// IscsiServiceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	IscsiServiceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
+	// iscsi_service_inline_metric
+	// IscsiServiceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// IscsiServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	IscsiServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// IscsiServiceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IscsiServiceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *IscsiServiceMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, iscsiServiceMetricTypeStatusPropEnum, true); err != nil {
+func (m *IscsiServiceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, iscsiServiceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateStatus(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -746,7 +746,7 @@ func (m *IscsiServiceMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -758,8 +758,8 @@ func (m *IscsiServiceMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service metric based on the context it is used
-func (m *IscsiServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline metric based on the context it is used
+func (m *IscsiServiceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -796,7 +796,7 @@ func (m *IscsiServiceMetric) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -810,16 +810,16 @@ func (m *IscsiServiceMetric) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -833,7 +833,7 @@ func (m *IscsiServiceMetric) contextValidateIops(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -847,16 +847,16 @@ func (m *IscsiServiceMetric) contextValidateLatency(ctx context.Context, formats
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -870,7 +870,7 @@ func (m *IscsiServiceMetric) contextValidateThroughput(ctx context.Context, form
 	return nil
 }
 
-func (m *IscsiServiceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -880,7 +880,7 @@ func (m *IscsiServiceMetric) contextValidateTimestamp(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceMetric) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -888,8 +888,8 @@ func (m *IscsiServiceMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceMetric) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceMetric
+func (m *IscsiServiceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -897,34 +897,34 @@ func (m *IscsiServiceMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceMetricIops The rate of I/O operations observed at the storage object.
+// IscsiServiceInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model IscsiServiceMetricIops
-type IscsiServiceMetricIops struct {
+// swagger:model iscsi_service_inline_metric_inline_iops
+type IscsiServiceInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this iscsi service metric iops
-func (m *IscsiServiceMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline metric inline iops
+func (m *IscsiServiceInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service metric iops based on the context it is used
-func (m *IscsiServiceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline metric inline iops based on the context it is used
+func (m *IscsiServiceInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -934,7 +934,7 @@ func (m *IscsiServiceMetricIops) ContextValidate(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceMetricIops) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -942,8 +942,8 @@ func (m *IscsiServiceMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceMetricIops) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceMetricIops
+func (m *IscsiServiceInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -951,34 +951,34 @@ func (m *IscsiServiceMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceMetricLatency The round trip latency in microseconds observed at the storage object.
+// IscsiServiceInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model IscsiServiceMetricLatency
-type IscsiServiceMetricLatency struct {
+// swagger:model iscsi_service_inline_metric_inline_latency
+type IscsiServiceInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this iscsi service metric latency
-func (m *IscsiServiceMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline metric inline latency
+func (m *IscsiServiceInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service metric latency based on the context it is used
-func (m *IscsiServiceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline metric inline latency based on the context it is used
+func (m *IscsiServiceInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -988,7 +988,7 @@ func (m *IscsiServiceMetricLatency) ContextValidate(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -996,8 +996,8 @@ func (m *IscsiServiceMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceMetricLatency) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceMetricLatency
+func (m *IscsiServiceInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1005,17 +1005,17 @@ func (m *IscsiServiceMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceMetricLinks iscsi service metric links
+// IscsiServiceInlineMetricInlineLinks iscsi service inline metric inline links
 //
-// swagger:model IscsiServiceMetricLinks
-type IscsiServiceMetricLinks struct {
+// swagger:model iscsi_service_inline_metric_inline__links
+type IscsiServiceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi service metric links
-func (m *IscsiServiceMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline metric inline links
+func (m *IscsiServiceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1028,7 +1028,7 @@ func (m *IscsiServiceMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1045,8 +1045,8 @@ func (m *IscsiServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service metric links based on the context it is used
-func (m *IscsiServiceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline metric inline links based on the context it is used
+func (m *IscsiServiceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1059,7 +1059,7 @@ func (m *IscsiServiceMetricLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IscsiServiceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1074,7 +1074,7 @@ func (m *IscsiServiceMetricLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1082,8 +1082,8 @@ func (m *IscsiServiceMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceMetricLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceMetricLinks
+func (m *IscsiServiceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1091,31 +1091,31 @@ func (m *IscsiServiceMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// IscsiServiceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model IscsiServiceMetricThroughput
-type IscsiServiceMetricThroughput struct {
+// swagger:model iscsi_service_inline_metric_inline_throughput
+type IscsiServiceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this iscsi service metric throughput
-func (m *IscsiServiceMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline metric inline throughput
+func (m *IscsiServiceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service metric throughput based on the context it is used
-func (m *IscsiServiceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline metric inline throughput based on the context it is used
+func (m *IscsiServiceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1125,7 +1125,7 @@ func (m *IscsiServiceMetricThroughput) ContextValidate(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1133,8 +1133,8 @@ func (m *IscsiServiceMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceMetricThroughput
+func (m *IscsiServiceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1142,25 +1142,25 @@ func (m *IscsiServiceMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceStatistics iscsi service statistics
+// IscsiServiceInlineStatistics iscsi service inline statistics
 //
-// swagger:model IscsiServiceStatistics
-type IscsiServiceStatistics struct {
+// swagger:model iscsi_service_inline_statistics
+type IscsiServiceInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *IscsiServiceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *IscsiServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *IscsiServiceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *IscsiServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *IscsiServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *IscsiServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1169,8 +1169,8 @@ type IscsiServiceStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this iscsi service statistics
-func (m *IscsiServiceStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline statistics
+func (m *IscsiServiceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -1199,7 +1199,7 @@ func (m *IscsiServiceStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -1216,7 +1216,7 @@ func (m *IscsiServiceStatistics) validateIopsRaw(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IscsiServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -1233,7 +1233,7 @@ func (m *IscsiServiceStatistics) validateLatencyRaw(formats strfmt.Registry) err
 	return nil
 }
 
-var iscsiServiceStatisticsTypeStatusPropEnum []interface{}
+var iscsiServiceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1241,145 +1241,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		iscsiServiceStatisticsTypeStatusPropEnum = append(iscsiServiceStatisticsTypeStatusPropEnum, v)
+		iscsiServiceInlineStatisticsTypeStatusPropEnum = append(iscsiServiceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusOk captures enum value "ok"
-	IscsiServiceStatisticsStatusOk string = "ok"
+	// IscsiServiceInlineStatisticsStatusOk captures enum value "ok"
+	IscsiServiceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusError captures enum value "error"
-	IscsiServiceStatisticsStatusError string = "error"
+	// IscsiServiceInlineStatisticsStatusError captures enum value "error"
+	IscsiServiceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	IscsiServiceStatisticsStatusPartialNoData string = "partial_no_data"
+	// IscsiServiceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	IscsiServiceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	IscsiServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// IscsiServiceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	IscsiServiceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	IscsiServiceStatisticsStatusPartialOtherError string = "partial_other_error"
+	// IscsiServiceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	IscsiServiceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	IscsiServiceStatisticsStatusNegativeDelta string = "negative_delta"
+	// IscsiServiceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	IscsiServiceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusNotFound captures enum value "not_found"
-	IscsiServiceStatisticsStatusNotFound string = "not_found"
+	// IscsiServiceInlineStatisticsStatusNotFound captures enum value "not_found"
+	IscsiServiceInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	IscsiServiceStatisticsStatusBackfilledData string = "backfilled_data"
+	// IscsiServiceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	IscsiServiceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	IscsiServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// IscsiServiceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	IscsiServiceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	IscsiServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// IscsiServiceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	IscsiServiceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
+	// iscsi_service_inline_statistics
+	// IscsiServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// IscsiServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	IscsiServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// IscsiServiceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IscsiServiceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *IscsiServiceStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, iscsiServiceStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *IscsiServiceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, iscsiServiceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *IscsiServiceStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -1396,7 +1396,7 @@ func (m *IscsiServiceStatistics) validateThroughputRaw(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *IscsiServiceStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1408,8 +1408,8 @@ func (m *IscsiServiceStatistics) validateTimestamp(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this iscsi service statistics based on the context it is used
-func (m *IscsiServiceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline statistics based on the context it is used
+func (m *IscsiServiceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -1438,7 +1438,7 @@ func (m *IscsiServiceStatistics) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IscsiServiceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -1452,7 +1452,7 @@ func (m *IscsiServiceStatistics) contextValidateIopsRaw(ctx context.Context, for
 	return nil
 }
 
-func (m *IscsiServiceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -1466,16 +1466,16 @@ func (m *IscsiServiceStatistics) contextValidateLatencyRaw(ctx context.Context, 
 	return nil
 }
 
-func (m *IscsiServiceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -1489,7 +1489,7 @@ func (m *IscsiServiceStatistics) contextValidateThroughputRaw(ctx context.Contex
 	return nil
 }
 
-func (m *IscsiServiceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1499,7 +1499,7 @@ func (m *IscsiServiceStatistics) contextValidateTimestamp(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceStatistics) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1507,8 +1507,8 @@ func (m *IscsiServiceStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceStatistics) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceStatistics
+func (m *IscsiServiceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1516,34 +1516,34 @@ func (m *IscsiServiceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// IscsiServiceInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model IscsiServiceStatisticsIopsRaw
-type IscsiServiceStatisticsIopsRaw struct {
+// swagger:model iscsi_service_inline_statistics_inline_iops_raw
+type IscsiServiceInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this iscsi service statistics iops raw
-func (m *IscsiServiceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline statistics inline iops raw
+func (m *IscsiServiceInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service statistics iops raw based on the context it is used
-func (m *IscsiServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline statistics inline iops raw based on the context it is used
+func (m *IscsiServiceInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1553,7 +1553,7 @@ func (m *IscsiServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1561,8 +1561,8 @@ func (m *IscsiServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceStatisticsIopsRaw
+func (m *IscsiServiceInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1570,34 +1570,34 @@ func (m *IscsiServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// IscsiServiceInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model IscsiServiceStatisticsLatencyRaw
-type IscsiServiceStatisticsLatencyRaw struct {
+// swagger:model iscsi_service_inline_statistics_inline_latency_raw
+type IscsiServiceInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this iscsi service statistics latency raw
-func (m *IscsiServiceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline statistics inline latency raw
+func (m *IscsiServiceInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service statistics latency raw based on the context it is used
-func (m *IscsiServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline statistics inline latency raw based on the context it is used
+func (m *IscsiServiceInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1607,7 +1607,7 @@ func (m *IscsiServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1615,8 +1615,8 @@ func (m *IscsiServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceStatisticsLatencyRaw
+func (m *IscsiServiceInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1624,31 +1624,31 @@ func (m *IscsiServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// IscsiServiceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model IscsiServiceStatisticsThroughputRaw
-type IscsiServiceStatisticsThroughputRaw struct {
+// swagger:model iscsi_service_inline_statistics_inline_throughput_raw
+type IscsiServiceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this iscsi service statistics throughput raw
-func (m *IscsiServiceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline statistics inline throughput raw
+func (m *IscsiServiceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service statistics throughput raw based on the context it is used
-func (m *IscsiServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline statistics inline throughput raw based on the context it is used
+func (m *IscsiServiceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1658,7 +1658,7 @@ func (m *IscsiServiceStatisticsThroughputRaw) ContextValidate(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1666,8 +1666,8 @@ func (m *IscsiServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceStatisticsThroughputRaw
+func (m *IscsiServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1675,27 +1675,27 @@ func (m *IscsiServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceSvm iscsi service svm
+// IscsiServiceInlineSvm iscsi service inline svm
 //
-// swagger:model IscsiServiceSvm
-type IscsiServiceSvm struct {
+// swagger:model iscsi_service_inline_svm
+type IscsiServiceInlineSvm struct {
 
 	// links
-	Links *IscsiServiceSvmLinks `json:"_links,omitempty"`
+	Links *IscsiServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this iscsi service svm
-func (m *IscsiServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline svm
+func (m *IscsiServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1708,7 +1708,7 @@ func (m *IscsiServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1725,8 +1725,8 @@ func (m *IscsiServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service svm based on the context it is used
-func (m *IscsiServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline svm based on the context it is used
+func (m *IscsiServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1739,7 +1739,7 @@ func (m *IscsiServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *IscsiServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1754,7 +1754,7 @@ func (m *IscsiServiceSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1762,8 +1762,8 @@ func (m *IscsiServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceSvm) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceSvm
+func (m *IscsiServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1771,17 +1771,17 @@ func (m *IscsiServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceSvmLinks iscsi service svm links
+// IscsiServiceInlineSvmInlineLinks iscsi service inline svm inline links
 //
-// swagger:model IscsiServiceSvmLinks
-type IscsiServiceSvmLinks struct {
+// swagger:model iscsi_service_inline_svm_inline__links
+type IscsiServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi service svm links
-func (m *IscsiServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline svm inline links
+func (m *IscsiServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1794,7 +1794,7 @@ func (m *IscsiServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1811,8 +1811,8 @@ func (m *IscsiServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi service svm links based on the context it is used
-func (m *IscsiServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline svm inline links based on the context it is used
+func (m *IscsiServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1825,7 +1825,7 @@ func (m *IscsiServiceSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IscsiServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1840,7 +1840,7 @@ func (m *IscsiServiceSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1848,8 +1848,8 @@ func (m *IscsiServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceSvmLinks
+func (m *IscsiServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1857,10 +1857,10 @@ func (m *IscsiServiceSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiServiceTarget iscsi service target
+// IscsiServiceInlineTarget iscsi service inline target
 //
-// swagger:model IscsiServiceTarget
-type IscsiServiceTarget struct {
+// swagger:model iscsi_service_inline_target
+type IscsiServiceInlineTarget struct {
 
 	// The iSCSI target alias of the iSCSI service.<br/>
 	// The target alias can contain one (1) to 128 characters and feature any printable character except space (" "). A PATCH request with an empty alias ("") clears the alias.<br/>
@@ -1869,7 +1869,7 @@ type IscsiServiceTarget struct {
 	// Example: svm1
 	// Max Length: 128
 	// Min Length: 1
-	Alias string `json:"alias,omitempty"`
+	Alias *string `json:"alias,omitempty"`
 
 	// The iSCSI target name of the iSCSI service. This is generated for the SVM during POST.<br/>
 	// If required, the target name can be modified using the ONTAP command line.
@@ -1878,11 +1878,11 @@ type IscsiServiceTarget struct {
 	// Read Only: true
 	// Max Length: 128
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this iscsi service target
-func (m *IscsiServiceTarget) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi service inline target
+func (m *IscsiServiceInlineTarget) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAlias(formats); err != nil {
@@ -1899,40 +1899,40 @@ func (m *IscsiServiceTarget) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiServiceTarget) validateAlias(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineTarget) validateAlias(formats strfmt.Registry) error {
 	if swag.IsZero(m.Alias) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("target"+"."+"alias", "body", m.Alias, 1); err != nil {
+	if err := validate.MinLength("target"+"."+"alias", "body", *m.Alias, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("target"+"."+"alias", "body", m.Alias, 128); err != nil {
+	if err := validate.MaxLength("target"+"."+"alias", "body", *m.Alias, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiServiceTarget) validateName(formats strfmt.Registry) error {
+func (m *IscsiServiceInlineTarget) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("target"+"."+"name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("target"+"."+"name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("target"+"."+"name", "body", m.Name, 128); err != nil {
+	if err := validate.MaxLength("target"+"."+"name", "body", *m.Name, 128); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this iscsi service target based on the context it is used
-func (m *IscsiServiceTarget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi service inline target based on the context it is used
+func (m *IscsiServiceInlineTarget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -1945,9 +1945,9 @@ func (m *IscsiServiceTarget) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IscsiServiceTarget) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiServiceInlineTarget) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "target"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "target"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -1955,7 +1955,7 @@ func (m *IscsiServiceTarget) contextValidateName(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiServiceTarget) MarshalBinary() ([]byte, error) {
+func (m *IscsiServiceInlineTarget) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1963,8 +1963,8 @@ func (m *IscsiServiceTarget) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiServiceTarget) UnmarshalBinary(b []byte) error {
-	var res IscsiServiceTarget
+func (m *IscsiServiceInlineTarget) UnmarshalBinary(b []byte) error {
+	var res IscsiServiceInlineTarget
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -21,23 +21,26 @@ import (
 type MetroclusterDiagDetails struct {
 
 	// aggregate
-	Aggregate *MetroclusterDiagDetailsAggregate `json:"aggregate,omitempty"`
+	Aggregate *MetroclusterDiagDetailsInlineAggregate `json:"aggregate,omitempty"`
+
+	// cluster
+	Cluster *MetroclusterDiagDetailsInlineCluster `json:"cluster,omitempty"`
 
 	// Collection of MetroCluster checks done for component.
 	// Read Only: true
-	Checks []*MetroclusterDiagCheck `json:"checks,omitempty"`
-
-	// cluster
-	Cluster *MetroclusterDiagDetailsCluster `json:"cluster,omitempty"`
+	MetroclusterDiagDetailsInlineChecks []*MetroclusterDiagCheck `json:"checks,omitempty"`
 
 	// node
-	Node *MetroclusterDiagDetailsNode `json:"node,omitempty"`
+	Node *MetroclusterDiagDetailsInlineNode `json:"node,omitempty"`
 
 	// Time check was done.
 	// Example: 2016-03-10T14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// volume
+	Volume *MetroclusterDiagDetailsInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this metrocluster diag details
@@ -48,11 +51,11 @@ func (m *MetroclusterDiagDetails) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateChecks(formats); err != nil {
+	if err := m.validateCluster(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateCluster(formats); err != nil {
+	if err := m.validateMetroclusterDiagDetailsInlineChecks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -61,6 +64,10 @@ func (m *MetroclusterDiagDetails) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolume(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,30 +94,6 @@ func (m *MetroclusterDiagDetails) validateAggregate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDiagDetails) validateChecks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Checks) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Checks); i++ {
-		if swag.IsZero(m.Checks[i]) { // not required
-			continue
-		}
-
-		if m.Checks[i] != nil {
-			if err := m.Checks[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("checks" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *MetroclusterDiagDetails) validateCluster(formats strfmt.Registry) error {
 	if swag.IsZero(m.Cluster) { // not required
 		return nil
@@ -123,6 +106,30 @@ func (m *MetroclusterDiagDetails) validateCluster(formats strfmt.Registry) error
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagDetails) validateMetroclusterDiagDetailsInlineChecks(formats strfmt.Registry) error {
+	if swag.IsZero(m.MetroclusterDiagDetailsInlineChecks) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.MetroclusterDiagDetailsInlineChecks); i++ {
+		if swag.IsZero(m.MetroclusterDiagDetailsInlineChecks[i]) { // not required
+			continue
+		}
+
+		if m.MetroclusterDiagDetailsInlineChecks[i] != nil {
+			if err := m.MetroclusterDiagDetailsInlineChecks[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("checks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -157,6 +164,23 @@ func (m *MetroclusterDiagDetails) validateTimestamp(formats strfmt.Registry) err
 	return nil
 }
 
+func (m *MetroclusterDiagDetails) validateVolume(formats strfmt.Registry) error {
+	if swag.IsZero(m.Volume) { // not required
+		return nil
+	}
+
+	if m.Volume != nil {
+		if err := m.Volume.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this metrocluster diag details based on the context it is used
 func (m *MetroclusterDiagDetails) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -165,11 +189,11 @@ func (m *MetroclusterDiagDetails) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateChecks(ctx, formats); err != nil {
+	if err := m.contextValidateCluster(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCluster(ctx, formats); err != nil {
+	if err := m.contextValidateMetroclusterDiagDetailsInlineChecks(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -178,6 +202,10 @@ func (m *MetroclusterDiagDetails) ContextValidate(ctx context.Context, formats s
 	}
 
 	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolume(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -201,28 +229,6 @@ func (m *MetroclusterDiagDetails) contextValidateAggregate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDiagDetails) contextValidateChecks(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "checks", "body", []*MetroclusterDiagCheck(m.Checks)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Checks); i++ {
-
-		if m.Checks[i] != nil {
-			if err := m.Checks[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("checks" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *MetroclusterDiagDetails) contextValidateCluster(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Cluster != nil {
@@ -232,6 +238,28 @@ func (m *MetroclusterDiagDetails) contextValidateCluster(ctx context.Context, fo
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterDiagDetails) contextValidateMetroclusterDiagDetailsInlineChecks(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "checks", "body", []*MetroclusterDiagCheck(m.MetroclusterDiagDetailsInlineChecks)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.MetroclusterDiagDetailsInlineChecks); i++ {
+
+		if m.MetroclusterDiagDetailsInlineChecks[i] != nil {
+			if err := m.MetroclusterDiagDetailsInlineChecks[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("checks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -260,6 +288,20 @@ func (m *MetroclusterDiagDetails) contextValidateTimestamp(ctx context.Context, 
 	return nil
 }
 
+func (m *MetroclusterDiagDetails) contextValidateVolume(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Volume != nil {
+		if err := m.Volume.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *MetroclusterDiagDetails) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -278,25 +320,25 @@ func (m *MetroclusterDiagDetails) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagDetailsAggregate metrocluster diag details aggregate
+// MetroclusterDiagDetailsInlineAggregate metrocluster diag details inline aggregate
 //
-// swagger:model MetroclusterDiagDetailsAggregate
-type MetroclusterDiagDetailsAggregate struct {
+// swagger:model metrocluster_diag_details_inline_aggregate
+type MetroclusterDiagDetailsInlineAggregate struct {
 
 	// links
-	Links *MetroclusterDiagDetailsAggregateLinks `json:"_links,omitempty"`
+	Links *MetroclusterDiagDetailsInlineAggregateInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster diag details aggregate
-func (m *MetroclusterDiagDetailsAggregate) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag details inline aggregate
+func (m *MetroclusterDiagDetailsInlineAggregate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -309,7 +351,7 @@ func (m *MetroclusterDiagDetailsAggregate) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsAggregate) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineAggregate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -326,8 +368,8 @@ func (m *MetroclusterDiagDetailsAggregate) validateLinks(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag details aggregate based on the context it is used
-func (m *MetroclusterDiagDetailsAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag details inline aggregate based on the context it is used
+func (m *MetroclusterDiagDetailsInlineAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -340,7 +382,7 @@ func (m *MetroclusterDiagDetailsAggregate) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -355,7 +397,7 @@ func (m *MetroclusterDiagDetailsAggregate) contextValidateLinks(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsAggregate) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagDetailsInlineAggregate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -363,8 +405,8 @@ func (m *MetroclusterDiagDetailsAggregate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsAggregate) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagDetailsAggregate
+func (m *MetroclusterDiagDetailsInlineAggregate) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineAggregate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -372,17 +414,17 @@ func (m *MetroclusterDiagDetailsAggregate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagDetailsAggregateLinks metrocluster diag details aggregate links
+// MetroclusterDiagDetailsInlineAggregateInlineLinks metrocluster diag details inline aggregate inline links
 //
-// swagger:model MetroclusterDiagDetailsAggregateLinks
-type MetroclusterDiagDetailsAggregateLinks struct {
+// swagger:model metrocluster_diag_details_inline_aggregate_inline__links
+type MetroclusterDiagDetailsInlineAggregateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster diag details aggregate links
-func (m *MetroclusterDiagDetailsAggregateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag details inline aggregate inline links
+func (m *MetroclusterDiagDetailsInlineAggregateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -395,7 +437,7 @@ func (m *MetroclusterDiagDetailsAggregateLinks) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsAggregateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineAggregateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -412,8 +454,8 @@ func (m *MetroclusterDiagDetailsAggregateLinks) validateSelf(formats strfmt.Regi
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag details aggregate links based on the context it is used
-func (m *MetroclusterDiagDetailsAggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag details inline aggregate inline links based on the context it is used
+func (m *MetroclusterDiagDetailsInlineAggregateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -426,7 +468,7 @@ func (m *MetroclusterDiagDetailsAggregateLinks) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsAggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineAggregateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -441,7 +483,7 @@ func (m *MetroclusterDiagDetailsAggregateLinks) contextValidateSelf(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsAggregateLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagDetailsInlineAggregateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -449,8 +491,8 @@ func (m *MetroclusterDiagDetailsAggregateLinks) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsAggregateLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagDetailsAggregateLinks
+func (m *MetroclusterDiagDetailsInlineAggregateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineAggregateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -458,26 +500,26 @@ func (m *MetroclusterDiagDetailsAggregateLinks) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// MetroclusterDiagDetailsCluster metrocluster diag details cluster
+// MetroclusterDiagDetailsInlineCluster metrocluster diag details inline cluster
 //
-// swagger:model MetroclusterDiagDetailsCluster
-type MetroclusterDiagDetailsCluster struct {
+// swagger:model metrocluster_diag_details_inline_cluster
+type MetroclusterDiagDetailsInlineCluster struct {
 
 	// links
-	Links *MetroclusterDiagDetailsClusterLinks `json:"_links,omitempty"`
+	Links *MetroclusterDiagDetailsInlineClusterInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster diag details cluster
-func (m *MetroclusterDiagDetailsCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag details inline cluster
+func (m *MetroclusterDiagDetailsInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -494,7 +536,7 @@ func (m *MetroclusterDiagDetailsCluster) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsCluster) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineCluster) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -511,7 +553,7 @@ func (m *MetroclusterDiagDetailsCluster) validateLinks(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsCluster) validateUUID(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -523,8 +565,8 @@ func (m *MetroclusterDiagDetailsCluster) validateUUID(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag details cluster based on the context it is used
-func (m *MetroclusterDiagDetailsCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag details inline cluster based on the context it is used
+func (m *MetroclusterDiagDetailsInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -537,7 +579,7 @@ func (m *MetroclusterDiagDetailsCluster) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineCluster) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -552,7 +594,7 @@ func (m *MetroclusterDiagDetailsCluster) contextValidateLinks(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsCluster) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagDetailsInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -560,8 +602,8 @@ func (m *MetroclusterDiagDetailsCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsCluster) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagDetailsCluster
+func (m *MetroclusterDiagDetailsInlineCluster) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -569,17 +611,17 @@ func (m *MetroclusterDiagDetailsCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagDetailsClusterLinks metrocluster diag details cluster links
+// MetroclusterDiagDetailsInlineClusterInlineLinks metrocluster diag details inline cluster inline links
 //
-// swagger:model MetroclusterDiagDetailsClusterLinks
-type MetroclusterDiagDetailsClusterLinks struct {
+// swagger:model metrocluster_diag_details_inline_cluster_inline__links
+type MetroclusterDiagDetailsInlineClusterInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster diag details cluster links
-func (m *MetroclusterDiagDetailsClusterLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag details inline cluster inline links
+func (m *MetroclusterDiagDetailsInlineClusterInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -592,7 +634,7 @@ func (m *MetroclusterDiagDetailsClusterLinks) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsClusterLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineClusterInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -609,8 +651,8 @@ func (m *MetroclusterDiagDetailsClusterLinks) validateSelf(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag details cluster links based on the context it is used
-func (m *MetroclusterDiagDetailsClusterLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag details inline cluster inline links based on the context it is used
+func (m *MetroclusterDiagDetailsInlineClusterInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -623,7 +665,7 @@ func (m *MetroclusterDiagDetailsClusterLinks) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsClusterLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineClusterInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -638,7 +680,7 @@ func (m *MetroclusterDiagDetailsClusterLinks) contextValidateSelf(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsClusterLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagDetailsInlineClusterInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -646,8 +688,8 @@ func (m *MetroclusterDiagDetailsClusterLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsClusterLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagDetailsClusterLinks
+func (m *MetroclusterDiagDetailsInlineClusterInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineClusterInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -655,25 +697,25 @@ func (m *MetroclusterDiagDetailsClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagDetailsNode metrocluster diag details node
+// MetroclusterDiagDetailsInlineNode metrocluster diag details inline node
 //
-// swagger:model MetroclusterDiagDetailsNode
-type MetroclusterDiagDetailsNode struct {
+// swagger:model metrocluster_diag_details_inline_node
+type MetroclusterDiagDetailsInlineNode struct {
 
 	// links
-	Links *MetroclusterDiagDetailsNodeLinks `json:"_links,omitempty"`
+	Links *MetroclusterDiagDetailsInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this metrocluster diag details node
-func (m *MetroclusterDiagDetailsNode) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag details inline node
+func (m *MetroclusterDiagDetailsInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -686,7 +728,7 @@ func (m *MetroclusterDiagDetailsNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsNode) validateLinks(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -703,8 +745,8 @@ func (m *MetroclusterDiagDetailsNode) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag details node based on the context it is used
-func (m *MetroclusterDiagDetailsNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag details inline node based on the context it is used
+func (m *MetroclusterDiagDetailsInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -717,7 +759,7 @@ func (m *MetroclusterDiagDetailsNode) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -732,7 +774,7 @@ func (m *MetroclusterDiagDetailsNode) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsNode) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagDetailsInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -740,8 +782,8 @@ func (m *MetroclusterDiagDetailsNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsNode) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagDetailsNode
+func (m *MetroclusterDiagDetailsInlineNode) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -749,17 +791,17 @@ func (m *MetroclusterDiagDetailsNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// MetroclusterDiagDetailsNodeLinks metrocluster diag details node links
+// MetroclusterDiagDetailsInlineNodeInlineLinks metrocluster diag details inline node inline links
 //
-// swagger:model MetroclusterDiagDetailsNodeLinks
-type MetroclusterDiagDetailsNodeLinks struct {
+// swagger:model metrocluster_diag_details_inline_node_inline__links
+type MetroclusterDiagDetailsInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this metrocluster diag details node links
-func (m *MetroclusterDiagDetailsNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this metrocluster diag details inline node inline links
+func (m *MetroclusterDiagDetailsInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -772,7 +814,7 @@ func (m *MetroclusterDiagDetailsNodeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -789,8 +831,8 @@ func (m *MetroclusterDiagDetailsNodeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this metrocluster diag details node links based on the context it is used
-func (m *MetroclusterDiagDetailsNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this metrocluster diag details inline node inline links based on the context it is used
+func (m *MetroclusterDiagDetailsInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -803,7 +845,7 @@ func (m *MetroclusterDiagDetailsNodeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *MetroclusterDiagDetailsNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *MetroclusterDiagDetailsInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -818,7 +860,7 @@ func (m *MetroclusterDiagDetailsNodeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *MetroclusterDiagDetailsInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -826,8 +868,188 @@ func (m *MetroclusterDiagDetailsNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *MetroclusterDiagDetailsNodeLinks) UnmarshalBinary(b []byte) error {
-	var res MetroclusterDiagDetailsNodeLinks
+func (m *MetroclusterDiagDetailsInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineNodeInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagDetailsInlineVolume metrocluster diag details inline volume
+//
+// swagger:model metrocluster_diag_details_inline_volume
+type MetroclusterDiagDetailsInlineVolume struct {
+
+	// links
+	Links *MetroclusterDiagDetailsInlineVolumeInlineLinks `json:"_links,omitempty"`
+
+	// The name of the volume.
+	// Example: volume1
+	Name *string `json:"name,omitempty"`
+
+	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
+	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this metrocluster diag details inline volume
+func (m *MetroclusterDiagDetailsInlineVolume) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagDetailsInlineVolume) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster diag details inline volume based on the context it is used
+func (m *MetroclusterDiagDetailsInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagDetailsInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagDetailsInlineVolume) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagDetailsInlineVolume) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineVolume
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MetroclusterDiagDetailsInlineVolumeInlineLinks metrocluster diag details inline volume inline links
+//
+// swagger:model metrocluster_diag_details_inline_volume_inline__links
+type MetroclusterDiagDetailsInlineVolumeInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this metrocluster diag details inline volume inline links
+func (m *MetroclusterDiagDetailsInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagDetailsInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this metrocluster diag details inline volume inline links based on the context it is used
+func (m *MetroclusterDiagDetailsInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MetroclusterDiagDetailsInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MetroclusterDiagDetailsInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MetroclusterDiagDetailsInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res MetroclusterDiagDetailsInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

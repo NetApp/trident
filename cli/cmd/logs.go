@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -65,6 +64,7 @@ var logsCmd = &cobra.Command{
 		tridentOperatorPodNamespace = ""
 		var operatorErr error
 
+		initCmdLogging()
 		err := discoverOperatingMode(cmd)
 
 		switch logType {
@@ -269,7 +269,7 @@ func getTridentLogs(logName string) error {
 	}
 
 	// Get logs
-	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+	logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
 	if err != nil {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
@@ -292,7 +292,7 @@ func getTridentLogs(logName string) error {
 			}
 
 			// Get logs
-			logBytes, err = exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+			logBytes, err = execKubernetesCLI(logsCommand...).CombinedOutput()
 			if err != nil {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
@@ -337,7 +337,7 @@ func getNodeLogs(logName, nodeName string) error {
 	}
 
 	// Get logs
-	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+	logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
 	if err != nil {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
@@ -360,7 +360,7 @@ func getNodeLogs(logName, nodeName string) error {
 			}
 
 			// Get logs
-			logBytes, err = exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+			logBytes, err = execKubernetesCLI(logsCommand...).CombinedOutput()
 			if err != nil {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
@@ -406,7 +406,7 @@ func getAllNodeLogs(logName string) error {
 		}
 
 		// Get logs
-		logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+		logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
 		if err != nil {
 			logErrors = appendError(logErrors, logBytes)
 		} else {
@@ -429,7 +429,7 @@ func getAllNodeLogs(logName string) error {
 				}
 
 				// Get logs
-				logBytes, err = exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+				logBytes, err = execKubernetesCLI(logsCommand...).CombinedOutput()
 				if err != nil {
 					logErrors = appendError(logErrors, logBytes)
 				} else {
@@ -465,7 +465,7 @@ func getTridentOperatorLogs(logName string) error {
 	}
 
 	// Get logs
-	logBytes, err := exec.Command(KubernetesCLI, logsCommand...).CombinedOutput()
+	logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
 	if err != nil {
 		logErrors = appendError(logErrors, logBytes)
 	} else {

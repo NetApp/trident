@@ -66,145 +66,145 @@ type SecurityAssociationCollectionGetParams struct {
 
 	   Filter by cipher_suite
 	*/
-	CipherSuiteQueryParameter *string
+	CipherSuite *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IkeAuthentication.
 
 	   Filter by ike.authentication
 	*/
-	IkeAuthenticationQueryParameter *string
+	IkeAuthentication *string
 
 	/* IkeInitiatorSecurityParameterIndex.
 
 	   Filter by ike.initiator_security_parameter_index
 	*/
-	IkeInitiatorSecurityParameterIndexQueryParameter *string
+	IkeInitiatorSecurityParameterIndex *string
 
 	/* IkeIsInitiator.
 
 	   Filter by ike.is_initiator
 	*/
-	IkeIsInitiatorQueryParameter *bool
+	IkeIsInitiator *bool
 
 	/* IkeResponderSecurityParameterIndex.
 
 	   Filter by ike.responder_security_parameter_index
 	*/
-	IkeResponderSecurityParameterIndexQueryParameter *string
+	IkeResponderSecurityParameterIndex *string
 
 	/* IkeState.
 
 	   Filter by ike.state
 	*/
-	IkeStateQueryParameter *string
+	IkeState *string
 
 	/* IkeVersion.
 
 	   Filter by ike.version
 	*/
-	IkeVersionQueryParameter *int64
+	IkeVersion *int64
 
 	/* IpsecAction.
 
 	   Filter by ipsec.action
 	*/
-	IpsecActionQueryParameter *string
+	IpsecAction *string
 
 	/* IpsecInboundBytes.
 
 	   Filter by ipsec.inbound.bytes
 	*/
-	IpsecInboundBytesQueryParameter *int64
+	IpsecInboundBytes *int64
 
 	/* IpsecInboundPackets.
 
 	   Filter by ipsec.inbound.packets
 	*/
-	IpsecInboundPacketsQueryParameter *int64
+	IpsecInboundPackets *int64
 
 	/* IpsecInboundSecurityParameterIndex.
 
 	   Filter by ipsec.inbound.security_parameter_index
 	*/
-	IpsecInboundSecurityParameterIndexQueryParameter *string
+	IpsecInboundSecurityParameterIndex *string
 
 	/* IpsecOutboundBytes.
 
 	   Filter by ipsec.outbound.bytes
 	*/
-	IpsecOutboundBytesQueryParameter *int64
+	IpsecOutboundBytes *int64
 
 	/* IpsecOutboundPackets.
 
 	   Filter by ipsec.outbound.packets
 	*/
-	IpsecOutboundPacketsQueryParameter *int64
+	IpsecOutboundPackets *int64
 
 	/* IpsecOutboundSecurityParameterIndex.
 
 	   Filter by ipsec.outbound.security_parameter_index
 	*/
-	IpsecOutboundSecurityParameterIndexQueryParameter *string
+	IpsecOutboundSecurityParameterIndex *string
 
 	/* IpsecState.
 
 	   Filter by ipsec.state
 	*/
-	IpsecStateQueryParameter *string
+	IpsecState *string
 
 	/* Lifetime.
 
 	   Filter by lifetime
 	*/
-	LifetimeQueryParameter *int64
+	Lifetime *int64
 
 	/* LocalAddress.
 
 	   Filter by local_address
 	*/
-	LocalAddressQueryParameter *string
+	LocalAddress *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PolicyName.
 
 	   Filter by policy_name
 	*/
-	PolicyNameQueryParameter *string
+	PolicyName *string
 
 	/* RemoteAddress.
 
 	   Filter by remote_address
 	*/
-	RemoteAddressQueryParameter *string
+	RemoteAddress *string
 
 	/* ReturnRecords.
 
@@ -212,7 +212,7 @@ type SecurityAssociationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -220,37 +220,37 @@ type SecurityAssociationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -270,14 +270,14 @@ func (o *SecurityAssociationCollectionGetParams) WithDefaults() *SecurityAssocia
 // All values with no default are reset to their zero value.
 func (o *SecurityAssociationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SecurityAssociationCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -319,345 +319,345 @@ func (o *SecurityAssociationCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithCipherSuiteQueryParameter adds the cipherSuite to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithCipherSuiteQueryParameter(cipherSuite *string) *SecurityAssociationCollectionGetParams {
-	o.SetCipherSuiteQueryParameter(cipherSuite)
+// WithCipherSuite adds the cipherSuite to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithCipherSuite(cipherSuite *string) *SecurityAssociationCollectionGetParams {
+	o.SetCipherSuite(cipherSuite)
 	return o
 }
 
-// SetCipherSuiteQueryParameter adds the cipherSuite to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetCipherSuiteQueryParameter(cipherSuite *string) {
-	o.CipherSuiteQueryParameter = cipherSuite
+// SetCipherSuite adds the cipherSuite to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetCipherSuite(cipherSuite *string) {
+	o.CipherSuite = cipherSuite
 }
 
-// WithFieldsQueryParameter adds the fields to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityAssociationCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithFields(fields []string) *SecurityAssociationCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIkeAuthenticationQueryParameter adds the ikeAuthentication to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeAuthenticationQueryParameter(ikeAuthentication *string) *SecurityAssociationCollectionGetParams {
-	o.SetIkeAuthenticationQueryParameter(ikeAuthentication)
+// WithIkeAuthentication adds the ikeAuthentication to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIkeAuthentication(ikeAuthentication *string) *SecurityAssociationCollectionGetParams {
+	o.SetIkeAuthentication(ikeAuthentication)
 	return o
 }
 
-// SetIkeAuthenticationQueryParameter adds the ikeAuthentication to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeAuthenticationQueryParameter(ikeAuthentication *string) {
-	o.IkeAuthenticationQueryParameter = ikeAuthentication
+// SetIkeAuthentication adds the ikeAuthentication to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIkeAuthentication(ikeAuthentication *string) {
+	o.IkeAuthentication = ikeAuthentication
 }
 
-// WithIkeInitiatorSecurityParameterIndexQueryParameter adds the ikeInitiatorSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeInitiatorSecurityParameterIndexQueryParameter(ikeInitiatorSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
-	o.SetIkeInitiatorSecurityParameterIndexQueryParameter(ikeInitiatorSecurityParameterIndex)
+// WithIkeInitiatorSecurityParameterIndex adds the ikeInitiatorSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIkeInitiatorSecurityParameterIndex(ikeInitiatorSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
+	o.SetIkeInitiatorSecurityParameterIndex(ikeInitiatorSecurityParameterIndex)
 	return o
 }
 
-// SetIkeInitiatorSecurityParameterIndexQueryParameter adds the ikeInitiatorSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeInitiatorSecurityParameterIndexQueryParameter(ikeInitiatorSecurityParameterIndex *string) {
-	o.IkeInitiatorSecurityParameterIndexQueryParameter = ikeInitiatorSecurityParameterIndex
+// SetIkeInitiatorSecurityParameterIndex adds the ikeInitiatorSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIkeInitiatorSecurityParameterIndex(ikeInitiatorSecurityParameterIndex *string) {
+	o.IkeInitiatorSecurityParameterIndex = ikeInitiatorSecurityParameterIndex
 }
 
-// WithIkeIsInitiatorQueryParameter adds the ikeIsInitiator to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeIsInitiatorQueryParameter(ikeIsInitiator *bool) *SecurityAssociationCollectionGetParams {
-	o.SetIkeIsInitiatorQueryParameter(ikeIsInitiator)
+// WithIkeIsInitiator adds the ikeIsInitiator to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIkeIsInitiator(ikeIsInitiator *bool) *SecurityAssociationCollectionGetParams {
+	o.SetIkeIsInitiator(ikeIsInitiator)
 	return o
 }
 
-// SetIkeIsInitiatorQueryParameter adds the ikeIsInitiator to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeIsInitiatorQueryParameter(ikeIsInitiator *bool) {
-	o.IkeIsInitiatorQueryParameter = ikeIsInitiator
+// SetIkeIsInitiator adds the ikeIsInitiator to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIkeIsInitiator(ikeIsInitiator *bool) {
+	o.IkeIsInitiator = ikeIsInitiator
 }
 
-// WithIkeResponderSecurityParameterIndexQueryParameter adds the ikeResponderSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeResponderSecurityParameterIndexQueryParameter(ikeResponderSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
-	o.SetIkeResponderSecurityParameterIndexQueryParameter(ikeResponderSecurityParameterIndex)
+// WithIkeResponderSecurityParameterIndex adds the ikeResponderSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIkeResponderSecurityParameterIndex(ikeResponderSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
+	o.SetIkeResponderSecurityParameterIndex(ikeResponderSecurityParameterIndex)
 	return o
 }
 
-// SetIkeResponderSecurityParameterIndexQueryParameter adds the ikeResponderSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeResponderSecurityParameterIndexQueryParameter(ikeResponderSecurityParameterIndex *string) {
-	o.IkeResponderSecurityParameterIndexQueryParameter = ikeResponderSecurityParameterIndex
+// SetIkeResponderSecurityParameterIndex adds the ikeResponderSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIkeResponderSecurityParameterIndex(ikeResponderSecurityParameterIndex *string) {
+	o.IkeResponderSecurityParameterIndex = ikeResponderSecurityParameterIndex
 }
 
-// WithIkeStateQueryParameter adds the ikeState to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeStateQueryParameter(ikeState *string) *SecurityAssociationCollectionGetParams {
-	o.SetIkeStateQueryParameter(ikeState)
+// WithIkeState adds the ikeState to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIkeState(ikeState *string) *SecurityAssociationCollectionGetParams {
+	o.SetIkeState(ikeState)
 	return o
 }
 
-// SetIkeStateQueryParameter adds the ikeState to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeStateQueryParameter(ikeState *string) {
-	o.IkeStateQueryParameter = ikeState
+// SetIkeState adds the ikeState to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIkeState(ikeState *string) {
+	o.IkeState = ikeState
 }
 
-// WithIkeVersionQueryParameter adds the ikeVersion to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeVersionQueryParameter(ikeVersion *int64) *SecurityAssociationCollectionGetParams {
-	o.SetIkeVersionQueryParameter(ikeVersion)
+// WithIkeVersion adds the ikeVersion to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIkeVersion(ikeVersion *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIkeVersion(ikeVersion)
 	return o
 }
 
-// SetIkeVersionQueryParameter adds the ikeVersion to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeVersionQueryParameter(ikeVersion *int64) {
-	o.IkeVersionQueryParameter = ikeVersion
+// SetIkeVersion adds the ikeVersion to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIkeVersion(ikeVersion *int64) {
+	o.IkeVersion = ikeVersion
 }
 
-// WithIpsecActionQueryParameter adds the ipsecAction to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecActionQueryParameter(ipsecAction *string) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecActionQueryParameter(ipsecAction)
+// WithIpsecAction adds the ipsecAction to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecAction(ipsecAction *string) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecAction(ipsecAction)
 	return o
 }
 
-// SetIpsecActionQueryParameter adds the ipsecAction to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecActionQueryParameter(ipsecAction *string) {
-	o.IpsecActionQueryParameter = ipsecAction
+// SetIpsecAction adds the ipsecAction to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecAction(ipsecAction *string) {
+	o.IpsecAction = ipsecAction
 }
 
-// WithIpsecInboundBytesQueryParameter adds the ipsecInboundBytes to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundBytesQueryParameter(ipsecInboundBytes *int64) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecInboundBytesQueryParameter(ipsecInboundBytes)
+// WithIpsecInboundBytes adds the ipsecInboundBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundBytes(ipsecInboundBytes *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecInboundBytes(ipsecInboundBytes)
 	return o
 }
 
-// SetIpsecInboundBytesQueryParameter adds the ipsecInboundBytes to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundBytesQueryParameter(ipsecInboundBytes *int64) {
-	o.IpsecInboundBytesQueryParameter = ipsecInboundBytes
+// SetIpsecInboundBytes adds the ipsecInboundBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundBytes(ipsecInboundBytes *int64) {
+	o.IpsecInboundBytes = ipsecInboundBytes
 }
 
-// WithIpsecInboundPacketsQueryParameter adds the ipsecInboundPackets to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundPacketsQueryParameter(ipsecInboundPackets *int64) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecInboundPacketsQueryParameter(ipsecInboundPackets)
+// WithIpsecInboundPackets adds the ipsecInboundPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundPackets(ipsecInboundPackets *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecInboundPackets(ipsecInboundPackets)
 	return o
 }
 
-// SetIpsecInboundPacketsQueryParameter adds the ipsecInboundPackets to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundPacketsQueryParameter(ipsecInboundPackets *int64) {
-	o.IpsecInboundPacketsQueryParameter = ipsecInboundPackets
+// SetIpsecInboundPackets adds the ipsecInboundPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundPackets(ipsecInboundPackets *int64) {
+	o.IpsecInboundPackets = ipsecInboundPackets
 }
 
-// WithIpsecInboundSecurityParameterIndexQueryParameter adds the ipsecInboundSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundSecurityParameterIndexQueryParameter(ipsecInboundSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecInboundSecurityParameterIndexQueryParameter(ipsecInboundSecurityParameterIndex)
+// WithIpsecInboundSecurityParameterIndex adds the ipsecInboundSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecInboundSecurityParameterIndex(ipsecInboundSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecInboundSecurityParameterIndex(ipsecInboundSecurityParameterIndex)
 	return o
 }
 
-// SetIpsecInboundSecurityParameterIndexQueryParameter adds the ipsecInboundSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundSecurityParameterIndexQueryParameter(ipsecInboundSecurityParameterIndex *string) {
-	o.IpsecInboundSecurityParameterIndexQueryParameter = ipsecInboundSecurityParameterIndex
+// SetIpsecInboundSecurityParameterIndex adds the ipsecInboundSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecInboundSecurityParameterIndex(ipsecInboundSecurityParameterIndex *string) {
+	o.IpsecInboundSecurityParameterIndex = ipsecInboundSecurityParameterIndex
 }
 
-// WithIpsecOutboundBytesQueryParameter adds the ipsecOutboundBytes to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundBytesQueryParameter(ipsecOutboundBytes *int64) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecOutboundBytesQueryParameter(ipsecOutboundBytes)
+// WithIpsecOutboundBytes adds the ipsecOutboundBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundBytes(ipsecOutboundBytes *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecOutboundBytes(ipsecOutboundBytes)
 	return o
 }
 
-// SetIpsecOutboundBytesQueryParameter adds the ipsecOutboundBytes to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundBytesQueryParameter(ipsecOutboundBytes *int64) {
-	o.IpsecOutboundBytesQueryParameter = ipsecOutboundBytes
+// SetIpsecOutboundBytes adds the ipsecOutboundBytes to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundBytes(ipsecOutboundBytes *int64) {
+	o.IpsecOutboundBytes = ipsecOutboundBytes
 }
 
-// WithIpsecOutboundPacketsQueryParameter adds the ipsecOutboundPackets to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundPacketsQueryParameter(ipsecOutboundPackets *int64) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecOutboundPacketsQueryParameter(ipsecOutboundPackets)
+// WithIpsecOutboundPackets adds the ipsecOutboundPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundPackets(ipsecOutboundPackets *int64) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecOutboundPackets(ipsecOutboundPackets)
 	return o
 }
 
-// SetIpsecOutboundPacketsQueryParameter adds the ipsecOutboundPackets to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundPacketsQueryParameter(ipsecOutboundPackets *int64) {
-	o.IpsecOutboundPacketsQueryParameter = ipsecOutboundPackets
+// SetIpsecOutboundPackets adds the ipsecOutboundPackets to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundPackets(ipsecOutboundPackets *int64) {
+	o.IpsecOutboundPackets = ipsecOutboundPackets
 }
 
-// WithIpsecOutboundSecurityParameterIndexQueryParameter adds the ipsecOutboundSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundSecurityParameterIndexQueryParameter(ipsecOutboundSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecOutboundSecurityParameterIndexQueryParameter(ipsecOutboundSecurityParameterIndex)
+// WithIpsecOutboundSecurityParameterIndex adds the ipsecOutboundSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecOutboundSecurityParameterIndex(ipsecOutboundSecurityParameterIndex *string) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecOutboundSecurityParameterIndex(ipsecOutboundSecurityParameterIndex)
 	return o
 }
 
-// SetIpsecOutboundSecurityParameterIndexQueryParameter adds the ipsecOutboundSecurityParameterIndex to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundSecurityParameterIndexQueryParameter(ipsecOutboundSecurityParameterIndex *string) {
-	o.IpsecOutboundSecurityParameterIndexQueryParameter = ipsecOutboundSecurityParameterIndex
+// SetIpsecOutboundSecurityParameterIndex adds the ipsecOutboundSecurityParameterIndex to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecOutboundSecurityParameterIndex(ipsecOutboundSecurityParameterIndex *string) {
+	o.IpsecOutboundSecurityParameterIndex = ipsecOutboundSecurityParameterIndex
 }
 
-// WithIpsecStateQueryParameter adds the ipsecState to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIpsecStateQueryParameter(ipsecState *string) *SecurityAssociationCollectionGetParams {
-	o.SetIpsecStateQueryParameter(ipsecState)
+// WithIpsecState adds the ipsecState to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithIpsecState(ipsecState *string) *SecurityAssociationCollectionGetParams {
+	o.SetIpsecState(ipsecState)
 	return o
 }
 
-// SetIpsecStateQueryParameter adds the ipsecState to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIpsecStateQueryParameter(ipsecState *string) {
-	o.IpsecStateQueryParameter = ipsecState
+// SetIpsecState adds the ipsecState to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetIpsecState(ipsecState *string) {
+	o.IpsecState = ipsecState
 }
 
-// WithLifetimeQueryParameter adds the lifetime to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithLifetimeQueryParameter(lifetime *int64) *SecurityAssociationCollectionGetParams {
-	o.SetLifetimeQueryParameter(lifetime)
+// WithLifetime adds the lifetime to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithLifetime(lifetime *int64) *SecurityAssociationCollectionGetParams {
+	o.SetLifetime(lifetime)
 	return o
 }
 
-// SetLifetimeQueryParameter adds the lifetime to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetLifetimeQueryParameter(lifetime *int64) {
-	o.LifetimeQueryParameter = lifetime
+// SetLifetime adds the lifetime to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetLifetime(lifetime *int64) {
+	o.Lifetime = lifetime
 }
 
-// WithLocalAddressQueryParameter adds the localAddress to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithLocalAddressQueryParameter(localAddress *string) *SecurityAssociationCollectionGetParams {
-	o.SetLocalAddressQueryParameter(localAddress)
+// WithLocalAddress adds the localAddress to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithLocalAddress(localAddress *string) *SecurityAssociationCollectionGetParams {
+	o.SetLocalAddress(localAddress)
 	return o
 }
 
-// SetLocalAddressQueryParameter adds the localAddress to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetLocalAddressQueryParameter(localAddress *string) {
-	o.LocalAddressQueryParameter = localAddress
+// SetLocalAddress adds the localAddress to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetLocalAddress(localAddress *string) {
+	o.LocalAddress = localAddress
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityAssociationCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityAssociationCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *SecurityAssociationCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithNodeName adds the nodeName to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithNodeName(nodeName *string) *SecurityAssociationCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetNodeName adds the nodeName to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *SecurityAssociationCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithNodeUUID(nodeUUID *string) *SecurityAssociationCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityAssociationCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithOrderBy(orderBy []string) *SecurityAssociationCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPolicyNameQueryParameter adds the policyName to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithPolicyNameQueryParameter(policyName *string) *SecurityAssociationCollectionGetParams {
-	o.SetPolicyNameQueryParameter(policyName)
+// WithPolicyName adds the policyName to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithPolicyName(policyName *string) *SecurityAssociationCollectionGetParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetPolicyNameQueryParameter adds the policyName to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetPolicyNameQueryParameter(policyName *string) {
-	o.PolicyNameQueryParameter = policyName
+// SetPolicyName adds the policyName to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetPolicyName(policyName *string) {
+	o.PolicyName = policyName
 }
 
-// WithRemoteAddressQueryParameter adds the remoteAddress to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithRemoteAddressQueryParameter(remoteAddress *string) *SecurityAssociationCollectionGetParams {
-	o.SetRemoteAddressQueryParameter(remoteAddress)
+// WithRemoteAddress adds the remoteAddress to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithRemoteAddress(remoteAddress *string) *SecurityAssociationCollectionGetParams {
+	o.SetRemoteAddress(remoteAddress)
 	return o
 }
 
-// SetRemoteAddressQueryParameter adds the remoteAddress to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetRemoteAddressQueryParameter(remoteAddress *string) {
-	o.RemoteAddressQueryParameter = remoteAddress
+// SetRemoteAddress adds the remoteAddress to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetRemoteAddress(remoteAddress *string) {
+	o.RemoteAddress = remoteAddress
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityAssociationCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityAssociationCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityAssociationCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityAssociationCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithScopeQueryParameter(scope *string) *SecurityAssociationCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithScope(scope *string) *SecurityAssociationCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSVMNameQueryParameter adds the svmName to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *SecurityAssociationCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithSvmName(svmName *string) *SecurityAssociationCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *SecurityAssociationCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithSvmUUID(svmUUID *string) *SecurityAssociationCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithTypeQueryParameter(typeVar *string) *SecurityAssociationCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithType(typeVar *string) *SecurityAssociationCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUUIDQueryParameter adds the uuid to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithUUIDQueryParameter(uuid *string) *SecurityAssociationCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) WithUUID(uuid *string) *SecurityAssociationCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the security association collection get params
+func (o *SecurityAssociationCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -668,13 +668,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.CipherSuiteQueryParameter != nil {
+	if o.CipherSuite != nil {
 
 		// query param cipher_suite
 		var qrCipherSuite string
 
-		if o.CipherSuiteQueryParameter != nil {
-			qrCipherSuite = *o.CipherSuiteQueryParameter
+		if o.CipherSuite != nil {
+			qrCipherSuite = *o.CipherSuite
 		}
 		qCipherSuite := qrCipherSuite
 		if qCipherSuite != "" {
@@ -685,7 +685,7 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -696,13 +696,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IkeAuthenticationQueryParameter != nil {
+	if o.IkeAuthentication != nil {
 
 		// query param ike.authentication
 		var qrIkeAuthentication string
 
-		if o.IkeAuthenticationQueryParameter != nil {
-			qrIkeAuthentication = *o.IkeAuthenticationQueryParameter
+		if o.IkeAuthentication != nil {
+			qrIkeAuthentication = *o.IkeAuthentication
 		}
 		qIkeAuthentication := qrIkeAuthentication
 		if qIkeAuthentication != "" {
@@ -713,13 +713,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IkeInitiatorSecurityParameterIndexQueryParameter != nil {
+	if o.IkeInitiatorSecurityParameterIndex != nil {
 
 		// query param ike.initiator_security_parameter_index
 		var qrIkeInitiatorSecurityParameterIndex string
 
-		if o.IkeInitiatorSecurityParameterIndexQueryParameter != nil {
-			qrIkeInitiatorSecurityParameterIndex = *o.IkeInitiatorSecurityParameterIndexQueryParameter
+		if o.IkeInitiatorSecurityParameterIndex != nil {
+			qrIkeInitiatorSecurityParameterIndex = *o.IkeInitiatorSecurityParameterIndex
 		}
 		qIkeInitiatorSecurityParameterIndex := qrIkeInitiatorSecurityParameterIndex
 		if qIkeInitiatorSecurityParameterIndex != "" {
@@ -730,13 +730,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IkeIsInitiatorQueryParameter != nil {
+	if o.IkeIsInitiator != nil {
 
 		// query param ike.is_initiator
 		var qrIkeIsInitiator bool
 
-		if o.IkeIsInitiatorQueryParameter != nil {
-			qrIkeIsInitiator = *o.IkeIsInitiatorQueryParameter
+		if o.IkeIsInitiator != nil {
+			qrIkeIsInitiator = *o.IkeIsInitiator
 		}
 		qIkeIsInitiator := swag.FormatBool(qrIkeIsInitiator)
 		if qIkeIsInitiator != "" {
@@ -747,13 +747,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IkeResponderSecurityParameterIndexQueryParameter != nil {
+	if o.IkeResponderSecurityParameterIndex != nil {
 
 		// query param ike.responder_security_parameter_index
 		var qrIkeResponderSecurityParameterIndex string
 
-		if o.IkeResponderSecurityParameterIndexQueryParameter != nil {
-			qrIkeResponderSecurityParameterIndex = *o.IkeResponderSecurityParameterIndexQueryParameter
+		if o.IkeResponderSecurityParameterIndex != nil {
+			qrIkeResponderSecurityParameterIndex = *o.IkeResponderSecurityParameterIndex
 		}
 		qIkeResponderSecurityParameterIndex := qrIkeResponderSecurityParameterIndex
 		if qIkeResponderSecurityParameterIndex != "" {
@@ -764,13 +764,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IkeStateQueryParameter != nil {
+	if o.IkeState != nil {
 
 		// query param ike.state
 		var qrIkeState string
 
-		if o.IkeStateQueryParameter != nil {
-			qrIkeState = *o.IkeStateQueryParameter
+		if o.IkeState != nil {
+			qrIkeState = *o.IkeState
 		}
 		qIkeState := qrIkeState
 		if qIkeState != "" {
@@ -781,13 +781,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IkeVersionQueryParameter != nil {
+	if o.IkeVersion != nil {
 
 		// query param ike.version
 		var qrIkeVersion int64
 
-		if o.IkeVersionQueryParameter != nil {
-			qrIkeVersion = *o.IkeVersionQueryParameter
+		if o.IkeVersion != nil {
+			qrIkeVersion = *o.IkeVersion
 		}
 		qIkeVersion := swag.FormatInt64(qrIkeVersion)
 		if qIkeVersion != "" {
@@ -798,13 +798,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecActionQueryParameter != nil {
+	if o.IpsecAction != nil {
 
 		// query param ipsec.action
 		var qrIpsecAction string
 
-		if o.IpsecActionQueryParameter != nil {
-			qrIpsecAction = *o.IpsecActionQueryParameter
+		if o.IpsecAction != nil {
+			qrIpsecAction = *o.IpsecAction
 		}
 		qIpsecAction := qrIpsecAction
 		if qIpsecAction != "" {
@@ -815,13 +815,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecInboundBytesQueryParameter != nil {
+	if o.IpsecInboundBytes != nil {
 
 		// query param ipsec.inbound.bytes
 		var qrIpsecInboundBytes int64
 
-		if o.IpsecInboundBytesQueryParameter != nil {
-			qrIpsecInboundBytes = *o.IpsecInboundBytesQueryParameter
+		if o.IpsecInboundBytes != nil {
+			qrIpsecInboundBytes = *o.IpsecInboundBytes
 		}
 		qIpsecInboundBytes := swag.FormatInt64(qrIpsecInboundBytes)
 		if qIpsecInboundBytes != "" {
@@ -832,13 +832,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecInboundPacketsQueryParameter != nil {
+	if o.IpsecInboundPackets != nil {
 
 		// query param ipsec.inbound.packets
 		var qrIpsecInboundPackets int64
 
-		if o.IpsecInboundPacketsQueryParameter != nil {
-			qrIpsecInboundPackets = *o.IpsecInboundPacketsQueryParameter
+		if o.IpsecInboundPackets != nil {
+			qrIpsecInboundPackets = *o.IpsecInboundPackets
 		}
 		qIpsecInboundPackets := swag.FormatInt64(qrIpsecInboundPackets)
 		if qIpsecInboundPackets != "" {
@@ -849,13 +849,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecInboundSecurityParameterIndexQueryParameter != nil {
+	if o.IpsecInboundSecurityParameterIndex != nil {
 
 		// query param ipsec.inbound.security_parameter_index
 		var qrIpsecInboundSecurityParameterIndex string
 
-		if o.IpsecInboundSecurityParameterIndexQueryParameter != nil {
-			qrIpsecInboundSecurityParameterIndex = *o.IpsecInboundSecurityParameterIndexQueryParameter
+		if o.IpsecInboundSecurityParameterIndex != nil {
+			qrIpsecInboundSecurityParameterIndex = *o.IpsecInboundSecurityParameterIndex
 		}
 		qIpsecInboundSecurityParameterIndex := qrIpsecInboundSecurityParameterIndex
 		if qIpsecInboundSecurityParameterIndex != "" {
@@ -866,13 +866,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecOutboundBytesQueryParameter != nil {
+	if o.IpsecOutboundBytes != nil {
 
 		// query param ipsec.outbound.bytes
 		var qrIpsecOutboundBytes int64
 
-		if o.IpsecOutboundBytesQueryParameter != nil {
-			qrIpsecOutboundBytes = *o.IpsecOutboundBytesQueryParameter
+		if o.IpsecOutboundBytes != nil {
+			qrIpsecOutboundBytes = *o.IpsecOutboundBytes
 		}
 		qIpsecOutboundBytes := swag.FormatInt64(qrIpsecOutboundBytes)
 		if qIpsecOutboundBytes != "" {
@@ -883,13 +883,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecOutboundPacketsQueryParameter != nil {
+	if o.IpsecOutboundPackets != nil {
 
 		// query param ipsec.outbound.packets
 		var qrIpsecOutboundPackets int64
 
-		if o.IpsecOutboundPacketsQueryParameter != nil {
-			qrIpsecOutboundPackets = *o.IpsecOutboundPacketsQueryParameter
+		if o.IpsecOutboundPackets != nil {
+			qrIpsecOutboundPackets = *o.IpsecOutboundPackets
 		}
 		qIpsecOutboundPackets := swag.FormatInt64(qrIpsecOutboundPackets)
 		if qIpsecOutboundPackets != "" {
@@ -900,13 +900,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecOutboundSecurityParameterIndexQueryParameter != nil {
+	if o.IpsecOutboundSecurityParameterIndex != nil {
 
 		// query param ipsec.outbound.security_parameter_index
 		var qrIpsecOutboundSecurityParameterIndex string
 
-		if o.IpsecOutboundSecurityParameterIndexQueryParameter != nil {
-			qrIpsecOutboundSecurityParameterIndex = *o.IpsecOutboundSecurityParameterIndexQueryParameter
+		if o.IpsecOutboundSecurityParameterIndex != nil {
+			qrIpsecOutboundSecurityParameterIndex = *o.IpsecOutboundSecurityParameterIndex
 		}
 		qIpsecOutboundSecurityParameterIndex := qrIpsecOutboundSecurityParameterIndex
 		if qIpsecOutboundSecurityParameterIndex != "" {
@@ -917,13 +917,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IpsecStateQueryParameter != nil {
+	if o.IpsecState != nil {
 
 		// query param ipsec.state
 		var qrIpsecState string
 
-		if o.IpsecStateQueryParameter != nil {
-			qrIpsecState = *o.IpsecStateQueryParameter
+		if o.IpsecState != nil {
+			qrIpsecState = *o.IpsecState
 		}
 		qIpsecState := qrIpsecState
 		if qIpsecState != "" {
@@ -934,13 +934,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.LifetimeQueryParameter != nil {
+	if o.Lifetime != nil {
 
 		// query param lifetime
 		var qrLifetime int64
 
-		if o.LifetimeQueryParameter != nil {
-			qrLifetime = *o.LifetimeQueryParameter
+		if o.Lifetime != nil {
+			qrLifetime = *o.Lifetime
 		}
 		qLifetime := swag.FormatInt64(qrLifetime)
 		if qLifetime != "" {
@@ -951,13 +951,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.LocalAddressQueryParameter != nil {
+	if o.LocalAddress != nil {
 
 		// query param local_address
 		var qrLocalAddress string
 
-		if o.LocalAddressQueryParameter != nil {
-			qrLocalAddress = *o.LocalAddressQueryParameter
+		if o.LocalAddress != nil {
+			qrLocalAddress = *o.LocalAddress
 		}
 		qLocalAddress := qrLocalAddress
 		if qLocalAddress != "" {
@@ -968,13 +968,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -985,13 +985,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -1002,13 +1002,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -1019,7 +1019,7 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1030,13 +1030,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.PolicyNameQueryParameter != nil {
+	if o.PolicyName != nil {
 
 		// query param policy_name
 		var qrPolicyName string
 
-		if o.PolicyNameQueryParameter != nil {
-			qrPolicyName = *o.PolicyNameQueryParameter
+		if o.PolicyName != nil {
+			qrPolicyName = *o.PolicyName
 		}
 		qPolicyName := qrPolicyName
 		if qPolicyName != "" {
@@ -1047,13 +1047,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.RemoteAddressQueryParameter != nil {
+	if o.RemoteAddress != nil {
 
 		// query param remote_address
 		var qrRemoteAddress string
 
-		if o.RemoteAddressQueryParameter != nil {
-			qrRemoteAddress = *o.RemoteAddressQueryParameter
+		if o.RemoteAddress != nil {
+			qrRemoteAddress = *o.RemoteAddress
 		}
 		qRemoteAddress := qrRemoteAddress
 		if qRemoteAddress != "" {
@@ -1064,13 +1064,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1081,13 +1081,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1098,13 +1098,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -1115,13 +1115,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1132,13 +1132,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1149,13 +1149,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -1166,13 +1166,13 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1191,7 +1191,7 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamSecurityAssociationCollectionGet binds the parameter fields
 func (o *SecurityAssociationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1208,7 +1208,7 @@ func (o *SecurityAssociationCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamSecurityAssociationCollectionGet binds the parameter order_by
 func (o *SecurityAssociationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,37 +66,37 @@ type S3PolicyCollectionGetParams struct {
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReadOnly.
 
 	   Filter by read-only
 	*/
-	ReadOnlyQueryParameter *bool
+	ReadOnly *bool
 
 	/* ReturnRecords.
 
@@ -104,7 +104,7 @@ type S3PolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -112,49 +112,49 @@ type S3PolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StatementsActions.
 
 	   Filter by statements.actions
 	*/
-	StatementsActionsQueryParameter *string
+	StatementsActions *string
 
 	/* StatementsEffect.
 
 	   Filter by statements.effect
 	*/
-	StatementsEffectQueryParameter *string
+	StatementsEffect *string
 
 	/* StatementsIndex.
 
 	   Filter by statements.index
 	*/
-	StatementsIndexQueryParameter *int64
+	StatementsIndex *int64
 
 	/* StatementsResources.
 
 	   Filter by statements.resources
 	*/
-	StatementsResourcesQueryParameter *string
+	StatementsResources *string
 
 	/* StatementsSid.
 
 	   Filter by statements.sid
 	*/
-	StatementsSIDQueryParameter *string
+	StatementsSid *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -174,14 +174,14 @@ func (o *S3PolicyCollectionGetParams) WithDefaults() *S3PolicyCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *S3PolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := S3PolicyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -223,169 +223,169 @@ func (o *S3PolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCommentQueryParameter adds the comment to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithCommentQueryParameter(comment *string) *S3PolicyCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithComment(comment *string) *S3PolicyCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithFieldsQueryParameter adds the fields to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *S3PolicyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithFields(fields []string) *S3PolicyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *S3PolicyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3PolicyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithNameQueryParameter(name *string) *S3PolicyCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithName(name *string) *S3PolicyCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *S3PolicyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithOrderBy(orderBy []string) *S3PolicyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReadOnlyQueryParameter adds the readOnly to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithReadOnlyQueryParameter(readOnly *bool) *S3PolicyCollectionGetParams {
-	o.SetReadOnlyQueryParameter(readOnly)
+// WithReadOnly adds the readOnly to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithReadOnly(readOnly *bool) *S3PolicyCollectionGetParams {
+	o.SetReadOnly(readOnly)
 	return o
 }
 
-// SetReadOnlyQueryParameter adds the readOnly to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetReadOnlyQueryParameter(readOnly *bool) {
-	o.ReadOnlyQueryParameter = readOnly
+// SetReadOnly adds the readOnly to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetReadOnly(readOnly *bool) {
+	o.ReadOnly = readOnly
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3PolicyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *S3PolicyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3PolicyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *S3PolicyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatementsActionsQueryParameter adds the statementsActions to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithStatementsActionsQueryParameter(statementsActions *string) *S3PolicyCollectionGetParams {
-	o.SetStatementsActionsQueryParameter(statementsActions)
+// WithStatementsActions adds the statementsActions to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithStatementsActions(statementsActions *string) *S3PolicyCollectionGetParams {
+	o.SetStatementsActions(statementsActions)
 	return o
 }
 
-// SetStatementsActionsQueryParameter adds the statementsActions to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetStatementsActionsQueryParameter(statementsActions *string) {
-	o.StatementsActionsQueryParameter = statementsActions
+// SetStatementsActions adds the statementsActions to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetStatementsActions(statementsActions *string) {
+	o.StatementsActions = statementsActions
 }
 
-// WithStatementsEffectQueryParameter adds the statementsEffect to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithStatementsEffectQueryParameter(statementsEffect *string) *S3PolicyCollectionGetParams {
-	o.SetStatementsEffectQueryParameter(statementsEffect)
+// WithStatementsEffect adds the statementsEffect to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithStatementsEffect(statementsEffect *string) *S3PolicyCollectionGetParams {
+	o.SetStatementsEffect(statementsEffect)
 	return o
 }
 
-// SetStatementsEffectQueryParameter adds the statementsEffect to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetStatementsEffectQueryParameter(statementsEffect *string) {
-	o.StatementsEffectQueryParameter = statementsEffect
+// SetStatementsEffect adds the statementsEffect to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetStatementsEffect(statementsEffect *string) {
+	o.StatementsEffect = statementsEffect
 }
 
-// WithStatementsIndexQueryParameter adds the statementsIndex to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithStatementsIndexQueryParameter(statementsIndex *int64) *S3PolicyCollectionGetParams {
-	o.SetStatementsIndexQueryParameter(statementsIndex)
+// WithStatementsIndex adds the statementsIndex to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithStatementsIndex(statementsIndex *int64) *S3PolicyCollectionGetParams {
+	o.SetStatementsIndex(statementsIndex)
 	return o
 }
 
-// SetStatementsIndexQueryParameter adds the statementsIndex to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetStatementsIndexQueryParameter(statementsIndex *int64) {
-	o.StatementsIndexQueryParameter = statementsIndex
+// SetStatementsIndex adds the statementsIndex to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetStatementsIndex(statementsIndex *int64) {
+	o.StatementsIndex = statementsIndex
 }
 
-// WithStatementsResourcesQueryParameter adds the statementsResources to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithStatementsResourcesQueryParameter(statementsResources *string) *S3PolicyCollectionGetParams {
-	o.SetStatementsResourcesQueryParameter(statementsResources)
+// WithStatementsResources adds the statementsResources to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithStatementsResources(statementsResources *string) *S3PolicyCollectionGetParams {
+	o.SetStatementsResources(statementsResources)
 	return o
 }
 
-// SetStatementsResourcesQueryParameter adds the statementsResources to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetStatementsResourcesQueryParameter(statementsResources *string) {
-	o.StatementsResourcesQueryParameter = statementsResources
+// SetStatementsResources adds the statementsResources to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetStatementsResources(statementsResources *string) {
+	o.StatementsResources = statementsResources
 }
 
-// WithStatementsSIDQueryParameter adds the statementsSid to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithStatementsSIDQueryParameter(statementsSid *string) *S3PolicyCollectionGetParams {
-	o.SetStatementsSIDQueryParameter(statementsSid)
+// WithStatementsSid adds the statementsSid to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithStatementsSid(statementsSid *string) *S3PolicyCollectionGetParams {
+	o.SetStatementsSid(statementsSid)
 	return o
 }
 
-// SetStatementsSIDQueryParameter adds the statementsSid to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetStatementsSIDQueryParameter(statementsSid *string) {
-	o.StatementsSIDQueryParameter = statementsSid
+// SetStatementsSid adds the statementsSid to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetStatementsSid(statementsSid *string) {
+	o.StatementsSid = statementsSid
 }
 
-// WithSVMNameQueryParameter adds the svmName to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *S3PolicyCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithSvmName(svmName *string) *S3PolicyCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3PolicyCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) WithSvmUUID(svmUUID string) *S3PolicyCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 policy collection get params
+func (o *S3PolicyCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -396,13 +396,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -413,7 +413,7 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -424,13 +424,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -441,13 +441,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -458,7 +458,7 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -469,13 +469,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReadOnlyQueryParameter != nil {
+	if o.ReadOnly != nil {
 
 		// query param read-only
 		var qrReadOnly bool
 
-		if o.ReadOnlyQueryParameter != nil {
-			qrReadOnly = *o.ReadOnlyQueryParameter
+		if o.ReadOnly != nil {
+			qrReadOnly = *o.ReadOnly
 		}
 		qReadOnly := swag.FormatBool(qrReadOnly)
 		if qReadOnly != "" {
@@ -486,13 +486,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -503,13 +503,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -520,13 +520,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StatementsActionsQueryParameter != nil {
+	if o.StatementsActions != nil {
 
 		// query param statements.actions
 		var qrStatementsActions string
 
-		if o.StatementsActionsQueryParameter != nil {
-			qrStatementsActions = *o.StatementsActionsQueryParameter
+		if o.StatementsActions != nil {
+			qrStatementsActions = *o.StatementsActions
 		}
 		qStatementsActions := qrStatementsActions
 		if qStatementsActions != "" {
@@ -537,13 +537,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StatementsEffectQueryParameter != nil {
+	if o.StatementsEffect != nil {
 
 		// query param statements.effect
 		var qrStatementsEffect string
 
-		if o.StatementsEffectQueryParameter != nil {
-			qrStatementsEffect = *o.StatementsEffectQueryParameter
+		if o.StatementsEffect != nil {
+			qrStatementsEffect = *o.StatementsEffect
 		}
 		qStatementsEffect := qrStatementsEffect
 		if qStatementsEffect != "" {
@@ -554,13 +554,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StatementsIndexQueryParameter != nil {
+	if o.StatementsIndex != nil {
 
 		// query param statements.index
 		var qrStatementsIndex int64
 
-		if o.StatementsIndexQueryParameter != nil {
-			qrStatementsIndex = *o.StatementsIndexQueryParameter
+		if o.StatementsIndex != nil {
+			qrStatementsIndex = *o.StatementsIndex
 		}
 		qStatementsIndex := swag.FormatInt64(qrStatementsIndex)
 		if qStatementsIndex != "" {
@@ -571,13 +571,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StatementsResourcesQueryParameter != nil {
+	if o.StatementsResources != nil {
 
 		// query param statements.resources
 		var qrStatementsResources string
 
-		if o.StatementsResourcesQueryParameter != nil {
-			qrStatementsResources = *o.StatementsResourcesQueryParameter
+		if o.StatementsResources != nil {
+			qrStatementsResources = *o.StatementsResources
 		}
 		qStatementsResources := qrStatementsResources
 		if qStatementsResources != "" {
@@ -588,13 +588,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StatementsSIDQueryParameter != nil {
+	if o.StatementsSid != nil {
 
 		// query param statements.sid
 		var qrStatementsSid string
 
-		if o.StatementsSIDQueryParameter != nil {
-			qrStatementsSid = *o.StatementsSIDQueryParameter
+		if o.StatementsSid != nil {
+			qrStatementsSid = *o.StatementsSid
 		}
 		qStatementsSid := qrStatementsSid
 		if qStatementsSid != "" {
@@ -605,13 +605,13 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -623,7 +623,7 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -635,7 +635,7 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamS3PolicyCollectionGet binds the parameter fields
 func (o *S3PolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -652,7 +652,7 @@ func (o *S3PolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamS3PolicyCollectionGet binds the parameter order_by
 func (o *S3PolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

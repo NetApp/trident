@@ -17,8 +17,8 @@ import (
 // swagger:model cifs_domain_name_mapping
 type CifsDomainNameMapping struct {
 
-	// trusted domains
-	TrustedDomains []string `json:"trusted_domains,omitempty"`
+	// cifs domain name mapping inline trusted domains
+	CifsDomainNameMappingInlineTrustedDomains []*string `json:"trusted_domains,omitempty"`
 }
 
 // Validate validates this cifs domain name mapping

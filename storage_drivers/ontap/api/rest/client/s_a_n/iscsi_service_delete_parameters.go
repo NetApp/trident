@@ -66,7 +66,7 @@ type IscsiServiceDeleteParams struct {
 	   The unique identifier of the SVM for which to delete the iSCSI service.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *IscsiServiceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi service delete params
-func (o *IscsiServiceDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiServiceDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi service delete params
+func (o *IscsiServiceDeleteParams) WithSvmUUID(svmUUID string) *IscsiServiceDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi service delete params
-func (o *IscsiServiceDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi service delete params
+func (o *IscsiServiceDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -141,7 +141,7 @@ func (o *IscsiServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

@@ -66,21 +66,21 @@ type LunMapReportingNodeDeleteParams struct {
 	   The unique identifier of the igroup.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* LunUUID.
 
 	   The unique identifier of the LUN.
 
 	*/
-	LunUUIDPathParameter string
+	LunUUID string
 
 	/* UUID.
 
 	   The unique identifier of the node.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *LunMapReportingNodeDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the lun map reporting node delete params
-func (o *LunMapReportingNodeDeleteParams) WithIgroupUUIDPathParameter(igroupUUID string) *LunMapReportingNodeDeleteParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the lun map reporting node delete params
+func (o *LunMapReportingNodeDeleteParams) WithIgroupUUID(igroupUUID string) *LunMapReportingNodeDeleteParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the lun map reporting node delete params
-func (o *LunMapReportingNodeDeleteParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the lun map reporting node delete params
+func (o *LunMapReportingNodeDeleteParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
-// WithLunUUIDPathParameter adds the lunUUID to the lun map reporting node delete params
-func (o *LunMapReportingNodeDeleteParams) WithLunUUIDPathParameter(lunUUID string) *LunMapReportingNodeDeleteParams {
-	o.SetLunUUIDPathParameter(lunUUID)
+// WithLunUUID adds the lunUUID to the lun map reporting node delete params
+func (o *LunMapReportingNodeDeleteParams) WithLunUUID(lunUUID string) *LunMapReportingNodeDeleteParams {
+	o.SetLunUUID(lunUUID)
 	return o
 }
 
-// SetLunUUIDPathParameter adds the lunUuid to the lun map reporting node delete params
-func (o *LunMapReportingNodeDeleteParams) SetLunUUIDPathParameter(lunUUID string) {
-	o.LunUUIDPathParameter = lunUUID
+// SetLunUUID adds the lunUuid to the lun map reporting node delete params
+func (o *LunMapReportingNodeDeleteParams) SetLunUUID(lunUUID string) {
+	o.LunUUID = lunUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the lun map reporting node delete params
-func (o *LunMapReportingNodeDeleteParams) WithUUIDPathParameter(uuid string) *LunMapReportingNodeDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the lun map reporting node delete params
+func (o *LunMapReportingNodeDeleteParams) WithUUID(uuid string) *LunMapReportingNodeDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the lun map reporting node delete params
-func (o *LunMapReportingNodeDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the lun map reporting node delete params
+func (o *LunMapReportingNodeDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -177,17 +177,17 @@ func (o *LunMapReportingNodeDeleteParams) WriteToRequest(r runtime.ClientRequest
 	var res []error
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 
 	// path param lun.uuid
-	if err := r.SetPathParam("lun.uuid", o.LunUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("lun.uuid", o.LunUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

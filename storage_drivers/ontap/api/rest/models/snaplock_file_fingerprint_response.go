@@ -20,13 +20,14 @@ import (
 type SnaplockFileFingerprintResponse struct {
 
 	// links
-	Links *SnaplockFileFingerprintResponseLinks `json:"_links,omitempty"`
+	Links *SnaplockFileFingerprintResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of Records.
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*SnaplockFileFingerprint `json:"records,omitempty"`
+	// snaplock file fingerprint response inline records
+	SnaplockFileFingerprintResponseInlineRecords []*SnaplockFileFingerprint `json:"records,omitempty"`
 }
 
 // Validate validates this snaplock file fingerprint response
@@ -37,7 +38,7 @@ func (m *SnaplockFileFingerprintResponse) Validate(formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateSnaplockFileFingerprintResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *SnaplockFileFingerprintResponse) validateLinks(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SnaplockFileFingerprintResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *SnaplockFileFingerprintResponse) validateSnaplockFileFingerprintResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnaplockFileFingerprintResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.SnaplockFileFingerprintResponseInlineRecords); i++ {
+		if swag.IsZero(m.SnaplockFileFingerprintResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.SnaplockFileFingerprintResponseInlineRecords[i] != nil {
+			if err := m.SnaplockFileFingerprintResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *SnaplockFileFingerprintResponse) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateSnaplockFileFingerprintResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *SnaplockFileFingerprintResponse) contextValidateLinks(ctx context.Conte
 	return nil
 }
 
-func (m *SnaplockFileFingerprintResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintResponse) contextValidateSnaplockFileFingerprintResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.SnaplockFileFingerprintResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.SnaplockFileFingerprintResponseInlineRecords[i] != nil {
+			if err := m.SnaplockFileFingerprintResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *SnaplockFileFingerprintResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockFileFingerprintResponseLinks snaplock file fingerprint response links
+// SnaplockFileFingerprintResponseInlineLinks snaplock file fingerprint response inline links
 //
-// swagger:model SnaplockFileFingerprintResponseLinks
-type SnaplockFileFingerprintResponseLinks struct {
+// swagger:model snaplock_file_fingerprint_response_inline__links
+type SnaplockFileFingerprintResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type SnaplockFileFingerprintResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock file fingerprint response links
-func (m *SnaplockFileFingerprintResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock file fingerprint response inline links
+func (m *SnaplockFileFingerprintResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *SnaplockFileFingerprintResponseLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *SnaplockFileFingerprintResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *SnaplockFileFingerprintResponseLinks) validateNext(formats strfmt.Regis
 	return nil
 }
 
-func (m *SnaplockFileFingerprintResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *SnaplockFileFingerprintResponseLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this snaplock file fingerprint response links based on the context it is used
-func (m *SnaplockFileFingerprintResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock file fingerprint response inline links based on the context it is used
+func (m *SnaplockFileFingerprintResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *SnaplockFileFingerprintResponseLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *SnaplockFileFingerprintResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *SnaplockFileFingerprintResponseLinks) contextValidateNext(ctx context.C
 	return nil
 }
 
-func (m *SnaplockFileFingerprintResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockFileFingerprintResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *SnaplockFileFingerprintResponseLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockFileFingerprintResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockFileFingerprintResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *SnaplockFileFingerprintResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockFileFingerprintResponseLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockFileFingerprintResponseLinks
+func (m *SnaplockFileFingerprintResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockFileFingerprintResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

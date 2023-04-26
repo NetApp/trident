@@ -65,13 +65,13 @@ type LicenseDeleteParams struct {
 
 	   Name of the license package to delete.
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SerialNumber.
 
 	   Serial number of the license to delete.
 	*/
-	SerialNumberQueryParameter string
+	SerialNumber string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *LicenseDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the license delete params
-func (o *LicenseDeleteParams) WithNamePathParameter(name string) *LicenseDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the license delete params
+func (o *LicenseDeleteParams) WithName(name string) *LicenseDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the license delete params
-func (o *LicenseDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the license delete params
+func (o *LicenseDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the license delete params
-func (o *LicenseDeleteParams) WithSerialNumberQueryParameter(serialNumber string) *LicenseDeleteParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the license delete params
+func (o *LicenseDeleteParams) WithSerialNumber(serialNumber string) *LicenseDeleteParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the license delete params
-func (o *LicenseDeleteParams) SetSerialNumberQueryParameter(serialNumber string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the license delete params
+func (o *LicenseDeleteParams) SetSerialNumber(serialNumber string) {
+	o.SerialNumber = serialNumber
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *LicenseDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// query param serial_number
-	qrSerialNumber := o.SerialNumberQueryParameter
+	qrSerialNumber := o.SerialNumber
 	qSerialNumber := qrSerialNumber
 	if qSerialNumber != "" {
 

@@ -73,7 +73,7 @@ type NdmpNodeModifyParams struct {
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *NdmpNodeModifyParams) SetInfo(info *models.NdmpNode) {
 	o.Info = info
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the ndmp node modify params
-func (o *NdmpNodeModifyParams) WithNodeUUIDPathParameter(nodeUUID string) *NdmpNodeModifyParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the ndmp node modify params
+func (o *NdmpNodeModifyParams) WithNodeUUID(nodeUUID string) *NdmpNodeModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the ndmp node modify params
-func (o *NdmpNodeModifyParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the ndmp node modify params
+func (o *NdmpNodeModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *NdmpNodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

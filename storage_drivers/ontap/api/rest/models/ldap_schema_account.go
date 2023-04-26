@@ -19,11 +19,11 @@ type LdapSchemaAccount struct {
 
 	// Attribute name used to retrieve UNIX account information.
 	// Example: windowsAccount
-	Unix string `json:"unix,omitempty"`
+	Unix *string `json:"unix,omitempty"`
 
 	// Attribute name used to retrieve Windows account information for a UNIX user account.
 	// Example: windowsAccount
-	Windows string `json:"windows,omitempty"`
+	Windows *string `json:"windows,omitempty"`
 }
 
 // Validate validates this ldap schema account

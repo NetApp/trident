@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 )
 
 type Server struct {
@@ -28,28 +28,28 @@ func NewMetricsServer(address, port string) *Server {
 		},
 	}
 
-	log.WithField("address", metricsServer.server.Addr).Info("Initializing metrics frontend.")
+	Log().WithField("address", metricsServer.server.Addr).Info("Initializing metrics frontend.")
 
 	return metricsServer
 }
 
 func (s *Server) Activate() error {
 	go func() {
-		log.WithField("address", s.server.Addr).Info("Activating metrics frontend.")
+		Log().WithField("address", s.server.Addr).Info("Activating metrics frontend.")
 		http.Handle("/metrics", s.server.Handler)
 
 		err := s.server.ListenAndServe()
 		if err == http.ErrServerClosed {
-			log.WithField("address", s.server.Addr).Info("Metrics frontend server has closed.")
+			Log().WithField("address", s.server.Addr).Info("Metrics frontend server has closed.")
 		} else if err != nil {
-			log.Fatal(err)
+			Log().Fatal(err)
 		}
 	}()
 	return nil
 }
 
 func (s *Server) Deactivate() error {
-	log.WithField("address", s.server.Addr).Info("Deactivating metrics frontend.")
+	Log().WithField("address", s.server.Addr).Info("Deactivating metrics frontend.")
 	ctx, cancel := context.WithTimeout(context.Background(), config.HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)

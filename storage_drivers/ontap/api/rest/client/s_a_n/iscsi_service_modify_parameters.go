@@ -75,7 +75,7 @@ type IscsiServiceModifyParams struct {
 	   The unique identifier of the SVM for which to update the iSCSI service.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *IscsiServiceModifyParams) SetInfo(info *models.IscsiService) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi service modify params
-func (o *IscsiServiceModifyParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiServiceModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi service modify params
+func (o *IscsiServiceModifyParams) WithSvmUUID(svmUUID string) *IscsiServiceModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi service modify params
-func (o *IscsiServiceModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi service modify params
+func (o *IscsiServiceModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *IscsiServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

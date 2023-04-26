@@ -69,7 +69,7 @@ type IgroupNestedCreateParams struct {
 	   The unique identifier of the parent initiator group.
 
 	*/
-	IgroupUUIDPathParameter string
+	IgroupUUID string
 
 	/* Info.
 
@@ -82,7 +82,7 @@ type IgroupNestedCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -102,11 +102,11 @@ func (o *IgroupNestedCreateParams) WithDefaults() *IgroupNestedCreateParams {
 // All values with no default are reset to their zero value.
 func (o *IgroupNestedCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := IgroupNestedCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -148,15 +148,15 @@ func (o *IgroupNestedCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithIgroupUUIDPathParameter adds the igroupUUID to the igroup nested create params
-func (o *IgroupNestedCreateParams) WithIgroupUUIDPathParameter(igroupUUID string) *IgroupNestedCreateParams {
-	o.SetIgroupUUIDPathParameter(igroupUUID)
+// WithIgroupUUID adds the igroupUUID to the igroup nested create params
+func (o *IgroupNestedCreateParams) WithIgroupUUID(igroupUUID string) *IgroupNestedCreateParams {
+	o.SetIgroupUUID(igroupUUID)
 	return o
 }
 
-// SetIgroupUUIDPathParameter adds the igroupUuid to the igroup nested create params
-func (o *IgroupNestedCreateParams) SetIgroupUUIDPathParameter(igroupUUID string) {
-	o.IgroupUUIDPathParameter = igroupUUID
+// SetIgroupUUID adds the igroupUuid to the igroup nested create params
+func (o *IgroupNestedCreateParams) SetIgroupUUID(igroupUUID string) {
+	o.IgroupUUID = igroupUUID
 }
 
 // WithInfo adds the info to the igroup nested create params
@@ -170,15 +170,15 @@ func (o *IgroupNestedCreateParams) SetInfo(info *models.IgroupNested) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the igroup nested create params
-func (o *IgroupNestedCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IgroupNestedCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the igroup nested create params
+func (o *IgroupNestedCreateParams) WithReturnRecords(returnRecords *bool) *IgroupNestedCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the igroup nested create params
-func (o *IgroupNestedCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the igroup nested create params
+func (o *IgroupNestedCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -190,7 +190,7 @@ func (o *IgroupNestedCreateParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param igroup.uuid
-	if err := r.SetPathParam("igroup.uuid", o.IgroupUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -199,13 +199,13 @@ func (o *IgroupNestedCreateParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

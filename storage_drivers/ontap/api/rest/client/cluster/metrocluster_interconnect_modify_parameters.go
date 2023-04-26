@@ -68,7 +68,7 @@ type MetroclusterInterconnectModifyParams struct {
 
 	   Interconnect adapter
 	*/
-	AdapterPathParameter string
+	Adapter string
 
 	/* Info.
 
@@ -80,19 +80,19 @@ type MetroclusterInterconnectModifyParams struct {
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* PartnerType.
 
 	   DR Partner type
 	*/
-	PartnerTypePathParameter string
+	PartnerType string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -112,11 +112,11 @@ func (o *MetroclusterInterconnectModifyParams) WithDefaults() *MetroclusterInter
 // All values with no default are reset to their zero value.
 func (o *MetroclusterInterconnectModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := MetroclusterInterconnectModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -158,15 +158,15 @@ func (o *MetroclusterInterconnectModifyParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
-// WithAdapterPathParameter adds the adapter to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) WithAdapterPathParameter(adapter string) *MetroclusterInterconnectModifyParams {
-	o.SetAdapterPathParameter(adapter)
+// WithAdapter adds the adapter to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) WithAdapter(adapter string) *MetroclusterInterconnectModifyParams {
+	o.SetAdapter(adapter)
 	return o
 }
 
-// SetAdapterPathParameter adds the adapter to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) SetAdapterPathParameter(adapter string) {
-	o.AdapterPathParameter = adapter
+// SetAdapter adds the adapter to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) SetAdapter(adapter string) {
+	o.Adapter = adapter
 }
 
 // WithInfo adds the info to the metrocluster interconnect modify params
@@ -180,37 +180,37 @@ func (o *MetroclusterInterconnectModifyParams) SetInfo(info *models.Metrocluster
 	o.Info = info
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) WithNodeUUIDPathParameter(nodeUUID string) *MetroclusterInterconnectModifyParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) WithNodeUUID(nodeUUID string) *MetroclusterInterconnectModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithPartnerTypePathParameter adds the partnerType to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) WithPartnerTypePathParameter(partnerType string) *MetroclusterInterconnectModifyParams {
-	o.SetPartnerTypePathParameter(partnerType)
+// WithPartnerType adds the partnerType to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) WithPartnerType(partnerType string) *MetroclusterInterconnectModifyParams {
+	o.SetPartnerType(partnerType)
 	return o
 }
 
-// SetPartnerTypePathParameter adds the partnerType to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) SetPartnerTypePathParameter(partnerType string) {
-	o.PartnerTypePathParameter = partnerType
+// SetPartnerType adds the partnerType to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) SetPartnerType(partnerType string) {
+	o.PartnerType = partnerType
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterInterconnectModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) WithReturnTimeout(returnTimeout *int64) *MetroclusterInterconnectModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster interconnect modify params
-func (o *MetroclusterInterconnectModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the metrocluster interconnect modify params
+func (o *MetroclusterInterconnectModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -222,7 +222,7 @@ func (o *MetroclusterInterconnectModifyParams) WriteToRequest(r runtime.ClientRe
 	var res []error
 
 	// path param adapter
-	if err := r.SetPathParam("adapter", o.AdapterPathParameter); err != nil {
+	if err := r.SetPathParam("adapter", o.Adapter); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -232,22 +232,22 @@ func (o *MetroclusterInterconnectModifyParams) WriteToRequest(r runtime.ClientRe
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param partner_type
-	if err := r.SetPathParam("partner_type", o.PartnerTypePathParameter); err != nil {
+	if err := r.SetPathParam("partner_type", o.PartnerType); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

@@ -20,13 +20,14 @@ import (
 type TapeDeviceResponse struct {
 
 	// links
-	Links *TapeDeviceResponseLinks `json:"_links,omitempty"`
+	Links *TapeDeviceResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*TapeDevice `json:"records,omitempty"`
+	// tape device response inline records
+	TapeDeviceResponseInlineRecords []*TapeDevice `json:"records,omitempty"`
 }
 
 // Validate validates this tape device response
@@ -37,7 +38,7 @@ func (m *TapeDeviceResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateTapeDeviceResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *TapeDeviceResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TapeDeviceResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *TapeDeviceResponse) validateTapeDeviceResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.TapeDeviceResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.TapeDeviceResponseInlineRecords); i++ {
+		if swag.IsZero(m.TapeDeviceResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.TapeDeviceResponseInlineRecords[i] != nil {
+			if err := m.TapeDeviceResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *TapeDeviceResponse) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateTapeDeviceResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *TapeDeviceResponse) contextValidateLinks(ctx context.Context, formats s
 	return nil
 }
 
-func (m *TapeDeviceResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *TapeDeviceResponse) contextValidateTapeDeviceResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.TapeDeviceResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.TapeDeviceResponseInlineRecords[i] != nil {
+			if err := m.TapeDeviceResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *TapeDeviceResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// TapeDeviceResponseLinks tape device response links
+// TapeDeviceResponseInlineLinks tape device response inline links
 //
-// swagger:model TapeDeviceResponseLinks
-type TapeDeviceResponseLinks struct {
+// swagger:model tape_device_response_inline__links
+type TapeDeviceResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type TapeDeviceResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this tape device response links
-func (m *TapeDeviceResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this tape device response inline links
+func (m *TapeDeviceResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *TapeDeviceResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TapeDeviceResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *TapeDeviceResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *TapeDeviceResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *TapeDeviceResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *TapeDeviceResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *TapeDeviceResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this tape device response links based on the context it is used
-func (m *TapeDeviceResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this tape device response inline links based on the context it is used
+func (m *TapeDeviceResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *TapeDeviceResponseLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *TapeDeviceResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *TapeDeviceResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *TapeDeviceResponseLinks) contextValidateNext(ctx context.Context, forma
 	return nil
 }
 
-func (m *TapeDeviceResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *TapeDeviceResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *TapeDeviceResponseLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *TapeDeviceResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *TapeDeviceResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *TapeDeviceResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *TapeDeviceResponseLinks) UnmarshalBinary(b []byte) error {
-	var res TapeDeviceResponseLinks
+func (m *TapeDeviceResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res TapeDeviceResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

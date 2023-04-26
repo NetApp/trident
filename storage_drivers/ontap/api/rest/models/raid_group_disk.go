@@ -21,28 +21,28 @@ import (
 type RaidGroupDisk struct {
 
 	// disk
-	Disk *RaidGroupDiskDisk `json:"disk,omitempty"`
+	Disk *RaidGroupDiskInlineDisk `json:"disk,omitempty"`
 
 	// The position of the disk within the RAID group.
 	// Read Only: true
 	// Enum: [data parity dparity tparity copy]
-	Position string `json:"position,omitempty"`
+	Position *string `json:"position,omitempty"`
 
 	// The state of the disk within the RAID group.
 	// Read Only: true
 	// Enum: [normal failed zeroing copy replacing evacuating prefail offline reconstructing]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
 	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm ssd_zns]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Size in bytes that is usable by the aggregate.
 	// Example: 947912704
 	// Read Only: true
-	UsableSize int64 `json:"usable_size,omitempty"`
+	UsableSize *int64 `json:"usable_size,omitempty"`
 }
 
 // Validate validates this raid group disk
@@ -167,7 +167,7 @@ func (m *RaidGroupDisk) validatePosition(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validatePositionEnum("position", "body", m.Position); err != nil {
+	if err := m.validatePositionEnum("position", "body", *m.Position); err != nil {
 		return err
 	}
 
@@ -293,7 +293,7 @@ func (m *RaidGroupDisk) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -459,7 +459,7 @@ func (m *RaidGroupDisk) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -512,7 +512,7 @@ func (m *RaidGroupDisk) contextValidateDisk(ctx context.Context, formats strfmt.
 
 func (m *RaidGroupDisk) contextValidatePosition(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "position", "body", string(m.Position)); err != nil {
+	if err := validate.ReadOnly(ctx, "position", "body", m.Position); err != nil {
 		return err
 	}
 
@@ -521,7 +521,7 @@ func (m *RaidGroupDisk) contextValidatePosition(ctx context.Context, formats str
 
 func (m *RaidGroupDisk) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -530,7 +530,7 @@ func (m *RaidGroupDisk) contextValidateState(ctx context.Context, formats strfmt
 
 func (m *RaidGroupDisk) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -539,7 +539,7 @@ func (m *RaidGroupDisk) contextValidateType(ctx context.Context, formats strfmt.
 
 func (m *RaidGroupDisk) contextValidateUsableSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "usable_size", "body", int64(m.UsableSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "usable_size", "body", m.UsableSize); err != nil {
 		return err
 	}
 
@@ -564,21 +564,21 @@ func (m *RaidGroupDisk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RaidGroupDiskDisk raid group disk disk
+// RaidGroupDiskInlineDisk raid group disk inline disk
 //
-// swagger:model RaidGroupDiskDisk
-type RaidGroupDiskDisk struct {
+// swagger:model raid_group_disk_inline_disk
+type RaidGroupDiskInlineDisk struct {
 
 	// links
-	Links *RaidGroupDiskDiskLinks `json:"_links,omitempty"`
+	Links *RaidGroupDiskInlineDiskInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: 1.0.1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this raid group disk disk
-func (m *RaidGroupDiskDisk) Validate(formats strfmt.Registry) error {
+// Validate validates this raid group disk inline disk
+func (m *RaidGroupDiskInlineDisk) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -591,7 +591,7 @@ func (m *RaidGroupDiskDisk) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RaidGroupDiskDisk) validateLinks(formats strfmt.Registry) error {
+func (m *RaidGroupDiskInlineDisk) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -608,8 +608,8 @@ func (m *RaidGroupDiskDisk) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this raid group disk disk based on the context it is used
-func (m *RaidGroupDiskDisk) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this raid group disk inline disk based on the context it is used
+func (m *RaidGroupDiskInlineDisk) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -622,7 +622,7 @@ func (m *RaidGroupDiskDisk) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *RaidGroupDiskDisk) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroupDiskInlineDisk) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -637,7 +637,7 @@ func (m *RaidGroupDiskDisk) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *RaidGroupDiskDisk) MarshalBinary() ([]byte, error) {
+func (m *RaidGroupDiskInlineDisk) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -645,8 +645,8 @@ func (m *RaidGroupDiskDisk) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RaidGroupDiskDisk) UnmarshalBinary(b []byte) error {
-	var res RaidGroupDiskDisk
+func (m *RaidGroupDiskInlineDisk) UnmarshalBinary(b []byte) error {
+	var res RaidGroupDiskInlineDisk
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -654,17 +654,17 @@ func (m *RaidGroupDiskDisk) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RaidGroupDiskDiskLinks raid group disk disk links
+// RaidGroupDiskInlineDiskInlineLinks raid group disk inline disk inline links
 //
-// swagger:model RaidGroupDiskDiskLinks
-type RaidGroupDiskDiskLinks struct {
+// swagger:model raid_group_disk_inline_disk_inline__links
+type RaidGroupDiskInlineDiskInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this raid group disk disk links
-func (m *RaidGroupDiskDiskLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this raid group disk inline disk inline links
+func (m *RaidGroupDiskInlineDiskInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -677,7 +677,7 @@ func (m *RaidGroupDiskDiskLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RaidGroupDiskDiskLinks) validateSelf(formats strfmt.Registry) error {
+func (m *RaidGroupDiskInlineDiskInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -694,8 +694,8 @@ func (m *RaidGroupDiskDiskLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this raid group disk disk links based on the context it is used
-func (m *RaidGroupDiskDiskLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this raid group disk inline disk inline links based on the context it is used
+func (m *RaidGroupDiskInlineDiskInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -708,7 +708,7 @@ func (m *RaidGroupDiskDiskLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *RaidGroupDiskDiskLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *RaidGroupDiskInlineDiskInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -723,7 +723,7 @@ func (m *RaidGroupDiskDiskLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *RaidGroupDiskDiskLinks) MarshalBinary() ([]byte, error) {
+func (m *RaidGroupDiskInlineDiskInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -731,8 +731,8 @@ func (m *RaidGroupDiskDiskLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RaidGroupDiskDiskLinks) UnmarshalBinary(b []byte) error {
-	var res RaidGroupDiskDiskLinks
+func (m *RaidGroupDiskInlineDiskInlineLinks) UnmarshalBinary(b []byte) error {
+	var res RaidGroupDiskInlineDiskInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

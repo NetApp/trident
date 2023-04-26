@@ -66,13 +66,13 @@ type NetworkEthernetBroadcastDomainGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Broadcast domain UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *NetworkEthernetBroadcastDomainGetParams) SetHTTPClient(client *http.Cli
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the network ethernet broadcast domain get params
-func (o *NetworkEthernetBroadcastDomainGetParams) WithFieldsQueryParameter(fields []string) *NetworkEthernetBroadcastDomainGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the network ethernet broadcast domain get params
+func (o *NetworkEthernetBroadcastDomainGetParams) WithFields(fields []string) *NetworkEthernetBroadcastDomainGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the network ethernet broadcast domain get params
-func (o *NetworkEthernetBroadcastDomainGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the network ethernet broadcast domain get params
+func (o *NetworkEthernetBroadcastDomainGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the network ethernet broadcast domain get params
-func (o *NetworkEthernetBroadcastDomainGetParams) WithUUIDPathParameter(uuid string) *NetworkEthernetBroadcastDomainGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the network ethernet broadcast domain get params
+func (o *NetworkEthernetBroadcastDomainGetParams) WithUUID(uuid string) *NetworkEthernetBroadcastDomainGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the network ethernet broadcast domain get params
-func (o *NetworkEthernetBroadcastDomainGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the network ethernet broadcast domain get params
+func (o *NetworkEthernetBroadcastDomainGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *NetworkEthernetBroadcastDomainGetParams) WriteToRequest(r runtime.Clien
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *NetworkEthernetBroadcastDomainGetParams) WriteToRequest(r runtime.Clien
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *NetworkEthernetBroadcastDomainGetParams) WriteToRequest(r runtime.Clien
 
 // bindParamNetworkEthernetBroadcastDomainGet binds the parameter fields
 func (o *NetworkEthernetBroadcastDomainGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

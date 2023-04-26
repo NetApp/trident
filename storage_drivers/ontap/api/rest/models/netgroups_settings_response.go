@@ -20,13 +20,14 @@ import (
 type NetgroupsSettingsResponse struct {
 
 	// links
-	Links *NetgroupsSettingsResponseLinks `json:"_links,omitempty"`
+	Links *NetgroupsSettingsResponseInlineLinks `json:"_links,omitempty"`
+
+	// netgroups settings response inline records
+	NetgroupsSettingsResponseInlineRecords []*NetgroupsSettings `json:"records,omitempty"`
 
 	// Number of records.
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*NetgroupsSettings `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this netgroups settings response
@@ -37,7 +38,7 @@ func (m *NetgroupsSettingsResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNetgroupsSettingsResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *NetgroupsSettingsResponse) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NetgroupsSettingsResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NetgroupsSettingsResponse) validateNetgroupsSettingsResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetgroupsSettingsResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NetgroupsSettingsResponseInlineRecords); i++ {
+		if swag.IsZero(m.NetgroupsSettingsResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NetgroupsSettingsResponseInlineRecords[i] != nil {
+			if err := m.NetgroupsSettingsResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *NetgroupsSettingsResponse) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNetgroupsSettingsResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *NetgroupsSettingsResponse) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *NetgroupsSettingsResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupsSettingsResponse) contextValidateNetgroupsSettingsResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NetgroupsSettingsResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NetgroupsSettingsResponseInlineRecords[i] != nil {
+			if err := m.NetgroupsSettingsResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *NetgroupsSettingsResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NetgroupsSettingsResponseLinks netgroups settings response links
+// NetgroupsSettingsResponseInlineLinks netgroups settings response inline links
 //
-// swagger:model NetgroupsSettingsResponseLinks
-type NetgroupsSettingsResponseLinks struct {
+// swagger:model netgroups_settings_response_inline__links
+type NetgroupsSettingsResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type NetgroupsSettingsResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this netgroups settings response links
-func (m *NetgroupsSettingsResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this netgroups settings response inline links
+func (m *NetgroupsSettingsResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *NetgroupsSettingsResponseLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NetgroupsSettingsResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NetgroupsSettingsResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *NetgroupsSettingsResponseLinks) validateNext(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NetgroupsSettingsResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NetgroupsSettingsResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *NetgroupsSettingsResponseLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this netgroups settings response links based on the context it is used
-func (m *NetgroupsSettingsResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this netgroups settings response inline links based on the context it is used
+func (m *NetgroupsSettingsResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *NetgroupsSettingsResponseLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NetgroupsSettingsResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupsSettingsResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *NetgroupsSettingsResponseLinks) contextValidateNext(ctx context.Context
 	return nil
 }
 
-func (m *NetgroupsSettingsResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NetgroupsSettingsResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *NetgroupsSettingsResponseLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NetgroupsSettingsResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NetgroupsSettingsResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *NetgroupsSettingsResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetgroupsSettingsResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NetgroupsSettingsResponseLinks
+func (m *NetgroupsSettingsResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NetgroupsSettingsResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

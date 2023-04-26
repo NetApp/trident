@@ -20,13 +20,14 @@ import (
 type AntiRansomwareSuspectResponse struct {
 
 	// links
-	Links *AntiRansomwareSuspectResponseLinks `json:"_links,omitempty"`
+	Links *AntiRansomwareSuspectResponseInlineLinks `json:"_links,omitempty"`
+
+	// anti ransomware suspect response inline records
+	AntiRansomwareSuspectResponseInlineRecords []*AntiRansomwareSuspect `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*AntiRansomwareSuspect `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this anti ransomware suspect response
@@ -37,7 +38,7 @@ func (m *AntiRansomwareSuspectResponse) Validate(formats strfmt.Registry) error 
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateAntiRansomwareSuspectResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *AntiRansomwareSuspectResponse) validateLinks(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *AntiRansomwareSuspectResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *AntiRansomwareSuspectResponse) validateAntiRansomwareSuspectResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomwareSuspectResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.AntiRansomwareSuspectResponseInlineRecords); i++ {
+		if swag.IsZero(m.AntiRansomwareSuspectResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.AntiRansomwareSuspectResponseInlineRecords[i] != nil {
+			if err := m.AntiRansomwareSuspectResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *AntiRansomwareSuspectResponse) ContextValidate(ctx context.Context, for
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateAntiRansomwareSuspectResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *AntiRansomwareSuspectResponse) contextValidateLinks(ctx context.Context
 	return nil
 }
 
-func (m *AntiRansomwareSuspectResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectResponse) contextValidateAntiRansomwareSuspectResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.AntiRansomwareSuspectResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.AntiRansomwareSuspectResponseInlineRecords[i] != nil {
+			if err := m.AntiRansomwareSuspectResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *AntiRansomwareSuspectResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AntiRansomwareSuspectResponseLinks anti ransomware suspect response links
+// AntiRansomwareSuspectResponseInlineLinks anti ransomware suspect response inline links
 //
-// swagger:model AntiRansomwareSuspectResponseLinks
-type AntiRansomwareSuspectResponseLinks struct {
+// swagger:model anti_ransomware_suspect_response_inline__links
+type AntiRansomwareSuspectResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type AntiRansomwareSuspectResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this anti ransomware suspect response links
-func (m *AntiRansomwareSuspectResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this anti ransomware suspect response inline links
+func (m *AntiRansomwareSuspectResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *AntiRansomwareSuspectResponseLinks) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *AntiRansomwareSuspectResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *AntiRansomwareSuspectResponseLinks) validateNext(formats strfmt.Registr
 	return nil
 }
 
-func (m *AntiRansomwareSuspectResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *AntiRansomwareSuspectResponseLinks) validateSelf(formats strfmt.Registr
 	return nil
 }
 
-// ContextValidate validate this anti ransomware suspect response links based on the context it is used
-func (m *AntiRansomwareSuspectResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this anti ransomware suspect response inline links based on the context it is used
+func (m *AntiRansomwareSuspectResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *AntiRansomwareSuspectResponseLinks) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *AntiRansomwareSuspectResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *AntiRansomwareSuspectResponseLinks) contextValidateNext(ctx context.Con
 	return nil
 }
 
-func (m *AntiRansomwareSuspectResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AntiRansomwareSuspectResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *AntiRansomwareSuspectResponseLinks) contextValidateSelf(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *AntiRansomwareSuspectResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *AntiRansomwareSuspectResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *AntiRansomwareSuspectResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AntiRansomwareSuspectResponseLinks) UnmarshalBinary(b []byte) error {
-	var res AntiRansomwareSuspectResponseLinks
+func (m *AntiRansomwareSuspectResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareSuspectResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

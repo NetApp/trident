@@ -1,13 +1,12 @@
-FROM gcr.io/distroless/static:f072ab8fd7e21912a30720928cce8ad562e82718
+ARG ARCH=amd64
+
+FROM --platform=linux/${ARCH} gcr.io/distroless/static@sha256:a01d47d4036cae5a67a9619e3d06fa14a6811a2247b4da72b4233ece4efebd57
 
 LABEL maintainers="The NetApp Trident Team" \
       app="trident-operator.netapp.io" description="Trident Operator"
 
 ARG BIN=trident-operator
-ENV BIN $BIN
-ARG K8S=""
-ENV K8S $K8S
 
-COPY $BIN /
+COPY ${BIN} /trident-operator
 
-ENTRYPOINT ["/$BIN"]
+ENTRYPOINT ["/trident-operator"]

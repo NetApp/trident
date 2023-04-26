@@ -66,67 +66,67 @@ type SwitchCollectionGetParams struct {
 
 	   Filter by address
 	*/
-	AddressQueryParameter *string
+	Address *string
 
 	/* Discovered.
 
 	   Filter by discovered
 	*/
-	DiscoveredQueryParameter *bool
+	Discovered *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Model.
 
 	   Filter by model
 	*/
-	ModelQueryParameter *string
+	Model *string
 
 	/* MonitoringEnabled.
 
 	   Filter by monitoring.enabled
 	*/
-	MonitoringEnabledQueryParameter *bool
+	MonitoringEnabled *bool
 
 	/* MonitoringMonitored.
 
 	   Filter by monitoring.monitored
 	*/
-	MonitoringMonitoredQueryParameter *bool
+	MonitoringMonitored *bool
 
 	/* MonitoringReason.
 
 	   Filter by monitoring.reason
 	*/
-	MonitoringReasonQueryParameter *string
+	MonitoringReason *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* Network.
 
 	   Filter by network
 	*/
-	NetworkQueryParameter *string
+	Network *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type SwitchCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,31 +142,31 @@ type SwitchCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* SnmpUser.
 
 	   Filter by snmp.user
 	*/
-	SnmpUserQueryParameter *string
+	SnmpUser *string
 
 	/* SnmpVersion.
 
 	   Filter by snmp.version
 	*/
-	SnmpVersionQueryParameter *string
+	SnmpVersion *string
 
 	/* Version.
 
 	   Filter by version
 	*/
-	VersionQueryParameter *string
+	Version *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -186,14 +186,14 @@ func (o *SwitchCollectionGetParams) WithDefaults() *SwitchCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *SwitchCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SwitchCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -235,191 +235,191 @@ func (o *SwitchCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAddressQueryParameter adds the address to the switch collection get params
-func (o *SwitchCollectionGetParams) WithAddressQueryParameter(address *string) *SwitchCollectionGetParams {
-	o.SetAddressQueryParameter(address)
+// WithAddress adds the address to the switch collection get params
+func (o *SwitchCollectionGetParams) WithAddress(address *string) *SwitchCollectionGetParams {
+	o.SetAddress(address)
 	return o
 }
 
-// SetAddressQueryParameter adds the address to the switch collection get params
-func (o *SwitchCollectionGetParams) SetAddressQueryParameter(address *string) {
-	o.AddressQueryParameter = address
+// SetAddress adds the address to the switch collection get params
+func (o *SwitchCollectionGetParams) SetAddress(address *string) {
+	o.Address = address
 }
 
-// WithDiscoveredQueryParameter adds the discovered to the switch collection get params
-func (o *SwitchCollectionGetParams) WithDiscoveredQueryParameter(discovered *bool) *SwitchCollectionGetParams {
-	o.SetDiscoveredQueryParameter(discovered)
+// WithDiscovered adds the discovered to the switch collection get params
+func (o *SwitchCollectionGetParams) WithDiscovered(discovered *bool) *SwitchCollectionGetParams {
+	o.SetDiscovered(discovered)
 	return o
 }
 
-// SetDiscoveredQueryParameter adds the discovered to the switch collection get params
-func (o *SwitchCollectionGetParams) SetDiscoveredQueryParameter(discovered *bool) {
-	o.DiscoveredQueryParameter = discovered
+// SetDiscovered adds the discovered to the switch collection get params
+func (o *SwitchCollectionGetParams) SetDiscovered(discovered *bool) {
+	o.Discovered = discovered
 }
 
-// WithFieldsQueryParameter adds the fields to the switch collection get params
-func (o *SwitchCollectionGetParams) WithFieldsQueryParameter(fields []string) *SwitchCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the switch collection get params
+func (o *SwitchCollectionGetParams) WithFields(fields []string) *SwitchCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the switch collection get params
-func (o *SwitchCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the switch collection get params
+func (o *SwitchCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the switch collection get params
-func (o *SwitchCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SwitchCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the switch collection get params
+func (o *SwitchCollectionGetParams) WithMaxRecords(maxRecords *int64) *SwitchCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the switch collection get params
-func (o *SwitchCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the switch collection get params
+func (o *SwitchCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithModelQueryParameter adds the model to the switch collection get params
-func (o *SwitchCollectionGetParams) WithModelQueryParameter(model *string) *SwitchCollectionGetParams {
-	o.SetModelQueryParameter(model)
+// WithModel adds the model to the switch collection get params
+func (o *SwitchCollectionGetParams) WithModel(model *string) *SwitchCollectionGetParams {
+	o.SetModel(model)
 	return o
 }
 
-// SetModelQueryParameter adds the model to the switch collection get params
-func (o *SwitchCollectionGetParams) SetModelQueryParameter(model *string) {
-	o.ModelQueryParameter = model
+// SetModel adds the model to the switch collection get params
+func (o *SwitchCollectionGetParams) SetModel(model *string) {
+	o.Model = model
 }
 
-// WithMonitoringEnabledQueryParameter adds the monitoringEnabled to the switch collection get params
-func (o *SwitchCollectionGetParams) WithMonitoringEnabledQueryParameter(monitoringEnabled *bool) *SwitchCollectionGetParams {
-	o.SetMonitoringEnabledQueryParameter(monitoringEnabled)
+// WithMonitoringEnabled adds the monitoringEnabled to the switch collection get params
+func (o *SwitchCollectionGetParams) WithMonitoringEnabled(monitoringEnabled *bool) *SwitchCollectionGetParams {
+	o.SetMonitoringEnabled(monitoringEnabled)
 	return o
 }
 
-// SetMonitoringEnabledQueryParameter adds the monitoringEnabled to the switch collection get params
-func (o *SwitchCollectionGetParams) SetMonitoringEnabledQueryParameter(monitoringEnabled *bool) {
-	o.MonitoringEnabledQueryParameter = monitoringEnabled
+// SetMonitoringEnabled adds the monitoringEnabled to the switch collection get params
+func (o *SwitchCollectionGetParams) SetMonitoringEnabled(monitoringEnabled *bool) {
+	o.MonitoringEnabled = monitoringEnabled
 }
 
-// WithMonitoringMonitoredQueryParameter adds the monitoringMonitored to the switch collection get params
-func (o *SwitchCollectionGetParams) WithMonitoringMonitoredQueryParameter(monitoringMonitored *bool) *SwitchCollectionGetParams {
-	o.SetMonitoringMonitoredQueryParameter(monitoringMonitored)
+// WithMonitoringMonitored adds the monitoringMonitored to the switch collection get params
+func (o *SwitchCollectionGetParams) WithMonitoringMonitored(monitoringMonitored *bool) *SwitchCollectionGetParams {
+	o.SetMonitoringMonitored(monitoringMonitored)
 	return o
 }
 
-// SetMonitoringMonitoredQueryParameter adds the monitoringMonitored to the switch collection get params
-func (o *SwitchCollectionGetParams) SetMonitoringMonitoredQueryParameter(monitoringMonitored *bool) {
-	o.MonitoringMonitoredQueryParameter = monitoringMonitored
+// SetMonitoringMonitored adds the monitoringMonitored to the switch collection get params
+func (o *SwitchCollectionGetParams) SetMonitoringMonitored(monitoringMonitored *bool) {
+	o.MonitoringMonitored = monitoringMonitored
 }
 
-// WithMonitoringReasonQueryParameter adds the monitoringReason to the switch collection get params
-func (o *SwitchCollectionGetParams) WithMonitoringReasonQueryParameter(monitoringReason *string) *SwitchCollectionGetParams {
-	o.SetMonitoringReasonQueryParameter(monitoringReason)
+// WithMonitoringReason adds the monitoringReason to the switch collection get params
+func (o *SwitchCollectionGetParams) WithMonitoringReason(monitoringReason *string) *SwitchCollectionGetParams {
+	o.SetMonitoringReason(monitoringReason)
 	return o
 }
 
-// SetMonitoringReasonQueryParameter adds the monitoringReason to the switch collection get params
-func (o *SwitchCollectionGetParams) SetMonitoringReasonQueryParameter(monitoringReason *string) {
-	o.MonitoringReasonQueryParameter = monitoringReason
+// SetMonitoringReason adds the monitoringReason to the switch collection get params
+func (o *SwitchCollectionGetParams) SetMonitoringReason(monitoringReason *string) {
+	o.MonitoringReason = monitoringReason
 }
 
-// WithNameQueryParameter adds the name to the switch collection get params
-func (o *SwitchCollectionGetParams) WithNameQueryParameter(name *string) *SwitchCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the switch collection get params
+func (o *SwitchCollectionGetParams) WithName(name *string) *SwitchCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the switch collection get params
-func (o *SwitchCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the switch collection get params
+func (o *SwitchCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNetworkQueryParameter adds the network to the switch collection get params
-func (o *SwitchCollectionGetParams) WithNetworkQueryParameter(network *string) *SwitchCollectionGetParams {
-	o.SetNetworkQueryParameter(network)
+// WithNetwork adds the network to the switch collection get params
+func (o *SwitchCollectionGetParams) WithNetwork(network *string) *SwitchCollectionGetParams {
+	o.SetNetwork(network)
 	return o
 }
 
-// SetNetworkQueryParameter adds the network to the switch collection get params
-func (o *SwitchCollectionGetParams) SetNetworkQueryParameter(network *string) {
-	o.NetworkQueryParameter = network
+// SetNetwork adds the network to the switch collection get params
+func (o *SwitchCollectionGetParams) SetNetwork(network *string) {
+	o.Network = network
 }
 
-// WithOrderByQueryParameter adds the orderBy to the switch collection get params
-func (o *SwitchCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SwitchCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the switch collection get params
+func (o *SwitchCollectionGetParams) WithOrderBy(orderBy []string) *SwitchCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the switch collection get params
-func (o *SwitchCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the switch collection get params
+func (o *SwitchCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the switch collection get params
-func (o *SwitchCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SwitchCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the switch collection get params
+func (o *SwitchCollectionGetParams) WithReturnRecords(returnRecords *bool) *SwitchCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the switch collection get params
-func (o *SwitchCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the switch collection get params
+func (o *SwitchCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the switch collection get params
-func (o *SwitchCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SwitchCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the switch collection get params
+func (o *SwitchCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SwitchCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the switch collection get params
-func (o *SwitchCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the switch collection get params
+func (o *SwitchCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the switch collection get params
-func (o *SwitchCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *SwitchCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the switch collection get params
+func (o *SwitchCollectionGetParams) WithSerialNumber(serialNumber *string) *SwitchCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the switch collection get params
-func (o *SwitchCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the switch collection get params
+func (o *SwitchCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithSnmpUserQueryParameter adds the snmpUser to the switch collection get params
-func (o *SwitchCollectionGetParams) WithSnmpUserQueryParameter(snmpUser *string) *SwitchCollectionGetParams {
-	o.SetSnmpUserQueryParameter(snmpUser)
+// WithSnmpUser adds the snmpUser to the switch collection get params
+func (o *SwitchCollectionGetParams) WithSnmpUser(snmpUser *string) *SwitchCollectionGetParams {
+	o.SetSnmpUser(snmpUser)
 	return o
 }
 
-// SetSnmpUserQueryParameter adds the snmpUser to the switch collection get params
-func (o *SwitchCollectionGetParams) SetSnmpUserQueryParameter(snmpUser *string) {
-	o.SnmpUserQueryParameter = snmpUser
+// SetSnmpUser adds the snmpUser to the switch collection get params
+func (o *SwitchCollectionGetParams) SetSnmpUser(snmpUser *string) {
+	o.SnmpUser = snmpUser
 }
 
-// WithSnmpVersionQueryParameter adds the snmpVersion to the switch collection get params
-func (o *SwitchCollectionGetParams) WithSnmpVersionQueryParameter(snmpVersion *string) *SwitchCollectionGetParams {
-	o.SetSnmpVersionQueryParameter(snmpVersion)
+// WithSnmpVersion adds the snmpVersion to the switch collection get params
+func (o *SwitchCollectionGetParams) WithSnmpVersion(snmpVersion *string) *SwitchCollectionGetParams {
+	o.SetSnmpVersion(snmpVersion)
 	return o
 }
 
-// SetSnmpVersionQueryParameter adds the snmpVersion to the switch collection get params
-func (o *SwitchCollectionGetParams) SetSnmpVersionQueryParameter(snmpVersion *string) {
-	o.SnmpVersionQueryParameter = snmpVersion
+// SetSnmpVersion adds the snmpVersion to the switch collection get params
+func (o *SwitchCollectionGetParams) SetSnmpVersion(snmpVersion *string) {
+	o.SnmpVersion = snmpVersion
 }
 
-// WithVersionQueryParameter adds the version to the switch collection get params
-func (o *SwitchCollectionGetParams) WithVersionQueryParameter(version *string) *SwitchCollectionGetParams {
-	o.SetVersionQueryParameter(version)
+// WithVersion adds the version to the switch collection get params
+func (o *SwitchCollectionGetParams) WithVersion(version *string) *SwitchCollectionGetParams {
+	o.SetVersion(version)
 	return o
 }
 
-// SetVersionQueryParameter adds the version to the switch collection get params
-func (o *SwitchCollectionGetParams) SetVersionQueryParameter(version *string) {
-	o.VersionQueryParameter = version
+// SetVersion adds the version to the switch collection get params
+func (o *SwitchCollectionGetParams) SetVersion(version *string) {
+	o.Version = version
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -430,13 +430,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.AddressQueryParameter != nil {
+	if o.Address != nil {
 
 		// query param address
 		var qrAddress string
 
-		if o.AddressQueryParameter != nil {
-			qrAddress = *o.AddressQueryParameter
+		if o.Address != nil {
+			qrAddress = *o.Address
 		}
 		qAddress := qrAddress
 		if qAddress != "" {
@@ -447,13 +447,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.DiscoveredQueryParameter != nil {
+	if o.Discovered != nil {
 
 		// query param discovered
 		var qrDiscovered bool
 
-		if o.DiscoveredQueryParameter != nil {
-			qrDiscovered = *o.DiscoveredQueryParameter
+		if o.Discovered != nil {
+			qrDiscovered = *o.Discovered
 		}
 		qDiscovered := swag.FormatBool(qrDiscovered)
 		if qDiscovered != "" {
@@ -464,7 +464,7 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -475,13 +475,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -492,13 +492,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ModelQueryParameter != nil {
+	if o.Model != nil {
 
 		// query param model
 		var qrModel string
 
-		if o.ModelQueryParameter != nil {
-			qrModel = *o.ModelQueryParameter
+		if o.Model != nil {
+			qrModel = *o.Model
 		}
 		qModel := qrModel
 		if qModel != "" {
@@ -509,13 +509,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MonitoringEnabledQueryParameter != nil {
+	if o.MonitoringEnabled != nil {
 
 		// query param monitoring.enabled
 		var qrMonitoringEnabled bool
 
-		if o.MonitoringEnabledQueryParameter != nil {
-			qrMonitoringEnabled = *o.MonitoringEnabledQueryParameter
+		if o.MonitoringEnabled != nil {
+			qrMonitoringEnabled = *o.MonitoringEnabled
 		}
 		qMonitoringEnabled := swag.FormatBool(qrMonitoringEnabled)
 		if qMonitoringEnabled != "" {
@@ -526,13 +526,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MonitoringMonitoredQueryParameter != nil {
+	if o.MonitoringMonitored != nil {
 
 		// query param monitoring.monitored
 		var qrMonitoringMonitored bool
 
-		if o.MonitoringMonitoredQueryParameter != nil {
-			qrMonitoringMonitored = *o.MonitoringMonitoredQueryParameter
+		if o.MonitoringMonitored != nil {
+			qrMonitoringMonitored = *o.MonitoringMonitored
 		}
 		qMonitoringMonitored := swag.FormatBool(qrMonitoringMonitored)
 		if qMonitoringMonitored != "" {
@@ -543,13 +543,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MonitoringReasonQueryParameter != nil {
+	if o.MonitoringReason != nil {
 
 		// query param monitoring.reason
 		var qrMonitoringReason string
 
-		if o.MonitoringReasonQueryParameter != nil {
-			qrMonitoringReason = *o.MonitoringReasonQueryParameter
+		if o.MonitoringReason != nil {
+			qrMonitoringReason = *o.MonitoringReason
 		}
 		qMonitoringReason := qrMonitoringReason
 		if qMonitoringReason != "" {
@@ -560,13 +560,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -577,13 +577,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.NetworkQueryParameter != nil {
+	if o.Network != nil {
 
 		// query param network
 		var qrNetwork string
 
-		if o.NetworkQueryParameter != nil {
-			qrNetwork = *o.NetworkQueryParameter
+		if o.Network != nil {
+			qrNetwork = *o.Network
 		}
 		qNetwork := qrNetwork
 		if qNetwork != "" {
@@ -594,7 +594,7 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -605,13 +605,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -622,13 +622,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -639,13 +639,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -656,13 +656,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SnmpUserQueryParameter != nil {
+	if o.SnmpUser != nil {
 
 		// query param snmp.user
 		var qrSnmpUser string
 
-		if o.SnmpUserQueryParameter != nil {
-			qrSnmpUser = *o.SnmpUserQueryParameter
+		if o.SnmpUser != nil {
+			qrSnmpUser = *o.SnmpUser
 		}
 		qSnmpUser := qrSnmpUser
 		if qSnmpUser != "" {
@@ -673,13 +673,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.SnmpVersionQueryParameter != nil {
+	if o.SnmpVersion != nil {
 
 		// query param snmp.version
 		var qrSnmpVersion string
 
-		if o.SnmpVersionQueryParameter != nil {
-			qrSnmpVersion = *o.SnmpVersionQueryParameter
+		if o.SnmpVersion != nil {
+			qrSnmpVersion = *o.SnmpVersion
 		}
 		qSnmpVersion := qrSnmpVersion
 		if qSnmpVersion != "" {
@@ -690,13 +690,13 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.VersionQueryParameter != nil {
+	if o.Version != nil {
 
 		// query param version
 		var qrVersion string
 
-		if o.VersionQueryParameter != nil {
-			qrVersion = *o.VersionQueryParameter
+		if o.Version != nil {
+			qrVersion = *o.Version
 		}
 		qVersion := qrVersion
 		if qVersion != "" {
@@ -715,7 +715,7 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamSwitchCollectionGet binds the parameter fields
 func (o *SwitchCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -732,7 +732,7 @@ func (o *SwitchCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamSwitchCollectionGet binds the parameter order_by
 func (o *SwitchCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -20,21 +21,31 @@ import (
 // swagger:model consistency_group_tiering
 type ConsistencyGroupTiering struct {
 
+	// Object stores to use. Used for placement.
+	//
+	// Max Items: 2
+	// Min Items: 0
+	ConsistencyGroupTieringInlineObjectStores []*ConsistencyGroupTieringInlineObjectStoresInlineArrayItem `json:"object_stores,omitempty"`
+
 	// Storage tiering placement rules for the object.
 	// Enum: [allowed best_effort disallowed required]
-	Control string `json:"control,omitempty"`
+	Control *string `json:"control,omitempty"`
 
 	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold.
 	// <br>FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br/>all &dash; Allows tiering of both Snapshot copies and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br/>auto &dash; Allows tiering of both snapshot and active file system user data to the cloud store<br/>none &dash; Volume blocks are not be tiered to the cloud store.<br/>snapshot_only &dash; Allows tiering of only the volume Snapshot copies not associated with the active file system.
 	// <br>The default tiering policy is "snapshot-only" for a FlexVol volume and "none" for a FlexGroup volume. The default minimum cooling period for the "snapshot-only" tiering policy is 2 days and for the "auto" tiering policy it is 31 days.
 	//
 	// Enum: [all auto backup none snapshot_only]
-	Policy string `json:"policy,omitempty"`
+	Policy *string `json:"policy,omitempty"`
 }
 
 // Validate validates this consistency group tiering
 func (m *ConsistencyGroupTiering) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateConsistencyGroupTieringInlineObjectStores(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateControl(formats); err != nil {
 		res = append(res, err)
@@ -47,6 +58,40 @@ func (m *ConsistencyGroupTiering) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ConsistencyGroupTiering) validateConsistencyGroupTieringInlineObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroupTieringInlineObjectStores) { // not required
+		return nil
+	}
+
+	iConsistencyGroupTieringInlineObjectStoresSize := int64(len(m.ConsistencyGroupTieringInlineObjectStores))
+
+	if err := validate.MinItems("object_stores", "body", iConsistencyGroupTieringInlineObjectStoresSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("object_stores", "body", iConsistencyGroupTieringInlineObjectStoresSize, 2); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ConsistencyGroupTieringInlineObjectStores); i++ {
+		if swag.IsZero(m.ConsistencyGroupTieringInlineObjectStores[i]) { // not required
+			continue
+		}
+
+		if m.ConsistencyGroupTieringInlineObjectStores[i] != nil {
+			if err := m.ConsistencyGroupTieringInlineObjectStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -119,7 +164,7 @@ func (m *ConsistencyGroupTiering) validateControl(formats strfmt.Registry) error
 	}
 
 	// value enum
-	if err := m.validateControlEnum("control", "body", m.Control); err != nil {
+	if err := m.validateControlEnum("control", "body", *m.Control); err != nil {
 		return err
 	}
 
@@ -205,15 +250,42 @@ func (m *ConsistencyGroupTiering) validatePolicy(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validatePolicyEnum("policy", "body", m.Policy); err != nil {
+	if err := m.validatePolicyEnum("policy", "body", *m.Policy); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this consistency group tiering based on context it is used
+// ContextValidate validate this consistency group tiering based on the context it is used
 func (m *ConsistencyGroupTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateConsistencyGroupTieringInlineObjectStores(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ConsistencyGroupTiering) contextValidateConsistencyGroupTieringInlineObjectStores(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ConsistencyGroupTieringInlineObjectStores); i++ {
+
+		if m.ConsistencyGroupTieringInlineObjectStores[i] != nil {
+			if err := m.ConsistencyGroupTieringInlineObjectStores[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -228,6 +300,43 @@ func (m *ConsistencyGroupTiering) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ConsistencyGroupTiering) UnmarshalBinary(b []byte) error {
 	var res ConsistencyGroupTiering
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ConsistencyGroupTieringInlineObjectStoresInlineArrayItem consistency group tiering inline object stores inline array item
+//
+// swagger:model consistency_group_tiering_inline_object_stores_inline_array_item
+type ConsistencyGroupTieringInlineObjectStoresInlineArrayItem struct {
+
+	// The name of the object store to use. Used for placement.
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this consistency group tiering inline object stores inline array item
+func (m *ConsistencyGroupTieringInlineObjectStoresInlineArrayItem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this consistency group tiering inline object stores inline array item based on context it is used
+func (m *ConsistencyGroupTieringInlineObjectStoresInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ConsistencyGroupTieringInlineObjectStoresInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ConsistencyGroupTieringInlineObjectStoresInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res ConsistencyGroupTieringInlineObjectStoresInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -18,16 +18,16 @@ import (
 type NdmpScsi struct {
 
 	// Indicates the NDMP SCSI device ID.
-	DeviceID string `json:"device_id,omitempty"`
+	DeviceID *string `json:"device_id,omitempty"`
 
 	// Indicates the NDMP SCSI host adapter.
-	HostAdapter int64 `json:"host_adapter,omitempty"`
+	HostAdapter *int64 `json:"host_adapter,omitempty"`
 
 	// Indicates the NDMP SCSI LUN ID.
-	LunID int64 `json:"lun_id,omitempty"`
+	LunID *int64 `json:"lun_id,omitempty"`
 
 	// Indicates the NDMP SCSI target ID.
-	TargetID int64 `json:"target_id,omitempty"`
+	TargetID *int64 `json:"target_id,omitempty"`
 }
 
 // Validate validates this ndmp scsi

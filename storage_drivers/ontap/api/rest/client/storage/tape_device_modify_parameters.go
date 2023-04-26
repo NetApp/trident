@@ -68,7 +68,7 @@ type TapeDeviceModifyParams struct {
 
 	   Device ID
 	*/
-	DeviceIDPathParameter string
+	DeviceID string
 
 	/* Info.
 
@@ -80,13 +80,13 @@ type TapeDeviceModifyParams struct {
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *TapeDeviceModifyParams) WithDefaults() *TapeDeviceModifyParams {
 // All values with no default are reset to their zero value.
 func (o *TapeDeviceModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := TapeDeviceModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,15 +152,15 @@ func (o *TapeDeviceModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDeviceIDPathParameter adds the deviceID to the tape device modify params
-func (o *TapeDeviceModifyParams) WithDeviceIDPathParameter(deviceID string) *TapeDeviceModifyParams {
-	o.SetDeviceIDPathParameter(deviceID)
+// WithDeviceID adds the deviceID to the tape device modify params
+func (o *TapeDeviceModifyParams) WithDeviceID(deviceID string) *TapeDeviceModifyParams {
+	o.SetDeviceID(deviceID)
 	return o
 }
 
-// SetDeviceIDPathParameter adds the deviceId to the tape device modify params
-func (o *TapeDeviceModifyParams) SetDeviceIDPathParameter(deviceID string) {
-	o.DeviceIDPathParameter = deviceID
+// SetDeviceID adds the deviceId to the tape device modify params
+func (o *TapeDeviceModifyParams) SetDeviceID(deviceID string) {
+	o.DeviceID = deviceID
 }
 
 // WithInfo adds the info to the tape device modify params
@@ -174,26 +174,26 @@ func (o *TapeDeviceModifyParams) SetInfo(info *models.TapeDevice) {
 	o.Info = info
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the tape device modify params
-func (o *TapeDeviceModifyParams) WithNodeUUIDPathParameter(nodeUUID string) *TapeDeviceModifyParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the tape device modify params
+func (o *TapeDeviceModifyParams) WithNodeUUID(nodeUUID string) *TapeDeviceModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the tape device modify params
-func (o *TapeDeviceModifyParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the tape device modify params
+func (o *TapeDeviceModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the tape device modify params
-func (o *TapeDeviceModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *TapeDeviceModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the tape device modify params
+func (o *TapeDeviceModifyParams) WithReturnTimeout(returnTimeout *int64) *TapeDeviceModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the tape device modify params
-func (o *TapeDeviceModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the tape device modify params
+func (o *TapeDeviceModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -205,7 +205,7 @@ func (o *TapeDeviceModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param device_id
-	if err := r.SetPathParam("device_id", o.DeviceIDPathParameter); err != nil {
+	if err := r.SetPathParam("device_id", o.DeviceID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -215,17 +215,17 @@ func (o *TapeDeviceModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

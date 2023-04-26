@@ -66,13 +66,13 @@ type SplitStatusGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* VolumeUUID.
 
 	   Volume Instance UUID
 	*/
-	VolumeUUIDPathParameter string
+	VolumeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SplitStatusGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the split status get params
-func (o *SplitStatusGetParams) WithFieldsQueryParameter(fields []string) *SplitStatusGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the split status get params
+func (o *SplitStatusGetParams) WithFields(fields []string) *SplitStatusGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the split status get params
-func (o *SplitStatusGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the split status get params
+func (o *SplitStatusGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithVolumeUUIDPathParameter adds the volumeUUID to the split status get params
-func (o *SplitStatusGetParams) WithVolumeUUIDPathParameter(volumeUUID string) *SplitStatusGetParams {
-	o.SetVolumeUUIDPathParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the split status get params
+func (o *SplitStatusGetParams) WithVolumeUUID(volumeUUID string) *SplitStatusGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDPathParameter adds the volumeUuid to the split status get params
-func (o *SplitStatusGetParams) SetVolumeUUIDPathParameter(volumeUUID string) {
-	o.VolumeUUIDPathParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the split status get params
+func (o *SplitStatusGetParams) SetVolumeUUID(volumeUUID string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SplitStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SplitStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param volume.uuid
-	if err := r.SetPathParam("volume.uuid", o.VolumeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("volume.uuid", o.VolumeUUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SplitStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamSplitStatusGet binds the parameter fields
 func (o *SplitStatusGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

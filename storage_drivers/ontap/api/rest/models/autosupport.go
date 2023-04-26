@@ -21,48 +21,49 @@ import (
 // swagger:model autosupport
 type Autosupport struct {
 
-	// Specifies whether to send the AutoSupport messages to vendor support.
-	// Example: true
-	ContactSupport bool `json:"contact_support,omitempty"`
-
-	// Specifies whether the AutoSupport daemon is enabled.  When this setting is disabled, delivery of all AutoSupport messages is turned off.
-	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
-
-	// The e-mail address from which the AutoSupport messages are sent. To generate node-specific 'from' addresses, enable '-node-specific-from' parameter via ONTAP CLI.
-	// Example: postmaster@example.com
-	// Format: email
-	From strfmt.Email `json:"from,omitempty"`
-
-	// Specifies whether the system information is collected in compliant form, to remove private data or in complete form, to enhance diagnostics.
-	// Example: true
-	IsMinimal bool `json:"is_minimal,omitempty"`
-
 	// A list of nodes in the cluster with connectivity issues to HTTP/SMTP/AOD AutoSupport destinations along with the corresponding error descriptions and corrective actions.
 	// Read Only: true
-	Issues []*AutosupportIssues `json:"issues,omitempty"`
+	AutosupportInlineIssues []*AutosupportIssues `json:"issues,omitempty"`
 
 	// The names of the mail servers used to deliver AutoSupport messages via SMTP.
 	// Example: ["mailhost1.example.com","mailhost2.example.com"]
 	// Max Items: 5
-	MailHosts []strfmt.URI `json:"mail_hosts,omitempty"`
+	AutosupportInlineMailHosts []*strfmt.URI `json:"mail_hosts,omitempty"`
 
 	// The list of partner addresses.
 	// Example: ["user1@partner.com","user2@partner.com"]
 	// Max Items: 5
-	PartnerAddresses []strfmt.Email `json:"partner_addresses,omitempty"`
-
-	// Proxy server for AutoSupport message delivery via HTTP/S. Optionally specify a username/password for authentication with the proxy server.
-	// Example: https://proxy.company.com
-	// Format: uri
-	ProxyURL strfmt.URI `json:"proxy_url,omitempty"`
+	AutosupportInlinePartnerAddresses []*strfmt.Email `json:"partner_addresses,omitempty"`
 
 	// The e-mail addresses to which the AutoSupport messages are sent.
 	// Example: ["user1@example.com","user2@example.com"]
 	// Max Items: 5
-	To []strfmt.Email `json:"to,omitempty"`
+	AutosupportInlineTo []*strfmt.Email `json:"to,omitempty"`
 
-	// The name of the transport protocol used to deliver AutoSupport messages.
+	// Specifies whether to send the AutoSupport messages to vendor support.
+	// Example: true
+	ContactSupport *bool `json:"contact_support,omitempty"`
+
+	// Specifies whether the AutoSupport daemon is enabled.  When this setting is disabled, delivery of all AutoSupport messages is turned off.
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// The e-mail address from which the AutoSupport messages are sent. To generate node-specific 'from' addresses, enable '-node-specific-from' parameter via ONTAP CLI.
+	// Example: postmaster@example.com
+	// Format: email
+	From *strfmt.Email `json:"from,omitempty"`
+
+	// Specifies whether the system information is collected in compliant form, to remove private data or in complete form, to enhance diagnostics.
+	// Example: true
+	IsMinimal *bool `json:"is_minimal,omitempty"`
+
+	// Proxy server for AutoSupport message delivery via HTTP/S. Optionally specify a username/password for authentication with the proxy server.
+	// Example: https://proxy.company.com
+	// Format: uri
+	ProxyURL *strfmt.URI `json:"proxy_url,omitempty"`
+
+	// The name of the transport protocol used to deliver AutoSupport messages. Note: Support for 'http' transport has been deprecated and might be removed in a future version of ONTAP.
+	//
 	// Example: smtp
 	// Enum: [smtp http https]
 	Transport *string `json:"transport,omitempty"`
@@ -72,27 +73,27 @@ type Autosupport struct {
 func (m *Autosupport) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAutosupportInlineIssues(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAutosupportInlineMailHosts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAutosupportInlinePartnerAddresses(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAutosupportInlineTo(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateFrom(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateIssues(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateMailHosts(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePartnerAddresses(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateProxyURL(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -103,6 +104,105 @@ func (m *Autosupport) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Autosupport) validateAutosupportInlineIssues(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutosupportInlineIssues) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AutosupportInlineIssues); i++ {
+		if swag.IsZero(m.AutosupportInlineIssues[i]) { // not required
+			continue
+		}
+
+		if m.AutosupportInlineIssues[i] != nil {
+			if err := m.AutosupportInlineIssues[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("issues" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Autosupport) validateAutosupportInlineMailHosts(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutosupportInlineMailHosts) { // not required
+		return nil
+	}
+
+	iAutosupportInlineMailHostsSize := int64(len(m.AutosupportInlineMailHosts))
+
+	if err := validate.MaxItems("mail_hosts", "body", iAutosupportInlineMailHostsSize, 5); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.AutosupportInlineMailHosts); i++ {
+		if swag.IsZero(m.AutosupportInlineMailHosts[i]) { // not required
+			continue
+		}
+
+		if err := validate.FormatOf("mail_hosts"+"."+strconv.Itoa(i), "body", "uri", m.AutosupportInlineMailHosts[i].String(), formats); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Autosupport) validateAutosupportInlinePartnerAddresses(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutosupportInlinePartnerAddresses) { // not required
+		return nil
+	}
+
+	iAutosupportInlinePartnerAddressesSize := int64(len(m.AutosupportInlinePartnerAddresses))
+
+	if err := validate.MaxItems("partner_addresses", "body", iAutosupportInlinePartnerAddressesSize, 5); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.AutosupportInlinePartnerAddresses); i++ {
+		if swag.IsZero(m.AutosupportInlinePartnerAddresses[i]) { // not required
+			continue
+		}
+
+		if err := validate.FormatOf("partner_addresses"+"."+strconv.Itoa(i), "body", "email", m.AutosupportInlinePartnerAddresses[i].String(), formats); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Autosupport) validateAutosupportInlineTo(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutosupportInlineTo) { // not required
+		return nil
+	}
+
+	iAutosupportInlineToSize := int64(len(m.AutosupportInlineTo))
+
+	if err := validate.MaxItems("to", "body", iAutosupportInlineToSize, 5); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.AutosupportInlineTo); i++ {
+		if swag.IsZero(m.AutosupportInlineTo[i]) { // not required
+			continue
+		}
+
+		if err := validate.FormatOf("to"+"."+strconv.Itoa(i), "body", "email", m.AutosupportInlineTo[i].String(), formats); err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 
@@ -118,74 +218,6 @@ func (m *Autosupport) validateFrom(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Autosupport) validateIssues(formats strfmt.Registry) error {
-	if swag.IsZero(m.Issues) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Issues); i++ {
-		if swag.IsZero(m.Issues[i]) { // not required
-			continue
-		}
-
-		if m.Issues[i] != nil {
-			if err := m.Issues[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("issues" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Autosupport) validateMailHosts(formats strfmt.Registry) error {
-	if swag.IsZero(m.MailHosts) { // not required
-		return nil
-	}
-
-	iMailHostsSize := int64(len(m.MailHosts))
-
-	if err := validate.MaxItems("mail_hosts", "body", iMailHostsSize, 5); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.MailHosts); i++ {
-
-		if err := validate.FormatOf("mail_hosts"+"."+strconv.Itoa(i), "body", "uri", m.MailHosts[i].String(), formats); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *Autosupport) validatePartnerAddresses(formats strfmt.Registry) error {
-	if swag.IsZero(m.PartnerAddresses) { // not required
-		return nil
-	}
-
-	iPartnerAddressesSize := int64(len(m.PartnerAddresses))
-
-	if err := validate.MaxItems("partner_addresses", "body", iPartnerAddressesSize, 5); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.PartnerAddresses); i++ {
-
-		if err := validate.FormatOf("partner_addresses"+"."+strconv.Itoa(i), "body", "email", m.PartnerAddresses[i].String(), formats); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 func (m *Autosupport) validateProxyURL(formats strfmt.Registry) error {
 	if swag.IsZero(m.ProxyURL) { // not required
 		return nil
@@ -193,28 +225,6 @@ func (m *Autosupport) validateProxyURL(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("proxy_url", "body", "uri", m.ProxyURL.String(), formats); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Autosupport) validateTo(formats strfmt.Registry) error {
-	if swag.IsZero(m.To) { // not required
-		return nil
-	}
-
-	iToSize := int64(len(m.To))
-
-	if err := validate.MaxItems("to", "body", iToSize, 5); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.To); i++ {
-
-		if err := validate.FormatOf("to"+"."+strconv.Itoa(i), "body", "email", m.To[i].String(), formats); err != nil {
-			return err
-		}
-
 	}
 
 	return nil
@@ -290,7 +300,7 @@ func (m *Autosupport) validateTransport(formats strfmt.Registry) error {
 func (m *Autosupport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateIssues(ctx, formats); err != nil {
+	if err := m.contextValidateAutosupportInlineIssues(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -300,16 +310,16 @@ func (m *Autosupport) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *Autosupport) contextValidateIssues(ctx context.Context, formats strfmt.Registry) error {
+func (m *Autosupport) contextValidateAutosupportInlineIssues(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "issues", "body", []*AutosupportIssues(m.Issues)); err != nil {
+	if err := validate.ReadOnly(ctx, "issues", "body", []*AutosupportIssues(m.AutosupportInlineIssues)); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Issues); i++ {
+	for i := 0; i < len(m.AutosupportInlineIssues); i++ {
 
-		if m.Issues[i] != nil {
-			if err := m.Issues[i].ContextValidate(ctx, formats); err != nil {
+		if m.AutosupportInlineIssues[i] != nil {
+			if err := m.AutosupportInlineIssues[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("issues" + "." + strconv.Itoa(i))
 				}

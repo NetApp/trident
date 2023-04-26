@@ -66,12 +66,12 @@ type NodeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// UUID.
 	//
 	// Format: uuid
-	UUIDPathParameter strfmt.UUID
+	UUID strfmt.UUID
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *NodeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the node get params
-func (o *NodeGetParams) WithFieldsQueryParameter(fields []string) *NodeGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the node get params
+func (o *NodeGetParams) WithFields(fields []string) *NodeGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the node get params
-func (o *NodeGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the node get params
+func (o *NodeGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the node get params
-func (o *NodeGetParams) WithUUIDPathParameter(uuid strfmt.UUID) *NodeGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the node get params
+func (o *NodeGetParams) WithUUID(uuid strfmt.UUID) *NodeGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the node get params
-func (o *NodeGetParams) SetUUIDPathParameter(uuid strfmt.UUID) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the node get params
+func (o *NodeGetParams) SetUUID(uuid strfmt.UUID) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -156,7 +156,7 @@ func (o *NodeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -168,7 +168,7 @@ func (o *NodeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter.String()); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID.String()); err != nil {
 		return err
 	}
 
@@ -180,7 +180,7 @@ func (o *NodeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamNodeGet binds the parameter fields
 func (o *NodeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

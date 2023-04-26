@@ -21,7 +21,7 @@ import (
 type FileInfo struct {
 
 	// links
-	Links *FileInfoLinksType `json:"_links,omitempty"`
+	Links *FileInfoInlineLinks `json:"_links,omitempty"`
 
 	// Last access time of the file in date-time format.
 	// Example: 2019-06-12T11:00:16-04:00
@@ -30,12 +30,12 @@ type FileInfo struct {
 	AccessedTime *strfmt.DateTime `json:"accessed_time,omitempty"`
 
 	// analytics
-	Analytics *FileInfoAnalytics `json:"analytics,omitempty"`
+	Analytics *FileInfoInlineAnalytics `json:"analytics,omitempty"`
 
 	// The actual number of bytes used on disk by this file. If byte_offset and length parameters are specified, this will return the bytes used by the file within the given range.
 	// Example: 4096
 	// Read Only: true
-	BytesUsed int64 `json:"bytes_used,omitempty"`
+	BytesUsed *int64 `json:"bytes_used,omitempty"`
 
 	// Last time data or attributes changed on the file in date-time format.
 	// Example: 2019-06-12T11:00:16-04:00
@@ -44,7 +44,7 @@ type FileInfo struct {
 	ChangedTime *strfmt.DateTime `json:"changed_time,omitempty"`
 
 	// constituent
-	Constituent *FileInfoConstituent `json:"constituent,omitempty"`
+	Constituent *FileInfoInlineConstituent `json:"constituent,omitempty"`
 
 	// Creation time of the file in date-time format.
 	// Example: 2019-06-12T11:00:16-04:00
@@ -58,26 +58,26 @@ type FileInfo struct {
 	// The integer ID of the group of the file owner.
 	// Example: 30
 	// Read Only: true
-	GroupID int64 `json:"group_id,omitempty"`
+	GroupID *int64 `json:"group_id,omitempty"`
 
 	// The number of hard links to the file.
 	// Example: 1
 	// Read Only: true
-	HardLinksCount int64 `json:"hard_links_count,omitempty"`
+	HardLinksCount *int64 `json:"hard_links_count,omitempty"`
 
 	// Inode generation number.
 	// Example: 214753547
 	// Read Only: true
-	InodeGeneration int64 `json:"inode_generation,omitempty"`
+	InodeGeneration *int64 `json:"inode_generation,omitempty"`
 
 	// The file inode number.
 	// Example: 1695
 	// Read Only: true
-	InodeNumber int64 `json:"inode_number,omitempty"`
+	InodeNumber *int64 `json:"inode_number,omitempty"`
 
 	// Specifies whether or not a directory is empty. A directory is considered empty if it only contains entries for "." and "..". This element is present if the file is a directory. In some special error cases, such as when the volume goes offline or when the directory is moved while retrieving this info, this field might not get set.
 	// Example: false
-	IsEmpty bool `json:"is_empty,omitempty"`
+	IsEmpty *bool `json:"is_empty,omitempty"`
 
 	// Returns "true" if the directory is a junction.
 	// Example: false
@@ -86,7 +86,7 @@ type FileInfo struct {
 
 	// Returns "true" if the directory is a Snapshot copy.
 	// Example: false
-	IsSnapshot bool `json:"is_snapshot,omitempty"`
+	IsSnapshot *bool `json:"is_snapshot,omitempty"`
 
 	// Returns true if the file is vm-aligned. A vm-aligned file is a file that is initially padded with zero-filled data so that its actual data starts at an offset other than zero. The amount by which the start offset is adjusted depends on the vm-align setting of the hosting volume.
 	// Example: false
@@ -101,7 +101,7 @@ type FileInfo struct {
 
 	// Name of the file.
 	// Example: test_file
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Returns "true" if the space reservation for overwrites is enabled. The field fill_enabled must also be set to the same value as this field.
 	OverwriteEnabled *bool `json:"overwrite_enabled,omitempty"`
@@ -109,39 +109,39 @@ type FileInfo struct {
 	// The integer ID of the file owner.
 	// Example: 54738
 	// Read Only: true
-	OwnerID int64 `json:"owner_id,omitempty"`
+	OwnerID *int64 `json:"owner_id,omitempty"`
 
 	// Path of the file.
 	// Example: d1/d2/d3
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// qos policy
-	QosPolicy *FileInfoQosPolicy `json:"qos_policy,omitempty"`
+	QosPolicy *FileInfoInlineQosPolicy `json:"qos_policy,omitempty"`
 
 	// The size of the file, in bytes.
 	// Example: 200
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// The relative or absolute path contained in a symlink, in the form <some>/<path>.
 	// Example: some_directory/some_other_directory/some_file
-	Target string `json:"target,omitempty"`
+	Target *string `json:"target,omitempty"`
 
 	// Type of the file.
 	// Example: file
 	// Enum: [file directory blockdev chardev symlink socket fifo stream lun]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Number of bytes uniquely held by this file. If byte_offset and length parameters are specified, this will return bytes uniquely held by the file within the given range.
 	// Example: 4096
 	// Read Only: true
-	UniqueBytes int64 `json:"unique_bytes,omitempty"`
+	UniqueBytes *int64 `json:"unique_bytes,omitempty"`
 
 	// UNIX permissions to be viewed as an octal number. It consists of 4 digits derived by adding up bits 4 (read), 2 (write), and 1 (execute). The first digit selects the set user ID(4), set group ID (2), and sticky (1) attributes. The second digit selects permissions for the owner of the file; the third selects permissions for other users in the same group; the fourth selects permissions for other users not in the group.
 	// Example: 755
-	UnixPermissions int64 `json:"unix_permissions,omitempty"`
+	UnixPermissions *int64 `json:"unix_permissions,omitempty"`
 
 	// volume
-	Volume *FileInfoVolume `json:"volume,omitempty"`
+	Volume *FileInfoInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this file info
@@ -429,7 +429,7 @@ func (m *FileInfo) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -574,7 +574,7 @@ func (m *FileInfo) contextValidateAnalytics(ctx context.Context, formats strfmt.
 
 func (m *FileInfo) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "bytes_used", "body", int64(m.BytesUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "bytes_used", "body", m.BytesUsed); err != nil {
 		return err
 	}
 
@@ -615,7 +615,7 @@ func (m *FileInfo) contextValidateCreationTime(ctx context.Context, formats strf
 
 func (m *FileInfo) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "group_id", "body", int64(m.GroupID)); err != nil {
+	if err := validate.ReadOnly(ctx, "group_id", "body", m.GroupID); err != nil {
 		return err
 	}
 
@@ -624,7 +624,7 @@ func (m *FileInfo) contextValidateGroupID(ctx context.Context, formats strfmt.Re
 
 func (m *FileInfo) contextValidateHardLinksCount(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "hard_links_count", "body", int64(m.HardLinksCount)); err != nil {
+	if err := validate.ReadOnly(ctx, "hard_links_count", "body", m.HardLinksCount); err != nil {
 		return err
 	}
 
@@ -633,7 +633,7 @@ func (m *FileInfo) contextValidateHardLinksCount(ctx context.Context, formats st
 
 func (m *FileInfo) contextValidateInodeGeneration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "inode_generation", "body", int64(m.InodeGeneration)); err != nil {
+	if err := validate.ReadOnly(ctx, "inode_generation", "body", m.InodeGeneration); err != nil {
 		return err
 	}
 
@@ -642,7 +642,7 @@ func (m *FileInfo) contextValidateInodeGeneration(ctx context.Context, formats s
 
 func (m *FileInfo) contextValidateInodeNumber(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "inode_number", "body", int64(m.InodeNumber)); err != nil {
+	if err := validate.ReadOnly(ctx, "inode_number", "body", m.InodeNumber); err != nil {
 		return err
 	}
 
@@ -678,7 +678,7 @@ func (m *FileInfo) contextValidateModifiedTime(ctx context.Context, formats strf
 
 func (m *FileInfo) contextValidateOwnerID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "owner_id", "body", int64(m.OwnerID)); err != nil {
+	if err := validate.ReadOnly(ctx, "owner_id", "body", m.OwnerID); err != nil {
 		return err
 	}
 
@@ -701,7 +701,7 @@ func (m *FileInfo) contextValidateQosPolicy(ctx context.Context, formats strfmt.
 
 func (m *FileInfo) contextValidateUniqueBytes(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "unique_bytes", "body", int64(m.UniqueBytes)); err != nil {
+	if err := validate.ReadOnly(ctx, "unique_bytes", "body", m.UniqueBytes); err != nil {
 		return err
 	}
 
@@ -740,34 +740,37 @@ func (m *FileInfo) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoAnalytics Additional file system analytics information summarizing all descendents of a directory. <br/>
+// FileInfoInlineAnalytics Additional file system analytics information summarizing all descendents of a directory. <br/>
 // This property is only populated if file system analytics is enabled on the containing volume. <br/>
 // In the context of the `records` property of a [`file_info_response`](#model-file_info_response), analytics objects will only include properties that may vary between elements within the collection. For example, the analytics objects will not contain histogram labels, since the same histogram labels are used for all elements within the collection. The invariant information is instead available via the `analytics` property of the [`file_info_response`](#model-file_info_response). This avoids an excessive amount of duplicated information when a [`GET  /storage/volumes/{volume.uuid}/files/{path}`](#/storage/file_collection_get) call returns a large collection.
 //
-// swagger:model FileInfoAnalytics
-type FileInfoAnalytics struct {
+// swagger:model file_info_inline_analytics
+type FileInfoInlineAnalytics struct {
 
 	// by accessed time
-	ByAccessedTime *FileInfoAnalyticsByAccessedTime `json:"by_accessed_time,omitempty"`
+	ByAccessedTime *FileInfoInlineAnalyticsInlineByAccessedTime `json:"by_accessed_time,omitempty"`
 
 	// by modified time
-	ByModifiedTime *FileInfoAnalyticsByModifiedTime `json:"by_modified_time,omitempty"`
+	ByModifiedTime *FileInfoInlineAnalyticsInlineByModifiedTime `json:"by_modified_time,omitempty"`
 
 	// Number of bytes used on-disk
 	// Example: 15436648448
-	BytesUsed int64 `json:"bytes_used,omitempty"`
+	BytesUsed *int64 `json:"bytes_used,omitempty"`
 
 	// Number of descendants
 	// Example: 21134
-	FileCount int64 `json:"file_count,omitempty"`
+	FileCount *int64 `json:"file_count,omitempty"`
+
+	// Returns true if data collection is incomplete for this directory tree.
+	IncompleteData *bool `json:"incomplete_data,omitempty"`
 
 	// Number of sub directories
 	// Example: 35
-	SubdirCount int64 `json:"subdir_count,omitempty"`
+	SubdirCount *int64 `json:"subdir_count,omitempty"`
 }
 
-// Validate validates this file info analytics
-func (m *FileInfoAnalytics) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline analytics
+func (m *FileInfoInlineAnalytics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateByAccessedTime(formats); err != nil {
@@ -784,7 +787,7 @@ func (m *FileInfoAnalytics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoAnalytics) validateByAccessedTime(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalytics) validateByAccessedTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.ByAccessedTime) { // not required
 		return nil
 	}
@@ -801,7 +804,7 @@ func (m *FileInfoAnalytics) validateByAccessedTime(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *FileInfoAnalytics) validateByModifiedTime(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalytics) validateByModifiedTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.ByModifiedTime) { // not required
 		return nil
 	}
@@ -818,8 +821,8 @@ func (m *FileInfoAnalytics) validateByModifiedTime(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this file info analytics based on the context it is used
-func (m *FileInfoAnalytics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline analytics based on the context it is used
+func (m *FileInfoInlineAnalytics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateByAccessedTime(ctx, formats); err != nil {
@@ -836,7 +839,7 @@ func (m *FileInfoAnalytics) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileInfoAnalytics) contextValidateByAccessedTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalytics) contextValidateByAccessedTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ByAccessedTime != nil {
 		if err := m.ByAccessedTime.ContextValidate(ctx, formats); err != nil {
@@ -850,7 +853,7 @@ func (m *FileInfoAnalytics) contextValidateByAccessedTime(ctx context.Context, f
 	return nil
 }
 
-func (m *FileInfoAnalytics) contextValidateByModifiedTime(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalytics) contextValidateByModifiedTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ByModifiedTime != nil {
 		if err := m.ByModifiedTime.ContextValidate(ctx, formats); err != nil {
@@ -865,7 +868,7 @@ func (m *FileInfoAnalytics) contextValidateByModifiedTime(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoAnalytics) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineAnalytics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -873,8 +876,8 @@ func (m *FileInfoAnalytics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoAnalytics) UnmarshalBinary(b []byte) error {
-	var res FileInfoAnalytics
+func (m *FileInfoInlineAnalytics) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineAnalytics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -882,17 +885,17 @@ func (m *FileInfoAnalytics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoAnalyticsByAccessedTime File system analytics information, broken down by date of last access.
+// FileInfoInlineAnalyticsInlineByAccessedTime File system analytics information, broken down by date of last access.
 //
-// swagger:model FileInfoAnalyticsByAccessedTime
-type FileInfoAnalyticsByAccessedTime struct {
+// swagger:model file_info_inline_analytics_inline_by_accessed_time
+type FileInfoInlineAnalyticsInlineByAccessedTime struct {
 
 	// bytes used
-	BytesUsed *FileInfoAnalyticsByAccessedTimeBytesUsed `json:"bytes_used,omitempty"`
+	BytesUsed *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
 }
 
-// Validate validates this file info analytics by accessed time
-func (m *FileInfoAnalyticsByAccessedTime) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline analytics inline by accessed time
+func (m *FileInfoInlineAnalyticsInlineByAccessedTime) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBytesUsed(formats); err != nil {
@@ -905,7 +908,7 @@ func (m *FileInfoAnalyticsByAccessedTime) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.BytesUsed) { // not required
 		return nil
 	}
@@ -922,8 +925,8 @@ func (m *FileInfoAnalyticsByAccessedTime) validateBytesUsed(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this file info analytics by accessed time based on the context it is used
-func (m *FileInfoAnalyticsByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline analytics inline by accessed time based on the context it is used
+func (m *FileInfoInlineAnalyticsInlineByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
@@ -936,7 +939,7 @@ func (m *FileInfoAnalyticsByAccessedTime) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BytesUsed != nil {
 		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
@@ -951,7 +954,7 @@ func (m *FileInfoAnalyticsByAccessedTime) contextValidateBytesUsed(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoAnalyticsByAccessedTime) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -959,8 +962,8 @@ func (m *FileInfoAnalyticsByAccessedTime) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoAnalyticsByAccessedTime) UnmarshalBinary(b []byte) error {
-	var res FileInfoAnalyticsByAccessedTime
+func (m *FileInfoInlineAnalyticsInlineByAccessedTime) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineAnalyticsInlineByAccessedTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -968,31 +971,31 @@ func (m *FileInfoAnalyticsByAccessedTime) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoAnalyticsByAccessedTimeBytesUsed Number of bytes used on-disk, broken down by date of last access.
+// FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last access.
 //
-// swagger:model FileInfoAnalyticsByAccessedTimeBytesUsed
-type FileInfoAnalyticsByAccessedTimeBytesUsed struct {
+// swagger:model file_info_inline_analytics_inline_by_accessed_time_inline_bytes_used
+type FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed struct {
 
 	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
 
 	// The newest time label with a non-zero histogram value.
-	NewestLabel AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
 
 	// The oldest time label with a non-zero histogram value.
-	OldestLabel AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
 
 	// Percentages for this histogram
-	// Example: ["0.1","11.24","0.18","15.75","0.75","83.5","0"]
-	Percentages []float64 `json:"percentages,omitempty"`
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	Percentages []*float64 `json:"percentages,omitempty"`
 
 	// Values for this histogram
-	// Example: ["15925248","1735569408","27672576","2430595072","116105216","12889948160","0"]
-	Values []int64 `json:"values,omitempty"`
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	Values []*int64 `json:"values,omitempty"`
 }
 
-// Validate validates this file info analytics by accessed time bytes used
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline analytics inline by accessed time inline bytes used
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLabels(formats); err != nil {
@@ -1013,7 +1016,7 @@ func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
 	if swag.IsZero(m.Labels) { // not required
 		return nil
 	}
@@ -1028,38 +1031,42 @@ func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) validateLabels(formats strfmt
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.NewestLabel) { // not required
 		return nil
 	}
 
-	if err := m.NewestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.OldestLabel) { // not required
 		return nil
 	}
 
-	if err := m.OldestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this file info analytics by accessed time bytes used based on the context it is used
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline analytics inline by accessed time inline bytes used based on the context it is used
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLabels(ctx, formats); err != nil {
@@ -1080,7 +1087,7 @@ func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -1092,32 +1099,36 @@ func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) contextValidateLabels(ctx con
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1125,8 +1136,8 @@ func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) UnmarshalBinary(b []byte) error {
-	var res FileInfoAnalyticsByAccessedTimeBytesUsed
+func (m *FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineAnalyticsInlineByAccessedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1134,17 +1145,17 @@ func (m *FileInfoAnalyticsByAccessedTimeBytesUsed) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// FileInfoAnalyticsByModifiedTime File system analytics information, broken down by date of last modification.
+// FileInfoInlineAnalyticsInlineByModifiedTime File system analytics information, broken down by date of last modification.
 //
-// swagger:model FileInfoAnalyticsByModifiedTime
-type FileInfoAnalyticsByModifiedTime struct {
+// swagger:model file_info_inline_analytics_inline_by_modified_time
+type FileInfoInlineAnalyticsInlineByModifiedTime struct {
 
 	// bytes used
-	BytesUsed *FileInfoAnalyticsByModifiedTimeBytesUsed `json:"bytes_used,omitempty"`
+	BytesUsed *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
 }
 
-// Validate validates this file info analytics by modified time
-func (m *FileInfoAnalyticsByModifiedTime) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline analytics inline by modified time
+func (m *FileInfoInlineAnalyticsInlineByModifiedTime) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBytesUsed(formats); err != nil {
@@ -1157,7 +1168,7 @@ func (m *FileInfoAnalyticsByModifiedTime) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
 	if swag.IsZero(m.BytesUsed) { // not required
 		return nil
 	}
@@ -1174,8 +1185,8 @@ func (m *FileInfoAnalyticsByModifiedTime) validateBytesUsed(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this file info analytics by modified time based on the context it is used
-func (m *FileInfoAnalyticsByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline analytics inline by modified time based on the context it is used
+func (m *FileInfoInlineAnalyticsInlineByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
@@ -1188,7 +1199,7 @@ func (m *FileInfoAnalyticsByModifiedTime) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BytesUsed != nil {
 		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
@@ -1203,7 +1214,7 @@ func (m *FileInfoAnalyticsByModifiedTime) contextValidateBytesUsed(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoAnalyticsByModifiedTime) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTime) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1211,8 +1222,8 @@ func (m *FileInfoAnalyticsByModifiedTime) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoAnalyticsByModifiedTime) UnmarshalBinary(b []byte) error {
-	var res FileInfoAnalyticsByModifiedTime
+func (m *FileInfoInlineAnalyticsInlineByModifiedTime) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineAnalyticsInlineByModifiedTime
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1220,31 +1231,31 @@ func (m *FileInfoAnalyticsByModifiedTime) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoAnalyticsByModifiedTimeBytesUsed Number of bytes used on-disk, broken down by date of last modification.
+// FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last modification.
 //
-// swagger:model FileInfoAnalyticsByModifiedTimeBytesUsed
-type FileInfoAnalyticsByModifiedTimeBytesUsed struct {
+// swagger:model file_info_inline_analytics_inline_by_modified_time_inline_bytes_used
+type FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed struct {
 
 	// labels
-	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
 
 	// The newest time label with a non-zero histogram value.
-	NewestLabel AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
 
 	// The oldest time label with a non-zero histogram value.
-	OldestLabel AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
 
 	// Percentages for this histogram
-	// Example: ["0.1","11.24","0.18","15.75","0.75","83.5","0"]
-	Percentages []float64 `json:"percentages,omitempty"`
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	Percentages []*float64 `json:"percentages,omitempty"`
 
 	// Values for this histogram
-	// Example: ["15925248","1735569408","27672576","2430595072","116105216","12889948160","0"]
-	Values []int64 `json:"values,omitempty"`
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	Values []*int64 `json:"values,omitempty"`
 }
 
-// Validate validates this file info analytics by modified time bytes used
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline analytics inline by modified time inline bytes used
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLabels(formats); err != nil {
@@ -1265,7 +1276,7 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) Validate(formats strfmt.Regis
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
 	if swag.IsZero(m.Labels) { // not required
 		return nil
 	}
@@ -1280,38 +1291,42 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) validateLabels(formats strfmt
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.NewestLabel) { // not required
 		return nil
 	}
 
-	if err := m.NewestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
 	if swag.IsZero(m.OldestLabel) { // not required
 		return nil
 	}
 
-	if err := m.OldestLabel.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this file info analytics by modified time bytes used based on the context it is used
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline analytics inline by modified time inline bytes used based on the context it is used
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLabels(ctx, formats); err != nil {
@@ -1332,7 +1347,7 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) ContextValidate(ctx context.C
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -1344,32 +1359,36 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) contextValidateLabels(ctx con
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1377,8 +1396,8 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) MarshalBinary() ([]byte, erro
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) UnmarshalBinary(b []byte) error {
-	var res FileInfoAnalyticsByModifiedTimeBytesUsed
+func (m *FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineAnalyticsInlineByModifiedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1386,32 +1405,32 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) UnmarshalBinary(b []byte) err
 	return nil
 }
 
-// FileInfoConstituent file info constituent
+// FileInfoInlineConstituent file info inline constituent
 //
-// swagger:model FileInfoConstituent
-type FileInfoConstituent struct {
+// swagger:model file_info_inline_constituent
+type FileInfoInlineConstituent struct {
 
 	// FlexGroup volume constituent name.
 	// Example: fg__0001
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// FlexGroup volume constituent UUID.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file info constituent
-func (m *FileInfoConstituent) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline constituent
+func (m *FileInfoInlineConstituent) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this file info constituent based on context it is used
-func (m *FileInfoConstituent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this file info inline constituent based on context it is used
+func (m *FileInfoInlineConstituent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoConstituent) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineConstituent) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1419,8 +1438,8 @@ func (m *FileInfoConstituent) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoConstituent) UnmarshalBinary(b []byte) error {
-	var res FileInfoConstituent
+func (m *FileInfoInlineConstituent) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineConstituent
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1428,10 +1447,10 @@ func (m *FileInfoConstituent) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoLinksType file info links type
+// FileInfoInlineLinks file info inline links
 //
-// swagger:model FileInfoLinksType
-type FileInfoLinksType struct {
+// swagger:model file_info_inline__links
+type FileInfoInlineLinks struct {
 
 	// metadata
 	Metadata *Href `json:"metadata,omitempty"`
@@ -1440,8 +1459,8 @@ type FileInfoLinksType struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file info links type
-func (m *FileInfoLinksType) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline links
+func (m *FileInfoInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateMetadata(formats); err != nil {
@@ -1458,7 +1477,7 @@ func (m *FileInfoLinksType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoLinksType) validateMetadata(formats strfmt.Registry) error {
+func (m *FileInfoInlineLinks) validateMetadata(formats strfmt.Registry) error {
 	if swag.IsZero(m.Metadata) { // not required
 		return nil
 	}
@@ -1475,7 +1494,7 @@ func (m *FileInfoLinksType) validateMetadata(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoLinksType) validateSelf(formats strfmt.Registry) error {
+func (m *FileInfoInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1492,8 +1511,8 @@ func (m *FileInfoLinksType) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file info links type based on the context it is used
-func (m *FileInfoLinksType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline links based on the context it is used
+func (m *FileInfoInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateMetadata(ctx, formats); err != nil {
@@ -1510,7 +1529,7 @@ func (m *FileInfoLinksType) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileInfoLinksType) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineLinks) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Metadata != nil {
 		if err := m.Metadata.ContextValidate(ctx, formats); err != nil {
@@ -1524,7 +1543,7 @@ func (m *FileInfoLinksType) contextValidateMetadata(ctx context.Context, formats
 	return nil
 }
 
-func (m *FileInfoLinksType) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1539,7 +1558,7 @@ func (m *FileInfoLinksType) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoLinksType) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1547,8 +1566,8 @@ func (m *FileInfoLinksType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoLinksType) UnmarshalBinary(b []byte) error {
-	var res FileInfoLinksType
+func (m *FileInfoInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1556,28 +1575,28 @@ func (m *FileInfoLinksType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoQosPolicy The QoS policy for the file. Both traditional and adaptive QoS policies are supported. If both `qos_policy.uuid` and `qos_policy.name` properties are specified in the same request, they must refer to the same QoS policy. To remove the file from a QoS policy, set the property `qos_policy.name` in a PATCH request to an empty string "" or "none". Note: Files which are in use as a LUN cannot be assigned to a QoS policy, instead use PATCH on /storage/luns to assign a QoS policy for such files. <br/>
+// FileInfoInlineQosPolicy The QoS policy for the file. Both traditional and adaptive QoS policies are supported. If both `qos_policy.uuid` and `qos_policy.name` properties are specified in the same request, they must refer to the same QoS policy. To remove the file from a QoS policy, set the property `qos_policy.name` in a PATCH request to an empty string "" or "none". Note: Files which are in use as a LUN cannot be assigned to a QoS policy, instead use PATCH on /storage/luns to assign a QoS policy for such files. <br/>
 // Note that a QoS policy can be set on a file, or a file's volume, but not on both.
 //
-// swagger:model FileInfoQosPolicy
-type FileInfoQosPolicy struct {
+// swagger:model file_info_inline_qos_policy
+type FileInfoInlineQosPolicy struct {
 
 	// links
-	Links *FileInfoQosPolicyLinks `json:"_links,omitempty"`
+	Links *FileInfoInlineQosPolicyInlineLinks `json:"_links,omitempty"`
 
 	// The name of the QoS policy. To remove the file from a QoS policy, set this property to an empty string "" or set it to "none" in a PATCH request.
 	//
 	// Example: qos1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the QoS policy. Valid in PATCH.
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file info qos policy
-func (m *FileInfoQosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline qos policy
+func (m *FileInfoInlineQosPolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1590,7 +1609,7 @@ func (m *FileInfoQosPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoQosPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *FileInfoInlineQosPolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1607,8 +1626,8 @@ func (m *FileInfoQosPolicy) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file info qos policy based on the context it is used
-func (m *FileInfoQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline qos policy based on the context it is used
+func (m *FileInfoInlineQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1621,7 +1640,7 @@ func (m *FileInfoQosPolicy) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *FileInfoQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1636,7 +1655,7 @@ func (m *FileInfoQosPolicy) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoQosPolicy) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineQosPolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1644,8 +1663,8 @@ func (m *FileInfoQosPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoQosPolicy) UnmarshalBinary(b []byte) error {
-	var res FileInfoQosPolicy
+func (m *FileInfoInlineQosPolicy) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineQosPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1653,17 +1672,17 @@ func (m *FileInfoQosPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoQosPolicyLinks file info qos policy links
+// FileInfoInlineQosPolicyInlineLinks file info inline qos policy inline links
 //
-// swagger:model FileInfoQosPolicyLinks
-type FileInfoQosPolicyLinks struct {
+// swagger:model file_info_inline_qos_policy_inline__links
+type FileInfoInlineQosPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file info qos policy links
-func (m *FileInfoQosPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline qos policy inline links
+func (m *FileInfoInlineQosPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1676,7 +1695,7 @@ func (m *FileInfoQosPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileInfoInlineQosPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1693,8 +1712,8 @@ func (m *FileInfoQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file info qos policy links based on the context it is used
-func (m *FileInfoQosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline qos policy inline links based on the context it is used
+func (m *FileInfoInlineQosPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1707,7 +1726,7 @@ func (m *FileInfoQosPolicyLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *FileInfoQosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineQosPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1722,7 +1741,7 @@ func (m *FileInfoQosPolicyLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoQosPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineQosPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1730,8 +1749,8 @@ func (m *FileInfoQosPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoQosPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res FileInfoQosPolicyLinks
+func (m *FileInfoInlineQosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineQosPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1739,25 +1758,25 @@ func (m *FileInfoQosPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoVolume file info volume
+// FileInfoInlineVolume file info inline volume
 //
-// swagger:model FileInfoVolume
-type FileInfoVolume struct {
+// swagger:model file_info_inline_volume
+type FileInfoInlineVolume struct {
 
 	// links
-	Links *FileInfoVolumeLinks `json:"_links,omitempty"`
+	Links *FileInfoInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this file info volume
-func (m *FileInfoVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline volume
+func (m *FileInfoInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1770,7 +1789,7 @@ func (m *FileInfoVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoVolume) validateLinks(formats strfmt.Registry) error {
+func (m *FileInfoInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1787,8 +1806,8 @@ func (m *FileInfoVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file info volume based on the context it is used
-func (m *FileInfoVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline volume based on the context it is used
+func (m *FileInfoInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1801,7 +1820,7 @@ func (m *FileInfoVolume) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *FileInfoVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1816,7 +1835,7 @@ func (m *FileInfoVolume) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoVolume) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1824,8 +1843,8 @@ func (m *FileInfoVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoVolume) UnmarshalBinary(b []byte) error {
-	var res FileInfoVolume
+func (m *FileInfoInlineVolume) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1833,17 +1852,17 @@ func (m *FileInfoVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FileInfoVolumeLinks file info volume links
+// FileInfoInlineVolumeInlineLinks file info inline volume inline links
 //
-// swagger:model FileInfoVolumeLinks
-type FileInfoVolumeLinks struct {
+// swagger:model file_info_inline_volume_inline__links
+type FileInfoInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this file info volume links
-func (m *FileInfoVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this file info inline volume inline links
+func (m *FileInfoInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1856,7 +1875,7 @@ func (m *FileInfoVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FileInfoVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FileInfoInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1873,8 +1892,8 @@ func (m *FileInfoVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this file info volume links based on the context it is used
-func (m *FileInfoVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this file info inline volume inline links based on the context it is used
+func (m *FileInfoInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1887,7 +1906,7 @@ func (m *FileInfoVolumeLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *FileInfoVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileInfoInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1902,7 +1921,7 @@ func (m *FileInfoVolumeLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FileInfoVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *FileInfoInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1910,8 +1929,8 @@ func (m *FileInfoVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FileInfoVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res FileInfoVolumeLinks
+func (m *FileInfoInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FileInfoInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

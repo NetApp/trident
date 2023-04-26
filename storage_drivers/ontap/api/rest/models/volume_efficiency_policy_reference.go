@@ -19,17 +19,17 @@ import (
 type VolumeEfficiencyPolicyReference struct {
 
 	// links
-	Links *VolumeEfficiencyPolicyReferenceLinks `json:"_links,omitempty"`
+	Links *VolumeEfficiencyPolicyReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Name of the volume efficiency policy
 	//
 	// Example: default
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier of the volume efficiency policy.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this volume efficiency policy reference
@@ -109,17 +109,17 @@ func (m *VolumeEfficiencyPolicyReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicyReferenceLinks volume efficiency policy reference links
+// VolumeEfficiencyPolicyReferenceInlineLinks volume efficiency policy reference inline links
 //
-// swagger:model VolumeEfficiencyPolicyReferenceLinks
-type VolumeEfficiencyPolicyReferenceLinks struct {
+// swagger:model volume_efficiency_policy_reference_inline__links
+type VolumeEfficiencyPolicyReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this volume efficiency policy reference links
-func (m *VolumeEfficiencyPolicyReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency policy reference inline links
+func (m *VolumeEfficiencyPolicyReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -132,7 +132,7 @@ func (m *VolumeEfficiencyPolicyReferenceLinks) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -149,8 +149,8 @@ func (m *VolumeEfficiencyPolicyReferenceLinks) validateSelf(formats strfmt.Regis
 	return nil
 }
 
-// ContextValidate validate this volume efficiency policy reference links based on the context it is used
-func (m *VolumeEfficiencyPolicyReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this volume efficiency policy reference inline links based on the context it is used
+func (m *VolumeEfficiencyPolicyReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -163,7 +163,7 @@ func (m *VolumeEfficiencyPolicyReferenceLinks) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *VolumeEfficiencyPolicyReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyPolicyReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -178,7 +178,7 @@ func (m *VolumeEfficiencyPolicyReferenceLinks) contextValidateSelf(ctx context.C
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicyReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyPolicyReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -186,8 +186,8 @@ func (m *VolumeEfficiencyPolicyReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicyReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicyReferenceLinks
+func (m *VolumeEfficiencyPolicyReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyPolicyReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

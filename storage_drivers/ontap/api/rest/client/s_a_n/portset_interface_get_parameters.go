@@ -66,21 +66,21 @@ type PortsetInterfaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* PortsetUUID.
 
 	   The unique identifier of the portset.
 
 	*/
-	PortsetUUIDPathParameter string
+	PortsetUUID string
 
 	/* UUID.
 
 	   The unique identifier of the network interface in the portset.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *PortsetInterfaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the portset interface get params
-func (o *PortsetInterfaceGetParams) WithFieldsQueryParameter(fields []string) *PortsetInterfaceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the portset interface get params
+func (o *PortsetInterfaceGetParams) WithFields(fields []string) *PortsetInterfaceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the portset interface get params
-func (o *PortsetInterfaceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the portset interface get params
+func (o *PortsetInterfaceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithPortsetUUIDPathParameter adds the portsetUUID to the portset interface get params
-func (o *PortsetInterfaceGetParams) WithPortsetUUIDPathParameter(portsetUUID string) *PortsetInterfaceGetParams {
-	o.SetPortsetUUIDPathParameter(portsetUUID)
+// WithPortsetUUID adds the portsetUUID to the portset interface get params
+func (o *PortsetInterfaceGetParams) WithPortsetUUID(portsetUUID string) *PortsetInterfaceGetParams {
+	o.SetPortsetUUID(portsetUUID)
 	return o
 }
 
-// SetPortsetUUIDPathParameter adds the portsetUuid to the portset interface get params
-func (o *PortsetInterfaceGetParams) SetPortsetUUIDPathParameter(portsetUUID string) {
-	o.PortsetUUIDPathParameter = portsetUUID
+// SetPortsetUUID adds the portsetUuid to the portset interface get params
+func (o *PortsetInterfaceGetParams) SetPortsetUUID(portsetUUID string) {
+	o.PortsetUUID = portsetUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the portset interface get params
-func (o *PortsetInterfaceGetParams) WithUUIDPathParameter(uuid string) *PortsetInterfaceGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the portset interface get params
+func (o *PortsetInterfaceGetParams) WithUUID(uuid string) *PortsetInterfaceGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the portset interface get params
-func (o *PortsetInterfaceGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the portset interface get params
+func (o *PortsetInterfaceGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *PortsetInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *PortsetInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param portset.uuid
-	if err := r.SetPathParam("portset.uuid", o.PortsetUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("portset.uuid", o.PortsetUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *PortsetInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamPortsetInterfaceGet binds the parameter fields
 func (o *PortsetInterfaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

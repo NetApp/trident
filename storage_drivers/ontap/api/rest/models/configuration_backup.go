@@ -22,18 +22,18 @@ type ConfigurationBackup struct {
 	// password
 	// Example: yourpassword
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// An external backup location for the cluster configuration. This is mostly required for single node clusters where node and cluster configuration backups cannot be copied to other nodes in the cluster.
 	// Example: http://10.224.65.198/backups
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 
 	// username
 	// Example: me
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 
 	// Use this parameter with the value "true" to validate the digital certificate of the remote server. Digital certificate validation is available only when the HTTPS protocol is used in the URL; it is disabled by default.
-	ValidateCertificate bool `json:"validate_certificate,omitempty"`
+	ValidateCertificate *bool `json:"validate_certificate,omitempty"`
 }
 
 // Validate validates this configuration backup

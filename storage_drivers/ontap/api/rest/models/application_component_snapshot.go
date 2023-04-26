@@ -21,10 +21,10 @@ import (
 type ApplicationComponentSnapshot struct {
 
 	// links
-	Links *ApplicationComponentSnapshotLinks `json:"_links,omitempty"`
+	Links *ApplicationComponentSnapshotInlineLinks `json:"_links,omitempty"`
 
 	// application
-	Application *ApplicationComponentSnapshotApplication `json:"application,omitempty"`
+	Application *ApplicationComponentSnapshotInlineApplication `json:"application,omitempty"`
 
 	// Comment. Valid in POST
 	// Max Length: 255
@@ -32,29 +32,29 @@ type ApplicationComponentSnapshot struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// component
-	Component *ApplicationComponentSnapshotComponent `json:"component,omitempty"`
+	Component *ApplicationComponentSnapshotInlineComponent `json:"component,omitempty"`
 
 	// Consistency Type. This is for categorization only. A Snapshot copy should not be set to application consistent unless the host application is quiesced for the Snapshot copy. Valid in POST
 	// Enum: [crash application]
-	ConsistencyType string `json:"consistency_type,omitempty"`
+	ConsistencyType *string `json:"consistency_type,omitempty"`
 
 	// Creation Time
 	// Read Only: true
-	CreateTime string `json:"create_time,omitempty"`
+	CreateTime *string `json:"create_time,omitempty"`
 
 	// A partial Snapshot copy means that not all volumes in an application component were included in the Snapshot copy.
 	// Read Only: true
 	IsPartial *bool `json:"is_partial,omitempty"`
 
 	// Snapshot copy name. Valid in POST
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// svm
-	Svm *ApplicationComponentSnapshotSvm `json:"svm,omitempty"`
+	Svm *ApplicationComponentSnapshotInlineSvm `json:"svm,omitempty"`
 
 	// Snapshot copy UUID. Valid in URL
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application component snapshot
@@ -207,7 +207,7 @@ func (m *ApplicationComponentSnapshot) validateConsistencyType(formats strfmt.Re
 	}
 
 	// value enum
-	if err := m.validateConsistencyTypeEnum("consistency_type", "body", m.ConsistencyType); err != nil {
+	if err := m.validateConsistencyTypeEnum("consistency_type", "body", *m.ConsistencyType); err != nil {
 		return err
 	}
 
@@ -313,7 +313,7 @@ func (m *ApplicationComponentSnapshot) contextValidateComponent(ctx context.Cont
 
 func (m *ApplicationComponentSnapshot) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "create_time", "body", string(m.CreateTime)); err != nil {
+	if err := validate.ReadOnly(ctx, "create_time", "body", m.CreateTime); err != nil {
 		return err
 	}
 
@@ -345,7 +345,7 @@ func (m *ApplicationComponentSnapshot) contextValidateSvm(ctx context.Context, f
 
 func (m *ApplicationComponentSnapshot) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -370,25 +370,25 @@ func (m *ApplicationComponentSnapshot) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentSnapshotApplication application component snapshot application
+// ApplicationComponentSnapshotInlineApplication application component snapshot inline application
 //
-// swagger:model ApplicationComponentSnapshotApplication
-type ApplicationComponentSnapshotApplication struct {
+// swagger:model application_component_snapshot_inline_application
+type ApplicationComponentSnapshotInlineApplication struct {
 
 	// links
-	Links *ApplicationComponentSnapshotApplicationLinks `json:"_links,omitempty"`
+	Links *ApplicationComponentSnapshotInlineApplicationInlineLinks `json:"_links,omitempty"`
 
 	// Application Name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Application UUID. Valid in URL
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application component snapshot application
-func (m *ApplicationComponentSnapshotApplication) Validate(formats strfmt.Registry) error {
+// Validate validates this application component snapshot inline application
+func (m *ApplicationComponentSnapshotInlineApplication) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -401,7 +401,7 @@ func (m *ApplicationComponentSnapshotApplication) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotApplication) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineApplication) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -418,8 +418,8 @@ func (m *ApplicationComponentSnapshotApplication) validateLinks(formats strfmt.R
 	return nil
 }
 
-// ContextValidate validate this application component snapshot application based on the context it is used
-func (m *ApplicationComponentSnapshotApplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component snapshot inline application based on the context it is used
+func (m *ApplicationComponentSnapshotInlineApplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -440,7 +440,7 @@ func (m *ApplicationComponentSnapshotApplication) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotApplication) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineApplication) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -454,18 +454,18 @@ func (m *ApplicationComponentSnapshotApplication) contextValidateLinks(ctx conte
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotApplication) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineApplication) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "application"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "application"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotApplication) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineApplication) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "application"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "application"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -473,7 +473,7 @@ func (m *ApplicationComponentSnapshotApplication) contextValidateUUID(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotApplication) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentSnapshotInlineApplication) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -481,8 +481,8 @@ func (m *ApplicationComponentSnapshotApplication) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotApplication) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSnapshotApplication
+func (m *ApplicationComponentSnapshotInlineApplication) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentSnapshotInlineApplication
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -490,17 +490,17 @@ func (m *ApplicationComponentSnapshotApplication) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// ApplicationComponentSnapshotApplicationLinks application component snapshot application links
+// ApplicationComponentSnapshotInlineApplicationInlineLinks application component snapshot inline application inline links
 //
-// swagger:model ApplicationComponentSnapshotApplicationLinks
-type ApplicationComponentSnapshotApplicationLinks struct {
+// swagger:model application_component_snapshot_inline_application_inline__links
+type ApplicationComponentSnapshotInlineApplicationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application component snapshot application links
-func (m *ApplicationComponentSnapshotApplicationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application component snapshot inline application inline links
+func (m *ApplicationComponentSnapshotInlineApplicationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -513,7 +513,7 @@ func (m *ApplicationComponentSnapshotApplicationLinks) Validate(formats strfmt.R
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotApplicationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineApplicationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -530,8 +530,8 @@ func (m *ApplicationComponentSnapshotApplicationLinks) validateSelf(formats strf
 	return nil
 }
 
-// ContextValidate validate this application component snapshot application links based on the context it is used
-func (m *ApplicationComponentSnapshotApplicationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component snapshot inline application inline links based on the context it is used
+func (m *ApplicationComponentSnapshotInlineApplicationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -544,7 +544,7 @@ func (m *ApplicationComponentSnapshotApplicationLinks) ContextValidate(ctx conte
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotApplicationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineApplicationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -559,7 +559,7 @@ func (m *ApplicationComponentSnapshotApplicationLinks) contextValidateSelf(ctx c
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotApplicationLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentSnapshotInlineApplicationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -567,8 +567,8 @@ func (m *ApplicationComponentSnapshotApplicationLinks) MarshalBinary() ([]byte, 
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotApplicationLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSnapshotApplicationLinks
+func (m *ApplicationComponentSnapshotInlineApplicationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentSnapshotInlineApplicationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -576,25 +576,25 @@ func (m *ApplicationComponentSnapshotApplicationLinks) UnmarshalBinary(b []byte)
 	return nil
 }
 
-// ApplicationComponentSnapshotComponent application component snapshot component
+// ApplicationComponentSnapshotInlineComponent application component snapshot inline component
 //
-// swagger:model ApplicationComponentSnapshotComponent
-type ApplicationComponentSnapshotComponent struct {
+// swagger:model application_component_snapshot_inline_component
+type ApplicationComponentSnapshotInlineComponent struct {
 
 	// links
-	Links *ApplicationComponentSnapshotComponentLinks `json:"_links,omitempty"`
+	Links *ApplicationComponentSnapshotInlineComponentInlineLinks `json:"_links,omitempty"`
 
 	// Component Name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Component UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application component snapshot component
-func (m *ApplicationComponentSnapshotComponent) Validate(formats strfmt.Registry) error {
+// Validate validates this application component snapshot inline component
+func (m *ApplicationComponentSnapshotInlineComponent) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -607,7 +607,7 @@ func (m *ApplicationComponentSnapshotComponent) Validate(formats strfmt.Registry
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotComponent) validateLinks(formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineComponent) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -624,8 +624,8 @@ func (m *ApplicationComponentSnapshotComponent) validateLinks(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validate this application component snapshot component based on the context it is used
-func (m *ApplicationComponentSnapshotComponent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component snapshot inline component based on the context it is used
+func (m *ApplicationComponentSnapshotInlineComponent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -646,7 +646,7 @@ func (m *ApplicationComponentSnapshotComponent) ContextValidate(ctx context.Cont
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotComponent) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineComponent) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -660,18 +660,18 @@ func (m *ApplicationComponentSnapshotComponent) contextValidateLinks(ctx context
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotComponent) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineComponent) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "component"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "component"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotComponent) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineComponent) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "component"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "component"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -679,7 +679,7 @@ func (m *ApplicationComponentSnapshotComponent) contextValidateUUID(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotComponent) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentSnapshotInlineComponent) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -687,8 +687,8 @@ func (m *ApplicationComponentSnapshotComponent) MarshalBinary() ([]byte, error) 
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotComponent) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSnapshotComponent
+func (m *ApplicationComponentSnapshotInlineComponent) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentSnapshotInlineComponent
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -696,17 +696,17 @@ func (m *ApplicationComponentSnapshotComponent) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// ApplicationComponentSnapshotComponentLinks application component snapshot component links
+// ApplicationComponentSnapshotInlineComponentInlineLinks application component snapshot inline component inline links
 //
-// swagger:model ApplicationComponentSnapshotComponentLinks
-type ApplicationComponentSnapshotComponentLinks struct {
+// swagger:model application_component_snapshot_inline_component_inline__links
+type ApplicationComponentSnapshotInlineComponentInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application component snapshot component links
-func (m *ApplicationComponentSnapshotComponentLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application component snapshot inline component inline links
+func (m *ApplicationComponentSnapshotInlineComponentInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -719,7 +719,7 @@ func (m *ApplicationComponentSnapshotComponentLinks) Validate(formats strfmt.Reg
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotComponentLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineComponentInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -736,8 +736,8 @@ func (m *ApplicationComponentSnapshotComponentLinks) validateSelf(formats strfmt
 	return nil
 }
 
-// ContextValidate validate this application component snapshot component links based on the context it is used
-func (m *ApplicationComponentSnapshotComponentLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component snapshot inline component inline links based on the context it is used
+func (m *ApplicationComponentSnapshotInlineComponentInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -750,7 +750,7 @@ func (m *ApplicationComponentSnapshotComponentLinks) ContextValidate(ctx context
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotComponentLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineComponentInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -765,7 +765,7 @@ func (m *ApplicationComponentSnapshotComponentLinks) contextValidateSelf(ctx con
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotComponentLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentSnapshotInlineComponentInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -773,8 +773,8 @@ func (m *ApplicationComponentSnapshotComponentLinks) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotComponentLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSnapshotComponentLinks
+func (m *ApplicationComponentSnapshotInlineComponentInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentSnapshotInlineComponentInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -782,17 +782,17 @@ func (m *ApplicationComponentSnapshotComponentLinks) UnmarshalBinary(b []byte) e
 	return nil
 }
 
-// ApplicationComponentSnapshotLinks application component snapshot links
+// ApplicationComponentSnapshotInlineLinks application component snapshot inline links
 //
-// swagger:model ApplicationComponentSnapshotLinks
-type ApplicationComponentSnapshotLinks struct {
+// swagger:model application_component_snapshot_inline__links
+type ApplicationComponentSnapshotInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application component snapshot links
-func (m *ApplicationComponentSnapshotLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application component snapshot inline links
+func (m *ApplicationComponentSnapshotInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -805,7 +805,7 @@ func (m *ApplicationComponentSnapshotLinks) Validate(formats strfmt.Registry) er
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -822,8 +822,8 @@ func (m *ApplicationComponentSnapshotLinks) validateSelf(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validate this application component snapshot links based on the context it is used
-func (m *ApplicationComponentSnapshotLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component snapshot inline links based on the context it is used
+func (m *ApplicationComponentSnapshotInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -836,7 +836,7 @@ func (m *ApplicationComponentSnapshotLinks) ContextValidate(ctx context.Context,
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -851,7 +851,7 @@ func (m *ApplicationComponentSnapshotLinks) contextValidateSelf(ctx context.Cont
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentSnapshotInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -859,8 +859,8 @@ func (m *ApplicationComponentSnapshotLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSnapshotLinks
+func (m *ApplicationComponentSnapshotInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentSnapshotInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -868,27 +868,27 @@ func (m *ApplicationComponentSnapshotLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationComponentSnapshotSvm application component snapshot svm
+// ApplicationComponentSnapshotInlineSvm application component snapshot inline svm
 //
-// swagger:model ApplicationComponentSnapshotSvm
-type ApplicationComponentSnapshotSvm struct {
+// swagger:model application_component_snapshot_inline_svm
+type ApplicationComponentSnapshotInlineSvm struct {
 
 	// SVM Name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// SVM UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this application component snapshot svm
-func (m *ApplicationComponentSnapshotSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this application component snapshot inline svm
+func (m *ApplicationComponentSnapshotInlineSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this application component snapshot svm based on the context it is used
-func (m *ApplicationComponentSnapshotSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application component snapshot inline svm based on the context it is used
+func (m *ApplicationComponentSnapshotInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -905,18 +905,18 @@ func (m *ApplicationComponentSnapshotSvm) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotSvm) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineSvm) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "svm"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "svm"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ApplicationComponentSnapshotSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationComponentSnapshotInlineSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -924,7 +924,7 @@ func (m *ApplicationComponentSnapshotSvm) contextValidateUUID(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotSvm) MarshalBinary() ([]byte, error) {
+func (m *ApplicationComponentSnapshotInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -932,8 +932,8 @@ func (m *ApplicationComponentSnapshotSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationComponentSnapshotSvm) UnmarshalBinary(b []byte) error {
-	var res ApplicationComponentSnapshotSvm
+func (m *ApplicationComponentSnapshotInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ApplicationComponentSnapshotInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

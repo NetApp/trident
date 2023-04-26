@@ -20,14 +20,14 @@ import (
 type NvmeSubsystemHostResponse struct {
 
 	// links
-	Links *NvmeSubsystemHostResponseLinks `json:"_links,omitempty"`
+	Links *NvmeSubsystemHostResponseInlineLinks `json:"_links,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*NvmeSubsystemHost `json:"records,omitempty"`
+	// nvme subsystem host response inline records
+	NvmeSubsystemHostResponseInlineRecords []*NvmeSubsystemHost `json:"records,omitempty"`
 }
 
 // Validate validates this nvme subsystem host response
@@ -38,7 +38,7 @@ func (m *NvmeSubsystemHostResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateNvmeSubsystemHostResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *NvmeSubsystemHostResponse) validateLinks(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeSubsystemHostResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *NvmeSubsystemHostResponse) validateNvmeSubsystemHostResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.NvmeSubsystemHostResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.NvmeSubsystemHostResponseInlineRecords); i++ {
+		if swag.IsZero(m.NvmeSubsystemHostResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.NvmeSubsystemHostResponseInlineRecords[i] != nil {
+			if err := m.NvmeSubsystemHostResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *NvmeSubsystemHostResponse) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateNvmeSubsystemHostResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *NvmeSubsystemHostResponse) contextValidateLinks(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeSubsystemHostResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostResponse) contextValidateNvmeSubsystemHostResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.NvmeSubsystemHostResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.NvmeSubsystemHostResponseInlineRecords[i] != nil {
+			if err := m.NvmeSubsystemHostResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *NvmeSubsystemHostResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemHostResponseLinks nvme subsystem host response links
+// NvmeSubsystemHostResponseInlineLinks nvme subsystem host response inline links
 //
-// swagger:model NvmeSubsystemHostResponseLinks
-type NvmeSubsystemHostResponseLinks struct {
+// swagger:model nvme_subsystem_host_response_inline__links
+type NvmeSubsystemHostResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type NvmeSubsystemHostResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme subsystem host response links
-func (m *NvmeSubsystemHostResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme subsystem host response inline links
+func (m *NvmeSubsystemHostResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *NvmeSubsystemHostResponseLinks) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *NvmeSubsystemHostResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *NvmeSubsystemHostResponseLinks) validateNext(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *NvmeSubsystemHostResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *NvmeSubsystemHostResponseLinks) validateSelf(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this nvme subsystem host response links based on the context it is used
-func (m *NvmeSubsystemHostResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme subsystem host response inline links based on the context it is used
+func (m *NvmeSubsystemHostResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *NvmeSubsystemHostResponseLinks) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *NvmeSubsystemHostResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *NvmeSubsystemHostResponseLinks) contextValidateNext(ctx context.Context
 	return nil
 }
 
-func (m *NvmeSubsystemHostResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeSubsystemHostResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *NvmeSubsystemHostResponseLinks) contextValidateSelf(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeSubsystemHostResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeSubsystemHostResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *NvmeSubsystemHostResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeSubsystemHostResponseLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeSubsystemHostResponseLinks
+func (m *NvmeSubsystemHostResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -66,21 +66,21 @@ type NvmeSubsystemControllerGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* ID.
 
 	   The unique identifier of the NVMe subsystem controller.
 
 	*/
-	IDPathParameter string
+	ID string
 
 	/* SubsystemUUID.
 
 	   The unique identifier of the NVMe subsystem.
 
 	*/
-	SubsystemUUIDPathParameter string
+	SubsystemUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -135,37 +135,37 @@ func (o *NvmeSubsystemControllerGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the nvme subsystem controller get params
-func (o *NvmeSubsystemControllerGetParams) WithFieldsQueryParameter(fields []string) *NvmeSubsystemControllerGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nvme subsystem controller get params
+func (o *NvmeSubsystemControllerGetParams) WithFields(fields []string) *NvmeSubsystemControllerGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nvme subsystem controller get params
-func (o *NvmeSubsystemControllerGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nvme subsystem controller get params
+func (o *NvmeSubsystemControllerGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIDPathParameter adds the id to the nvme subsystem controller get params
-func (o *NvmeSubsystemControllerGetParams) WithIDPathParameter(id string) *NvmeSubsystemControllerGetParams {
-	o.SetIDPathParameter(id)
+// WithID adds the id to the nvme subsystem controller get params
+func (o *NvmeSubsystemControllerGetParams) WithID(id string) *NvmeSubsystemControllerGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDPathParameter adds the id to the nvme subsystem controller get params
-func (o *NvmeSubsystemControllerGetParams) SetIDPathParameter(id string) {
-	o.IDPathParameter = id
+// SetID adds the id to the nvme subsystem controller get params
+func (o *NvmeSubsystemControllerGetParams) SetID(id string) {
+	o.ID = id
 }
 
-// WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem controller get params
-func (o *NvmeSubsystemControllerGetParams) WithSubsystemUUIDPathParameter(subsystemUUID string) *NvmeSubsystemControllerGetParams {
-	o.SetSubsystemUUIDPathParameter(subsystemUUID)
+// WithSubsystemUUID adds the subsystemUUID to the nvme subsystem controller get params
+func (o *NvmeSubsystemControllerGetParams) WithSubsystemUUID(subsystemUUID string) *NvmeSubsystemControllerGetParams {
+	o.SetSubsystemUUID(subsystemUUID)
 	return o
 }
 
-// SetSubsystemUUIDPathParameter adds the subsystemUuid to the nvme subsystem controller get params
-func (o *NvmeSubsystemControllerGetParams) SetSubsystemUUIDPathParameter(subsystemUUID string) {
-	o.SubsystemUUIDPathParameter = subsystemUUID
+// SetSubsystemUUID adds the subsystemUuid to the nvme subsystem controller get params
+func (o *NvmeSubsystemControllerGetParams) SetSubsystemUUID(subsystemUUID string) {
+	o.SubsystemUUID = subsystemUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -176,7 +176,7 @@ func (o *NvmeSubsystemControllerGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -188,12 +188,12 @@ func (o *NvmeSubsystemControllerGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param id
-	if err := r.SetPathParam("id", o.IDPathParameter); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 
 	// path param subsystem.uuid
-	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("subsystem.uuid", o.SubsystemUUID); err != nil {
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (o *NvmeSubsystemControllerGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamNvmeSubsystemControllerGet binds the parameter fields
 func (o *NvmeSubsystemControllerGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

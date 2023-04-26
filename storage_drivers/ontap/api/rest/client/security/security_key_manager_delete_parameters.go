@@ -65,7 +65,7 @@ type SecurityKeyManagerDeleteParams struct {
 
 	   Key manager UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SecurityKeyManagerDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the security key manager delete params
-func (o *SecurityKeyManagerDeleteParams) WithUUIDPathParameter(uuid string) *SecurityKeyManagerDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the security key manager delete params
+func (o *SecurityKeyManagerDeleteParams) WithUUID(uuid string) *SecurityKeyManagerDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the security key manager delete params
-func (o *SecurityKeyManagerDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the security key manager delete params
+func (o *SecurityKeyManagerDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *SecurityKeyManagerDeleteParams) WriteToRequest(r runtime.ClientRequest,
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

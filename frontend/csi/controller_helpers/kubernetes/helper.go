@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -16,7 +15,7 @@ import (
 	frontendcommon "github.com/netapp/trident/frontend/common"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
@@ -39,7 +38,7 @@ func (h *helper) GetVolumeConfig(
 	// Kubernetes CSI passes us the name of what will become a new PV
 	pvName := name
 
-	fields := log.Fields{"Method": "GetVolumeConfig", "Type": "K8S helper", "name": pvName}
+	fields := LogFields{"Method": "GetVolumeConfig", "Type": "K8S helper", "name": pvName}
 	Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeConfig")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeConfig")
 
@@ -48,13 +47,13 @@ func (h *helper) GetVolumeConfig(
 	if err != nil {
 		return nil, err
 	}
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":         pvc.Name,
 		"namespace":    pvc.Namespace,
 		"UID":          pvc.UID,
 		"size":         pvc.Spec.Resources.Requests[v1.ResourceStorage],
 		"storageClass": getStorageClassForPVC(pvc),
-	}).Infof("Found PVC for requested volume %s.", pvName)
+	}).Debugf("Found PVC for requested volume %s.", pvName)
 
 	// Validate the PVC
 	if pvc.Status.Phase != v1.ClaimPending {
@@ -77,7 +76,7 @@ func (h *helper) GetVolumeConfig(
 	if err != nil {
 		return nil, err
 	}
-	Logc(ctx).WithField("name", sc.Name).Infof("Found storage class for requested volume %s.", pvName)
+	Logc(ctx).WithField("name", sc.Name).Debugf("Found storage class for requested volume %s.", pvName)
 
 	// Validate the storage class
 	if sc.Provisioner != csi.Provisioner {
@@ -267,7 +266,7 @@ func (h *helper) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 	// NOTE: For VolumeContentSource this check is performed by CSI
 	sourcePVC, err := h.waitForCachedPVCByName(ctx, sourcePVCName, clonePVC.Namespace, PreSyncCacheWaitPeriod)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"sourcePVCName": sourcePVCName,
 			"namespace":     clonePVC.Namespace,
 		}).Errorf("Clone source PVC not found in local cache: %v", err)
@@ -277,7 +276,7 @@ func (h *helper) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 	// Check that both source and clone PVCs have the same storage class
 	// NOTE: For VolumeContentSource this check is performed by CSI
 	if getStorageClassForPVC(sourcePVC) != getStorageClassForPVC(clonePVC) {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"clonePVCName":          clonePVC.Name,
 			"clonePVCNamespace":     clonePVC.Namespace,
 			"clonePVCStorageClass":  getStorageClassForPVC(clonePVC),
@@ -291,7 +290,7 @@ func (h *helper) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 	// Check that the source PVC has an associated PV
 	sourcePVName := sourcePVC.Spec.VolumeName
 	if sourcePVName == "" {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"sourcePVCName":      sourcePVC.Name,
 			"sourcePVCNamespace": sourcePVC.Namespace,
 		}).Error("Cloning from a PVC requires the source to be bound to a PV.")
@@ -395,7 +394,7 @@ func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
 func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,
@@ -412,7 +411,7 @@ func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 // RecordNodeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
 func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":      name,
 		"eventType": eventType,
 		"reason":    reason,
@@ -453,7 +452,7 @@ func getVolumeConfig(
 		accessModes = append(accessModes, config.AccessMode(pvcAccessMode))
 	}
 
-	accessMode := frontendcommon.CombineAccessModes(accessModes)
+	accessMode := frontendcommon.CombineAccessModes(ctx, accessModes)
 
 	if volumeMode == nil {
 		volumeModeVal := v1.PersistentVolumeFilesystem

@@ -66,517 +66,517 @@ type ShelfCollectionGetParams struct {
 
 	   Filter by acps.address
 	*/
-	AcpsAddressQueryParameter *string
+	AcpsAddress *string
 
 	/* AcpsChannel.
 
 	   Filter by acps.channel
 	*/
-	AcpsChannelQueryParameter *string
+	AcpsChannel *string
 
 	/* AcpsConnectionState.
 
 	   Filter by acps.connection_state
 	*/
-	AcpsConnectionStateQueryParameter *string
+	AcpsConnectionState *string
 
 	/* AcpsEnabled.
 
 	   Filter by acps.enabled
 	*/
-	AcpsEnabledQueryParameter *bool
+	AcpsEnabled *bool
 
 	/* AcpsErrorReasonArgumentsCode.
 
 	   Filter by acps.error.reason.arguments.code
 	*/
-	AcpsErrorReasonArgumentsCodeQueryParameter *string
+	AcpsErrorReasonArgumentsCode *string
 
 	/* AcpsErrorReasonArgumentsMessage.
 
 	   Filter by acps.error.reason.arguments.message
 	*/
-	AcpsErrorReasonArgumentsMessageQueryParameter *string
+	AcpsErrorReasonArgumentsMessage *string
 
 	/* AcpsErrorReasonCode.
 
 	   Filter by acps.error.reason.code
 	*/
-	AcpsErrorReasonCodeQueryParameter *string
+	AcpsErrorReasonCode *string
 
 	/* AcpsErrorReasonMessage.
 
 	   Filter by acps.error.reason.message
 	*/
-	AcpsErrorReasonMessageQueryParameter *string
+	AcpsErrorReasonMessage *string
 
 	/* AcpsErrorReasonTarget.
 
 	   Filter by acps.error.reason.target
 	*/
-	AcpsErrorReasonTargetQueryParameter *string
+	AcpsErrorReasonTarget *string
 
 	/* AcpsErrorSeverity.
 
 	   Filter by acps.error.severity
 	*/
-	AcpsErrorSeverityQueryParameter *string
+	AcpsErrorSeverity *string
 
 	/* AcpsErrorType.
 
 	   Filter by acps.error.type
 	*/
-	AcpsErrorTypeQueryParameter *string
+	AcpsErrorType *string
 
 	/* AcpsNetmask.
 
 	   Filter by acps.netmask
 	*/
-	AcpsNetmaskQueryParameter *string
+	AcpsNetmask *string
 
 	/* AcpsNodeName.
 
 	   Filter by acps.node.name
 	*/
-	AcpsNodeNameQueryParameter *string
+	AcpsNodeName *string
 
 	/* AcpsNodeUUID.
 
 	   Filter by acps.node.uuid
 	*/
-	AcpsNodeUUIDQueryParameter *string
+	AcpsNodeUUID *string
 
 	/* AcpsPort.
 
 	   Filter by acps.port
 	*/
-	AcpsPortQueryParameter *string
+	AcpsPort *string
 
 	/* AcpsSubnet.
 
 	   Filter by acps.subnet
 	*/
-	AcpsSubnetQueryParameter *string
+	AcpsSubnet *string
 
 	/* BaysDrawerID.
 
 	   Filter by bays.drawer.id
 	*/
-	BaysDrawerIDQueryParameter *int64
+	BaysDrawerID *int64
 
 	/* BaysDrawerSlot.
 
 	   Filter by bays.drawer.slot
 	*/
-	BaysDrawerSlotQueryParameter *int64
+	BaysDrawerSlot *int64
 
 	/* BaysHasDisk.
 
 	   Filter by bays.has_disk
 	*/
-	BaysHasDiskQueryParameter *bool
+	BaysHasDisk *bool
 
 	/* BaysID.
 
 	   Filter by bays.id
 	*/
-	BaysIDQueryParameter *int64
+	BaysID *int64
 
 	/* BaysState.
 
 	   Filter by bays.state
 	*/
-	BaysStateQueryParameter *string
+	BaysState *string
 
 	/* BaysType.
 
 	   Filter by bays.type
 	*/
-	BaysTypeQueryParameter *string
+	BaysType *string
 
 	/* ConnectionType.
 
 	   Filter by connection_type
 	*/
-	ConnectionTypeQueryParameter *string
+	ConnectionType *string
 
 	/* CurrentSensorsCurrent.
 
 	   Filter by current_sensors.current
 	*/
-	CurrentSensorsCurrentQueryParameter *int64
+	CurrentSensorsCurrent *int64
 
 	/* CurrentSensorsID.
 
 	   Filter by current_sensors.id
 	*/
-	CurrentSensorsIDQueryParameter *int64
+	CurrentSensorsID *int64
 
 	/* CurrentSensorsLocation.
 
 	   Filter by current_sensors.location
 	*/
-	CurrentSensorsLocationQueryParameter *string
+	CurrentSensorsLocation *string
 
 	/* CurrentSensorsState.
 
 	   Filter by current_sensors.state
 	*/
-	CurrentSensorsStateQueryParameter *string
+	CurrentSensorsState *string
 
 	/* DiskCount.
 
 	   Filter by disk_count
 	*/
-	DiskCountQueryParameter *int64
+	DiskCount *int64
 
 	/* DrawersClosed.
 
 	   Filter by drawers.closed
 	*/
-	DrawersClosedQueryParameter *bool
+	DrawersClosed *bool
 
 	/* DrawersDiskCount.
 
 	   Filter by drawers.disk_count
 	*/
-	DrawersDiskCountQueryParameter *int64
+	DrawersDiskCount *int64
 
 	/* DrawersError.
 
 	   Filter by drawers.error
 	*/
-	DrawersErrorQueryParameter *string
+	DrawersError *string
 
 	/* DrawersID.
 
 	   Filter by drawers.id
 	*/
-	DrawersIDQueryParameter *int64
+	DrawersID *int64
 
 	/* DrawersPartNumber.
 
 	   Filter by drawers.part_number
 	*/
-	DrawersPartNumberQueryParameter *string
+	DrawersPartNumber *string
 
 	/* DrawersSerialNumber.
 
 	   Filter by drawers.serial_number
 	*/
-	DrawersSerialNumberQueryParameter *string
+	DrawersSerialNumber *string
 
 	/* DrawersState.
 
 	   Filter by drawers.state
 	*/
-	DrawersStateQueryParameter *string
+	DrawersState *string
 
 	/* ErrorsReasonArgumentsCode.
 
 	   Filter by errors.reason.arguments.code
 	*/
-	ErrorsReasonArgumentsCodeQueryParameter *string
+	ErrorsReasonArgumentsCode *string
 
 	/* ErrorsReasonArgumentsMessage.
 
 	   Filter by errors.reason.arguments.message
 	*/
-	ErrorsReasonArgumentsMessageQueryParameter *string
+	ErrorsReasonArgumentsMessage *string
 
 	/* ErrorsReasonCode.
 
 	   Filter by errors.reason.code
 	*/
-	ErrorsReasonCodeQueryParameter *string
+	ErrorsReasonCode *string
 
 	/* ErrorsReasonMessage.
 
 	   Filter by errors.reason.message
 	*/
-	ErrorsReasonMessageQueryParameter *string
+	ErrorsReasonMessage *string
 
 	/* ErrorsReasonTarget.
 
 	   Filter by errors.reason.target
 	*/
-	ErrorsReasonTargetQueryParameter *string
+	ErrorsReasonTarget *string
 
 	/* FansID.
 
 	   Filter by fans.id
 	*/
-	FansIDQueryParameter *int64
+	FansID *int64
 
 	/* FansLocation.
 
 	   Filter by fans.location
 	*/
-	FansLocationQueryParameter *string
+	FansLocation *string
 
 	/* FansRpm.
 
 	   Filter by fans.rpm
 	*/
-	FansRpmQueryParameter *int64
+	FansRpm *int64
 
 	/* FansState.
 
 	   Filter by fans.state
 	*/
-	FansStateQueryParameter *string
+	FansState *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FrusFirmwareVersion.
 
 	   Filter by frus.firmware_version
 	*/
-	FrusFirmwareVersionQueryParameter *string
+	FrusFirmwareVersion *string
 
 	/* FrusID.
 
 	   Filter by frus.id
 	*/
-	FrusIDQueryParameter *int64
+	FrusID *int64
 
 	/* FrusInstalled.
 
 	   Filter by frus.installed
 	*/
-	FrusInstalledQueryParameter *bool
+	FrusInstalled *bool
 
 	/* FrusPartNumber.
 
 	   Filter by frus.part_number
 	*/
-	FrusPartNumberQueryParameter *string
+	FrusPartNumber *string
 
 	/* FrusPsuCrestFactor.
 
 	   Filter by frus.psu.crest_factor
 	*/
-	FrusPsuCrestFactorQueryParameter *int64
+	FrusPsuCrestFactor *int64
 
 	/* FrusPsuModel.
 
 	   Filter by frus.psu.model
 	*/
-	FrusPsuModelQueryParameter *string
+	FrusPsuModel *string
 
 	/* FrusPsuPowerDrawn.
 
 	   Filter by frus.psu.power_drawn
 	*/
-	FrusPsuPowerDrawnQueryParameter *int64
+	FrusPsuPowerDrawn *int64
 
 	/* FrusPsuPowerRating.
 
 	   Filter by frus.psu.power_rating
 	*/
-	FrusPsuPowerRatingQueryParameter *int64
+	FrusPsuPowerRating *int64
 
 	/* FrusSerialNumber.
 
 	   Filter by frus.serial_number
 	*/
-	FrusSerialNumberQueryParameter *string
+	FrusSerialNumber *string
 
 	/* FrusState.
 
 	   Filter by frus.state
 	*/
-	FrusStateQueryParameter *string
+	FrusState *string
 
 	/* FrusType.
 
 	   Filter by frus.type
 	*/
-	FrusTypeQueryParameter *string
+	FrusType *string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *string
+	ID *string
 
 	/* Internal.
 
 	   Filter by internal
 	*/
-	InternalQueryParameter *bool
+	Internal *bool
 
 	/* Local.
 
 	   Filter by local
 	*/
-	LocalQueryParameter *bool
+	Local *bool
 
 	/* LocationLed.
 
 	   Filter by location_led
 	*/
-	LocationLedQueryParameter *string
+	LocationLed *string
 
 	/* ManufacturerName.
 
 	   Filter by manufacturer.name
 	*/
-	ManufacturerNameQueryParameter *string
+	ManufacturerName *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Model.
 
 	   Filter by model
 	*/
-	ModelQueryParameter *string
+	Model *string
 
 	/* ModuleType.
 
 	   Filter by module_type
 	*/
-	ModuleTypeQueryParameter *string
+	ModuleType *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PathsName.
 
 	   Filter by paths.name
 	*/
-	PathsNameQueryParameter *string
+	PathsName *string
 
 	/* PathsNodeName.
 
 	   Filter by paths.node.name
 	*/
-	PathsNodeNameQueryParameter *string
+	PathsNodeName *string
 
 	/* PathsNodeUUID.
 
 	   Filter by paths.node.uuid
 	*/
-	PathsNodeUUIDQueryParameter *string
+	PathsNodeUUID *string
 
 	/* PortsCableIdentifier.
 
 	   Filter by ports.cable.identifier
 	*/
-	PortsCableIDentifierQueryParameter *string
+	PortsCableIdentifier *string
 
 	/* PortsCableLength.
 
 	   Filter by ports.cable.length
 	*/
-	PortsCableLengthQueryParameter *string
+	PortsCableLength *string
 
 	/* PortsCablePartNumber.
 
 	   Filter by ports.cable.part_number
 	*/
-	PortsCablePartNumberQueryParameter *string
+	PortsCablePartNumber *string
 
 	/* PortsCableSerialNumber.
 
 	   Filter by ports.cable.serial_number
 	*/
-	PortsCableSerialNumberQueryParameter *string
+	PortsCableSerialNumber *string
 
 	/* PortsDesignator.
 
 	   Filter by ports.designator
 	*/
-	PortsDesignatorQueryParameter *string
+	PortsDesignator *string
 
 	/* PortsID.
 
 	   Filter by ports.id
 	*/
-	PortsIDQueryParameter *int64
+	PortsID *int64
 
 	/* PortsInternal.
 
 	   Filter by ports.internal
 	*/
-	PortsInternalQueryParameter *bool
+	PortsInternal *bool
 
 	/* PortsMacAddress.
 
 	   Filter by ports.mac_address
 	*/
-	PortsMacAddressQueryParameter *string
+	PortsMacAddress *string
 
 	/* PortsModuleID.
 
 	   Filter by ports.module_id
 	*/
-	PortsModuleIDQueryParameter *string
+	PortsModuleID *string
 
 	/* PortsRemoteChassis.
 
 	   Filter by ports.remote.chassis
 	*/
-	PortsRemoteChassisQueryParameter *string
+	PortsRemoteChassis *string
 
 	/* PortsRemoteDevice.
 
 	   Filter by ports.remote.device
 	*/
-	PortsRemoteDeviceQueryParameter *string
+	PortsRemoteDevice *string
 
 	/* PortsRemoteMacAddress.
 
 	   Filter by ports.remote.mac_address
 	*/
-	PortsRemoteMacAddressQueryParameter *string
+	PortsRemoteMacAddress *string
 
 	/* PortsRemotePhy.
 
 	   Filter by ports.remote.phy
 	*/
-	PortsRemotePhyQueryParameter *string
+	PortsRemotePhy *string
 
 	/* PortsRemotePort.
 
 	   Filter by ports.remote.port
 	*/
-	PortsRemotePortQueryParameter *string
+	PortsRemotePort *string
 
 	/* PortsRemoteWwn.
 
 	   Filter by ports.remote.wwn
 	*/
-	PortsRemoteWwnQueryParameter *string
+	PortsRemoteWwn *string
 
 	/* PortsState.
 
 	   Filter by ports.state
 	*/
-	PortsStateQueryParameter *string
+	PortsState *string
 
 	/* PortsWwn.
 
 	   Filter by ports.wwn
 	*/
-	PortsWwnQueryParameter *string
+	PortsWwn *string
 
 	/* ReturnRecords.
 
@@ -584,7 +584,7 @@ type ShelfCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -592,133 +592,133 @@ type ShelfCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* TemperatureSensorsAmbient.
 
 	   Filter by temperature_sensors.ambient
 	*/
-	TemperatureSensorsAmbientQueryParameter *bool
+	TemperatureSensorsAmbient *bool
 
 	/* TemperatureSensorsID.
 
 	   Filter by temperature_sensors.id
 	*/
-	TemperatureSensorsIDQueryParameter *int64
+	TemperatureSensorsID *int64
 
 	/* TemperatureSensorsLocation.
 
 	   Filter by temperature_sensors.location
 	*/
-	TemperatureSensorsLocationQueryParameter *string
+	TemperatureSensorsLocation *string
 
 	/* TemperatureSensorsState.
 
 	   Filter by temperature_sensors.state
 	*/
-	TemperatureSensorsStateQueryParameter *string
+	TemperatureSensorsState *string
 
 	/* TemperatureSensorsTemperature.
 
 	   Filter by temperature_sensors.temperature
 	*/
-	TemperatureSensorsTemperatureQueryParameter *int64
+	TemperatureSensorsTemperature *int64
 
 	/* TemperatureSensorsThresholdHighCritical.
 
 	   Filter by temperature_sensors.threshold.high.critical
 	*/
-	TemperatureSensorsThresholdHighCriticalQueryParameter *int64
+	TemperatureSensorsThresholdHighCritical *int64
 
 	/* TemperatureSensorsThresholdHighWarning.
 
 	   Filter by temperature_sensors.threshold.high.warning
 	*/
-	TemperatureSensorsThresholdHighWarningQueryParameter *int64
+	TemperatureSensorsThresholdHighWarning *int64
 
 	/* TemperatureSensorsThresholdLowCritical.
 
 	   Filter by temperature_sensors.threshold.low.critical
 	*/
-	TemperatureSensorsThresholdLowCriticalQueryParameter *int64
+	TemperatureSensorsThresholdLowCritical *int64
 
 	/* TemperatureSensorsThresholdLowWarning.
 
 	   Filter by temperature_sensors.threshold.low.warning
 	*/
-	TemperatureSensorsThresholdLowWarningQueryParameter *int64
+	TemperatureSensorsThresholdLowWarning *int64
 
 	/* UID.
 
 	   Filter by uid
 	*/
-	UIDQueryParameter *string
+	UID *string
 
 	/* VendorManufacturer.
 
 	   Filter by vendor.manufacturer
 	*/
-	VendorManufacturerQueryParameter *string
+	VendorManufacturer *string
 
 	/* VendorName.
 
 	   Filter by vendor.name
 	*/
-	VendorNameQueryParameter *string
+	VendorName *string
 
 	/* VendorPartNumber.
 
 	   Filter by vendor.part_number
 	*/
-	VendorPartNumberQueryParameter *string
+	VendorPartNumber *string
 
 	/* VendorProduct.
 
 	   Filter by vendor.product
 	*/
-	VendorProductQueryParameter *string
+	VendorProduct *string
 
 	/* VendorSerialNumber.
 
 	   Filter by vendor.serial_number
 	*/
-	VendorSerialNumberQueryParameter *string
+	VendorSerialNumber *string
 
 	/* VoltageSensorsID.
 
 	   Filter by voltage_sensors.id
 	*/
-	VoltageSensorsIDQueryParameter *int64
+	VoltageSensorsID *int64
 
 	/* VoltageSensorsLocation.
 
 	   Filter by voltage_sensors.location
 	*/
-	VoltageSensorsLocationQueryParameter *string
+	VoltageSensorsLocation *string
 
 	/* VoltageSensorsState.
 
 	   Filter by voltage_sensors.state
 	*/
-	VoltageSensorsStateQueryParameter *string
+	VoltageSensorsState *string
 
 	/* VoltageSensorsVoltage.
 
 	   Filter by voltage_sensors.voltage
 	*/
-	VoltageSensorsVoltageQueryParameter *float64
+	VoltageSensorsVoltage *float64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -738,14 +738,14 @@ func (o *ShelfCollectionGetParams) WithDefaults() *ShelfCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *ShelfCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ShelfCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -787,1203 +787,1203 @@ func (o *ShelfCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAcpsAddressQueryParameter adds the acpsAddress to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsAddressQueryParameter(acpsAddress *string) *ShelfCollectionGetParams {
-	o.SetAcpsAddressQueryParameter(acpsAddress)
+// WithAcpsAddress adds the acpsAddress to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsAddress(acpsAddress *string) *ShelfCollectionGetParams {
+	o.SetAcpsAddress(acpsAddress)
 	return o
 }
 
-// SetAcpsAddressQueryParameter adds the acpsAddress to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsAddressQueryParameter(acpsAddress *string) {
-	o.AcpsAddressQueryParameter = acpsAddress
+// SetAcpsAddress adds the acpsAddress to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsAddress(acpsAddress *string) {
+	o.AcpsAddress = acpsAddress
 }
 
-// WithAcpsChannelQueryParameter adds the acpsChannel to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsChannelQueryParameter(acpsChannel *string) *ShelfCollectionGetParams {
-	o.SetAcpsChannelQueryParameter(acpsChannel)
+// WithAcpsChannel adds the acpsChannel to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsChannel(acpsChannel *string) *ShelfCollectionGetParams {
+	o.SetAcpsChannel(acpsChannel)
 	return o
 }
 
-// SetAcpsChannelQueryParameter adds the acpsChannel to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsChannelQueryParameter(acpsChannel *string) {
-	o.AcpsChannelQueryParameter = acpsChannel
+// SetAcpsChannel adds the acpsChannel to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsChannel(acpsChannel *string) {
+	o.AcpsChannel = acpsChannel
 }
 
-// WithAcpsConnectionStateQueryParameter adds the acpsConnectionState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsConnectionStateQueryParameter(acpsConnectionState *string) *ShelfCollectionGetParams {
-	o.SetAcpsConnectionStateQueryParameter(acpsConnectionState)
+// WithAcpsConnectionState adds the acpsConnectionState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsConnectionState(acpsConnectionState *string) *ShelfCollectionGetParams {
+	o.SetAcpsConnectionState(acpsConnectionState)
 	return o
 }
 
-// SetAcpsConnectionStateQueryParameter adds the acpsConnectionState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsConnectionStateQueryParameter(acpsConnectionState *string) {
-	o.AcpsConnectionStateQueryParameter = acpsConnectionState
+// SetAcpsConnectionState adds the acpsConnectionState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsConnectionState(acpsConnectionState *string) {
+	o.AcpsConnectionState = acpsConnectionState
 }
 
-// WithAcpsEnabledQueryParameter adds the acpsEnabled to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsEnabledQueryParameter(acpsEnabled *bool) *ShelfCollectionGetParams {
-	o.SetAcpsEnabledQueryParameter(acpsEnabled)
+// WithAcpsEnabled adds the acpsEnabled to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsEnabled(acpsEnabled *bool) *ShelfCollectionGetParams {
+	o.SetAcpsEnabled(acpsEnabled)
 	return o
 }
 
-// SetAcpsEnabledQueryParameter adds the acpsEnabled to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsEnabledQueryParameter(acpsEnabled *bool) {
-	o.AcpsEnabledQueryParameter = acpsEnabled
+// SetAcpsEnabled adds the acpsEnabled to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsEnabled(acpsEnabled *bool) {
+	o.AcpsEnabled = acpsEnabled
 }
 
-// WithAcpsErrorReasonArgumentsCodeQueryParameter adds the acpsErrorReasonArgumentsCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorReasonArgumentsCodeQueryParameter(acpsErrorReasonArgumentsCode *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorReasonArgumentsCodeQueryParameter(acpsErrorReasonArgumentsCode)
+// WithAcpsErrorReasonArgumentsCode adds the acpsErrorReasonArgumentsCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorReasonArgumentsCode(acpsErrorReasonArgumentsCode *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorReasonArgumentsCode(acpsErrorReasonArgumentsCode)
 	return o
 }
 
-// SetAcpsErrorReasonArgumentsCodeQueryParameter adds the acpsErrorReasonArgumentsCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorReasonArgumentsCodeQueryParameter(acpsErrorReasonArgumentsCode *string) {
-	o.AcpsErrorReasonArgumentsCodeQueryParameter = acpsErrorReasonArgumentsCode
+// SetAcpsErrorReasonArgumentsCode adds the acpsErrorReasonArgumentsCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorReasonArgumentsCode(acpsErrorReasonArgumentsCode *string) {
+	o.AcpsErrorReasonArgumentsCode = acpsErrorReasonArgumentsCode
 }
 
-// WithAcpsErrorReasonArgumentsMessageQueryParameter adds the acpsErrorReasonArgumentsMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorReasonArgumentsMessageQueryParameter(acpsErrorReasonArgumentsMessage *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorReasonArgumentsMessageQueryParameter(acpsErrorReasonArgumentsMessage)
+// WithAcpsErrorReasonArgumentsMessage adds the acpsErrorReasonArgumentsMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorReasonArgumentsMessage(acpsErrorReasonArgumentsMessage *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorReasonArgumentsMessage(acpsErrorReasonArgumentsMessage)
 	return o
 }
 
-// SetAcpsErrorReasonArgumentsMessageQueryParameter adds the acpsErrorReasonArgumentsMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorReasonArgumentsMessageQueryParameter(acpsErrorReasonArgumentsMessage *string) {
-	o.AcpsErrorReasonArgumentsMessageQueryParameter = acpsErrorReasonArgumentsMessage
+// SetAcpsErrorReasonArgumentsMessage adds the acpsErrorReasonArgumentsMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorReasonArgumentsMessage(acpsErrorReasonArgumentsMessage *string) {
+	o.AcpsErrorReasonArgumentsMessage = acpsErrorReasonArgumentsMessage
 }
 
-// WithAcpsErrorReasonCodeQueryParameter adds the acpsErrorReasonCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorReasonCodeQueryParameter(acpsErrorReasonCode *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorReasonCodeQueryParameter(acpsErrorReasonCode)
+// WithAcpsErrorReasonCode adds the acpsErrorReasonCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorReasonCode(acpsErrorReasonCode *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorReasonCode(acpsErrorReasonCode)
 	return o
 }
 
-// SetAcpsErrorReasonCodeQueryParameter adds the acpsErrorReasonCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorReasonCodeQueryParameter(acpsErrorReasonCode *string) {
-	o.AcpsErrorReasonCodeQueryParameter = acpsErrorReasonCode
+// SetAcpsErrorReasonCode adds the acpsErrorReasonCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorReasonCode(acpsErrorReasonCode *string) {
+	o.AcpsErrorReasonCode = acpsErrorReasonCode
 }
 
-// WithAcpsErrorReasonMessageQueryParameter adds the acpsErrorReasonMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorReasonMessageQueryParameter(acpsErrorReasonMessage *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorReasonMessageQueryParameter(acpsErrorReasonMessage)
+// WithAcpsErrorReasonMessage adds the acpsErrorReasonMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorReasonMessage(acpsErrorReasonMessage *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorReasonMessage(acpsErrorReasonMessage)
 	return o
 }
 
-// SetAcpsErrorReasonMessageQueryParameter adds the acpsErrorReasonMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorReasonMessageQueryParameter(acpsErrorReasonMessage *string) {
-	o.AcpsErrorReasonMessageQueryParameter = acpsErrorReasonMessage
+// SetAcpsErrorReasonMessage adds the acpsErrorReasonMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorReasonMessage(acpsErrorReasonMessage *string) {
+	o.AcpsErrorReasonMessage = acpsErrorReasonMessage
 }
 
-// WithAcpsErrorReasonTargetQueryParameter adds the acpsErrorReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorReasonTargetQueryParameter(acpsErrorReasonTarget *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorReasonTargetQueryParameter(acpsErrorReasonTarget)
+// WithAcpsErrorReasonTarget adds the acpsErrorReasonTarget to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorReasonTarget(acpsErrorReasonTarget *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorReasonTarget(acpsErrorReasonTarget)
 	return o
 }
 
-// SetAcpsErrorReasonTargetQueryParameter adds the acpsErrorReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorReasonTargetQueryParameter(acpsErrorReasonTarget *string) {
-	o.AcpsErrorReasonTargetQueryParameter = acpsErrorReasonTarget
+// SetAcpsErrorReasonTarget adds the acpsErrorReasonTarget to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorReasonTarget(acpsErrorReasonTarget *string) {
+	o.AcpsErrorReasonTarget = acpsErrorReasonTarget
 }
 
-// WithAcpsErrorSeverityQueryParameter adds the acpsErrorSeverity to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorSeverityQueryParameter(acpsErrorSeverity *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorSeverityQueryParameter(acpsErrorSeverity)
+// WithAcpsErrorSeverity adds the acpsErrorSeverity to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorSeverity(acpsErrorSeverity *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorSeverity(acpsErrorSeverity)
 	return o
 }
 
-// SetAcpsErrorSeverityQueryParameter adds the acpsErrorSeverity to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorSeverityQueryParameter(acpsErrorSeverity *string) {
-	o.AcpsErrorSeverityQueryParameter = acpsErrorSeverity
+// SetAcpsErrorSeverity adds the acpsErrorSeverity to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorSeverity(acpsErrorSeverity *string) {
+	o.AcpsErrorSeverity = acpsErrorSeverity
 }
 
-// WithAcpsErrorTypeQueryParameter adds the acpsErrorType to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsErrorTypeQueryParameter(acpsErrorType *string) *ShelfCollectionGetParams {
-	o.SetAcpsErrorTypeQueryParameter(acpsErrorType)
+// WithAcpsErrorType adds the acpsErrorType to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsErrorType(acpsErrorType *string) *ShelfCollectionGetParams {
+	o.SetAcpsErrorType(acpsErrorType)
 	return o
 }
 
-// SetAcpsErrorTypeQueryParameter adds the acpsErrorType to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsErrorTypeQueryParameter(acpsErrorType *string) {
-	o.AcpsErrorTypeQueryParameter = acpsErrorType
+// SetAcpsErrorType adds the acpsErrorType to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsErrorType(acpsErrorType *string) {
+	o.AcpsErrorType = acpsErrorType
 }
 
-// WithAcpsNetmaskQueryParameter adds the acpsNetmask to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsNetmaskQueryParameter(acpsNetmask *string) *ShelfCollectionGetParams {
-	o.SetAcpsNetmaskQueryParameter(acpsNetmask)
+// WithAcpsNetmask adds the acpsNetmask to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsNetmask(acpsNetmask *string) *ShelfCollectionGetParams {
+	o.SetAcpsNetmask(acpsNetmask)
 	return o
 }
 
-// SetAcpsNetmaskQueryParameter adds the acpsNetmask to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsNetmaskQueryParameter(acpsNetmask *string) {
-	o.AcpsNetmaskQueryParameter = acpsNetmask
+// SetAcpsNetmask adds the acpsNetmask to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsNetmask(acpsNetmask *string) {
+	o.AcpsNetmask = acpsNetmask
 }
 
-// WithAcpsNodeNameQueryParameter adds the acpsNodeName to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsNodeNameQueryParameter(acpsNodeName *string) *ShelfCollectionGetParams {
-	o.SetAcpsNodeNameQueryParameter(acpsNodeName)
+// WithAcpsNodeName adds the acpsNodeName to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsNodeName(acpsNodeName *string) *ShelfCollectionGetParams {
+	o.SetAcpsNodeName(acpsNodeName)
 	return o
 }
 
-// SetAcpsNodeNameQueryParameter adds the acpsNodeName to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsNodeNameQueryParameter(acpsNodeName *string) {
-	o.AcpsNodeNameQueryParameter = acpsNodeName
+// SetAcpsNodeName adds the acpsNodeName to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsNodeName(acpsNodeName *string) {
+	o.AcpsNodeName = acpsNodeName
 }
 
-// WithAcpsNodeUUIDQueryParameter adds the acpsNodeUUID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsNodeUUIDQueryParameter(acpsNodeUUID *string) *ShelfCollectionGetParams {
-	o.SetAcpsNodeUUIDQueryParameter(acpsNodeUUID)
+// WithAcpsNodeUUID adds the acpsNodeUUID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsNodeUUID(acpsNodeUUID *string) *ShelfCollectionGetParams {
+	o.SetAcpsNodeUUID(acpsNodeUUID)
 	return o
 }
 
-// SetAcpsNodeUUIDQueryParameter adds the acpsNodeUuid to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsNodeUUIDQueryParameter(acpsNodeUUID *string) {
-	o.AcpsNodeUUIDQueryParameter = acpsNodeUUID
+// SetAcpsNodeUUID adds the acpsNodeUuid to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsNodeUUID(acpsNodeUUID *string) {
+	o.AcpsNodeUUID = acpsNodeUUID
 }
 
-// WithAcpsPortQueryParameter adds the acpsPort to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsPortQueryParameter(acpsPort *string) *ShelfCollectionGetParams {
-	o.SetAcpsPortQueryParameter(acpsPort)
+// WithAcpsPort adds the acpsPort to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsPort(acpsPort *string) *ShelfCollectionGetParams {
+	o.SetAcpsPort(acpsPort)
 	return o
 }
 
-// SetAcpsPortQueryParameter adds the acpsPort to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsPortQueryParameter(acpsPort *string) {
-	o.AcpsPortQueryParameter = acpsPort
+// SetAcpsPort adds the acpsPort to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsPort(acpsPort *string) {
+	o.AcpsPort = acpsPort
 }
 
-// WithAcpsSubnetQueryParameter adds the acpsSubnet to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithAcpsSubnetQueryParameter(acpsSubnet *string) *ShelfCollectionGetParams {
-	o.SetAcpsSubnetQueryParameter(acpsSubnet)
+// WithAcpsSubnet adds the acpsSubnet to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithAcpsSubnet(acpsSubnet *string) *ShelfCollectionGetParams {
+	o.SetAcpsSubnet(acpsSubnet)
 	return o
 }
 
-// SetAcpsSubnetQueryParameter adds the acpsSubnet to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetAcpsSubnetQueryParameter(acpsSubnet *string) {
-	o.AcpsSubnetQueryParameter = acpsSubnet
+// SetAcpsSubnet adds the acpsSubnet to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetAcpsSubnet(acpsSubnet *string) {
+	o.AcpsSubnet = acpsSubnet
 }
 
-// WithBaysDrawerIDQueryParameter adds the baysDrawerID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithBaysDrawerIDQueryParameter(baysDrawerID *int64) *ShelfCollectionGetParams {
-	o.SetBaysDrawerIDQueryParameter(baysDrawerID)
+// WithBaysDrawerID adds the baysDrawerID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysDrawerID(baysDrawerID *int64) *ShelfCollectionGetParams {
+	o.SetBaysDrawerID(baysDrawerID)
 	return o
 }
 
-// SetBaysDrawerIDQueryParameter adds the baysDrawerId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetBaysDrawerIDQueryParameter(baysDrawerID *int64) {
-	o.BaysDrawerIDQueryParameter = baysDrawerID
+// SetBaysDrawerID adds the baysDrawerId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysDrawerID(baysDrawerID *int64) {
+	o.BaysDrawerID = baysDrawerID
 }
 
-// WithBaysDrawerSlotQueryParameter adds the baysDrawerSlot to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithBaysDrawerSlotQueryParameter(baysDrawerSlot *int64) *ShelfCollectionGetParams {
-	o.SetBaysDrawerSlotQueryParameter(baysDrawerSlot)
+// WithBaysDrawerSlot adds the baysDrawerSlot to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysDrawerSlot(baysDrawerSlot *int64) *ShelfCollectionGetParams {
+	o.SetBaysDrawerSlot(baysDrawerSlot)
 	return o
 }
 
-// SetBaysDrawerSlotQueryParameter adds the baysDrawerSlot to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetBaysDrawerSlotQueryParameter(baysDrawerSlot *int64) {
-	o.BaysDrawerSlotQueryParameter = baysDrawerSlot
+// SetBaysDrawerSlot adds the baysDrawerSlot to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysDrawerSlot(baysDrawerSlot *int64) {
+	o.BaysDrawerSlot = baysDrawerSlot
 }
 
-// WithBaysHasDiskQueryParameter adds the baysHasDisk to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithBaysHasDiskQueryParameter(baysHasDisk *bool) *ShelfCollectionGetParams {
-	o.SetBaysHasDiskQueryParameter(baysHasDisk)
+// WithBaysHasDisk adds the baysHasDisk to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysHasDisk(baysHasDisk *bool) *ShelfCollectionGetParams {
+	o.SetBaysHasDisk(baysHasDisk)
 	return o
 }
 
-// SetBaysHasDiskQueryParameter adds the baysHasDisk to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetBaysHasDiskQueryParameter(baysHasDisk *bool) {
-	o.BaysHasDiskQueryParameter = baysHasDisk
+// SetBaysHasDisk adds the baysHasDisk to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysHasDisk(baysHasDisk *bool) {
+	o.BaysHasDisk = baysHasDisk
 }
 
-// WithBaysIDQueryParameter adds the baysID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithBaysIDQueryParameter(baysID *int64) *ShelfCollectionGetParams {
-	o.SetBaysIDQueryParameter(baysID)
+// WithBaysID adds the baysID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysID(baysID *int64) *ShelfCollectionGetParams {
+	o.SetBaysID(baysID)
 	return o
 }
 
-// SetBaysIDQueryParameter adds the baysId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetBaysIDQueryParameter(baysID *int64) {
-	o.BaysIDQueryParameter = baysID
+// SetBaysID adds the baysId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysID(baysID *int64) {
+	o.BaysID = baysID
 }
 
-// WithBaysStateQueryParameter adds the baysState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithBaysStateQueryParameter(baysState *string) *ShelfCollectionGetParams {
-	o.SetBaysStateQueryParameter(baysState)
+// WithBaysState adds the baysState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysState(baysState *string) *ShelfCollectionGetParams {
+	o.SetBaysState(baysState)
 	return o
 }
 
-// SetBaysStateQueryParameter adds the baysState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetBaysStateQueryParameter(baysState *string) {
-	o.BaysStateQueryParameter = baysState
+// SetBaysState adds the baysState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysState(baysState *string) {
+	o.BaysState = baysState
 }
 
-// WithBaysTypeQueryParameter adds the baysType to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithBaysTypeQueryParameter(baysType *string) *ShelfCollectionGetParams {
-	o.SetBaysTypeQueryParameter(baysType)
+// WithBaysType adds the baysType to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithBaysType(baysType *string) *ShelfCollectionGetParams {
+	o.SetBaysType(baysType)
 	return o
 }
 
-// SetBaysTypeQueryParameter adds the baysType to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetBaysTypeQueryParameter(baysType *string) {
-	o.BaysTypeQueryParameter = baysType
+// SetBaysType adds the baysType to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetBaysType(baysType *string) {
+	o.BaysType = baysType
 }
 
-// WithConnectionTypeQueryParameter adds the connectionType to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithConnectionTypeQueryParameter(connectionType *string) *ShelfCollectionGetParams {
-	o.SetConnectionTypeQueryParameter(connectionType)
+// WithConnectionType adds the connectionType to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithConnectionType(connectionType *string) *ShelfCollectionGetParams {
+	o.SetConnectionType(connectionType)
 	return o
 }
 
-// SetConnectionTypeQueryParameter adds the connectionType to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetConnectionTypeQueryParameter(connectionType *string) {
-	o.ConnectionTypeQueryParameter = connectionType
+// SetConnectionType adds the connectionType to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetConnectionType(connectionType *string) {
+	o.ConnectionType = connectionType
 }
 
-// WithCurrentSensorsCurrentQueryParameter adds the currentSensorsCurrent to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithCurrentSensorsCurrentQueryParameter(currentSensorsCurrent *int64) *ShelfCollectionGetParams {
-	o.SetCurrentSensorsCurrentQueryParameter(currentSensorsCurrent)
+// WithCurrentSensorsCurrent adds the currentSensorsCurrent to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithCurrentSensorsCurrent(currentSensorsCurrent *int64) *ShelfCollectionGetParams {
+	o.SetCurrentSensorsCurrent(currentSensorsCurrent)
 	return o
 }
 
-// SetCurrentSensorsCurrentQueryParameter adds the currentSensorsCurrent to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetCurrentSensorsCurrentQueryParameter(currentSensorsCurrent *int64) {
-	o.CurrentSensorsCurrentQueryParameter = currentSensorsCurrent
+// SetCurrentSensorsCurrent adds the currentSensorsCurrent to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetCurrentSensorsCurrent(currentSensorsCurrent *int64) {
+	o.CurrentSensorsCurrent = currentSensorsCurrent
 }
 
-// WithCurrentSensorsIDQueryParameter adds the currentSensorsID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithCurrentSensorsIDQueryParameter(currentSensorsID *int64) *ShelfCollectionGetParams {
-	o.SetCurrentSensorsIDQueryParameter(currentSensorsID)
+// WithCurrentSensorsID adds the currentSensorsID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithCurrentSensorsID(currentSensorsID *int64) *ShelfCollectionGetParams {
+	o.SetCurrentSensorsID(currentSensorsID)
 	return o
 }
 
-// SetCurrentSensorsIDQueryParameter adds the currentSensorsId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetCurrentSensorsIDQueryParameter(currentSensorsID *int64) {
-	o.CurrentSensorsIDQueryParameter = currentSensorsID
+// SetCurrentSensorsID adds the currentSensorsId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetCurrentSensorsID(currentSensorsID *int64) {
+	o.CurrentSensorsID = currentSensorsID
 }
 
-// WithCurrentSensorsLocationQueryParameter adds the currentSensorsLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithCurrentSensorsLocationQueryParameter(currentSensorsLocation *string) *ShelfCollectionGetParams {
-	o.SetCurrentSensorsLocationQueryParameter(currentSensorsLocation)
+// WithCurrentSensorsLocation adds the currentSensorsLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithCurrentSensorsLocation(currentSensorsLocation *string) *ShelfCollectionGetParams {
+	o.SetCurrentSensorsLocation(currentSensorsLocation)
 	return o
 }
 
-// SetCurrentSensorsLocationQueryParameter adds the currentSensorsLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetCurrentSensorsLocationQueryParameter(currentSensorsLocation *string) {
-	o.CurrentSensorsLocationQueryParameter = currentSensorsLocation
+// SetCurrentSensorsLocation adds the currentSensorsLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetCurrentSensorsLocation(currentSensorsLocation *string) {
+	o.CurrentSensorsLocation = currentSensorsLocation
 }
 
-// WithCurrentSensorsStateQueryParameter adds the currentSensorsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithCurrentSensorsStateQueryParameter(currentSensorsState *string) *ShelfCollectionGetParams {
-	o.SetCurrentSensorsStateQueryParameter(currentSensorsState)
+// WithCurrentSensorsState adds the currentSensorsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithCurrentSensorsState(currentSensorsState *string) *ShelfCollectionGetParams {
+	o.SetCurrentSensorsState(currentSensorsState)
 	return o
 }
 
-// SetCurrentSensorsStateQueryParameter adds the currentSensorsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetCurrentSensorsStateQueryParameter(currentSensorsState *string) {
-	o.CurrentSensorsStateQueryParameter = currentSensorsState
+// SetCurrentSensorsState adds the currentSensorsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetCurrentSensorsState(currentSensorsState *string) {
+	o.CurrentSensorsState = currentSensorsState
 }
 
-// WithDiskCountQueryParameter adds the diskCount to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDiskCountQueryParameter(diskCount *int64) *ShelfCollectionGetParams {
-	o.SetDiskCountQueryParameter(diskCount)
+// WithDiskCount adds the diskCount to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDiskCount(diskCount *int64) *ShelfCollectionGetParams {
+	o.SetDiskCount(diskCount)
 	return o
 }
 
-// SetDiskCountQueryParameter adds the diskCount to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDiskCountQueryParameter(diskCount *int64) {
-	o.DiskCountQueryParameter = diskCount
+// SetDiskCount adds the diskCount to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDiskCount(diskCount *int64) {
+	o.DiskCount = diskCount
 }
 
-// WithDrawersClosedQueryParameter adds the drawersClosed to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersClosedQueryParameter(drawersClosed *bool) *ShelfCollectionGetParams {
-	o.SetDrawersClosedQueryParameter(drawersClosed)
+// WithDrawersClosed adds the drawersClosed to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersClosed(drawersClosed *bool) *ShelfCollectionGetParams {
+	o.SetDrawersClosed(drawersClosed)
 	return o
 }
 
-// SetDrawersClosedQueryParameter adds the drawersClosed to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersClosedQueryParameter(drawersClosed *bool) {
-	o.DrawersClosedQueryParameter = drawersClosed
+// SetDrawersClosed adds the drawersClosed to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersClosed(drawersClosed *bool) {
+	o.DrawersClosed = drawersClosed
 }
 
-// WithDrawersDiskCountQueryParameter adds the drawersDiskCount to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersDiskCountQueryParameter(drawersDiskCount *int64) *ShelfCollectionGetParams {
-	o.SetDrawersDiskCountQueryParameter(drawersDiskCount)
+// WithDrawersDiskCount adds the drawersDiskCount to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersDiskCount(drawersDiskCount *int64) *ShelfCollectionGetParams {
+	o.SetDrawersDiskCount(drawersDiskCount)
 	return o
 }
 
-// SetDrawersDiskCountQueryParameter adds the drawersDiskCount to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersDiskCountQueryParameter(drawersDiskCount *int64) {
-	o.DrawersDiskCountQueryParameter = drawersDiskCount
+// SetDrawersDiskCount adds the drawersDiskCount to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersDiskCount(drawersDiskCount *int64) {
+	o.DrawersDiskCount = drawersDiskCount
 }
 
-// WithDrawersErrorQueryParameter adds the drawersError to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersErrorQueryParameter(drawersError *string) *ShelfCollectionGetParams {
-	o.SetDrawersErrorQueryParameter(drawersError)
+// WithDrawersError adds the drawersError to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersError(drawersError *string) *ShelfCollectionGetParams {
+	o.SetDrawersError(drawersError)
 	return o
 }
 
-// SetDrawersErrorQueryParameter adds the drawersError to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersErrorQueryParameter(drawersError *string) {
-	o.DrawersErrorQueryParameter = drawersError
+// SetDrawersError adds the drawersError to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersError(drawersError *string) {
+	o.DrawersError = drawersError
 }
 
-// WithDrawersIDQueryParameter adds the drawersID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersIDQueryParameter(drawersID *int64) *ShelfCollectionGetParams {
-	o.SetDrawersIDQueryParameter(drawersID)
+// WithDrawersID adds the drawersID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersID(drawersID *int64) *ShelfCollectionGetParams {
+	o.SetDrawersID(drawersID)
 	return o
 }
 
-// SetDrawersIDQueryParameter adds the drawersId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersIDQueryParameter(drawersID *int64) {
-	o.DrawersIDQueryParameter = drawersID
+// SetDrawersID adds the drawersId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersID(drawersID *int64) {
+	o.DrawersID = drawersID
 }
 
-// WithDrawersPartNumberQueryParameter adds the drawersPartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersPartNumberQueryParameter(drawersPartNumber *string) *ShelfCollectionGetParams {
-	o.SetDrawersPartNumberQueryParameter(drawersPartNumber)
+// WithDrawersPartNumber adds the drawersPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersPartNumber(drawersPartNumber *string) *ShelfCollectionGetParams {
+	o.SetDrawersPartNumber(drawersPartNumber)
 	return o
 }
 
-// SetDrawersPartNumberQueryParameter adds the drawersPartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersPartNumberQueryParameter(drawersPartNumber *string) {
-	o.DrawersPartNumberQueryParameter = drawersPartNumber
+// SetDrawersPartNumber adds the drawersPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersPartNumber(drawersPartNumber *string) {
+	o.DrawersPartNumber = drawersPartNumber
 }
 
-// WithDrawersSerialNumberQueryParameter adds the drawersSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersSerialNumberQueryParameter(drawersSerialNumber *string) *ShelfCollectionGetParams {
-	o.SetDrawersSerialNumberQueryParameter(drawersSerialNumber)
+// WithDrawersSerialNumber adds the drawersSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersSerialNumber(drawersSerialNumber *string) *ShelfCollectionGetParams {
+	o.SetDrawersSerialNumber(drawersSerialNumber)
 	return o
 }
 
-// SetDrawersSerialNumberQueryParameter adds the drawersSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersSerialNumberQueryParameter(drawersSerialNumber *string) {
-	o.DrawersSerialNumberQueryParameter = drawersSerialNumber
+// SetDrawersSerialNumber adds the drawersSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersSerialNumber(drawersSerialNumber *string) {
+	o.DrawersSerialNumber = drawersSerialNumber
 }
 
-// WithDrawersStateQueryParameter adds the drawersState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithDrawersStateQueryParameter(drawersState *string) *ShelfCollectionGetParams {
-	o.SetDrawersStateQueryParameter(drawersState)
+// WithDrawersState adds the drawersState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithDrawersState(drawersState *string) *ShelfCollectionGetParams {
+	o.SetDrawersState(drawersState)
 	return o
 }
 
-// SetDrawersStateQueryParameter adds the drawersState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetDrawersStateQueryParameter(drawersState *string) {
-	o.DrawersStateQueryParameter = drawersState
+// SetDrawersState adds the drawersState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetDrawersState(drawersState *string) {
+	o.DrawersState = drawersState
 }
 
-// WithErrorsReasonArgumentsCodeQueryParameter adds the errorsReasonArgumentsCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode *string) *ShelfCollectionGetParams {
-	o.SetErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode)
+// WithErrorsReasonArgumentsCode adds the errorsReasonArgumentsCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonArgumentsCode(errorsReasonArgumentsCode *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonArgumentsCode(errorsReasonArgumentsCode)
 	return o
 }
 
-// SetErrorsReasonArgumentsCodeQueryParameter adds the errorsReasonArgumentsCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode *string) {
-	o.ErrorsReasonArgumentsCodeQueryParameter = errorsReasonArgumentsCode
+// SetErrorsReasonArgumentsCode adds the errorsReasonArgumentsCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonArgumentsCode(errorsReasonArgumentsCode *string) {
+	o.ErrorsReasonArgumentsCode = errorsReasonArgumentsCode
 }
 
-// WithErrorsReasonArgumentsMessageQueryParameter adds the errorsReasonArgumentsMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage *string) *ShelfCollectionGetParams {
-	o.SetErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage)
+// WithErrorsReasonArgumentsMessage adds the errorsReasonArgumentsMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonArgumentsMessage(errorsReasonArgumentsMessage *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonArgumentsMessage(errorsReasonArgumentsMessage)
 	return o
 }
 
-// SetErrorsReasonArgumentsMessageQueryParameter adds the errorsReasonArgumentsMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage *string) {
-	o.ErrorsReasonArgumentsMessageQueryParameter = errorsReasonArgumentsMessage
+// SetErrorsReasonArgumentsMessage adds the errorsReasonArgumentsMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonArgumentsMessage(errorsReasonArgumentsMessage *string) {
+	o.ErrorsReasonArgumentsMessage = errorsReasonArgumentsMessage
 }
 
-// WithErrorsReasonCodeQueryParameter adds the errorsReasonCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithErrorsReasonCodeQueryParameter(errorsReasonCode *string) *ShelfCollectionGetParams {
-	o.SetErrorsReasonCodeQueryParameter(errorsReasonCode)
+// WithErrorsReasonCode adds the errorsReasonCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonCode(errorsReasonCode *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonCode(errorsReasonCode)
 	return o
 }
 
-// SetErrorsReasonCodeQueryParameter adds the errorsReasonCode to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetErrorsReasonCodeQueryParameter(errorsReasonCode *string) {
-	o.ErrorsReasonCodeQueryParameter = errorsReasonCode
+// SetErrorsReasonCode adds the errorsReasonCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonCode(errorsReasonCode *string) {
+	o.ErrorsReasonCode = errorsReasonCode
 }
 
-// WithErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithErrorsReasonMessageQueryParameter(errorsReasonMessage *string) *ShelfCollectionGetParams {
-	o.SetErrorsReasonMessageQueryParameter(errorsReasonMessage)
+// WithErrorsReasonMessage adds the errorsReasonMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonMessage(errorsReasonMessage *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonMessage(errorsReasonMessage)
 	return o
 }
 
-// SetErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetErrorsReasonMessageQueryParameter(errorsReasonMessage *string) {
-	o.ErrorsReasonMessageQueryParameter = errorsReasonMessage
+// SetErrorsReasonMessage adds the errorsReasonMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonMessage(errorsReasonMessage *string) {
+	o.ErrorsReasonMessage = errorsReasonMessage
 }
 
-// WithErrorsReasonTargetQueryParameter adds the errorsReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithErrorsReasonTargetQueryParameter(errorsReasonTarget *string) *ShelfCollectionGetParams {
-	o.SetErrorsReasonTargetQueryParameter(errorsReasonTarget)
+// WithErrorsReasonTarget adds the errorsReasonTarget to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonTarget(errorsReasonTarget *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonTarget(errorsReasonTarget)
 	return o
 }
 
-// SetErrorsReasonTargetQueryParameter adds the errorsReasonTarget to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetErrorsReasonTargetQueryParameter(errorsReasonTarget *string) {
-	o.ErrorsReasonTargetQueryParameter = errorsReasonTarget
+// SetErrorsReasonTarget adds the errorsReasonTarget to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonTarget(errorsReasonTarget *string) {
+	o.ErrorsReasonTarget = errorsReasonTarget
 }
 
-// WithFansIDQueryParameter adds the fansID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFansIDQueryParameter(fansID *int64) *ShelfCollectionGetParams {
-	o.SetFansIDQueryParameter(fansID)
+// WithFansID adds the fansID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansID(fansID *int64) *ShelfCollectionGetParams {
+	o.SetFansID(fansID)
 	return o
 }
 
-// SetFansIDQueryParameter adds the fansId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFansIDQueryParameter(fansID *int64) {
-	o.FansIDQueryParameter = fansID
+// SetFansID adds the fansId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansID(fansID *int64) {
+	o.FansID = fansID
 }
 
-// WithFansLocationQueryParameter adds the fansLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFansLocationQueryParameter(fansLocation *string) *ShelfCollectionGetParams {
-	o.SetFansLocationQueryParameter(fansLocation)
+// WithFansLocation adds the fansLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansLocation(fansLocation *string) *ShelfCollectionGetParams {
+	o.SetFansLocation(fansLocation)
 	return o
 }
 
-// SetFansLocationQueryParameter adds the fansLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFansLocationQueryParameter(fansLocation *string) {
-	o.FansLocationQueryParameter = fansLocation
+// SetFansLocation adds the fansLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansLocation(fansLocation *string) {
+	o.FansLocation = fansLocation
 }
 
-// WithFansRpmQueryParameter adds the fansRpm to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFansRpmQueryParameter(fansRpm *int64) *ShelfCollectionGetParams {
-	o.SetFansRpmQueryParameter(fansRpm)
+// WithFansRpm adds the fansRpm to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansRpm(fansRpm *int64) *ShelfCollectionGetParams {
+	o.SetFansRpm(fansRpm)
 	return o
 }
 
-// SetFansRpmQueryParameter adds the fansRpm to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFansRpmQueryParameter(fansRpm *int64) {
-	o.FansRpmQueryParameter = fansRpm
+// SetFansRpm adds the fansRpm to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansRpm(fansRpm *int64) {
+	o.FansRpm = fansRpm
 }
 
-// WithFansStateQueryParameter adds the fansState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFansStateQueryParameter(fansState *string) *ShelfCollectionGetParams {
-	o.SetFansStateQueryParameter(fansState)
+// WithFansState adds the fansState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansState(fansState *string) *ShelfCollectionGetParams {
+	o.SetFansState(fansState)
 	return o
 }
 
-// SetFansStateQueryParameter adds the fansState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFansStateQueryParameter(fansState *string) {
-	o.FansStateQueryParameter = fansState
+// SetFansState adds the fansState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansState(fansState *string) {
+	o.FansState = fansState
 }
 
-// WithFieldsQueryParameter adds the fields to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFieldsQueryParameter(fields []string) *ShelfCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFields(fields []string) *ShelfCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFrusFirmwareVersionQueryParameter adds the frusFirmwareVersion to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusFirmwareVersionQueryParameter(frusFirmwareVersion *string) *ShelfCollectionGetParams {
-	o.SetFrusFirmwareVersionQueryParameter(frusFirmwareVersion)
+// WithFrusFirmwareVersion adds the frusFirmwareVersion to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusFirmwareVersion(frusFirmwareVersion *string) *ShelfCollectionGetParams {
+	o.SetFrusFirmwareVersion(frusFirmwareVersion)
 	return o
 }
 
-// SetFrusFirmwareVersionQueryParameter adds the frusFirmwareVersion to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusFirmwareVersionQueryParameter(frusFirmwareVersion *string) {
-	o.FrusFirmwareVersionQueryParameter = frusFirmwareVersion
+// SetFrusFirmwareVersion adds the frusFirmwareVersion to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusFirmwareVersion(frusFirmwareVersion *string) {
+	o.FrusFirmwareVersion = frusFirmwareVersion
 }
 
-// WithFrusIDQueryParameter adds the frusID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusIDQueryParameter(frusID *int64) *ShelfCollectionGetParams {
-	o.SetFrusIDQueryParameter(frusID)
+// WithFrusID adds the frusID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusID(frusID *int64) *ShelfCollectionGetParams {
+	o.SetFrusID(frusID)
 	return o
 }
 
-// SetFrusIDQueryParameter adds the frusId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusIDQueryParameter(frusID *int64) {
-	o.FrusIDQueryParameter = frusID
+// SetFrusID adds the frusId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusID(frusID *int64) {
+	o.FrusID = frusID
 }
 
-// WithFrusInstalledQueryParameter adds the frusInstalled to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusInstalledQueryParameter(frusInstalled *bool) *ShelfCollectionGetParams {
-	o.SetFrusInstalledQueryParameter(frusInstalled)
+// WithFrusInstalled adds the frusInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusInstalled(frusInstalled *bool) *ShelfCollectionGetParams {
+	o.SetFrusInstalled(frusInstalled)
 	return o
 }
 
-// SetFrusInstalledQueryParameter adds the frusInstalled to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusInstalledQueryParameter(frusInstalled *bool) {
-	o.FrusInstalledQueryParameter = frusInstalled
+// SetFrusInstalled adds the frusInstalled to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusInstalled(frusInstalled *bool) {
+	o.FrusInstalled = frusInstalled
 }
 
-// WithFrusPartNumberQueryParameter adds the frusPartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusPartNumberQueryParameter(frusPartNumber *string) *ShelfCollectionGetParams {
-	o.SetFrusPartNumberQueryParameter(frusPartNumber)
+// WithFrusPartNumber adds the frusPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusPartNumber(frusPartNumber *string) *ShelfCollectionGetParams {
+	o.SetFrusPartNumber(frusPartNumber)
 	return o
 }
 
-// SetFrusPartNumberQueryParameter adds the frusPartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusPartNumberQueryParameter(frusPartNumber *string) {
-	o.FrusPartNumberQueryParameter = frusPartNumber
+// SetFrusPartNumber adds the frusPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusPartNumber(frusPartNumber *string) {
+	o.FrusPartNumber = frusPartNumber
 }
 
-// WithFrusPsuCrestFactorQueryParameter adds the frusPsuCrestFactor to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusPsuCrestFactorQueryParameter(frusPsuCrestFactor *int64) *ShelfCollectionGetParams {
-	o.SetFrusPsuCrestFactorQueryParameter(frusPsuCrestFactor)
+// WithFrusPsuCrestFactor adds the frusPsuCrestFactor to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusPsuCrestFactor(frusPsuCrestFactor *int64) *ShelfCollectionGetParams {
+	o.SetFrusPsuCrestFactor(frusPsuCrestFactor)
 	return o
 }
 
-// SetFrusPsuCrestFactorQueryParameter adds the frusPsuCrestFactor to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusPsuCrestFactorQueryParameter(frusPsuCrestFactor *int64) {
-	o.FrusPsuCrestFactorQueryParameter = frusPsuCrestFactor
+// SetFrusPsuCrestFactor adds the frusPsuCrestFactor to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusPsuCrestFactor(frusPsuCrestFactor *int64) {
+	o.FrusPsuCrestFactor = frusPsuCrestFactor
 }
 
-// WithFrusPsuModelQueryParameter adds the frusPsuModel to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusPsuModelQueryParameter(frusPsuModel *string) *ShelfCollectionGetParams {
-	o.SetFrusPsuModelQueryParameter(frusPsuModel)
+// WithFrusPsuModel adds the frusPsuModel to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusPsuModel(frusPsuModel *string) *ShelfCollectionGetParams {
+	o.SetFrusPsuModel(frusPsuModel)
 	return o
 }
 
-// SetFrusPsuModelQueryParameter adds the frusPsuModel to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusPsuModelQueryParameter(frusPsuModel *string) {
-	o.FrusPsuModelQueryParameter = frusPsuModel
+// SetFrusPsuModel adds the frusPsuModel to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusPsuModel(frusPsuModel *string) {
+	o.FrusPsuModel = frusPsuModel
 }
 
-// WithFrusPsuPowerDrawnQueryParameter adds the frusPsuPowerDrawn to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusPsuPowerDrawnQueryParameter(frusPsuPowerDrawn *int64) *ShelfCollectionGetParams {
-	o.SetFrusPsuPowerDrawnQueryParameter(frusPsuPowerDrawn)
+// WithFrusPsuPowerDrawn adds the frusPsuPowerDrawn to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusPsuPowerDrawn(frusPsuPowerDrawn *int64) *ShelfCollectionGetParams {
+	o.SetFrusPsuPowerDrawn(frusPsuPowerDrawn)
 	return o
 }
 
-// SetFrusPsuPowerDrawnQueryParameter adds the frusPsuPowerDrawn to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusPsuPowerDrawnQueryParameter(frusPsuPowerDrawn *int64) {
-	o.FrusPsuPowerDrawnQueryParameter = frusPsuPowerDrawn
+// SetFrusPsuPowerDrawn adds the frusPsuPowerDrawn to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusPsuPowerDrawn(frusPsuPowerDrawn *int64) {
+	o.FrusPsuPowerDrawn = frusPsuPowerDrawn
 }
 
-// WithFrusPsuPowerRatingQueryParameter adds the frusPsuPowerRating to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusPsuPowerRatingQueryParameter(frusPsuPowerRating *int64) *ShelfCollectionGetParams {
-	o.SetFrusPsuPowerRatingQueryParameter(frusPsuPowerRating)
+// WithFrusPsuPowerRating adds the frusPsuPowerRating to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusPsuPowerRating(frusPsuPowerRating *int64) *ShelfCollectionGetParams {
+	o.SetFrusPsuPowerRating(frusPsuPowerRating)
 	return o
 }
 
-// SetFrusPsuPowerRatingQueryParameter adds the frusPsuPowerRating to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusPsuPowerRatingQueryParameter(frusPsuPowerRating *int64) {
-	o.FrusPsuPowerRatingQueryParameter = frusPsuPowerRating
+// SetFrusPsuPowerRating adds the frusPsuPowerRating to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusPsuPowerRating(frusPsuPowerRating *int64) {
+	o.FrusPsuPowerRating = frusPsuPowerRating
 }
 
-// WithFrusSerialNumberQueryParameter adds the frusSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusSerialNumberQueryParameter(frusSerialNumber *string) *ShelfCollectionGetParams {
-	o.SetFrusSerialNumberQueryParameter(frusSerialNumber)
+// WithFrusSerialNumber adds the frusSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusSerialNumber(frusSerialNumber *string) *ShelfCollectionGetParams {
+	o.SetFrusSerialNumber(frusSerialNumber)
 	return o
 }
 
-// SetFrusSerialNumberQueryParameter adds the frusSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusSerialNumberQueryParameter(frusSerialNumber *string) {
-	o.FrusSerialNumberQueryParameter = frusSerialNumber
+// SetFrusSerialNumber adds the frusSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusSerialNumber(frusSerialNumber *string) {
+	o.FrusSerialNumber = frusSerialNumber
 }
 
-// WithFrusStateQueryParameter adds the frusState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusStateQueryParameter(frusState *string) *ShelfCollectionGetParams {
-	o.SetFrusStateQueryParameter(frusState)
+// WithFrusState adds the frusState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusState(frusState *string) *ShelfCollectionGetParams {
+	o.SetFrusState(frusState)
 	return o
 }
 
-// SetFrusStateQueryParameter adds the frusState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusStateQueryParameter(frusState *string) {
-	o.FrusStateQueryParameter = frusState
+// SetFrusState adds the frusState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusState(frusState *string) {
+	o.FrusState = frusState
 }
 
-// WithFrusTypeQueryParameter adds the frusType to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFrusTypeQueryParameter(frusType *string) *ShelfCollectionGetParams {
-	o.SetFrusTypeQueryParameter(frusType)
+// WithFrusType adds the frusType to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFrusType(frusType *string) *ShelfCollectionGetParams {
+	o.SetFrusType(frusType)
 	return o
 }
 
-// SetFrusTypeQueryParameter adds the frusType to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFrusTypeQueryParameter(frusType *string) {
-	o.FrusTypeQueryParameter = frusType
+// SetFrusType adds the frusType to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFrusType(frusType *string) {
+	o.FrusType = frusType
 }
 
-// WithIDQueryParameter adds the id to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithIDQueryParameter(id *string) *ShelfCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithID(id *string) *ShelfCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetIDQueryParameter(id *string) {
-	o.IDQueryParameter = id
+// SetID adds the id to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetID(id *string) {
+	o.ID = id
 }
 
-// WithInternalQueryParameter adds the internal to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithInternalQueryParameter(internal *bool) *ShelfCollectionGetParams {
-	o.SetInternalQueryParameter(internal)
+// WithInternal adds the internal to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithInternal(internal *bool) *ShelfCollectionGetParams {
+	o.SetInternal(internal)
 	return o
 }
 
-// SetInternalQueryParameter adds the internal to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetInternalQueryParameter(internal *bool) {
-	o.InternalQueryParameter = internal
+// SetInternal adds the internal to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetInternal(internal *bool) {
+	o.Internal = internal
 }
 
-// WithLocalQueryParameter adds the local to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithLocalQueryParameter(local *bool) *ShelfCollectionGetParams {
-	o.SetLocalQueryParameter(local)
+// WithLocal adds the local to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithLocal(local *bool) *ShelfCollectionGetParams {
+	o.SetLocal(local)
 	return o
 }
 
-// SetLocalQueryParameter adds the local to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetLocalQueryParameter(local *bool) {
-	o.LocalQueryParameter = local
+// SetLocal adds the local to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetLocal(local *bool) {
+	o.Local = local
 }
 
-// WithLocationLedQueryParameter adds the locationLed to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithLocationLedQueryParameter(locationLed *string) *ShelfCollectionGetParams {
-	o.SetLocationLedQueryParameter(locationLed)
+// WithLocationLed adds the locationLed to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithLocationLed(locationLed *string) *ShelfCollectionGetParams {
+	o.SetLocationLed(locationLed)
 	return o
 }
 
-// SetLocationLedQueryParameter adds the locationLed to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetLocationLedQueryParameter(locationLed *string) {
-	o.LocationLedQueryParameter = locationLed
+// SetLocationLed adds the locationLed to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetLocationLed(locationLed *string) {
+	o.LocationLed = locationLed
 }
 
-// WithManufacturerNameQueryParameter adds the manufacturerName to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithManufacturerNameQueryParameter(manufacturerName *string) *ShelfCollectionGetParams {
-	o.SetManufacturerNameQueryParameter(manufacturerName)
+// WithManufacturerName adds the manufacturerName to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithManufacturerName(manufacturerName *string) *ShelfCollectionGetParams {
+	o.SetManufacturerName(manufacturerName)
 	return o
 }
 
-// SetManufacturerNameQueryParameter adds the manufacturerName to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetManufacturerNameQueryParameter(manufacturerName *string) {
-	o.ManufacturerNameQueryParameter = manufacturerName
+// SetManufacturerName adds the manufacturerName to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetManufacturerName(manufacturerName *string) {
+	o.ManufacturerName = manufacturerName
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ShelfCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithMaxRecords(maxRecords *int64) *ShelfCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithModelQueryParameter adds the model to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithModelQueryParameter(model *string) *ShelfCollectionGetParams {
-	o.SetModelQueryParameter(model)
+// WithModel adds the model to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithModel(model *string) *ShelfCollectionGetParams {
+	o.SetModel(model)
 	return o
 }
 
-// SetModelQueryParameter adds the model to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetModelQueryParameter(model *string) {
-	o.ModelQueryParameter = model
+// SetModel adds the model to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetModel(model *string) {
+	o.Model = model
 }
 
-// WithModuleTypeQueryParameter adds the moduleType to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithModuleTypeQueryParameter(moduleType *string) *ShelfCollectionGetParams {
-	o.SetModuleTypeQueryParameter(moduleType)
+// WithModuleType adds the moduleType to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithModuleType(moduleType *string) *ShelfCollectionGetParams {
+	o.SetModuleType(moduleType)
 	return o
 }
 
-// SetModuleTypeQueryParameter adds the moduleType to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetModuleTypeQueryParameter(moduleType *string) {
-	o.ModuleTypeQueryParameter = moduleType
+// SetModuleType adds the moduleType to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetModuleType(moduleType *string) {
+	o.ModuleType = moduleType
 }
 
-// WithNameQueryParameter adds the name to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithNameQueryParameter(name *string) *ShelfCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithName(name *string) *ShelfCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ShelfCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithOrderBy(orderBy []string) *ShelfCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPathsNameQueryParameter adds the pathsName to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPathsNameQueryParameter(pathsName *string) *ShelfCollectionGetParams {
-	o.SetPathsNameQueryParameter(pathsName)
+// WithPathsName adds the pathsName to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPathsName(pathsName *string) *ShelfCollectionGetParams {
+	o.SetPathsName(pathsName)
 	return o
 }
 
-// SetPathsNameQueryParameter adds the pathsName to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPathsNameQueryParameter(pathsName *string) {
-	o.PathsNameQueryParameter = pathsName
+// SetPathsName adds the pathsName to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPathsName(pathsName *string) {
+	o.PathsName = pathsName
 }
 
-// WithPathsNodeNameQueryParameter adds the pathsNodeName to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPathsNodeNameQueryParameter(pathsNodeName *string) *ShelfCollectionGetParams {
-	o.SetPathsNodeNameQueryParameter(pathsNodeName)
+// WithPathsNodeName adds the pathsNodeName to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPathsNodeName(pathsNodeName *string) *ShelfCollectionGetParams {
+	o.SetPathsNodeName(pathsNodeName)
 	return o
 }
 
-// SetPathsNodeNameQueryParameter adds the pathsNodeName to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPathsNodeNameQueryParameter(pathsNodeName *string) {
-	o.PathsNodeNameQueryParameter = pathsNodeName
+// SetPathsNodeName adds the pathsNodeName to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPathsNodeName(pathsNodeName *string) {
+	o.PathsNodeName = pathsNodeName
 }
 
-// WithPathsNodeUUIDQueryParameter adds the pathsNodeUUID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPathsNodeUUIDQueryParameter(pathsNodeUUID *string) *ShelfCollectionGetParams {
-	o.SetPathsNodeUUIDQueryParameter(pathsNodeUUID)
+// WithPathsNodeUUID adds the pathsNodeUUID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPathsNodeUUID(pathsNodeUUID *string) *ShelfCollectionGetParams {
+	o.SetPathsNodeUUID(pathsNodeUUID)
 	return o
 }
 
-// SetPathsNodeUUIDQueryParameter adds the pathsNodeUuid to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPathsNodeUUIDQueryParameter(pathsNodeUUID *string) {
-	o.PathsNodeUUIDQueryParameter = pathsNodeUUID
+// SetPathsNodeUUID adds the pathsNodeUuid to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPathsNodeUUID(pathsNodeUUID *string) {
+	o.PathsNodeUUID = pathsNodeUUID
 }
 
-// WithPortsCableIDentifierQueryParameter adds the portsCableIdentifier to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsCableIDentifierQueryParameter(portsCableIdentifier *string) *ShelfCollectionGetParams {
-	o.SetPortsCableIDentifierQueryParameter(portsCableIdentifier)
+// WithPortsCableIdentifier adds the portsCableIdentifier to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsCableIdentifier(portsCableIdentifier *string) *ShelfCollectionGetParams {
+	o.SetPortsCableIdentifier(portsCableIdentifier)
 	return o
 }
 
-// SetPortsCableIDentifierQueryParameter adds the portsCableIdentifier to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsCableIDentifierQueryParameter(portsCableIdentifier *string) {
-	o.PortsCableIDentifierQueryParameter = portsCableIdentifier
+// SetPortsCableIdentifier adds the portsCableIdentifier to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsCableIdentifier(portsCableIdentifier *string) {
+	o.PortsCableIdentifier = portsCableIdentifier
 }
 
-// WithPortsCableLengthQueryParameter adds the portsCableLength to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsCableLengthQueryParameter(portsCableLength *string) *ShelfCollectionGetParams {
-	o.SetPortsCableLengthQueryParameter(portsCableLength)
+// WithPortsCableLength adds the portsCableLength to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsCableLength(portsCableLength *string) *ShelfCollectionGetParams {
+	o.SetPortsCableLength(portsCableLength)
 	return o
 }
 
-// SetPortsCableLengthQueryParameter adds the portsCableLength to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsCableLengthQueryParameter(portsCableLength *string) {
-	o.PortsCableLengthQueryParameter = portsCableLength
+// SetPortsCableLength adds the portsCableLength to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsCableLength(portsCableLength *string) {
+	o.PortsCableLength = portsCableLength
 }
 
-// WithPortsCablePartNumberQueryParameter adds the portsCablePartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsCablePartNumberQueryParameter(portsCablePartNumber *string) *ShelfCollectionGetParams {
-	o.SetPortsCablePartNumberQueryParameter(portsCablePartNumber)
+// WithPortsCablePartNumber adds the portsCablePartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsCablePartNumber(portsCablePartNumber *string) *ShelfCollectionGetParams {
+	o.SetPortsCablePartNumber(portsCablePartNumber)
 	return o
 }
 
-// SetPortsCablePartNumberQueryParameter adds the portsCablePartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsCablePartNumberQueryParameter(portsCablePartNumber *string) {
-	o.PortsCablePartNumberQueryParameter = portsCablePartNumber
+// SetPortsCablePartNumber adds the portsCablePartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsCablePartNumber(portsCablePartNumber *string) {
+	o.PortsCablePartNumber = portsCablePartNumber
 }
 
-// WithPortsCableSerialNumberQueryParameter adds the portsCableSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsCableSerialNumberQueryParameter(portsCableSerialNumber *string) *ShelfCollectionGetParams {
-	o.SetPortsCableSerialNumberQueryParameter(portsCableSerialNumber)
+// WithPortsCableSerialNumber adds the portsCableSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsCableSerialNumber(portsCableSerialNumber *string) *ShelfCollectionGetParams {
+	o.SetPortsCableSerialNumber(portsCableSerialNumber)
 	return o
 }
 
-// SetPortsCableSerialNumberQueryParameter adds the portsCableSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsCableSerialNumberQueryParameter(portsCableSerialNumber *string) {
-	o.PortsCableSerialNumberQueryParameter = portsCableSerialNumber
+// SetPortsCableSerialNumber adds the portsCableSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsCableSerialNumber(portsCableSerialNumber *string) {
+	o.PortsCableSerialNumber = portsCableSerialNumber
 }
 
-// WithPortsDesignatorQueryParameter adds the portsDesignator to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsDesignatorQueryParameter(portsDesignator *string) *ShelfCollectionGetParams {
-	o.SetPortsDesignatorQueryParameter(portsDesignator)
+// WithPortsDesignator adds the portsDesignator to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsDesignator(portsDesignator *string) *ShelfCollectionGetParams {
+	o.SetPortsDesignator(portsDesignator)
 	return o
 }
 
-// SetPortsDesignatorQueryParameter adds the portsDesignator to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsDesignatorQueryParameter(portsDesignator *string) {
-	o.PortsDesignatorQueryParameter = portsDesignator
+// SetPortsDesignator adds the portsDesignator to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsDesignator(portsDesignator *string) {
+	o.PortsDesignator = portsDesignator
 }
 
-// WithPortsIDQueryParameter adds the portsID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsIDQueryParameter(portsID *int64) *ShelfCollectionGetParams {
-	o.SetPortsIDQueryParameter(portsID)
+// WithPortsID adds the portsID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsID(portsID *int64) *ShelfCollectionGetParams {
+	o.SetPortsID(portsID)
 	return o
 }
 
-// SetPortsIDQueryParameter adds the portsId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsIDQueryParameter(portsID *int64) {
-	o.PortsIDQueryParameter = portsID
+// SetPortsID adds the portsId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsID(portsID *int64) {
+	o.PortsID = portsID
 }
 
-// WithPortsInternalQueryParameter adds the portsInternal to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsInternalQueryParameter(portsInternal *bool) *ShelfCollectionGetParams {
-	o.SetPortsInternalQueryParameter(portsInternal)
+// WithPortsInternal adds the portsInternal to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsInternal(portsInternal *bool) *ShelfCollectionGetParams {
+	o.SetPortsInternal(portsInternal)
 	return o
 }
 
-// SetPortsInternalQueryParameter adds the portsInternal to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsInternalQueryParameter(portsInternal *bool) {
-	o.PortsInternalQueryParameter = portsInternal
+// SetPortsInternal adds the portsInternal to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsInternal(portsInternal *bool) {
+	o.PortsInternal = portsInternal
 }
 
-// WithPortsMacAddressQueryParameter adds the portsMacAddress to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsMacAddressQueryParameter(portsMacAddress *string) *ShelfCollectionGetParams {
-	o.SetPortsMacAddressQueryParameter(portsMacAddress)
+// WithPortsMacAddress adds the portsMacAddress to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsMacAddress(portsMacAddress *string) *ShelfCollectionGetParams {
+	o.SetPortsMacAddress(portsMacAddress)
 	return o
 }
 
-// SetPortsMacAddressQueryParameter adds the portsMacAddress to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsMacAddressQueryParameter(portsMacAddress *string) {
-	o.PortsMacAddressQueryParameter = portsMacAddress
+// SetPortsMacAddress adds the portsMacAddress to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsMacAddress(portsMacAddress *string) {
+	o.PortsMacAddress = portsMacAddress
 }
 
-// WithPortsModuleIDQueryParameter adds the portsModuleID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsModuleIDQueryParameter(portsModuleID *string) *ShelfCollectionGetParams {
-	o.SetPortsModuleIDQueryParameter(portsModuleID)
+// WithPortsModuleID adds the portsModuleID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsModuleID(portsModuleID *string) *ShelfCollectionGetParams {
+	o.SetPortsModuleID(portsModuleID)
 	return o
 }
 
-// SetPortsModuleIDQueryParameter adds the portsModuleId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsModuleIDQueryParameter(portsModuleID *string) {
-	o.PortsModuleIDQueryParameter = portsModuleID
+// SetPortsModuleID adds the portsModuleId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsModuleID(portsModuleID *string) {
+	o.PortsModuleID = portsModuleID
 }
 
-// WithPortsRemoteChassisQueryParameter adds the portsRemoteChassis to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsRemoteChassisQueryParameter(portsRemoteChassis *string) *ShelfCollectionGetParams {
-	o.SetPortsRemoteChassisQueryParameter(portsRemoteChassis)
+// WithPortsRemoteChassis adds the portsRemoteChassis to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemoteChassis(portsRemoteChassis *string) *ShelfCollectionGetParams {
+	o.SetPortsRemoteChassis(portsRemoteChassis)
 	return o
 }
 
-// SetPortsRemoteChassisQueryParameter adds the portsRemoteChassis to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsRemoteChassisQueryParameter(portsRemoteChassis *string) {
-	o.PortsRemoteChassisQueryParameter = portsRemoteChassis
+// SetPortsRemoteChassis adds the portsRemoteChassis to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemoteChassis(portsRemoteChassis *string) {
+	o.PortsRemoteChassis = portsRemoteChassis
 }
 
-// WithPortsRemoteDeviceQueryParameter adds the portsRemoteDevice to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsRemoteDeviceQueryParameter(portsRemoteDevice *string) *ShelfCollectionGetParams {
-	o.SetPortsRemoteDeviceQueryParameter(portsRemoteDevice)
+// WithPortsRemoteDevice adds the portsRemoteDevice to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemoteDevice(portsRemoteDevice *string) *ShelfCollectionGetParams {
+	o.SetPortsRemoteDevice(portsRemoteDevice)
 	return o
 }
 
-// SetPortsRemoteDeviceQueryParameter adds the portsRemoteDevice to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsRemoteDeviceQueryParameter(portsRemoteDevice *string) {
-	o.PortsRemoteDeviceQueryParameter = portsRemoteDevice
+// SetPortsRemoteDevice adds the portsRemoteDevice to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemoteDevice(portsRemoteDevice *string) {
+	o.PortsRemoteDevice = portsRemoteDevice
 }
 
-// WithPortsRemoteMacAddressQueryParameter adds the portsRemoteMacAddress to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsRemoteMacAddressQueryParameter(portsRemoteMacAddress *string) *ShelfCollectionGetParams {
-	o.SetPortsRemoteMacAddressQueryParameter(portsRemoteMacAddress)
+// WithPortsRemoteMacAddress adds the portsRemoteMacAddress to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemoteMacAddress(portsRemoteMacAddress *string) *ShelfCollectionGetParams {
+	o.SetPortsRemoteMacAddress(portsRemoteMacAddress)
 	return o
 }
 
-// SetPortsRemoteMacAddressQueryParameter adds the portsRemoteMacAddress to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsRemoteMacAddressQueryParameter(portsRemoteMacAddress *string) {
-	o.PortsRemoteMacAddressQueryParameter = portsRemoteMacAddress
+// SetPortsRemoteMacAddress adds the portsRemoteMacAddress to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemoteMacAddress(portsRemoteMacAddress *string) {
+	o.PortsRemoteMacAddress = portsRemoteMacAddress
 }
 
-// WithPortsRemotePhyQueryParameter adds the portsRemotePhy to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsRemotePhyQueryParameter(portsRemotePhy *string) *ShelfCollectionGetParams {
-	o.SetPortsRemotePhyQueryParameter(portsRemotePhy)
+// WithPortsRemotePhy adds the portsRemotePhy to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemotePhy(portsRemotePhy *string) *ShelfCollectionGetParams {
+	o.SetPortsRemotePhy(portsRemotePhy)
 	return o
 }
 
-// SetPortsRemotePhyQueryParameter adds the portsRemotePhy to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsRemotePhyQueryParameter(portsRemotePhy *string) {
-	o.PortsRemotePhyQueryParameter = portsRemotePhy
+// SetPortsRemotePhy adds the portsRemotePhy to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemotePhy(portsRemotePhy *string) {
+	o.PortsRemotePhy = portsRemotePhy
 }
 
-// WithPortsRemotePortQueryParameter adds the portsRemotePort to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsRemotePortQueryParameter(portsRemotePort *string) *ShelfCollectionGetParams {
-	o.SetPortsRemotePortQueryParameter(portsRemotePort)
+// WithPortsRemotePort adds the portsRemotePort to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemotePort(portsRemotePort *string) *ShelfCollectionGetParams {
+	o.SetPortsRemotePort(portsRemotePort)
 	return o
 }
 
-// SetPortsRemotePortQueryParameter adds the portsRemotePort to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsRemotePortQueryParameter(portsRemotePort *string) {
-	o.PortsRemotePortQueryParameter = portsRemotePort
+// SetPortsRemotePort adds the portsRemotePort to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemotePort(portsRemotePort *string) {
+	o.PortsRemotePort = portsRemotePort
 }
 
-// WithPortsRemoteWwnQueryParameter adds the portsRemoteWwn to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsRemoteWwnQueryParameter(portsRemoteWwn *string) *ShelfCollectionGetParams {
-	o.SetPortsRemoteWwnQueryParameter(portsRemoteWwn)
+// WithPortsRemoteWwn adds the portsRemoteWwn to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemoteWwn(portsRemoteWwn *string) *ShelfCollectionGetParams {
+	o.SetPortsRemoteWwn(portsRemoteWwn)
 	return o
 }
 
-// SetPortsRemoteWwnQueryParameter adds the portsRemoteWwn to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsRemoteWwnQueryParameter(portsRemoteWwn *string) {
-	o.PortsRemoteWwnQueryParameter = portsRemoteWwn
+// SetPortsRemoteWwn adds the portsRemoteWwn to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemoteWwn(portsRemoteWwn *string) {
+	o.PortsRemoteWwn = portsRemoteWwn
 }
 
-// WithPortsStateQueryParameter adds the portsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsStateQueryParameter(portsState *string) *ShelfCollectionGetParams {
-	o.SetPortsStateQueryParameter(portsState)
+// WithPortsState adds the portsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsState(portsState *string) *ShelfCollectionGetParams {
+	o.SetPortsState(portsState)
 	return o
 }
 
-// SetPortsStateQueryParameter adds the portsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsStateQueryParameter(portsState *string) {
-	o.PortsStateQueryParameter = portsState
+// SetPortsState adds the portsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsState(portsState *string) {
+	o.PortsState = portsState
 }
 
-// WithPortsWwnQueryParameter adds the portsWwn to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithPortsWwnQueryParameter(portsWwn *string) *ShelfCollectionGetParams {
-	o.SetPortsWwnQueryParameter(portsWwn)
+// WithPortsWwn adds the portsWwn to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsWwn(portsWwn *string) *ShelfCollectionGetParams {
+	o.SetPortsWwn(portsWwn)
 	return o
 }
 
-// SetPortsWwnQueryParameter adds the portsWwn to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetPortsWwnQueryParameter(portsWwn *string) {
-	o.PortsWwnQueryParameter = portsWwn
+// SetPortsWwn adds the portsWwn to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsWwn(portsWwn *string) {
+	o.PortsWwn = portsWwn
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ShelfCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithReturnRecords(returnRecords *bool) *ShelfCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ShelfCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ShelfCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *ShelfCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithSerialNumber(serialNumber *string) *ShelfCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithStateQueryParameter adds the state to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithStateQueryParameter(state *string) *ShelfCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithState adds the state to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithState(state *string) *ShelfCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetState adds the state to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithTemperatureSensorsAmbientQueryParameter adds the temperatureSensorsAmbient to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsAmbientQueryParameter(temperatureSensorsAmbient *bool) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsAmbientQueryParameter(temperatureSensorsAmbient)
+// WithTemperatureSensorsAmbient adds the temperatureSensorsAmbient to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsAmbient(temperatureSensorsAmbient *bool) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsAmbient(temperatureSensorsAmbient)
 	return o
 }
 
-// SetTemperatureSensorsAmbientQueryParameter adds the temperatureSensorsAmbient to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsAmbientQueryParameter(temperatureSensorsAmbient *bool) {
-	o.TemperatureSensorsAmbientQueryParameter = temperatureSensorsAmbient
+// SetTemperatureSensorsAmbient adds the temperatureSensorsAmbient to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsAmbient(temperatureSensorsAmbient *bool) {
+	o.TemperatureSensorsAmbient = temperatureSensorsAmbient
 }
 
-// WithTemperatureSensorsIDQueryParameter adds the temperatureSensorsID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsIDQueryParameter(temperatureSensorsID *int64) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsIDQueryParameter(temperatureSensorsID)
+// WithTemperatureSensorsID adds the temperatureSensorsID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsID(temperatureSensorsID *int64) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsID(temperatureSensorsID)
 	return o
 }
 
-// SetTemperatureSensorsIDQueryParameter adds the temperatureSensorsId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsIDQueryParameter(temperatureSensorsID *int64) {
-	o.TemperatureSensorsIDQueryParameter = temperatureSensorsID
+// SetTemperatureSensorsID adds the temperatureSensorsId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsID(temperatureSensorsID *int64) {
+	o.TemperatureSensorsID = temperatureSensorsID
 }
 
-// WithTemperatureSensorsLocationQueryParameter adds the temperatureSensorsLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsLocationQueryParameter(temperatureSensorsLocation *string) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsLocationQueryParameter(temperatureSensorsLocation)
+// WithTemperatureSensorsLocation adds the temperatureSensorsLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsLocation(temperatureSensorsLocation *string) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsLocation(temperatureSensorsLocation)
 	return o
 }
 
-// SetTemperatureSensorsLocationQueryParameter adds the temperatureSensorsLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsLocationQueryParameter(temperatureSensorsLocation *string) {
-	o.TemperatureSensorsLocationQueryParameter = temperatureSensorsLocation
+// SetTemperatureSensorsLocation adds the temperatureSensorsLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsLocation(temperatureSensorsLocation *string) {
+	o.TemperatureSensorsLocation = temperatureSensorsLocation
 }
 
-// WithTemperatureSensorsStateQueryParameter adds the temperatureSensorsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsStateQueryParameter(temperatureSensorsState *string) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsStateQueryParameter(temperatureSensorsState)
+// WithTemperatureSensorsState adds the temperatureSensorsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsState(temperatureSensorsState *string) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsState(temperatureSensorsState)
 	return o
 }
 
-// SetTemperatureSensorsStateQueryParameter adds the temperatureSensorsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsStateQueryParameter(temperatureSensorsState *string) {
-	o.TemperatureSensorsStateQueryParameter = temperatureSensorsState
+// SetTemperatureSensorsState adds the temperatureSensorsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsState(temperatureSensorsState *string) {
+	o.TemperatureSensorsState = temperatureSensorsState
 }
 
-// WithTemperatureSensorsTemperatureQueryParameter adds the temperatureSensorsTemperature to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsTemperatureQueryParameter(temperatureSensorsTemperature *int64) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsTemperatureQueryParameter(temperatureSensorsTemperature)
+// WithTemperatureSensorsTemperature adds the temperatureSensorsTemperature to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsTemperature(temperatureSensorsTemperature *int64) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsTemperature(temperatureSensorsTemperature)
 	return o
 }
 
-// SetTemperatureSensorsTemperatureQueryParameter adds the temperatureSensorsTemperature to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsTemperatureQueryParameter(temperatureSensorsTemperature *int64) {
-	o.TemperatureSensorsTemperatureQueryParameter = temperatureSensorsTemperature
+// SetTemperatureSensorsTemperature adds the temperatureSensorsTemperature to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsTemperature(temperatureSensorsTemperature *int64) {
+	o.TemperatureSensorsTemperature = temperatureSensorsTemperature
 }
 
-// WithTemperatureSensorsThresholdHighCriticalQueryParameter adds the temperatureSensorsThresholdHighCritical to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdHighCriticalQueryParameter(temperatureSensorsThresholdHighCritical *int64) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsThresholdHighCriticalQueryParameter(temperatureSensorsThresholdHighCritical)
+// WithTemperatureSensorsThresholdHighCritical adds the temperatureSensorsThresholdHighCritical to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdHighCritical(temperatureSensorsThresholdHighCritical *int64) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsThresholdHighCritical(temperatureSensorsThresholdHighCritical)
 	return o
 }
 
-// SetTemperatureSensorsThresholdHighCriticalQueryParameter adds the temperatureSensorsThresholdHighCritical to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdHighCriticalQueryParameter(temperatureSensorsThresholdHighCritical *int64) {
-	o.TemperatureSensorsThresholdHighCriticalQueryParameter = temperatureSensorsThresholdHighCritical
+// SetTemperatureSensorsThresholdHighCritical adds the temperatureSensorsThresholdHighCritical to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdHighCritical(temperatureSensorsThresholdHighCritical *int64) {
+	o.TemperatureSensorsThresholdHighCritical = temperatureSensorsThresholdHighCritical
 }
 
-// WithTemperatureSensorsThresholdHighWarningQueryParameter adds the temperatureSensorsThresholdHighWarning to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdHighWarningQueryParameter(temperatureSensorsThresholdHighWarning *int64) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsThresholdHighWarningQueryParameter(temperatureSensorsThresholdHighWarning)
+// WithTemperatureSensorsThresholdHighWarning adds the temperatureSensorsThresholdHighWarning to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdHighWarning(temperatureSensorsThresholdHighWarning *int64) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsThresholdHighWarning(temperatureSensorsThresholdHighWarning)
 	return o
 }
 
-// SetTemperatureSensorsThresholdHighWarningQueryParameter adds the temperatureSensorsThresholdHighWarning to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdHighWarningQueryParameter(temperatureSensorsThresholdHighWarning *int64) {
-	o.TemperatureSensorsThresholdHighWarningQueryParameter = temperatureSensorsThresholdHighWarning
+// SetTemperatureSensorsThresholdHighWarning adds the temperatureSensorsThresholdHighWarning to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdHighWarning(temperatureSensorsThresholdHighWarning *int64) {
+	o.TemperatureSensorsThresholdHighWarning = temperatureSensorsThresholdHighWarning
 }
 
-// WithTemperatureSensorsThresholdLowCriticalQueryParameter adds the temperatureSensorsThresholdLowCritical to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdLowCriticalQueryParameter(temperatureSensorsThresholdLowCritical *int64) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsThresholdLowCriticalQueryParameter(temperatureSensorsThresholdLowCritical)
+// WithTemperatureSensorsThresholdLowCritical adds the temperatureSensorsThresholdLowCritical to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdLowCritical(temperatureSensorsThresholdLowCritical *int64) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsThresholdLowCritical(temperatureSensorsThresholdLowCritical)
 	return o
 }
 
-// SetTemperatureSensorsThresholdLowCriticalQueryParameter adds the temperatureSensorsThresholdLowCritical to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdLowCriticalQueryParameter(temperatureSensorsThresholdLowCritical *int64) {
-	o.TemperatureSensorsThresholdLowCriticalQueryParameter = temperatureSensorsThresholdLowCritical
+// SetTemperatureSensorsThresholdLowCritical adds the temperatureSensorsThresholdLowCritical to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdLowCritical(temperatureSensorsThresholdLowCritical *int64) {
+	o.TemperatureSensorsThresholdLowCritical = temperatureSensorsThresholdLowCritical
 }
 
-// WithTemperatureSensorsThresholdLowWarningQueryParameter adds the temperatureSensorsThresholdLowWarning to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdLowWarningQueryParameter(temperatureSensorsThresholdLowWarning *int64) *ShelfCollectionGetParams {
-	o.SetTemperatureSensorsThresholdLowWarningQueryParameter(temperatureSensorsThresholdLowWarning)
+// WithTemperatureSensorsThresholdLowWarning adds the temperatureSensorsThresholdLowWarning to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithTemperatureSensorsThresholdLowWarning(temperatureSensorsThresholdLowWarning *int64) *ShelfCollectionGetParams {
+	o.SetTemperatureSensorsThresholdLowWarning(temperatureSensorsThresholdLowWarning)
 	return o
 }
 
-// SetTemperatureSensorsThresholdLowWarningQueryParameter adds the temperatureSensorsThresholdLowWarning to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdLowWarningQueryParameter(temperatureSensorsThresholdLowWarning *int64) {
-	o.TemperatureSensorsThresholdLowWarningQueryParameter = temperatureSensorsThresholdLowWarning
+// SetTemperatureSensorsThresholdLowWarning adds the temperatureSensorsThresholdLowWarning to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetTemperatureSensorsThresholdLowWarning(temperatureSensorsThresholdLowWarning *int64) {
+	o.TemperatureSensorsThresholdLowWarning = temperatureSensorsThresholdLowWarning
 }
 
-// WithUIDQueryParameter adds the uid to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithUIDQueryParameter(uid *string) *ShelfCollectionGetParams {
-	o.SetUIDQueryParameter(uid)
+// WithUID adds the uid to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithUID(uid *string) *ShelfCollectionGetParams {
+	o.SetUID(uid)
 	return o
 }
 
-// SetUIDQueryParameter adds the uid to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetUIDQueryParameter(uid *string) {
-	o.UIDQueryParameter = uid
+// SetUID adds the uid to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetUID(uid *string) {
+	o.UID = uid
 }
 
-// WithVendorManufacturerQueryParameter adds the vendorManufacturer to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVendorManufacturerQueryParameter(vendorManufacturer *string) *ShelfCollectionGetParams {
-	o.SetVendorManufacturerQueryParameter(vendorManufacturer)
+// WithVendorManufacturer adds the vendorManufacturer to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorManufacturer(vendorManufacturer *string) *ShelfCollectionGetParams {
+	o.SetVendorManufacturer(vendorManufacturer)
 	return o
 }
 
-// SetVendorManufacturerQueryParameter adds the vendorManufacturer to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVendorManufacturerQueryParameter(vendorManufacturer *string) {
-	o.VendorManufacturerQueryParameter = vendorManufacturer
+// SetVendorManufacturer adds the vendorManufacturer to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorManufacturer(vendorManufacturer *string) {
+	o.VendorManufacturer = vendorManufacturer
 }
 
-// WithVendorNameQueryParameter adds the vendorName to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVendorNameQueryParameter(vendorName *string) *ShelfCollectionGetParams {
-	o.SetVendorNameQueryParameter(vendorName)
+// WithVendorName adds the vendorName to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorName(vendorName *string) *ShelfCollectionGetParams {
+	o.SetVendorName(vendorName)
 	return o
 }
 
-// SetVendorNameQueryParameter adds the vendorName to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVendorNameQueryParameter(vendorName *string) {
-	o.VendorNameQueryParameter = vendorName
+// SetVendorName adds the vendorName to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorName(vendorName *string) {
+	o.VendorName = vendorName
 }
 
-// WithVendorPartNumberQueryParameter adds the vendorPartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVendorPartNumberQueryParameter(vendorPartNumber *string) *ShelfCollectionGetParams {
-	o.SetVendorPartNumberQueryParameter(vendorPartNumber)
+// WithVendorPartNumber adds the vendorPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorPartNumber(vendorPartNumber *string) *ShelfCollectionGetParams {
+	o.SetVendorPartNumber(vendorPartNumber)
 	return o
 }
 
-// SetVendorPartNumberQueryParameter adds the vendorPartNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVendorPartNumberQueryParameter(vendorPartNumber *string) {
-	o.VendorPartNumberQueryParameter = vendorPartNumber
+// SetVendorPartNumber adds the vendorPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorPartNumber(vendorPartNumber *string) {
+	o.VendorPartNumber = vendorPartNumber
 }
 
-// WithVendorProductQueryParameter adds the vendorProduct to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVendorProductQueryParameter(vendorProduct *string) *ShelfCollectionGetParams {
-	o.SetVendorProductQueryParameter(vendorProduct)
+// WithVendorProduct adds the vendorProduct to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorProduct(vendorProduct *string) *ShelfCollectionGetParams {
+	o.SetVendorProduct(vendorProduct)
 	return o
 }
 
-// SetVendorProductQueryParameter adds the vendorProduct to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVendorProductQueryParameter(vendorProduct *string) {
-	o.VendorProductQueryParameter = vendorProduct
+// SetVendorProduct adds the vendorProduct to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorProduct(vendorProduct *string) {
+	o.VendorProduct = vendorProduct
 }
 
-// WithVendorSerialNumberQueryParameter adds the vendorSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVendorSerialNumberQueryParameter(vendorSerialNumber *string) *ShelfCollectionGetParams {
-	o.SetVendorSerialNumberQueryParameter(vendorSerialNumber)
+// WithVendorSerialNumber adds the vendorSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorSerialNumber(vendorSerialNumber *string) *ShelfCollectionGetParams {
+	o.SetVendorSerialNumber(vendorSerialNumber)
 	return o
 }
 
-// SetVendorSerialNumberQueryParameter adds the vendorSerialNumber to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVendorSerialNumberQueryParameter(vendorSerialNumber *string) {
-	o.VendorSerialNumberQueryParameter = vendorSerialNumber
+// SetVendorSerialNumber adds the vendorSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorSerialNumber(vendorSerialNumber *string) {
+	o.VendorSerialNumber = vendorSerialNumber
 }
 
-// WithVoltageSensorsIDQueryParameter adds the voltageSensorsID to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVoltageSensorsIDQueryParameter(voltageSensorsID *int64) *ShelfCollectionGetParams {
-	o.SetVoltageSensorsIDQueryParameter(voltageSensorsID)
+// WithVoltageSensorsID adds the voltageSensorsID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVoltageSensorsID(voltageSensorsID *int64) *ShelfCollectionGetParams {
+	o.SetVoltageSensorsID(voltageSensorsID)
 	return o
 }
 
-// SetVoltageSensorsIDQueryParameter adds the voltageSensorsId to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVoltageSensorsIDQueryParameter(voltageSensorsID *int64) {
-	o.VoltageSensorsIDQueryParameter = voltageSensorsID
+// SetVoltageSensorsID adds the voltageSensorsId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVoltageSensorsID(voltageSensorsID *int64) {
+	o.VoltageSensorsID = voltageSensorsID
 }
 
-// WithVoltageSensorsLocationQueryParameter adds the voltageSensorsLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVoltageSensorsLocationQueryParameter(voltageSensorsLocation *string) *ShelfCollectionGetParams {
-	o.SetVoltageSensorsLocationQueryParameter(voltageSensorsLocation)
+// WithVoltageSensorsLocation adds the voltageSensorsLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVoltageSensorsLocation(voltageSensorsLocation *string) *ShelfCollectionGetParams {
+	o.SetVoltageSensorsLocation(voltageSensorsLocation)
 	return o
 }
 
-// SetVoltageSensorsLocationQueryParameter adds the voltageSensorsLocation to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVoltageSensorsLocationQueryParameter(voltageSensorsLocation *string) {
-	o.VoltageSensorsLocationQueryParameter = voltageSensorsLocation
+// SetVoltageSensorsLocation adds the voltageSensorsLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVoltageSensorsLocation(voltageSensorsLocation *string) {
+	o.VoltageSensorsLocation = voltageSensorsLocation
 }
 
-// WithVoltageSensorsStateQueryParameter adds the voltageSensorsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVoltageSensorsStateQueryParameter(voltageSensorsState *string) *ShelfCollectionGetParams {
-	o.SetVoltageSensorsStateQueryParameter(voltageSensorsState)
+// WithVoltageSensorsState adds the voltageSensorsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVoltageSensorsState(voltageSensorsState *string) *ShelfCollectionGetParams {
+	o.SetVoltageSensorsState(voltageSensorsState)
 	return o
 }
 
-// SetVoltageSensorsStateQueryParameter adds the voltageSensorsState to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVoltageSensorsStateQueryParameter(voltageSensorsState *string) {
-	o.VoltageSensorsStateQueryParameter = voltageSensorsState
+// SetVoltageSensorsState adds the voltageSensorsState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVoltageSensorsState(voltageSensorsState *string) {
+	o.VoltageSensorsState = voltageSensorsState
 }
 
-// WithVoltageSensorsVoltageQueryParameter adds the voltageSensorsVoltage to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithVoltageSensorsVoltageQueryParameter(voltageSensorsVoltage *float64) *ShelfCollectionGetParams {
-	o.SetVoltageSensorsVoltageQueryParameter(voltageSensorsVoltage)
+// WithVoltageSensorsVoltage adds the voltageSensorsVoltage to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVoltageSensorsVoltage(voltageSensorsVoltage *float64) *ShelfCollectionGetParams {
+	o.SetVoltageSensorsVoltage(voltageSensorsVoltage)
 	return o
 }
 
-// SetVoltageSensorsVoltageQueryParameter adds the voltageSensorsVoltage to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetVoltageSensorsVoltageQueryParameter(voltageSensorsVoltage *float64) {
-	o.VoltageSensorsVoltageQueryParameter = voltageSensorsVoltage
+// SetVoltageSensorsVoltage adds the voltageSensorsVoltage to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVoltageSensorsVoltage(voltageSensorsVoltage *float64) {
+	o.VoltageSensorsVoltage = voltageSensorsVoltage
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1994,13 +1994,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.AcpsAddressQueryParameter != nil {
+	if o.AcpsAddress != nil {
 
 		// query param acps.address
 		var qrAcpsAddress string
 
-		if o.AcpsAddressQueryParameter != nil {
-			qrAcpsAddress = *o.AcpsAddressQueryParameter
+		if o.AcpsAddress != nil {
+			qrAcpsAddress = *o.AcpsAddress
 		}
 		qAcpsAddress := qrAcpsAddress
 		if qAcpsAddress != "" {
@@ -2011,13 +2011,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsChannelQueryParameter != nil {
+	if o.AcpsChannel != nil {
 
 		// query param acps.channel
 		var qrAcpsChannel string
 
-		if o.AcpsChannelQueryParameter != nil {
-			qrAcpsChannel = *o.AcpsChannelQueryParameter
+		if o.AcpsChannel != nil {
+			qrAcpsChannel = *o.AcpsChannel
 		}
 		qAcpsChannel := qrAcpsChannel
 		if qAcpsChannel != "" {
@@ -2028,13 +2028,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsConnectionStateQueryParameter != nil {
+	if o.AcpsConnectionState != nil {
 
 		// query param acps.connection_state
 		var qrAcpsConnectionState string
 
-		if o.AcpsConnectionStateQueryParameter != nil {
-			qrAcpsConnectionState = *o.AcpsConnectionStateQueryParameter
+		if o.AcpsConnectionState != nil {
+			qrAcpsConnectionState = *o.AcpsConnectionState
 		}
 		qAcpsConnectionState := qrAcpsConnectionState
 		if qAcpsConnectionState != "" {
@@ -2045,13 +2045,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsEnabledQueryParameter != nil {
+	if o.AcpsEnabled != nil {
 
 		// query param acps.enabled
 		var qrAcpsEnabled bool
 
-		if o.AcpsEnabledQueryParameter != nil {
-			qrAcpsEnabled = *o.AcpsEnabledQueryParameter
+		if o.AcpsEnabled != nil {
+			qrAcpsEnabled = *o.AcpsEnabled
 		}
 		qAcpsEnabled := swag.FormatBool(qrAcpsEnabled)
 		if qAcpsEnabled != "" {
@@ -2062,13 +2062,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorReasonArgumentsCodeQueryParameter != nil {
+	if o.AcpsErrorReasonArgumentsCode != nil {
 
 		// query param acps.error.reason.arguments.code
 		var qrAcpsErrorReasonArgumentsCode string
 
-		if o.AcpsErrorReasonArgumentsCodeQueryParameter != nil {
-			qrAcpsErrorReasonArgumentsCode = *o.AcpsErrorReasonArgumentsCodeQueryParameter
+		if o.AcpsErrorReasonArgumentsCode != nil {
+			qrAcpsErrorReasonArgumentsCode = *o.AcpsErrorReasonArgumentsCode
 		}
 		qAcpsErrorReasonArgumentsCode := qrAcpsErrorReasonArgumentsCode
 		if qAcpsErrorReasonArgumentsCode != "" {
@@ -2079,13 +2079,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorReasonArgumentsMessageQueryParameter != nil {
+	if o.AcpsErrorReasonArgumentsMessage != nil {
 
 		// query param acps.error.reason.arguments.message
 		var qrAcpsErrorReasonArgumentsMessage string
 
-		if o.AcpsErrorReasonArgumentsMessageQueryParameter != nil {
-			qrAcpsErrorReasonArgumentsMessage = *o.AcpsErrorReasonArgumentsMessageQueryParameter
+		if o.AcpsErrorReasonArgumentsMessage != nil {
+			qrAcpsErrorReasonArgumentsMessage = *o.AcpsErrorReasonArgumentsMessage
 		}
 		qAcpsErrorReasonArgumentsMessage := qrAcpsErrorReasonArgumentsMessage
 		if qAcpsErrorReasonArgumentsMessage != "" {
@@ -2096,13 +2096,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorReasonCodeQueryParameter != nil {
+	if o.AcpsErrorReasonCode != nil {
 
 		// query param acps.error.reason.code
 		var qrAcpsErrorReasonCode string
 
-		if o.AcpsErrorReasonCodeQueryParameter != nil {
-			qrAcpsErrorReasonCode = *o.AcpsErrorReasonCodeQueryParameter
+		if o.AcpsErrorReasonCode != nil {
+			qrAcpsErrorReasonCode = *o.AcpsErrorReasonCode
 		}
 		qAcpsErrorReasonCode := qrAcpsErrorReasonCode
 		if qAcpsErrorReasonCode != "" {
@@ -2113,13 +2113,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorReasonMessageQueryParameter != nil {
+	if o.AcpsErrorReasonMessage != nil {
 
 		// query param acps.error.reason.message
 		var qrAcpsErrorReasonMessage string
 
-		if o.AcpsErrorReasonMessageQueryParameter != nil {
-			qrAcpsErrorReasonMessage = *o.AcpsErrorReasonMessageQueryParameter
+		if o.AcpsErrorReasonMessage != nil {
+			qrAcpsErrorReasonMessage = *o.AcpsErrorReasonMessage
 		}
 		qAcpsErrorReasonMessage := qrAcpsErrorReasonMessage
 		if qAcpsErrorReasonMessage != "" {
@@ -2130,13 +2130,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorReasonTargetQueryParameter != nil {
+	if o.AcpsErrorReasonTarget != nil {
 
 		// query param acps.error.reason.target
 		var qrAcpsErrorReasonTarget string
 
-		if o.AcpsErrorReasonTargetQueryParameter != nil {
-			qrAcpsErrorReasonTarget = *o.AcpsErrorReasonTargetQueryParameter
+		if o.AcpsErrorReasonTarget != nil {
+			qrAcpsErrorReasonTarget = *o.AcpsErrorReasonTarget
 		}
 		qAcpsErrorReasonTarget := qrAcpsErrorReasonTarget
 		if qAcpsErrorReasonTarget != "" {
@@ -2147,13 +2147,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorSeverityQueryParameter != nil {
+	if o.AcpsErrorSeverity != nil {
 
 		// query param acps.error.severity
 		var qrAcpsErrorSeverity string
 
-		if o.AcpsErrorSeverityQueryParameter != nil {
-			qrAcpsErrorSeverity = *o.AcpsErrorSeverityQueryParameter
+		if o.AcpsErrorSeverity != nil {
+			qrAcpsErrorSeverity = *o.AcpsErrorSeverity
 		}
 		qAcpsErrorSeverity := qrAcpsErrorSeverity
 		if qAcpsErrorSeverity != "" {
@@ -2164,13 +2164,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsErrorTypeQueryParameter != nil {
+	if o.AcpsErrorType != nil {
 
 		// query param acps.error.type
 		var qrAcpsErrorType string
 
-		if o.AcpsErrorTypeQueryParameter != nil {
-			qrAcpsErrorType = *o.AcpsErrorTypeQueryParameter
+		if o.AcpsErrorType != nil {
+			qrAcpsErrorType = *o.AcpsErrorType
 		}
 		qAcpsErrorType := qrAcpsErrorType
 		if qAcpsErrorType != "" {
@@ -2181,13 +2181,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsNetmaskQueryParameter != nil {
+	if o.AcpsNetmask != nil {
 
 		// query param acps.netmask
 		var qrAcpsNetmask string
 
-		if o.AcpsNetmaskQueryParameter != nil {
-			qrAcpsNetmask = *o.AcpsNetmaskQueryParameter
+		if o.AcpsNetmask != nil {
+			qrAcpsNetmask = *o.AcpsNetmask
 		}
 		qAcpsNetmask := qrAcpsNetmask
 		if qAcpsNetmask != "" {
@@ -2198,13 +2198,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsNodeNameQueryParameter != nil {
+	if o.AcpsNodeName != nil {
 
 		// query param acps.node.name
 		var qrAcpsNodeName string
 
-		if o.AcpsNodeNameQueryParameter != nil {
-			qrAcpsNodeName = *o.AcpsNodeNameQueryParameter
+		if o.AcpsNodeName != nil {
+			qrAcpsNodeName = *o.AcpsNodeName
 		}
 		qAcpsNodeName := qrAcpsNodeName
 		if qAcpsNodeName != "" {
@@ -2215,13 +2215,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsNodeUUIDQueryParameter != nil {
+	if o.AcpsNodeUUID != nil {
 
 		// query param acps.node.uuid
 		var qrAcpsNodeUUID string
 
-		if o.AcpsNodeUUIDQueryParameter != nil {
-			qrAcpsNodeUUID = *o.AcpsNodeUUIDQueryParameter
+		if o.AcpsNodeUUID != nil {
+			qrAcpsNodeUUID = *o.AcpsNodeUUID
 		}
 		qAcpsNodeUUID := qrAcpsNodeUUID
 		if qAcpsNodeUUID != "" {
@@ -2232,13 +2232,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsPortQueryParameter != nil {
+	if o.AcpsPort != nil {
 
 		// query param acps.port
 		var qrAcpsPort string
 
-		if o.AcpsPortQueryParameter != nil {
-			qrAcpsPort = *o.AcpsPortQueryParameter
+		if o.AcpsPort != nil {
+			qrAcpsPort = *o.AcpsPort
 		}
 		qAcpsPort := qrAcpsPort
 		if qAcpsPort != "" {
@@ -2249,13 +2249,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.AcpsSubnetQueryParameter != nil {
+	if o.AcpsSubnet != nil {
 
 		// query param acps.subnet
 		var qrAcpsSubnet string
 
-		if o.AcpsSubnetQueryParameter != nil {
-			qrAcpsSubnet = *o.AcpsSubnetQueryParameter
+		if o.AcpsSubnet != nil {
+			qrAcpsSubnet = *o.AcpsSubnet
 		}
 		qAcpsSubnet := qrAcpsSubnet
 		if qAcpsSubnet != "" {
@@ -2266,13 +2266,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.BaysDrawerIDQueryParameter != nil {
+	if o.BaysDrawerID != nil {
 
 		// query param bays.drawer.id
 		var qrBaysDrawerID int64
 
-		if o.BaysDrawerIDQueryParameter != nil {
-			qrBaysDrawerID = *o.BaysDrawerIDQueryParameter
+		if o.BaysDrawerID != nil {
+			qrBaysDrawerID = *o.BaysDrawerID
 		}
 		qBaysDrawerID := swag.FormatInt64(qrBaysDrawerID)
 		if qBaysDrawerID != "" {
@@ -2283,13 +2283,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.BaysDrawerSlotQueryParameter != nil {
+	if o.BaysDrawerSlot != nil {
 
 		// query param bays.drawer.slot
 		var qrBaysDrawerSlot int64
 
-		if o.BaysDrawerSlotQueryParameter != nil {
-			qrBaysDrawerSlot = *o.BaysDrawerSlotQueryParameter
+		if o.BaysDrawerSlot != nil {
+			qrBaysDrawerSlot = *o.BaysDrawerSlot
 		}
 		qBaysDrawerSlot := swag.FormatInt64(qrBaysDrawerSlot)
 		if qBaysDrawerSlot != "" {
@@ -2300,13 +2300,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.BaysHasDiskQueryParameter != nil {
+	if o.BaysHasDisk != nil {
 
 		// query param bays.has_disk
 		var qrBaysHasDisk bool
 
-		if o.BaysHasDiskQueryParameter != nil {
-			qrBaysHasDisk = *o.BaysHasDiskQueryParameter
+		if o.BaysHasDisk != nil {
+			qrBaysHasDisk = *o.BaysHasDisk
 		}
 		qBaysHasDisk := swag.FormatBool(qrBaysHasDisk)
 		if qBaysHasDisk != "" {
@@ -2317,13 +2317,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.BaysIDQueryParameter != nil {
+	if o.BaysID != nil {
 
 		// query param bays.id
 		var qrBaysID int64
 
-		if o.BaysIDQueryParameter != nil {
-			qrBaysID = *o.BaysIDQueryParameter
+		if o.BaysID != nil {
+			qrBaysID = *o.BaysID
 		}
 		qBaysID := swag.FormatInt64(qrBaysID)
 		if qBaysID != "" {
@@ -2334,13 +2334,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.BaysStateQueryParameter != nil {
+	if o.BaysState != nil {
 
 		// query param bays.state
 		var qrBaysState string
 
-		if o.BaysStateQueryParameter != nil {
-			qrBaysState = *o.BaysStateQueryParameter
+		if o.BaysState != nil {
+			qrBaysState = *o.BaysState
 		}
 		qBaysState := qrBaysState
 		if qBaysState != "" {
@@ -2351,13 +2351,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.BaysTypeQueryParameter != nil {
+	if o.BaysType != nil {
 
 		// query param bays.type
 		var qrBaysType string
 
-		if o.BaysTypeQueryParameter != nil {
-			qrBaysType = *o.BaysTypeQueryParameter
+		if o.BaysType != nil {
+			qrBaysType = *o.BaysType
 		}
 		qBaysType := qrBaysType
 		if qBaysType != "" {
@@ -2368,13 +2368,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ConnectionTypeQueryParameter != nil {
+	if o.ConnectionType != nil {
 
 		// query param connection_type
 		var qrConnectionType string
 
-		if o.ConnectionTypeQueryParameter != nil {
-			qrConnectionType = *o.ConnectionTypeQueryParameter
+		if o.ConnectionType != nil {
+			qrConnectionType = *o.ConnectionType
 		}
 		qConnectionType := qrConnectionType
 		if qConnectionType != "" {
@@ -2385,13 +2385,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.CurrentSensorsCurrentQueryParameter != nil {
+	if o.CurrentSensorsCurrent != nil {
 
 		// query param current_sensors.current
 		var qrCurrentSensorsCurrent int64
 
-		if o.CurrentSensorsCurrentQueryParameter != nil {
-			qrCurrentSensorsCurrent = *o.CurrentSensorsCurrentQueryParameter
+		if o.CurrentSensorsCurrent != nil {
+			qrCurrentSensorsCurrent = *o.CurrentSensorsCurrent
 		}
 		qCurrentSensorsCurrent := swag.FormatInt64(qrCurrentSensorsCurrent)
 		if qCurrentSensorsCurrent != "" {
@@ -2402,13 +2402,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.CurrentSensorsIDQueryParameter != nil {
+	if o.CurrentSensorsID != nil {
 
 		// query param current_sensors.id
 		var qrCurrentSensorsID int64
 
-		if o.CurrentSensorsIDQueryParameter != nil {
-			qrCurrentSensorsID = *o.CurrentSensorsIDQueryParameter
+		if o.CurrentSensorsID != nil {
+			qrCurrentSensorsID = *o.CurrentSensorsID
 		}
 		qCurrentSensorsID := swag.FormatInt64(qrCurrentSensorsID)
 		if qCurrentSensorsID != "" {
@@ -2419,13 +2419,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.CurrentSensorsLocationQueryParameter != nil {
+	if o.CurrentSensorsLocation != nil {
 
 		// query param current_sensors.location
 		var qrCurrentSensorsLocation string
 
-		if o.CurrentSensorsLocationQueryParameter != nil {
-			qrCurrentSensorsLocation = *o.CurrentSensorsLocationQueryParameter
+		if o.CurrentSensorsLocation != nil {
+			qrCurrentSensorsLocation = *o.CurrentSensorsLocation
 		}
 		qCurrentSensorsLocation := qrCurrentSensorsLocation
 		if qCurrentSensorsLocation != "" {
@@ -2436,13 +2436,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.CurrentSensorsStateQueryParameter != nil {
+	if o.CurrentSensorsState != nil {
 
 		// query param current_sensors.state
 		var qrCurrentSensorsState string
 
-		if o.CurrentSensorsStateQueryParameter != nil {
-			qrCurrentSensorsState = *o.CurrentSensorsStateQueryParameter
+		if o.CurrentSensorsState != nil {
+			qrCurrentSensorsState = *o.CurrentSensorsState
 		}
 		qCurrentSensorsState := qrCurrentSensorsState
 		if qCurrentSensorsState != "" {
@@ -2453,13 +2453,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DiskCountQueryParameter != nil {
+	if o.DiskCount != nil {
 
 		// query param disk_count
 		var qrDiskCount int64
 
-		if o.DiskCountQueryParameter != nil {
-			qrDiskCount = *o.DiskCountQueryParameter
+		if o.DiskCount != nil {
+			qrDiskCount = *o.DiskCount
 		}
 		qDiskCount := swag.FormatInt64(qrDiskCount)
 		if qDiskCount != "" {
@@ -2470,13 +2470,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersClosedQueryParameter != nil {
+	if o.DrawersClosed != nil {
 
 		// query param drawers.closed
 		var qrDrawersClosed bool
 
-		if o.DrawersClosedQueryParameter != nil {
-			qrDrawersClosed = *o.DrawersClosedQueryParameter
+		if o.DrawersClosed != nil {
+			qrDrawersClosed = *o.DrawersClosed
 		}
 		qDrawersClosed := swag.FormatBool(qrDrawersClosed)
 		if qDrawersClosed != "" {
@@ -2487,13 +2487,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersDiskCountQueryParameter != nil {
+	if o.DrawersDiskCount != nil {
 
 		// query param drawers.disk_count
 		var qrDrawersDiskCount int64
 
-		if o.DrawersDiskCountQueryParameter != nil {
-			qrDrawersDiskCount = *o.DrawersDiskCountQueryParameter
+		if o.DrawersDiskCount != nil {
+			qrDrawersDiskCount = *o.DrawersDiskCount
 		}
 		qDrawersDiskCount := swag.FormatInt64(qrDrawersDiskCount)
 		if qDrawersDiskCount != "" {
@@ -2504,13 +2504,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersErrorQueryParameter != nil {
+	if o.DrawersError != nil {
 
 		// query param drawers.error
 		var qrDrawersError string
 
-		if o.DrawersErrorQueryParameter != nil {
-			qrDrawersError = *o.DrawersErrorQueryParameter
+		if o.DrawersError != nil {
+			qrDrawersError = *o.DrawersError
 		}
 		qDrawersError := qrDrawersError
 		if qDrawersError != "" {
@@ -2521,13 +2521,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersIDQueryParameter != nil {
+	if o.DrawersID != nil {
 
 		// query param drawers.id
 		var qrDrawersID int64
 
-		if o.DrawersIDQueryParameter != nil {
-			qrDrawersID = *o.DrawersIDQueryParameter
+		if o.DrawersID != nil {
+			qrDrawersID = *o.DrawersID
 		}
 		qDrawersID := swag.FormatInt64(qrDrawersID)
 		if qDrawersID != "" {
@@ -2538,13 +2538,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersPartNumberQueryParameter != nil {
+	if o.DrawersPartNumber != nil {
 
 		// query param drawers.part_number
 		var qrDrawersPartNumber string
 
-		if o.DrawersPartNumberQueryParameter != nil {
-			qrDrawersPartNumber = *o.DrawersPartNumberQueryParameter
+		if o.DrawersPartNumber != nil {
+			qrDrawersPartNumber = *o.DrawersPartNumber
 		}
 		qDrawersPartNumber := qrDrawersPartNumber
 		if qDrawersPartNumber != "" {
@@ -2555,13 +2555,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersSerialNumberQueryParameter != nil {
+	if o.DrawersSerialNumber != nil {
 
 		// query param drawers.serial_number
 		var qrDrawersSerialNumber string
 
-		if o.DrawersSerialNumberQueryParameter != nil {
-			qrDrawersSerialNumber = *o.DrawersSerialNumberQueryParameter
+		if o.DrawersSerialNumber != nil {
+			qrDrawersSerialNumber = *o.DrawersSerialNumber
 		}
 		qDrawersSerialNumber := qrDrawersSerialNumber
 		if qDrawersSerialNumber != "" {
@@ -2572,13 +2572,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.DrawersStateQueryParameter != nil {
+	if o.DrawersState != nil {
 
 		// query param drawers.state
 		var qrDrawersState string
 
-		if o.DrawersStateQueryParameter != nil {
-			qrDrawersState = *o.DrawersStateQueryParameter
+		if o.DrawersState != nil {
+			qrDrawersState = *o.DrawersState
 		}
 		qDrawersState := qrDrawersState
 		if qDrawersState != "" {
@@ -2589,13 +2589,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ErrorsReasonArgumentsCodeQueryParameter != nil {
+	if o.ErrorsReasonArgumentsCode != nil {
 
 		// query param errors.reason.arguments.code
 		var qrErrorsReasonArgumentsCode string
 
-		if o.ErrorsReasonArgumentsCodeQueryParameter != nil {
-			qrErrorsReasonArgumentsCode = *o.ErrorsReasonArgumentsCodeQueryParameter
+		if o.ErrorsReasonArgumentsCode != nil {
+			qrErrorsReasonArgumentsCode = *o.ErrorsReasonArgumentsCode
 		}
 		qErrorsReasonArgumentsCode := qrErrorsReasonArgumentsCode
 		if qErrorsReasonArgumentsCode != "" {
@@ -2606,13 +2606,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ErrorsReasonArgumentsMessageQueryParameter != nil {
+	if o.ErrorsReasonArgumentsMessage != nil {
 
 		// query param errors.reason.arguments.message
 		var qrErrorsReasonArgumentsMessage string
 
-		if o.ErrorsReasonArgumentsMessageQueryParameter != nil {
-			qrErrorsReasonArgumentsMessage = *o.ErrorsReasonArgumentsMessageQueryParameter
+		if o.ErrorsReasonArgumentsMessage != nil {
+			qrErrorsReasonArgumentsMessage = *o.ErrorsReasonArgumentsMessage
 		}
 		qErrorsReasonArgumentsMessage := qrErrorsReasonArgumentsMessage
 		if qErrorsReasonArgumentsMessage != "" {
@@ -2623,13 +2623,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ErrorsReasonCodeQueryParameter != nil {
+	if o.ErrorsReasonCode != nil {
 
 		// query param errors.reason.code
 		var qrErrorsReasonCode string
 
-		if o.ErrorsReasonCodeQueryParameter != nil {
-			qrErrorsReasonCode = *o.ErrorsReasonCodeQueryParameter
+		if o.ErrorsReasonCode != nil {
+			qrErrorsReasonCode = *o.ErrorsReasonCode
 		}
 		qErrorsReasonCode := qrErrorsReasonCode
 		if qErrorsReasonCode != "" {
@@ -2640,13 +2640,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ErrorsReasonMessageQueryParameter != nil {
+	if o.ErrorsReasonMessage != nil {
 
 		// query param errors.reason.message
 		var qrErrorsReasonMessage string
 
-		if o.ErrorsReasonMessageQueryParameter != nil {
-			qrErrorsReasonMessage = *o.ErrorsReasonMessageQueryParameter
+		if o.ErrorsReasonMessage != nil {
+			qrErrorsReasonMessage = *o.ErrorsReasonMessage
 		}
 		qErrorsReasonMessage := qrErrorsReasonMessage
 		if qErrorsReasonMessage != "" {
@@ -2657,13 +2657,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ErrorsReasonTargetQueryParameter != nil {
+	if o.ErrorsReasonTarget != nil {
 
 		// query param errors.reason.target
 		var qrErrorsReasonTarget string
 
-		if o.ErrorsReasonTargetQueryParameter != nil {
-			qrErrorsReasonTarget = *o.ErrorsReasonTargetQueryParameter
+		if o.ErrorsReasonTarget != nil {
+			qrErrorsReasonTarget = *o.ErrorsReasonTarget
 		}
 		qErrorsReasonTarget := qrErrorsReasonTarget
 		if qErrorsReasonTarget != "" {
@@ -2674,13 +2674,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FansIDQueryParameter != nil {
+	if o.FansID != nil {
 
 		// query param fans.id
 		var qrFansID int64
 
-		if o.FansIDQueryParameter != nil {
-			qrFansID = *o.FansIDQueryParameter
+		if o.FansID != nil {
+			qrFansID = *o.FansID
 		}
 		qFansID := swag.FormatInt64(qrFansID)
 		if qFansID != "" {
@@ -2691,13 +2691,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FansLocationQueryParameter != nil {
+	if o.FansLocation != nil {
 
 		// query param fans.location
 		var qrFansLocation string
 
-		if o.FansLocationQueryParameter != nil {
-			qrFansLocation = *o.FansLocationQueryParameter
+		if o.FansLocation != nil {
+			qrFansLocation = *o.FansLocation
 		}
 		qFansLocation := qrFansLocation
 		if qFansLocation != "" {
@@ -2708,13 +2708,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FansRpmQueryParameter != nil {
+	if o.FansRpm != nil {
 
 		// query param fans.rpm
 		var qrFansRpm int64
 
-		if o.FansRpmQueryParameter != nil {
-			qrFansRpm = *o.FansRpmQueryParameter
+		if o.FansRpm != nil {
+			qrFansRpm = *o.FansRpm
 		}
 		qFansRpm := swag.FormatInt64(qrFansRpm)
 		if qFansRpm != "" {
@@ -2725,13 +2725,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FansStateQueryParameter != nil {
+	if o.FansState != nil {
 
 		// query param fans.state
 		var qrFansState string
 
-		if o.FansStateQueryParameter != nil {
-			qrFansState = *o.FansStateQueryParameter
+		if o.FansState != nil {
+			qrFansState = *o.FansState
 		}
 		qFansState := qrFansState
 		if qFansState != "" {
@@ -2742,7 +2742,7 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -2753,13 +2753,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusFirmwareVersionQueryParameter != nil {
+	if o.FrusFirmwareVersion != nil {
 
 		// query param frus.firmware_version
 		var qrFrusFirmwareVersion string
 
-		if o.FrusFirmwareVersionQueryParameter != nil {
-			qrFrusFirmwareVersion = *o.FrusFirmwareVersionQueryParameter
+		if o.FrusFirmwareVersion != nil {
+			qrFrusFirmwareVersion = *o.FrusFirmwareVersion
 		}
 		qFrusFirmwareVersion := qrFrusFirmwareVersion
 		if qFrusFirmwareVersion != "" {
@@ -2770,13 +2770,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusIDQueryParameter != nil {
+	if o.FrusID != nil {
 
 		// query param frus.id
 		var qrFrusID int64
 
-		if o.FrusIDQueryParameter != nil {
-			qrFrusID = *o.FrusIDQueryParameter
+		if o.FrusID != nil {
+			qrFrusID = *o.FrusID
 		}
 		qFrusID := swag.FormatInt64(qrFrusID)
 		if qFrusID != "" {
@@ -2787,13 +2787,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusInstalledQueryParameter != nil {
+	if o.FrusInstalled != nil {
 
 		// query param frus.installed
 		var qrFrusInstalled bool
 
-		if o.FrusInstalledQueryParameter != nil {
-			qrFrusInstalled = *o.FrusInstalledQueryParameter
+		if o.FrusInstalled != nil {
+			qrFrusInstalled = *o.FrusInstalled
 		}
 		qFrusInstalled := swag.FormatBool(qrFrusInstalled)
 		if qFrusInstalled != "" {
@@ -2804,13 +2804,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusPartNumberQueryParameter != nil {
+	if o.FrusPartNumber != nil {
 
 		// query param frus.part_number
 		var qrFrusPartNumber string
 
-		if o.FrusPartNumberQueryParameter != nil {
-			qrFrusPartNumber = *o.FrusPartNumberQueryParameter
+		if o.FrusPartNumber != nil {
+			qrFrusPartNumber = *o.FrusPartNumber
 		}
 		qFrusPartNumber := qrFrusPartNumber
 		if qFrusPartNumber != "" {
@@ -2821,13 +2821,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusPsuCrestFactorQueryParameter != nil {
+	if o.FrusPsuCrestFactor != nil {
 
 		// query param frus.psu.crest_factor
 		var qrFrusPsuCrestFactor int64
 
-		if o.FrusPsuCrestFactorQueryParameter != nil {
-			qrFrusPsuCrestFactor = *o.FrusPsuCrestFactorQueryParameter
+		if o.FrusPsuCrestFactor != nil {
+			qrFrusPsuCrestFactor = *o.FrusPsuCrestFactor
 		}
 		qFrusPsuCrestFactor := swag.FormatInt64(qrFrusPsuCrestFactor)
 		if qFrusPsuCrestFactor != "" {
@@ -2838,13 +2838,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusPsuModelQueryParameter != nil {
+	if o.FrusPsuModel != nil {
 
 		// query param frus.psu.model
 		var qrFrusPsuModel string
 
-		if o.FrusPsuModelQueryParameter != nil {
-			qrFrusPsuModel = *o.FrusPsuModelQueryParameter
+		if o.FrusPsuModel != nil {
+			qrFrusPsuModel = *o.FrusPsuModel
 		}
 		qFrusPsuModel := qrFrusPsuModel
 		if qFrusPsuModel != "" {
@@ -2855,13 +2855,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusPsuPowerDrawnQueryParameter != nil {
+	if o.FrusPsuPowerDrawn != nil {
 
 		// query param frus.psu.power_drawn
 		var qrFrusPsuPowerDrawn int64
 
-		if o.FrusPsuPowerDrawnQueryParameter != nil {
-			qrFrusPsuPowerDrawn = *o.FrusPsuPowerDrawnQueryParameter
+		if o.FrusPsuPowerDrawn != nil {
+			qrFrusPsuPowerDrawn = *o.FrusPsuPowerDrawn
 		}
 		qFrusPsuPowerDrawn := swag.FormatInt64(qrFrusPsuPowerDrawn)
 		if qFrusPsuPowerDrawn != "" {
@@ -2872,13 +2872,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusPsuPowerRatingQueryParameter != nil {
+	if o.FrusPsuPowerRating != nil {
 
 		// query param frus.psu.power_rating
 		var qrFrusPsuPowerRating int64
 
-		if o.FrusPsuPowerRatingQueryParameter != nil {
-			qrFrusPsuPowerRating = *o.FrusPsuPowerRatingQueryParameter
+		if o.FrusPsuPowerRating != nil {
+			qrFrusPsuPowerRating = *o.FrusPsuPowerRating
 		}
 		qFrusPsuPowerRating := swag.FormatInt64(qrFrusPsuPowerRating)
 		if qFrusPsuPowerRating != "" {
@@ -2889,13 +2889,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusSerialNumberQueryParameter != nil {
+	if o.FrusSerialNumber != nil {
 
 		// query param frus.serial_number
 		var qrFrusSerialNumber string
 
-		if o.FrusSerialNumberQueryParameter != nil {
-			qrFrusSerialNumber = *o.FrusSerialNumberQueryParameter
+		if o.FrusSerialNumber != nil {
+			qrFrusSerialNumber = *o.FrusSerialNumber
 		}
 		qFrusSerialNumber := qrFrusSerialNumber
 		if qFrusSerialNumber != "" {
@@ -2906,13 +2906,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusStateQueryParameter != nil {
+	if o.FrusState != nil {
 
 		// query param frus.state
 		var qrFrusState string
 
-		if o.FrusStateQueryParameter != nil {
-			qrFrusState = *o.FrusStateQueryParameter
+		if o.FrusState != nil {
+			qrFrusState = *o.FrusState
 		}
 		qFrusState := qrFrusState
 		if qFrusState != "" {
@@ -2923,13 +2923,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FrusTypeQueryParameter != nil {
+	if o.FrusType != nil {
 
 		// query param frus.type
 		var qrFrusType string
 
-		if o.FrusTypeQueryParameter != nil {
-			qrFrusType = *o.FrusTypeQueryParameter
+		if o.FrusType != nil {
+			qrFrusType = *o.FrusType
 		}
 		qFrusType := qrFrusType
 		if qFrusType != "" {
@@ -2940,13 +2940,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID string
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := qrID
 		if qID != "" {
@@ -2957,13 +2957,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.InternalQueryParameter != nil {
+	if o.Internal != nil {
 
 		// query param internal
 		var qrInternal bool
 
-		if o.InternalQueryParameter != nil {
-			qrInternal = *o.InternalQueryParameter
+		if o.Internal != nil {
+			qrInternal = *o.Internal
 		}
 		qInternal := swag.FormatBool(qrInternal)
 		if qInternal != "" {
@@ -2974,13 +2974,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LocalQueryParameter != nil {
+	if o.Local != nil {
 
 		// query param local
 		var qrLocal bool
 
-		if o.LocalQueryParameter != nil {
-			qrLocal = *o.LocalQueryParameter
+		if o.Local != nil {
+			qrLocal = *o.Local
 		}
 		qLocal := swag.FormatBool(qrLocal)
 		if qLocal != "" {
@@ -2991,13 +2991,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.LocationLedQueryParameter != nil {
+	if o.LocationLed != nil {
 
 		// query param location_led
 		var qrLocationLed string
 
-		if o.LocationLedQueryParameter != nil {
-			qrLocationLed = *o.LocationLedQueryParameter
+		if o.LocationLed != nil {
+			qrLocationLed = *o.LocationLed
 		}
 		qLocationLed := qrLocationLed
 		if qLocationLed != "" {
@@ -3008,13 +3008,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ManufacturerNameQueryParameter != nil {
+	if o.ManufacturerName != nil {
 
 		// query param manufacturer.name
 		var qrManufacturerName string
 
-		if o.ManufacturerNameQueryParameter != nil {
-			qrManufacturerName = *o.ManufacturerNameQueryParameter
+		if o.ManufacturerName != nil {
+			qrManufacturerName = *o.ManufacturerName
 		}
 		qManufacturerName := qrManufacturerName
 		if qManufacturerName != "" {
@@ -3025,13 +3025,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -3042,13 +3042,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ModelQueryParameter != nil {
+	if o.Model != nil {
 
 		// query param model
 		var qrModel string
 
-		if o.ModelQueryParameter != nil {
-			qrModel = *o.ModelQueryParameter
+		if o.Model != nil {
+			qrModel = *o.Model
 		}
 		qModel := qrModel
 		if qModel != "" {
@@ -3059,13 +3059,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ModuleTypeQueryParameter != nil {
+	if o.ModuleType != nil {
 
 		// query param module_type
 		var qrModuleType string
 
-		if o.ModuleTypeQueryParameter != nil {
-			qrModuleType = *o.ModuleTypeQueryParameter
+		if o.ModuleType != nil {
+			qrModuleType = *o.ModuleType
 		}
 		qModuleType := qrModuleType
 		if qModuleType != "" {
@@ -3076,13 +3076,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -3093,7 +3093,7 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -3104,13 +3104,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PathsNameQueryParameter != nil {
+	if o.PathsName != nil {
 
 		// query param paths.name
 		var qrPathsName string
 
-		if o.PathsNameQueryParameter != nil {
-			qrPathsName = *o.PathsNameQueryParameter
+		if o.PathsName != nil {
+			qrPathsName = *o.PathsName
 		}
 		qPathsName := qrPathsName
 		if qPathsName != "" {
@@ -3121,13 +3121,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PathsNodeNameQueryParameter != nil {
+	if o.PathsNodeName != nil {
 
 		// query param paths.node.name
 		var qrPathsNodeName string
 
-		if o.PathsNodeNameQueryParameter != nil {
-			qrPathsNodeName = *o.PathsNodeNameQueryParameter
+		if o.PathsNodeName != nil {
+			qrPathsNodeName = *o.PathsNodeName
 		}
 		qPathsNodeName := qrPathsNodeName
 		if qPathsNodeName != "" {
@@ -3138,13 +3138,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PathsNodeUUIDQueryParameter != nil {
+	if o.PathsNodeUUID != nil {
 
 		// query param paths.node.uuid
 		var qrPathsNodeUUID string
 
-		if o.PathsNodeUUIDQueryParameter != nil {
-			qrPathsNodeUUID = *o.PathsNodeUUIDQueryParameter
+		if o.PathsNodeUUID != nil {
+			qrPathsNodeUUID = *o.PathsNodeUUID
 		}
 		qPathsNodeUUID := qrPathsNodeUUID
 		if qPathsNodeUUID != "" {
@@ -3155,13 +3155,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsCableIDentifierQueryParameter != nil {
+	if o.PortsCableIdentifier != nil {
 
 		// query param ports.cable.identifier
 		var qrPortsCableIdentifier string
 
-		if o.PortsCableIDentifierQueryParameter != nil {
-			qrPortsCableIdentifier = *o.PortsCableIDentifierQueryParameter
+		if o.PortsCableIdentifier != nil {
+			qrPortsCableIdentifier = *o.PortsCableIdentifier
 		}
 		qPortsCableIdentifier := qrPortsCableIdentifier
 		if qPortsCableIdentifier != "" {
@@ -3172,13 +3172,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsCableLengthQueryParameter != nil {
+	if o.PortsCableLength != nil {
 
 		// query param ports.cable.length
 		var qrPortsCableLength string
 
-		if o.PortsCableLengthQueryParameter != nil {
-			qrPortsCableLength = *o.PortsCableLengthQueryParameter
+		if o.PortsCableLength != nil {
+			qrPortsCableLength = *o.PortsCableLength
 		}
 		qPortsCableLength := qrPortsCableLength
 		if qPortsCableLength != "" {
@@ -3189,13 +3189,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsCablePartNumberQueryParameter != nil {
+	if o.PortsCablePartNumber != nil {
 
 		// query param ports.cable.part_number
 		var qrPortsCablePartNumber string
 
-		if o.PortsCablePartNumberQueryParameter != nil {
-			qrPortsCablePartNumber = *o.PortsCablePartNumberQueryParameter
+		if o.PortsCablePartNumber != nil {
+			qrPortsCablePartNumber = *o.PortsCablePartNumber
 		}
 		qPortsCablePartNumber := qrPortsCablePartNumber
 		if qPortsCablePartNumber != "" {
@@ -3206,13 +3206,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsCableSerialNumberQueryParameter != nil {
+	if o.PortsCableSerialNumber != nil {
 
 		// query param ports.cable.serial_number
 		var qrPortsCableSerialNumber string
 
-		if o.PortsCableSerialNumberQueryParameter != nil {
-			qrPortsCableSerialNumber = *o.PortsCableSerialNumberQueryParameter
+		if o.PortsCableSerialNumber != nil {
+			qrPortsCableSerialNumber = *o.PortsCableSerialNumber
 		}
 		qPortsCableSerialNumber := qrPortsCableSerialNumber
 		if qPortsCableSerialNumber != "" {
@@ -3223,13 +3223,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsDesignatorQueryParameter != nil {
+	if o.PortsDesignator != nil {
 
 		// query param ports.designator
 		var qrPortsDesignator string
 
-		if o.PortsDesignatorQueryParameter != nil {
-			qrPortsDesignator = *o.PortsDesignatorQueryParameter
+		if o.PortsDesignator != nil {
+			qrPortsDesignator = *o.PortsDesignator
 		}
 		qPortsDesignator := qrPortsDesignator
 		if qPortsDesignator != "" {
@@ -3240,13 +3240,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsIDQueryParameter != nil {
+	if o.PortsID != nil {
 
 		// query param ports.id
 		var qrPortsID int64
 
-		if o.PortsIDQueryParameter != nil {
-			qrPortsID = *o.PortsIDQueryParameter
+		if o.PortsID != nil {
+			qrPortsID = *o.PortsID
 		}
 		qPortsID := swag.FormatInt64(qrPortsID)
 		if qPortsID != "" {
@@ -3257,13 +3257,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsInternalQueryParameter != nil {
+	if o.PortsInternal != nil {
 
 		// query param ports.internal
 		var qrPortsInternal bool
 
-		if o.PortsInternalQueryParameter != nil {
-			qrPortsInternal = *o.PortsInternalQueryParameter
+		if o.PortsInternal != nil {
+			qrPortsInternal = *o.PortsInternal
 		}
 		qPortsInternal := swag.FormatBool(qrPortsInternal)
 		if qPortsInternal != "" {
@@ -3274,13 +3274,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsMacAddressQueryParameter != nil {
+	if o.PortsMacAddress != nil {
 
 		// query param ports.mac_address
 		var qrPortsMacAddress string
 
-		if o.PortsMacAddressQueryParameter != nil {
-			qrPortsMacAddress = *o.PortsMacAddressQueryParameter
+		if o.PortsMacAddress != nil {
+			qrPortsMacAddress = *o.PortsMacAddress
 		}
 		qPortsMacAddress := qrPortsMacAddress
 		if qPortsMacAddress != "" {
@@ -3291,13 +3291,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsModuleIDQueryParameter != nil {
+	if o.PortsModuleID != nil {
 
 		// query param ports.module_id
 		var qrPortsModuleID string
 
-		if o.PortsModuleIDQueryParameter != nil {
-			qrPortsModuleID = *o.PortsModuleIDQueryParameter
+		if o.PortsModuleID != nil {
+			qrPortsModuleID = *o.PortsModuleID
 		}
 		qPortsModuleID := qrPortsModuleID
 		if qPortsModuleID != "" {
@@ -3308,13 +3308,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsRemoteChassisQueryParameter != nil {
+	if o.PortsRemoteChassis != nil {
 
 		// query param ports.remote.chassis
 		var qrPortsRemoteChassis string
 
-		if o.PortsRemoteChassisQueryParameter != nil {
-			qrPortsRemoteChassis = *o.PortsRemoteChassisQueryParameter
+		if o.PortsRemoteChassis != nil {
+			qrPortsRemoteChassis = *o.PortsRemoteChassis
 		}
 		qPortsRemoteChassis := qrPortsRemoteChassis
 		if qPortsRemoteChassis != "" {
@@ -3325,13 +3325,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsRemoteDeviceQueryParameter != nil {
+	if o.PortsRemoteDevice != nil {
 
 		// query param ports.remote.device
 		var qrPortsRemoteDevice string
 
-		if o.PortsRemoteDeviceQueryParameter != nil {
-			qrPortsRemoteDevice = *o.PortsRemoteDeviceQueryParameter
+		if o.PortsRemoteDevice != nil {
+			qrPortsRemoteDevice = *o.PortsRemoteDevice
 		}
 		qPortsRemoteDevice := qrPortsRemoteDevice
 		if qPortsRemoteDevice != "" {
@@ -3342,13 +3342,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsRemoteMacAddressQueryParameter != nil {
+	if o.PortsRemoteMacAddress != nil {
 
 		// query param ports.remote.mac_address
 		var qrPortsRemoteMacAddress string
 
-		if o.PortsRemoteMacAddressQueryParameter != nil {
-			qrPortsRemoteMacAddress = *o.PortsRemoteMacAddressQueryParameter
+		if o.PortsRemoteMacAddress != nil {
+			qrPortsRemoteMacAddress = *o.PortsRemoteMacAddress
 		}
 		qPortsRemoteMacAddress := qrPortsRemoteMacAddress
 		if qPortsRemoteMacAddress != "" {
@@ -3359,13 +3359,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsRemotePhyQueryParameter != nil {
+	if o.PortsRemotePhy != nil {
 
 		// query param ports.remote.phy
 		var qrPortsRemotePhy string
 
-		if o.PortsRemotePhyQueryParameter != nil {
-			qrPortsRemotePhy = *o.PortsRemotePhyQueryParameter
+		if o.PortsRemotePhy != nil {
+			qrPortsRemotePhy = *o.PortsRemotePhy
 		}
 		qPortsRemotePhy := qrPortsRemotePhy
 		if qPortsRemotePhy != "" {
@@ -3376,13 +3376,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsRemotePortQueryParameter != nil {
+	if o.PortsRemotePort != nil {
 
 		// query param ports.remote.port
 		var qrPortsRemotePort string
 
-		if o.PortsRemotePortQueryParameter != nil {
-			qrPortsRemotePort = *o.PortsRemotePortQueryParameter
+		if o.PortsRemotePort != nil {
+			qrPortsRemotePort = *o.PortsRemotePort
 		}
 		qPortsRemotePort := qrPortsRemotePort
 		if qPortsRemotePort != "" {
@@ -3393,13 +3393,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsRemoteWwnQueryParameter != nil {
+	if o.PortsRemoteWwn != nil {
 
 		// query param ports.remote.wwn
 		var qrPortsRemoteWwn string
 
-		if o.PortsRemoteWwnQueryParameter != nil {
-			qrPortsRemoteWwn = *o.PortsRemoteWwnQueryParameter
+		if o.PortsRemoteWwn != nil {
+			qrPortsRemoteWwn = *o.PortsRemoteWwn
 		}
 		qPortsRemoteWwn := qrPortsRemoteWwn
 		if qPortsRemoteWwn != "" {
@@ -3410,13 +3410,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsStateQueryParameter != nil {
+	if o.PortsState != nil {
 
 		// query param ports.state
 		var qrPortsState string
 
-		if o.PortsStateQueryParameter != nil {
-			qrPortsState = *o.PortsStateQueryParameter
+		if o.PortsState != nil {
+			qrPortsState = *o.PortsState
 		}
 		qPortsState := qrPortsState
 		if qPortsState != "" {
@@ -3427,13 +3427,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PortsWwnQueryParameter != nil {
+	if o.PortsWwn != nil {
 
 		// query param ports.wwn
 		var qrPortsWwn string
 
-		if o.PortsWwnQueryParameter != nil {
-			qrPortsWwn = *o.PortsWwnQueryParameter
+		if o.PortsWwn != nil {
+			qrPortsWwn = *o.PortsWwn
 		}
 		qPortsWwn := qrPortsWwn
 		if qPortsWwn != "" {
@@ -3444,13 +3444,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -3461,13 +3461,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -3478,13 +3478,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -3495,13 +3495,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -3512,13 +3512,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsAmbientQueryParameter != nil {
+	if o.TemperatureSensorsAmbient != nil {
 
 		// query param temperature_sensors.ambient
 		var qrTemperatureSensorsAmbient bool
 
-		if o.TemperatureSensorsAmbientQueryParameter != nil {
-			qrTemperatureSensorsAmbient = *o.TemperatureSensorsAmbientQueryParameter
+		if o.TemperatureSensorsAmbient != nil {
+			qrTemperatureSensorsAmbient = *o.TemperatureSensorsAmbient
 		}
 		qTemperatureSensorsAmbient := swag.FormatBool(qrTemperatureSensorsAmbient)
 		if qTemperatureSensorsAmbient != "" {
@@ -3529,13 +3529,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsIDQueryParameter != nil {
+	if o.TemperatureSensorsID != nil {
 
 		// query param temperature_sensors.id
 		var qrTemperatureSensorsID int64
 
-		if o.TemperatureSensorsIDQueryParameter != nil {
-			qrTemperatureSensorsID = *o.TemperatureSensorsIDQueryParameter
+		if o.TemperatureSensorsID != nil {
+			qrTemperatureSensorsID = *o.TemperatureSensorsID
 		}
 		qTemperatureSensorsID := swag.FormatInt64(qrTemperatureSensorsID)
 		if qTemperatureSensorsID != "" {
@@ -3546,13 +3546,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsLocationQueryParameter != nil {
+	if o.TemperatureSensorsLocation != nil {
 
 		// query param temperature_sensors.location
 		var qrTemperatureSensorsLocation string
 
-		if o.TemperatureSensorsLocationQueryParameter != nil {
-			qrTemperatureSensorsLocation = *o.TemperatureSensorsLocationQueryParameter
+		if o.TemperatureSensorsLocation != nil {
+			qrTemperatureSensorsLocation = *o.TemperatureSensorsLocation
 		}
 		qTemperatureSensorsLocation := qrTemperatureSensorsLocation
 		if qTemperatureSensorsLocation != "" {
@@ -3563,13 +3563,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsStateQueryParameter != nil {
+	if o.TemperatureSensorsState != nil {
 
 		// query param temperature_sensors.state
 		var qrTemperatureSensorsState string
 
-		if o.TemperatureSensorsStateQueryParameter != nil {
-			qrTemperatureSensorsState = *o.TemperatureSensorsStateQueryParameter
+		if o.TemperatureSensorsState != nil {
+			qrTemperatureSensorsState = *o.TemperatureSensorsState
 		}
 		qTemperatureSensorsState := qrTemperatureSensorsState
 		if qTemperatureSensorsState != "" {
@@ -3580,13 +3580,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsTemperatureQueryParameter != nil {
+	if o.TemperatureSensorsTemperature != nil {
 
 		// query param temperature_sensors.temperature
 		var qrTemperatureSensorsTemperature int64
 
-		if o.TemperatureSensorsTemperatureQueryParameter != nil {
-			qrTemperatureSensorsTemperature = *o.TemperatureSensorsTemperatureQueryParameter
+		if o.TemperatureSensorsTemperature != nil {
+			qrTemperatureSensorsTemperature = *o.TemperatureSensorsTemperature
 		}
 		qTemperatureSensorsTemperature := swag.FormatInt64(qrTemperatureSensorsTemperature)
 		if qTemperatureSensorsTemperature != "" {
@@ -3597,13 +3597,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsThresholdHighCriticalQueryParameter != nil {
+	if o.TemperatureSensorsThresholdHighCritical != nil {
 
 		// query param temperature_sensors.threshold.high.critical
 		var qrTemperatureSensorsThresholdHighCritical int64
 
-		if o.TemperatureSensorsThresholdHighCriticalQueryParameter != nil {
-			qrTemperatureSensorsThresholdHighCritical = *o.TemperatureSensorsThresholdHighCriticalQueryParameter
+		if o.TemperatureSensorsThresholdHighCritical != nil {
+			qrTemperatureSensorsThresholdHighCritical = *o.TemperatureSensorsThresholdHighCritical
 		}
 		qTemperatureSensorsThresholdHighCritical := swag.FormatInt64(qrTemperatureSensorsThresholdHighCritical)
 		if qTemperatureSensorsThresholdHighCritical != "" {
@@ -3614,13 +3614,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsThresholdHighWarningQueryParameter != nil {
+	if o.TemperatureSensorsThresholdHighWarning != nil {
 
 		// query param temperature_sensors.threshold.high.warning
 		var qrTemperatureSensorsThresholdHighWarning int64
 
-		if o.TemperatureSensorsThresholdHighWarningQueryParameter != nil {
-			qrTemperatureSensorsThresholdHighWarning = *o.TemperatureSensorsThresholdHighWarningQueryParameter
+		if o.TemperatureSensorsThresholdHighWarning != nil {
+			qrTemperatureSensorsThresholdHighWarning = *o.TemperatureSensorsThresholdHighWarning
 		}
 		qTemperatureSensorsThresholdHighWarning := swag.FormatInt64(qrTemperatureSensorsThresholdHighWarning)
 		if qTemperatureSensorsThresholdHighWarning != "" {
@@ -3631,13 +3631,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsThresholdLowCriticalQueryParameter != nil {
+	if o.TemperatureSensorsThresholdLowCritical != nil {
 
 		// query param temperature_sensors.threshold.low.critical
 		var qrTemperatureSensorsThresholdLowCritical int64
 
-		if o.TemperatureSensorsThresholdLowCriticalQueryParameter != nil {
-			qrTemperatureSensorsThresholdLowCritical = *o.TemperatureSensorsThresholdLowCriticalQueryParameter
+		if o.TemperatureSensorsThresholdLowCritical != nil {
+			qrTemperatureSensorsThresholdLowCritical = *o.TemperatureSensorsThresholdLowCritical
 		}
 		qTemperatureSensorsThresholdLowCritical := swag.FormatInt64(qrTemperatureSensorsThresholdLowCritical)
 		if qTemperatureSensorsThresholdLowCritical != "" {
@@ -3648,13 +3648,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.TemperatureSensorsThresholdLowWarningQueryParameter != nil {
+	if o.TemperatureSensorsThresholdLowWarning != nil {
 
 		// query param temperature_sensors.threshold.low.warning
 		var qrTemperatureSensorsThresholdLowWarning int64
 
-		if o.TemperatureSensorsThresholdLowWarningQueryParameter != nil {
-			qrTemperatureSensorsThresholdLowWarning = *o.TemperatureSensorsThresholdLowWarningQueryParameter
+		if o.TemperatureSensorsThresholdLowWarning != nil {
+			qrTemperatureSensorsThresholdLowWarning = *o.TemperatureSensorsThresholdLowWarning
 		}
 		qTemperatureSensorsThresholdLowWarning := swag.FormatInt64(qrTemperatureSensorsThresholdLowWarning)
 		if qTemperatureSensorsThresholdLowWarning != "" {
@@ -3665,13 +3665,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.UIDQueryParameter != nil {
+	if o.UID != nil {
 
 		// query param uid
 		var qrUID string
 
-		if o.UIDQueryParameter != nil {
-			qrUID = *o.UIDQueryParameter
+		if o.UID != nil {
+			qrUID = *o.UID
 		}
 		qUID := qrUID
 		if qUID != "" {
@@ -3682,13 +3682,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VendorManufacturerQueryParameter != nil {
+	if o.VendorManufacturer != nil {
 
 		// query param vendor.manufacturer
 		var qrVendorManufacturer string
 
-		if o.VendorManufacturerQueryParameter != nil {
-			qrVendorManufacturer = *o.VendorManufacturerQueryParameter
+		if o.VendorManufacturer != nil {
+			qrVendorManufacturer = *o.VendorManufacturer
 		}
 		qVendorManufacturer := qrVendorManufacturer
 		if qVendorManufacturer != "" {
@@ -3699,13 +3699,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VendorNameQueryParameter != nil {
+	if o.VendorName != nil {
 
 		// query param vendor.name
 		var qrVendorName string
 
-		if o.VendorNameQueryParameter != nil {
-			qrVendorName = *o.VendorNameQueryParameter
+		if o.VendorName != nil {
+			qrVendorName = *o.VendorName
 		}
 		qVendorName := qrVendorName
 		if qVendorName != "" {
@@ -3716,13 +3716,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VendorPartNumberQueryParameter != nil {
+	if o.VendorPartNumber != nil {
 
 		// query param vendor.part_number
 		var qrVendorPartNumber string
 
-		if o.VendorPartNumberQueryParameter != nil {
-			qrVendorPartNumber = *o.VendorPartNumberQueryParameter
+		if o.VendorPartNumber != nil {
+			qrVendorPartNumber = *o.VendorPartNumber
 		}
 		qVendorPartNumber := qrVendorPartNumber
 		if qVendorPartNumber != "" {
@@ -3733,13 +3733,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VendorProductQueryParameter != nil {
+	if o.VendorProduct != nil {
 
 		// query param vendor.product
 		var qrVendorProduct string
 
-		if o.VendorProductQueryParameter != nil {
-			qrVendorProduct = *o.VendorProductQueryParameter
+		if o.VendorProduct != nil {
+			qrVendorProduct = *o.VendorProduct
 		}
 		qVendorProduct := qrVendorProduct
 		if qVendorProduct != "" {
@@ -3750,13 +3750,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VendorSerialNumberQueryParameter != nil {
+	if o.VendorSerialNumber != nil {
 
 		// query param vendor.serial_number
 		var qrVendorSerialNumber string
 
-		if o.VendorSerialNumberQueryParameter != nil {
-			qrVendorSerialNumber = *o.VendorSerialNumberQueryParameter
+		if o.VendorSerialNumber != nil {
+			qrVendorSerialNumber = *o.VendorSerialNumber
 		}
 		qVendorSerialNumber := qrVendorSerialNumber
 		if qVendorSerialNumber != "" {
@@ -3767,13 +3767,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VoltageSensorsIDQueryParameter != nil {
+	if o.VoltageSensorsID != nil {
 
 		// query param voltage_sensors.id
 		var qrVoltageSensorsID int64
 
-		if o.VoltageSensorsIDQueryParameter != nil {
-			qrVoltageSensorsID = *o.VoltageSensorsIDQueryParameter
+		if o.VoltageSensorsID != nil {
+			qrVoltageSensorsID = *o.VoltageSensorsID
 		}
 		qVoltageSensorsID := swag.FormatInt64(qrVoltageSensorsID)
 		if qVoltageSensorsID != "" {
@@ -3784,13 +3784,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VoltageSensorsLocationQueryParameter != nil {
+	if o.VoltageSensorsLocation != nil {
 
 		// query param voltage_sensors.location
 		var qrVoltageSensorsLocation string
 
-		if o.VoltageSensorsLocationQueryParameter != nil {
-			qrVoltageSensorsLocation = *o.VoltageSensorsLocationQueryParameter
+		if o.VoltageSensorsLocation != nil {
+			qrVoltageSensorsLocation = *o.VoltageSensorsLocation
 		}
 		qVoltageSensorsLocation := qrVoltageSensorsLocation
 		if qVoltageSensorsLocation != "" {
@@ -3801,13 +3801,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VoltageSensorsStateQueryParameter != nil {
+	if o.VoltageSensorsState != nil {
 
 		// query param voltage_sensors.state
 		var qrVoltageSensorsState string
 
-		if o.VoltageSensorsStateQueryParameter != nil {
-			qrVoltageSensorsState = *o.VoltageSensorsStateQueryParameter
+		if o.VoltageSensorsState != nil {
+			qrVoltageSensorsState = *o.VoltageSensorsState
 		}
 		qVoltageSensorsState := qrVoltageSensorsState
 		if qVoltageSensorsState != "" {
@@ -3818,13 +3818,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VoltageSensorsVoltageQueryParameter != nil {
+	if o.VoltageSensorsVoltage != nil {
 
 		// query param voltage_sensors.voltage
 		var qrVoltageSensorsVoltage float64
 
-		if o.VoltageSensorsVoltageQueryParameter != nil {
-			qrVoltageSensorsVoltage = *o.VoltageSensorsVoltageQueryParameter
+		if o.VoltageSensorsVoltage != nil {
+			qrVoltageSensorsVoltage = *o.VoltageSensorsVoltage
 		}
 		qVoltageSensorsVoltage := swag.FormatFloat64(qrVoltageSensorsVoltage)
 		if qVoltageSensorsVoltage != "" {
@@ -3843,7 +3843,7 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamShelfCollectionGet binds the parameter fields
 func (o *ShelfCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -3860,7 +3860,7 @@ func (o *ShelfCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamShelfCollectionGet binds the parameter order_by
 func (o *ShelfCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

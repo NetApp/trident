@@ -66,13 +66,13 @@ type CifsOpenFileDeleteParams struct {
 
 	   Connection ID
 	*/
-	ConnectionIDentifierPathParameter int64
+	ConnectionIdentifier int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Identifier.
 
@@ -80,13 +80,13 @@ type CifsOpenFileDeleteParams struct {
 
 	   Format: int64
 	*/
-	IdentifierPathParameter int64
+	Identifier int64
 
 	/* NodeUUID.
 
 	   Node UUID.
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* SessionIdentifier.
 
@@ -94,13 +94,13 @@ type CifsOpenFileDeleteParams struct {
 
 	   Format: int64
 	*/
-	SessionIDentifierPathParameter int64
+	SessionIdentifier int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -155,70 +155,70 @@ func (o *CifsOpenFileDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConnectionIDentifierPathParameter adds the connectionIdentifier to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) WithConnectionIDentifierPathParameter(connectionIdentifier int64) *CifsOpenFileDeleteParams {
-	o.SetConnectionIDentifierPathParameter(connectionIdentifier)
+// WithConnectionIdentifier adds the connectionIdentifier to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) WithConnectionIdentifier(connectionIdentifier int64) *CifsOpenFileDeleteParams {
+	o.SetConnectionIdentifier(connectionIdentifier)
 	return o
 }
 
-// SetConnectionIDentifierPathParameter adds the connectionIdentifier to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) SetConnectionIDentifierPathParameter(connectionIdentifier int64) {
-	o.ConnectionIDentifierPathParameter = connectionIdentifier
+// SetConnectionIdentifier adds the connectionIdentifier to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) SetConnectionIdentifier(connectionIdentifier int64) {
+	o.ConnectionIdentifier = connectionIdentifier
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) WithFieldsQueryParameter(fields []string) *CifsOpenFileDeleteParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) WithFields(fields []string) *CifsOpenFileDeleteParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentifierPathParameter adds the identifier to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) WithIdentifierPathParameter(identifier int64) *CifsOpenFileDeleteParams {
-	o.SetIdentifierPathParameter(identifier)
+// WithIdentifier adds the identifier to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) WithIdentifier(identifier int64) *CifsOpenFileDeleteParams {
+	o.SetIdentifier(identifier)
 	return o
 }
 
-// SetIdentifierPathParameter adds the identifier to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) SetIdentifierPathParameter(identifier int64) {
-	o.IdentifierPathParameter = identifier
+// SetIdentifier adds the identifier to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) SetIdentifier(identifier int64) {
+	o.Identifier = identifier
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) WithNodeUUIDPathParameter(nodeUUID string) *CifsOpenFileDeleteParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) WithNodeUUID(nodeUUID string) *CifsOpenFileDeleteParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithSessionIDentifierPathParameter adds the sessionIdentifier to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) WithSessionIDentifierPathParameter(sessionIdentifier int64) *CifsOpenFileDeleteParams {
-	o.SetSessionIDentifierPathParameter(sessionIdentifier)
+// WithSessionIdentifier adds the sessionIdentifier to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) WithSessionIdentifier(sessionIdentifier int64) *CifsOpenFileDeleteParams {
+	o.SetSessionIdentifier(sessionIdentifier)
 	return o
 }
 
-// SetSessionIDentifierPathParameter adds the sessionIdentifier to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) SetSessionIDentifierPathParameter(sessionIdentifier int64) {
-	o.SessionIDentifierPathParameter = sessionIdentifier
+// SetSessionIdentifier adds the sessionIdentifier to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) SetSessionIdentifier(sessionIdentifier int64) {
+	o.SessionIdentifier = sessionIdentifier
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsOpenFileDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) WithSvmUUID(svmUUID string) *CifsOpenFileDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs open file delete params
-func (o *CifsOpenFileDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs open file delete params
+func (o *CifsOpenFileDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -230,11 +230,11 @@ func (o *CifsOpenFileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param connection.identifier
-	if err := r.SetPathParam("connection.identifier", swag.FormatInt64(o.ConnectionIDentifierPathParameter)); err != nil {
+	if err := r.SetPathParam("connection.identifier", swag.FormatInt64(o.ConnectionIdentifier)); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -246,22 +246,22 @@ func (o *CifsOpenFileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param identifier
-	if err := r.SetPathParam("identifier", swag.FormatInt64(o.IdentifierPathParameter)); err != nil {
+	if err := r.SetPathParam("identifier", swag.FormatInt64(o.Identifier)); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
 	// path param session.identifier
-	if err := r.SetPathParam("session.identifier", swag.FormatInt64(o.SessionIDentifierPathParameter)); err != nil {
+	if err := r.SetPathParam("session.identifier", swag.FormatInt64(o.SessionIdentifier)); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -273,7 +273,7 @@ func (o *CifsOpenFileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamCifsOpenFileDelete binds the parameter fields
 func (o *CifsOpenFileDeleteParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

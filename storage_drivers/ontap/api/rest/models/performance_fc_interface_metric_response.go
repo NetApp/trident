@@ -22,13 +22,14 @@ import (
 type PerformanceFcInterfaceMetricResponse struct {
 
 	// links
-	Links *PerformanceFcInterfaceMetricResponseLinks `json:"_links,omitempty"`
+	Links *PerformanceFcInterfaceMetricResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*PerformanceFcInterfaceMetricResponseRecordsItems0 `json:"records,omitempty"`
+	// performance fc interface metric response inline records
+	PerformanceFcInterfaceMetricResponseInlineRecords []*PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this performance fc interface metric response
@@ -39,7 +40,7 @@ func (m *PerformanceFcInterfaceMetricResponse) Validate(formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validatePerformanceFcInterfaceMetricResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +67,18 @@ func (m *PerformanceFcInterfaceMetricResponse) validateLinks(formats strfmt.Regi
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *PerformanceFcInterfaceMetricResponse) validatePerformanceFcInterfaceMetricResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.PerformanceFcInterfaceMetricResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.PerformanceFcInterfaceMetricResponseInlineRecords); i++ {
+		if swag.IsZero(m.PerformanceFcInterfaceMetricResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.PerformanceFcInterfaceMetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceFcInterfaceMetricResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -98,7 +99,7 @@ func (m *PerformanceFcInterfaceMetricResponse) ContextValidate(ctx context.Conte
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidatePerformanceFcInterfaceMetricResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,12 +123,12 @@ func (m *PerformanceFcInterfaceMetricResponse) contextValidateLinks(ctx context.
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponse) contextValidatePerformanceFcInterfaceMetricResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.PerformanceFcInterfaceMetricResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.PerformanceFcInterfaceMetricResponseInlineRecords[i] != nil {
+			if err := m.PerformanceFcInterfaceMetricResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -158,10 +159,10 @@ func (m *PerformanceFcInterfaceMetricResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcInterfaceMetricResponseLinks performance fc interface metric response links
+// PerformanceFcInterfaceMetricResponseInlineLinks performance fc interface metric response inline links
 //
-// swagger:model PerformanceFcInterfaceMetricResponseLinks
-type PerformanceFcInterfaceMetricResponseLinks struct {
+// swagger:model performance_fc_interface_metric_response_inline__links
+type PerformanceFcInterfaceMetricResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -170,8 +171,8 @@ type PerformanceFcInterfaceMetricResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance fc interface metric response links
-func (m *PerformanceFcInterfaceMetricResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fc interface metric response inline links
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -188,7 +189,7 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) Validate(formats strfmt.Regi
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -205,7 +206,7 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) validateNext(formats strfmt.
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -222,8 +223,8 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) validateSelf(formats strfmt.
 	return nil
 }
 
-// ContextValidate validate this performance fc interface metric response links based on the context it is used
-func (m *PerformanceFcInterfaceMetricResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fc interface metric response inline links based on the context it is used
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -240,7 +241,7 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) ContextValidate(ctx context.
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +255,7 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) contextValidateNext(ctx cont
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +270,7 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) contextValidateSelf(ctx cont
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +278,8 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseLinks) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcInterfaceMetricResponseLinks
+func (m *PerformanceFcInterfaceMetricResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcInterfaceMetricResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,35 +287,35 @@ func (m *PerformanceFcInterfaceMetricResponseLinks) UnmarshalBinary(b []byte) er
 	return nil
 }
 
-// PerformanceFcInterfaceMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput
+// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem Performance numbers, such as IOPS latency and throughput
 //
-// swagger:model PerformanceFcInterfaceMetricResponseRecordsItems0
-type PerformanceFcInterfaceMetricResponseRecordsItems0 struct {
+// swagger:model performance_fc_interface_metric_response_inline_records_inline_array_item
+type PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem struct {
 
 	// links
-	Links *PerformanceFcInterfaceMetricResponseRecordsItems0Links `json:"_links,omitempty"`
+	Links *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceFcInterfaceMetricResponseRecordsItems0Iops `json:"iops,omitempty"`
+	Iops *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceFcInterfaceMetricResponseRecordsItems0Latency `json:"latency,omitempty"`
+	Latency *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput `json:"throughput,omitempty"`
+	Throughput *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -326,11 +327,11 @@ type PerformanceFcInterfaceMetricResponseRecordsItems0 struct {
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this performance fc interface metric response records items0
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fc interface metric response inline records inline array item
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -367,7 +368,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) Validate(formats str
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateLinks(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -384,7 +385,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateLinks(format
 	return nil
 }
 
-var performanceFcInterfaceMetricResponseRecordsItems0TypeDurationPropEnum []interface{}
+var performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -392,95 +393,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceFcInterfaceMetricResponseRecordsItems0TypeDurationPropEnum = append(performanceFcInterfaceMetricResponseRecordsItems0TypeDurationPropEnum, v)
+		performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum = append(performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT15S captures enum value "PT15S"
-	PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT15S string = "PT15S"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT15S captures enum value "PT15S"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT4M captures enum value "PT4M"
-	PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT4M string = "PT4M"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT4M captures enum value "PT4M"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT30M captures enum value "PT30M"
-	PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT30M string = "PT30M"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT30M captures enum value "PT30M"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT2H captures enum value "PT2H"
-	PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT2H string = "PT2H"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT2H captures enum value "PT2H"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0DurationP1D captures enum value "P1D"
-	PerformanceFcInterfaceMetricResponseRecordsItems0DurationP1D string = "P1D"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationP1D captures enum value "P1D"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT5M captures enum value "PT5M"
-	PerformanceFcInterfaceMetricResponseRecordsItems0DurationPT5M string = "PT5M"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT5M captures enum value "PT5M"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceFcInterfaceMetricResponseRecordsItems0TypeDurationPropEnum, true); err != nil {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateDuration(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateIops(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -497,7 +498,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateIops(formats
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateLatency(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -514,7 +515,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateLatency(form
 	return nil
 }
 
-var performanceFcInterfaceMetricResponseRecordsItems0TypeStatusPropEnum []interface{}
+var performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -522,145 +523,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		performanceFcInterfaceMetricResponseRecordsItems0TypeStatusPropEnum = append(performanceFcInterfaceMetricResponseRecordsItems0TypeStatusPropEnum, v)
+		performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum = append(performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusOk captures enum value "ok"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusOk string = "ok"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusOk captures enum value "ok"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusError captures enum value "error"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusError string = "error"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusError captures enum value "error"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialNoData captures enum value "partial_no_data"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse captures enum value "partial_no_response"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError captures enum value "partial_other_error"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta captures enum value "negative_delta"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusNotFound captures enum value "not_found"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusNotFound string = "not_found"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusNotFound captures enum value "not_found"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusBackfilledData captures enum value "backfilled_data"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
-	// PerformanceFcInterfaceMetricResponseRecordsItems0
+	// performance_fc_interface_metric_response_inline_records_inline_array_item
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceFcInterfaceMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
+	// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, performanceFcInterfaceMetricResponseRecordsItems0TypeStatusPropEnum, true); err != nil {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, performanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateStatus(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateThroughput(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -677,7 +678,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateThroughput(f
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateTimestamp(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -689,8 +690,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) validateTimestamp(fo
 	return nil
 }
 
-// ContextValidate validate this performance fc interface metric response records items0 based on the context it is used
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fc interface metric response inline records inline array item based on the context it is used
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -731,7 +732,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) ContextValidate(ctx 
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -745,16 +746,16 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateLinks
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -768,7 +769,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateIops(
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -782,16 +783,16 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateLaten
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -805,7 +806,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateThrou
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -814,9 +815,9 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateTimes
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -824,7 +825,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) contextValidateUUID(
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -832,8 +833,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) MarshalBinary() ([]b
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcInterfaceMetricResponseRecordsItems0
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -841,34 +842,34 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0) UnmarshalBinary(b []
 	return nil
 }
 
-// PerformanceFcInterfaceMetricResponseRecordsItems0Iops The rate of I/O operations observed at the storage object.
+// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceFcInterfaceMetricResponseRecordsItems0Iops
-type PerformanceFcInterfaceMetricResponseRecordsItems0Iops struct {
+// swagger:model performance_fc_interface_metric_response_inline_records_inline_array_item_inline_iops
+type PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance fc interface metric response records items0 iops
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fc interface metric response inline records inline array item inline iops
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance fc interface metric response records items0 iops based on the context it is used
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fc interface metric response inline records inline array item inline iops based on the context it is used
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -878,7 +879,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) ContextValidate(
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -886,8 +887,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) MarshalBinary() 
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcInterfaceMetricResponseRecordsItems0Iops
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -895,34 +896,34 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Iops) UnmarshalBinary(
 	return nil
 }
 
-// PerformanceFcInterfaceMetricResponseRecordsItems0Latency The round trip latency in microseconds observed at the storage object.
+// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceFcInterfaceMetricResponseRecordsItems0Latency
-type PerformanceFcInterfaceMetricResponseRecordsItems0Latency struct {
+// swagger:model performance_fc_interface_metric_response_inline_records_inline_array_item_inline_latency
+type PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance fc interface metric response records items0 latency
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fc interface metric response inline records inline array item inline latency
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance fc interface metric response records items0 latency based on the context it is used
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fc interface metric response inline records inline array item inline latency based on the context it is used
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -932,7 +933,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) ContextValida
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -940,8 +941,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) MarshalBinary
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcInterfaceMetricResponseRecordsItems0Latency
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -949,17 +950,17 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Latency) UnmarshalBina
 	return nil
 }
 
-// PerformanceFcInterfaceMetricResponseRecordsItems0Links performance fc interface metric response records items0 links
+// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks performance fc interface metric response inline records inline array item inline links
 //
-// swagger:model PerformanceFcInterfaceMetricResponseRecordsItems0Links
-type PerformanceFcInterfaceMetricResponseRecordsItems0Links struct {
+// swagger:model performance_fc_interface_metric_response_inline_records_inline_array_item_inline__links
+type PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this performance fc interface metric response records items0 links
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fc interface metric response inline records inline array item inline links
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -972,7 +973,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) Validate(format
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -989,8 +990,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) validateSelf(fo
 	return nil
 }
 
-// ContextValidate validate this performance fc interface metric response records items0 links based on the context it is used
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fc interface metric response inline records inline array item inline links based on the context it is used
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1003,7 +1004,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) ContextValidate
 	return nil
 }
 
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1018,7 +1019,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) contextValidate
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1026,8 +1027,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) MarshalBinary()
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcInterfaceMetricResponseRecordsItems0Links
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1035,31 +1036,31 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Links) UnmarshalBinary
 	return nil
 }
 
-// PerformanceFcInterfaceMetricResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceFcInterfaceMetricResponseRecordsItems0Throughput
-type PerformanceFcInterfaceMetricResponseRecordsItems0Throughput struct {
+// swagger:model performance_fc_interface_metric_response_inline_records_inline_array_item_inline_throughput
+type PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance fc interface metric response records items0 throughput
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance fc interface metric response inline records inline array item inline throughput
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance fc interface metric response records items0 throughput based on the context it is used
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance fc interface metric response inline records inline array item inline throughput based on the context it is used
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1069,7 +1070,7 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput) ContextVal
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1077,8 +1078,8 @@ func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput) MarshalBin
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceFcInterfaceMetricResponseRecordsItems0Throughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceFcInterfaceMetricResponseRecordsItems0Throughput
+func (m *PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcInterfaceMetricResponseInlineRecordsInlineArrayItemInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

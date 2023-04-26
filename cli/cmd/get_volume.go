@@ -110,7 +110,7 @@ func GetVolumes() ([]string, error) {
 		url += "?parentOfSubordinate=" + getSubordinateVolume
 	}
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -130,7 +130,7 @@ func GetVolumes() ([]string, error) {
 func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 	url := BaseURL() + "/volume/" + volumeName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return storage.VolumeExternal{}, err
 	} else if response.StatusCode != http.StatusOK {

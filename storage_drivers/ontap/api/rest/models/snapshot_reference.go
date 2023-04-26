@@ -19,15 +19,15 @@ import (
 type SnapshotReference struct {
 
 	// links
-	Links *SnapshotReferenceLinks `json:"_links,omitempty"`
+	Links *SnapshotReferenceInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: this_snapshot
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this snapshot reference
@@ -107,17 +107,17 @@ func (m *SnapshotReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapshotReferenceLinks snapshot reference links
+// SnapshotReferenceInlineLinks snapshot reference inline links
 //
-// swagger:model SnapshotReferenceLinks
-type SnapshotReferenceLinks struct {
+// swagger:model snapshot_reference_inline__links
+type SnapshotReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snapshot reference links
-func (m *SnapshotReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snapshot reference inline links
+func (m *SnapshotReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -130,7 +130,7 @@ func (m *SnapshotReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SnapshotReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnapshotReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -147,8 +147,8 @@ func (m *SnapshotReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this snapshot reference links based on the context it is used
-func (m *SnapshotReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snapshot reference inline links based on the context it is used
+func (m *SnapshotReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -161,7 +161,7 @@ func (m *SnapshotReferenceLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *SnapshotReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnapshotReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -176,7 +176,7 @@ func (m *SnapshotReferenceLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *SnapshotReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *SnapshotReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -184,8 +184,8 @@ func (m *SnapshotReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnapshotReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res SnapshotReferenceLinks
+func (m *SnapshotReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnapshotReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

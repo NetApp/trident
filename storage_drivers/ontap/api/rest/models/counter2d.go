@@ -17,11 +17,11 @@ import (
 // swagger:model counter2d
 type Counter2d struct {
 
-	// Second dimension label.
-	Label string `json:"label,omitempty"`
-
 	// List of values for the counter.
-	Values []int64 `json:"values,omitempty"`
+	Counter2dInlineValues []*int64 `json:"values,omitempty"`
+
+	// Second dimension label.
+	Label *string `json:"label,omitempty"`
 }
 
 // Validate validates this counter2d

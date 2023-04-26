@@ -17,8 +17,8 @@ import (
 // swagger:model license_keys
 type LicenseKeys struct {
 
-	// keys
-	Keys []string `json:"keys,omitempty"`
+	// license keys inline keys
+	LicenseKeysInlineKeys []*string `json:"keys,omitempty"`
 }
 
 // Validate validates this license keys

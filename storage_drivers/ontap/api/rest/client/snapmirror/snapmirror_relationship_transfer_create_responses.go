@@ -52,6 +52,10 @@ SnapmirrorRelationshipTransferCreateCreated describes a response with status cod
 Created
 */
 type SnapmirrorRelationshipTransferCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this snapmirror relationship transfer create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *SnapmirrorRelationshipTransferCreateCreated) String() string {
 }
 
 func (o *SnapmirrorRelationshipTransferCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

@@ -65,19 +65,19 @@ type FileDirectorySecurityDeleteParams struct {
 
 	   Remove all SLAG ACLs. Currently bulk deletion of file-directory ACLs is not supported.
 	*/
-	AccessControlQueryParameter *string
+	AccessControl *string
 
 	/* Path.
 
 	   target path
 	*/
-	PathPathParameter string
+	Path string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -132,37 +132,37 @@ func (o *FileDirectorySecurityDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAccessControlQueryParameter adds the accessControl to the file directory security delete params
-func (o *FileDirectorySecurityDeleteParams) WithAccessControlQueryParameter(accessControl *string) *FileDirectorySecurityDeleteParams {
-	o.SetAccessControlQueryParameter(accessControl)
+// WithAccessControl adds the accessControl to the file directory security delete params
+func (o *FileDirectorySecurityDeleteParams) WithAccessControl(accessControl *string) *FileDirectorySecurityDeleteParams {
+	o.SetAccessControl(accessControl)
 	return o
 }
 
-// SetAccessControlQueryParameter adds the accessControl to the file directory security delete params
-func (o *FileDirectorySecurityDeleteParams) SetAccessControlQueryParameter(accessControl *string) {
-	o.AccessControlQueryParameter = accessControl
+// SetAccessControl adds the accessControl to the file directory security delete params
+func (o *FileDirectorySecurityDeleteParams) SetAccessControl(accessControl *string) {
+	o.AccessControl = accessControl
 }
 
-// WithPathPathParameter adds the path to the file directory security delete params
-func (o *FileDirectorySecurityDeleteParams) WithPathPathParameter(path string) *FileDirectorySecurityDeleteParams {
-	o.SetPathPathParameter(path)
+// WithPath adds the path to the file directory security delete params
+func (o *FileDirectorySecurityDeleteParams) WithPath(path string) *FileDirectorySecurityDeleteParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathPathParameter adds the path to the file directory security delete params
-func (o *FileDirectorySecurityDeleteParams) SetPathPathParameter(path string) {
-	o.PathPathParameter = path
+// SetPath adds the path to the file directory security delete params
+func (o *FileDirectorySecurityDeleteParams) SetPath(path string) {
+	o.Path = path
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the file directory security delete params
-func (o *FileDirectorySecurityDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *FileDirectorySecurityDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the file directory security delete params
+func (o *FileDirectorySecurityDeleteParams) WithSvmUUID(svmUUID string) *FileDirectorySecurityDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the file directory security delete params
-func (o *FileDirectorySecurityDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the file directory security delete params
+func (o *FileDirectorySecurityDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *FileDirectorySecurityDeleteParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.AccessControlQueryParameter != nil {
+	if o.AccessControl != nil {
 
 		// query param access_control
 		var qrAccessControl string
 
-		if o.AccessControlQueryParameter != nil {
-			qrAccessControl = *o.AccessControlQueryParameter
+		if o.AccessControl != nil {
+			qrAccessControl = *o.AccessControl
 		}
 		qAccessControl := qrAccessControl
 		if qAccessControl != "" {
@@ -191,12 +191,12 @@ func (o *FileDirectorySecurityDeleteParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param path
-	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
+	if err := r.SetPathParam("path", o.Path); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

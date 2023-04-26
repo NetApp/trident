@@ -21,70 +21,46 @@ import (
 // swagger:model s3_bucket_policy_statement
 type S3BucketPolicyStatement struct {
 
-	// actions
-	// Example: ["GetObject","PutObject","DeleteObject","ListBucket"]
-	Actions []string `json:"actions,omitempty"`
-
-	// Specifies bucket policy conditions.
-	Conditions []*S3BucketPolicyCondition `json:"conditions,omitempty"`
-
 	// Specifies whether access is allowed or denied when a user requests the specific action. If access (to allow) is not granted explicitly to a resource, access is implicitly denied. Access can also be denied explicitly to a resource, in order to make sure that a user cannot access it, even if a different policy grants access.
 	// Example: allow
 	// Enum: [allow deny]
-	Effect string `json:"effect,omitempty"`
+	Effect *string `json:"effect,omitempty"`
 
-	// principals
+	// s3 bucket policy statement inline actions
+	// Example: ["GetObject","PutObject","DeleteObject","ListBucket"]
+	S3BucketPolicyStatementInlineActions []*string `json:"actions,omitempty"`
+
+	// Specifies bucket policy conditions.
+	S3BucketPolicyStatementInlineConditions []*S3BucketPolicyCondition `json:"conditions,omitempty"`
+
+	// s3 bucket policy statement inline principals
 	// Example: ["user1","group/grp1"]
-	Principals []string `json:"principals,omitempty"`
+	S3BucketPolicyStatementInlinePrincipals []*string `json:"principals,omitempty"`
 
-	// resources
+	// s3 bucket policy statement inline resources
 	// Example: ["bucket1","bucket1/*"]
-	Resources []string `json:"resources,omitempty"`
+	S3BucketPolicyStatementInlineResources []*string `json:"resources,omitempty"`
 
 	// Specifies the statement identifier used to differentiate between statements.
 	// Example: FullAccessToUser1
-	Sid string `json:"sid,omitempty"`
+	Sid *string `json:"sid,omitempty"`
 }
 
 // Validate validates this s3 bucket policy statement
 func (m *S3BucketPolicyStatement) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateConditions(formats); err != nil {
+	if err := m.validateEffect(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateEffect(formats); err != nil {
+	if err := m.validateS3BucketPolicyStatementInlineConditions(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *S3BucketPolicyStatement) validateConditions(formats strfmt.Registry) error {
-	if swag.IsZero(m.Conditions) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Conditions); i++ {
-		if swag.IsZero(m.Conditions[i]) { // not required
-			continue
-		}
-
-		if m.Conditions[i] != nil {
-			if err := m.Conditions[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("conditions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -137,8 +113,32 @@ func (m *S3BucketPolicyStatement) validateEffect(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateEffectEnum("effect", "body", m.Effect); err != nil {
+	if err := m.validateEffectEnum("effect", "body", *m.Effect); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketPolicyStatement) validateS3BucketPolicyStatementInlineConditions(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3BucketPolicyStatementInlineConditions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.S3BucketPolicyStatementInlineConditions); i++ {
+		if swag.IsZero(m.S3BucketPolicyStatementInlineConditions[i]) { // not required
+			continue
+		}
+
+		if m.S3BucketPolicyStatementInlineConditions[i] != nil {
+			if err := m.S3BucketPolicyStatementInlineConditions[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("conditions" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -148,7 +148,7 @@ func (m *S3BucketPolicyStatement) validateEffect(formats strfmt.Registry) error 
 func (m *S3BucketPolicyStatement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateConditions(ctx, formats); err != nil {
+	if err := m.contextValidateS3BucketPolicyStatementInlineConditions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -158,12 +158,12 @@ func (m *S3BucketPolicyStatement) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *S3BucketPolicyStatement) contextValidateConditions(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketPolicyStatement) contextValidateS3BucketPolicyStatementInlineConditions(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Conditions); i++ {
+	for i := 0; i < len(m.S3BucketPolicyStatementInlineConditions); i++ {
 
-		if m.Conditions[i] != nil {
-			if err := m.Conditions[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3BucketPolicyStatementInlineConditions[i] != nil {
+			if err := m.S3BucketPolicyStatementInlineConditions[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("conditions" + "." + strconv.Itoa(i))
 				}

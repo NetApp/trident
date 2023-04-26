@@ -38,6 +38,10 @@ func (in *TridentMirrorRelationship) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentMirrorRelationship) GetKind() string {
+	return "TridentMirrorRelationship"
+}
+
 func (in *TridentMirrorRelationship) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

@@ -69,27 +69,27 @@ type FcZoneGetParams struct {
 	   Format: iso8601
 	   Default: "15 minutes"
 	*/
-	CacheMaximumAgeQueryParameter *string
+	CacheMaximumAge *string
 
 	/* FabricName.
 
 	   The WWN of the primary switch of the Fibre Channel fabric.
 
 	*/
-	FabricNamePathParameter string
+	FabricName string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   The name of a zone in the active zoneset the Fibre Channel fabric.
 
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -109,11 +109,11 @@ func (o *FcZoneGetParams) WithDefaults() *FcZoneGetParams {
 // All values with no default are reset to their zero value.
 func (o *FcZoneGetParams) SetDefaults() {
 	var (
-		cacheMaximumAgeQueryParameterDefault = string("15 minutes")
+		cacheMaximumAgeDefault = string("15 minutes")
 	)
 
 	val := FcZoneGetParams{
-		CacheMaximumAgeQueryParameter: &cacheMaximumAgeQueryParameterDefault,
+		CacheMaximumAge: &cacheMaximumAgeDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,48 +155,48 @@ func (o *FcZoneGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc zone get params
-func (o *FcZoneGetParams) WithCacheMaximumAgeQueryParameter(cacheMaximumAge *string) *FcZoneGetParams {
-	o.SetCacheMaximumAgeQueryParameter(cacheMaximumAge)
+// WithCacheMaximumAge adds the cacheMaximumAge to the fc zone get params
+func (o *FcZoneGetParams) WithCacheMaximumAge(cacheMaximumAge *string) *FcZoneGetParams {
+	o.SetCacheMaximumAge(cacheMaximumAge)
 	return o
 }
 
-// SetCacheMaximumAgeQueryParameter adds the cacheMaximumAge to the fc zone get params
-func (o *FcZoneGetParams) SetCacheMaximumAgeQueryParameter(cacheMaximumAge *string) {
-	o.CacheMaximumAgeQueryParameter = cacheMaximumAge
+// SetCacheMaximumAge adds the cacheMaximumAge to the fc zone get params
+func (o *FcZoneGetParams) SetCacheMaximumAge(cacheMaximumAge *string) {
+	o.CacheMaximumAge = cacheMaximumAge
 }
 
-// WithFabricNamePathParameter adds the fabricName to the fc zone get params
-func (o *FcZoneGetParams) WithFabricNamePathParameter(fabricName string) *FcZoneGetParams {
-	o.SetFabricNamePathParameter(fabricName)
+// WithFabricName adds the fabricName to the fc zone get params
+func (o *FcZoneGetParams) WithFabricName(fabricName string) *FcZoneGetParams {
+	o.SetFabricName(fabricName)
 	return o
 }
 
-// SetFabricNamePathParameter adds the fabricName to the fc zone get params
-func (o *FcZoneGetParams) SetFabricNamePathParameter(fabricName string) {
-	o.FabricNamePathParameter = fabricName
+// SetFabricName adds the fabricName to the fc zone get params
+func (o *FcZoneGetParams) SetFabricName(fabricName string) {
+	o.FabricName = fabricName
 }
 
-// WithFieldsQueryParameter adds the fields to the fc zone get params
-func (o *FcZoneGetParams) WithFieldsQueryParameter(fields []string) *FcZoneGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc zone get params
+func (o *FcZoneGetParams) WithFields(fields []string) *FcZoneGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc zone get params
-func (o *FcZoneGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc zone get params
+func (o *FcZoneGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the fc zone get params
-func (o *FcZoneGetParams) WithNamePathParameter(name string) *FcZoneGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the fc zone get params
+func (o *FcZoneGetParams) WithName(name string) *FcZoneGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the fc zone get params
-func (o *FcZoneGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the fc zone get params
+func (o *FcZoneGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -207,13 +207,13 @@ func (o *FcZoneGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.CacheMaximumAgeQueryParameter != nil {
+	if o.CacheMaximumAge != nil {
 
 		// query param cache.maximum_age
 		var qrCacheMaximumAge string
 
-		if o.CacheMaximumAgeQueryParameter != nil {
-			qrCacheMaximumAge = *o.CacheMaximumAgeQueryParameter
+		if o.CacheMaximumAge != nil {
+			qrCacheMaximumAge = *o.CacheMaximumAge
 		}
 		qCacheMaximumAge := qrCacheMaximumAge
 		if qCacheMaximumAge != "" {
@@ -225,11 +225,11 @@ func (o *FcZoneGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param fabric.name
-	if err := r.SetPathParam("fabric.name", o.FabricNamePathParameter); err != nil {
+	if err := r.SetPathParam("fabric.name", o.FabricName); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -241,7 +241,7 @@ func (o *FcZoneGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -253,7 +253,7 @@ func (o *FcZoneGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamFcZoneGet binds the parameter fields
 func (o *FcZoneGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

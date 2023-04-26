@@ -21,30 +21,30 @@ import (
 type FlexcacheOrigin struct {
 
 	// links
-	Links *FlexcacheOriginLinks `json:"_links,omitempty"`
+	Links *FlexcacheOriginInlineLinks `json:"_links,omitempty"`
 
-	// Block level invalidation enables the FlexCache volume to retain blocks that are not changed at the FlexCache volume without having to evict them. This means that the FlexCache volume does not have to again incur the cost of fetching blocks over the WAN from the FlexCache volume origin on the next client access. Block level invalidation is a property of the origin volume. Without block level invalidation, any write at the origin volume would evict the whole file at the FlexCache volume, since by default, origin volume does a file level invalidation.
-	BlockLevelInvalidation bool `json:"block_level_invalidation,omitempty"`
+	// Block level invalidation enables the FlexCache volume to retain blocks that are not changed at the FlexCache volume without having to evict them. This means that the FlexCache volume does not have to again incur the computational cost of fetching blocks over the WAN from the FlexCache volume origin on the next client access. Block level invalidation is a property of the origin volume. Without block level invalidation, any write at the origin volume would evict the whole file at the FlexCache volume, since by default, origin volume does a file level invalidation.
+	BlockLevelInvalidation *bool `json:"block_level_invalidation,omitempty"`
 
-	// flexcaches
-	Flexcaches []*FlexcacheRelationship `json:"flexcaches,omitempty"`
+	// flexcache origin inline flexcaches
+	FlexcacheOriginInlineFlexcaches []*FlexcacheRelationship `json:"flexcaches,omitempty"`
 
 	// Specifies whether a global file locking option is enabled for an origin volume of a FlexCache volume.
-	GlobalFileLockingEnabled bool `json:"global_file_locking_enabled,omitempty"`
+	GlobalFileLockingEnabled *bool `json:"global_file_locking_enabled,omitempty"`
 
 	// Origin volume name
 	// Example: vol1, vol_2
 	// Max Length: 203
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// svm
-	Svm *FlexcacheOriginSvm `json:"svm,omitempty"`
+	Svm *FlexcacheOriginInlineSvm `json:"svm,omitempty"`
 
 	// Origin volume UUID. Unique identifier for origin of FlexCache.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563512
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this flexcache origin
@@ -55,7 +55,7 @@ func (m *FlexcacheOrigin) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateFlexcaches(formats); err != nil {
+	if err := m.validateFlexcacheOriginInlineFlexcaches(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -90,18 +90,18 @@ func (m *FlexcacheOrigin) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheOrigin) validateFlexcaches(formats strfmt.Registry) error {
-	if swag.IsZero(m.Flexcaches) { // not required
+func (m *FlexcacheOrigin) validateFlexcacheOriginInlineFlexcaches(formats strfmt.Registry) error {
+	if swag.IsZero(m.FlexcacheOriginInlineFlexcaches) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Flexcaches); i++ {
-		if swag.IsZero(m.Flexcaches[i]) { // not required
+	for i := 0; i < len(m.FlexcacheOriginInlineFlexcaches); i++ {
+		if swag.IsZero(m.FlexcacheOriginInlineFlexcaches[i]) { // not required
 			continue
 		}
 
-		if m.Flexcaches[i] != nil {
-			if err := m.Flexcaches[i].Validate(formats); err != nil {
+		if m.FlexcacheOriginInlineFlexcaches[i] != nil {
+			if err := m.FlexcacheOriginInlineFlexcaches[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("flexcaches" + "." + strconv.Itoa(i))
 				}
@@ -119,11 +119,11 @@ func (m *FlexcacheOrigin) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 203); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 203); err != nil {
 		return err
 	}
 
@@ -155,7 +155,7 @@ func (m *FlexcacheOrigin) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateFlexcaches(ctx, formats); err != nil {
+	if err := m.contextValidateFlexcacheOriginInlineFlexcaches(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -187,12 +187,12 @@ func (m *FlexcacheOrigin) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FlexcacheOrigin) contextValidateFlexcaches(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheOrigin) contextValidateFlexcacheOriginInlineFlexcaches(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Flexcaches); i++ {
+	for i := 0; i < len(m.FlexcacheOriginInlineFlexcaches); i++ {
 
-		if m.Flexcaches[i] != nil {
-			if err := m.Flexcaches[i].ContextValidate(ctx, formats); err != nil {
+		if m.FlexcacheOriginInlineFlexcaches[i] != nil {
+			if err := m.FlexcacheOriginInlineFlexcaches[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("flexcaches" + "." + strconv.Itoa(i))
 				}
@@ -221,7 +221,7 @@ func (m *FlexcacheOrigin) contextValidateSvm(ctx context.Context, formats strfmt
 
 func (m *FlexcacheOrigin) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -246,17 +246,17 @@ func (m *FlexcacheOrigin) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheOriginLinks flexcache origin links
+// FlexcacheOriginInlineLinks flexcache origin inline links
 //
-// swagger:model FlexcacheOriginLinks
-type FlexcacheOriginLinks struct {
+// swagger:model flexcache_origin_inline__links
+type FlexcacheOriginInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this flexcache origin links
-func (m *FlexcacheOriginLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache origin inline links
+func (m *FlexcacheOriginInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -269,7 +269,7 @@ func (m *FlexcacheOriginLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheOriginLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FlexcacheOriginInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -286,8 +286,8 @@ func (m *FlexcacheOriginLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this flexcache origin links based on the context it is used
-func (m *FlexcacheOriginLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache origin inline links based on the context it is used
+func (m *FlexcacheOriginInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -300,7 +300,7 @@ func (m *FlexcacheOriginLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *FlexcacheOriginLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheOriginInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -315,7 +315,7 @@ func (m *FlexcacheOriginLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheOriginLinks) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheOriginInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -323,8 +323,8 @@ func (m *FlexcacheOriginLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheOriginLinks) UnmarshalBinary(b []byte) error {
-	var res FlexcacheOriginLinks
+func (m *FlexcacheOriginInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FlexcacheOriginInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -332,27 +332,27 @@ func (m *FlexcacheOriginLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheOriginSvm Origin volume SVM
+// FlexcacheOriginInlineSvm Origin volume SVM
 //
-// swagger:model FlexcacheOriginSvm
-type FlexcacheOriginSvm struct {
+// swagger:model flexcache_origin_inline_svm
+type FlexcacheOriginInlineSvm struct {
 
 	// links
-	Links *FlexcacheOriginSvmLinks `json:"_links,omitempty"`
+	Links *FlexcacheOriginInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this flexcache origin svm
-func (m *FlexcacheOriginSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache origin inline svm
+func (m *FlexcacheOriginInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -365,7 +365,7 @@ func (m *FlexcacheOriginSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheOriginSvm) validateLinks(formats strfmt.Registry) error {
+func (m *FlexcacheOriginInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -382,8 +382,8 @@ func (m *FlexcacheOriginSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this flexcache origin svm based on the context it is used
-func (m *FlexcacheOriginSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache origin inline svm based on the context it is used
+func (m *FlexcacheOriginInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -396,7 +396,7 @@ func (m *FlexcacheOriginSvm) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *FlexcacheOriginSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheOriginInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -411,7 +411,7 @@ func (m *FlexcacheOriginSvm) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheOriginSvm) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheOriginInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -419,8 +419,8 @@ func (m *FlexcacheOriginSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheOriginSvm) UnmarshalBinary(b []byte) error {
-	var res FlexcacheOriginSvm
+func (m *FlexcacheOriginInlineSvm) UnmarshalBinary(b []byte) error {
+	var res FlexcacheOriginInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -428,17 +428,17 @@ func (m *FlexcacheOriginSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FlexcacheOriginSvmLinks flexcache origin svm links
+// FlexcacheOriginInlineSvmInlineLinks flexcache origin inline svm inline links
 //
-// swagger:model FlexcacheOriginSvmLinks
-type FlexcacheOriginSvmLinks struct {
+// swagger:model flexcache_origin_inline_svm_inline__links
+type FlexcacheOriginInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this flexcache origin svm links
-func (m *FlexcacheOriginSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this flexcache origin inline svm inline links
+func (m *FlexcacheOriginInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -451,7 +451,7 @@ func (m *FlexcacheOriginSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FlexcacheOriginSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FlexcacheOriginInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -468,8 +468,8 @@ func (m *FlexcacheOriginSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this flexcache origin svm links based on the context it is used
-func (m *FlexcacheOriginSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this flexcache origin inline svm inline links based on the context it is used
+func (m *FlexcacheOriginInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -482,7 +482,7 @@ func (m *FlexcacheOriginSvmLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *FlexcacheOriginSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FlexcacheOriginInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -497,7 +497,7 @@ func (m *FlexcacheOriginSvmLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *FlexcacheOriginSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *FlexcacheOriginInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -505,8 +505,8 @@ func (m *FlexcacheOriginSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FlexcacheOriginSvmLinks) UnmarshalBinary(b []byte) error {
-	var res FlexcacheOriginSvmLinks
+func (m *FlexcacheOriginInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FlexcacheOriginInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

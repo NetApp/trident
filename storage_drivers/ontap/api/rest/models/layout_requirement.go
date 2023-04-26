@@ -23,19 +23,19 @@ type LayoutRequirement struct {
 	// Minimum number of disks to create an aggregate.
 	// Example: 6
 	// Read Only: true
-	AggregateMinDisks int64 `json:"aggregate_min_disks,omitempty"`
+	AggregateMinDisks *int64 `json:"aggregate_min_disks,omitempty"`
 
 	// Indicates if this RAID type is the default.
 	// Read Only: true
 	Default *bool `json:"default,omitempty"`
 
 	// raid group
-	RaidGroup *LayoutRequirementRaidGroup `json:"raid_group,omitempty"`
+	RaidGroup *LayoutRequirementInlineRaidGroup `json:"raid_group,omitempty"`
 
 	// RAID type.
 	// Read Only: true
 	// Enum: [raid_dp raid_tec raid4 raid0]
-	RaidType string `json:"raid_type,omitempty"`
+	RaidType *string `json:"raid_type,omitempty"`
 }
 
 // Validate validates this layout requirement
@@ -142,7 +142,7 @@ func (m *LayoutRequirement) validateRaidType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateRaidTypeEnum("raid_type", "body", m.RaidType); err != nil {
+	if err := m.validateRaidTypeEnum("raid_type", "body", *m.RaidType); err != nil {
 		return err
 	}
 
@@ -177,7 +177,7 @@ func (m *LayoutRequirement) ContextValidate(ctx context.Context, formats strfmt.
 
 func (m *LayoutRequirement) contextValidateAggregateMinDisks(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "aggregate_min_disks", "body", int64(m.AggregateMinDisks)); err != nil {
+	if err := validate.ReadOnly(ctx, "aggregate_min_disks", "body", m.AggregateMinDisks); err != nil {
 		return err
 	}
 
@@ -209,7 +209,7 @@ func (m *LayoutRequirement) contextValidateRaidGroup(ctx context.Context, format
 
 func (m *LayoutRequirement) contextValidateRaidType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "raid_type", "body", string(m.RaidType)); err != nil {
+	if err := validate.ReadOnly(ctx, "raid_type", "body", m.RaidType); err != nil {
 		return err
 	}
 
@@ -234,34 +234,34 @@ func (m *LayoutRequirement) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LayoutRequirementRaidGroup layout requirement raid group
+// LayoutRequirementInlineRaidGroup layout requirement inline raid group
 //
-// swagger:model LayoutRequirementRaidGroup
-type LayoutRequirementRaidGroup struct {
+// swagger:model layout_requirement_inline_raid_group
+type LayoutRequirementInlineRaidGroup struct {
 
 	// Default number of disks in a RAID group.
 	// Example: 16
 	// Read Only: true
-	Default int64 `json:"default,omitempty"`
+	Default *int64 `json:"default,omitempty"`
 
 	// Maximum number of disks allowed in a RAID group.
 	// Example: 28
 	// Read Only: true
-	Max int64 `json:"max,omitempty"`
+	Max *int64 `json:"max,omitempty"`
 
 	// Minimum number of disks allowed in a RAID group.
 	// Example: 5
 	// Read Only: true
-	Min int64 `json:"min,omitempty"`
+	Min *int64 `json:"min,omitempty"`
 }
 
-// Validate validates this layout requirement raid group
-func (m *LayoutRequirementRaidGroup) Validate(formats strfmt.Registry) error {
+// Validate validates this layout requirement inline raid group
+func (m *LayoutRequirementInlineRaidGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this layout requirement raid group based on the context it is used
-func (m *LayoutRequirementRaidGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this layout requirement inline raid group based on the context it is used
+func (m *LayoutRequirementInlineRaidGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDefault(ctx, formats); err != nil {
@@ -282,27 +282,27 @@ func (m *LayoutRequirementRaidGroup) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *LayoutRequirementRaidGroup) contextValidateDefault(ctx context.Context, formats strfmt.Registry) error {
+func (m *LayoutRequirementInlineRaidGroup) contextValidateDefault(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "raid_group"+"."+"default", "body", int64(m.Default)); err != nil {
+	if err := validate.ReadOnly(ctx, "raid_group"+"."+"default", "body", m.Default); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LayoutRequirementRaidGroup) contextValidateMax(ctx context.Context, formats strfmt.Registry) error {
+func (m *LayoutRequirementInlineRaidGroup) contextValidateMax(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "raid_group"+"."+"max", "body", int64(m.Max)); err != nil {
+	if err := validate.ReadOnly(ctx, "raid_group"+"."+"max", "body", m.Max); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *LayoutRequirementRaidGroup) contextValidateMin(ctx context.Context, formats strfmt.Registry) error {
+func (m *LayoutRequirementInlineRaidGroup) contextValidateMin(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "raid_group"+"."+"min", "body", int64(m.Min)); err != nil {
+	if err := validate.ReadOnly(ctx, "raid_group"+"."+"min", "body", m.Min); err != nil {
 		return err
 	}
 
@@ -310,7 +310,7 @@ func (m *LayoutRequirementRaidGroup) contextValidateMin(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *LayoutRequirementRaidGroup) MarshalBinary() ([]byte, error) {
+func (m *LayoutRequirementInlineRaidGroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -318,8 +318,8 @@ func (m *LayoutRequirementRaidGroup) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LayoutRequirementRaidGroup) UnmarshalBinary(b []byte) error {
-	var res LayoutRequirementRaidGroup
+func (m *LayoutRequirementInlineRaidGroup) UnmarshalBinary(b []byte) error {
+	var res LayoutRequirementInlineRaidGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

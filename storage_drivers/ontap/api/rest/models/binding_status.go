@@ -18,10 +18,10 @@ import (
 type BindingStatus struct {
 
 	// Code corresponding to the server's binding status.
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Detailed description of the server's binding status.
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this binding status

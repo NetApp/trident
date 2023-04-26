@@ -20,14 +20,14 @@ import (
 type LunAttributeResponse struct {
 
 	// links
-	Links *LunAttributeResponseLinks `json:"_links,omitempty"`
+	Links *LunAttributeResponseInlineLinks `json:"_links,omitempty"`
+
+	// lun attribute response inline records
+	LunAttributeResponseInlineRecords []*LunAttribute `json:"records,omitempty"`
 
 	// The number of records in the response.
 	// Example: 1
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*LunAttribute `json:"records,omitempty"`
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this lun attribute response
@@ -38,7 +38,7 @@ func (m *LunAttributeResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateLunAttributeResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,18 +65,18 @@ func (m *LunAttributeResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunAttributeResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *LunAttributeResponse) validateLunAttributeResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.LunAttributeResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.LunAttributeResponseInlineRecords); i++ {
+		if swag.IsZero(m.LunAttributeResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.LunAttributeResponseInlineRecords[i] != nil {
+			if err := m.LunAttributeResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -97,7 +97,7 @@ func (m *LunAttributeResponse) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateLunAttributeResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,12 +121,12 @@ func (m *LunAttributeResponse) contextValidateLinks(ctx context.Context, formats
 	return nil
 }
 
-func (m *LunAttributeResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunAttributeResponse) contextValidateLunAttributeResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.LunAttributeResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.LunAttributeResponseInlineRecords[i] != nil {
+			if err := m.LunAttributeResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -157,10 +157,10 @@ func (m *LunAttributeResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunAttributeResponseLinks lun attribute response links
+// LunAttributeResponseInlineLinks lun attribute response inline links
 //
-// swagger:model LunAttributeResponseLinks
-type LunAttributeResponseLinks struct {
+// swagger:model lun_attribute_response_inline__links
+type LunAttributeResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -169,8 +169,8 @@ type LunAttributeResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this lun attribute response links
-func (m *LunAttributeResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this lun attribute response inline links
+func (m *LunAttributeResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -187,7 +187,7 @@ func (m *LunAttributeResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LunAttributeResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *LunAttributeResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -204,7 +204,7 @@ func (m *LunAttributeResponseLinks) validateNext(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *LunAttributeResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LunAttributeResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -221,8 +221,8 @@ func (m *LunAttributeResponseLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this lun attribute response links based on the context it is used
-func (m *LunAttributeResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this lun attribute response inline links based on the context it is used
+func (m *LunAttributeResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *LunAttributeResponseLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *LunAttributeResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunAttributeResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *LunAttributeResponseLinks) contextValidateNext(ctx context.Context, for
 	return nil
 }
 
-func (m *LunAttributeResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LunAttributeResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -268,7 +268,7 @@ func (m *LunAttributeResponseLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *LunAttributeResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *LunAttributeResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -276,8 +276,8 @@ func (m *LunAttributeResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LunAttributeResponseLinks) UnmarshalBinary(b []byte) error {
-	var res LunAttributeResponseLinks
+func (m *LunAttributeResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LunAttributeResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

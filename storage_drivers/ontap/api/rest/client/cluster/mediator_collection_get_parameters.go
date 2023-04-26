@@ -66,55 +66,55 @@ type MediatorCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IPAddress.
 
 	   Filter by ip_address
 	*/
-	IPAddressQueryParameter *string
+	IPAddress *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PeerClusterName.
 
 	   Filter by peer_cluster.name
 	*/
-	PeerClusterNameQueryParameter *string
+	PeerClusterName *string
 
 	/* PeerClusterUUID.
 
 	   Filter by peer_cluster.uuid
 	*/
-	PeerClusterUUIDQueryParameter *string
+	PeerClusterUUID *string
 
 	/* PeerMediatorConnectivity.
 
 	   Filter by peer_mediator_connectivity
 	*/
-	PeerMediatorConnectivityQueryParameter *string
+	PeerMediatorConnectivity *string
 
 	/* Port.
 
 	   Filter by port
 	*/
-	PortQueryParameter *int64
+	Port *int64
 
 	/* Reachable.
 
 	   Filter by reachable
 	*/
-	ReachableQueryParameter *bool
+	Reachable *bool
 
 	/* ReturnRecords.
 
@@ -122,7 +122,7 @@ type MediatorCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -130,13 +130,13 @@ type MediatorCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -156,14 +156,14 @@ func (o *MediatorCollectionGetParams) WithDefaults() *MediatorCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *MediatorCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := MediatorCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -205,136 +205,136 @@ func (o *MediatorCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithFieldsQueryParameter(fields []string) *MediatorCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithFields(fields []string) *MediatorCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIPAddressQueryParameter adds the iPAddress to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithIPAddressQueryParameter(iPAddress *string) *MediatorCollectionGetParams {
-	o.SetIPAddressQueryParameter(iPAddress)
+// WithIPAddress adds the iPAddress to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithIPAddress(iPAddress *string) *MediatorCollectionGetParams {
+	o.SetIPAddress(iPAddress)
 	return o
 }
 
-// SetIPAddressQueryParameter adds the ipAddress to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetIPAddressQueryParameter(iPAddress *string) {
-	o.IPAddressQueryParameter = iPAddress
+// SetIPAddress adds the ipAddress to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetIPAddress(iPAddress *string) {
+	o.IPAddress = iPAddress
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *MediatorCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithMaxRecords(maxRecords *int64) *MediatorCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *MediatorCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithOrderBy(orderBy []string) *MediatorCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPeerClusterNameQueryParameter adds the peerClusterName to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithPeerClusterNameQueryParameter(peerClusterName *string) *MediatorCollectionGetParams {
-	o.SetPeerClusterNameQueryParameter(peerClusterName)
+// WithPeerClusterName adds the peerClusterName to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithPeerClusterName(peerClusterName *string) *MediatorCollectionGetParams {
+	o.SetPeerClusterName(peerClusterName)
 	return o
 }
 
-// SetPeerClusterNameQueryParameter adds the peerClusterName to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetPeerClusterNameQueryParameter(peerClusterName *string) {
-	o.PeerClusterNameQueryParameter = peerClusterName
+// SetPeerClusterName adds the peerClusterName to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetPeerClusterName(peerClusterName *string) {
+	o.PeerClusterName = peerClusterName
 }
 
-// WithPeerClusterUUIDQueryParameter adds the peerClusterUUID to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithPeerClusterUUIDQueryParameter(peerClusterUUID *string) *MediatorCollectionGetParams {
-	o.SetPeerClusterUUIDQueryParameter(peerClusterUUID)
+// WithPeerClusterUUID adds the peerClusterUUID to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithPeerClusterUUID(peerClusterUUID *string) *MediatorCollectionGetParams {
+	o.SetPeerClusterUUID(peerClusterUUID)
 	return o
 }
 
-// SetPeerClusterUUIDQueryParameter adds the peerClusterUuid to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetPeerClusterUUIDQueryParameter(peerClusterUUID *string) {
-	o.PeerClusterUUIDQueryParameter = peerClusterUUID
+// SetPeerClusterUUID adds the peerClusterUuid to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetPeerClusterUUID(peerClusterUUID *string) {
+	o.PeerClusterUUID = peerClusterUUID
 }
 
-// WithPeerMediatorConnectivityQueryParameter adds the peerMediatorConnectivity to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithPeerMediatorConnectivityQueryParameter(peerMediatorConnectivity *string) *MediatorCollectionGetParams {
-	o.SetPeerMediatorConnectivityQueryParameter(peerMediatorConnectivity)
+// WithPeerMediatorConnectivity adds the peerMediatorConnectivity to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithPeerMediatorConnectivity(peerMediatorConnectivity *string) *MediatorCollectionGetParams {
+	o.SetPeerMediatorConnectivity(peerMediatorConnectivity)
 	return o
 }
 
-// SetPeerMediatorConnectivityQueryParameter adds the peerMediatorConnectivity to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetPeerMediatorConnectivityQueryParameter(peerMediatorConnectivity *string) {
-	o.PeerMediatorConnectivityQueryParameter = peerMediatorConnectivity
+// SetPeerMediatorConnectivity adds the peerMediatorConnectivity to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetPeerMediatorConnectivity(peerMediatorConnectivity *string) {
+	o.PeerMediatorConnectivity = peerMediatorConnectivity
 }
 
-// WithPortQueryParameter adds the port to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithPortQueryParameter(port *int64) *MediatorCollectionGetParams {
-	o.SetPortQueryParameter(port)
+// WithPort adds the port to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithPort(port *int64) *MediatorCollectionGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetPortQueryParameter adds the port to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetPortQueryParameter(port *int64) {
-	o.PortQueryParameter = port
+// SetPort adds the port to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
-// WithReachableQueryParameter adds the reachable to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithReachableQueryParameter(reachable *bool) *MediatorCollectionGetParams {
-	o.SetReachableQueryParameter(reachable)
+// WithReachable adds the reachable to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithReachable(reachable *bool) *MediatorCollectionGetParams {
+	o.SetReachable(reachable)
 	return o
 }
 
-// SetReachableQueryParameter adds the reachable to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetReachableQueryParameter(reachable *bool) {
-	o.ReachableQueryParameter = reachable
+// SetReachable adds the reachable to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetReachable(reachable *bool) {
+	o.Reachable = reachable
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MediatorCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithReturnRecords(returnRecords *bool) *MediatorCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MediatorCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *MediatorCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithUUIDQueryParameter adds the uuid to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithUUIDQueryParameter(uuid *string) *MediatorCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithUUID(uuid *string) *MediatorCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -345,7 +345,7 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -356,13 +356,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IPAddressQueryParameter != nil {
+	if o.IPAddress != nil {
 
 		// query param ip_address
 		var qrIPAddress string
 
-		if o.IPAddressQueryParameter != nil {
-			qrIPAddress = *o.IPAddressQueryParameter
+		if o.IPAddress != nil {
+			qrIPAddress = *o.IPAddress
 		}
 		qIPAddress := qrIPAddress
 		if qIPAddress != "" {
@@ -373,13 +373,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -390,7 +390,7 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -401,13 +401,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PeerClusterNameQueryParameter != nil {
+	if o.PeerClusterName != nil {
 
 		// query param peer_cluster.name
 		var qrPeerClusterName string
 
-		if o.PeerClusterNameQueryParameter != nil {
-			qrPeerClusterName = *o.PeerClusterNameQueryParameter
+		if o.PeerClusterName != nil {
+			qrPeerClusterName = *o.PeerClusterName
 		}
 		qPeerClusterName := qrPeerClusterName
 		if qPeerClusterName != "" {
@@ -418,13 +418,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PeerClusterUUIDQueryParameter != nil {
+	if o.PeerClusterUUID != nil {
 
 		// query param peer_cluster.uuid
 		var qrPeerClusterUUID string
 
-		if o.PeerClusterUUIDQueryParameter != nil {
-			qrPeerClusterUUID = *o.PeerClusterUUIDQueryParameter
+		if o.PeerClusterUUID != nil {
+			qrPeerClusterUUID = *o.PeerClusterUUID
 		}
 		qPeerClusterUUID := qrPeerClusterUUID
 		if qPeerClusterUUID != "" {
@@ -435,13 +435,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PeerMediatorConnectivityQueryParameter != nil {
+	if o.PeerMediatorConnectivity != nil {
 
 		// query param peer_mediator_connectivity
 		var qrPeerMediatorConnectivity string
 
-		if o.PeerMediatorConnectivityQueryParameter != nil {
-			qrPeerMediatorConnectivity = *o.PeerMediatorConnectivityQueryParameter
+		if o.PeerMediatorConnectivity != nil {
+			qrPeerMediatorConnectivity = *o.PeerMediatorConnectivity
 		}
 		qPeerMediatorConnectivity := qrPeerMediatorConnectivity
 		if qPeerMediatorConnectivity != "" {
@@ -452,13 +452,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PortQueryParameter != nil {
+	if o.Port != nil {
 
 		// query param port
 		var qrPort int64
 
-		if o.PortQueryParameter != nil {
-			qrPort = *o.PortQueryParameter
+		if o.Port != nil {
+			qrPort = *o.Port
 		}
 		qPort := swag.FormatInt64(qrPort)
 		if qPort != "" {
@@ -469,13 +469,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReachableQueryParameter != nil {
+	if o.Reachable != nil {
 
 		// query param reachable
 		var qrReachable bool
 
-		if o.ReachableQueryParameter != nil {
-			qrReachable = *o.ReachableQueryParameter
+		if o.Reachable != nil {
+			qrReachable = *o.Reachable
 		}
 		qReachable := swag.FormatBool(qrReachable)
 		if qReachable != "" {
@@ -486,13 +486,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -503,13 +503,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -520,13 +520,13 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -545,7 +545,7 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamMediatorCollectionGet binds the parameter fields
 func (o *MediatorCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -562,7 +562,7 @@ func (o *MediatorCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamMediatorCollectionGet binds the parameter order_by
 func (o *MediatorCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

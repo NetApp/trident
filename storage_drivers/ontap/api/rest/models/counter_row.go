@@ -20,22 +20,22 @@ import (
 type CounterRow struct {
 
 	// links
-	Links *CounterRowLinks `json:"_links,omitempty"`
+	Links *CounterRowInlineLinks `json:"_links,omitempty"`
 
 	// aggregation
 	Aggregation *InstanceCounterAggregation `json:"aggregation,omitempty"`
 
+	// Array of counter name/value pairs.
+	CounterRowInlineCounters []*Counter `json:"counters,omitempty"`
+
+	// Array of property name/value pairs.
+	CounterRowInlineProperties []*CounterProperty `json:"properties,omitempty"`
+
 	// counter table
 	CounterTable *CounterTableReference `json:"counter_table,omitempty"`
 
-	// Array of counter name/value pairs.
-	Counters []*Counter `json:"counters,omitempty"`
-
 	// Unique row idenfier.
-	ID string `json:"id,omitempty"`
-
-	// Array of property name/value pairs.
-	Properties []*CounterProperty `json:"properties,omitempty"`
+	ID *string `json:"id,omitempty"`
 }
 
 // Validate validates this counter row
@@ -50,15 +50,15 @@ func (m *CounterRow) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCounterRowInlineCounters(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCounterRowInlineProperties(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCounterTable(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateCounters(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateProperties(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,6 +102,54 @@ func (m *CounterRow) validateAggregation(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *CounterRow) validateCounterRowInlineCounters(formats strfmt.Registry) error {
+	if swag.IsZero(m.CounterRowInlineCounters) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CounterRowInlineCounters); i++ {
+		if swag.IsZero(m.CounterRowInlineCounters[i]) { // not required
+			continue
+		}
+
+		if m.CounterRowInlineCounters[i] != nil {
+			if err := m.CounterRowInlineCounters[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CounterRow) validateCounterRowInlineProperties(formats strfmt.Registry) error {
+	if swag.IsZero(m.CounterRowInlineProperties) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CounterRowInlineProperties); i++ {
+		if swag.IsZero(m.CounterRowInlineProperties[i]) { // not required
+			continue
+		}
+
+		if m.CounterRowInlineProperties[i] != nil {
+			if err := m.CounterRowInlineProperties[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("properties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *CounterRow) validateCounterTable(formats strfmt.Registry) error {
 	if swag.IsZero(m.CounterTable) { // not required
 		return nil
@@ -119,54 +167,6 @@ func (m *CounterRow) validateCounterTable(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterRow) validateCounters(formats strfmt.Registry) error {
-	if swag.IsZero(m.Counters) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Counters); i++ {
-		if swag.IsZero(m.Counters[i]) { // not required
-			continue
-		}
-
-		if m.Counters[i] != nil {
-			if err := m.Counters[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *CounterRow) validateProperties(formats strfmt.Registry) error {
-	if swag.IsZero(m.Properties) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Properties); i++ {
-		if swag.IsZero(m.Properties[i]) { // not required
-			continue
-		}
-
-		if m.Properties[i] != nil {
-			if err := m.Properties[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("properties" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this counter row based on the context it is used
 func (m *CounterRow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -179,15 +179,15 @@ func (m *CounterRow) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCounterRowInlineCounters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCounterRowInlineProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCounterTable(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateCounters(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateProperties(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -225,26 +225,12 @@ func (m *CounterRow) contextValidateAggregation(ctx context.Context, formats str
 	return nil
 }
 
-func (m *CounterRow) contextValidateCounterTable(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterRow) contextValidateCounterRowInlineCounters(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.CounterTable != nil {
-		if err := m.CounterTable.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("counter_table")
-			}
-			return err
-		}
-	}
+	for i := 0; i < len(m.CounterRowInlineCounters); i++ {
 
-	return nil
-}
-
-func (m *CounterRow) contextValidateCounters(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Counters); i++ {
-
-		if m.Counters[i] != nil {
-			if err := m.Counters[i].ContextValidate(ctx, formats); err != nil {
+		if m.CounterRowInlineCounters[i] != nil {
+			if err := m.CounterRowInlineCounters[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
 				}
@@ -257,12 +243,12 @@ func (m *CounterRow) contextValidateCounters(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *CounterRow) contextValidateProperties(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterRow) contextValidateCounterRowInlineProperties(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Properties); i++ {
+	for i := 0; i < len(m.CounterRowInlineProperties); i++ {
 
-		if m.Properties[i] != nil {
-			if err := m.Properties[i].ContextValidate(ctx, formats); err != nil {
+		if m.CounterRowInlineProperties[i] != nil {
+			if err := m.CounterRowInlineProperties[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("properties" + "." + strconv.Itoa(i))
 				}
@@ -270,6 +256,20 @@ func (m *CounterRow) contextValidateProperties(ctx context.Context, formats strf
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *CounterRow) contextValidateCounterTable(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.CounterTable != nil {
+		if err := m.CounterTable.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("counter_table")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -293,17 +293,17 @@ func (m *CounterRow) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CounterRowLinks counter row links
+// CounterRowInlineLinks counter row inline links
 //
-// swagger:model CounterRowLinks
-type CounterRowLinks struct {
+// swagger:model counter_row_inline__links
+type CounterRowInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this counter row links
-func (m *CounterRowLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this counter row inline links
+func (m *CounterRowInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -316,7 +316,7 @@ func (m *CounterRowLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CounterRowLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CounterRowInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -333,8 +333,8 @@ func (m *CounterRowLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this counter row links based on the context it is used
-func (m *CounterRowLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this counter row inline links based on the context it is used
+func (m *CounterRowInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -347,7 +347,7 @@ func (m *CounterRowLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *CounterRowLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CounterRowInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -362,7 +362,7 @@ func (m *CounterRowLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *CounterRowLinks) MarshalBinary() ([]byte, error) {
+func (m *CounterRowInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -370,8 +370,8 @@ func (m *CounterRowLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CounterRowLinks) UnmarshalBinary(b []byte) error {
-	var res CounterRowLinks
+func (m *CounterRowInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CounterRowInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

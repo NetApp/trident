@@ -15,10 +15,9 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -45,7 +44,8 @@ type PassthroughClient struct {
 // use case, which doesn't easily support a separate persistence layer
 // and has no support for storage classes.
 func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowStorageClientCreate,
+		LogLayerPersistentStore)
 	client := &PassthroughClient{
 		liveBackends: make(map[string]storage.Backend),
 		bootBackends: make([]*storage.BackendPersistent, 0),
@@ -117,7 +117,7 @@ func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) 
 	// Read config file
 	fileContents, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"configPath": configPath,
 			"error":      err,
 		}).Fatal("Passthrough store could not read configuration file.")
@@ -156,20 +156,20 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 
 	var configType string
 	switch commonConfig.StorageDriverName {
-	case drivers.OntapNASStorageDriverName,
-		drivers.OntapNASQtreeStorageDriverName,
-		drivers.OntapNASFlexGroupStorageDriverName,
-		drivers.OntapSANStorageDriverName,
-		drivers.OntapSANEconomyStorageDriverName:
+	case config.OntapNASStorageDriverName,
+		config.OntapNASQtreeStorageDriverName,
+		config.OntapNASFlexGroupStorageDriverName,
+		config.OntapSANStorageDriverName,
+		config.OntapSANEconomyStorageDriverName:
 		configType = "ontap_config"
-	case drivers.SolidfireSANStorageDriverName:
+	case config.SolidfireSANStorageDriverName:
 		configType = "solidfire_config"
-	case drivers.AzureNASStorageDriverName,
-		drivers.AzureNASBlockStorageDriverName:
+	case config.AzureNASStorageDriverName,
+		config.AzureNASBlockStorageDriverName:
 		configType = "azure_config"
-	case drivers.GCPNFSStorageDriverName:
+	case config.GCPNFSStorageDriverName:
 		configType = "gcp_config"
-	case drivers.FakeStorageDriverName:
+	case config.FakeStorageDriverName:
 		configType = "fake_config"
 	default:
 		return "", fmt.Errorf("unknown storage driver: %v", commonConfig.StorageDriverName)
@@ -225,10 +225,6 @@ func (c *PassthroughClient) AddBackend(ctx context.Context, backend storage.Back
 	return nil
 }
 
-func (c *PassthroughClient) AddBackendPersistent(context.Context, *storage.BackendPersistent) error {
-	return NewPersistentStoreError(NotSupported, "")
-}
-
 func (c *PassthroughClient) GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error) {
 	existingBackend, ok := c.liveBackends[backendName]
 	if !ok {
@@ -252,16 +248,7 @@ func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend storage.B
 	return nil
 }
 
-// UpdateBackendPersistent updates a backend's persistent state
-func (c *PassthroughClient) UpdateBackendPersistent(context.Context, *storage.BackendPersistent) error {
-	return nil
-}
-
 func (c *PassthroughClient) DeleteBackend(_ context.Context, backend storage.Backend) error {
-	if _, ok := c.liveBackends[backend.Name()]; !ok {
-		return NewPersistentStoreError(KeyNotFoundErr, backend.Name())
-	}
-
 	delete(c.liveBackends, backend.Name())
 	return nil
 }
@@ -299,11 +286,6 @@ func (c *PassthroughClient) AddVolume(context.Context, *storage.Volume) error {
 	return nil
 }
 
-// AddVolumePersistent saves a volume's persistent state to the persistent store
-func (c *PassthroughClient) AddVolumePersistent(context.Context, *storage.VolumeExternal) error {
-	return nil
-}
-
 // GetVolume is not called by the orchestrator, which caches all volumes in
 // memory after bootstrapping.  So this method need not do anything.
 func (c *PassthroughClient) GetVolume(_ context.Context, volName string) (*storage.VolumeExternal, error) {
@@ -314,16 +296,7 @@ func (c *PassthroughClient) UpdateVolume(context.Context, *storage.Volume) error
 	return nil
 }
 
-// UpdateVolumePersistent updates a volume's persistent state
-func (c *PassthroughClient) UpdateVolumePersistent(context.Context, *storage.VolumeExternal) error {
-	return nil
-}
-
 func (c *PassthroughClient) DeleteVolume(context.Context, *storage.Volume) error {
-	return nil
-}
-
-func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(context.Context, *storage.Volume) error {
 	return nil
 }
 
@@ -395,7 +368,7 @@ func (c *PassthroughClient) GetVolumeTransactions(context.Context) ([]*storage.V
 	return make([]*storage.VolumeTransaction, 0), nil
 }
 
-func (c *PassthroughClient) GetExistingVolumeTransaction(
+func (c *PassthroughClient) GetVolumeTransaction(
 	context.Context, *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
 	return nil, nil
@@ -481,10 +454,6 @@ func (c *PassthroughClient) UpdateSnapshot(context.Context, *storage.Snapshot) e
 }
 
 func (c *PassthroughClient) DeleteSnapshot(context.Context, *storage.Snapshot) error {
-	return nil
-}
-
-func (c *PassthroughClient) DeleteSnapshotIgnoreNotFound(context.Context, *storage.Snapshot) error {
 	return nil
 }
 

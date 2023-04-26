@@ -62,119 +62,77 @@ EmsEventCollectionGetParams contains all the parameters to send to the API endpo
 */
 type EmsEventCollectionGetParams struct {
 
-	/* ActionPossibleActionsAction.
-
-	   Filter by action.possible_actions.action
-	*/
-	ActionPossibleActionsActionQueryParameter *string
-
-	/* ActionPossibleActionsInvokeVerb.
-
-	   Filter by action.possible_actions.invoke.verb
-	*/
-	ActionPossibleActionsInvokeVerbQueryParameter *string
-
-	/* ActionPossibleActionsParametersFormat.
-
-	   Filter by action.possible_actions.parameters.format
-	*/
-	ActionPossibleActionsParametersFormatQueryParameter *string
-
-	/* ActionPossibleActionsParametersName.
-
-	   Filter by action.possible_actions.parameters.name
-	*/
-	ActionPossibleActionsParametersNameQueryParameter *string
-
-	/* ActionPossibleActionsParametersType.
-
-	   Filter by action.possible_actions.parameters.type
-	*/
-	ActionPossibleActionsParametersTypeQueryParameter *string
-
-	/* CreationTime.
-
-	   Filter by creation_time
-	*/
-	CreationTimeQueryParameter *string
-
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FilterName.
 
 	   Filter the collection returned using an event filter
 	*/
-	FilterNameQueryParameter *string
+	FilterName *string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
-
-	/* LastUpdateTime.
-
-	   Filter by last_update_time
-	*/
-	LastUpdateTimeQueryParameter *string
+	Index *int64
 
 	/* LogMessage.
 
 	   Filter by log_message
 	*/
-	LogMessageQueryParameter *string
+	LogMessage *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MessageName.
 
 	   Filter by message.name
 	*/
-	MessageNameQueryParameter *string
+	MessageName *string
 
 	/* MessageSeverity.
 
 	   Filter by message.severity
 	*/
-	MessageSeverityQueryParameter *string
+	MessageSeverity *string
 
 	/* NodeName.
 
 	   Filter by node.name
 	*/
-	NodeNameQueryParameter *string
+	NodeName *string
 
 	/* NodeUUID.
 
 	   Filter by node.uuid
 	*/
-	NodeUUIDQueryParameter *string
+	NodeUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ParametersName.
 
 	   Filter by parameters.name
 	*/
-	ParametersNameQueryParameter *string
+	ParametersName *string
 
 	/* ParametersValue.
 
 	   Filter by parameters.value
 	*/
-	ParametersValueQueryParameter *string
+	ParametersValue *string
 
 	/* ReturnRecords.
 
@@ -182,7 +140,7 @@ type EmsEventCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -190,37 +148,19 @@ type EmsEventCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Source.
 
 	   Filter by source
 	*/
-	SourceQueryParameter *string
-
-	/* State.
-
-	   Filter by state
-	*/
-	StateQueryParameter *string
-
-	/* Stateful.
-
-	   Filter by stateful
-	*/
-	StatefulQueryParameter *bool
+	Source *string
 
 	/* Time.
 
 	   Filter by time
 	*/
-	TimeQueryParameter *string
-
-	/* UUID.
-
-	   Filter by uuid
-	*/
-	UUIDQueryParameter *string
+	Time *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -240,14 +180,14 @@ func (o *EmsEventCollectionGetParams) WithDefaults() *EmsEventCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *EmsEventCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := EmsEventCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -289,290 +229,180 @@ func (o *EmsEventCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithActionPossibleActionsActionQueryParameter adds the actionPossibleActionsAction to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithActionPossibleActionsActionQueryParameter(actionPossibleActionsAction *string) *EmsEventCollectionGetParams {
-	o.SetActionPossibleActionsActionQueryParameter(actionPossibleActionsAction)
+// WithFields adds the fields to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithFields(fields []string) *EmsEventCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetActionPossibleActionsActionQueryParameter adds the actionPossibleActionsAction to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetActionPossibleActionsActionQueryParameter(actionPossibleActionsAction *string) {
-	o.ActionPossibleActionsActionQueryParameter = actionPossibleActionsAction
+// SetFields adds the fields to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithActionPossibleActionsInvokeVerbQueryParameter adds the actionPossibleActionsInvokeVerb to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithActionPossibleActionsInvokeVerbQueryParameter(actionPossibleActionsInvokeVerb *string) *EmsEventCollectionGetParams {
-	o.SetActionPossibleActionsInvokeVerbQueryParameter(actionPossibleActionsInvokeVerb)
+// WithFilterName adds the filterName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithFilterName(filterName *string) *EmsEventCollectionGetParams {
+	o.SetFilterName(filterName)
 	return o
 }
 
-// SetActionPossibleActionsInvokeVerbQueryParameter adds the actionPossibleActionsInvokeVerb to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetActionPossibleActionsInvokeVerbQueryParameter(actionPossibleActionsInvokeVerb *string) {
-	o.ActionPossibleActionsInvokeVerbQueryParameter = actionPossibleActionsInvokeVerb
+// SetFilterName adds the filterName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetFilterName(filterName *string) {
+	o.FilterName = filterName
 }
 
-// WithActionPossibleActionsParametersFormatQueryParameter adds the actionPossibleActionsParametersFormat to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithActionPossibleActionsParametersFormatQueryParameter(actionPossibleActionsParametersFormat *string) *EmsEventCollectionGetParams {
-	o.SetActionPossibleActionsParametersFormatQueryParameter(actionPossibleActionsParametersFormat)
+// WithIndex adds the index to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithIndex(index *int64) *EmsEventCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetActionPossibleActionsParametersFormatQueryParameter adds the actionPossibleActionsParametersFormat to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetActionPossibleActionsParametersFormatQueryParameter(actionPossibleActionsParametersFormat *string) {
-	o.ActionPossibleActionsParametersFormatQueryParameter = actionPossibleActionsParametersFormat
+// SetIndex adds the index to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithActionPossibleActionsParametersNameQueryParameter adds the actionPossibleActionsParametersName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithActionPossibleActionsParametersNameQueryParameter(actionPossibleActionsParametersName *string) *EmsEventCollectionGetParams {
-	o.SetActionPossibleActionsParametersNameQueryParameter(actionPossibleActionsParametersName)
+// WithLogMessage adds the logMessage to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithLogMessage(logMessage *string) *EmsEventCollectionGetParams {
+	o.SetLogMessage(logMessage)
 	return o
 }
 
-// SetActionPossibleActionsParametersNameQueryParameter adds the actionPossibleActionsParametersName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetActionPossibleActionsParametersNameQueryParameter(actionPossibleActionsParametersName *string) {
-	o.ActionPossibleActionsParametersNameQueryParameter = actionPossibleActionsParametersName
+// SetLogMessage adds the logMessage to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetLogMessage(logMessage *string) {
+	o.LogMessage = logMessage
 }
 
-// WithActionPossibleActionsParametersTypeQueryParameter adds the actionPossibleActionsParametersType to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithActionPossibleActionsParametersTypeQueryParameter(actionPossibleActionsParametersType *string) *EmsEventCollectionGetParams {
-	o.SetActionPossibleActionsParametersTypeQueryParameter(actionPossibleActionsParametersType)
+// WithMaxRecords adds the maxRecords to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithMaxRecords(maxRecords *int64) *EmsEventCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetActionPossibleActionsParametersTypeQueryParameter adds the actionPossibleActionsParametersType to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetActionPossibleActionsParametersTypeQueryParameter(actionPossibleActionsParametersType *string) {
-	o.ActionPossibleActionsParametersTypeQueryParameter = actionPossibleActionsParametersType
+// SetMaxRecords adds the maxRecords to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithCreationTimeQueryParameter adds the creationTime to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithCreationTimeQueryParameter(creationTime *string) *EmsEventCollectionGetParams {
-	o.SetCreationTimeQueryParameter(creationTime)
+// WithMessageName adds the messageName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithMessageName(messageName *string) *EmsEventCollectionGetParams {
+	o.SetMessageName(messageName)
 	return o
 }
 
-// SetCreationTimeQueryParameter adds the creationTime to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetCreationTimeQueryParameter(creationTime *string) {
-	o.CreationTimeQueryParameter = creationTime
+// SetMessageName adds the messageName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetMessageName(messageName *string) {
+	o.MessageName = messageName
 }
 
-// WithFieldsQueryParameter adds the fields to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithFieldsQueryParameter(fields []string) *EmsEventCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithMessageSeverity adds the messageSeverity to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithMessageSeverity(messageSeverity *string) *EmsEventCollectionGetParams {
+	o.SetMessageSeverity(messageSeverity)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetMessageSeverity adds the messageSeverity to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetMessageSeverity(messageSeverity *string) {
+	o.MessageSeverity = messageSeverity
 }
 
-// WithFilterNameQueryParameter adds the filterName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithFilterNameQueryParameter(filterName *string) *EmsEventCollectionGetParams {
-	o.SetFilterNameQueryParameter(filterName)
+// WithNodeName adds the nodeName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithNodeName(nodeName *string) *EmsEventCollectionGetParams {
+	o.SetNodeName(nodeName)
 	return o
 }
 
-// SetFilterNameQueryParameter adds the filterName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetFilterNameQueryParameter(filterName *string) {
-	o.FilterNameQueryParameter = filterName
+// SetNodeName adds the nodeName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetNodeName(nodeName *string) {
+	o.NodeName = nodeName
 }
 
-// WithIndexQueryParameter adds the index to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithIndexQueryParameter(index *int64) *EmsEventCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithNodeUUID adds the nodeUUID to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithNodeUUID(nodeUUID *string) *EmsEventCollectionGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetNodeUUID adds the nodeUuid to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetNodeUUID(nodeUUID *string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithLastUpdateTimeQueryParameter adds the lastUpdateTime to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithLastUpdateTimeQueryParameter(lastUpdateTime *string) *EmsEventCollectionGetParams {
-	o.SetLastUpdateTimeQueryParameter(lastUpdateTime)
+// WithOrderBy adds the orderBy to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithOrderBy(orderBy []string) *EmsEventCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetLastUpdateTimeQueryParameter adds the lastUpdateTime to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetLastUpdateTimeQueryParameter(lastUpdateTime *string) {
-	o.LastUpdateTimeQueryParameter = lastUpdateTime
+// SetOrderBy adds the orderBy to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithLogMessageQueryParameter adds the logMessage to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithLogMessageQueryParameter(logMessage *string) *EmsEventCollectionGetParams {
-	o.SetLogMessageQueryParameter(logMessage)
+// WithParametersName adds the parametersName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithParametersName(parametersName *string) *EmsEventCollectionGetParams {
+	o.SetParametersName(parametersName)
 	return o
 }
 
-// SetLogMessageQueryParameter adds the logMessage to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetLogMessageQueryParameter(logMessage *string) {
-	o.LogMessageQueryParameter = logMessage
+// SetParametersName adds the parametersName to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetParametersName(parametersName *string) {
+	o.ParametersName = parametersName
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *EmsEventCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithParametersValue adds the parametersValue to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithParametersValue(parametersValue *string) *EmsEventCollectionGetParams {
+	o.SetParametersValue(parametersValue)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetParametersValue adds the parametersValue to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetParametersValue(parametersValue *string) {
+	o.ParametersValue = parametersValue
 }
 
-// WithMessageNameQueryParameter adds the messageName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithMessageNameQueryParameter(messageName *string) *EmsEventCollectionGetParams {
-	o.SetMessageNameQueryParameter(messageName)
+// WithReturnRecords adds the returnRecords to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithReturnRecords(returnRecords *bool) *EmsEventCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetMessageNameQueryParameter adds the messageName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetMessageNameQueryParameter(messageName *string) {
-	o.MessageNameQueryParameter = messageName
+// SetReturnRecords adds the returnRecords to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithMessageSeverityQueryParameter adds the messageSeverity to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithMessageSeverityQueryParameter(messageSeverity *string) *EmsEventCollectionGetParams {
-	o.SetMessageSeverityQueryParameter(messageSeverity)
+// WithReturnTimeout adds the returnTimeout to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *EmsEventCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetMessageSeverityQueryParameter adds the messageSeverity to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetMessageSeverityQueryParameter(messageSeverity *string) {
-	o.MessageSeverityQueryParameter = messageSeverity
+// SetReturnTimeout adds the returnTimeout to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithNodeNameQueryParameter adds the nodeName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithNodeNameQueryParameter(nodeName *string) *EmsEventCollectionGetParams {
-	o.SetNodeNameQueryParameter(nodeName)
+// WithSource adds the source to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithSource(source *string) *EmsEventCollectionGetParams {
+	o.SetSource(source)
 	return o
 }
 
-// SetNodeNameQueryParameter adds the nodeName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetNodeNameQueryParameter(nodeName *string) {
-	o.NodeNameQueryParameter = nodeName
+// SetSource adds the source to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetSource(source *string) {
+	o.Source = source
 }
 
-// WithNodeUUIDQueryParameter adds the nodeUUID to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithNodeUUIDQueryParameter(nodeUUID *string) *EmsEventCollectionGetParams {
-	o.SetNodeUUIDQueryParameter(nodeUUID)
+// WithTime adds the time to the ems event collection get params
+func (o *EmsEventCollectionGetParams) WithTime(time *string) *EmsEventCollectionGetParams {
+	o.SetTime(time)
 	return o
 }
 
-// SetNodeUUIDQueryParameter adds the nodeUuid to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
-	o.NodeUUIDQueryParameter = nodeUUID
-}
-
-// WithOrderByQueryParameter adds the orderBy to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *EmsEventCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
-	return o
-}
-
-// SetOrderByQueryParameter adds the orderBy to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
-}
-
-// WithParametersNameQueryParameter adds the parametersName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithParametersNameQueryParameter(parametersName *string) *EmsEventCollectionGetParams {
-	o.SetParametersNameQueryParameter(parametersName)
-	return o
-}
-
-// SetParametersNameQueryParameter adds the parametersName to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetParametersNameQueryParameter(parametersName *string) {
-	o.ParametersNameQueryParameter = parametersName
-}
-
-// WithParametersValueQueryParameter adds the parametersValue to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithParametersValueQueryParameter(parametersValue *string) *EmsEventCollectionGetParams {
-	o.SetParametersValueQueryParameter(parametersValue)
-	return o
-}
-
-// SetParametersValueQueryParameter adds the parametersValue to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetParametersValueQueryParameter(parametersValue *string) {
-	o.ParametersValueQueryParameter = parametersValue
-}
-
-// WithReturnRecordsQueryParameter adds the returnRecords to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *EmsEventCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *EmsEventCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
-	return o
-}
-
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
-}
-
-// WithSourceQueryParameter adds the source to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithSourceQueryParameter(source *string) *EmsEventCollectionGetParams {
-	o.SetSourceQueryParameter(source)
-	return o
-}
-
-// SetSourceQueryParameter adds the source to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetSourceQueryParameter(source *string) {
-	o.SourceQueryParameter = source
-}
-
-// WithStateQueryParameter adds the state to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithStateQueryParameter(state *string) *EmsEventCollectionGetParams {
-	o.SetStateQueryParameter(state)
-	return o
-}
-
-// SetStateQueryParameter adds the state to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
-}
-
-// WithStatefulQueryParameter adds the stateful to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithStatefulQueryParameter(stateful *bool) *EmsEventCollectionGetParams {
-	o.SetStatefulQueryParameter(stateful)
-	return o
-}
-
-// SetStatefulQueryParameter adds the stateful to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetStatefulQueryParameter(stateful *bool) {
-	o.StatefulQueryParameter = stateful
-}
-
-// WithTimeQueryParameter adds the time to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithTimeQueryParameter(time *string) *EmsEventCollectionGetParams {
-	o.SetTimeQueryParameter(time)
-	return o
-}
-
-// SetTimeQueryParameter adds the time to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetTimeQueryParameter(time *string) {
-	o.TimeQueryParameter = time
-}
-
-// WithUUIDQueryParameter adds the uuid to the ems event collection get params
-func (o *EmsEventCollectionGetParams) WithUUIDQueryParameter(uuid *string) *EmsEventCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
-	return o
-}
-
-// SetUUIDQueryParameter adds the uuid to the ems event collection get params
-func (o *EmsEventCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetTime adds the time to the ems event collection get params
+func (o *EmsEventCollectionGetParams) SetTime(time *string) {
+	o.Time = time
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -583,109 +413,7 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.ActionPossibleActionsActionQueryParameter != nil {
-
-		// query param action.possible_actions.action
-		var qrActionPossibleActionsAction string
-
-		if o.ActionPossibleActionsActionQueryParameter != nil {
-			qrActionPossibleActionsAction = *o.ActionPossibleActionsActionQueryParameter
-		}
-		qActionPossibleActionsAction := qrActionPossibleActionsAction
-		if qActionPossibleActionsAction != "" {
-
-			if err := r.SetQueryParam("action.possible_actions.action", qActionPossibleActionsAction); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ActionPossibleActionsInvokeVerbQueryParameter != nil {
-
-		// query param action.possible_actions.invoke.verb
-		var qrActionPossibleActionsInvokeVerb string
-
-		if o.ActionPossibleActionsInvokeVerbQueryParameter != nil {
-			qrActionPossibleActionsInvokeVerb = *o.ActionPossibleActionsInvokeVerbQueryParameter
-		}
-		qActionPossibleActionsInvokeVerb := qrActionPossibleActionsInvokeVerb
-		if qActionPossibleActionsInvokeVerb != "" {
-
-			if err := r.SetQueryParam("action.possible_actions.invoke.verb", qActionPossibleActionsInvokeVerb); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ActionPossibleActionsParametersFormatQueryParameter != nil {
-
-		// query param action.possible_actions.parameters.format
-		var qrActionPossibleActionsParametersFormat string
-
-		if o.ActionPossibleActionsParametersFormatQueryParameter != nil {
-			qrActionPossibleActionsParametersFormat = *o.ActionPossibleActionsParametersFormatQueryParameter
-		}
-		qActionPossibleActionsParametersFormat := qrActionPossibleActionsParametersFormat
-		if qActionPossibleActionsParametersFormat != "" {
-
-			if err := r.SetQueryParam("action.possible_actions.parameters.format", qActionPossibleActionsParametersFormat); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ActionPossibleActionsParametersNameQueryParameter != nil {
-
-		// query param action.possible_actions.parameters.name
-		var qrActionPossibleActionsParametersName string
-
-		if o.ActionPossibleActionsParametersNameQueryParameter != nil {
-			qrActionPossibleActionsParametersName = *o.ActionPossibleActionsParametersNameQueryParameter
-		}
-		qActionPossibleActionsParametersName := qrActionPossibleActionsParametersName
-		if qActionPossibleActionsParametersName != "" {
-
-			if err := r.SetQueryParam("action.possible_actions.parameters.name", qActionPossibleActionsParametersName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ActionPossibleActionsParametersTypeQueryParameter != nil {
-
-		// query param action.possible_actions.parameters.type
-		var qrActionPossibleActionsParametersType string
-
-		if o.ActionPossibleActionsParametersTypeQueryParameter != nil {
-			qrActionPossibleActionsParametersType = *o.ActionPossibleActionsParametersTypeQueryParameter
-		}
-		qActionPossibleActionsParametersType := qrActionPossibleActionsParametersType
-		if qActionPossibleActionsParametersType != "" {
-
-			if err := r.SetQueryParam("action.possible_actions.parameters.type", qActionPossibleActionsParametersType); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.CreationTimeQueryParameter != nil {
-
-		// query param creation_time
-		var qrCreationTime string
-
-		if o.CreationTimeQueryParameter != nil {
-			qrCreationTime = *o.CreationTimeQueryParameter
-		}
-		qCreationTime := qrCreationTime
-		if qCreationTime != "" {
-
-			if err := r.SetQueryParam("creation_time", qCreationTime); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -696,13 +424,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.FilterNameQueryParameter != nil {
+	if o.FilterName != nil {
 
 		// query param filter.name
 		var qrFilterName string
 
-		if o.FilterNameQueryParameter != nil {
-			qrFilterName = *o.FilterNameQueryParameter
+		if o.FilterName != nil {
+			qrFilterName = *o.FilterName
 		}
 		qFilterName := qrFilterName
 		if qFilterName != "" {
@@ -713,13 +441,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -730,30 +458,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.LastUpdateTimeQueryParameter != nil {
-
-		// query param last_update_time
-		var qrLastUpdateTime string
-
-		if o.LastUpdateTimeQueryParameter != nil {
-			qrLastUpdateTime = *o.LastUpdateTimeQueryParameter
-		}
-		qLastUpdateTime := qrLastUpdateTime
-		if qLastUpdateTime != "" {
-
-			if err := r.SetQueryParam("last_update_time", qLastUpdateTime); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.LogMessageQueryParameter != nil {
+	if o.LogMessage != nil {
 
 		// query param log_message
 		var qrLogMessage string
 
-		if o.LogMessageQueryParameter != nil {
-			qrLogMessage = *o.LogMessageQueryParameter
+		if o.LogMessage != nil {
+			qrLogMessage = *o.LogMessage
 		}
 		qLogMessage := qrLogMessage
 		if qLogMessage != "" {
@@ -764,13 +475,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -781,13 +492,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MessageNameQueryParameter != nil {
+	if o.MessageName != nil {
 
 		// query param message.name
 		var qrMessageName string
 
-		if o.MessageNameQueryParameter != nil {
-			qrMessageName = *o.MessageNameQueryParameter
+		if o.MessageName != nil {
+			qrMessageName = *o.MessageName
 		}
 		qMessageName := qrMessageName
 		if qMessageName != "" {
@@ -798,13 +509,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MessageSeverityQueryParameter != nil {
+	if o.MessageSeverity != nil {
 
 		// query param message.severity
 		var qrMessageSeverity string
 
-		if o.MessageSeverityQueryParameter != nil {
-			qrMessageSeverity = *o.MessageSeverityQueryParameter
+		if o.MessageSeverity != nil {
+			qrMessageSeverity = *o.MessageSeverity
 		}
 		qMessageSeverity := qrMessageSeverity
 		if qMessageSeverity != "" {
@@ -815,13 +526,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeNameQueryParameter != nil {
+	if o.NodeName != nil {
 
 		// query param node.name
 		var qrNodeName string
 
-		if o.NodeNameQueryParameter != nil {
-			qrNodeName = *o.NodeNameQueryParameter
+		if o.NodeName != nil {
+			qrNodeName = *o.NodeName
 		}
 		qNodeName := qrNodeName
 		if qNodeName != "" {
@@ -832,13 +543,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.NodeUUIDQueryParameter != nil {
+	if o.NodeUUID != nil {
 
 		// query param node.uuid
 		var qrNodeUUID string
 
-		if o.NodeUUIDQueryParameter != nil {
-			qrNodeUUID = *o.NodeUUIDQueryParameter
+		if o.NodeUUID != nil {
+			qrNodeUUID = *o.NodeUUID
 		}
 		qNodeUUID := qrNodeUUID
 		if qNodeUUID != "" {
@@ -849,7 +560,7 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -860,13 +571,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ParametersNameQueryParameter != nil {
+	if o.ParametersName != nil {
 
 		// query param parameters.name
 		var qrParametersName string
 
-		if o.ParametersNameQueryParameter != nil {
-			qrParametersName = *o.ParametersNameQueryParameter
+		if o.ParametersName != nil {
+			qrParametersName = *o.ParametersName
 		}
 		qParametersName := qrParametersName
 		if qParametersName != "" {
@@ -877,13 +588,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ParametersValueQueryParameter != nil {
+	if o.ParametersValue != nil {
 
 		// query param parameters.value
 		var qrParametersValue string
 
-		if o.ParametersValueQueryParameter != nil {
-			qrParametersValue = *o.ParametersValueQueryParameter
+		if o.ParametersValue != nil {
+			qrParametersValue = *o.ParametersValue
 		}
 		qParametersValue := qrParametersValue
 		if qParametersValue != "" {
@@ -894,13 +605,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -911,13 +622,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -928,13 +639,13 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.SourceQueryParameter != nil {
+	if o.Source != nil {
 
 		// query param source
 		var qrSource string
 
-		if o.SourceQueryParameter != nil {
-			qrSource = *o.SourceQueryParameter
+		if o.Source != nil {
+			qrSource = *o.Source
 		}
 		qSource := qrSource
 		if qSource != "" {
@@ -945,69 +656,18 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.StateQueryParameter != nil {
-
-		// query param state
-		var qrState string
-
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
-		}
-		qState := qrState
-		if qState != "" {
-
-			if err := r.SetQueryParam("state", qState); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.StatefulQueryParameter != nil {
-
-		// query param stateful
-		var qrStateful bool
-
-		if o.StatefulQueryParameter != nil {
-			qrStateful = *o.StatefulQueryParameter
-		}
-		qStateful := swag.FormatBool(qrStateful)
-		if qStateful != "" {
-
-			if err := r.SetQueryParam("stateful", qStateful); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.TimeQueryParameter != nil {
+	if o.Time != nil {
 
 		// query param time
 		var qrTime string
 
-		if o.TimeQueryParameter != nil {
-			qrTime = *o.TimeQueryParameter
+		if o.Time != nil {
+			qrTime = *o.Time
 		}
 		qTime := qrTime
 		if qTime != "" {
 
 			if err := r.SetQueryParam("time", qTime); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.UUIDQueryParameter != nil {
-
-		// query param uuid
-		var qrUUID string
-
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
-		}
-		qUUID := qrUUID
-		if qUUID != "" {
-
-			if err := r.SetQueryParam("uuid", qUUID); err != nil {
 				return err
 			}
 		}
@@ -1021,7 +681,7 @@ func (o *EmsEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamEmsEventCollectionGet binds the parameter fields
 func (o *EmsEventCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1038,7 +698,7 @@ func (o *EmsEventCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamEmsEventCollectionGet binds the parameter order_by
 func (o *EmsEventCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

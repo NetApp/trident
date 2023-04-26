@@ -66,7 +66,7 @@ type FcpServiceDeleteParams struct {
 	   The unique identifier of the SVM for which to delete the FC Protocol service.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *FcpServiceDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fcp service delete params
-func (o *FcpServiceDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *FcpServiceDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fcp service delete params
+func (o *FcpServiceDeleteParams) WithSvmUUID(svmUUID string) *FcpServiceDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fcp service delete params
-func (o *FcpServiceDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fcp service delete params
+func (o *FcpServiceDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -141,7 +141,7 @@ func (o *FcpServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

@@ -31,23 +31,16 @@ type FileDirectorySecurity struct {
 	// Enum: [file_directory slag]
 	AccessControl *string `json:"access_control,omitempty"`
 
-	// A discretionary access security list (DACL) identifies the trustees that are allowed or denied access
-	// to a securable object. When a process tries to access a securable
-	// object, the system checks the access control entries (ACEs) in the
-	// object's DACL to determine whether to grant access to it.
-	//
-	Acls []*ACL `json:"acls,omitempty"`
-
 	// Specifies the control flags in the SD. It is a Hexadecimal Value.
 	//
 	// Example: 8014
-	ControlFlags string `json:"control_flags,omitempty"`
+	ControlFlags *string `json:"control_flags,omitempty"`
 
 	// Specifies the file attributes on this file or directory.
 	//
 	// Example: 10
 	// Read Only: true
-	DosAttributes string `json:"dos_attributes,omitempty"`
+	DosAttributes *string `json:"dos_attributes,omitempty"`
 
 	// Specifies the effective style of the SD. The following values are supported:
 	// * unix - UNIX style
@@ -58,36 +51,43 @@ type FileDirectorySecurity struct {
 	// Example: mixed
 	// Read Only: true
 	// Enum: [unix ntfs mixed unified]
-	EffectiveStyle string `json:"effective_style,omitempty"`
+	EffectiveStyle *string `json:"effective_style,omitempty"`
+
+	// A discretionary access security list (DACL) identifies the trustees that are allowed or denied access
+	// to a securable object. When a process tries to access a securable
+	// object, the system checks the access control entries (ACEs) in the
+	// object's DACL to determine whether to grant access to it.
+	//
+	FileDirectorySecurityInlineAcls []*ACL `json:"acls,omitempty"`
+
+	// Specifies that permissions on this file or directory cannot be replaced.
+	//
+	// Example: ["/dir1/dir2/","/parent/dir3"]
+	FileDirectorySecurityInlineIgnorePaths []*string `json:"ignore_paths,omitempty"`
 
 	// Specifies the owner's primary group.
 	// You can specify the owner group using either a group name or SID.
 	//
 	// Example: S-1-5-21-2233347455-2266964949-1780268902-69700
-	Group string `json:"group,omitempty"`
+	Group *string `json:"group,omitempty"`
 
 	// Specifies group ID on this file or directory.
 	//
 	// Example: 2
 	// Read Only: true
-	GroupID string `json:"group_id,omitempty"`
-
-	// Specifies that permissions on this file or directory cannot be replaced.
-	//
-	// Example: ["/dir1/dir2/","/parent/dir3"]
-	IgnorePaths []string `json:"ignore_paths,omitempty"`
+	GroupID *string `json:"group_id,omitempty"`
 
 	// Specifies the File Inode number.
 	//
 	// Example: 64
 	// Read Only: true
-	Inode int64 `json:"inode,omitempty"`
+	Inode *int64 `json:"inode,omitempty"`
 
 	// Specifies the mode bits on this file or directory.
 	//
 	// Example: 777
 	// Read Only: true
-	ModeBits int64 `json:"mode_bits,omitempty"`
+	ModeBits *int64 `json:"mode_bits,omitempty"`
 
 	// Specifies the owner of the SD.
 	// You can specify the owner using either a user name or security identifier (SID).
@@ -97,7 +97,7 @@ type FileDirectorySecurity struct {
 	// of the object or objects to which the SD is applied.
 	//
 	// Example: S-1-5-21-2233347455-2266964949-1780268902-69304
-	Owner string `json:"owner,omitempty"`
+	Owner *string `json:"owner,omitempty"`
 
 	// Specifies how to propagate security settings to child subfolders and files.
 	// This setting determines how child files/folders contained within a parent
@@ -119,25 +119,25 @@ type FileDirectorySecurity struct {
 	// Example: ntfs
 	// Read Only: true
 	// Enum: [unix ntfs mixed unified]
-	SecurityStyle string `json:"security_style,omitempty"`
+	SecurityStyle *string `json:"security_style,omitempty"`
 
 	// Specifies the textual format of file attributes on this file or directory.
 	//
 	// Example: ---A----
 	// Read Only: true
-	TextDosAttr string `json:"text_dos_attr,omitempty"`
+	TextDosAttr *string `json:"text_dos_attr,omitempty"`
 
 	// Specifies the textual format of mode bits on this file or directory.
 	//
 	// Example: rwxrwxrwx
 	// Read Only: true
-	TextModeBits string `json:"text_mode_bits,omitempty"`
+	TextModeBits *string `json:"text_mode_bits,omitempty"`
 
 	// Specifies user ID of this file or directory.
 	//
 	// Example: 10
 	// Read Only: true
-	UserID string `json:"user_id,omitempty"`
+	UserID *string `json:"user_id,omitempty"`
 }
 
 // Validate validates this file directory security
@@ -148,11 +148,11 @@ func (m *FileDirectorySecurity) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAcls(formats); err != nil {
+	if err := m.validateEffectiveStyle(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateEffectiveStyle(formats); err != nil {
+	if err := m.validateFileDirectorySecurityInlineAcls(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -221,30 +221,6 @@ func (m *FileDirectorySecurity) validateAccessControl(formats strfmt.Registry) e
 	// value enum
 	if err := m.validateAccessControlEnum("access_control", "body", *m.AccessControl); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *FileDirectorySecurity) validateAcls(formats strfmt.Registry) error {
-	if swag.IsZero(m.Acls) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Acls); i++ {
-		if swag.IsZero(m.Acls[i]) { // not required
-			continue
-		}
-
-		if m.Acls[i] != nil {
-			if err := m.Acls[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("acls" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -319,8 +295,32 @@ func (m *FileDirectorySecurity) validateEffectiveStyle(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateEffectiveStyleEnum("effective_style", "body", m.EffectiveStyle); err != nil {
+	if err := m.validateEffectiveStyleEnum("effective_style", "body", *m.EffectiveStyle); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *FileDirectorySecurity) validateFileDirectorySecurityInlineAcls(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileDirectorySecurityInlineAcls) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FileDirectorySecurityInlineAcls); i++ {
+		if swag.IsZero(m.FileDirectorySecurityInlineAcls[i]) { // not required
+			continue
+		}
+
+		if m.FileDirectorySecurityInlineAcls[i] != nil {
+			if err := m.FileDirectorySecurityInlineAcls[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("acls" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -451,7 +451,7 @@ func (m *FileDirectorySecurity) validateSecurityStyle(formats strfmt.Registry) e
 	}
 
 	// value enum
-	if err := m.validateSecurityStyleEnum("security_style", "body", m.SecurityStyle); err != nil {
+	if err := m.validateSecurityStyleEnum("security_style", "body", *m.SecurityStyle); err != nil {
 		return err
 	}
 
@@ -462,15 +462,15 @@ func (m *FileDirectorySecurity) validateSecurityStyle(formats strfmt.Registry) e
 func (m *FileDirectorySecurity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateAcls(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateDosAttributes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateEffectiveStyle(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileDirectorySecurityInlineAcls(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -508,12 +508,30 @@ func (m *FileDirectorySecurity) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *FileDirectorySecurity) contextValidateAcls(ctx context.Context, formats strfmt.Registry) error {
+func (m *FileDirectorySecurity) contextValidateDosAttributes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Acls); i++ {
+	if err := validate.ReadOnly(ctx, "dos_attributes", "body", m.DosAttributes); err != nil {
+		return err
+	}
 
-		if m.Acls[i] != nil {
-			if err := m.Acls[i].ContextValidate(ctx, formats); err != nil {
+	return nil
+}
+
+func (m *FileDirectorySecurity) contextValidateEffectiveStyle(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "effective_style", "body", m.EffectiveStyle); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FileDirectorySecurity) contextValidateFileDirectorySecurityInlineAcls(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FileDirectorySecurityInlineAcls); i++ {
+
+		if m.FileDirectorySecurityInlineAcls[i] != nil {
+			if err := m.FileDirectorySecurityInlineAcls[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("acls" + "." + strconv.Itoa(i))
 				}
@@ -526,27 +544,9 @@ func (m *FileDirectorySecurity) contextValidateAcls(ctx context.Context, formats
 	return nil
 }
 
-func (m *FileDirectorySecurity) contextValidateDosAttributes(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "dos_attributes", "body", string(m.DosAttributes)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *FileDirectorySecurity) contextValidateEffectiveStyle(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "effective_style", "body", string(m.EffectiveStyle)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *FileDirectorySecurity) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "group_id", "body", string(m.GroupID)); err != nil {
+	if err := validate.ReadOnly(ctx, "group_id", "body", m.GroupID); err != nil {
 		return err
 	}
 
@@ -555,7 +555,7 @@ func (m *FileDirectorySecurity) contextValidateGroupID(ctx context.Context, form
 
 func (m *FileDirectorySecurity) contextValidateInode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "inode", "body", int64(m.Inode)); err != nil {
+	if err := validate.ReadOnly(ctx, "inode", "body", m.Inode); err != nil {
 		return err
 	}
 
@@ -564,7 +564,7 @@ func (m *FileDirectorySecurity) contextValidateInode(ctx context.Context, format
 
 func (m *FileDirectorySecurity) contextValidateModeBits(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "mode_bits", "body", int64(m.ModeBits)); err != nil {
+	if err := validate.ReadOnly(ctx, "mode_bits", "body", m.ModeBits); err != nil {
 		return err
 	}
 
@@ -573,7 +573,7 @@ func (m *FileDirectorySecurity) contextValidateModeBits(ctx context.Context, for
 
 func (m *FileDirectorySecurity) contextValidateSecurityStyle(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "security_style", "body", string(m.SecurityStyle)); err != nil {
+	if err := validate.ReadOnly(ctx, "security_style", "body", m.SecurityStyle); err != nil {
 		return err
 	}
 
@@ -582,7 +582,7 @@ func (m *FileDirectorySecurity) contextValidateSecurityStyle(ctx context.Context
 
 func (m *FileDirectorySecurity) contextValidateTextDosAttr(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "text_dos_attr", "body", string(m.TextDosAttr)); err != nil {
+	if err := validate.ReadOnly(ctx, "text_dos_attr", "body", m.TextDosAttr); err != nil {
 		return err
 	}
 
@@ -591,7 +591,7 @@ func (m *FileDirectorySecurity) contextValidateTextDosAttr(ctx context.Context, 
 
 func (m *FileDirectorySecurity) contextValidateTextModeBits(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "text_mode_bits", "body", string(m.TextModeBits)); err != nil {
+	if err := validate.ReadOnly(ctx, "text_mode_bits", "body", m.TextModeBits); err != nil {
 		return err
 	}
 
@@ -600,7 +600,7 @@ func (m *FileDirectorySecurity) contextValidateTextModeBits(ctx context.Context,
 
 func (m *FileDirectorySecurity) contextValidateUserID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "user_id", "body", string(m.UserID)); err != nil {
+	if err := validate.ReadOnly(ctx, "user_id", "body", m.UserID); err != nil {
 		return err
 	}
 

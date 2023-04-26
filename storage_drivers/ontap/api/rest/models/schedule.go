@@ -22,41 +22,41 @@ import (
 type Schedule struct {
 
 	// links
-	Links *ScheduleLinks `json:"_links,omitempty"`
+	Links *ScheduleInlineLinks `json:"_links,omitempty"`
 
 	// cluster
-	Cluster *ScheduleCluster `json:"cluster,omitempty"`
+	Cluster *ScheduleInlineCluster `json:"cluster,omitempty"`
 
 	// cron
-	Cron *ScheduleCron `json:"cron,omitempty"`
+	Cron *ScheduleInlineCron `json:"cron,omitempty"`
 
 	// An ISO-8601 duration formatted string.
 	// Example: P1DT2H3M4S
-	Interval string `json:"interval,omitempty"`
+	Interval *string `json:"interval,omitempty"`
 
 	// Schedule name. Required in the URL or POST body.
 	// Max Length: 256
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// If the schedule is owned by a data SVM, then the scope is set to svm. Otherwise it will be set to cluster.
 	// Read Only: true
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// svm
-	Svm *ScheduleSvm `json:"svm,omitempty"`
+	Svm *ScheduleInlineSvm `json:"svm,omitempty"`
 
 	// Schedule type
 	// Read Only: true
 	// Enum: [cron interval]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Job schedule UUID
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
 // Validate validates this schedule
@@ -157,11 +157,11 @@ func (m *Schedule) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
 		return err
 	}
 
@@ -217,7 +217,7 @@ func (m *Schedule) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -290,7 +290,7 @@ func (m *Schedule) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -391,7 +391,7 @@ func (m *Schedule) contextValidateCron(ctx context.Context, formats strfmt.Regis
 
 func (m *Schedule) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -414,7 +414,7 @@ func (m *Schedule) contextValidateSvm(ctx context.Context, formats strfmt.Regist
 
 func (m *Schedule) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+	if err := validate.ReadOnly(ctx, "type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -423,7 +423,7 @@ func (m *Schedule) contextValidateType(ctx context.Context, formats strfmt.Regis
 
 func (m *Schedule) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -448,23 +448,23 @@ func (m *Schedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleCluster The cluster that owns the schedule. Defaults to the local cluster.
+// ScheduleInlineCluster The cluster that owns the schedule. Defaults to the local cluster.
 //
-// swagger:model ScheduleCluster
-type ScheduleCluster struct {
+// swagger:model schedule_inline_cluster
+type ScheduleInlineCluster struct {
 
 	// Cluster name
 	// Example: cluster1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Cluster UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 }
 
-// Validate validates this schedule cluster
-func (m *ScheduleCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule inline cluster
+func (m *ScheduleInlineCluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateUUID(formats); err != nil {
@@ -477,7 +477,7 @@ func (m *ScheduleCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleCluster) validateUUID(formats strfmt.Registry) error {
+func (m *ScheduleInlineCluster) validateUUID(formats strfmt.Registry) error {
 	if swag.IsZero(m.UUID) { // not required
 		return nil
 	}
@@ -489,13 +489,13 @@ func (m *ScheduleCluster) validateUUID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this schedule cluster based on context it is used
-func (m *ScheduleCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this schedule inline cluster based on context it is used
+func (m *ScheduleInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleCluster) MarshalBinary() ([]byte, error) {
+func (m *ScheduleInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -503,8 +503,8 @@ func (m *ScheduleCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleCluster) UnmarshalBinary(b []byte) error {
-	var res ScheduleCluster
+func (m *ScheduleInlineCluster) UnmarshalBinary(b []byte) error {
+	var res ScheduleInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -512,13 +512,13 @@ func (m *ScheduleCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleCron Details for schedules of type cron.
+// ScheduleInlineCron Details for schedules of type cron.
 //
-// swagger:model ScheduleCron
-type ScheduleCron struct {
+// swagger:model schedule_inline_cron
+type ScheduleInlineCron struct {
 
 	// The days of the month the schedule runs. Leave empty for all.
-	Days []int64 `json:"days,omitempty"`
+	Days []*int64 `json:"days,omitempty"`
 
 	// The hours of the day the schedule runs. Leave empty for all.
 	Hours []*int64 `json:"hours,omitempty"`
@@ -527,14 +527,14 @@ type ScheduleCron struct {
 	Minutes []*int64 `json:"minutes,omitempty"`
 
 	// The months of the year the schedule runs. Leave empty for all.
-	Months []int64 `json:"months,omitempty"`
+	Months []*int64 `json:"months,omitempty"`
 
 	// The weekdays the schedule runs. Leave empty for all.
 	Weekdays []*int64 `json:"weekdays,omitempty"`
 }
 
-// Validate validates this schedule cron
-func (m *ScheduleCron) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule inline cron
+func (m *ScheduleInlineCron) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDays(formats); err != nil {
@@ -563,18 +563,21 @@ func (m *ScheduleCron) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleCron) validateDays(formats strfmt.Registry) error {
+func (m *ScheduleInlineCron) validateDays(formats strfmt.Registry) error {
 	if swag.IsZero(m.Days) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.Days); i++ {
+		if swag.IsZero(m.Days[i]) { // not required
+			continue
+		}
 
-		if err := validate.MinimumInt("cron"+"."+"days"+"."+strconv.Itoa(i), "body", m.Days[i], 1, false); err != nil {
+		if err := validate.MinimumInt("cron"+"."+"days"+"."+strconv.Itoa(i), "body", *m.Days[i], 1, false); err != nil {
 			return err
 		}
 
-		if err := validate.MaximumInt("cron"+"."+"days"+"."+strconv.Itoa(i), "body", m.Days[i], 31, false); err != nil {
+		if err := validate.MaximumInt("cron"+"."+"days"+"."+strconv.Itoa(i), "body", *m.Days[i], 31, false); err != nil {
 			return err
 		}
 
@@ -583,7 +586,7 @@ func (m *ScheduleCron) validateDays(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleCron) validateHours(formats strfmt.Registry) error {
+func (m *ScheduleInlineCron) validateHours(formats strfmt.Registry) error {
 	if swag.IsZero(m.Hours) { // not required
 		return nil
 	}
@@ -606,7 +609,7 @@ func (m *ScheduleCron) validateHours(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleCron) validateMinutes(formats strfmt.Registry) error {
+func (m *ScheduleInlineCron) validateMinutes(formats strfmt.Registry) error {
 	if swag.IsZero(m.Minutes) { // not required
 		return nil
 	}
@@ -629,18 +632,21 @@ func (m *ScheduleCron) validateMinutes(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleCron) validateMonths(formats strfmt.Registry) error {
+func (m *ScheduleInlineCron) validateMonths(formats strfmt.Registry) error {
 	if swag.IsZero(m.Months) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.Months); i++ {
+		if swag.IsZero(m.Months[i]) { // not required
+			continue
+		}
 
-		if err := validate.MinimumInt("cron"+"."+"months"+"."+strconv.Itoa(i), "body", m.Months[i], 1, false); err != nil {
+		if err := validate.MinimumInt("cron"+"."+"months"+"."+strconv.Itoa(i), "body", *m.Months[i], 1, false); err != nil {
 			return err
 		}
 
-		if err := validate.MaximumInt("cron"+"."+"months"+"."+strconv.Itoa(i), "body", m.Months[i], 12, false); err != nil {
+		if err := validate.MaximumInt("cron"+"."+"months"+"."+strconv.Itoa(i), "body", *m.Months[i], 12, false); err != nil {
 			return err
 		}
 
@@ -649,7 +655,7 @@ func (m *ScheduleCron) validateMonths(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleCron) validateWeekdays(formats strfmt.Registry) error {
+func (m *ScheduleInlineCron) validateWeekdays(formats strfmt.Registry) error {
 	if swag.IsZero(m.Weekdays) { // not required
 		return nil
 	}
@@ -672,13 +678,13 @@ func (m *ScheduleCron) validateWeekdays(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this schedule cron based on context it is used
-func (m *ScheduleCron) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this schedule inline cron based on context it is used
+func (m *ScheduleInlineCron) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleCron) MarshalBinary() ([]byte, error) {
+func (m *ScheduleInlineCron) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -686,8 +692,8 @@ func (m *ScheduleCron) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleCron) UnmarshalBinary(b []byte) error {
-	var res ScheduleCron
+func (m *ScheduleInlineCron) UnmarshalBinary(b []byte) error {
+	var res ScheduleInlineCron
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -695,17 +701,17 @@ func (m *ScheduleCron) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleLinks schedule links
+// ScheduleInlineLinks schedule inline links
 //
-// swagger:model ScheduleLinks
-type ScheduleLinks struct {
+// swagger:model schedule_inline__links
+type ScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this schedule links
-func (m *ScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule inline links
+func (m *ScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -718,7 +724,7 @@ func (m *ScheduleLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -735,8 +741,8 @@ func (m *ScheduleLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this schedule links based on the context it is used
-func (m *ScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this schedule inline links based on the context it is used
+func (m *ScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -749,7 +755,7 @@ func (m *ScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *ScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -764,7 +770,7 @@ func (m *ScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *ScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -772,8 +778,8 @@ func (m *ScheduleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res ScheduleLinks
+func (m *ScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -781,27 +787,27 @@ func (m *ScheduleLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleSvm schedule svm
+// ScheduleInlineSvm schedule inline svm
 //
-// swagger:model ScheduleSvm
-type ScheduleSvm struct {
+// swagger:model schedule_inline_svm
+type ScheduleInlineSvm struct {
 
 	// links
-	Links *ScheduleSvmLinks `json:"_links,omitempty"`
+	Links *ScheduleInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this schedule svm
-func (m *ScheduleSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule inline svm
+func (m *ScheduleInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -814,7 +820,7 @@ func (m *ScheduleSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleSvm) validateLinks(formats strfmt.Registry) error {
+func (m *ScheduleInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -831,8 +837,8 @@ func (m *ScheduleSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this schedule svm based on the context it is used
-func (m *ScheduleSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this schedule inline svm based on the context it is used
+func (m *ScheduleInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -845,7 +851,7 @@ func (m *ScheduleSvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *ScheduleSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -860,7 +866,7 @@ func (m *ScheduleSvm) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleSvm) MarshalBinary() ([]byte, error) {
+func (m *ScheduleInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -868,8 +874,8 @@ func (m *ScheduleSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleSvm) UnmarshalBinary(b []byte) error {
-	var res ScheduleSvm
+func (m *ScheduleInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ScheduleInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -877,17 +883,17 @@ func (m *ScheduleSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ScheduleSvmLinks schedule svm links
+// ScheduleInlineSvmInlineLinks schedule inline svm inline links
 //
-// swagger:model ScheduleSvmLinks
-type ScheduleSvmLinks struct {
+// swagger:model schedule_inline_svm_inline__links
+type ScheduleInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this schedule svm links
-func (m *ScheduleSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this schedule inline svm inline links
+func (m *ScheduleInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -900,7 +906,7 @@ func (m *ScheduleSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ScheduleSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ScheduleInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -917,8 +923,8 @@ func (m *ScheduleSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this schedule svm links based on the context it is used
-func (m *ScheduleSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this schedule inline svm inline links based on the context it is used
+func (m *ScheduleInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -931,7 +937,7 @@ func (m *ScheduleSvmLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ScheduleSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ScheduleInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -946,7 +952,7 @@ func (m *ScheduleSvmLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ScheduleSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *ScheduleInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -954,8 +960,8 @@ func (m *ScheduleSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScheduleSvmLinks) UnmarshalBinary(b []byte) error {
-	var res ScheduleSvmLinks
+func (m *ScheduleInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ScheduleInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

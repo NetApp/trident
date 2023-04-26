@@ -21,15 +21,15 @@ type SpaceEfficiency struct {
 
 	// Logical used
 	// Read Only: true
-	LogicalUsed int64 `json:"logical_used,omitempty"`
+	LogicalUsed *int64 `json:"logical_used,omitempty"`
 
 	// Data reduction ratio (logical_used / used)
 	// Read Only: true
-	Ratio float64 `json:"ratio,omitempty"`
+	Ratio *float64 `json:"ratio,omitempty"`
 
 	// Space saved by storage efficiencies (logical_used - used)
 	// Read Only: true
-	Savings int64 `json:"savings,omitempty"`
+	Savings *int64 `json:"savings,omitempty"`
 }
 
 // Validate validates this space efficiency
@@ -61,7 +61,7 @@ func (m *SpaceEfficiency) ContextValidate(ctx context.Context, formats strfmt.Re
 
 func (m *SpaceEfficiency) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "logical_used", "body", int64(m.LogicalUsed)); err != nil {
+	if err := validate.ReadOnly(ctx, "logical_used", "body", m.LogicalUsed); err != nil {
 		return err
 	}
 
@@ -70,7 +70,7 @@ func (m *SpaceEfficiency) contextValidateLogicalUsed(ctx context.Context, format
 
 func (m *SpaceEfficiency) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "ratio", "body", float64(m.Ratio)); err != nil {
+	if err := validate.ReadOnly(ctx, "ratio", "body", m.Ratio); err != nil {
 		return err
 	}
 
@@ -79,7 +79,7 @@ func (m *SpaceEfficiency) contextValidateRatio(ctx context.Context, formats strf
 
 func (m *SpaceEfficiency) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "savings", "body", int64(m.Savings)); err != nil {
+	if err := validate.ReadOnly(ctx, "savings", "body", m.Savings); err != nil {
 		return err
 	}
 

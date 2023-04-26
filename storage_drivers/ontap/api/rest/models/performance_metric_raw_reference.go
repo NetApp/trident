@@ -21,19 +21,19 @@ import (
 type PerformanceMetricRawReference struct {
 
 	// iops raw
-	IopsRaw *PerformanceMetricRawReferenceIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *PerformanceMetricRawReferenceInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *PerformanceMetricRawReferenceLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *PerformanceMetricRawReferenceInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *PerformanceMetricRawReferenceThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *PerformanceMetricRawReferenceInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -245,7 +245,7 @@ func (m *PerformanceMetricRawReference) validateStatus(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -341,7 +341,7 @@ func (m *PerformanceMetricRawReference) contextValidateLatencyRaw(ctx context.Co
 
 func (m *PerformanceMetricRawReference) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -389,34 +389,34 @@ func (m *PerformanceMetricRawReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricRawReferenceIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
+// PerformanceMetricRawReferenceInlineIopsRaw The number of I/O operations observed at the storage object. This can be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model PerformanceMetricRawReferenceIopsRaw
-type PerformanceMetricRawReferenceIopsRaw struct {
+// swagger:model performance_metric_raw_reference_inline_iops_raw
+type PerformanceMetricRawReferenceInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric raw reference iops raw
-func (m *PerformanceMetricRawReferenceIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric raw reference inline iops raw
+func (m *PerformanceMetricRawReferenceInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric raw reference iops raw based on the context it is used
-func (m *PerformanceMetricRawReferenceIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric raw reference inline iops raw based on the context it is used
+func (m *PerformanceMetricRawReferenceInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -426,7 +426,7 @@ func (m *PerformanceMetricRawReferenceIopsRaw) ContextValidate(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricRawReferenceIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricRawReferenceInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -434,8 +434,8 @@ func (m *PerformanceMetricRawReferenceIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricRawReferenceIopsRaw) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricRawReferenceIopsRaw
+func (m *PerformanceMetricRawReferenceInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricRawReferenceInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -443,34 +443,34 @@ func (m *PerformanceMetricRawReferenceIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceMetricRawReferenceLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// PerformanceMetricRawReferenceInlineLatencyRaw The raw latency in microseconds observed at the storage object. This can be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model PerformanceMetricRawReferenceLatencyRaw
-type PerformanceMetricRawReferenceLatencyRaw struct {
+// swagger:model performance_metric_raw_reference_inline_latency_raw
+type PerformanceMetricRawReferenceInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric raw reference latency raw
-func (m *PerformanceMetricRawReferenceLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric raw reference inline latency raw
+func (m *PerformanceMetricRawReferenceInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric raw reference latency raw based on the context it is used
-func (m *PerformanceMetricRawReferenceLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric raw reference inline latency raw based on the context it is used
+func (m *PerformanceMetricRawReferenceInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -480,7 +480,7 @@ func (m *PerformanceMetricRawReferenceLatencyRaw) ContextValidate(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricRawReferenceLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricRawReferenceInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -488,8 +488,8 @@ func (m *PerformanceMetricRawReferenceLatencyRaw) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricRawReferenceLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricRawReferenceLatencyRaw
+func (m *PerformanceMetricRawReferenceInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricRawReferenceInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -497,34 +497,34 @@ func (m *PerformanceMetricRawReferenceLatencyRaw) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// PerformanceMetricRawReferenceThroughputRaw Throughput bytes observed at the storage object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// PerformanceMetricRawReferenceInlineThroughputRaw Throughput bytes observed at the storage object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model PerformanceMetricRawReferenceThroughputRaw
-type PerformanceMetricRawReferenceThroughputRaw struct {
+// swagger:model performance_metric_raw_reference_inline_throughput_raw
+type PerformanceMetricRawReferenceInlineThroughputRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance metric raw reference throughput raw
-func (m *PerformanceMetricRawReferenceThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this performance metric raw reference inline throughput raw
+func (m *PerformanceMetricRawReferenceInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance metric raw reference throughput raw based on the context it is used
-func (m *PerformanceMetricRawReferenceThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance metric raw reference inline throughput raw based on the context it is used
+func (m *PerformanceMetricRawReferenceInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -534,7 +534,7 @@ func (m *PerformanceMetricRawReferenceThroughputRaw) ContextValidate(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceMetricRawReferenceThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *PerformanceMetricRawReferenceInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -542,8 +542,8 @@ func (m *PerformanceMetricRawReferenceThroughputRaw) MarshalBinary() ([]byte, er
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceMetricRawReferenceThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res PerformanceMetricRawReferenceThroughputRaw
+func (m *PerformanceMetricRawReferenceInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res PerformanceMetricRawReferenceInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

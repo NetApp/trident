@@ -19,16 +19,16 @@ import (
 type NvmeNamespaceReference struct {
 
 	// links
-	Links *NvmeNamespaceReferenceLinks `json:"_links,omitempty"`
+	Links *NvmeNamespaceReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The fully qualified path name of the NVMe namespace composed from the volume name, qtree name and base name of the namespace.
 	//
 	// Example: /vol/volume1/namespace1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the NVMe namespace.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this nvme namespace reference
@@ -108,17 +108,17 @@ func (m *NvmeNamespaceReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeNamespaceReferenceLinks nvme namespace reference links
+// NvmeNamespaceReferenceInlineLinks nvme namespace reference inline links
 //
-// swagger:model NvmeNamespaceReferenceLinks
-type NvmeNamespaceReferenceLinks struct {
+// swagger:model nvme_namespace_reference_inline__links
+type NvmeNamespaceReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this nvme namespace reference links
-func (m *NvmeNamespaceReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this nvme namespace reference inline links
+func (m *NvmeNamespaceReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -131,7 +131,7 @@ func (m *NvmeNamespaceReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NvmeNamespaceReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NvmeNamespaceReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -148,8 +148,8 @@ func (m *NvmeNamespaceReferenceLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this nvme namespace reference links based on the context it is used
-func (m *NvmeNamespaceReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this nvme namespace reference inline links based on the context it is used
+func (m *NvmeNamespaceReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -162,7 +162,7 @@ func (m *NvmeNamespaceReferenceLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *NvmeNamespaceReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NvmeNamespaceReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -177,7 +177,7 @@ func (m *NvmeNamespaceReferenceLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *NvmeNamespaceReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *NvmeNamespaceReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -185,8 +185,8 @@ func (m *NvmeNamespaceReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NvmeNamespaceReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res NvmeNamespaceReferenceLinks
+func (m *NvmeNamespaceReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -18,13 +18,13 @@ import (
 type SnapmirrorError struct {
 
 	// Error code
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Error message
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Parameters for the error message
-	Parameters []string `json:"parameters,omitempty"`
+	SnapmirrorErrorInlineParameters []*string `json:"parameters,omitempty"`
 }
 
 // Validate validates this snapmirror error

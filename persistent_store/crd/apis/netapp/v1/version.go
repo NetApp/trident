@@ -63,6 +63,10 @@ func (in *TridentVersion) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
 }
 
+func (in *TridentVersion) GetKind() string {
+	return "TridentVersion"
+}
+
 func (in *TridentVersion) GetFinalizers() []string {
 	if in.ObjectMeta.Finalizers != nil {
 		return in.ObjectMeta.Finalizers

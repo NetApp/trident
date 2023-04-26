@@ -70,7 +70,7 @@ type LunGetParams struct {
 
 	     Format: int64
 	*/
-	DataOffsetQueryParameter *int64
+	DataOffset *int64
 
 	/* DataSize.
 
@@ -80,20 +80,20 @@ type LunGetParams struct {
 
 	     Format: int64
 	*/
-	DataSizeQueryParameter *int64
+	DataSize *int64
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   The unique identifier of the LUN to retrieve.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -148,48 +148,48 @@ func (o *LunGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDataOffsetQueryParameter adds the dataOffset to the lun get params
-func (o *LunGetParams) WithDataOffsetQueryParameter(dataOffset *int64) *LunGetParams {
-	o.SetDataOffsetQueryParameter(dataOffset)
+// WithDataOffset adds the dataOffset to the lun get params
+func (o *LunGetParams) WithDataOffset(dataOffset *int64) *LunGetParams {
+	o.SetDataOffset(dataOffset)
 	return o
 }
 
-// SetDataOffsetQueryParameter adds the dataOffset to the lun get params
-func (o *LunGetParams) SetDataOffsetQueryParameter(dataOffset *int64) {
-	o.DataOffsetQueryParameter = dataOffset
+// SetDataOffset adds the dataOffset to the lun get params
+func (o *LunGetParams) SetDataOffset(dataOffset *int64) {
+	o.DataOffset = dataOffset
 }
 
-// WithDataSizeQueryParameter adds the dataSize to the lun get params
-func (o *LunGetParams) WithDataSizeQueryParameter(dataSize *int64) *LunGetParams {
-	o.SetDataSizeQueryParameter(dataSize)
+// WithDataSize adds the dataSize to the lun get params
+func (o *LunGetParams) WithDataSize(dataSize *int64) *LunGetParams {
+	o.SetDataSize(dataSize)
 	return o
 }
 
-// SetDataSizeQueryParameter adds the dataSize to the lun get params
-func (o *LunGetParams) SetDataSizeQueryParameter(dataSize *int64) {
-	o.DataSizeQueryParameter = dataSize
+// SetDataSize adds the dataSize to the lun get params
+func (o *LunGetParams) SetDataSize(dataSize *int64) {
+	o.DataSize = dataSize
 }
 
-// WithFieldsQueryParameter adds the fields to the lun get params
-func (o *LunGetParams) WithFieldsQueryParameter(fields []string) *LunGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the lun get params
+func (o *LunGetParams) WithFields(fields []string) *LunGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the lun get params
-func (o *LunGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the lun get params
+func (o *LunGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the lun get params
-func (o *LunGetParams) WithUUIDPathParameter(uuid string) *LunGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the lun get params
+func (o *LunGetParams) WithUUID(uuid string) *LunGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the lun get params
-func (o *LunGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the lun get params
+func (o *LunGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -200,13 +200,13 @@ func (o *LunGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.DataOffsetQueryParameter != nil {
+	if o.DataOffset != nil {
 
 		// query param data.offset
 		var qrDataOffset int64
 
-		if o.DataOffsetQueryParameter != nil {
-			qrDataOffset = *o.DataOffsetQueryParameter
+		if o.DataOffset != nil {
+			qrDataOffset = *o.DataOffset
 		}
 		qDataOffset := swag.FormatInt64(qrDataOffset)
 		if qDataOffset != "" {
@@ -217,13 +217,13 @@ func (o *LunGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 		}
 	}
 
-	if o.DataSizeQueryParameter != nil {
+	if o.DataSize != nil {
 
 		// query param data.size
 		var qrDataSize int64
 
-		if o.DataSizeQueryParameter != nil {
-			qrDataSize = *o.DataSizeQueryParameter
+		if o.DataSize != nil {
+			qrDataSize = *o.DataSize
 		}
 		qDataSize := swag.FormatInt64(qrDataSize)
 		if qDataSize != "" {
@@ -234,7 +234,7 @@ func (o *LunGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -246,7 +246,7 @@ func (o *LunGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -258,7 +258,7 @@ func (o *LunGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 
 // bindParamLunGet binds the parameter fields
 func (o *LunGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

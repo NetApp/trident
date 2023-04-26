@@ -20,13 +20,14 @@ import (
 type FpolicyEventResponse struct {
 
 	// links
-	Links *FpolicyEventResponseLinks `json:"_links,omitempty"`
+	Links *FpolicyEventResponseInlineLinks `json:"_links,omitempty"`
+
+	// fpolicy event response inline records
+	FpolicyEventResponseInlineRecords []*FpolicyEvent `json:"records,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
-
-	// records
-	Records []*FpolicyEvent `json:"records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 }
 
 // Validate validates this fpolicy event response
@@ -37,7 +38,7 @@ func (m *FpolicyEventResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateFpolicyEventResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *FpolicyEventResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyEventResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *FpolicyEventResponse) validateFpolicyEventResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.FpolicyEventResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.FpolicyEventResponseInlineRecords); i++ {
+		if swag.IsZero(m.FpolicyEventResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.FpolicyEventResponseInlineRecords[i] != nil {
+			if err := m.FpolicyEventResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *FpolicyEventResponse) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateFpolicyEventResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *FpolicyEventResponse) contextValidateLinks(ctx context.Context, formats
 	return nil
 }
 
-func (m *FpolicyEventResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEventResponse) contextValidateFpolicyEventResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.FpolicyEventResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.FpolicyEventResponseInlineRecords[i] != nil {
+			if err := m.FpolicyEventResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *FpolicyEventResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEventResponseLinks fpolicy event response links
+// FpolicyEventResponseInlineLinks fpolicy event response inline links
 //
-// swagger:model FpolicyEventResponseLinks
-type FpolicyEventResponseLinks struct {
+// swagger:model fpolicy_event_response_inline__links
+type FpolicyEventResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type FpolicyEventResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy event response links
-func (m *FpolicyEventResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy event response inline links
+func (m *FpolicyEventResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *FpolicyEventResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyEventResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *FpolicyEventResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *FpolicyEventResponseLinks) validateNext(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *FpolicyEventResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyEventResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *FpolicyEventResponseLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this fpolicy event response links based on the context it is used
-func (m *FpolicyEventResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy event response inline links based on the context it is used
+func (m *FpolicyEventResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *FpolicyEventResponseLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *FpolicyEventResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEventResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *FpolicyEventResponseLinks) contextValidateNext(ctx context.Context, for
 	return nil
 }
 
-func (m *FpolicyEventResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEventResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *FpolicyEventResponseLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEventResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEventResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *FpolicyEventResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEventResponseLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyEventResponseLinks
+func (m *FpolicyEventResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyEventResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

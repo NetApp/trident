@@ -66,103 +66,103 @@ type IscsiSessionCollectionGetParams struct {
 
 	   Filter by connections.authentication_type
 	*/
-	ConnectionsAuthenticationTypeQueryParameter *string
+	ConnectionsAuthenticationType *string
 
 	/* ConnectionsCid.
 
 	   Filter by connections.cid
 	*/
-	ConnectionsCIDQueryParameter *int64
+	ConnectionsCid *int64
 
 	/* ConnectionsInitiatorAddressAddress.
 
 	   Filter by connections.initiator_address.address
 	*/
-	ConnectionsInitiatorAddressAddressQueryParameter *string
+	ConnectionsInitiatorAddressAddress *string
 
 	/* ConnectionsInitiatorAddressPort.
 
 	   Filter by connections.initiator_address.port
 	*/
-	ConnectionsInitiatorAddressPortQueryParameter *int64
+	ConnectionsInitiatorAddressPort *int64
 
 	/* ConnectionsInterfaceIPAddress.
 
 	   Filter by connections.interface.ip.address
 	*/
-	ConnectionsInterfaceIPAddressQueryParameter *string
+	ConnectionsInterfaceIPAddress *string
 
 	/* ConnectionsInterfaceIPPort.
 
 	   Filter by connections.interface.ip.port
 	*/
-	ConnectionsInterfaceIPPortQueryParameter *int64
+	ConnectionsInterfaceIPPort *int64
 
 	/* ConnectionsInterfaceName.
 
 	   Filter by connections.interface.name
 	*/
-	ConnectionsInterfaceNameQueryParameter *string
+	ConnectionsInterfaceName *string
 
 	/* ConnectionsInterfaceUUID.
 
 	   Filter by connections.interface.uuid
 	*/
-	ConnectionsInterfaceUUIDQueryParameter *string
+	ConnectionsInterfaceUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IgroupsName.
 
 	   Filter by igroups.name
 	*/
-	IgroupsNameQueryParameter *string
+	IgroupsName *string
 
 	/* IgroupsUUID.
 
 	   Filter by igroups.uuid
 	*/
-	IgroupsUUIDQueryParameter *string
+	IgroupsUUID *string
 
 	/* InitiatorAlias.
 
 	   Filter by initiator.alias
 	*/
-	InitiatorAliasQueryParameter *string
+	InitiatorAlias *string
 
 	/* InitiatorComment.
 
 	   Filter by initiator.comment
 	*/
-	InitiatorCommentQueryParameter *string
+	InitiatorComment *string
 
 	/* InitiatorName.
 
 	   Filter by initiator.name
 	*/
-	InitiatorNameQueryParameter *string
+	InitiatorName *string
 
 	/* Isid.
 
 	   Filter by isid
 	*/
-	IsIDQueryParameter *string
+	Isid *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -170,7 +170,7 @@ type IscsiSessionCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -178,37 +178,37 @@ type IscsiSessionCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TargetPortalGroup.
 
 	   Filter by target_portal_group
 	*/
-	TargetPortalGroupQueryParameter *string
+	TargetPortalGroup *string
 
 	/* TargetPortalGroupTag.
 
 	   Filter by target_portal_group_tag
 	*/
-	TargetPortalGroupTagQueryParameter *int64
+	TargetPortalGroupTag *int64
 
 	/* Tsih.
 
 	   Filter by tsih
 	*/
-	TsihQueryParameter *int64
+	Tsih *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -228,14 +228,14 @@ func (o *IscsiSessionCollectionGetParams) WithDefaults() *IscsiSessionCollection
 // All values with no default are reset to their zero value.
 func (o *IscsiSessionCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IscsiSessionCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,268 +277,268 @@ func (o *IscsiSessionCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConnectionsAuthenticationTypeQueryParameter adds the connectionsAuthenticationType to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsAuthenticationTypeQueryParameter(connectionsAuthenticationType *string) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsAuthenticationTypeQueryParameter(connectionsAuthenticationType)
+// WithConnectionsAuthenticationType adds the connectionsAuthenticationType to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsAuthenticationType(connectionsAuthenticationType *string) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsAuthenticationType(connectionsAuthenticationType)
 	return o
 }
 
-// SetConnectionsAuthenticationTypeQueryParameter adds the connectionsAuthenticationType to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsAuthenticationTypeQueryParameter(connectionsAuthenticationType *string) {
-	o.ConnectionsAuthenticationTypeQueryParameter = connectionsAuthenticationType
+// SetConnectionsAuthenticationType adds the connectionsAuthenticationType to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsAuthenticationType(connectionsAuthenticationType *string) {
+	o.ConnectionsAuthenticationType = connectionsAuthenticationType
 }
 
-// WithConnectionsCIDQueryParameter adds the connectionsCid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsCIDQueryParameter(connectionsCid *int64) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsCIDQueryParameter(connectionsCid)
+// WithConnectionsCid adds the connectionsCid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsCid(connectionsCid *int64) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsCid(connectionsCid)
 	return o
 }
 
-// SetConnectionsCIDQueryParameter adds the connectionsCid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsCIDQueryParameter(connectionsCid *int64) {
-	o.ConnectionsCIDQueryParameter = connectionsCid
+// SetConnectionsCid adds the connectionsCid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsCid(connectionsCid *int64) {
+	o.ConnectionsCid = connectionsCid
 }
 
-// WithConnectionsInitiatorAddressAddressQueryParameter adds the connectionsInitiatorAddressAddress to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsInitiatorAddressAddressQueryParameter(connectionsInitiatorAddressAddress *string) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsInitiatorAddressAddressQueryParameter(connectionsInitiatorAddressAddress)
+// WithConnectionsInitiatorAddressAddress adds the connectionsInitiatorAddressAddress to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsInitiatorAddressAddress(connectionsInitiatorAddressAddress *string) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsInitiatorAddressAddress(connectionsInitiatorAddressAddress)
 	return o
 }
 
-// SetConnectionsInitiatorAddressAddressQueryParameter adds the connectionsInitiatorAddressAddress to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsInitiatorAddressAddressQueryParameter(connectionsInitiatorAddressAddress *string) {
-	o.ConnectionsInitiatorAddressAddressQueryParameter = connectionsInitiatorAddressAddress
+// SetConnectionsInitiatorAddressAddress adds the connectionsInitiatorAddressAddress to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsInitiatorAddressAddress(connectionsInitiatorAddressAddress *string) {
+	o.ConnectionsInitiatorAddressAddress = connectionsInitiatorAddressAddress
 }
 
-// WithConnectionsInitiatorAddressPortQueryParameter adds the connectionsInitiatorAddressPort to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsInitiatorAddressPortQueryParameter(connectionsInitiatorAddressPort *int64) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsInitiatorAddressPortQueryParameter(connectionsInitiatorAddressPort)
+// WithConnectionsInitiatorAddressPort adds the connectionsInitiatorAddressPort to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsInitiatorAddressPort(connectionsInitiatorAddressPort *int64) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsInitiatorAddressPort(connectionsInitiatorAddressPort)
 	return o
 }
 
-// SetConnectionsInitiatorAddressPortQueryParameter adds the connectionsInitiatorAddressPort to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsInitiatorAddressPortQueryParameter(connectionsInitiatorAddressPort *int64) {
-	o.ConnectionsInitiatorAddressPortQueryParameter = connectionsInitiatorAddressPort
+// SetConnectionsInitiatorAddressPort adds the connectionsInitiatorAddressPort to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsInitiatorAddressPort(connectionsInitiatorAddressPort *int64) {
+	o.ConnectionsInitiatorAddressPort = connectionsInitiatorAddressPort
 }
 
-// WithConnectionsInterfaceIPAddressQueryParameter adds the connectionsInterfaceIPAddress to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceIPAddressQueryParameter(connectionsInterfaceIPAddress *string) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsInterfaceIPAddressQueryParameter(connectionsInterfaceIPAddress)
+// WithConnectionsInterfaceIPAddress adds the connectionsInterfaceIPAddress to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceIPAddress(connectionsInterfaceIPAddress *string) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsInterfaceIPAddress(connectionsInterfaceIPAddress)
 	return o
 }
 
-// SetConnectionsInterfaceIPAddressQueryParameter adds the connectionsInterfaceIpAddress to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceIPAddressQueryParameter(connectionsInterfaceIPAddress *string) {
-	o.ConnectionsInterfaceIPAddressQueryParameter = connectionsInterfaceIPAddress
+// SetConnectionsInterfaceIPAddress adds the connectionsInterfaceIpAddress to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceIPAddress(connectionsInterfaceIPAddress *string) {
+	o.ConnectionsInterfaceIPAddress = connectionsInterfaceIPAddress
 }
 
-// WithConnectionsInterfaceIPPortQueryParameter adds the connectionsInterfaceIPPort to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceIPPortQueryParameter(connectionsInterfaceIPPort *int64) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsInterfaceIPPortQueryParameter(connectionsInterfaceIPPort)
+// WithConnectionsInterfaceIPPort adds the connectionsInterfaceIPPort to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceIPPort(connectionsInterfaceIPPort *int64) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsInterfaceIPPort(connectionsInterfaceIPPort)
 	return o
 }
 
-// SetConnectionsInterfaceIPPortQueryParameter adds the connectionsInterfaceIpPort to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceIPPortQueryParameter(connectionsInterfaceIPPort *int64) {
-	o.ConnectionsInterfaceIPPortQueryParameter = connectionsInterfaceIPPort
+// SetConnectionsInterfaceIPPort adds the connectionsInterfaceIpPort to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceIPPort(connectionsInterfaceIPPort *int64) {
+	o.ConnectionsInterfaceIPPort = connectionsInterfaceIPPort
 }
 
-// WithConnectionsInterfaceNameQueryParameter adds the connectionsInterfaceName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceNameQueryParameter(connectionsInterfaceName *string) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsInterfaceNameQueryParameter(connectionsInterfaceName)
+// WithConnectionsInterfaceName adds the connectionsInterfaceName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceName(connectionsInterfaceName *string) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsInterfaceName(connectionsInterfaceName)
 	return o
 }
 
-// SetConnectionsInterfaceNameQueryParameter adds the connectionsInterfaceName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceNameQueryParameter(connectionsInterfaceName *string) {
-	o.ConnectionsInterfaceNameQueryParameter = connectionsInterfaceName
+// SetConnectionsInterfaceName adds the connectionsInterfaceName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceName(connectionsInterfaceName *string) {
+	o.ConnectionsInterfaceName = connectionsInterfaceName
 }
 
-// WithConnectionsInterfaceUUIDQueryParameter adds the connectionsInterfaceUUID to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceUUIDQueryParameter(connectionsInterfaceUUID *string) *IscsiSessionCollectionGetParams {
-	o.SetConnectionsInterfaceUUIDQueryParameter(connectionsInterfaceUUID)
+// WithConnectionsInterfaceUUID adds the connectionsInterfaceUUID to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithConnectionsInterfaceUUID(connectionsInterfaceUUID *string) *IscsiSessionCollectionGetParams {
+	o.SetConnectionsInterfaceUUID(connectionsInterfaceUUID)
 	return o
 }
 
-// SetConnectionsInterfaceUUIDQueryParameter adds the connectionsInterfaceUuid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceUUIDQueryParameter(connectionsInterfaceUUID *string) {
-	o.ConnectionsInterfaceUUIDQueryParameter = connectionsInterfaceUUID
+// SetConnectionsInterfaceUUID adds the connectionsInterfaceUuid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetConnectionsInterfaceUUID(connectionsInterfaceUUID *string) {
+	o.ConnectionsInterfaceUUID = connectionsInterfaceUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithFieldsQueryParameter(fields []string) *IscsiSessionCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithFields(fields []string) *IscsiSessionCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIgroupsNameQueryParameter adds the igroupsName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithIgroupsNameQueryParameter(igroupsName *string) *IscsiSessionCollectionGetParams {
-	o.SetIgroupsNameQueryParameter(igroupsName)
+// WithIgroupsName adds the igroupsName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithIgroupsName(igroupsName *string) *IscsiSessionCollectionGetParams {
+	o.SetIgroupsName(igroupsName)
 	return o
 }
 
-// SetIgroupsNameQueryParameter adds the igroupsName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetIgroupsNameQueryParameter(igroupsName *string) {
-	o.IgroupsNameQueryParameter = igroupsName
+// SetIgroupsName adds the igroupsName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetIgroupsName(igroupsName *string) {
+	o.IgroupsName = igroupsName
 }
 
-// WithIgroupsUUIDQueryParameter adds the igroupsUUID to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithIgroupsUUIDQueryParameter(igroupsUUID *string) *IscsiSessionCollectionGetParams {
-	o.SetIgroupsUUIDQueryParameter(igroupsUUID)
+// WithIgroupsUUID adds the igroupsUUID to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithIgroupsUUID(igroupsUUID *string) *IscsiSessionCollectionGetParams {
+	o.SetIgroupsUUID(igroupsUUID)
 	return o
 }
 
-// SetIgroupsUUIDQueryParameter adds the igroupsUuid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetIgroupsUUIDQueryParameter(igroupsUUID *string) {
-	o.IgroupsUUIDQueryParameter = igroupsUUID
+// SetIgroupsUUID adds the igroupsUuid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetIgroupsUUID(igroupsUUID *string) {
+	o.IgroupsUUID = igroupsUUID
 }
 
-// WithInitiatorAliasQueryParameter adds the initiatorAlias to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithInitiatorAliasQueryParameter(initiatorAlias *string) *IscsiSessionCollectionGetParams {
-	o.SetInitiatorAliasQueryParameter(initiatorAlias)
+// WithInitiatorAlias adds the initiatorAlias to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithInitiatorAlias(initiatorAlias *string) *IscsiSessionCollectionGetParams {
+	o.SetInitiatorAlias(initiatorAlias)
 	return o
 }
 
-// SetInitiatorAliasQueryParameter adds the initiatorAlias to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetInitiatorAliasQueryParameter(initiatorAlias *string) {
-	o.InitiatorAliasQueryParameter = initiatorAlias
+// SetInitiatorAlias adds the initiatorAlias to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetInitiatorAlias(initiatorAlias *string) {
+	o.InitiatorAlias = initiatorAlias
 }
 
-// WithInitiatorCommentQueryParameter adds the initiatorComment to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithInitiatorCommentQueryParameter(initiatorComment *string) *IscsiSessionCollectionGetParams {
-	o.SetInitiatorCommentQueryParameter(initiatorComment)
+// WithInitiatorComment adds the initiatorComment to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithInitiatorComment(initiatorComment *string) *IscsiSessionCollectionGetParams {
+	o.SetInitiatorComment(initiatorComment)
 	return o
 }
 
-// SetInitiatorCommentQueryParameter adds the initiatorComment to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetInitiatorCommentQueryParameter(initiatorComment *string) {
-	o.InitiatorCommentQueryParameter = initiatorComment
+// SetInitiatorComment adds the initiatorComment to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetInitiatorComment(initiatorComment *string) {
+	o.InitiatorComment = initiatorComment
 }
 
-// WithInitiatorNameQueryParameter adds the initiatorName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithInitiatorNameQueryParameter(initiatorName *string) *IscsiSessionCollectionGetParams {
-	o.SetInitiatorNameQueryParameter(initiatorName)
+// WithInitiatorName adds the initiatorName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithInitiatorName(initiatorName *string) *IscsiSessionCollectionGetParams {
+	o.SetInitiatorName(initiatorName)
 	return o
 }
 
-// SetInitiatorNameQueryParameter adds the initiatorName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetInitiatorNameQueryParameter(initiatorName *string) {
-	o.InitiatorNameQueryParameter = initiatorName
+// SetInitiatorName adds the initiatorName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetInitiatorName(initiatorName *string) {
+	o.InitiatorName = initiatorName
 }
 
-// WithIsIDQueryParameter adds the isid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithIsIDQueryParameter(isid *string) *IscsiSessionCollectionGetParams {
-	o.SetIsIDQueryParameter(isid)
+// WithIsid adds the isid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithIsid(isid *string) *IscsiSessionCollectionGetParams {
+	o.SetIsid(isid)
 	return o
 }
 
-// SetIsIDQueryParameter adds the isid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetIsIDQueryParameter(isid *string) {
-	o.IsIDQueryParameter = isid
+// SetIsid adds the isid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetIsid(isid *string) {
+	o.Isid = isid
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IscsiSessionCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithMaxRecords(maxRecords *int64) *IscsiSessionCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IscsiSessionCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithOrderBy(orderBy []string) *IscsiSessionCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IscsiSessionCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithReturnRecords(returnRecords *bool) *IscsiSessionCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IscsiSessionCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IscsiSessionCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *IscsiSessionCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithSvmName(svmName *string) *IscsiSessionCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *IscsiSessionCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithSvmUUID(svmUUID *string) *IscsiSessionCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTargetPortalGroupQueryParameter adds the targetPortalGroup to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithTargetPortalGroupQueryParameter(targetPortalGroup *string) *IscsiSessionCollectionGetParams {
-	o.SetTargetPortalGroupQueryParameter(targetPortalGroup)
+// WithTargetPortalGroup adds the targetPortalGroup to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithTargetPortalGroup(targetPortalGroup *string) *IscsiSessionCollectionGetParams {
+	o.SetTargetPortalGroup(targetPortalGroup)
 	return o
 }
 
-// SetTargetPortalGroupQueryParameter adds the targetPortalGroup to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetTargetPortalGroupQueryParameter(targetPortalGroup *string) {
-	o.TargetPortalGroupQueryParameter = targetPortalGroup
+// SetTargetPortalGroup adds the targetPortalGroup to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetTargetPortalGroup(targetPortalGroup *string) {
+	o.TargetPortalGroup = targetPortalGroup
 }
 
-// WithTargetPortalGroupTagQueryParameter adds the targetPortalGroupTag to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithTargetPortalGroupTagQueryParameter(targetPortalGroupTag *int64) *IscsiSessionCollectionGetParams {
-	o.SetTargetPortalGroupTagQueryParameter(targetPortalGroupTag)
+// WithTargetPortalGroupTag adds the targetPortalGroupTag to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithTargetPortalGroupTag(targetPortalGroupTag *int64) *IscsiSessionCollectionGetParams {
+	o.SetTargetPortalGroupTag(targetPortalGroupTag)
 	return o
 }
 
-// SetTargetPortalGroupTagQueryParameter adds the targetPortalGroupTag to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetTargetPortalGroupTagQueryParameter(targetPortalGroupTag *int64) {
-	o.TargetPortalGroupTagQueryParameter = targetPortalGroupTag
+// SetTargetPortalGroupTag adds the targetPortalGroupTag to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetTargetPortalGroupTag(targetPortalGroupTag *int64) {
+	o.TargetPortalGroupTag = targetPortalGroupTag
 }
 
-// WithTsihQueryParameter adds the tsih to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) WithTsihQueryParameter(tsih *int64) *IscsiSessionCollectionGetParams {
-	o.SetTsihQueryParameter(tsih)
+// WithTsih adds the tsih to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) WithTsih(tsih *int64) *IscsiSessionCollectionGetParams {
+	o.SetTsih(tsih)
 	return o
 }
 
-// SetTsihQueryParameter adds the tsih to the iscsi session collection get params
-func (o *IscsiSessionCollectionGetParams) SetTsihQueryParameter(tsih *int64) {
-	o.TsihQueryParameter = tsih
+// SetTsih adds the tsih to the iscsi session collection get params
+func (o *IscsiSessionCollectionGetParams) SetTsih(tsih *int64) {
+	o.Tsih = tsih
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -549,13 +549,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.ConnectionsAuthenticationTypeQueryParameter != nil {
+	if o.ConnectionsAuthenticationType != nil {
 
 		// query param connections.authentication_type
 		var qrConnectionsAuthenticationType string
 
-		if o.ConnectionsAuthenticationTypeQueryParameter != nil {
-			qrConnectionsAuthenticationType = *o.ConnectionsAuthenticationTypeQueryParameter
+		if o.ConnectionsAuthenticationType != nil {
+			qrConnectionsAuthenticationType = *o.ConnectionsAuthenticationType
 		}
 		qConnectionsAuthenticationType := qrConnectionsAuthenticationType
 		if qConnectionsAuthenticationType != "" {
@@ -566,13 +566,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsCIDQueryParameter != nil {
+	if o.ConnectionsCid != nil {
 
 		// query param connections.cid
 		var qrConnectionsCid int64
 
-		if o.ConnectionsCIDQueryParameter != nil {
-			qrConnectionsCid = *o.ConnectionsCIDQueryParameter
+		if o.ConnectionsCid != nil {
+			qrConnectionsCid = *o.ConnectionsCid
 		}
 		qConnectionsCid := swag.FormatInt64(qrConnectionsCid)
 		if qConnectionsCid != "" {
@@ -583,13 +583,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsInitiatorAddressAddressQueryParameter != nil {
+	if o.ConnectionsInitiatorAddressAddress != nil {
 
 		// query param connections.initiator_address.address
 		var qrConnectionsInitiatorAddressAddress string
 
-		if o.ConnectionsInitiatorAddressAddressQueryParameter != nil {
-			qrConnectionsInitiatorAddressAddress = *o.ConnectionsInitiatorAddressAddressQueryParameter
+		if o.ConnectionsInitiatorAddressAddress != nil {
+			qrConnectionsInitiatorAddressAddress = *o.ConnectionsInitiatorAddressAddress
 		}
 		qConnectionsInitiatorAddressAddress := qrConnectionsInitiatorAddressAddress
 		if qConnectionsInitiatorAddressAddress != "" {
@@ -600,13 +600,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsInitiatorAddressPortQueryParameter != nil {
+	if o.ConnectionsInitiatorAddressPort != nil {
 
 		// query param connections.initiator_address.port
 		var qrConnectionsInitiatorAddressPort int64
 
-		if o.ConnectionsInitiatorAddressPortQueryParameter != nil {
-			qrConnectionsInitiatorAddressPort = *o.ConnectionsInitiatorAddressPortQueryParameter
+		if o.ConnectionsInitiatorAddressPort != nil {
+			qrConnectionsInitiatorAddressPort = *o.ConnectionsInitiatorAddressPort
 		}
 		qConnectionsInitiatorAddressPort := swag.FormatInt64(qrConnectionsInitiatorAddressPort)
 		if qConnectionsInitiatorAddressPort != "" {
@@ -617,13 +617,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsInterfaceIPAddressQueryParameter != nil {
+	if o.ConnectionsInterfaceIPAddress != nil {
 
 		// query param connections.interface.ip.address
 		var qrConnectionsInterfaceIPAddress string
 
-		if o.ConnectionsInterfaceIPAddressQueryParameter != nil {
-			qrConnectionsInterfaceIPAddress = *o.ConnectionsInterfaceIPAddressQueryParameter
+		if o.ConnectionsInterfaceIPAddress != nil {
+			qrConnectionsInterfaceIPAddress = *o.ConnectionsInterfaceIPAddress
 		}
 		qConnectionsInterfaceIPAddress := qrConnectionsInterfaceIPAddress
 		if qConnectionsInterfaceIPAddress != "" {
@@ -634,13 +634,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsInterfaceIPPortQueryParameter != nil {
+	if o.ConnectionsInterfaceIPPort != nil {
 
 		// query param connections.interface.ip.port
 		var qrConnectionsInterfaceIPPort int64
 
-		if o.ConnectionsInterfaceIPPortQueryParameter != nil {
-			qrConnectionsInterfaceIPPort = *o.ConnectionsInterfaceIPPortQueryParameter
+		if o.ConnectionsInterfaceIPPort != nil {
+			qrConnectionsInterfaceIPPort = *o.ConnectionsInterfaceIPPort
 		}
 		qConnectionsInterfaceIPPort := swag.FormatInt64(qrConnectionsInterfaceIPPort)
 		if qConnectionsInterfaceIPPort != "" {
@@ -651,13 +651,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsInterfaceNameQueryParameter != nil {
+	if o.ConnectionsInterfaceName != nil {
 
 		// query param connections.interface.name
 		var qrConnectionsInterfaceName string
 
-		if o.ConnectionsInterfaceNameQueryParameter != nil {
-			qrConnectionsInterfaceName = *o.ConnectionsInterfaceNameQueryParameter
+		if o.ConnectionsInterfaceName != nil {
+			qrConnectionsInterfaceName = *o.ConnectionsInterfaceName
 		}
 		qConnectionsInterfaceName := qrConnectionsInterfaceName
 		if qConnectionsInterfaceName != "" {
@@ -668,13 +668,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ConnectionsInterfaceUUIDQueryParameter != nil {
+	if o.ConnectionsInterfaceUUID != nil {
 
 		// query param connections.interface.uuid
 		var qrConnectionsInterfaceUUID string
 
-		if o.ConnectionsInterfaceUUIDQueryParameter != nil {
-			qrConnectionsInterfaceUUID = *o.ConnectionsInterfaceUUIDQueryParameter
+		if o.ConnectionsInterfaceUUID != nil {
+			qrConnectionsInterfaceUUID = *o.ConnectionsInterfaceUUID
 		}
 		qConnectionsInterfaceUUID := qrConnectionsInterfaceUUID
 		if qConnectionsInterfaceUUID != "" {
@@ -685,7 +685,7 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -696,13 +696,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.IgroupsNameQueryParameter != nil {
+	if o.IgroupsName != nil {
 
 		// query param igroups.name
 		var qrIgroupsName string
 
-		if o.IgroupsNameQueryParameter != nil {
-			qrIgroupsName = *o.IgroupsNameQueryParameter
+		if o.IgroupsName != nil {
+			qrIgroupsName = *o.IgroupsName
 		}
 		qIgroupsName := qrIgroupsName
 		if qIgroupsName != "" {
@@ -713,13 +713,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.IgroupsUUIDQueryParameter != nil {
+	if o.IgroupsUUID != nil {
 
 		// query param igroups.uuid
 		var qrIgroupsUUID string
 
-		if o.IgroupsUUIDQueryParameter != nil {
-			qrIgroupsUUID = *o.IgroupsUUIDQueryParameter
+		if o.IgroupsUUID != nil {
+			qrIgroupsUUID = *o.IgroupsUUID
 		}
 		qIgroupsUUID := qrIgroupsUUID
 		if qIgroupsUUID != "" {
@@ -730,13 +730,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.InitiatorAliasQueryParameter != nil {
+	if o.InitiatorAlias != nil {
 
 		// query param initiator.alias
 		var qrInitiatorAlias string
 
-		if o.InitiatorAliasQueryParameter != nil {
-			qrInitiatorAlias = *o.InitiatorAliasQueryParameter
+		if o.InitiatorAlias != nil {
+			qrInitiatorAlias = *o.InitiatorAlias
 		}
 		qInitiatorAlias := qrInitiatorAlias
 		if qInitiatorAlias != "" {
@@ -747,13 +747,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.InitiatorCommentQueryParameter != nil {
+	if o.InitiatorComment != nil {
 
 		// query param initiator.comment
 		var qrInitiatorComment string
 
-		if o.InitiatorCommentQueryParameter != nil {
-			qrInitiatorComment = *o.InitiatorCommentQueryParameter
+		if o.InitiatorComment != nil {
+			qrInitiatorComment = *o.InitiatorComment
 		}
 		qInitiatorComment := qrInitiatorComment
 		if qInitiatorComment != "" {
@@ -764,13 +764,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.InitiatorNameQueryParameter != nil {
+	if o.InitiatorName != nil {
 
 		// query param initiator.name
 		var qrInitiatorName string
 
-		if o.InitiatorNameQueryParameter != nil {
-			qrInitiatorName = *o.InitiatorNameQueryParameter
+		if o.InitiatorName != nil {
+			qrInitiatorName = *o.InitiatorName
 		}
 		qInitiatorName := qrInitiatorName
 		if qInitiatorName != "" {
@@ -781,13 +781,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.IsIDQueryParameter != nil {
+	if o.Isid != nil {
 
 		// query param isid
 		var qrIsid string
 
-		if o.IsIDQueryParameter != nil {
-			qrIsid = *o.IsIDQueryParameter
+		if o.Isid != nil {
+			qrIsid = *o.Isid
 		}
 		qIsid := qrIsid
 		if qIsid != "" {
@@ -798,13 +798,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -815,7 +815,7 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -826,13 +826,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -843,13 +843,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -860,13 +860,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -877,13 +877,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -894,13 +894,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TargetPortalGroupQueryParameter != nil {
+	if o.TargetPortalGroup != nil {
 
 		// query param target_portal_group
 		var qrTargetPortalGroup string
 
-		if o.TargetPortalGroupQueryParameter != nil {
-			qrTargetPortalGroup = *o.TargetPortalGroupQueryParameter
+		if o.TargetPortalGroup != nil {
+			qrTargetPortalGroup = *o.TargetPortalGroup
 		}
 		qTargetPortalGroup := qrTargetPortalGroup
 		if qTargetPortalGroup != "" {
@@ -911,13 +911,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TargetPortalGroupTagQueryParameter != nil {
+	if o.TargetPortalGroupTag != nil {
 
 		// query param target_portal_group_tag
 		var qrTargetPortalGroupTag int64
 
-		if o.TargetPortalGroupTagQueryParameter != nil {
-			qrTargetPortalGroupTag = *o.TargetPortalGroupTagQueryParameter
+		if o.TargetPortalGroupTag != nil {
+			qrTargetPortalGroupTag = *o.TargetPortalGroupTag
 		}
 		qTargetPortalGroupTag := swag.FormatInt64(qrTargetPortalGroupTag)
 		if qTargetPortalGroupTag != "" {
@@ -928,13 +928,13 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.TsihQueryParameter != nil {
+	if o.Tsih != nil {
 
 		// query param tsih
 		var qrTsih int64
 
-		if o.TsihQueryParameter != nil {
-			qrTsih = *o.TsihQueryParameter
+		if o.Tsih != nil {
+			qrTsih = *o.Tsih
 		}
 		qTsih := swag.FormatInt64(qrTsih)
 		if qTsih != "" {
@@ -953,7 +953,7 @@ func (o *IscsiSessionCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamIscsiSessionCollectionGet binds the parameter fields
 func (o *IscsiSessionCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -970,7 +970,7 @@ func (o *IscsiSessionCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamIscsiSessionCollectionGet binds the parameter order_by
 func (o *IscsiSessionCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,67 +66,67 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* EngineName.
 
 	   Filter by engine.name
 	*/
-	EngineNameQueryParameter *string
+	EngineName *string
 
 	/* EventsName.
 
 	   Filter by events.name
 	*/
-	EventsNameQueryParameter *string
+	EventsName *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Mandatory.
 
 	   Filter by mandatory
 	*/
-	MandatoryQueryParameter *bool
+	Mandatory *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PassthroughRead.
 
 	   Filter by passthrough_read
 	*/
-	PassthroughReadQueryParameter *bool
+	PassthroughRead *bool
 
 	/* Priority.
 
 	   Filter by priority
 	*/
-	PriorityQueryParameter *int64
+	Priority *int64
 
 	/* PrivilegedUser.
 
 	   Filter by privileged_user
 	*/
-	PrivilegedUserQueryParameter *string
+	PrivilegedUser *string
 
 	/* ReturnRecords.
 
@@ -134,7 +134,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -142,73 +142,73 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ScopeCheckExtensionsOnDirectories.
 
 	   Filter by scope.check_extensions_on_directories
 	*/
-	ScopeCheckExtensionsOnDirectoriesQueryParameter *bool
+	ScopeCheckExtensionsOnDirectories *bool
 
 	/* ScopeExcludeExportPolicies.
 
 	   Filter by scope.exclude_export_policies
 	*/
-	ScopeExcludeExportPoliciesQueryParameter *string
+	ScopeExcludeExportPolicies *string
 
 	/* ScopeExcludeExtension.
 
 	   Filter by scope.exclude_extension
 	*/
-	ScopeExcludeExtensionQueryParameter *string
+	ScopeExcludeExtension *string
 
 	/* ScopeExcludeShares.
 
 	   Filter by scope.exclude_shares
 	*/
-	ScopeExcludeSharesQueryParameter *string
+	ScopeExcludeShares *string
 
 	/* ScopeExcludeVolumes.
 
 	   Filter by scope.exclude_volumes
 	*/
-	ScopeExcludeVolumesQueryParameter *string
+	ScopeExcludeVolumes *string
 
 	/* ScopeIncludeExportPolicies.
 
 	   Filter by scope.include_export_policies
 	*/
-	ScopeIncludeExportPoliciesQueryParameter *string
+	ScopeIncludeExportPolicies *string
 
 	/* ScopeIncludeExtension.
 
 	   Filter by scope.include_extension
 	*/
-	ScopeIncludeExtensionQueryParameter *string
+	ScopeIncludeExtension *string
 
 	/* ScopeIncludeShares.
 
 	   Filter by scope.include_shares
 	*/
-	ScopeIncludeSharesQueryParameter *string
+	ScopeIncludeShares *string
 
 	/* ScopeIncludeVolumes.
 
 	   Filter by scope.include_volumes
 	*/
-	ScopeIncludeVolumesQueryParameter *string
+	ScopeIncludeVolumes *string
 
 	/* ScopeObjectMonitoringWithNoExtension.
 
 	   Filter by scope.object_monitoring_with_no_extension
 	*/
-	ScopeObjectMonitoringWithNoExtensionQueryParameter *bool
+	ScopeObjectMonitoringWithNoExtension *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -228,14 +228,14 @@ func (o *FpolicyPolicyCollectionGetParams) WithDefaults() *FpolicyPolicyCollecti
 // All values with no default are reset to their zero value.
 func (o *FpolicyPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := FpolicyPolicyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -277,268 +277,268 @@ func (o *FpolicyPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEnabledQueryParameter adds the enabled to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithEnabled(enabled *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithEngineNameQueryParameter adds the engineName to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithEngineNameQueryParameter(engineName *string) *FpolicyPolicyCollectionGetParams {
-	o.SetEngineNameQueryParameter(engineName)
+// WithEngineName adds the engineName to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithEngineName(engineName *string) *FpolicyPolicyCollectionGetParams {
+	o.SetEngineName(engineName)
 	return o
 }
 
-// SetEngineNameQueryParameter adds the engineName to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetEngineNameQueryParameter(engineName *string) {
-	o.EngineNameQueryParameter = engineName
+// SetEngineName adds the engineName to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetEngineName(engineName *string) {
+	o.EngineName = engineName
 }
 
-// WithEventsNameQueryParameter adds the eventsName to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithEventsNameQueryParameter(eventsName *string) *FpolicyPolicyCollectionGetParams {
-	o.SetEventsNameQueryParameter(eventsName)
+// WithEventsName adds the eventsName to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithEventsName(eventsName *string) *FpolicyPolicyCollectionGetParams {
+	o.SetEventsName(eventsName)
 	return o
 }
 
-// SetEventsNameQueryParameter adds the eventsName to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetEventsNameQueryParameter(eventsName *string) {
-	o.EventsNameQueryParameter = eventsName
+// SetEventsName adds the eventsName to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetEventsName(eventsName *string) {
+	o.EventsName = eventsName
 }
 
-// WithFieldsQueryParameter adds the fields to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *FpolicyPolicyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithFields(fields []string) *FpolicyPolicyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMandatoryQueryParameter adds the mandatory to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithMandatoryQueryParameter(mandatory *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetMandatoryQueryParameter(mandatory)
+// WithMandatory adds the mandatory to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithMandatory(mandatory *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetMandatory(mandatory)
 	return o
 }
 
-// SetMandatoryQueryParameter adds the mandatory to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetMandatoryQueryParameter(mandatory *bool) {
-	o.MandatoryQueryParameter = mandatory
+// SetMandatory adds the mandatory to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetMandatory(mandatory *bool) {
+	o.Mandatory = mandatory
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FpolicyPolicyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *FpolicyPolicyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithNameQueryParameter(name *string) *FpolicyPolicyCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithName(name *string) *FpolicyPolicyCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FpolicyPolicyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithOrderBy(orderBy []string) *FpolicyPolicyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPassthroughReadQueryParameter adds the passthroughRead to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithPassthroughReadQueryParameter(passthroughRead *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetPassthroughReadQueryParameter(passthroughRead)
+// WithPassthroughRead adds the passthroughRead to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithPassthroughRead(passthroughRead *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetPassthroughRead(passthroughRead)
 	return o
 }
 
-// SetPassthroughReadQueryParameter adds the passthroughRead to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetPassthroughReadQueryParameter(passthroughRead *bool) {
-	o.PassthroughReadQueryParameter = passthroughRead
+// SetPassthroughRead adds the passthroughRead to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetPassthroughRead(passthroughRead *bool) {
+	o.PassthroughRead = passthroughRead
 }
 
-// WithPriorityQueryParameter adds the priority to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithPriorityQueryParameter(priority *int64) *FpolicyPolicyCollectionGetParams {
-	o.SetPriorityQueryParameter(priority)
+// WithPriority adds the priority to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithPriority(priority *int64) *FpolicyPolicyCollectionGetParams {
+	o.SetPriority(priority)
 	return o
 }
 
-// SetPriorityQueryParameter adds the priority to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetPriorityQueryParameter(priority *int64) {
-	o.PriorityQueryParameter = priority
+// SetPriority adds the priority to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetPriority(priority *int64) {
+	o.Priority = priority
 }
 
-// WithPrivilegedUserQueryParameter adds the privilegedUser to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithPrivilegedUserQueryParameter(privilegedUser *string) *FpolicyPolicyCollectionGetParams {
-	o.SetPrivilegedUserQueryParameter(privilegedUser)
+// WithPrivilegedUser adds the privilegedUser to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithPrivilegedUser(privilegedUser *string) *FpolicyPolicyCollectionGetParams {
+	o.SetPrivilegedUser(privilegedUser)
 	return o
 }
 
-// SetPrivilegedUserQueryParameter adds the privilegedUser to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetPrivilegedUserQueryParameter(privilegedUser *string) {
-	o.PrivilegedUserQueryParameter = privilegedUser
+// SetPrivilegedUser adds the privilegedUser to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetPrivilegedUser(privilegedUser *string) {
+	o.PrivilegedUser = privilegedUser
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FpolicyPolicyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FpolicyPolicyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeCheckExtensionsOnDirectoriesQueryParameter adds the scopeCheckExtensionsOnDirectories to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeCheckExtensionsOnDirectoriesQueryParameter(scopeCheckExtensionsOnDirectories *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeCheckExtensionsOnDirectoriesQueryParameter(scopeCheckExtensionsOnDirectories)
+// WithScopeCheckExtensionsOnDirectories adds the scopeCheckExtensionsOnDirectories to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeCheckExtensionsOnDirectories(scopeCheckExtensionsOnDirectories *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeCheckExtensionsOnDirectories(scopeCheckExtensionsOnDirectories)
 	return o
 }
 
-// SetScopeCheckExtensionsOnDirectoriesQueryParameter adds the scopeCheckExtensionsOnDirectories to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeCheckExtensionsOnDirectoriesQueryParameter(scopeCheckExtensionsOnDirectories *bool) {
-	o.ScopeCheckExtensionsOnDirectoriesQueryParameter = scopeCheckExtensionsOnDirectories
+// SetScopeCheckExtensionsOnDirectories adds the scopeCheckExtensionsOnDirectories to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeCheckExtensionsOnDirectories(scopeCheckExtensionsOnDirectories *bool) {
+	o.ScopeCheckExtensionsOnDirectories = scopeCheckExtensionsOnDirectories
 }
 
-// WithScopeExcludeExportPoliciesQueryParameter adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeExportPoliciesQueryParameter(scopeExcludeExportPolicies *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeExcludeExportPoliciesQueryParameter(scopeExcludeExportPolicies)
+// WithScopeExcludeExportPolicies adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeExportPolicies(scopeExcludeExportPolicies *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeExcludeExportPolicies(scopeExcludeExportPolicies)
 	return o
 }
 
-// SetScopeExcludeExportPoliciesQueryParameter adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeExportPoliciesQueryParameter(scopeExcludeExportPolicies *string) {
-	o.ScopeExcludeExportPoliciesQueryParameter = scopeExcludeExportPolicies
+// SetScopeExcludeExportPolicies adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeExportPolicies(scopeExcludeExportPolicies *string) {
+	o.ScopeExcludeExportPolicies = scopeExcludeExportPolicies
 }
 
-// WithScopeExcludeExtensionQueryParameter adds the scopeExcludeExtension to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeExtensionQueryParameter(scopeExcludeExtension *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeExcludeExtensionQueryParameter(scopeExcludeExtension)
+// WithScopeExcludeExtension adds the scopeExcludeExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeExtension(scopeExcludeExtension *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeExcludeExtension(scopeExcludeExtension)
 	return o
 }
 
-// SetScopeExcludeExtensionQueryParameter adds the scopeExcludeExtension to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeExtensionQueryParameter(scopeExcludeExtension *string) {
-	o.ScopeExcludeExtensionQueryParameter = scopeExcludeExtension
+// SetScopeExcludeExtension adds the scopeExcludeExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeExtension(scopeExcludeExtension *string) {
+	o.ScopeExcludeExtension = scopeExcludeExtension
 }
 
-// WithScopeExcludeSharesQueryParameter adds the scopeExcludeShares to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeSharesQueryParameter(scopeExcludeShares *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeExcludeSharesQueryParameter(scopeExcludeShares)
+// WithScopeExcludeShares adds the scopeExcludeShares to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeShares(scopeExcludeShares *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeExcludeShares(scopeExcludeShares)
 	return o
 }
 
-// SetScopeExcludeSharesQueryParameter adds the scopeExcludeShares to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeSharesQueryParameter(scopeExcludeShares *string) {
-	o.ScopeExcludeSharesQueryParameter = scopeExcludeShares
+// SetScopeExcludeShares adds the scopeExcludeShares to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeShares(scopeExcludeShares *string) {
+	o.ScopeExcludeShares = scopeExcludeShares
 }
 
-// WithScopeExcludeVolumesQueryParameter adds the scopeExcludeVolumes to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeVolumesQueryParameter(scopeExcludeVolumes *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeExcludeVolumesQueryParameter(scopeExcludeVolumes)
+// WithScopeExcludeVolumes adds the scopeExcludeVolumes to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeVolumes(scopeExcludeVolumes *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeExcludeVolumes(scopeExcludeVolumes)
 	return o
 }
 
-// SetScopeExcludeVolumesQueryParameter adds the scopeExcludeVolumes to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeVolumesQueryParameter(scopeExcludeVolumes *string) {
-	o.ScopeExcludeVolumesQueryParameter = scopeExcludeVolumes
+// SetScopeExcludeVolumes adds the scopeExcludeVolumes to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeVolumes(scopeExcludeVolumes *string) {
+	o.ScopeExcludeVolumes = scopeExcludeVolumes
 }
 
-// WithScopeIncludeExportPoliciesQueryParameter adds the scopeIncludeExportPolicies to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeExportPoliciesQueryParameter(scopeIncludeExportPolicies *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeIncludeExportPoliciesQueryParameter(scopeIncludeExportPolicies)
+// WithScopeIncludeExportPolicies adds the scopeIncludeExportPolicies to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeExportPolicies(scopeIncludeExportPolicies *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeIncludeExportPolicies(scopeIncludeExportPolicies)
 	return o
 }
 
-// SetScopeIncludeExportPoliciesQueryParameter adds the scopeIncludeExportPolicies to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeExportPoliciesQueryParameter(scopeIncludeExportPolicies *string) {
-	o.ScopeIncludeExportPoliciesQueryParameter = scopeIncludeExportPolicies
+// SetScopeIncludeExportPolicies adds the scopeIncludeExportPolicies to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeExportPolicies(scopeIncludeExportPolicies *string) {
+	o.ScopeIncludeExportPolicies = scopeIncludeExportPolicies
 }
 
-// WithScopeIncludeExtensionQueryParameter adds the scopeIncludeExtension to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeExtensionQueryParameter(scopeIncludeExtension *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeIncludeExtensionQueryParameter(scopeIncludeExtension)
+// WithScopeIncludeExtension adds the scopeIncludeExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeExtension(scopeIncludeExtension *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeIncludeExtension(scopeIncludeExtension)
 	return o
 }
 
-// SetScopeIncludeExtensionQueryParameter adds the scopeIncludeExtension to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeExtensionQueryParameter(scopeIncludeExtension *string) {
-	o.ScopeIncludeExtensionQueryParameter = scopeIncludeExtension
+// SetScopeIncludeExtension adds the scopeIncludeExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeExtension(scopeIncludeExtension *string) {
+	o.ScopeIncludeExtension = scopeIncludeExtension
 }
 
-// WithScopeIncludeSharesQueryParameter adds the scopeIncludeShares to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeSharesQueryParameter(scopeIncludeShares *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeIncludeSharesQueryParameter(scopeIncludeShares)
+// WithScopeIncludeShares adds the scopeIncludeShares to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeShares(scopeIncludeShares *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeIncludeShares(scopeIncludeShares)
 	return o
 }
 
-// SetScopeIncludeSharesQueryParameter adds the scopeIncludeShares to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeSharesQueryParameter(scopeIncludeShares *string) {
-	o.ScopeIncludeSharesQueryParameter = scopeIncludeShares
+// SetScopeIncludeShares adds the scopeIncludeShares to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeShares(scopeIncludeShares *string) {
+	o.ScopeIncludeShares = scopeIncludeShares
 }
 
-// WithScopeIncludeVolumesQueryParameter adds the scopeIncludeVolumes to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeVolumesQueryParameter(scopeIncludeVolumes *string) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeIncludeVolumesQueryParameter(scopeIncludeVolumes)
+// WithScopeIncludeVolumes adds the scopeIncludeVolumes to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeVolumes(scopeIncludeVolumes *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeIncludeVolumes(scopeIncludeVolumes)
 	return o
 }
 
-// SetScopeIncludeVolumesQueryParameter adds the scopeIncludeVolumes to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeVolumesQueryParameter(scopeIncludeVolumes *string) {
-	o.ScopeIncludeVolumesQueryParameter = scopeIncludeVolumes
+// SetScopeIncludeVolumes adds the scopeIncludeVolumes to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeVolumes(scopeIncludeVolumes *string) {
+	o.ScopeIncludeVolumes = scopeIncludeVolumes
 }
 
-// WithScopeObjectMonitoringWithNoExtensionQueryParameter adds the scopeObjectMonitoringWithNoExtension to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithScopeObjectMonitoringWithNoExtensionQueryParameter(scopeObjectMonitoringWithNoExtension *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetScopeObjectMonitoringWithNoExtensionQueryParameter(scopeObjectMonitoringWithNoExtension)
+// WithScopeObjectMonitoringWithNoExtension adds the scopeObjectMonitoringWithNoExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeObjectMonitoringWithNoExtension(scopeObjectMonitoringWithNoExtension *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeObjectMonitoringWithNoExtension(scopeObjectMonitoringWithNoExtension)
 	return o
 }
 
-// SetScopeObjectMonitoringWithNoExtensionQueryParameter adds the scopeObjectMonitoringWithNoExtension to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetScopeObjectMonitoringWithNoExtensionQueryParameter(scopeObjectMonitoringWithNoExtension *bool) {
-	o.ScopeObjectMonitoringWithNoExtensionQueryParameter = scopeObjectMonitoringWithNoExtension
+// SetScopeObjectMonitoringWithNoExtension adds the scopeObjectMonitoringWithNoExtension to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeObjectMonitoringWithNoExtension(scopeObjectMonitoringWithNoExtension *bool) {
+	o.ScopeObjectMonitoringWithNoExtension = scopeObjectMonitoringWithNoExtension
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyPolicyCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithSvmUUID(svmUUID string) *FpolicyPolicyCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -549,13 +549,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -566,13 +566,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EngineNameQueryParameter != nil {
+	if o.EngineName != nil {
 
 		// query param engine.name
 		var qrEngineName string
 
-		if o.EngineNameQueryParameter != nil {
-			qrEngineName = *o.EngineNameQueryParameter
+		if o.EngineName != nil {
+			qrEngineName = *o.EngineName
 		}
 		qEngineName := qrEngineName
 		if qEngineName != "" {
@@ -583,13 +583,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EventsNameQueryParameter != nil {
+	if o.EventsName != nil {
 
 		// query param events.name
 		var qrEventsName string
 
-		if o.EventsNameQueryParameter != nil {
-			qrEventsName = *o.EventsNameQueryParameter
+		if o.EventsName != nil {
+			qrEventsName = *o.EventsName
 		}
 		qEventsName := qrEventsName
 		if qEventsName != "" {
@@ -600,7 +600,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -611,13 +611,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MandatoryQueryParameter != nil {
+	if o.Mandatory != nil {
 
 		// query param mandatory
 		var qrMandatory bool
 
-		if o.MandatoryQueryParameter != nil {
-			qrMandatory = *o.MandatoryQueryParameter
+		if o.Mandatory != nil {
+			qrMandatory = *o.Mandatory
 		}
 		qMandatory := swag.FormatBool(qrMandatory)
 		if qMandatory != "" {
@@ -628,13 +628,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -645,13 +645,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -662,7 +662,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -673,13 +673,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PassthroughReadQueryParameter != nil {
+	if o.PassthroughRead != nil {
 
 		// query param passthrough_read
 		var qrPassthroughRead bool
 
-		if o.PassthroughReadQueryParameter != nil {
-			qrPassthroughRead = *o.PassthroughReadQueryParameter
+		if o.PassthroughRead != nil {
+			qrPassthroughRead = *o.PassthroughRead
 		}
 		qPassthroughRead := swag.FormatBool(qrPassthroughRead)
 		if qPassthroughRead != "" {
@@ -690,13 +690,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PriorityQueryParameter != nil {
+	if o.Priority != nil {
 
 		// query param priority
 		var qrPriority int64
 
-		if o.PriorityQueryParameter != nil {
-			qrPriority = *o.PriorityQueryParameter
+		if o.Priority != nil {
+			qrPriority = *o.Priority
 		}
 		qPriority := swag.FormatInt64(qrPriority)
 		if qPriority != "" {
@@ -707,13 +707,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PrivilegedUserQueryParameter != nil {
+	if o.PrivilegedUser != nil {
 
 		// query param privileged_user
 		var qrPrivilegedUser string
 
-		if o.PrivilegedUserQueryParameter != nil {
-			qrPrivilegedUser = *o.PrivilegedUserQueryParameter
+		if o.PrivilegedUser != nil {
+			qrPrivilegedUser = *o.PrivilegedUser
 		}
 		qPrivilegedUser := qrPrivilegedUser
 		if qPrivilegedUser != "" {
@@ -724,13 +724,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -741,13 +741,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -758,13 +758,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeCheckExtensionsOnDirectoriesQueryParameter != nil {
+	if o.ScopeCheckExtensionsOnDirectories != nil {
 
 		// query param scope.check_extensions_on_directories
 		var qrScopeCheckExtensionsOnDirectories bool
 
-		if o.ScopeCheckExtensionsOnDirectoriesQueryParameter != nil {
-			qrScopeCheckExtensionsOnDirectories = *o.ScopeCheckExtensionsOnDirectoriesQueryParameter
+		if o.ScopeCheckExtensionsOnDirectories != nil {
+			qrScopeCheckExtensionsOnDirectories = *o.ScopeCheckExtensionsOnDirectories
 		}
 		qScopeCheckExtensionsOnDirectories := swag.FormatBool(qrScopeCheckExtensionsOnDirectories)
 		if qScopeCheckExtensionsOnDirectories != "" {
@@ -775,13 +775,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeExcludeExportPoliciesQueryParameter != nil {
+	if o.ScopeExcludeExportPolicies != nil {
 
 		// query param scope.exclude_export_policies
 		var qrScopeExcludeExportPolicies string
 
-		if o.ScopeExcludeExportPoliciesQueryParameter != nil {
-			qrScopeExcludeExportPolicies = *o.ScopeExcludeExportPoliciesQueryParameter
+		if o.ScopeExcludeExportPolicies != nil {
+			qrScopeExcludeExportPolicies = *o.ScopeExcludeExportPolicies
 		}
 		qScopeExcludeExportPolicies := qrScopeExcludeExportPolicies
 		if qScopeExcludeExportPolicies != "" {
@@ -792,13 +792,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeExcludeExtensionQueryParameter != nil {
+	if o.ScopeExcludeExtension != nil {
 
 		// query param scope.exclude_extension
 		var qrScopeExcludeExtension string
 
-		if o.ScopeExcludeExtensionQueryParameter != nil {
-			qrScopeExcludeExtension = *o.ScopeExcludeExtensionQueryParameter
+		if o.ScopeExcludeExtension != nil {
+			qrScopeExcludeExtension = *o.ScopeExcludeExtension
 		}
 		qScopeExcludeExtension := qrScopeExcludeExtension
 		if qScopeExcludeExtension != "" {
@@ -809,13 +809,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeExcludeSharesQueryParameter != nil {
+	if o.ScopeExcludeShares != nil {
 
 		// query param scope.exclude_shares
 		var qrScopeExcludeShares string
 
-		if o.ScopeExcludeSharesQueryParameter != nil {
-			qrScopeExcludeShares = *o.ScopeExcludeSharesQueryParameter
+		if o.ScopeExcludeShares != nil {
+			qrScopeExcludeShares = *o.ScopeExcludeShares
 		}
 		qScopeExcludeShares := qrScopeExcludeShares
 		if qScopeExcludeShares != "" {
@@ -826,13 +826,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeExcludeVolumesQueryParameter != nil {
+	if o.ScopeExcludeVolumes != nil {
 
 		// query param scope.exclude_volumes
 		var qrScopeExcludeVolumes string
 
-		if o.ScopeExcludeVolumesQueryParameter != nil {
-			qrScopeExcludeVolumes = *o.ScopeExcludeVolumesQueryParameter
+		if o.ScopeExcludeVolumes != nil {
+			qrScopeExcludeVolumes = *o.ScopeExcludeVolumes
 		}
 		qScopeExcludeVolumes := qrScopeExcludeVolumes
 		if qScopeExcludeVolumes != "" {
@@ -843,13 +843,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeIncludeExportPoliciesQueryParameter != nil {
+	if o.ScopeIncludeExportPolicies != nil {
 
 		// query param scope.include_export_policies
 		var qrScopeIncludeExportPolicies string
 
-		if o.ScopeIncludeExportPoliciesQueryParameter != nil {
-			qrScopeIncludeExportPolicies = *o.ScopeIncludeExportPoliciesQueryParameter
+		if o.ScopeIncludeExportPolicies != nil {
+			qrScopeIncludeExportPolicies = *o.ScopeIncludeExportPolicies
 		}
 		qScopeIncludeExportPolicies := qrScopeIncludeExportPolicies
 		if qScopeIncludeExportPolicies != "" {
@@ -860,13 +860,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeIncludeExtensionQueryParameter != nil {
+	if o.ScopeIncludeExtension != nil {
 
 		// query param scope.include_extension
 		var qrScopeIncludeExtension string
 
-		if o.ScopeIncludeExtensionQueryParameter != nil {
-			qrScopeIncludeExtension = *o.ScopeIncludeExtensionQueryParameter
+		if o.ScopeIncludeExtension != nil {
+			qrScopeIncludeExtension = *o.ScopeIncludeExtension
 		}
 		qScopeIncludeExtension := qrScopeIncludeExtension
 		if qScopeIncludeExtension != "" {
@@ -877,13 +877,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeIncludeSharesQueryParameter != nil {
+	if o.ScopeIncludeShares != nil {
 
 		// query param scope.include_shares
 		var qrScopeIncludeShares string
 
-		if o.ScopeIncludeSharesQueryParameter != nil {
-			qrScopeIncludeShares = *o.ScopeIncludeSharesQueryParameter
+		if o.ScopeIncludeShares != nil {
+			qrScopeIncludeShares = *o.ScopeIncludeShares
 		}
 		qScopeIncludeShares := qrScopeIncludeShares
 		if qScopeIncludeShares != "" {
@@ -894,13 +894,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeIncludeVolumesQueryParameter != nil {
+	if o.ScopeIncludeVolumes != nil {
 
 		// query param scope.include_volumes
 		var qrScopeIncludeVolumes string
 
-		if o.ScopeIncludeVolumesQueryParameter != nil {
-			qrScopeIncludeVolumes = *o.ScopeIncludeVolumesQueryParameter
+		if o.ScopeIncludeVolumes != nil {
+			qrScopeIncludeVolumes = *o.ScopeIncludeVolumes
 		}
 		qScopeIncludeVolumes := qrScopeIncludeVolumes
 		if qScopeIncludeVolumes != "" {
@@ -911,13 +911,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeObjectMonitoringWithNoExtensionQueryParameter != nil {
+	if o.ScopeObjectMonitoringWithNoExtension != nil {
 
 		// query param scope.object_monitoring_with_no_extension
 		var qrScopeObjectMonitoringWithNoExtension bool
 
-		if o.ScopeObjectMonitoringWithNoExtensionQueryParameter != nil {
-			qrScopeObjectMonitoringWithNoExtension = *o.ScopeObjectMonitoringWithNoExtensionQueryParameter
+		if o.ScopeObjectMonitoringWithNoExtension != nil {
+			qrScopeObjectMonitoringWithNoExtension = *o.ScopeObjectMonitoringWithNoExtension
 		}
 		qScopeObjectMonitoringWithNoExtension := swag.FormatBool(qrScopeObjectMonitoringWithNoExtension)
 		if qScopeObjectMonitoringWithNoExtension != "" {
@@ -929,7 +929,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -941,7 +941,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamFpolicyPolicyCollectionGet binds the parameter fields
 func (o *FpolicyPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -958,7 +958,7 @@ func (o *FpolicyPolicyCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamFpolicyPolicyCollectionGet binds the parameter order_by
 func (o *FpolicyPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -22,7 +22,7 @@ type S3User struct {
 	// Specifies the access key for the user.
 	// Example: Pz3SB54G2B_6dsXQPrA5HrTPcf478qoAW6_Xx6qyqZ948AgZ_7YfCf_9nO87YoZmskxx3cq41U2JAH2M3_fs321B4rkzS3a_oC5_8u7D8j_45N8OsBCBPWGD_1d_ccfq
 	// Read Only: true
-	AccessKey string `json:"access_key,omitempty"`
+	AccessKey *string `json:"access_key,omitempty"`
 
 	// Can contain any additional information about the user being created or modified.
 	// Example: S3 user
@@ -34,10 +34,10 @@ type S3User struct {
 	// Example: user-1
 	// Max Length: 64
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// svm
-	Svm *S3UserSvm `json:"svm,omitempty"`
+	Svm *S3UserInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this s3 user
@@ -83,11 +83,11 @@ func (m *S3User) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 64); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
@@ -131,7 +131,7 @@ func (m *S3User) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 
 func (m *S3User) contextValidateAccessKey(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "access_key", "body", string(m.AccessKey)); err != nil {
+	if err := validate.ReadOnly(ctx, "access_key", "body", m.AccessKey); err != nil {
 		return err
 	}
 
@@ -170,27 +170,27 @@ func (m *S3User) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3UserSvm s3 user svm
+// S3UserInlineSvm s3 user inline svm
 //
-// swagger:model S3UserSvm
-type S3UserSvm struct {
+// swagger:model s3_user_inline_svm
+type S3UserInlineSvm struct {
 
 	// links
-	Links *S3UserSvmLinks `json:"_links,omitempty"`
+	Links *S3UserInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 user svm
-func (m *S3UserSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 user inline svm
+func (m *S3UserInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -203,7 +203,7 @@ func (m *S3UserSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3UserSvm) validateLinks(formats strfmt.Registry) error {
+func (m *S3UserInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -220,8 +220,8 @@ func (m *S3UserSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 user svm based on the context it is used
-func (m *S3UserSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 user inline svm based on the context it is used
+func (m *S3UserInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -234,7 +234,7 @@ func (m *S3UserSvm) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *S3UserSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3UserInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -249,7 +249,7 @@ func (m *S3UserSvm) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 }
 
 // MarshalBinary interface implementation
-func (m *S3UserSvm) MarshalBinary() ([]byte, error) {
+func (m *S3UserInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -257,8 +257,8 @@ func (m *S3UserSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3UserSvm) UnmarshalBinary(b []byte) error {
-	var res S3UserSvm
+func (m *S3UserInlineSvm) UnmarshalBinary(b []byte) error {
+	var res S3UserInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -266,17 +266,17 @@ func (m *S3UserSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3UserSvmLinks s3 user svm links
+// S3UserInlineSvmInlineLinks s3 user inline svm inline links
 //
-// swagger:model S3UserSvmLinks
-type S3UserSvmLinks struct {
+// swagger:model s3_user_inline_svm_inline__links
+type S3UserInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 user svm links
-func (m *S3UserSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 user inline svm inline links
+func (m *S3UserInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -289,7 +289,7 @@ func (m *S3UserSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3UserSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3UserInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -306,8 +306,8 @@ func (m *S3UserSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 user svm links based on the context it is used
-func (m *S3UserSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 user inline svm inline links based on the context it is used
+func (m *S3UserInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -320,7 +320,7 @@ func (m *S3UserSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *S3UserSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3UserInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -335,7 +335,7 @@ func (m *S3UserSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *S3UserSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *S3UserInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -343,8 +343,8 @@ func (m *S3UserSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3UserSvmLinks) UnmarshalBinary(b []byte) error {
-	var res S3UserSvmLinks
+func (m *S3UserInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3UserInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -73,13 +73,13 @@ type SnapshotPolicyScheduleModifyParams struct {
 
 	   Snapshot copy policy schedule UUID
 	*/
-	ScheduleUUIDPathParameter string
+	ScheduleUUID string
 
 	/* SnapshotPolicyUUID.
 
 	   Snapshot copy policy UUID
 	*/
-	SnapshotPolicyUUIDPathParameter string
+	SnapshotPolicyUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,26 +145,26 @@ func (o *SnapshotPolicyScheduleModifyParams) SetInfo(info *models.SnapshotPolicy
 	o.Info = info
 }
 
-// WithScheduleUUIDPathParameter adds the scheduleUUID to the snapshot policy schedule modify params
-func (o *SnapshotPolicyScheduleModifyParams) WithScheduleUUIDPathParameter(scheduleUUID string) *SnapshotPolicyScheduleModifyParams {
-	o.SetScheduleUUIDPathParameter(scheduleUUID)
+// WithScheduleUUID adds the scheduleUUID to the snapshot policy schedule modify params
+func (o *SnapshotPolicyScheduleModifyParams) WithScheduleUUID(scheduleUUID string) *SnapshotPolicyScheduleModifyParams {
+	o.SetScheduleUUID(scheduleUUID)
 	return o
 }
 
-// SetScheduleUUIDPathParameter adds the scheduleUuid to the snapshot policy schedule modify params
-func (o *SnapshotPolicyScheduleModifyParams) SetScheduleUUIDPathParameter(scheduleUUID string) {
-	o.ScheduleUUIDPathParameter = scheduleUUID
+// SetScheduleUUID adds the scheduleUuid to the snapshot policy schedule modify params
+func (o *SnapshotPolicyScheduleModifyParams) SetScheduleUUID(scheduleUUID string) {
+	o.ScheduleUUID = scheduleUUID
 }
 
-// WithSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUUID to the snapshot policy schedule modify params
-func (o *SnapshotPolicyScheduleModifyParams) WithSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) *SnapshotPolicyScheduleModifyParams {
-	o.SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID)
+// WithSnapshotPolicyUUID adds the snapshotPolicyUUID to the snapshot policy schedule modify params
+func (o *SnapshotPolicyScheduleModifyParams) WithSnapshotPolicyUUID(snapshotPolicyUUID string) *SnapshotPolicyScheduleModifyParams {
+	o.SetSnapshotPolicyUUID(snapshotPolicyUUID)
 	return o
 }
 
-// SetSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUuid to the snapshot policy schedule modify params
-func (o *SnapshotPolicyScheduleModifyParams) SetSnapshotPolicyUUIDPathParameter(snapshotPolicyUUID string) {
-	o.SnapshotPolicyUUIDPathParameter = snapshotPolicyUUID
+// SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the snapshot policy schedule modify params
+func (o *SnapshotPolicyScheduleModifyParams) SetSnapshotPolicyUUID(snapshotPolicyUUID string) {
+	o.SnapshotPolicyUUID = snapshotPolicyUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -181,12 +181,12 @@ func (o *SnapshotPolicyScheduleModifyParams) WriteToRequest(r runtime.ClientRequ
 	}
 
 	// path param schedule.uuid
-	if err := r.SetPathParam("schedule.uuid", o.ScheduleUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("schedule.uuid", o.ScheduleUUID); err != nil {
 		return err
 	}
 
 	// path param snapshot_policy.uuid
-	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUID); err != nil {
 		return err
 	}
 

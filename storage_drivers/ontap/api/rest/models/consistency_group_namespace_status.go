@@ -23,22 +23,22 @@ type ConsistencyGroupNamespaceStatus struct {
 	// The state of the volume and aggregate that contain the NVMe namespace. Namespaces are only available when their containers are available.
 	//
 	// Enum: [online aggregate_offline volume_offline]
-	ContainerState string `json:"container_state,omitempty"`
+	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
-	Mapped bool `json:"mapped,omitempty"`
+	Mapped *bool `json:"mapped,omitempty"`
 
 	// Reports if the NVMe namespace allows only read access.
 	//
-	ReadOnly bool `json:"read_only,omitempty"`
+	ReadOnly *bool `json:"read_only,omitempty"`
 
 	// The state of the NVMe namespace. Normal states for a namespace are _online_ and _offline_. Other states indicate errors.
 	//
 	// Example: online
 	// Enum: [nvfail offline online space_error]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this consistency group namespace status
@@ -118,7 +118,7 @@ func (m *ConsistencyGroupNamespaceStatus) validateContainerState(formats strfmt.
 	}
 
 	// value enum
-	if err := m.validateContainerStateEnum("container_state", "body", m.ContainerState); err != nil {
+	if err := m.validateContainerStateEnum("container_state", "body", *m.ContainerState); err != nil {
 		return err
 	}
 
@@ -194,7 +194,7 @@ func (m *ConsistencyGroupNamespaceStatus) validateState(formats strfmt.Registry)
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 

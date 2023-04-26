@@ -66,13 +66,13 @@ type ScheduleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Schedule UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *ScheduleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the schedule get params
-func (o *ScheduleGetParams) WithFieldsQueryParameter(fields []string) *ScheduleGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the schedule get params
+func (o *ScheduleGetParams) WithFields(fields []string) *ScheduleGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the schedule get params
-func (o *ScheduleGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the schedule get params
+func (o *ScheduleGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the schedule get params
-func (o *ScheduleGetParams) WithUUIDPathParameter(uuid string) *ScheduleGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the schedule get params
+func (o *ScheduleGetParams) WithUUID(uuid string) *ScheduleGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the schedule get params
-func (o *ScheduleGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the schedule get params
+func (o *ScheduleGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *ScheduleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *ScheduleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *ScheduleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamScheduleGet binds the parameter fields
 func (o *ScheduleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

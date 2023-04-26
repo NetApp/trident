@@ -76,7 +76,7 @@ func backendUpdateState(backendNames []string, backendState string) error {
 		return err
 	}
 
-	response, responseBody, err := api.InvokeRESTAPI("POST", url, requestBytes, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("POST", url, requestBytes)
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusOK {

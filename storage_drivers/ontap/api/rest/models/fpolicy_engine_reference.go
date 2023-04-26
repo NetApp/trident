@@ -19,10 +19,10 @@ import (
 type FpolicyEngineReference struct {
 
 	// links
-	Links *FpolicyEngineReferenceLinks `json:"_links,omitempty"`
+	Links *FpolicyEngineReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the FPolicy external engine.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this fpolicy engine reference
@@ -102,17 +102,17 @@ func (m *FpolicyEngineReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEngineReferenceLinks fpolicy engine reference links
+// FpolicyEngineReferenceInlineLinks fpolicy engine reference inline links
 //
-// swagger:model FpolicyEngineReferenceLinks
-type FpolicyEngineReferenceLinks struct {
+// swagger:model fpolicy_engine_reference_inline__links
+type FpolicyEngineReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this fpolicy engine reference links
-func (m *FpolicyEngineReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy engine reference inline links
+func (m *FpolicyEngineReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -125,7 +125,7 @@ func (m *FpolicyEngineReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FpolicyEngineReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *FpolicyEngineReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -142,8 +142,8 @@ func (m *FpolicyEngineReferenceLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this fpolicy engine reference links based on the context it is used
-func (m *FpolicyEngineReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this fpolicy engine reference inline links based on the context it is used
+func (m *FpolicyEngineReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -156,7 +156,7 @@ func (m *FpolicyEngineReferenceLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *FpolicyEngineReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEngineReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -171,7 +171,7 @@ func (m *FpolicyEngineReferenceLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEngineReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEngineReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -179,8 +179,8 @@ func (m *FpolicyEngineReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEngineReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res FpolicyEngineReferenceLinks
+func (m *FpolicyEngineReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res FpolicyEngineReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

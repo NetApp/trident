@@ -21,10 +21,6 @@ import (
 // swagger:model fc_interface_recommend_message
 type FcInterfaceRecommendMessage struct {
 
-	// The message substitution arguments.
-	// Read Only: true
-	Arguments []*ErrorArguments `json:"arguments,omitempty"`
-
 	// The message code. Possible messages:
 	//   ONTAP Error Response Codes
 	//   | Error Code | Description |
@@ -47,12 +43,16 @@ type FcInterfaceRecommendMessage struct {
 	//
 	// Example: 5375959
 	// Read Only: true
-	Code string `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
+
+	// The message substitution arguments.
+	// Read Only: true
+	FcInterfaceRecommendMessageInlineArguments []*ErrorArguments `json:"arguments,omitempty"`
 
 	// The message text.
 	// Example: Network ports are disabled.
 	// Read Only: true
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// The severity of the message. Message severities are as follows:
 	// - `error` - Messages reporting problems that must be corrected before creating the FC network interfaces.
@@ -62,14 +62,14 @@ type FcInterfaceRecommendMessage struct {
 	// Example: informational
 	// Read Only: true
 	// Enum: [error warning informational]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 }
 
 // Validate validates this fc interface recommend message
 func (m *FcInterfaceRecommendMessage) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateArguments(formats); err != nil {
+	if err := m.validateFcInterfaceRecommendMessageInlineArguments(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -83,18 +83,18 @@ func (m *FcInterfaceRecommendMessage) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FcInterfaceRecommendMessage) validateArguments(formats strfmt.Registry) error {
-	if swag.IsZero(m.Arguments) { // not required
+func (m *FcInterfaceRecommendMessage) validateFcInterfaceRecommendMessageInlineArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.FcInterfaceRecommendMessageInlineArguments) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Arguments); i++ {
-		if swag.IsZero(m.Arguments[i]) { // not required
+	for i := 0; i < len(m.FcInterfaceRecommendMessageInlineArguments); i++ {
+		if swag.IsZero(m.FcInterfaceRecommendMessageInlineArguments[i]) { // not required
 			continue
 		}
 
-		if m.Arguments[i] != nil {
-			if err := m.Arguments[i].Validate(formats); err != nil {
+		if m.FcInterfaceRecommendMessageInlineArguments[i] != nil {
+			if err := m.FcInterfaceRecommendMessageInlineArguments[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("arguments" + "." + strconv.Itoa(i))
 				}
@@ -166,7 +166,7 @@ func (m *FcInterfaceRecommendMessage) validateSeverity(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 
@@ -177,11 +177,11 @@ func (m *FcInterfaceRecommendMessage) validateSeverity(formats strfmt.Registry) 
 func (m *FcInterfaceRecommendMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateArguments(ctx, formats); err != nil {
+	if err := m.contextValidateCode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateCode(ctx, formats); err != nil {
+	if err := m.contextValidateFcInterfaceRecommendMessageInlineArguments(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -199,16 +199,25 @@ func (m *FcInterfaceRecommendMessage) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *FcInterfaceRecommendMessage) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+func (m *FcInterfaceRecommendMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Arguments); i++ {
+	return nil
+}
 
-		if m.Arguments[i] != nil {
-			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+func (m *FcInterfaceRecommendMessage) contextValidateFcInterfaceRecommendMessageInlineArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "arguments", "body", []*ErrorArguments(m.FcInterfaceRecommendMessageInlineArguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.FcInterfaceRecommendMessageInlineArguments); i++ {
+
+		if m.FcInterfaceRecommendMessageInlineArguments[i] != nil {
+			if err := m.FcInterfaceRecommendMessageInlineArguments[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("arguments" + "." + strconv.Itoa(i))
 				}
@@ -221,18 +230,9 @@ func (m *FcInterfaceRecommendMessage) contextValidateArguments(ctx context.Conte
 	return nil
 }
 
-func (m *FcInterfaceRecommendMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *FcInterfaceRecommendMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -241,7 +241,7 @@ func (m *FcInterfaceRecommendMessage) contextValidateMessage(ctx context.Context
 
 func (m *FcInterfaceRecommendMessage) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "severity", "body", string(m.Severity)); err != nil {
+	if err := validate.ReadOnly(ctx, "severity", "body", m.Severity); err != nil {
 		return err
 	}
 

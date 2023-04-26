@@ -20,7 +20,7 @@ import (
 type QtreeReference struct {
 
 	// links
-	Links *QtreeReferenceLinks `json:"_links,omitempty"`
+	Links *QtreeReferenceInlineLinks `json:"_links,omitempty"`
 
 	// The identifier for the qtree, unique within the qtree's volume.
 	//
@@ -31,7 +31,7 @@ type QtreeReference struct {
 
 	// The name of the qtree.
 	// Example: qt1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this qtree reference
@@ -131,17 +131,17 @@ func (m *QtreeReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QtreeReferenceLinks qtree reference links
+// QtreeReferenceInlineLinks qtree reference inline links
 //
-// swagger:model QtreeReferenceLinks
-type QtreeReferenceLinks struct {
+// swagger:model qtree_reference_inline__links
+type QtreeReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qtree reference links
-func (m *QtreeReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qtree reference inline links
+func (m *QtreeReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -154,7 +154,7 @@ func (m *QtreeReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QtreeReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QtreeReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -171,8 +171,8 @@ func (m *QtreeReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qtree reference links based on the context it is used
-func (m *QtreeReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qtree reference inline links based on the context it is used
+func (m *QtreeReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -185,7 +185,7 @@ func (m *QtreeReferenceLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *QtreeReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QtreeReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -200,7 +200,7 @@ func (m *QtreeReferenceLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *QtreeReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *QtreeReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *QtreeReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QtreeReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res QtreeReferenceLinks
+func (m *QtreeReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QtreeReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

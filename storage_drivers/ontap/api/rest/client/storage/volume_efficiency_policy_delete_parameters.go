@@ -65,7 +65,7 @@ type VolumeEfficiencyPolicyDeleteParams struct {
 
 	   Volume efficiency policy UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *VolumeEfficiencyPolicyDeleteParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the volume efficiency policy delete params
-func (o *VolumeEfficiencyPolicyDeleteParams) WithUUIDPathParameter(uuid string) *VolumeEfficiencyPolicyDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the volume efficiency policy delete params
+func (o *VolumeEfficiencyPolicyDeleteParams) WithUUID(uuid string) *VolumeEfficiencyPolicyDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the volume efficiency policy delete params
-func (o *VolumeEfficiencyPolicyDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the volume efficiency policy delete params
+func (o *VolumeEfficiencyPolicyDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *VolumeEfficiencyPolicyDeleteParams) WriteToRequest(r runtime.ClientRequ
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

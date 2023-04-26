@@ -66,229 +66,169 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Filter by consistency_group_failover.error.arguments.code
 	*/
-	ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter *string
+	ConsistencyGroupFailoverErrorArgumentsCode *string
 
 	/* ConsistencyGroupFailoverErrorArgumentsMessage.
 
 	   Filter by consistency_group_failover.error.arguments.message
 	*/
-	ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter *string
+	ConsistencyGroupFailoverErrorArgumentsMessage *string
 
 	/* ConsistencyGroupFailoverErrorCode.
 
 	   Filter by consistency_group_failover.error.code
 	*/
-	ConsistencyGroupFailoverErrorCodeQueryParameter *string
+	ConsistencyGroupFailoverErrorCode *string
 
 	/* ConsistencyGroupFailoverErrorMessage.
 
 	   Filter by consistency_group_failover.error.message
 	*/
-	ConsistencyGroupFailoverErrorMessageQueryParameter *string
+	ConsistencyGroupFailoverErrorMessage *string
 
 	/* ConsistencyGroupFailoverErrorTarget.
 
 	   Filter by consistency_group_failover.error.target
 	*/
-	ConsistencyGroupFailoverErrorTargetQueryParameter *string
+	ConsistencyGroupFailoverErrorTarget *string
 
 	/* ConsistencyGroupFailoverStatusCode.
 
 	   Filter by consistency_group_failover.status.code
 	*/
-	ConsistencyGroupFailoverStatusCodeQueryParameter *string
+	ConsistencyGroupFailoverStatusCode *string
 
 	/* ConsistencyGroupFailoverStatusMessage.
 
 	   Filter by consistency_group_failover.status.message
 	*/
-	ConsistencyGroupFailoverStatusMessageQueryParameter *string
+	ConsistencyGroupFailoverStatusMessage *string
 
 	/* DestinationClusterName.
 
 	   Filter by destination.cluster.name
 	*/
-	DestinationClusterNameQueryParameter *string
+	DestinationClusterName *string
 
 	/* DestinationClusterUUID.
 
 	   Filter by destination.cluster.uuid
 	*/
-	DestinationClusterUUIDQueryParameter *string
+	DestinationClusterUUID *string
 
 	/* DestinationConsistencyGroupVolumesName.
 
 	   Filter by destination.consistency_group_volumes.name
 	*/
-	DestinationConsistencyGroupVolumesNameQueryParameter *string
+	DestinationConsistencyGroupVolumesName *string
 
 	/* DestinationPath.
 
 	   Filter by destination.path
 	*/
-	DestinationPathQueryParameter *string
+	DestinationPath *string
 
 	/* DestinationSvmName.
 
 	   Filter by destination.svm.name
 	*/
-	DestinationSVMNameQueryParameter *string
+	DestinationSvmName *string
 
 	/* DestinationSvmUUID.
 
 	   Filter by destination.svm.uuid
 	*/
-	DestinationSVMUUIDQueryParameter *string
+	DestinationSvmUUID *string
 
 	/* DestinationUUID.
 
 	   Filter by destination.uuid
 	*/
-	DestinationUUIDQueryParameter *string
+	DestinationUUID *string
 
 	/* ExportedSnapshot.
 
 	   Filter by exported_snapshot
 	*/
-	ExportedSnapshotQueryParameter *string
-
-	/* FabriclinkDestinationBucket.
-
-	   Filter by fabriclink.destination_bucket
-	*/
-	FabriclinkDestinationBucketQueryParameter *string
-
-	/* FabriclinkDestinationRole.
-
-	   Filter by fabriclink.destination_role
-	*/
-	FabriclinkDestinationRoleQueryParameter *string
-
-	/* FabriclinkPendingWorkTaskCount.
-
-	   Filter by fabriclink.pending_work_task_count
-	*/
-	FabriclinkPendingWorkTaskCountQueryParameter *int64
-
-	/* FabriclinkPullByteCount.
-
-	   Filter by fabriclink.pull_byte_count
-	*/
-	FabriclinkPullByteCountQueryParameter *int64
-
-	/* FabriclinkPushByteCount.
-
-	   Filter by fabriclink.push_byte_count
-	*/
-	FabriclinkPushByteCountQueryParameter *int64
-
-	/* FabriclinkSourceBucket.
-
-	   Filter by fabriclink.source_bucket
-	*/
-	FabriclinkSourceBucketQueryParameter *string
-
-	/* FabriclinkSourceRole.
-
-	   Filter by fabriclink.source_role
-	*/
-	FabriclinkSourceRoleQueryParameter *string
-
-	/* FabriclinkStatus.
-
-	   Filter by fabriclink.status
-	*/
-	FabriclinkStatusQueryParameter *string
-
-	/* FabriclinkTopologyUUID.
-
-	   Filter by fabriclink.topology_uuid
-	*/
-	FabriclinkTopologyUUIDQueryParameter *string
+	ExportedSnapshot *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* GroupType.
 
 	   Filter by group_type
 	*/
-	GroupTypeQueryParameter *string
+	GroupType *string
 
 	/* Healthy.
 
 	   Filter by healthy
 	*/
-	HealthyQueryParameter *bool
+	Healthy *bool
 
 	/* IdentityPreservation.
 
 	   Filter by identity_preservation
 	*/
-	IdentityPreservationQueryParameter *string
+	IdentityPreservation *string
 
 	/* LagTime.
 
 	   Filter by lag_time
 	*/
-	LagTimeQueryParameter *string
+	LagTime *string
 
 	/* LastTransferType.
 
 	   Filter by last_transfer_type
 	*/
-	LastTransferTypeQueryParameter *string
+	LastTransferType *string
 
 	/* ListDestinationsOnly.
 
 	   Set to true to show relationships from the source only.
 	*/
-	ListDestinationsOnlyQueryParameter *bool
+	ListDestinationsOnly *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* PolicyName.
 
 	   Filter by policy.name
 	*/
-	PolicyNameQueryParameter *string
-
-	/* PolicyTransferScheduleName.
-
-	   Filter by policy.transfer_schedule.name
-	*/
-	PolicyTransferScheduleNameQueryParameter *string
+	PolicyName *string
 
 	/* PolicyType.
 
 	   Filter by policy.type
 	*/
-	PolicyTypeQueryParameter *string
+	PolicyType *string
 
 	/* PolicyUUID.
 
 	   Filter by policy.uuid
 	*/
-	PolicyUUIDQueryParameter *string
+	PolicyUUID *string
 
 	/* Restore.
 
 	   Filter by restore
 	*/
-	RestoreQueryParameter *bool
+	Restore *bool
 
 	/* ReturnRecords.
 
@@ -296,7 +236,7 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -304,127 +244,127 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SourceClusterName.
 
 	   Filter by source.cluster.name
 	*/
-	SourceClusterNameQueryParameter *string
+	SourceClusterName *string
 
 	/* SourceClusterUUID.
 
 	   Filter by source.cluster.uuid
 	*/
-	SourceClusterUUIDQueryParameter *string
+	SourceClusterUUID *string
 
 	/* SourceConsistencyGroupVolumesName.
 
 	   Filter by source.consistency_group_volumes.name
 	*/
-	SourceConsistencyGroupVolumesNameQueryParameter *string
+	SourceConsistencyGroupVolumesName *string
 
 	/* SourcePath.
 
 	   Filter by source.path
 	*/
-	SourcePathQueryParameter *string
+	SourcePath *string
 
 	/* SourceSvmName.
 
 	   Filter by source.svm.name
 	*/
-	SourceSVMNameQueryParameter *string
+	SourceSvmName *string
 
 	/* SourceSvmUUID.
 
 	   Filter by source.svm.uuid
 	*/
-	SourceSVMUUIDQueryParameter *string
+	SourceSvmUUID *string
 
 	/* SourceUUID.
 
 	   Filter by source.uuid
 	*/
-	SourceUUIDQueryParameter *string
+	SourceUUID *string
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* Throttle.
 
 	   Filter by throttle
 	*/
-	ThrottleQueryParameter *int64
+	Throttle *int64
 
 	/* TransferBytesTransferred.
 
 	   Filter by transfer.bytes_transferred
 	*/
-	TransferBytesTransferredQueryParameter *int64
+	TransferBytesTransferred *int64
 
 	/* TransferEndTime.
 
 	   Filter by transfer.end_time
 	*/
-	TransferEndTimeQueryParameter *string
+	TransferEndTime *string
 
 	/* TransferState.
 
 	   Filter by transfer.state
 	*/
-	TransferStateQueryParameter *string
+	TransferState *string
 
 	/* TransferTotalDuration.
 
 	   Filter by transfer.total_duration
 	*/
-	TransferTotalDurationQueryParameter *string
+	TransferTotalDuration *string
 
 	/* TransferUUID.
 
 	   Filter by transfer.uuid
 	*/
-	TransferUUIDQueryParameter *string
+	TransferUUID *string
 
 	/* TransferScheduleName.
 
 	   Filter by transfer_schedule.name
 	*/
-	TransferScheduleNameQueryParameter *string
+	TransferScheduleName *string
 
 	/* TransferScheduleUUID.
 
 	   Filter by transfer_schedule.uuid
 	*/
-	TransferScheduleUUIDQueryParameter *string
+	TransferScheduleUUID *string
 
 	/* UnhealthyReasonCode.
 
 	   Filter by unhealthy_reason.code
 	*/
-	UnhealthyReasonCodeQueryParameter *int64
+	UnhealthyReasonCode *int64
 
 	/* UnhealthyReasonMessage.
 
 	   Filter by unhealthy_reason.message
 	*/
-	UnhealthyReasonMessageQueryParameter *string
+	UnhealthyReasonMessage *string
 
 	/* UnhealthyReasonParameters.
 
 	   Filter by unhealthy_reason.parameters
 	*/
-	UnhealthyReasonParametersQueryParameter *string
+	UnhealthyReasonParameters *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -444,14 +384,14 @@ func (o *SnapmirrorRelationshipsGetParams) WithDefaults() *SnapmirrorRelationshi
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipsGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SnapmirrorRelationshipsGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -493,664 +433,554 @@ func (o *SnapmirrorRelationshipsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConsistencyGroupFailoverErrorArgumentsCodeQueryParameter adds the consistencyGroupFailoverErrorArgumentsCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorArgumentsCodeQueryParameter(consistencyGroupFailoverErrorArgumentsCode *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverErrorArgumentsCodeQueryParameter(consistencyGroupFailoverErrorArgumentsCode)
+// WithConsistencyGroupFailoverErrorArgumentsCode adds the consistencyGroupFailoverErrorArgumentsCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorArgumentsCode(consistencyGroupFailoverErrorArgumentsCode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorArgumentsCode(consistencyGroupFailoverErrorArgumentsCode)
 	return o
 }
 
-// SetConsistencyGroupFailoverErrorArgumentsCodeQueryParameter adds the consistencyGroupFailoverErrorArgumentsCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorArgumentsCodeQueryParameter(consistencyGroupFailoverErrorArgumentsCode *string) {
-	o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter = consistencyGroupFailoverErrorArgumentsCode
+// SetConsistencyGroupFailoverErrorArgumentsCode adds the consistencyGroupFailoverErrorArgumentsCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorArgumentsCode(consistencyGroupFailoverErrorArgumentsCode *string) {
+	o.ConsistencyGroupFailoverErrorArgumentsCode = consistencyGroupFailoverErrorArgumentsCode
 }
 
-// WithConsistencyGroupFailoverErrorArgumentsMessageQueryParameter adds the consistencyGroupFailoverErrorArgumentsMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorArgumentsMessageQueryParameter(consistencyGroupFailoverErrorArgumentsMessage *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverErrorArgumentsMessageQueryParameter(consistencyGroupFailoverErrorArgumentsMessage)
+// WithConsistencyGroupFailoverErrorArgumentsMessage adds the consistencyGroupFailoverErrorArgumentsMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorArgumentsMessage(consistencyGroupFailoverErrorArgumentsMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorArgumentsMessage(consistencyGroupFailoverErrorArgumentsMessage)
 	return o
 }
 
-// SetConsistencyGroupFailoverErrorArgumentsMessageQueryParameter adds the consistencyGroupFailoverErrorArgumentsMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorArgumentsMessageQueryParameter(consistencyGroupFailoverErrorArgumentsMessage *string) {
-	o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter = consistencyGroupFailoverErrorArgumentsMessage
+// SetConsistencyGroupFailoverErrorArgumentsMessage adds the consistencyGroupFailoverErrorArgumentsMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorArgumentsMessage(consistencyGroupFailoverErrorArgumentsMessage *string) {
+	o.ConsistencyGroupFailoverErrorArgumentsMessage = consistencyGroupFailoverErrorArgumentsMessage
 }
 
-// WithConsistencyGroupFailoverErrorCodeQueryParameter adds the consistencyGroupFailoverErrorCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorCodeQueryParameter(consistencyGroupFailoverErrorCode *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverErrorCodeQueryParameter(consistencyGroupFailoverErrorCode)
+// WithConsistencyGroupFailoverErrorCode adds the consistencyGroupFailoverErrorCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorCode(consistencyGroupFailoverErrorCode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorCode(consistencyGroupFailoverErrorCode)
 	return o
 }
 
-// SetConsistencyGroupFailoverErrorCodeQueryParameter adds the consistencyGroupFailoverErrorCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorCodeQueryParameter(consistencyGroupFailoverErrorCode *string) {
-	o.ConsistencyGroupFailoverErrorCodeQueryParameter = consistencyGroupFailoverErrorCode
+// SetConsistencyGroupFailoverErrorCode adds the consistencyGroupFailoverErrorCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorCode(consistencyGroupFailoverErrorCode *string) {
+	o.ConsistencyGroupFailoverErrorCode = consistencyGroupFailoverErrorCode
 }
 
-// WithConsistencyGroupFailoverErrorMessageQueryParameter adds the consistencyGroupFailoverErrorMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorMessageQueryParameter(consistencyGroupFailoverErrorMessage *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverErrorMessageQueryParameter(consistencyGroupFailoverErrorMessage)
+// WithConsistencyGroupFailoverErrorMessage adds the consistencyGroupFailoverErrorMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorMessage(consistencyGroupFailoverErrorMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorMessage(consistencyGroupFailoverErrorMessage)
 	return o
 }
 
-// SetConsistencyGroupFailoverErrorMessageQueryParameter adds the consistencyGroupFailoverErrorMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorMessageQueryParameter(consistencyGroupFailoverErrorMessage *string) {
-	o.ConsistencyGroupFailoverErrorMessageQueryParameter = consistencyGroupFailoverErrorMessage
+// SetConsistencyGroupFailoverErrorMessage adds the consistencyGroupFailoverErrorMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorMessage(consistencyGroupFailoverErrorMessage *string) {
+	o.ConsistencyGroupFailoverErrorMessage = consistencyGroupFailoverErrorMessage
 }
 
-// WithConsistencyGroupFailoverErrorTargetQueryParameter adds the consistencyGroupFailoverErrorTarget to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorTargetQueryParameter(consistencyGroupFailoverErrorTarget *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverErrorTargetQueryParameter(consistencyGroupFailoverErrorTarget)
+// WithConsistencyGroupFailoverErrorTarget adds the consistencyGroupFailoverErrorTarget to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorTarget(consistencyGroupFailoverErrorTarget *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorTarget(consistencyGroupFailoverErrorTarget)
 	return o
 }
 
-// SetConsistencyGroupFailoverErrorTargetQueryParameter adds the consistencyGroupFailoverErrorTarget to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorTargetQueryParameter(consistencyGroupFailoverErrorTarget *string) {
-	o.ConsistencyGroupFailoverErrorTargetQueryParameter = consistencyGroupFailoverErrorTarget
+// SetConsistencyGroupFailoverErrorTarget adds the consistencyGroupFailoverErrorTarget to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorTarget(consistencyGroupFailoverErrorTarget *string) {
+	o.ConsistencyGroupFailoverErrorTarget = consistencyGroupFailoverErrorTarget
 }
 
-// WithConsistencyGroupFailoverStatusCodeQueryParameter adds the consistencyGroupFailoverStatusCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverStatusCodeQueryParameter(consistencyGroupFailoverStatusCode *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverStatusCodeQueryParameter(consistencyGroupFailoverStatusCode)
+// WithConsistencyGroupFailoverStatusCode adds the consistencyGroupFailoverStatusCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverStatusCode(consistencyGroupFailoverStatusCode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverStatusCode(consistencyGroupFailoverStatusCode)
 	return o
 }
 
-// SetConsistencyGroupFailoverStatusCodeQueryParameter adds the consistencyGroupFailoverStatusCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverStatusCodeQueryParameter(consistencyGroupFailoverStatusCode *string) {
-	o.ConsistencyGroupFailoverStatusCodeQueryParameter = consistencyGroupFailoverStatusCode
+// SetConsistencyGroupFailoverStatusCode adds the consistencyGroupFailoverStatusCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverStatusCode(consistencyGroupFailoverStatusCode *string) {
+	o.ConsistencyGroupFailoverStatusCode = consistencyGroupFailoverStatusCode
 }
 
-// WithConsistencyGroupFailoverStatusMessageQueryParameter adds the consistencyGroupFailoverStatusMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverStatusMessageQueryParameter(consistencyGroupFailoverStatusMessage *string) *SnapmirrorRelationshipsGetParams {
-	o.SetConsistencyGroupFailoverStatusMessageQueryParameter(consistencyGroupFailoverStatusMessage)
+// WithConsistencyGroupFailoverStatusMessage adds the consistencyGroupFailoverStatusMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverStatusMessage(consistencyGroupFailoverStatusMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverStatusMessage(consistencyGroupFailoverStatusMessage)
 	return o
 }
 
-// SetConsistencyGroupFailoverStatusMessageQueryParameter adds the consistencyGroupFailoverStatusMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverStatusMessageQueryParameter(consistencyGroupFailoverStatusMessage *string) {
-	o.ConsistencyGroupFailoverStatusMessageQueryParameter = consistencyGroupFailoverStatusMessage
+// SetConsistencyGroupFailoverStatusMessage adds the consistencyGroupFailoverStatusMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverStatusMessage(consistencyGroupFailoverStatusMessage *string) {
+	o.ConsistencyGroupFailoverStatusMessage = consistencyGroupFailoverStatusMessage
 }
 
-// WithDestinationClusterNameQueryParameter adds the destinationClusterName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationClusterNameQueryParameter(destinationClusterName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationClusterNameQueryParameter(destinationClusterName)
+// WithDestinationClusterName adds the destinationClusterName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationClusterName(destinationClusterName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationClusterName(destinationClusterName)
 	return o
 }
 
-// SetDestinationClusterNameQueryParameter adds the destinationClusterName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationClusterNameQueryParameter(destinationClusterName *string) {
-	o.DestinationClusterNameQueryParameter = destinationClusterName
+// SetDestinationClusterName adds the destinationClusterName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationClusterName(destinationClusterName *string) {
+	o.DestinationClusterName = destinationClusterName
 }
 
-// WithDestinationClusterUUIDQueryParameter adds the destinationClusterUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationClusterUUIDQueryParameter(destinationClusterUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationClusterUUIDQueryParameter(destinationClusterUUID)
+// WithDestinationClusterUUID adds the destinationClusterUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationClusterUUID(destinationClusterUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationClusterUUID(destinationClusterUUID)
 	return o
 }
 
-// SetDestinationClusterUUIDQueryParameter adds the destinationClusterUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationClusterUUIDQueryParameter(destinationClusterUUID *string) {
-	o.DestinationClusterUUIDQueryParameter = destinationClusterUUID
+// SetDestinationClusterUUID adds the destinationClusterUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationClusterUUID(destinationClusterUUID *string) {
+	o.DestinationClusterUUID = destinationClusterUUID
 }
 
-// WithDestinationConsistencyGroupVolumesNameQueryParameter adds the destinationConsistencyGroupVolumesName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationConsistencyGroupVolumesNameQueryParameter(destinationConsistencyGroupVolumesName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationConsistencyGroupVolumesNameQueryParameter(destinationConsistencyGroupVolumesName)
+// WithDestinationConsistencyGroupVolumesName adds the destinationConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationConsistencyGroupVolumesName(destinationConsistencyGroupVolumesName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationConsistencyGroupVolumesName(destinationConsistencyGroupVolumesName)
 	return o
 }
 
-// SetDestinationConsistencyGroupVolumesNameQueryParameter adds the destinationConsistencyGroupVolumesName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationConsistencyGroupVolumesNameQueryParameter(destinationConsistencyGroupVolumesName *string) {
-	o.DestinationConsistencyGroupVolumesNameQueryParameter = destinationConsistencyGroupVolumesName
+// SetDestinationConsistencyGroupVolumesName adds the destinationConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationConsistencyGroupVolumesName(destinationConsistencyGroupVolumesName *string) {
+	o.DestinationConsistencyGroupVolumesName = destinationConsistencyGroupVolumesName
 }
 
-// WithDestinationPathQueryParameter adds the destinationPath to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationPathQueryParameter(destinationPath *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationPathQueryParameter(destinationPath)
+// WithDestinationPath adds the destinationPath to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationPath(destinationPath *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationPath(destinationPath)
 	return o
 }
 
-// SetDestinationPathQueryParameter adds the destinationPath to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationPathQueryParameter(destinationPath *string) {
-	o.DestinationPathQueryParameter = destinationPath
+// SetDestinationPath adds the destinationPath to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationPath(destinationPath *string) {
+	o.DestinationPath = destinationPath
 }
 
-// WithDestinationSVMNameQueryParameter adds the destinationSvmName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationSVMNameQueryParameter(destinationSvmName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationSVMNameQueryParameter(destinationSvmName)
+// WithDestinationSvmName adds the destinationSvmName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationSvmName(destinationSvmName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationSvmName(destinationSvmName)
 	return o
 }
 
-// SetDestinationSVMNameQueryParameter adds the destinationSvmName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationSVMNameQueryParameter(destinationSvmName *string) {
-	o.DestinationSVMNameQueryParameter = destinationSvmName
+// SetDestinationSvmName adds the destinationSvmName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationSvmName(destinationSvmName *string) {
+	o.DestinationSvmName = destinationSvmName
 }
 
-// WithDestinationSVMUUIDQueryParameter adds the destinationSvmUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationSVMUUIDQueryParameter(destinationSvmUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationSVMUUIDQueryParameter(destinationSvmUUID)
+// WithDestinationSvmUUID adds the destinationSvmUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationSvmUUID(destinationSvmUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationSvmUUID(destinationSvmUUID)
 	return o
 }
 
-// SetDestinationSVMUUIDQueryParameter adds the destinationSvmUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationSVMUUIDQueryParameter(destinationSvmUUID *string) {
-	o.DestinationSVMUUIDQueryParameter = destinationSvmUUID
+// SetDestinationSvmUUID adds the destinationSvmUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationSvmUUID(destinationSvmUUID *string) {
+	o.DestinationSvmUUID = destinationSvmUUID
 }
 
-// WithDestinationUUIDQueryParameter adds the destinationUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithDestinationUUIDQueryParameter(destinationUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetDestinationUUIDQueryParameter(destinationUUID)
+// WithDestinationUUID adds the destinationUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationUUID(destinationUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationUUID(destinationUUID)
 	return o
 }
 
-// SetDestinationUUIDQueryParameter adds the destinationUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetDestinationUUIDQueryParameter(destinationUUID *string) {
-	o.DestinationUUIDQueryParameter = destinationUUID
+// SetDestinationUUID adds the destinationUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationUUID(destinationUUID *string) {
+	o.DestinationUUID = destinationUUID
 }
 
-// WithExportedSnapshotQueryParameter adds the exportedSnapshot to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithExportedSnapshotQueryParameter(exportedSnapshot *string) *SnapmirrorRelationshipsGetParams {
-	o.SetExportedSnapshotQueryParameter(exportedSnapshot)
+// WithExportedSnapshot adds the exportedSnapshot to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithExportedSnapshot(exportedSnapshot *string) *SnapmirrorRelationshipsGetParams {
+	o.SetExportedSnapshot(exportedSnapshot)
 	return o
 }
 
-// SetExportedSnapshotQueryParameter adds the exportedSnapshot to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetExportedSnapshotQueryParameter(exportedSnapshot *string) {
-	o.ExportedSnapshotQueryParameter = exportedSnapshot
+// SetExportedSnapshot adds the exportedSnapshot to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetExportedSnapshot(exportedSnapshot *string) {
+	o.ExportedSnapshot = exportedSnapshot
 }
 
-// WithFabriclinkDestinationBucketQueryParameter adds the fabriclinkDestinationBucket to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkDestinationBucketQueryParameter(fabriclinkDestinationBucket *string) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkDestinationBucketQueryParameter(fabriclinkDestinationBucket)
+// WithFields adds the fields to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithFields(fields []string) *SnapmirrorRelationshipsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFabriclinkDestinationBucketQueryParameter adds the fabriclinkDestinationBucket to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkDestinationBucketQueryParameter(fabriclinkDestinationBucket *string) {
-	o.FabriclinkDestinationBucketQueryParameter = fabriclinkDestinationBucket
+// SetFields adds the fields to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFabriclinkDestinationRoleQueryParameter adds the fabriclinkDestinationRole to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkDestinationRoleQueryParameter(fabriclinkDestinationRole *string) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkDestinationRoleQueryParameter(fabriclinkDestinationRole)
+// WithGroupType adds the groupType to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithGroupType(groupType *string) *SnapmirrorRelationshipsGetParams {
+	o.SetGroupType(groupType)
 	return o
 }
 
-// SetFabriclinkDestinationRoleQueryParameter adds the fabriclinkDestinationRole to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkDestinationRoleQueryParameter(fabriclinkDestinationRole *string) {
-	o.FabriclinkDestinationRoleQueryParameter = fabriclinkDestinationRole
+// SetGroupType adds the groupType to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetGroupType(groupType *string) {
+	o.GroupType = groupType
 }
 
-// WithFabriclinkPendingWorkTaskCountQueryParameter adds the fabriclinkPendingWorkTaskCount to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkPendingWorkTaskCountQueryParameter(fabriclinkPendingWorkTaskCount *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkPendingWorkTaskCountQueryParameter(fabriclinkPendingWorkTaskCount)
+// WithHealthy adds the healthy to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithHealthy(healthy *bool) *SnapmirrorRelationshipsGetParams {
+	o.SetHealthy(healthy)
 	return o
 }
 
-// SetFabriclinkPendingWorkTaskCountQueryParameter adds the fabriclinkPendingWorkTaskCount to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkPendingWorkTaskCountQueryParameter(fabriclinkPendingWorkTaskCount *int64) {
-	o.FabriclinkPendingWorkTaskCountQueryParameter = fabriclinkPendingWorkTaskCount
+// SetHealthy adds the healthy to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetHealthy(healthy *bool) {
+	o.Healthy = healthy
 }
 
-// WithFabriclinkPullByteCountQueryParameter adds the fabriclinkPullByteCount to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkPullByteCountQueryParameter(fabriclinkPullByteCount *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkPullByteCountQueryParameter(fabriclinkPullByteCount)
+// WithIdentityPreservation adds the identityPreservation to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithIdentityPreservation(identityPreservation *string) *SnapmirrorRelationshipsGetParams {
+	o.SetIdentityPreservation(identityPreservation)
 	return o
 }
 
-// SetFabriclinkPullByteCountQueryParameter adds the fabriclinkPullByteCount to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkPullByteCountQueryParameter(fabriclinkPullByteCount *int64) {
-	o.FabriclinkPullByteCountQueryParameter = fabriclinkPullByteCount
+// SetIdentityPreservation adds the identityPreservation to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetIdentityPreservation(identityPreservation *string) {
+	o.IdentityPreservation = identityPreservation
 }
 
-// WithFabriclinkPushByteCountQueryParameter adds the fabriclinkPushByteCount to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkPushByteCountQueryParameter(fabriclinkPushByteCount *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkPushByteCountQueryParameter(fabriclinkPushByteCount)
+// WithLagTime adds the lagTime to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithLagTime(lagTime *string) *SnapmirrorRelationshipsGetParams {
+	o.SetLagTime(lagTime)
 	return o
 }
 
-// SetFabriclinkPushByteCountQueryParameter adds the fabriclinkPushByteCount to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkPushByteCountQueryParameter(fabriclinkPushByteCount *int64) {
-	o.FabriclinkPushByteCountQueryParameter = fabriclinkPushByteCount
+// SetLagTime adds the lagTime to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetLagTime(lagTime *string) {
+	o.LagTime = lagTime
 }
 
-// WithFabriclinkSourceBucketQueryParameter adds the fabriclinkSourceBucket to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkSourceBucketQueryParameter(fabriclinkSourceBucket *string) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkSourceBucketQueryParameter(fabriclinkSourceBucket)
+// WithLastTransferType adds the lastTransferType to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithLastTransferType(lastTransferType *string) *SnapmirrorRelationshipsGetParams {
+	o.SetLastTransferType(lastTransferType)
 	return o
 }
 
-// SetFabriclinkSourceBucketQueryParameter adds the fabriclinkSourceBucket to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkSourceBucketQueryParameter(fabriclinkSourceBucket *string) {
-	o.FabriclinkSourceBucketQueryParameter = fabriclinkSourceBucket
+// SetLastTransferType adds the lastTransferType to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetLastTransferType(lastTransferType *string) {
+	o.LastTransferType = lastTransferType
 }
 
-// WithFabriclinkSourceRoleQueryParameter adds the fabriclinkSourceRole to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkSourceRoleQueryParameter(fabriclinkSourceRole *string) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkSourceRoleQueryParameter(fabriclinkSourceRole)
+// WithListDestinationsOnly adds the listDestinationsOnly to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithListDestinationsOnly(listDestinationsOnly *bool) *SnapmirrorRelationshipsGetParams {
+	o.SetListDestinationsOnly(listDestinationsOnly)
 	return o
 }
 
-// SetFabriclinkSourceRoleQueryParameter adds the fabriclinkSourceRole to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkSourceRoleQueryParameter(fabriclinkSourceRole *string) {
-	o.FabriclinkSourceRoleQueryParameter = fabriclinkSourceRole
+// SetListDestinationsOnly adds the listDestinationsOnly to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetListDestinationsOnly(listDestinationsOnly *bool) {
+	o.ListDestinationsOnly = listDestinationsOnly
 }
 
-// WithFabriclinkStatusQueryParameter adds the fabriclinkStatus to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkStatusQueryParameter(fabriclinkStatus *string) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkStatusQueryParameter(fabriclinkStatus)
+// WithMaxRecords adds the maxRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithMaxRecords(maxRecords *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetFabriclinkStatusQueryParameter adds the fabriclinkStatus to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkStatusQueryParameter(fabriclinkStatus *string) {
-	o.FabriclinkStatusQueryParameter = fabriclinkStatus
+// SetMaxRecords adds the maxRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithFabriclinkTopologyUUIDQueryParameter adds the fabriclinkTopologyUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFabriclinkTopologyUUIDQueryParameter(fabriclinkTopologyUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetFabriclinkTopologyUUIDQueryParameter(fabriclinkTopologyUUID)
+// WithOrderBy adds the orderBy to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithOrderBy(orderBy []string) *SnapmirrorRelationshipsGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetFabriclinkTopologyUUIDQueryParameter adds the fabriclinkTopologyUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFabriclinkTopologyUUIDQueryParameter(fabriclinkTopologyUUID *string) {
-	o.FabriclinkTopologyUUIDQueryParameter = fabriclinkTopologyUUID
+// SetOrderBy adds the orderBy to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithFieldsQueryParameter adds the fields to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorRelationshipsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithPolicyName adds the policyName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithPolicyName(policyName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetPolicyName(policyName)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetPolicyName adds the policyName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetPolicyName(policyName *string) {
+	o.PolicyName = policyName
 }
 
-// WithGroupTypeQueryParameter adds the groupType to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithGroupTypeQueryParameter(groupType *string) *SnapmirrorRelationshipsGetParams {
-	o.SetGroupTypeQueryParameter(groupType)
+// WithPolicyType adds the policyType to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithPolicyType(policyType *string) *SnapmirrorRelationshipsGetParams {
+	o.SetPolicyType(policyType)
 	return o
 }
 
-// SetGroupTypeQueryParameter adds the groupType to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetGroupTypeQueryParameter(groupType *string) {
-	o.GroupTypeQueryParameter = groupType
+// SetPolicyType adds the policyType to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetPolicyType(policyType *string) {
+	o.PolicyType = policyType
 }
 
-// WithHealthyQueryParameter adds the healthy to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithHealthyQueryParameter(healthy *bool) *SnapmirrorRelationshipsGetParams {
-	o.SetHealthyQueryParameter(healthy)
+// WithPolicyUUID adds the policyUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithPolicyUUID(policyUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetPolicyUUID(policyUUID)
 	return o
 }
 
-// SetHealthyQueryParameter adds the healthy to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetHealthyQueryParameter(healthy *bool) {
-	o.HealthyQueryParameter = healthy
+// SetPolicyUUID adds the policyUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetPolicyUUID(policyUUID *string) {
+	o.PolicyUUID = policyUUID
 }
 
-// WithIdentityPreservationQueryParameter adds the identityPreservation to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithIdentityPreservationQueryParameter(identityPreservation *string) *SnapmirrorRelationshipsGetParams {
-	o.SetIdentityPreservationQueryParameter(identityPreservation)
+// WithRestore adds the restore to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithRestore(restore *bool) *SnapmirrorRelationshipsGetParams {
+	o.SetRestore(restore)
 	return o
 }
 
-// SetIdentityPreservationQueryParameter adds the identityPreservation to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetIdentityPreservationQueryParameter(identityPreservation *string) {
-	o.IdentityPreservationQueryParameter = identityPreservation
+// SetRestore adds the restore to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetRestore(restore *bool) {
+	o.Restore = restore
 }
 
-// WithLagTimeQueryParameter adds the lagTime to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithLagTimeQueryParameter(lagTime *string) *SnapmirrorRelationshipsGetParams {
-	o.SetLagTimeQueryParameter(lagTime)
+// WithReturnRecords adds the returnRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithReturnRecords(returnRecords *bool) *SnapmirrorRelationshipsGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetLagTimeQueryParameter adds the lagTime to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetLagTimeQueryParameter(lagTime *string) {
-	o.LagTimeQueryParameter = lagTime
+// SetReturnRecords adds the returnRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithLastTransferTypeQueryParameter adds the lastTransferType to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithLastTransferTypeQueryParameter(lastTransferType *string) *SnapmirrorRelationshipsGetParams {
-	o.SetLastTransferTypeQueryParameter(lastTransferType)
+// WithReturnTimeout adds the returnTimeout to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetLastTransferTypeQueryParameter adds the lastTransferType to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetLastTransferTypeQueryParameter(lastTransferType *string) {
-	o.LastTransferTypeQueryParameter = lastTransferType
+// SetReturnTimeout adds the returnTimeout to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithListDestinationsOnlyQueryParameter adds the listDestinationsOnly to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithListDestinationsOnlyQueryParameter(listDestinationsOnly *bool) *SnapmirrorRelationshipsGetParams {
-	o.SetListDestinationsOnlyQueryParameter(listDestinationsOnly)
+// WithSourceClusterName adds the sourceClusterName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceClusterName(sourceClusterName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceClusterName(sourceClusterName)
 	return o
 }
 
-// SetListDestinationsOnlyQueryParameter adds the listDestinationsOnly to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetListDestinationsOnlyQueryParameter(listDestinationsOnly *bool) {
-	o.ListDestinationsOnlyQueryParameter = listDestinationsOnly
+// SetSourceClusterName adds the sourceClusterName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceClusterName(sourceClusterName *string) {
+	o.SourceClusterName = sourceClusterName
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithSourceClusterUUID adds the sourceClusterUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceClusterUUID(sourceClusterUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceClusterUUID(sourceClusterUUID)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetSourceClusterUUID adds the sourceClusterUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceClusterUUID(sourceClusterUUID *string) {
+	o.SourceClusterUUID = sourceClusterUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithOrderByQueryParameter(orderBy []string) *SnapmirrorRelationshipsGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithSourceConsistencyGroupVolumesName adds the sourceConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceConsistencyGroupVolumesName(sourceConsistencyGroupVolumesName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceConsistencyGroupVolumesName(sourceConsistencyGroupVolumesName)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetSourceConsistencyGroupVolumesName adds the sourceConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceConsistencyGroupVolumesName(sourceConsistencyGroupVolumesName *string) {
+	o.SourceConsistencyGroupVolumesName = sourceConsistencyGroupVolumesName
 }
 
-// WithPolicyNameQueryParameter adds the policyName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithPolicyNameQueryParameter(policyName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetPolicyNameQueryParameter(policyName)
+// WithSourcePath adds the sourcePath to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourcePath(sourcePath *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourcePath(sourcePath)
 	return o
 }
 
-// SetPolicyNameQueryParameter adds the policyName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetPolicyNameQueryParameter(policyName *string) {
-	o.PolicyNameQueryParameter = policyName
+// SetSourcePath adds the sourcePath to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourcePath(sourcePath *string) {
+	o.SourcePath = sourcePath
 }
 
-// WithPolicyTransferScheduleNameQueryParameter adds the policyTransferScheduleName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithPolicyTransferScheduleNameQueryParameter(policyTransferScheduleName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetPolicyTransferScheduleNameQueryParameter(policyTransferScheduleName)
+// WithSourceSvmName adds the sourceSvmName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceSvmName(sourceSvmName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceSvmName(sourceSvmName)
 	return o
 }
 
-// SetPolicyTransferScheduleNameQueryParameter adds the policyTransferScheduleName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetPolicyTransferScheduleNameQueryParameter(policyTransferScheduleName *string) {
-	o.PolicyTransferScheduleNameQueryParameter = policyTransferScheduleName
+// SetSourceSvmName adds the sourceSvmName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceSvmName(sourceSvmName *string) {
+	o.SourceSvmName = sourceSvmName
 }
 
-// WithPolicyTypeQueryParameter adds the policyType to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithPolicyTypeQueryParameter(policyType *string) *SnapmirrorRelationshipsGetParams {
-	o.SetPolicyTypeQueryParameter(policyType)
+// WithSourceSvmUUID adds the sourceSvmUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceSvmUUID(sourceSvmUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceSvmUUID(sourceSvmUUID)
 	return o
 }
 
-// SetPolicyTypeQueryParameter adds the policyType to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetPolicyTypeQueryParameter(policyType *string) {
-	o.PolicyTypeQueryParameter = policyType
+// SetSourceSvmUUID adds the sourceSvmUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceSvmUUID(sourceSvmUUID *string) {
+	o.SourceSvmUUID = sourceSvmUUID
 }
 
-// WithPolicyUUIDQueryParameter adds the policyUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithPolicyUUIDQueryParameter(policyUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetPolicyUUIDQueryParameter(policyUUID)
+// WithSourceUUID adds the sourceUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceUUID(sourceUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceUUID(sourceUUID)
 	return o
 }
 
-// SetPolicyUUIDQueryParameter adds the policyUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetPolicyUUIDQueryParameter(policyUUID *string) {
-	o.PolicyUUIDQueryParameter = policyUUID
+// SetSourceUUID adds the sourceUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceUUID(sourceUUID *string) {
+	o.SourceUUID = sourceUUID
 }
 
-// WithRestoreQueryParameter adds the restore to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithRestoreQueryParameter(restore *bool) *SnapmirrorRelationshipsGetParams {
-	o.SetRestoreQueryParameter(restore)
+// WithState adds the state to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithState(state *string) *SnapmirrorRelationshipsGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetRestoreQueryParameter adds the restore to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetRestoreQueryParameter(restore *bool) {
-	o.RestoreQueryParameter = restore
+// SetState adds the state to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorRelationshipsGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithThrottle adds the throttle to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithThrottle(throttle *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetThrottle(throttle)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetThrottle adds the throttle to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetThrottle(throttle *int64) {
+	o.Throttle = throttle
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithTransferBytesTransferred adds the transferBytesTransferred to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferBytesTransferred(transferBytesTransferred *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferBytesTransferred(transferBytesTransferred)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetTransferBytesTransferred adds the transferBytesTransferred to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferBytesTransferred(transferBytesTransferred *int64) {
+	o.TransferBytesTransferred = transferBytesTransferred
 }
 
-// WithSourceClusterNameQueryParameter adds the sourceClusterName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourceClusterNameQueryParameter(sourceClusterName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourceClusterNameQueryParameter(sourceClusterName)
+// WithTransferEndTime adds the transferEndTime to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferEndTime(transferEndTime *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferEndTime(transferEndTime)
 	return o
 }
 
-// SetSourceClusterNameQueryParameter adds the sourceClusterName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourceClusterNameQueryParameter(sourceClusterName *string) {
-	o.SourceClusterNameQueryParameter = sourceClusterName
+// SetTransferEndTime adds the transferEndTime to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferEndTime(transferEndTime *string) {
+	o.TransferEndTime = transferEndTime
 }
 
-// WithSourceClusterUUIDQueryParameter adds the sourceClusterUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourceClusterUUIDQueryParameter(sourceClusterUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourceClusterUUIDQueryParameter(sourceClusterUUID)
+// WithTransferState adds the transferState to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferState(transferState *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferState(transferState)
 	return o
 }
 
-// SetSourceClusterUUIDQueryParameter adds the sourceClusterUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourceClusterUUIDQueryParameter(sourceClusterUUID *string) {
-	o.SourceClusterUUIDQueryParameter = sourceClusterUUID
+// SetTransferState adds the transferState to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferState(transferState *string) {
+	o.TransferState = transferState
 }
 
-// WithSourceConsistencyGroupVolumesNameQueryParameter adds the sourceConsistencyGroupVolumesName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourceConsistencyGroupVolumesNameQueryParameter(sourceConsistencyGroupVolumesName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourceConsistencyGroupVolumesNameQueryParameter(sourceConsistencyGroupVolumesName)
+// WithTransferTotalDuration adds the transferTotalDuration to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferTotalDuration(transferTotalDuration *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferTotalDuration(transferTotalDuration)
 	return o
 }
 
-// SetSourceConsistencyGroupVolumesNameQueryParameter adds the sourceConsistencyGroupVolumesName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourceConsistencyGroupVolumesNameQueryParameter(sourceConsistencyGroupVolumesName *string) {
-	o.SourceConsistencyGroupVolumesNameQueryParameter = sourceConsistencyGroupVolumesName
+// SetTransferTotalDuration adds the transferTotalDuration to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferTotalDuration(transferTotalDuration *string) {
+	o.TransferTotalDuration = transferTotalDuration
 }
 
-// WithSourcePathQueryParameter adds the sourcePath to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourcePathQueryParameter(sourcePath *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourcePathQueryParameter(sourcePath)
+// WithTransferUUID adds the transferUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferUUID(transferUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferUUID(transferUUID)
 	return o
 }
 
-// SetSourcePathQueryParameter adds the sourcePath to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourcePathQueryParameter(sourcePath *string) {
-	o.SourcePathQueryParameter = sourcePath
+// SetTransferUUID adds the transferUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferUUID(transferUUID *string) {
+	o.TransferUUID = transferUUID
 }
 
-// WithSourceSVMNameQueryParameter adds the sourceSvmName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourceSVMNameQueryParameter(sourceSvmName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourceSVMNameQueryParameter(sourceSvmName)
+// WithTransferScheduleName adds the transferScheduleName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferScheduleName(transferScheduleName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferScheduleName(transferScheduleName)
 	return o
 }
 
-// SetSourceSVMNameQueryParameter adds the sourceSvmName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourceSVMNameQueryParameter(sourceSvmName *string) {
-	o.SourceSVMNameQueryParameter = sourceSvmName
+// SetTransferScheduleName adds the transferScheduleName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferScheduleName(transferScheduleName *string) {
+	o.TransferScheduleName = transferScheduleName
 }
 
-// WithSourceSVMUUIDQueryParameter adds the sourceSvmUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourceSVMUUIDQueryParameter(sourceSvmUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourceSVMUUIDQueryParameter(sourceSvmUUID)
+// WithTransferScheduleUUID adds the transferScheduleUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferScheduleUUID(transferScheduleUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferScheduleUUID(transferScheduleUUID)
 	return o
 }
 
-// SetSourceSVMUUIDQueryParameter adds the sourceSvmUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourceSVMUUIDQueryParameter(sourceSvmUUID *string) {
-	o.SourceSVMUUIDQueryParameter = sourceSvmUUID
+// SetTransferScheduleUUID adds the transferScheduleUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferScheduleUUID(transferScheduleUUID *string) {
+	o.TransferScheduleUUID = transferScheduleUUID
 }
 
-// WithSourceUUIDQueryParameter adds the sourceUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithSourceUUIDQueryParameter(sourceUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetSourceUUIDQueryParameter(sourceUUID)
+// WithUnhealthyReasonCode adds the unhealthyReasonCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithUnhealthyReasonCode(unhealthyReasonCode *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetUnhealthyReasonCode(unhealthyReasonCode)
 	return o
 }
 
-// SetSourceUUIDQueryParameter adds the sourceUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetSourceUUIDQueryParameter(sourceUUID *string) {
-	o.SourceUUIDQueryParameter = sourceUUID
+// SetUnhealthyReasonCode adds the unhealthyReasonCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetUnhealthyReasonCode(unhealthyReasonCode *int64) {
+	o.UnhealthyReasonCode = unhealthyReasonCode
 }
 
-// WithStateQueryParameter adds the state to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithStateQueryParameter(state *string) *SnapmirrorRelationshipsGetParams {
-	o.SetStateQueryParameter(state)
+// WithUnhealthyReasonMessage adds the unhealthyReasonMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithUnhealthyReasonMessage(unhealthyReasonMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetUnhealthyReasonMessage(unhealthyReasonMessage)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetUnhealthyReasonMessage adds the unhealthyReasonMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetUnhealthyReasonMessage(unhealthyReasonMessage *string) {
+	o.UnhealthyReasonMessage = unhealthyReasonMessage
 }
 
-// WithThrottleQueryParameter adds the throttle to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithThrottleQueryParameter(throttle *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetThrottleQueryParameter(throttle)
+// WithUnhealthyReasonParameters adds the unhealthyReasonParameters to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithUnhealthyReasonParameters(unhealthyReasonParameters *string) *SnapmirrorRelationshipsGetParams {
+	o.SetUnhealthyReasonParameters(unhealthyReasonParameters)
 	return o
 }
 
-// SetThrottleQueryParameter adds the throttle to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetThrottleQueryParameter(throttle *int64) {
-	o.ThrottleQueryParameter = throttle
+// SetUnhealthyReasonParameters adds the unhealthyReasonParameters to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetUnhealthyReasonParameters(unhealthyReasonParameters *string) {
+	o.UnhealthyReasonParameters = unhealthyReasonParameters
 }
 
-// WithTransferBytesTransferredQueryParameter adds the transferBytesTransferred to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferBytesTransferredQueryParameter(transferBytesTransferred *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferBytesTransferredQueryParameter(transferBytesTransferred)
+// WithUUID adds the uuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithUUID(uuid *string) *SnapmirrorRelationshipsGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetTransferBytesTransferredQueryParameter adds the transferBytesTransferred to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferBytesTransferredQueryParameter(transferBytesTransferred *int64) {
-	o.TransferBytesTransferredQueryParameter = transferBytesTransferred
-}
-
-// WithTransferEndTimeQueryParameter adds the transferEndTime to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferEndTimeQueryParameter(transferEndTime *string) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferEndTimeQueryParameter(transferEndTime)
-	return o
-}
-
-// SetTransferEndTimeQueryParameter adds the transferEndTime to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferEndTimeQueryParameter(transferEndTime *string) {
-	o.TransferEndTimeQueryParameter = transferEndTime
-}
-
-// WithTransferStateQueryParameter adds the transferState to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferStateQueryParameter(transferState *string) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferStateQueryParameter(transferState)
-	return o
-}
-
-// SetTransferStateQueryParameter adds the transferState to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferStateQueryParameter(transferState *string) {
-	o.TransferStateQueryParameter = transferState
-}
-
-// WithTransferTotalDurationQueryParameter adds the transferTotalDuration to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferTotalDurationQueryParameter(transferTotalDuration *string) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferTotalDurationQueryParameter(transferTotalDuration)
-	return o
-}
-
-// SetTransferTotalDurationQueryParameter adds the transferTotalDuration to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferTotalDurationQueryParameter(transferTotalDuration *string) {
-	o.TransferTotalDurationQueryParameter = transferTotalDuration
-}
-
-// WithTransferUUIDQueryParameter adds the transferUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferUUIDQueryParameter(transferUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferUUIDQueryParameter(transferUUID)
-	return o
-}
-
-// SetTransferUUIDQueryParameter adds the transferUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferUUIDQueryParameter(transferUUID *string) {
-	o.TransferUUIDQueryParameter = transferUUID
-}
-
-// WithTransferScheduleNameQueryParameter adds the transferScheduleName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferScheduleNameQueryParameter(transferScheduleName *string) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferScheduleNameQueryParameter(transferScheduleName)
-	return o
-}
-
-// SetTransferScheduleNameQueryParameter adds the transferScheduleName to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferScheduleNameQueryParameter(transferScheduleName *string) {
-	o.TransferScheduleNameQueryParameter = transferScheduleName
-}
-
-// WithTransferScheduleUUIDQueryParameter adds the transferScheduleUUID to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithTransferScheduleUUIDQueryParameter(transferScheduleUUID *string) *SnapmirrorRelationshipsGetParams {
-	o.SetTransferScheduleUUIDQueryParameter(transferScheduleUUID)
-	return o
-}
-
-// SetTransferScheduleUUIDQueryParameter adds the transferScheduleUuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetTransferScheduleUUIDQueryParameter(transferScheduleUUID *string) {
-	o.TransferScheduleUUIDQueryParameter = transferScheduleUUID
-}
-
-// WithUnhealthyReasonCodeQueryParameter adds the unhealthyReasonCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithUnhealthyReasonCodeQueryParameter(unhealthyReasonCode *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetUnhealthyReasonCodeQueryParameter(unhealthyReasonCode)
-	return o
-}
-
-// SetUnhealthyReasonCodeQueryParameter adds the unhealthyReasonCode to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetUnhealthyReasonCodeQueryParameter(unhealthyReasonCode *int64) {
-	o.UnhealthyReasonCodeQueryParameter = unhealthyReasonCode
-}
-
-// WithUnhealthyReasonMessageQueryParameter adds the unhealthyReasonMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithUnhealthyReasonMessageQueryParameter(unhealthyReasonMessage *string) *SnapmirrorRelationshipsGetParams {
-	o.SetUnhealthyReasonMessageQueryParameter(unhealthyReasonMessage)
-	return o
-}
-
-// SetUnhealthyReasonMessageQueryParameter adds the unhealthyReasonMessage to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetUnhealthyReasonMessageQueryParameter(unhealthyReasonMessage *string) {
-	o.UnhealthyReasonMessageQueryParameter = unhealthyReasonMessage
-}
-
-// WithUnhealthyReasonParametersQueryParameter adds the unhealthyReasonParameters to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithUnhealthyReasonParametersQueryParameter(unhealthyReasonParameters *string) *SnapmirrorRelationshipsGetParams {
-	o.SetUnhealthyReasonParametersQueryParameter(unhealthyReasonParameters)
-	return o
-}
-
-// SetUnhealthyReasonParametersQueryParameter adds the unhealthyReasonParameters to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetUnhealthyReasonParametersQueryParameter(unhealthyReasonParameters *string) {
-	o.UnhealthyReasonParametersQueryParameter = unhealthyReasonParameters
-}
-
-// WithUUIDQueryParameter adds the uuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithUUIDQueryParameter(uuid *string) *SnapmirrorRelationshipsGetParams {
-	o.SetUUIDQueryParameter(uuid)
-	return o
-}
-
-// SetUUIDQueryParameter adds the uuid to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1161,13 +991,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter != nil {
+	if o.ConsistencyGroupFailoverErrorArgumentsCode != nil {
 
 		// query param consistency_group_failover.error.arguments.code
 		var qrConsistencyGroupFailoverErrorArgumentsCode string
 
-		if o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter != nil {
-			qrConsistencyGroupFailoverErrorArgumentsCode = *o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter
+		if o.ConsistencyGroupFailoverErrorArgumentsCode != nil {
+			qrConsistencyGroupFailoverErrorArgumentsCode = *o.ConsistencyGroupFailoverErrorArgumentsCode
 		}
 		qConsistencyGroupFailoverErrorArgumentsCode := qrConsistencyGroupFailoverErrorArgumentsCode
 		if qConsistencyGroupFailoverErrorArgumentsCode != "" {
@@ -1178,13 +1008,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter != nil {
+	if o.ConsistencyGroupFailoverErrorArgumentsMessage != nil {
 
 		// query param consistency_group_failover.error.arguments.message
 		var qrConsistencyGroupFailoverErrorArgumentsMessage string
 
-		if o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter != nil {
-			qrConsistencyGroupFailoverErrorArgumentsMessage = *o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter
+		if o.ConsistencyGroupFailoverErrorArgumentsMessage != nil {
+			qrConsistencyGroupFailoverErrorArgumentsMessage = *o.ConsistencyGroupFailoverErrorArgumentsMessage
 		}
 		qConsistencyGroupFailoverErrorArgumentsMessage := qrConsistencyGroupFailoverErrorArgumentsMessage
 		if qConsistencyGroupFailoverErrorArgumentsMessage != "" {
@@ -1195,13 +1025,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ConsistencyGroupFailoverErrorCodeQueryParameter != nil {
+	if o.ConsistencyGroupFailoverErrorCode != nil {
 
 		// query param consistency_group_failover.error.code
 		var qrConsistencyGroupFailoverErrorCode string
 
-		if o.ConsistencyGroupFailoverErrorCodeQueryParameter != nil {
-			qrConsistencyGroupFailoverErrorCode = *o.ConsistencyGroupFailoverErrorCodeQueryParameter
+		if o.ConsistencyGroupFailoverErrorCode != nil {
+			qrConsistencyGroupFailoverErrorCode = *o.ConsistencyGroupFailoverErrorCode
 		}
 		qConsistencyGroupFailoverErrorCode := qrConsistencyGroupFailoverErrorCode
 		if qConsistencyGroupFailoverErrorCode != "" {
@@ -1212,13 +1042,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ConsistencyGroupFailoverErrorMessageQueryParameter != nil {
+	if o.ConsistencyGroupFailoverErrorMessage != nil {
 
 		// query param consistency_group_failover.error.message
 		var qrConsistencyGroupFailoverErrorMessage string
 
-		if o.ConsistencyGroupFailoverErrorMessageQueryParameter != nil {
-			qrConsistencyGroupFailoverErrorMessage = *o.ConsistencyGroupFailoverErrorMessageQueryParameter
+		if o.ConsistencyGroupFailoverErrorMessage != nil {
+			qrConsistencyGroupFailoverErrorMessage = *o.ConsistencyGroupFailoverErrorMessage
 		}
 		qConsistencyGroupFailoverErrorMessage := qrConsistencyGroupFailoverErrorMessage
 		if qConsistencyGroupFailoverErrorMessage != "" {
@@ -1229,13 +1059,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ConsistencyGroupFailoverErrorTargetQueryParameter != nil {
+	if o.ConsistencyGroupFailoverErrorTarget != nil {
 
 		// query param consistency_group_failover.error.target
 		var qrConsistencyGroupFailoverErrorTarget string
 
-		if o.ConsistencyGroupFailoverErrorTargetQueryParameter != nil {
-			qrConsistencyGroupFailoverErrorTarget = *o.ConsistencyGroupFailoverErrorTargetQueryParameter
+		if o.ConsistencyGroupFailoverErrorTarget != nil {
+			qrConsistencyGroupFailoverErrorTarget = *o.ConsistencyGroupFailoverErrorTarget
 		}
 		qConsistencyGroupFailoverErrorTarget := qrConsistencyGroupFailoverErrorTarget
 		if qConsistencyGroupFailoverErrorTarget != "" {
@@ -1246,13 +1076,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ConsistencyGroupFailoverStatusCodeQueryParameter != nil {
+	if o.ConsistencyGroupFailoverStatusCode != nil {
 
 		// query param consistency_group_failover.status.code
 		var qrConsistencyGroupFailoverStatusCode string
 
-		if o.ConsistencyGroupFailoverStatusCodeQueryParameter != nil {
-			qrConsistencyGroupFailoverStatusCode = *o.ConsistencyGroupFailoverStatusCodeQueryParameter
+		if o.ConsistencyGroupFailoverStatusCode != nil {
+			qrConsistencyGroupFailoverStatusCode = *o.ConsistencyGroupFailoverStatusCode
 		}
 		qConsistencyGroupFailoverStatusCode := qrConsistencyGroupFailoverStatusCode
 		if qConsistencyGroupFailoverStatusCode != "" {
@@ -1263,13 +1093,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ConsistencyGroupFailoverStatusMessageQueryParameter != nil {
+	if o.ConsistencyGroupFailoverStatusMessage != nil {
 
 		// query param consistency_group_failover.status.message
 		var qrConsistencyGroupFailoverStatusMessage string
 
-		if o.ConsistencyGroupFailoverStatusMessageQueryParameter != nil {
-			qrConsistencyGroupFailoverStatusMessage = *o.ConsistencyGroupFailoverStatusMessageQueryParameter
+		if o.ConsistencyGroupFailoverStatusMessage != nil {
+			qrConsistencyGroupFailoverStatusMessage = *o.ConsistencyGroupFailoverStatusMessage
 		}
 		qConsistencyGroupFailoverStatusMessage := qrConsistencyGroupFailoverStatusMessage
 		if qConsistencyGroupFailoverStatusMessage != "" {
@@ -1280,13 +1110,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationClusterNameQueryParameter != nil {
+	if o.DestinationClusterName != nil {
 
 		// query param destination.cluster.name
 		var qrDestinationClusterName string
 
-		if o.DestinationClusterNameQueryParameter != nil {
-			qrDestinationClusterName = *o.DestinationClusterNameQueryParameter
+		if o.DestinationClusterName != nil {
+			qrDestinationClusterName = *o.DestinationClusterName
 		}
 		qDestinationClusterName := qrDestinationClusterName
 		if qDestinationClusterName != "" {
@@ -1297,13 +1127,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationClusterUUIDQueryParameter != nil {
+	if o.DestinationClusterUUID != nil {
 
 		// query param destination.cluster.uuid
 		var qrDestinationClusterUUID string
 
-		if o.DestinationClusterUUIDQueryParameter != nil {
-			qrDestinationClusterUUID = *o.DestinationClusterUUIDQueryParameter
+		if o.DestinationClusterUUID != nil {
+			qrDestinationClusterUUID = *o.DestinationClusterUUID
 		}
 		qDestinationClusterUUID := qrDestinationClusterUUID
 		if qDestinationClusterUUID != "" {
@@ -1314,13 +1144,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationConsistencyGroupVolumesNameQueryParameter != nil {
+	if o.DestinationConsistencyGroupVolumesName != nil {
 
 		// query param destination.consistency_group_volumes.name
 		var qrDestinationConsistencyGroupVolumesName string
 
-		if o.DestinationConsistencyGroupVolumesNameQueryParameter != nil {
-			qrDestinationConsistencyGroupVolumesName = *o.DestinationConsistencyGroupVolumesNameQueryParameter
+		if o.DestinationConsistencyGroupVolumesName != nil {
+			qrDestinationConsistencyGroupVolumesName = *o.DestinationConsistencyGroupVolumesName
 		}
 		qDestinationConsistencyGroupVolumesName := qrDestinationConsistencyGroupVolumesName
 		if qDestinationConsistencyGroupVolumesName != "" {
@@ -1331,13 +1161,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationPathQueryParameter != nil {
+	if o.DestinationPath != nil {
 
 		// query param destination.path
 		var qrDestinationPath string
 
-		if o.DestinationPathQueryParameter != nil {
-			qrDestinationPath = *o.DestinationPathQueryParameter
+		if o.DestinationPath != nil {
+			qrDestinationPath = *o.DestinationPath
 		}
 		qDestinationPath := qrDestinationPath
 		if qDestinationPath != "" {
@@ -1348,13 +1178,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationSVMNameQueryParameter != nil {
+	if o.DestinationSvmName != nil {
 
 		// query param destination.svm.name
 		var qrDestinationSvmName string
 
-		if o.DestinationSVMNameQueryParameter != nil {
-			qrDestinationSvmName = *o.DestinationSVMNameQueryParameter
+		if o.DestinationSvmName != nil {
+			qrDestinationSvmName = *o.DestinationSvmName
 		}
 		qDestinationSvmName := qrDestinationSvmName
 		if qDestinationSvmName != "" {
@@ -1365,13 +1195,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationSVMUUIDQueryParameter != nil {
+	if o.DestinationSvmUUID != nil {
 
 		// query param destination.svm.uuid
 		var qrDestinationSvmUUID string
 
-		if o.DestinationSVMUUIDQueryParameter != nil {
-			qrDestinationSvmUUID = *o.DestinationSVMUUIDQueryParameter
+		if o.DestinationSvmUUID != nil {
+			qrDestinationSvmUUID = *o.DestinationSvmUUID
 		}
 		qDestinationSvmUUID := qrDestinationSvmUUID
 		if qDestinationSvmUUID != "" {
@@ -1382,13 +1212,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.DestinationUUIDQueryParameter != nil {
+	if o.DestinationUUID != nil {
 
 		// query param destination.uuid
 		var qrDestinationUUID string
 
-		if o.DestinationUUIDQueryParameter != nil {
-			qrDestinationUUID = *o.DestinationUUIDQueryParameter
+		if o.DestinationUUID != nil {
+			qrDestinationUUID = *o.DestinationUUID
 		}
 		qDestinationUUID := qrDestinationUUID
 		if qDestinationUUID != "" {
@@ -1399,13 +1229,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ExportedSnapshotQueryParameter != nil {
+	if o.ExportedSnapshot != nil {
 
 		// query param exported_snapshot
 		var qrExportedSnapshot string
 
-		if o.ExportedSnapshotQueryParameter != nil {
-			qrExportedSnapshot = *o.ExportedSnapshotQueryParameter
+		if o.ExportedSnapshot != nil {
+			qrExportedSnapshot = *o.ExportedSnapshot
 		}
 		qExportedSnapshot := qrExportedSnapshot
 		if qExportedSnapshot != "" {
@@ -1416,160 +1246,7 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FabriclinkDestinationBucketQueryParameter != nil {
-
-		// query param fabriclink.destination_bucket
-		var qrFabriclinkDestinationBucket string
-
-		if o.FabriclinkDestinationBucketQueryParameter != nil {
-			qrFabriclinkDestinationBucket = *o.FabriclinkDestinationBucketQueryParameter
-		}
-		qFabriclinkDestinationBucket := qrFabriclinkDestinationBucket
-		if qFabriclinkDestinationBucket != "" {
-
-			if err := r.SetQueryParam("fabriclink.destination_bucket", qFabriclinkDestinationBucket); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkDestinationRoleQueryParameter != nil {
-
-		// query param fabriclink.destination_role
-		var qrFabriclinkDestinationRole string
-
-		if o.FabriclinkDestinationRoleQueryParameter != nil {
-			qrFabriclinkDestinationRole = *o.FabriclinkDestinationRoleQueryParameter
-		}
-		qFabriclinkDestinationRole := qrFabriclinkDestinationRole
-		if qFabriclinkDestinationRole != "" {
-
-			if err := r.SetQueryParam("fabriclink.destination_role", qFabriclinkDestinationRole); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkPendingWorkTaskCountQueryParameter != nil {
-
-		// query param fabriclink.pending_work_task_count
-		var qrFabriclinkPendingWorkTaskCount int64
-
-		if o.FabriclinkPendingWorkTaskCountQueryParameter != nil {
-			qrFabriclinkPendingWorkTaskCount = *o.FabriclinkPendingWorkTaskCountQueryParameter
-		}
-		qFabriclinkPendingWorkTaskCount := swag.FormatInt64(qrFabriclinkPendingWorkTaskCount)
-		if qFabriclinkPendingWorkTaskCount != "" {
-
-			if err := r.SetQueryParam("fabriclink.pending_work_task_count", qFabriclinkPendingWorkTaskCount); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkPullByteCountQueryParameter != nil {
-
-		// query param fabriclink.pull_byte_count
-		var qrFabriclinkPullByteCount int64
-
-		if o.FabriclinkPullByteCountQueryParameter != nil {
-			qrFabriclinkPullByteCount = *o.FabriclinkPullByteCountQueryParameter
-		}
-		qFabriclinkPullByteCount := swag.FormatInt64(qrFabriclinkPullByteCount)
-		if qFabriclinkPullByteCount != "" {
-
-			if err := r.SetQueryParam("fabriclink.pull_byte_count", qFabriclinkPullByteCount); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkPushByteCountQueryParameter != nil {
-
-		// query param fabriclink.push_byte_count
-		var qrFabriclinkPushByteCount int64
-
-		if o.FabriclinkPushByteCountQueryParameter != nil {
-			qrFabriclinkPushByteCount = *o.FabriclinkPushByteCountQueryParameter
-		}
-		qFabriclinkPushByteCount := swag.FormatInt64(qrFabriclinkPushByteCount)
-		if qFabriclinkPushByteCount != "" {
-
-			if err := r.SetQueryParam("fabriclink.push_byte_count", qFabriclinkPushByteCount); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkSourceBucketQueryParameter != nil {
-
-		// query param fabriclink.source_bucket
-		var qrFabriclinkSourceBucket string
-
-		if o.FabriclinkSourceBucketQueryParameter != nil {
-			qrFabriclinkSourceBucket = *o.FabriclinkSourceBucketQueryParameter
-		}
-		qFabriclinkSourceBucket := qrFabriclinkSourceBucket
-		if qFabriclinkSourceBucket != "" {
-
-			if err := r.SetQueryParam("fabriclink.source_bucket", qFabriclinkSourceBucket); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkSourceRoleQueryParameter != nil {
-
-		// query param fabriclink.source_role
-		var qrFabriclinkSourceRole string
-
-		if o.FabriclinkSourceRoleQueryParameter != nil {
-			qrFabriclinkSourceRole = *o.FabriclinkSourceRoleQueryParameter
-		}
-		qFabriclinkSourceRole := qrFabriclinkSourceRole
-		if qFabriclinkSourceRole != "" {
-
-			if err := r.SetQueryParam("fabriclink.source_role", qFabriclinkSourceRole); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkStatusQueryParameter != nil {
-
-		// query param fabriclink.status
-		var qrFabriclinkStatus string
-
-		if o.FabriclinkStatusQueryParameter != nil {
-			qrFabriclinkStatus = *o.FabriclinkStatusQueryParameter
-		}
-		qFabriclinkStatus := qrFabriclinkStatus
-		if qFabriclinkStatus != "" {
-
-			if err := r.SetQueryParam("fabriclink.status", qFabriclinkStatus); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FabriclinkTopologyUUIDQueryParameter != nil {
-
-		// query param fabriclink.topology_uuid
-		var qrFabriclinkTopologyUUID string
-
-		if o.FabriclinkTopologyUUIDQueryParameter != nil {
-			qrFabriclinkTopologyUUID = *o.FabriclinkTopologyUUIDQueryParameter
-		}
-		qFabriclinkTopologyUUID := qrFabriclinkTopologyUUID
-		if qFabriclinkTopologyUUID != "" {
-
-			if err := r.SetQueryParam("fabriclink.topology_uuid", qFabriclinkTopologyUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1580,13 +1257,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.GroupTypeQueryParameter != nil {
+	if o.GroupType != nil {
 
 		// query param group_type
 		var qrGroupType string
 
-		if o.GroupTypeQueryParameter != nil {
-			qrGroupType = *o.GroupTypeQueryParameter
+		if o.GroupType != nil {
+			qrGroupType = *o.GroupType
 		}
 		qGroupType := qrGroupType
 		if qGroupType != "" {
@@ -1597,13 +1274,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.HealthyQueryParameter != nil {
+	if o.Healthy != nil {
 
 		// query param healthy
 		var qrHealthy bool
 
-		if o.HealthyQueryParameter != nil {
-			qrHealthy = *o.HealthyQueryParameter
+		if o.Healthy != nil {
+			qrHealthy = *o.Healthy
 		}
 		qHealthy := swag.FormatBool(qrHealthy)
 		if qHealthy != "" {
@@ -1614,13 +1291,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.IdentityPreservationQueryParameter != nil {
+	if o.IdentityPreservation != nil {
 
 		// query param identity_preservation
 		var qrIdentityPreservation string
 
-		if o.IdentityPreservationQueryParameter != nil {
-			qrIdentityPreservation = *o.IdentityPreservationQueryParameter
+		if o.IdentityPreservation != nil {
+			qrIdentityPreservation = *o.IdentityPreservation
 		}
 		qIdentityPreservation := qrIdentityPreservation
 		if qIdentityPreservation != "" {
@@ -1631,13 +1308,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LagTimeQueryParameter != nil {
+	if o.LagTime != nil {
 
 		// query param lag_time
 		var qrLagTime string
 
-		if o.LagTimeQueryParameter != nil {
-			qrLagTime = *o.LagTimeQueryParameter
+		if o.LagTime != nil {
+			qrLagTime = *o.LagTime
 		}
 		qLagTime := qrLagTime
 		if qLagTime != "" {
@@ -1648,13 +1325,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.LastTransferTypeQueryParameter != nil {
+	if o.LastTransferType != nil {
 
 		// query param last_transfer_type
 		var qrLastTransferType string
 
-		if o.LastTransferTypeQueryParameter != nil {
-			qrLastTransferType = *o.LastTransferTypeQueryParameter
+		if o.LastTransferType != nil {
+			qrLastTransferType = *o.LastTransferType
 		}
 		qLastTransferType := qrLastTransferType
 		if qLastTransferType != "" {
@@ -1665,13 +1342,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ListDestinationsOnlyQueryParameter != nil {
+	if o.ListDestinationsOnly != nil {
 
 		// query param list_destinations_only
 		var qrListDestinationsOnly bool
 
-		if o.ListDestinationsOnlyQueryParameter != nil {
-			qrListDestinationsOnly = *o.ListDestinationsOnlyQueryParameter
+		if o.ListDestinationsOnly != nil {
+			qrListDestinationsOnly = *o.ListDestinationsOnly
 		}
 		qListDestinationsOnly := swag.FormatBool(qrListDestinationsOnly)
 		if qListDestinationsOnly != "" {
@@ -1682,13 +1359,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1699,7 +1376,7 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1710,13 +1387,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PolicyNameQueryParameter != nil {
+	if o.PolicyName != nil {
 
 		// query param policy.name
 		var qrPolicyName string
 
-		if o.PolicyNameQueryParameter != nil {
-			qrPolicyName = *o.PolicyNameQueryParameter
+		if o.PolicyName != nil {
+			qrPolicyName = *o.PolicyName
 		}
 		qPolicyName := qrPolicyName
 		if qPolicyName != "" {
@@ -1727,30 +1404,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PolicyTransferScheduleNameQueryParameter != nil {
-
-		// query param policy.transfer_schedule.name
-		var qrPolicyTransferScheduleName string
-
-		if o.PolicyTransferScheduleNameQueryParameter != nil {
-			qrPolicyTransferScheduleName = *o.PolicyTransferScheduleNameQueryParameter
-		}
-		qPolicyTransferScheduleName := qrPolicyTransferScheduleName
-		if qPolicyTransferScheduleName != "" {
-
-			if err := r.SetQueryParam("policy.transfer_schedule.name", qPolicyTransferScheduleName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.PolicyTypeQueryParameter != nil {
+	if o.PolicyType != nil {
 
 		// query param policy.type
 		var qrPolicyType string
 
-		if o.PolicyTypeQueryParameter != nil {
-			qrPolicyType = *o.PolicyTypeQueryParameter
+		if o.PolicyType != nil {
+			qrPolicyType = *o.PolicyType
 		}
 		qPolicyType := qrPolicyType
 		if qPolicyType != "" {
@@ -1761,13 +1421,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.PolicyUUIDQueryParameter != nil {
+	if o.PolicyUUID != nil {
 
 		// query param policy.uuid
 		var qrPolicyUUID string
 
-		if o.PolicyUUIDQueryParameter != nil {
-			qrPolicyUUID = *o.PolicyUUIDQueryParameter
+		if o.PolicyUUID != nil {
+			qrPolicyUUID = *o.PolicyUUID
 		}
 		qPolicyUUID := qrPolicyUUID
 		if qPolicyUUID != "" {
@@ -1778,13 +1438,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.RestoreQueryParameter != nil {
+	if o.Restore != nil {
 
 		// query param restore
 		var qrRestore bool
 
-		if o.RestoreQueryParameter != nil {
-			qrRestore = *o.RestoreQueryParameter
+		if o.Restore != nil {
+			qrRestore = *o.Restore
 		}
 		qRestore := swag.FormatBool(qrRestore)
 		if qRestore != "" {
@@ -1795,13 +1455,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1812,13 +1472,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1829,13 +1489,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourceClusterNameQueryParameter != nil {
+	if o.SourceClusterName != nil {
 
 		// query param source.cluster.name
 		var qrSourceClusterName string
 
-		if o.SourceClusterNameQueryParameter != nil {
-			qrSourceClusterName = *o.SourceClusterNameQueryParameter
+		if o.SourceClusterName != nil {
+			qrSourceClusterName = *o.SourceClusterName
 		}
 		qSourceClusterName := qrSourceClusterName
 		if qSourceClusterName != "" {
@@ -1846,13 +1506,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourceClusterUUIDQueryParameter != nil {
+	if o.SourceClusterUUID != nil {
 
 		// query param source.cluster.uuid
 		var qrSourceClusterUUID string
 
-		if o.SourceClusterUUIDQueryParameter != nil {
-			qrSourceClusterUUID = *o.SourceClusterUUIDQueryParameter
+		if o.SourceClusterUUID != nil {
+			qrSourceClusterUUID = *o.SourceClusterUUID
 		}
 		qSourceClusterUUID := qrSourceClusterUUID
 		if qSourceClusterUUID != "" {
@@ -1863,13 +1523,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourceConsistencyGroupVolumesNameQueryParameter != nil {
+	if o.SourceConsistencyGroupVolumesName != nil {
 
 		// query param source.consistency_group_volumes.name
 		var qrSourceConsistencyGroupVolumesName string
 
-		if o.SourceConsistencyGroupVolumesNameQueryParameter != nil {
-			qrSourceConsistencyGroupVolumesName = *o.SourceConsistencyGroupVolumesNameQueryParameter
+		if o.SourceConsistencyGroupVolumesName != nil {
+			qrSourceConsistencyGroupVolumesName = *o.SourceConsistencyGroupVolumesName
 		}
 		qSourceConsistencyGroupVolumesName := qrSourceConsistencyGroupVolumesName
 		if qSourceConsistencyGroupVolumesName != "" {
@@ -1880,13 +1540,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourcePathQueryParameter != nil {
+	if o.SourcePath != nil {
 
 		// query param source.path
 		var qrSourcePath string
 
-		if o.SourcePathQueryParameter != nil {
-			qrSourcePath = *o.SourcePathQueryParameter
+		if o.SourcePath != nil {
+			qrSourcePath = *o.SourcePath
 		}
 		qSourcePath := qrSourcePath
 		if qSourcePath != "" {
@@ -1897,13 +1557,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourceSVMNameQueryParameter != nil {
+	if o.SourceSvmName != nil {
 
 		// query param source.svm.name
 		var qrSourceSvmName string
 
-		if o.SourceSVMNameQueryParameter != nil {
-			qrSourceSvmName = *o.SourceSVMNameQueryParameter
+		if o.SourceSvmName != nil {
+			qrSourceSvmName = *o.SourceSvmName
 		}
 		qSourceSvmName := qrSourceSvmName
 		if qSourceSvmName != "" {
@@ -1914,13 +1574,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourceSVMUUIDQueryParameter != nil {
+	if o.SourceSvmUUID != nil {
 
 		// query param source.svm.uuid
 		var qrSourceSvmUUID string
 
-		if o.SourceSVMUUIDQueryParameter != nil {
-			qrSourceSvmUUID = *o.SourceSVMUUIDQueryParameter
+		if o.SourceSvmUUID != nil {
+			qrSourceSvmUUID = *o.SourceSvmUUID
 		}
 		qSourceSvmUUID := qrSourceSvmUUID
 		if qSourceSvmUUID != "" {
@@ -1931,13 +1591,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SourceUUIDQueryParameter != nil {
+	if o.SourceUUID != nil {
 
 		// query param source.uuid
 		var qrSourceUUID string
 
-		if o.SourceUUIDQueryParameter != nil {
-			qrSourceUUID = *o.SourceUUIDQueryParameter
+		if o.SourceUUID != nil {
+			qrSourceUUID = *o.SourceUUID
 		}
 		qSourceUUID := qrSourceUUID
 		if qSourceUUID != "" {
@@ -1948,13 +1608,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -1965,13 +1625,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ThrottleQueryParameter != nil {
+	if o.Throttle != nil {
 
 		// query param throttle
 		var qrThrottle int64
 
-		if o.ThrottleQueryParameter != nil {
-			qrThrottle = *o.ThrottleQueryParameter
+		if o.Throttle != nil {
+			qrThrottle = *o.Throttle
 		}
 		qThrottle := swag.FormatInt64(qrThrottle)
 		if qThrottle != "" {
@@ -1982,13 +1642,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferBytesTransferredQueryParameter != nil {
+	if o.TransferBytesTransferred != nil {
 
 		// query param transfer.bytes_transferred
 		var qrTransferBytesTransferred int64
 
-		if o.TransferBytesTransferredQueryParameter != nil {
-			qrTransferBytesTransferred = *o.TransferBytesTransferredQueryParameter
+		if o.TransferBytesTransferred != nil {
+			qrTransferBytesTransferred = *o.TransferBytesTransferred
 		}
 		qTransferBytesTransferred := swag.FormatInt64(qrTransferBytesTransferred)
 		if qTransferBytesTransferred != "" {
@@ -1999,13 +1659,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferEndTimeQueryParameter != nil {
+	if o.TransferEndTime != nil {
 
 		// query param transfer.end_time
 		var qrTransferEndTime string
 
-		if o.TransferEndTimeQueryParameter != nil {
-			qrTransferEndTime = *o.TransferEndTimeQueryParameter
+		if o.TransferEndTime != nil {
+			qrTransferEndTime = *o.TransferEndTime
 		}
 		qTransferEndTime := qrTransferEndTime
 		if qTransferEndTime != "" {
@@ -2016,13 +1676,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferStateQueryParameter != nil {
+	if o.TransferState != nil {
 
 		// query param transfer.state
 		var qrTransferState string
 
-		if o.TransferStateQueryParameter != nil {
-			qrTransferState = *o.TransferStateQueryParameter
+		if o.TransferState != nil {
+			qrTransferState = *o.TransferState
 		}
 		qTransferState := qrTransferState
 		if qTransferState != "" {
@@ -2033,13 +1693,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferTotalDurationQueryParameter != nil {
+	if o.TransferTotalDuration != nil {
 
 		// query param transfer.total_duration
 		var qrTransferTotalDuration string
 
-		if o.TransferTotalDurationQueryParameter != nil {
-			qrTransferTotalDuration = *o.TransferTotalDurationQueryParameter
+		if o.TransferTotalDuration != nil {
+			qrTransferTotalDuration = *o.TransferTotalDuration
 		}
 		qTransferTotalDuration := qrTransferTotalDuration
 		if qTransferTotalDuration != "" {
@@ -2050,13 +1710,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferUUIDQueryParameter != nil {
+	if o.TransferUUID != nil {
 
 		// query param transfer.uuid
 		var qrTransferUUID string
 
-		if o.TransferUUIDQueryParameter != nil {
-			qrTransferUUID = *o.TransferUUIDQueryParameter
+		if o.TransferUUID != nil {
+			qrTransferUUID = *o.TransferUUID
 		}
 		qTransferUUID := qrTransferUUID
 		if qTransferUUID != "" {
@@ -2067,13 +1727,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferScheduleNameQueryParameter != nil {
+	if o.TransferScheduleName != nil {
 
 		// query param transfer_schedule.name
 		var qrTransferScheduleName string
 
-		if o.TransferScheduleNameQueryParameter != nil {
-			qrTransferScheduleName = *o.TransferScheduleNameQueryParameter
+		if o.TransferScheduleName != nil {
+			qrTransferScheduleName = *o.TransferScheduleName
 		}
 		qTransferScheduleName := qrTransferScheduleName
 		if qTransferScheduleName != "" {
@@ -2084,13 +1744,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TransferScheduleUUIDQueryParameter != nil {
+	if o.TransferScheduleUUID != nil {
 
 		// query param transfer_schedule.uuid
 		var qrTransferScheduleUUID string
 
-		if o.TransferScheduleUUIDQueryParameter != nil {
-			qrTransferScheduleUUID = *o.TransferScheduleUUIDQueryParameter
+		if o.TransferScheduleUUID != nil {
+			qrTransferScheduleUUID = *o.TransferScheduleUUID
 		}
 		qTransferScheduleUUID := qrTransferScheduleUUID
 		if qTransferScheduleUUID != "" {
@@ -2101,13 +1761,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UnhealthyReasonCodeQueryParameter != nil {
+	if o.UnhealthyReasonCode != nil {
 
 		// query param unhealthy_reason.code
 		var qrUnhealthyReasonCode int64
 
-		if o.UnhealthyReasonCodeQueryParameter != nil {
-			qrUnhealthyReasonCode = *o.UnhealthyReasonCodeQueryParameter
+		if o.UnhealthyReasonCode != nil {
+			qrUnhealthyReasonCode = *o.UnhealthyReasonCode
 		}
 		qUnhealthyReasonCode := swag.FormatInt64(qrUnhealthyReasonCode)
 		if qUnhealthyReasonCode != "" {
@@ -2118,13 +1778,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UnhealthyReasonMessageQueryParameter != nil {
+	if o.UnhealthyReasonMessage != nil {
 
 		// query param unhealthy_reason.message
 		var qrUnhealthyReasonMessage string
 
-		if o.UnhealthyReasonMessageQueryParameter != nil {
-			qrUnhealthyReasonMessage = *o.UnhealthyReasonMessageQueryParameter
+		if o.UnhealthyReasonMessage != nil {
+			qrUnhealthyReasonMessage = *o.UnhealthyReasonMessage
 		}
 		qUnhealthyReasonMessage := qrUnhealthyReasonMessage
 		if qUnhealthyReasonMessage != "" {
@@ -2135,13 +1795,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UnhealthyReasonParametersQueryParameter != nil {
+	if o.UnhealthyReasonParameters != nil {
 
 		// query param unhealthy_reason.parameters
 		var qrUnhealthyReasonParameters string
 
-		if o.UnhealthyReasonParametersQueryParameter != nil {
-			qrUnhealthyReasonParameters = *o.UnhealthyReasonParametersQueryParameter
+		if o.UnhealthyReasonParameters != nil {
+			qrUnhealthyReasonParameters = *o.UnhealthyReasonParameters
 		}
 		qUnhealthyReasonParameters := qrUnhealthyReasonParameters
 		if qUnhealthyReasonParameters != "" {
@@ -2152,13 +1812,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -2177,7 +1837,7 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnapmirrorRelationshipsGet binds the parameter fields
 func (o *SnapmirrorRelationshipsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2194,7 +1854,7 @@ func (o *SnapmirrorRelationshipsGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamSnapmirrorRelationshipsGet binds the parameter order_by
 func (o *SnapmirrorRelationshipsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

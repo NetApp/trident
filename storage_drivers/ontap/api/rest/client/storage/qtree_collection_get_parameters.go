@@ -66,109 +66,109 @@ type QtreeCollectionGetParams struct {
 
 	   Filter by export_policy.id
 	*/
-	ExportPolicyIDQueryParameter *int64
+	ExportPolicyID *int64
 
 	/* ExportPolicyName.
 
 	   Filter by export_policy.name
 	*/
-	ExportPolicyNameQueryParameter *string
+	ExportPolicyName *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FilesystemPath.
 
 	   Filter by filesystem_path
 	*/
-	FilesystemPathQueryParameter *string
+	FilesystemPath *string
 
 	/* GroupID.
 
 	   Filter by group.id
 	*/
-	GroupIDQueryParameter *string
+	GroupID *string
 
 	/* GroupName.
 
 	   Filter by group.name
 	*/
-	GroupNameQueryParameter *string
+	GroupName *string
 
 	/* ID.
 
 	   Filter by id
 	*/
-	IDQueryParameter *int64
+	ID *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NasPath.
 
 	   Filter by nas.path
 	*/
-	NasPathQueryParameter *string
+	NasPath *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Path.
 
 	   Filter by path
 	*/
-	PathQueryParameter *string
+	Path *string
 
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
 	*/
-	QosPolicyMaxThroughputIopsQueryParameter *int64
+	QosPolicyMaxThroughputIops *int64
 
 	/* QosPolicyMaxThroughputMbps.
 
 	   Filter by qos_policy.max_throughput_mbps
 	*/
-	QosPolicyMaxThroughputMbpsQueryParameter *int64
+	QosPolicyMaxThroughputMbps *int64
 
 	/* QosPolicyMinThroughputIops.
 
 	   Filter by qos_policy.min_throughput_iops
 	*/
-	QosPolicyMinThroughputIopsQueryParameter *int64
+	QosPolicyMinThroughputIops *int64
 
 	/* QosPolicyMinThroughputMbps.
 
 	   Filter by qos_policy.min_throughput_mbps
 	*/
-	QosPolicyMinThroughputMbpsQueryParameter *int64
+	QosPolicyMinThroughputMbps *int64
 
 	/* QosPolicyName.
 
 	   Filter by qos_policy.name
 	*/
-	QosPolicyNameQueryParameter *string
+	QosPolicyName *string
 
 	/* QosPolicyUUID.
 
 	   Filter by qos_policy.uuid
 	*/
-	QosPolicyUUIDQueryParameter *string
+	QosPolicyUUID *string
 
 	/* ReturnRecords.
 
@@ -176,7 +176,7 @@ type QtreeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -184,115 +184,115 @@ type QtreeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SecurityStyle.
 
 	   Filter by security_style
 	*/
-	SecurityStyleQueryParameter *string
+	SecurityStyle *string
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawOther.
 
 	   Filter by statistics.throughput_raw.other
 	*/
-	StatisticsThroughputRawOtherQueryParameter *int64
+	StatisticsThroughputRawOther *int64
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UnixPermissions.
 
 	   Filter by unix_permissions
 	*/
-	UnixPermissionsQueryParameter *int64
+	UnixPermissions *int64
 
 	/* UserID.
 
 	   Filter by user.id
 	*/
-	UserIDQueryParameter *string
+	UserID *string
 
 	/* UserName.
 
 	   Filter by user.name
 	*/
-	UserNameQueryParameter *string
+	UserName *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -312,14 +312,14 @@ func (o *QtreeCollectionGetParams) WithDefaults() *QtreeCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *QtreeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := QtreeCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -361,422 +361,422 @@ func (o *QtreeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithExportPolicyIDQueryParameter adds the exportPolicyID to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithExportPolicyIDQueryParameter(exportPolicyID *int64) *QtreeCollectionGetParams {
-	o.SetExportPolicyIDQueryParameter(exportPolicyID)
+// WithExportPolicyID adds the exportPolicyID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithExportPolicyID(exportPolicyID *int64) *QtreeCollectionGetParams {
+	o.SetExportPolicyID(exportPolicyID)
 	return o
 }
 
-// SetExportPolicyIDQueryParameter adds the exportPolicyId to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetExportPolicyIDQueryParameter(exportPolicyID *int64) {
-	o.ExportPolicyIDQueryParameter = exportPolicyID
+// SetExportPolicyID adds the exportPolicyId to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetExportPolicyID(exportPolicyID *int64) {
+	o.ExportPolicyID = exportPolicyID
 }
 
-// WithExportPolicyNameQueryParameter adds the exportPolicyName to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithExportPolicyNameQueryParameter(exportPolicyName *string) *QtreeCollectionGetParams {
-	o.SetExportPolicyNameQueryParameter(exportPolicyName)
+// WithExportPolicyName adds the exportPolicyName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithExportPolicyName(exportPolicyName *string) *QtreeCollectionGetParams {
+	o.SetExportPolicyName(exportPolicyName)
 	return o
 }
 
-// SetExportPolicyNameQueryParameter adds the exportPolicyName to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetExportPolicyNameQueryParameter(exportPolicyName *string) {
-	o.ExportPolicyNameQueryParameter = exportPolicyName
+// SetExportPolicyName adds the exportPolicyName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetExportPolicyName(exportPolicyName *string) {
+	o.ExportPolicyName = exportPolicyName
 }
 
-// WithFieldsQueryParameter adds the fields to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithFieldsQueryParameter(fields []string) *QtreeCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithFields(fields []string) *QtreeCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFilesystemPathQueryParameter adds the filesystemPath to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithFilesystemPathQueryParameter(filesystemPath *string) *QtreeCollectionGetParams {
-	o.SetFilesystemPathQueryParameter(filesystemPath)
+// WithFilesystemPath adds the filesystemPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithFilesystemPath(filesystemPath *string) *QtreeCollectionGetParams {
+	o.SetFilesystemPath(filesystemPath)
 	return o
 }
 
-// SetFilesystemPathQueryParameter adds the filesystemPath to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetFilesystemPathQueryParameter(filesystemPath *string) {
-	o.FilesystemPathQueryParameter = filesystemPath
+// SetFilesystemPath adds the filesystemPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetFilesystemPath(filesystemPath *string) {
+	o.FilesystemPath = filesystemPath
 }
 
-// WithGroupIDQueryParameter adds the groupID to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithGroupIDQueryParameter(groupID *string) *QtreeCollectionGetParams {
-	o.SetGroupIDQueryParameter(groupID)
+// WithGroupID adds the groupID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithGroupID(groupID *string) *QtreeCollectionGetParams {
+	o.SetGroupID(groupID)
 	return o
 }
 
-// SetGroupIDQueryParameter adds the groupId to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetGroupIDQueryParameter(groupID *string) {
-	o.GroupIDQueryParameter = groupID
+// SetGroupID adds the groupId to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetGroupID(groupID *string) {
+	o.GroupID = groupID
 }
 
-// WithGroupNameQueryParameter adds the groupName to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithGroupNameQueryParameter(groupName *string) *QtreeCollectionGetParams {
-	o.SetGroupNameQueryParameter(groupName)
+// WithGroupName adds the groupName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithGroupName(groupName *string) *QtreeCollectionGetParams {
+	o.SetGroupName(groupName)
 	return o
 }
 
-// SetGroupNameQueryParameter adds the groupName to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetGroupNameQueryParameter(groupName *string) {
-	o.GroupNameQueryParameter = groupName
+// SetGroupName adds the groupName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetGroupName(groupName *string) {
+	o.GroupName = groupName
 }
 
-// WithIDQueryParameter adds the id to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithIDQueryParameter(id *int64) *QtreeCollectionGetParams {
-	o.SetIDQueryParameter(id)
+// WithID adds the id to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithID(id *int64) *QtreeCollectionGetParams {
+	o.SetID(id)
 	return o
 }
 
-// SetIDQueryParameter adds the id to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetIDQueryParameter(id *int64) {
-	o.IDQueryParameter = id
+// SetID adds the id to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetID(id *int64) {
+	o.ID = id
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QtreeCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMaxRecords(maxRecords *int64) *QtreeCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithNameQueryParameter(name *string) *QtreeCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithName(name *string) *QtreeCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNasPathQueryParameter adds the nasPath to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithNasPathQueryParameter(nasPath *string) *QtreeCollectionGetParams {
-	o.SetNasPathQueryParameter(nasPath)
+// WithNasPath adds the nasPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithNasPath(nasPath *string) *QtreeCollectionGetParams {
+	o.SetNasPath(nasPath)
 	return o
 }
 
-// SetNasPathQueryParameter adds the nasPath to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetNasPathQueryParameter(nasPath *string) {
-	o.NasPathQueryParameter = nasPath
+// SetNasPath adds the nasPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetNasPath(nasPath *string) {
+	o.NasPath = nasPath
 }
 
-// WithOrderByQueryParameter adds the orderBy to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QtreeCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithOrderBy(orderBy []string) *QtreeCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPathQueryParameter adds the path to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithPathQueryParameter(path *string) *QtreeCollectionGetParams {
-	o.SetPathQueryParameter(path)
+// WithPath adds the path to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithPath(path *string) *QtreeCollectionGetParams {
+	o.SetPath(path)
 	return o
 }
 
-// SetPathQueryParameter adds the path to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetPathQueryParameter(path *string) {
-	o.PathQueryParameter = path
+// SetPath adds the path to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetPath(path *string) {
+	o.Path = path
 }
 
-// WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) *QtreeCollectionGetParams {
-	o.SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops)
+// WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) {
-	o.QosPolicyMaxThroughputIopsQueryParameter = qosPolicyMaxThroughputIops
+// SetQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) {
+	o.QosPolicyMaxThroughputIops = qosPolicyMaxThroughputIops
 }
 
-// WithQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) *QtreeCollectionGetParams {
-	o.SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps)
+// WithQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) {
-	o.QosPolicyMaxThroughputMbpsQueryParameter = qosPolicyMaxThroughputMbps
+// SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
+	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
 }
 
-// WithQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) *QtreeCollectionGetParams {
-	o.SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops)
+// WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops)
 	return o
 }
 
-// SetQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) {
-	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
+// SetQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputIops(qosPolicyMinThroughputIops *int64) {
+	o.QosPolicyMinThroughputIops = qosPolicyMinThroughputIops
 }
 
-// WithQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) *QtreeCollectionGetParams {
-	o.SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps)
+// WithQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps)
 	return o
 }
 
-// SetQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) {
-	o.QosPolicyMinThroughputMbpsQueryParameter = qosPolicyMinThroughputMbps
+// SetQosPolicyMinThroughputMbps adds the qosPolicyMinThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputMbps(qosPolicyMinThroughputMbps *int64) {
+	o.QosPolicyMinThroughputMbps = qosPolicyMinThroughputMbps
 }
 
-// WithQosPolicyNameQueryParameter adds the qosPolicyName to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *QtreeCollectionGetParams {
-	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+// WithQosPolicyName adds the qosPolicyName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *QtreeCollectionGetParams {
+	o.SetQosPolicyName(qosPolicyName)
 	return o
 }
 
-// SetQosPolicyNameQueryParameter adds the qosPolicyName to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
-	o.QosPolicyNameQueryParameter = qosPolicyName
+// SetQosPolicyName adds the qosPolicyName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyName(qosPolicyName *string) {
+	o.QosPolicyName = qosPolicyName
 }
 
-// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *QtreeCollectionGetParams {
-	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+// WithQosPolicyUUID adds the qosPolicyUUID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *QtreeCollectionGetParams {
+	o.SetQosPolicyUUID(qosPolicyUUID)
 	return o
 }
 
-// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
-	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+// SetQosPolicyUUID adds the qosPolicyUuid to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
+	o.QosPolicyUUID = qosPolicyUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QtreeCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithReturnRecords(returnRecords *bool) *QtreeCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QtreeCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QtreeCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSecurityStyleQueryParameter adds the securityStyle to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithSecurityStyleQueryParameter(securityStyle *string) *QtreeCollectionGetParams {
-	o.SetSecurityStyleQueryParameter(securityStyle)
+// WithSecurityStyle adds the securityStyle to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithSecurityStyle(securityStyle *string) *QtreeCollectionGetParams {
+	o.SetSecurityStyle(securityStyle)
 	return o
 }
 
-// SetSecurityStyleQueryParameter adds the securityStyle to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetSecurityStyleQueryParameter(securityStyle *string) {
-	o.SecurityStyleQueryParameter = securityStyle
+// SetSecurityStyle adds the securityStyle to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetSecurityStyle(securityStyle *string) {
+	o.SecurityStyle = securityStyle
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *QtreeCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsStatus adds the statisticsStatus to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *QtreeCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsStatus adds the statisticsStatus to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther)
+// WithStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawOther(statisticsThroughputRawOther)
 	return o
 }
 
-// SetStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) {
-	o.StatisticsThroughputRawOtherQueryParameter = statisticsThroughputRawOther
+// SetStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) {
+	o.StatisticsThroughputRawOther = statisticsThroughputRawOther
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *QtreeCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *QtreeCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *QtreeCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsTimestamp adds the statisticsTimestamp to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithSVMNameQueryParameter adds the svmName to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *QtreeCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithSvmName(svmName *string) *QtreeCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *QtreeCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithSvmUUID(svmUUID *string) *QtreeCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUnixPermissionsQueryParameter adds the unixPermissions to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithUnixPermissionsQueryParameter(unixPermissions *int64) *QtreeCollectionGetParams {
-	o.SetUnixPermissionsQueryParameter(unixPermissions)
+// WithUnixPermissions adds the unixPermissions to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithUnixPermissions(unixPermissions *int64) *QtreeCollectionGetParams {
+	o.SetUnixPermissions(unixPermissions)
 	return o
 }
 
-// SetUnixPermissionsQueryParameter adds the unixPermissions to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetUnixPermissionsQueryParameter(unixPermissions *int64) {
-	o.UnixPermissionsQueryParameter = unixPermissions
+// SetUnixPermissions adds the unixPermissions to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetUnixPermissions(unixPermissions *int64) {
+	o.UnixPermissions = unixPermissions
 }
 
-// WithUserIDQueryParameter adds the userID to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithUserIDQueryParameter(userID *string) *QtreeCollectionGetParams {
-	o.SetUserIDQueryParameter(userID)
+// WithUserID adds the userID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithUserID(userID *string) *QtreeCollectionGetParams {
+	o.SetUserID(userID)
 	return o
 }
 
-// SetUserIDQueryParameter adds the userId to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetUserIDQueryParameter(userID *string) {
-	o.UserIDQueryParameter = userID
+// SetUserID adds the userId to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetUserID(userID *string) {
+	o.UserID = userID
 }
 
-// WithUserNameQueryParameter adds the userName to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithUserNameQueryParameter(userName *string) *QtreeCollectionGetParams {
-	o.SetUserNameQueryParameter(userName)
+// WithUserName adds the userName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithUserName(userName *string) *QtreeCollectionGetParams {
+	o.SetUserName(userName)
 	return o
 }
 
-// SetUserNameQueryParameter adds the userName to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetUserNameQueryParameter(userName *string) {
-	o.UserNameQueryParameter = userName
+// SetUserName adds the userName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetUserName(userName *string) {
+	o.UserName = userName
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *QtreeCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithVolumeName(volumeName *string) *QtreeCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *QtreeCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithVolumeUUID(volumeUUID *string) *QtreeCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -787,13 +787,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.ExportPolicyIDQueryParameter != nil {
+	if o.ExportPolicyID != nil {
 
 		// query param export_policy.id
 		var qrExportPolicyID int64
 
-		if o.ExportPolicyIDQueryParameter != nil {
-			qrExportPolicyID = *o.ExportPolicyIDQueryParameter
+		if o.ExportPolicyID != nil {
+			qrExportPolicyID = *o.ExportPolicyID
 		}
 		qExportPolicyID := swag.FormatInt64(qrExportPolicyID)
 		if qExportPolicyID != "" {
@@ -804,13 +804,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ExportPolicyNameQueryParameter != nil {
+	if o.ExportPolicyName != nil {
 
 		// query param export_policy.name
 		var qrExportPolicyName string
 
-		if o.ExportPolicyNameQueryParameter != nil {
-			qrExportPolicyName = *o.ExportPolicyNameQueryParameter
+		if o.ExportPolicyName != nil {
+			qrExportPolicyName = *o.ExportPolicyName
 		}
 		qExportPolicyName := qrExportPolicyName
 		if qExportPolicyName != "" {
@@ -821,7 +821,7 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -832,13 +832,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.FilesystemPathQueryParameter != nil {
+	if o.FilesystemPath != nil {
 
 		// query param filesystem_path
 		var qrFilesystemPath string
 
-		if o.FilesystemPathQueryParameter != nil {
-			qrFilesystemPath = *o.FilesystemPathQueryParameter
+		if o.FilesystemPath != nil {
+			qrFilesystemPath = *o.FilesystemPath
 		}
 		qFilesystemPath := qrFilesystemPath
 		if qFilesystemPath != "" {
@@ -849,13 +849,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.GroupIDQueryParameter != nil {
+	if o.GroupID != nil {
 
 		// query param group.id
 		var qrGroupID string
 
-		if o.GroupIDQueryParameter != nil {
-			qrGroupID = *o.GroupIDQueryParameter
+		if o.GroupID != nil {
+			qrGroupID = *o.GroupID
 		}
 		qGroupID := qrGroupID
 		if qGroupID != "" {
@@ -866,13 +866,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.GroupNameQueryParameter != nil {
+	if o.GroupName != nil {
 
 		// query param group.name
 		var qrGroupName string
 
-		if o.GroupNameQueryParameter != nil {
-			qrGroupName = *o.GroupNameQueryParameter
+		if o.GroupName != nil {
+			qrGroupName = *o.GroupName
 		}
 		qGroupName := qrGroupName
 		if qGroupName != "" {
@@ -883,13 +883,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.IDQueryParameter != nil {
+	if o.ID != nil {
 
 		// query param id
 		var qrID int64
 
-		if o.IDQueryParameter != nil {
-			qrID = *o.IDQueryParameter
+		if o.ID != nil {
+			qrID = *o.ID
 		}
 		qID := swag.FormatInt64(qrID)
 		if qID != "" {
@@ -900,13 +900,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -917,13 +917,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -934,13 +934,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.NasPathQueryParameter != nil {
+	if o.NasPath != nil {
 
 		// query param nas.path
 		var qrNasPath string
 
-		if o.NasPathQueryParameter != nil {
-			qrNasPath = *o.NasPathQueryParameter
+		if o.NasPath != nil {
+			qrNasPath = *o.NasPath
 		}
 		qNasPath := qrNasPath
 		if qNasPath != "" {
@@ -951,7 +951,7 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -962,13 +962,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.PathQueryParameter != nil {
+	if o.Path != nil {
 
 		// query param path
 		var qrPath string
 
-		if o.PathQueryParameter != nil {
-			qrPath = *o.PathQueryParameter
+		if o.Path != nil {
+			qrPath = *o.Path
 		}
 		qPath := qrPath
 		if qPath != "" {
@@ -979,13 +979,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos_policy.max_throughput_iops
 		var qrQosPolicyMaxThroughputIops int64
 
-		if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIopsQueryParameter
+		if o.QosPolicyMaxThroughputIops != nil {
+			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIops
 		}
 		qQosPolicyMaxThroughputIops := swag.FormatInt64(qrQosPolicyMaxThroughputIops)
 		if qQosPolicyMaxThroughputIops != "" {
@@ -996,13 +996,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.QosPolicyMaxThroughputMbps != nil {
 
 		// query param qos_policy.max_throughput_mbps
 		var qrQosPolicyMaxThroughputMbps int64
 
-		if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbpsQueryParameter
+		if o.QosPolicyMaxThroughputMbps != nil {
+			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbps
 		}
 		qQosPolicyMaxThroughputMbps := swag.FormatInt64(qrQosPolicyMaxThroughputMbps)
 		if qQosPolicyMaxThroughputMbps != "" {
@@ -1013,13 +1013,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.QosPolicyMinThroughputIops != nil {
 
 		// query param qos_policy.min_throughput_iops
 		var qrQosPolicyMinThroughputIops int64
 
-		if o.QosPolicyMinThroughputIopsQueryParameter != nil {
-			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIopsQueryParameter
+		if o.QosPolicyMinThroughputIops != nil {
+			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIops
 		}
 		qQosPolicyMinThroughputIops := swag.FormatInt64(qrQosPolicyMinThroughputIops)
 		if qQosPolicyMinThroughputIops != "" {
@@ -1030,13 +1030,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.QosPolicyMinThroughputMbps != nil {
 
 		// query param qos_policy.min_throughput_mbps
 		var qrQosPolicyMinThroughputMbps int64
 
-		if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbpsQueryParameter
+		if o.QosPolicyMinThroughputMbps != nil {
+			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbps
 		}
 		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
 		if qQosPolicyMinThroughputMbps != "" {
@@ -1047,13 +1047,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.QosPolicyNameQueryParameter != nil {
+	if o.QosPolicyName != nil {
 
 		// query param qos_policy.name
 		var qrQosPolicyName string
 
-		if o.QosPolicyNameQueryParameter != nil {
-			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		if o.QosPolicyName != nil {
+			qrQosPolicyName = *o.QosPolicyName
 		}
 		qQosPolicyName := qrQosPolicyName
 		if qQosPolicyName != "" {
@@ -1064,13 +1064,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.QosPolicyUUIDQueryParameter != nil {
+	if o.QosPolicyUUID != nil {
 
 		// query param qos_policy.uuid
 		var qrQosPolicyUUID string
 
-		if o.QosPolicyUUIDQueryParameter != nil {
-			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		if o.QosPolicyUUID != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUID
 		}
 		qQosPolicyUUID := qrQosPolicyUUID
 		if qQosPolicyUUID != "" {
@@ -1081,13 +1081,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1098,13 +1098,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1115,13 +1115,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SecurityStyleQueryParameter != nil {
+	if o.SecurityStyle != nil {
 
 		// query param security_style
 		var qrSecurityStyle string
 
-		if o.SecurityStyleQueryParameter != nil {
-			qrSecurityStyle = *o.SecurityStyleQueryParameter
+		if o.SecurityStyle != nil {
+			qrSecurityStyle = *o.SecurityStyle
 		}
 		qSecurityStyle := qrSecurityStyle
 		if qSecurityStyle != "" {
@@ -1132,13 +1132,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -1149,13 +1149,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -1166,13 +1166,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -1183,13 +1183,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -1200,13 +1200,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -1217,13 +1217,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsThroughputRawOtherQueryParameter != nil {
+	if o.StatisticsThroughputRawOther != nil {
 
 		// query param statistics.throughput_raw.other
 		var qrStatisticsThroughputRawOther int64
 
-		if o.StatisticsThroughputRawOtherQueryParameter != nil {
-			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOtherQueryParameter
+		if o.StatisticsThroughputRawOther != nil {
+			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOther
 		}
 		qStatisticsThroughputRawOther := swag.FormatInt64(qrStatisticsThroughputRawOther)
 		if qStatisticsThroughputRawOther != "" {
@@ -1234,13 +1234,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -1251,13 +1251,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -1268,13 +1268,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -1285,13 +1285,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -1302,13 +1302,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1319,13 +1319,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1336,13 +1336,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.UnixPermissionsQueryParameter != nil {
+	if o.UnixPermissions != nil {
 
 		// query param unix_permissions
 		var qrUnixPermissions int64
 
-		if o.UnixPermissionsQueryParameter != nil {
-			qrUnixPermissions = *o.UnixPermissionsQueryParameter
+		if o.UnixPermissions != nil {
+			qrUnixPermissions = *o.UnixPermissions
 		}
 		qUnixPermissions := swag.FormatInt64(qrUnixPermissions)
 		if qUnixPermissions != "" {
@@ -1353,13 +1353,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.UserIDQueryParameter != nil {
+	if o.UserID != nil {
 
 		// query param user.id
 		var qrUserID string
 
-		if o.UserIDQueryParameter != nil {
-			qrUserID = *o.UserIDQueryParameter
+		if o.UserID != nil {
+			qrUserID = *o.UserID
 		}
 		qUserID := qrUserID
 		if qUserID != "" {
@@ -1370,13 +1370,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.UserNameQueryParameter != nil {
+	if o.UserName != nil {
 
 		// query param user.name
 		var qrUserName string
 
-		if o.UserNameQueryParameter != nil {
-			qrUserName = *o.UserNameQueryParameter
+		if o.UserName != nil {
+			qrUserName = *o.UserName
 		}
 		qUserName := qrUserName
 		if qUserName != "" {
@@ -1387,13 +1387,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -1404,13 +1404,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -1429,7 +1429,7 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamQtreeCollectionGet binds the parameter fields
 func (o *QtreeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1446,7 +1446,7 @@ func (o *QtreeCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamQtreeCollectionGet binds the parameter order_by
 func (o *QtreeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

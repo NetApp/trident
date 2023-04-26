@@ -66,19 +66,19 @@ type CloudStoreGetParams struct {
 
 	   Aggregate UUID
 	*/
-	AggregateUUIDPathParameter string
+	AggregateUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* TargetUUID.
 
 	   Cloud target UUID
 	*/
-	TargetUUIDPathParameter string
+	TargetUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *CloudStoreGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAggregateUUIDPathParameter adds the aggregateUUID to the cloud store get params
-func (o *CloudStoreGetParams) WithAggregateUUIDPathParameter(aggregateUUID string) *CloudStoreGetParams {
-	o.SetAggregateUUIDPathParameter(aggregateUUID)
+// WithAggregateUUID adds the aggregateUUID to the cloud store get params
+func (o *CloudStoreGetParams) WithAggregateUUID(aggregateUUID string) *CloudStoreGetParams {
+	o.SetAggregateUUID(aggregateUUID)
 	return o
 }
 
-// SetAggregateUUIDPathParameter adds the aggregateUuid to the cloud store get params
-func (o *CloudStoreGetParams) SetAggregateUUIDPathParameter(aggregateUUID string) {
-	o.AggregateUUIDPathParameter = aggregateUUID
+// SetAggregateUUID adds the aggregateUuid to the cloud store get params
+func (o *CloudStoreGetParams) SetAggregateUUID(aggregateUUID string) {
+	o.AggregateUUID = aggregateUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the cloud store get params
-func (o *CloudStoreGetParams) WithFieldsQueryParameter(fields []string) *CloudStoreGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cloud store get params
+func (o *CloudStoreGetParams) WithFields(fields []string) *CloudStoreGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cloud store get params
-func (o *CloudStoreGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cloud store get params
+func (o *CloudStoreGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithTargetUUIDPathParameter adds the targetUUID to the cloud store get params
-func (o *CloudStoreGetParams) WithTargetUUIDPathParameter(targetUUID string) *CloudStoreGetParams {
-	o.SetTargetUUIDPathParameter(targetUUID)
+// WithTargetUUID adds the targetUUID to the cloud store get params
+func (o *CloudStoreGetParams) WithTargetUUID(targetUUID string) *CloudStoreGetParams {
+	o.SetTargetUUID(targetUUID)
 	return o
 }
 
-// SetTargetUUIDPathParameter adds the targetUuid to the cloud store get params
-func (o *CloudStoreGetParams) SetTargetUUIDPathParameter(targetUUID string) {
-	o.TargetUUIDPathParameter = targetUUID
+// SetTargetUUID adds the targetUuid to the cloud store get params
+func (o *CloudStoreGetParams) SetTargetUUID(targetUUID string) {
+	o.TargetUUID = targetUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,11 +175,11 @@ func (o *CloudStoreGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param aggregate.uuid
-	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -191,7 +191,7 @@ func (o *CloudStoreGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param target.uuid
-	if err := r.SetPathParam("target.uuid", o.TargetUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("target.uuid", o.TargetUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *CloudStoreGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamCloudStoreGet binds the parameter fields
 func (o *CloudStoreGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

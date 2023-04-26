@@ -62,7 +62,7 @@ NfsDeleteParams contains all the parameters to send to the API endpoint
 type NfsDeleteParams struct {
 
 	// SvmUUID.
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -117,15 +117,15 @@ func (o *NfsDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nfs delete params
-func (o *NfsDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *NfsDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nfs delete params
+func (o *NfsDeleteParams) WithSvmUUID(svmUUID string) *NfsDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nfs delete params
-func (o *NfsDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nfs delete params
+func (o *NfsDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -137,7 +137,7 @@ func (o *NfsDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

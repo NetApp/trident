@@ -66,7 +66,7 @@ type AutoUpdateInfoGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *AutoUpdateInfoGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the auto update info get params
-func (o *AutoUpdateInfoGetParams) WithFieldsQueryParameter(fields []string) *AutoUpdateInfoGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the auto update info get params
+func (o *AutoUpdateInfoGetParams) WithFields(fields []string) *AutoUpdateInfoGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the auto update info get params
-func (o *AutoUpdateInfoGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the auto update info get params
+func (o *AutoUpdateInfoGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *AutoUpdateInfoGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *AutoUpdateInfoGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamAutoUpdateInfoGet binds the parameter fields
 func (o *AutoUpdateInfoGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

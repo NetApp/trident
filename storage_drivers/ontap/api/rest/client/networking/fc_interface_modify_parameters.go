@@ -75,7 +75,7 @@ type FcInterfaceModifyParams struct {
 	   The unique identifier for the FC interface.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -141,15 +141,15 @@ func (o *FcInterfaceModifyParams) SetInfo(info *models.FcInterface) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the fc interface modify params
-func (o *FcInterfaceModifyParams) WithUUIDPathParameter(uuid string) *FcInterfaceModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the fc interface modify params
+func (o *FcInterfaceModifyParams) WithUUID(uuid string) *FcInterfaceModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the fc interface modify params
-func (o *FcInterfaceModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the fc interface modify params
+func (o *FcInterfaceModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -166,7 +166,7 @@ func (o *FcInterfaceModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

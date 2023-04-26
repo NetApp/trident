@@ -23,26 +23,26 @@ type SoftwareUpdateDetailsReference struct {
 	// Elapsed duration for each update phase
 	// Example: 2100
 	// Read Only: true
-	ElapsedDuration int64 `json:"elapsed_duration,omitempty"`
+	ElapsedDuration *int64 `json:"elapsed_duration,omitempty"`
 
 	// Estimated duration for each update phase
 	// Example: 4620
 	// Read Only: true
-	EstimatedDuration int64 `json:"estimated_duration,omitempty"`
+	EstimatedDuration *int64 `json:"estimated_duration,omitempty"`
 
 	// node
-	Node *SoftwareUpdateDetailsReferenceNode `json:"node,omitempty"`
+	Node *SoftwareUpdateDetailsReferenceInlineNode `json:"node,omitempty"`
 
 	// Phase details
 	// Example: Post-update checks
 	// Read Only: true
-	Phase string `json:"phase,omitempty"`
+	Phase *string `json:"phase,omitempty"`
 
 	// State of the update phase
 	// Example: failed
 	// Read Only: true
 	// Enum: [in_progress waiting paused_by_user paused_on_error completed canceled failed pause_pending cancel_pending]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
 // Validate validates this software update details reference
@@ -199,7 +199,7 @@ func (m *SoftwareUpdateDetailsReference) validateState(formats strfmt.Registry) 
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -238,7 +238,7 @@ func (m *SoftwareUpdateDetailsReference) ContextValidate(ctx context.Context, fo
 
 func (m *SoftwareUpdateDetailsReference) contextValidateElapsedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "elapsed_duration", "body", int64(m.ElapsedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "elapsed_duration", "body", m.ElapsedDuration); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func (m *SoftwareUpdateDetailsReference) contextValidateElapsedDuration(ctx cont
 
 func (m *SoftwareUpdateDetailsReference) contextValidateEstimatedDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "estimated_duration", "body", int64(m.EstimatedDuration)); err != nil {
+	if err := validate.ReadOnly(ctx, "estimated_duration", "body", m.EstimatedDuration); err != nil {
 		return err
 	}
 
@@ -270,7 +270,7 @@ func (m *SoftwareUpdateDetailsReference) contextValidateNode(ctx context.Context
 
 func (m *SoftwareUpdateDetailsReference) contextValidatePhase(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "phase", "body", string(m.Phase)); err != nil {
+	if err := validate.ReadOnly(ctx, "phase", "body", m.Phase); err != nil {
 		return err
 	}
 
@@ -279,7 +279,7 @@ func (m *SoftwareUpdateDetailsReference) contextValidatePhase(ctx context.Contex
 
 func (m *SoftwareUpdateDetailsReference) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -304,24 +304,24 @@ func (m *SoftwareUpdateDetailsReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareUpdateDetailsReferenceNode software update details reference node
+// SoftwareUpdateDetailsReferenceInlineNode software update details reference inline node
 //
-// swagger:model SoftwareUpdateDetailsReferenceNode
-type SoftwareUpdateDetailsReferenceNode struct {
+// swagger:model software_update_details_reference_inline_node
+type SoftwareUpdateDetailsReferenceInlineNode struct {
 
 	// Name of the node to be retrieved for update details.
 	// Example: node1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this software update details reference node
-func (m *SoftwareUpdateDetailsReferenceNode) Validate(formats strfmt.Registry) error {
+// Validate validates this software update details reference inline node
+func (m *SoftwareUpdateDetailsReferenceInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software update details reference node based on the context it is used
-func (m *SoftwareUpdateDetailsReferenceNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software update details reference inline node based on the context it is used
+func (m *SoftwareUpdateDetailsReferenceInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
@@ -334,9 +334,9 @@ func (m *SoftwareUpdateDetailsReferenceNode) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *SoftwareUpdateDetailsReferenceNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareUpdateDetailsReferenceInlineNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "node"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "node"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -344,7 +344,7 @@ func (m *SoftwareUpdateDetailsReferenceNode) contextValidateName(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareUpdateDetailsReferenceNode) MarshalBinary() ([]byte, error) {
+func (m *SoftwareUpdateDetailsReferenceInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -352,8 +352,8 @@ func (m *SoftwareUpdateDetailsReferenceNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareUpdateDetailsReferenceNode) UnmarshalBinary(b []byte) error {
-	var res SoftwareUpdateDetailsReferenceNode
+func (m *SoftwareUpdateDetailsReferenceInlineNode) UnmarshalBinary(b []byte) error {
+	var res SoftwareUpdateDetailsReferenceInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -52,6 +52,10 @@ LocalHostCreateCreated describes a response with status code 201, with default h
 Created
 */
 type LocalHostCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this local host create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *LocalHostCreateCreated) String() string {
 }
 
 func (o *LocalHostCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

@@ -66,19 +66,19 @@ type CoredumpDeleteParams struct {
 
 	   Core name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* NodeUUID.
 
 	   Node UUID
 	*/
-	NodeUUIDPathParameter string
+	NodeUUID string
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *CoredumpDeleteParams) WithDefaults() *CoredumpDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *CoredumpDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := CoredumpDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,37 +144,37 @@ func (o *CoredumpDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithNamePathParameter adds the name to the coredump delete params
-func (o *CoredumpDeleteParams) WithNamePathParameter(name string) *CoredumpDeleteParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the coredump delete params
+func (o *CoredumpDeleteParams) WithName(name string) *CoredumpDeleteParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the coredump delete params
-func (o *CoredumpDeleteParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the coredump delete params
+func (o *CoredumpDeleteParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithNodeUUIDPathParameter adds the nodeUUID to the coredump delete params
-func (o *CoredumpDeleteParams) WithNodeUUIDPathParameter(nodeUUID string) *CoredumpDeleteParams {
-	o.SetNodeUUIDPathParameter(nodeUUID)
+// WithNodeUUID adds the nodeUUID to the coredump delete params
+func (o *CoredumpDeleteParams) WithNodeUUID(nodeUUID string) *CoredumpDeleteParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeUUIDPathParameter adds the nodeUuid to the coredump delete params
-func (o *CoredumpDeleteParams) SetNodeUUIDPathParameter(nodeUUID string) {
-	o.NodeUUIDPathParameter = nodeUUID
+// SetNodeUUID adds the nodeUuid to the coredump delete params
+func (o *CoredumpDeleteParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the coredump delete params
-func (o *CoredumpDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CoredumpDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the coredump delete params
+func (o *CoredumpDeleteParams) WithReturnTimeout(returnTimeout *int64) *CoredumpDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the coredump delete params
-func (o *CoredumpDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the coredump delete params
+func (o *CoredumpDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,22 +186,22 @@ func (o *CoredumpDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	var res []error
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param node.uuid
-	if err := r.SetPathParam("node.uuid", o.NodeUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

@@ -12,22 +12,22 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// GcpConnectivity Indicates whether or not the Google Cloud KMS service is reachable from all nodes in the cluster.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
+// GcpConnectivity Indicates whether or not the Google Cloud KMS is reachable from all nodes in the cluster.
+// This is an advanced property; there is an added computational cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
 //
 // swagger:model gcp_connectivity
 type GcpConnectivity struct {
 
-	// Code corresponding to the error message. Returns a 0 if Google Cloud KMS service is reachable from all nodes in the cluster.
+	// Code corresponding to the error message. Returns a 0 if Google Cloud KMS is reachable from all nodes in the cluster.
 	// Example: 346758
-	Code int64 `json:"code,omitempty"`
+	Code *string `json:"code,omitempty"`
 
 	// Set to the error message when 'reachable' is false.
-	// Example: Google Cloud KMS service is not reachable from all nodes - \u003creason\u003e.
-	Message string `json:"message,omitempty"`
+	// Example: Google Cloud KMS is not reachable from all nodes - \u003creason\u003e.
+	Message *string `json:"message,omitempty"`
 
-	// Set to true if the Google Cloud KMS service is reachable from all nodes of the cluster.
-	Reachable bool `json:"reachable,omitempty"`
+	// Set to true if the Google Cloud KMS is reachable from all nodes of the cluster.
+	Reachable *bool `json:"reachable,omitempty"`
 }
 
 // Validate validates this gcp connectivity

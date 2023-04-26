@@ -10,31 +10,34 @@ import (
 	"net"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/mitchellh/copystructure"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/multierr"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
-	MinimumVolumeSizeBytes      = uint64(1000000000)   // 1 GB
-	MinimumCVSVolumeSizeBytesSW = uint64(107374182400) // 100 GiB
-	MinimumCVSVolumeSizeBytesHW = uint64(107374182400) // 100 GiB
-	MinimumAPIVersion           = "1.1.6"
-	MinimumSDEVersion           = "2020.10.0"
+	MinimumVolumeSizeBytes       = uint64(1073741824)   // 1 GiB
+	MinimumCVSVolumeSizeBytesHW  = uint64(107374182400) // 100 GiB
+	MaximumVolumesPerStoragePool = 50
+	MinimumAPIVersion            = "1.1.26"
+	MinimumSDEVersion            = "2022.9.0"
 
-	defaultServiceLevel    = api.UserServiceLevel1
+	defaultHWServiceLevel  = api.UserServiceLevel1
+	defaultSWServiceLevel  = api.PoolServiceLevel1
 	defaultNfsMountOptions = "-o nfsvers=3"
 	defaultSecurityStyle   = "unix"
 	defaultSnapshotDir     = "false"
@@ -56,10 +59,14 @@ const (
 	Zone            = "zone"
 	StorageClass    = "storageClass"
 	UnixPermissions = "unixPermissions"
+	StoragePools    = "storagePools"
 
 	// Topology label names
 	topologyZoneLabel   = drivers.TopologyLabelPrefix + "/" + Zone
 	topologyRegionLabel = drivers.TopologyLabelPrefix + "/" + Region
+
+	// discovery debug log constant
+	discovery = "discovery"
 )
 
 // NFSStorageDriver is for storage provisioning using Cloud Volumes Service in GCP
@@ -68,8 +75,8 @@ type NFSStorageDriver struct {
 	Config              drivers.GCPNFSStorageDriverConfig
 	API                 api.GCPClient
 	telemetry           *Telemetry
-	apiVersion          *utils.Version
-	sdeVersion          *utils.Version
+	apiVersion          *versionutils.Version
+	sdeVersion          *versionutils.Version
 	tokenRegexp         *regexp.Regexp
 	csiRegexp           *regexp.Regexp
 	apiRegions          []string
@@ -96,7 +103,7 @@ func (d *NFSStorageDriver) getTelemetry() *Telemetry {
 
 // Name returns the name of this driver
 func (d *NFSStorageDriver) Name() string {
-	return drivers.GCPNFSStorageDriverName
+	return tridentconfig.GCPNFSStorageDriverName
 }
 
 // defaultBackendName returns the default name of the backend managed by this driver instance
@@ -157,15 +164,6 @@ func (d *NFSStorageDriver) makeNetworkPath(network string) string {
 	return fmt.Sprintf("projects/%s/global/networks/%s", projectNumber, network)
 }
 
-// applyMinimumVolumeSizeSW applies the volume size rules for CVS-SO
-func (d *NFSStorageDriver) applyMinimumVolumeSizeSW(sizeBytes uint64) uint64 {
-	if sizeBytes < MinimumCVSVolumeSizeBytesSW {
-		return MinimumCVSVolumeSizeBytesSW
-	}
-
-	return sizeBytes
-}
-
 // applyMinimumVolumeSizeHW applies the volume size rules for CVS-PO
 func (d *NFSStorageDriver) applyMinimumVolumeSizeHW(sizeBytes uint64) uint64 {
 	if sizeBytes < MinimumCVSVolumeSizeBytesHW {
@@ -180,11 +178,9 @@ func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "NFSStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 	d.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
@@ -204,12 +200,11 @@ func (d *NFSStorageDriver) Initialize(
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
 
-	if err = d.initializeStoragePools(ctx); err != nil {
-		return fmt.Errorf("could not configure storage pools: %v", err)
-	}
+	d.initializeStoragePools(ctx)
 
-	if d.API, err = d.initializeGCPAPIClient(ctx, &d.Config); err != nil {
-		return fmt.Errorf("error initializing %s API client. %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API = d.initializeGCPAPIClient(ctx, &d.Config)
 	}
 
 	if err = d.validate(ctx); err != nil {
@@ -234,11 +229,9 @@ func (d *NFSStorageDriver) Initialized() bool {
 
 // Terminate stops the driver prior to its being unloaded
 func (d *NFSStorageDriver) Terminate(ctx context.Context, _ string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
 
 	d.initialized = false
 }
@@ -247,11 +240,9 @@ func (d *NFSStorageDriver) Terminate(ctx context.Context, _ string) {
 func (d *NFSStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.GCPNFSStorageDriverConfig,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< populateConfigurationDefaults")
-	}
+	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "NFSStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
 		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
@@ -264,7 +255,11 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	}
 
 	if config.ServiceLevel == "" {
-		config.ServiceLevel = defaultServiceLevel
+		if config.StorageClass == api.StorageClassSoftware {
+			config.ServiceLevel = defaultSWServiceLevel
+		} else {
+			config.ServiceLevel = defaultHWServiceLevel
+		}
 	}
 
 	if config.StorageClass == "" {
@@ -312,7 +307,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	}
 	d.volumeCreateTimeout = volumeCreateTimeout
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":              *config.StoragePrefix,
 		"Size":                       config.Size,
 		"ServiceLevel":               config.ServiceLevel,
@@ -329,7 +324,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 }
 
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
-func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
+func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) == 0 {
@@ -353,7 +348,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		}
 
 		pool.InternalAttributes()[Size] = d.Config.Size
-		pool.InternalAttributes()[ServiceLevel] = d.Config.ServiceLevel
+		pool.InternalAttributes()[ServiceLevel] = strings.ToLower(d.Config.ServiceLevel)
 		pool.InternalAttributes()[StorageClass] = d.Config.StorageClass
 		pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes()[SnapshotReserve] = d.Config.SnapshotReserve
@@ -362,6 +357,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes()[Network] = d.Config.Network
 		pool.InternalAttributes()[Region] = d.Config.Region
 		pool.InternalAttributes()[Zone] = d.Config.Zone
+		pool.InternalAttributes()[StoragePools] = strings.Join(d.Config.StoragePools, ",")
 
 		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
@@ -428,6 +424,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 				network = vpool.Network
 			}
 
+			storagePools := d.Config.StoragePools
+			if vpool.StoragePools != nil {
+				storagePools = vpool.StoragePools
+			}
+
 			pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
 			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
@@ -444,7 +445,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			}
 
 			pool.InternalAttributes()[Size] = size
-			pool.InternalAttributes()[ServiceLevel] = serviceLevel
+			pool.InternalAttributes()[ServiceLevel] = strings.ToLower(serviceLevel)
 			pool.InternalAttributes()[StorageClass] = storageClass
 			pool.InternalAttributes()[SnapshotDir] = snapshotDir
 			pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
@@ -453,14 +454,13 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes()[Network] = network
 			pool.InternalAttributes()[Region] = region
 			pool.InternalAttributes()[Zone] = zone
+			pool.InternalAttributes()[StoragePools] = strings.Join(storagePools, ",")
 
 			pool.SetSupportedTopologies(supportedTopologies)
 
 			d.pools[pool.Name()] = pool
 		}
 	}
-
-	return nil
 }
 
 // initializeGCPConfig parses the GCP config, mixing in the specified common config.
@@ -468,11 +468,9 @@ func (d *NFSStorageDriver) initializeGCPConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
 ) (*drivers.GCPNFSStorageDriverConfig, error) {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeGCPConfig", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> initializeGCPConfig")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeGCPConfig")
-	}
+	fields := LogFields{"Method": "initializeGCPConfig", "Type": "NFSStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeGCPConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeGCPConfig")
 
 	config := &drivers.GCPNFSStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
@@ -497,12 +495,10 @@ func (d *NFSStorageDriver) initializeGCPConfig(
 // initializeGCPAPIClient returns an GCP API client.
 func (d *NFSStorageDriver) initializeGCPAPIClient(
 	ctx context.Context, config *drivers.GCPNFSStorageDriverConfig,
-) (api.GCPClient, error) {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeGCPAPIClient", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> initializeGCPAPIClient")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeGCPAPIClient")
-	}
+) api.GCPClient {
+	fields := LogFields{"Method": "initializeGCPAPIClient", "Type": "NFSStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeGCPAPIClient")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeGCPAPIClient")
 
 	client := api.NewDriver(api.ClientConfig{
 		ProjectNumber:   config.ProjectNumber,
@@ -514,16 +510,14 @@ func (d *NFSStorageDriver) initializeGCPAPIClient(
 		DebugTraceFlags: config.DebugTraceFlags,
 	})
 
-	return client, nil
+	return client
 }
 
 // validate ensures the driver configuration and execution environment are valid and working
 func (d *NFSStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	var err error
 
@@ -544,10 +538,10 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("could not read volumes in %s region; %v", d.Config.APIRegion, err)
 	}
 
-	if d.apiVersion.LessThan(utils.MustParseSemantic(MinimumAPIVersion)) {
+	if d.apiVersion.LessThan(versionutils.MustParseSemantic(MinimumAPIVersion)) {
 		return fmt.Errorf("API version is %s, at least %s is required", d.apiVersion.String(), MinimumAPIVersion)
 	}
-	if d.sdeVersion.LessThan(utils.MustParseSemantic(MinimumSDEVersion)) {
+	if d.sdeVersion.LessThan(versionutils.MustParseSemantic(MinimumSDEVersion)) {
 		return fmt.Errorf("SDE version is %s, at least %s is required", d.sdeVersion.String(), MinimumSDEVersion)
 	}
 
@@ -563,9 +557,21 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 	// Validate pool-level attributes
 	for poolName, pool := range d.pools {
 
+		// Validate storage class
+		if !api.IsValidStorageClass(pool.InternalAttributes()[StorageClass]) {
+			return fmt.Errorf("invalid storage class in pool %s: %s", poolName, pool.InternalAttributes()[StorageClass])
+		}
+
 		// Validate service level
-		if !api.IsValidUserServiceLevel(pool.InternalAttributes()[ServiceLevel]) {
+		if !api.IsValidUserServiceLevel(pool.InternalAttributes()[ServiceLevel], pool.InternalAttributes()[StorageClass]) {
 			return fmt.Errorf("invalid service level in pool %s: %s", poolName, pool.InternalAttributes()[ServiceLevel])
+		}
+
+		// Validate storagePools field
+		if pool.InternalAttributes()[StorageClass] == api.StorageClassHardware &&
+			pool.InternalAttributes()[StoragePools] != "" {
+			return fmt.Errorf("storagePools not expected for hardware type storage class pool %s: %s",
+				poolName, pool.InternalAttributes()[StoragePools])
 		}
 
 		// Validate export rules
@@ -617,16 +623,14 @@ func (d *NFSStorageDriver) Create(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Create",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
-			"attrs":  volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "NFSStorageDriver",
+		"name":   name,
+		"attrs":  volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// Make sure we got a valid name
 	if err := d.validateName(name); err != nil {
@@ -665,13 +669,11 @@ func (d *NFSStorageDriver) Create(
 	storageClass := volConfig.CVSStorageClass
 	if storageClass == "" {
 		storageClass = pool.InternalAttributes()[StorageClass]
-		volConfig.CVSStorageClass = storageClass
 	}
 
 	unixPermissions := volConfig.UnixPermissions
 	if unixPermissions == "" {
 		unixPermissions = pool.InternalAttributes()[UnixPermissions]
-		volConfig.UnixPermissions = unixPermissions
 	}
 
 	// Determine volume size in bytes
@@ -693,25 +695,17 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	// Apply volume size rules
-	var sizeBytes uint64
-	switch storageClass {
-	case api.StorageClassSoftware:
-		sizeBytes = d.applyMinimumVolumeSizeSW(requestedSizeBytes)
-	case api.StorageClassHardware:
+	sizeBytes := requestedSizeBytes
+	if storageClass == api.StorageClassHardware {
 		sizeBytes = d.applyMinimumVolumeSizeHW(requestedSizeBytes)
-	default:
-		return fmt.Errorf("invalid storageClass: %s", storageClass)
 	}
 
 	if requestedSizeBytes < sizeBytes {
-
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":          name,
 			"requestedSize": requestedSizeBytes,
 			"minimumSize":   sizeBytes,
 		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable.")
-
-		volConfig.Size = fmt.Sprintf("%d", sizeBytes)
 	}
 
 	if _, _, err := drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
@@ -722,12 +716,8 @@ func (d *NFSStorageDriver) Create(
 	userServiceLevel := volConfig.ServiceLevel
 	if userServiceLevel == "" {
 		userServiceLevel = pool.InternalAttributes()[ServiceLevel]
-		volConfig.ServiceLevel = userServiceLevel
 	}
-	switch userServiceLevel {
-	case api.UserServiceLevel1, api.UserServiceLevel2, api.UserServiceLevel3:
-		break
-	default:
+	if !api.IsValidUserServiceLevel(userServiceLevel, storageClass) {
 		return fmt.Errorf("invalid service level: %s", userServiceLevel)
 	}
 	apiServiceLevel := api.GCPAPIServiceLevelFromUserServiceLevel(userServiceLevel)
@@ -754,26 +744,19 @@ func (d *NFSStorageDriver) Create(
 			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 		}
 		snapshotReservePtr = &snapshotReserveInt
-		volConfig.SnapshotReserve = snapshotReserve
 	}
 
 	// Take network from volume config first (handles Docker case), then from pool
 	network := volConfig.Network
 	if network == "" {
 		network = pool.InternalAttributes()[Network]
-		volConfig.Network = network
 	}
 	gcpNetwork := d.makeNetworkPath(network)
 
 	// TODO: Remove when software storage class allows NFSv4
 	protocolTypes := []string{api.ProtocolTypeNFSv3}
-	switch storageClass {
-	case api.StorageClassSoftware:
-		break
-	case api.StorageClassHardware:
+	if storageClass == api.StorageClassHardware {
 		protocolTypes = append(protocolTypes, api.ProtocolTypeNFSv4)
-	default:
-		return fmt.Errorf("invalid storageClass: %s", storageClass)
 	}
 
 	// Take the zone from volume config first (handles Docker case), then from pool
@@ -788,7 +771,17 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("software volumes require zone")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	// Update config to reflect values used to create volume
+	volConfig.CVSStorageClass = storageClass
+	volConfig.UnixPermissions = unixPermissions
+	volConfig.Size = fmt.Sprintf("%d", sizeBytes)
+	volConfig.ServiceLevel = userServiceLevel
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.Network = network
+	volConfig.Zone = zone
+
+	Logc(ctx).WithFields(LogFields{
 		"creationToken":    name,
 		"size":             sizeBytes,
 		"network":          network,
@@ -845,24 +838,85 @@ func (d *NFSStorageDriver) Create(
 		SnapshotDirectory: snapshotDirBool,
 		SnapshotPolicy:    snapshotPolicy,
 		SnapReserve:       snapshotReservePtr,
-		UnixPermissions:   volConfig.UnixPermissions,
+		UnixPermissions:   unixPermissions,
 		Network:           gcpNetwork,
 		Zone:              zone,
 	}
 
-	// Create the volume
-	if err := d.API.CreateVolume(ctx, createRequest); err != nil {
-		return err
+	if storageClass == api.StorageClassSoftware {
+		return d.createSOVolume(ctx, createRequest, volConfig, pool)
 	}
 
-	// Get the volume
-	newVolume, err := d.API.GetVolumeByCreationToken(ctx, name)
+	return d.createVolume(ctx, createRequest, volConfig)
+}
+
+// createSOVolume gets the GCP storage pools and tries to create software storage class volume in one of the pools.
+func (d *NFSStorageDriver) createSOVolume(
+	ctx context.Context, createRequest *api.VolumeCreateRequest, config *storage.VolumeConfig, sPool storage.Pool,
+) error {
+	GCPPools, err := d.GetPoolsForCreate(ctx, sPool, config.ServiceLevel, createRequest.QuotaInBytes)
 	if err != nil {
 		return err
 	}
 
+	if config.ServiceLevel == api.PoolServiceLevel2 {
+		// This field is set for Zone Redundant Pools only
+		createRequest.RegionalHA = true
+	}
+
+	var createErrors error
+	for _, GCPPool := range GCPPools {
+		createRequest.PoolID = GCPPool.PoolID
+
+		err := d.createVolume(ctx, createRequest, config)
+		if utils.IsVolumeCreatingError(err) {
+			// For this case, volume create will be retried in the future
+			// So we return here itself instead of trying for another pool
+			return err
+		}
+		if err != nil {
+			createErrors = multierr.Append(createErrors, err)
+			continue
+		}
+
+		return nil
+	}
+
+	return createErrors
+}
+
+// createVolume makes the API call to create a volume and waits till the volume create state changes
+// from creating to some other state. It is common for SO and PO volumes.
+func (d *NFSStorageDriver) createVolume(
+	ctx context.Context, createRequest *api.VolumeCreateRequest, config *storage.VolumeConfig,
+) error {
+	formatErr := func(msg string, err error) error {
+		if createRequest.PoolID != "" {
+			createErr := fmt.Errorf("GCP pool %s, %s: %s", createRequest.PoolID, msg, err)
+			Logc(ctx).Error(createErr)
+			return createErr
+		}
+		createErr := fmt.Errorf("%s: %s", msg, err)
+		Logc(ctx).Error(createErr)
+		return createErr
+	}
+
+	// Create the volume
+	if err := d.API.CreateVolume(ctx, createRequest); err != nil {
+		return formatErr("error creating volume", err)
+	}
+
+	// Get the volume
+	newVolume, err := d.API.GetVolumeByCreationToken(ctx, createRequest.CreationToken)
+	if err != nil {
+		return formatErr("error getting new volume", err)
+	}
+
+	// Always save the ID so, we can find the volume efficiently later
+	config.InternalID = d.CreateGCPInternalID(newVolume)
+
 	// Wait for creation to complete so that the mount targets are available
-	return d.waitForVolumeCreate(ctx, newVolume, name)
+	return d.waitForVolumeCreate(ctx, newVolume, createRequest.CreationToken)
 }
 
 func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
@@ -873,7 +927,7 @@ func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
 	if len(volConfig.PreferredTopologies) > 0 {
 		if r, ok := volConfig.PreferredTopologies[0][topologyRegionLabel]; ok {
 			if d.Config.APIRegion != r {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"configuredRegion": d.Config.APIRegion,
 					"topologyRegion":   r,
 				}).Warn("configured region does not match topology region")
@@ -882,7 +936,7 @@ func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
 		if storageClass == api.StorageClassSoftware {
 			if z, ok := volConfig.PreferredTopologies[0][topologyZoneLabel]; ok {
 				if configuredZone != "" && configuredZone != z {
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"configuredZone": configuredZone,
 						"topologyZone":   z,
 					}).Warn("configured zone does not match topology zone")
@@ -898,29 +952,26 @@ func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
+	ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshot
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":   "CreateClone",
-			"Type":     "NFSStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":   "CreateClone",
+		"Type":     "NFSStorageDriver",
+		"name":     name,
+		"source":   source,
+		"snapshot": snapshot,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
 	// ensure new volume doesn't exist, fail if so
 	// get source volume, fail if nonexistent or if wrong region
-	// if snapshot specified, read snapshot / backup from source, fail if nonexistent
-	// if no snap specified for hardware, create one, fail if error
-	// if no snap specified for software, fail
+	// if snapshot specified, read snapshot from source, fail if nonexistent
+	// if no snap specified, create one, fail if error
 	// create volume from snapshot
 
 	// Make sure we got a valid name
@@ -967,22 +1018,58 @@ func (d *NFSStorageDriver) CreateClone(
 		return fmt.Errorf("could not get source volume details: %v", err)
 	}
 
-	// Only one of the following will return a name & ID, the other is a no-op that returns empty strings,
-	// so both values may be passed to the clone API.
-	sourceSnapshotName, sourceSnapshotID, err := d.getSnapshotForClone(ctx, sourceVolume, snapshot)
-	if err != nil {
-		return err
-	}
-	sourceBackupName, sourceBackupID, err := d.getBackupForClone(ctx, sourceVolume, snapshot)
-	if err != nil {
-		return err
-	}
+	var sourceSnapshot *api.Snapshot
 
-	// Ensure we got exactly one clone source
-	if sourceSnapshotID == "" && sourceBackupID == "" {
-		return fmt.Errorf("could not determine source details")
-	} else if sourceSnapshotID != "" && sourceBackupID != "" {
-		return fmt.Errorf("cannot clone a volume from both snapshot and backup")
+	if snapshot != "" {
+
+		// Get the source snapshot
+		if sourceSnapshot, err = d.API.GetSnapshotForVolume(ctx, sourceVolume, snapshot); err != nil {
+			return fmt.Errorf("could not find source snapshot: %v", err)
+		}
+
+		// Ensure snapshot is in a usable state
+		if sourceSnapshot.LifeCycleState != api.StateAvailable {
+			return fmt.Errorf("source snapshot state is '%s', it must be '%s'",
+				sourceSnapshot.LifeCycleState, api.StateAvailable)
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": snapshot,
+			"source":   sourceVolume.Name,
+		}).Debug("Found source snapshot.")
+
+	} else {
+		// No source snapshot specified, so create one
+		snapName := time.Now().UTC().Format(storage.SnapshotNameFormat)
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": snapName,
+			"source":   sourceVolume.Name,
+		}).Debug("Creating source snapshot.")
+
+		snapshotCreateRequest := &api.SnapshotCreateRequest{
+			VolumeID: sourceVolume.VolumeID,
+			Name:     snapName,
+		}
+
+		if err = d.API.CreateSnapshot(ctx, snapshotCreateRequest); err != nil {
+			return fmt.Errorf("could not create source snapshot: %v", err)
+		}
+
+		if sourceSnapshot, err = d.API.GetSnapshotForVolume(ctx, sourceVolume, snapName); err != nil {
+			return fmt.Errorf("could not create source snapshot: %v", err)
+		}
+
+		// Wait for snapshot creation to complete
+		if err = d.API.WaitForSnapshotState(
+			ctx, sourceSnapshot, api.StateAvailable, []string{api.StateError}, d.defaultTimeout()); err != nil {
+			return err
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": sourceSnapshot.Name,
+			"source":   sourceVolume.Name,
+		}).Debug("Created source snapshot.")
 	}
 
 	network := cloneVolConfig.Network
@@ -996,11 +1083,10 @@ func (d *NFSStorageDriver) CreateClone(
 		return fmt.Errorf("software volumes require zone")
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"creationToken":  name,
 		"sourceVolume":   sourceVolume.CreationToken,
-		"sourceSnapshot": sourceSnapshotName,
-		"sourceBackup":   sourceBackupName,
+		"sourceSnapshot": sourceSnapshot.Name,
 	}).Debug("Cloning volume.")
 
 	var labels []string
@@ -1035,122 +1121,33 @@ func (d *NFSStorageDriver) CreateClone(
 		SnapshotDirectory: sourceVolume.SnapshotDirectory,
 		SnapshotPolicy:    sourceVolume.SnapshotPolicy,
 		SnapReserve:       &sourceVolume.SnapReserve,
-		SnapshotID:        sourceSnapshotID,
+		SnapshotID:        sourceSnapshot.SnapshotID,
 		UnixPermissions:   sourceVolume.UnixPermissions,
-		BackupID:          sourceBackupID,
+		PoolID:            sourceVolume.PoolID,
 		Network:           gcpNetwork,
 	}
 
-	// Clone the volume
-	if err := d.API.CreateVolume(ctx, createRequest); err != nil {
-		return err
+	// Use the same service level for clone as the source volume.
+	cloneVolConfig.ServiceLevel = sourceVolConfig.ServiceLevel
+
+	// Check if we need to create clone in zone redundant pool
+	if cloneVolConfig.ServiceLevel == api.PoolServiceLevel2 {
+		createRequest.RegionalHA = true
 	}
 
-	// Get the volume
-	clone, err := d.API.GetVolumeByCreationToken(ctx, name)
-	if err != nil {
-		return err
-	}
-
-	// Wait for creation to complete so that the mount targets are available
-	return d.waitForVolumeCreate(ctx, clone, name)
-}
-
-func (d *NFSStorageDriver) getSnapshotForClone(
-	ctx context.Context, sourceVolume *api.Volume, snapshot string,
-) (string, string, error) {
-	if sourceVolume.StorageClass == api.StorageClassSoftware {
-		return "", "", nil
-	}
-
-	var sourceSnapshot *api.Snapshot
-	var err error
-
-	if snapshot != "" {
-
-		// Get the source snapshot
-		sourceSnapshot, err = d.API.GetSnapshotForVolume(ctx, sourceVolume, snapshot)
-		if err != nil {
-			return "", "", fmt.Errorf("could not find source snapshot: %v", err)
-		}
-
-		// Ensure snapshot is in a usable state
-		if sourceSnapshot.LifeCycleState != api.StateAvailable {
-			return "", "", fmt.Errorf("source snapshot state is '%s', it must be '%s'",
-				sourceSnapshot.LifeCycleState, api.StateAvailable)
-		}
-
-	} else {
-
-		newSnapName := time.Now().UTC().Format(storage.SnapshotNameFormat)
-
-		// No source snapshot specified, so create one
-		snapshotCreateRequest := &api.SnapshotCreateRequest{
-			VolumeID: sourceVolume.VolumeID,
-			Name:     newSnapName,
-		}
-
-		if err = d.API.CreateSnapshot(ctx, snapshotCreateRequest); err != nil {
-			return "", "", fmt.Errorf("could not create source snapshot: %v", err)
-		}
-
-		sourceSnapshot, err = d.API.GetSnapshotForVolume(ctx, sourceVolume, newSnapName)
-		if err != nil {
-			return "", "", fmt.Errorf("could not create source snapshot: %v", err)
-		}
-
-		// Wait for snapshot creation to complete
-		err = d.API.WaitForSnapshotState(
-			ctx, sourceSnapshot, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
-		if err != nil {
-			return "", "", err
-		}
-	}
-
-	return sourceSnapshot.Name, sourceSnapshot.SnapshotID, nil
-}
-
-func (d *NFSStorageDriver) getBackupForClone(
-	ctx context.Context, sourceVolume *api.Volume, snapshot string,
-) (string, string, error) {
-	if sourceVolume.StorageClass == api.StorageClassHardware {
-		return "", "", nil
-	}
-
-	if snapshot == "" {
-		return "", "", fmt.Errorf("source snapshot must be specified for a software volume")
-	}
-
-	var sourceBackup *api.Backup
-	var err error
-
-	// Get the source backup
-	sourceBackup, err = d.API.GetBackupForVolume(ctx, sourceVolume, snapshot)
-	if err != nil {
-		return "", "", fmt.Errorf("could not find source backup: %v", err)
-	}
-
-	// Ensure backup is in a usable state
-	if sourceBackup.LifeCycleState != api.StateAvailable {
-		return "", "", fmt.Errorf(
-			"source backup state is '%s', it must be '%s'", sourceBackup.LifeCycleState, api.StateAvailable,
-		)
-	}
-
-	return sourceBackup.Name, sourceBackup.BackupID, nil
+	// Clone the volume and wait for the creation to complete
+	return d.createVolume(ctx, createRequest, cloneVolConfig)
 }
 
 func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "Import",
-			"Type":         "NFSStorageDriver",
-			"originalName": originalName,
-			"newName":      volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Import")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "NFSStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	// Get the volume
 	creationToken := originalName
@@ -1162,6 +1159,22 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Get the volume size
 	volConfig.Size = strconv.FormatInt(volume.QuotaInBytes, 10)
+
+	// Set the serviceLevel in the imported volumes's config appropriately.
+	// a) for storageClass == software,
+	//      i) if RegionalHA is true, this means the volume is created in zoneRedundantstandardsw pool
+	//      ii) else use the serviceLevel as "standardsw"
+	// b) for storageClass == hardware, user save the servicelevel as one of standard, premium and extreme
+
+	if volume.StorageClass == api.StorageClassSoftware {
+		if volume.RegionalHA {
+			volConfig.ServiceLevel = api.PoolServiceLevel2
+		} else {
+			volConfig.ServiceLevel = api.PoolServiceLevel1
+		}
+	} else {
+		volConfig.ServiceLevel = api.UserServiceLevelFromAPIServiceLevel(volume.ServiceLevel)
+	}
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
@@ -1197,20 +1210,21 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	// The CVS creation token cannot be changed, so use it as the internal name
 	volConfig.InternalName = creationToken
 
+	// Always save the ID so, we can find the volume efficiently later
+	volConfig.InternalID = d.CreateGCPInternalID(volume)
+
 	return nil
 }
 
 func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "Rename",
-			"Type":    "NFSStorageDriver",
-			"name":    name,
-			"newName": newName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Rename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Rename")
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "NFSStorageDriver",
+		"name":    name,
+		"newName": newName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
 	// Rename is only needed for the import workflow, and we aren't currently renaming the
 	// CVS volume when importing, so do nothing here lest we set the volume name incorrectly
@@ -1265,7 +1279,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 	if err != nil {
 
 		if state == api.StateCreating || state == api.StateRestoring {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"volume": volumeName,
 			}).Debugf("Volume is in %s state.", state)
 			return utils.VolumeCreatingError(err.Error())
@@ -1275,7 +1289,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 		if !api.IsTransitionalState(state) {
 			errDelete := d.API.DeleteVolume(ctx, volume)
 			if errDelete != nil {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"volume": volumeName,
 				}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDelete)
 			} else {
@@ -1283,7 +1297,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 				_, errDeleteWait := d.API.WaitForVolumeStates(
 					ctx, volume, []string{api.StateDeleted}, []string{api.StateError}, d.defaultTimeout())
 				if errDeleteWait != nil {
-					Logc(ctx).WithFields(log.Fields{
+					Logc(ctx).WithFields(LogFields{
 						"volume": volumeName,
 					}).Warnf("Volume could not be cleaned up and must be manually deleted: %v.", errDeleteWait)
 				}
@@ -1299,16 +1313,13 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 // Destroy deletes a volume.
 func (d *NFSStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "NFSStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// If volume doesn't exist, return success
 	volumeExists, extantVolume, err := d.API.VolumeExistsByCreationToken(ctx, name)
@@ -1349,16 +1360,13 @@ func (d *NFSStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
-
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Publish",
-			"Type":   "NFSStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method": "Publish",
+		"Type":   "NFSStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	// Get the volume
 	creationToken := name
@@ -1366,6 +1374,11 @@ func (d *NFSStorageDriver) Publish(
 	volume, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	// Heal the ID on legacy volumes
+	if volConfig.InternalID == "" {
+		volConfig.InternalID = d.CreateGCPInternalID(volume)
 	}
 
 	if len(volume.MountPoints) == 0 {
@@ -1400,16 +1413,14 @@ func (d *NFSStorageDriver) GetSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1422,17 +1433,7 @@ func (d *NFSStorageDriver) GetSnapshot(
 		// The GCP volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
 		return nil, nil
 	}
-
-	// Use snapshot or backup API depending on CVS storage class
-	switch extantVolume.StorageClass {
-	case api.StorageClassHardware:
-		return d.getSnapshot(ctx, extantVolume, snapConfig)
-	case api.StorageClassSoftware:
-		return d.getBackup(ctx, extantVolume, snapConfig)
-	default:
-		return nil, fmt.Errorf("unknown CVS storage class (%s) for volume %s",
-			extantVolume.StorageClass, extantVolume.Name)
-	}
+	return d.getSnapshot(ctx, extantVolume, snapConfig)
 }
 
 // getSnapshot returns a snapshot object from a hardware volume.
@@ -1452,7 +1453,7 @@ func (d *NFSStorageDriver) getSnapshot(
 
 			created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"snapshotName": internalSnapName,
 				"volumeName":   internalVolName,
 				"created":      created,
@@ -1470,62 +1471,19 @@ func (d *NFSStorageDriver) getSnapshot(
 	return nil, nil
 }
 
-// getBackup returns the C2C backup object from a software volume as a snapshot object.
-func (d *NFSStorageDriver) getBackup(
-	ctx context.Context, volume *api.Volume, snapConfig *storage.SnapshotConfig,
-) (*storage.Snapshot, error) {
-	internalSnapName := snapConfig.InternalName
-	internalVolName := snapConfig.VolumeInternalName
-
-	backups, err := d.API.GetBackupsForVolume(ctx, volume)
-	if err != nil {
-		return nil, err
-	}
-
-	for idx := range *backups {
-		backup := &(*backups)[idx]
-		if backup.Name == internalSnapName {
-
-			created := backup.Created.UTC().Format(storage.SnapshotTimestampFormat)
-
-			Logc(ctx).WithFields(log.Fields{
-				"snapshotName": internalSnapName,
-				"volumeName":   internalVolName,
-				"created":      created,
-			}).Debug("Found backup.")
-
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   created,
-				SizeBytes: volume.QuotaInBytes,
-				State:     d.getSnapshotStateForBackup(backup),
-			}, nil
-		}
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"backupName": internalSnapName,
-		"volumeName": internalVolName,
-	}).Warning("Backup not found.")
-
-	return nil, nil
-}
-
 // GetSnapshots returns the list of snapshots associated with the specified volume
 func (d *NFSStorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "GetSnapshots",
-			"Type":       "NFSStorageDriver",
-			"volumeName": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "NFSStorageDriver",
+		"volumeName": internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1534,16 +1492,7 @@ func (d *NFSStorageDriver) GetSnapshots(
 	if err != nil {
 		return nil, fmt.Errorf("could not find volume %s: %v", creationToken, err)
 	}
-
-	// Use snapshot or backup API depending on CVS storage class
-	switch volume.StorageClass {
-	case api.StorageClassHardware:
-		return d.getSnapshots(ctx, volume, volConfig)
-	case api.StorageClassSoftware:
-		return d.getBackups(ctx, volume, volConfig)
-	default:
-		return nil, fmt.Errorf("unknown CVS storage class (%s) for volume %s", volume.StorageClass, volume.Name)
-	}
+	return d.getSnapshots(ctx, volume, volConfig)
 }
 
 // getSnapshots returns the snapshot objects from a hardware volume.
@@ -1581,43 +1530,6 @@ func (d *NFSStorageDriver) getSnapshots(
 	return snapshotList, nil
 }
 
-// getBackups returns the C2C backup objects from a software volume as snapshot objects.
-func (d *NFSStorageDriver) getBackups(
-	ctx context.Context, volume *api.Volume, volConfig *storage.VolumeConfig,
-) ([]*storage.Snapshot, error) {
-	backups, err := d.API.GetBackupsForVolume(ctx, volume)
-	if err != nil {
-		return nil, err
-	}
-
-	snapshotList := make([]*storage.Snapshot, 0)
-
-	for idx := range *backups {
-		backup := &(*backups)[idx]
-
-		// Filter out backups in unavailable states
-		switch backup.LifeCycleState {
-		case api.StateDisabled, api.StateDeleting, api.StateDeleted, api.StateError:
-			continue
-		}
-
-		snapshotList = append(snapshotList, &storage.Snapshot{
-			Config: &storage.SnapshotConfig{
-				Version:            tridentconfig.OrchestratorAPIVersion,
-				Name:               backup.Name,
-				InternalName:       backup.Name,
-				VolumeName:         volConfig.Name,
-				VolumeInternalName: volConfig.InternalName,
-			},
-			Created:   backup.Created.Format(storage.SnapshotTimestampFormat),
-			SizeBytes: volume.QuotaInBytes,
-			State:     d.getSnapshotStateForBackup(backup),
-		})
-	}
-
-	return snapshotList, nil
-}
-
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *NFSStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
@@ -1625,16 +1537,14 @@ func (d *NFSStorageDriver) CreateSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	// Check if volume exists
 	volumeExists, sourceVolume, err := d.API.VolumeExistsByCreationToken(ctx, internalVolName)
@@ -1650,17 +1560,7 @@ func (d *NFSStorageDriver) CreateSnapshot(
 	if err != nil {
 		return nil, fmt.Errorf("could not get source volume details: %v", err)
 	}
-
-	// Use snapshot or backup API depending on CVS storage class
-	switch sourceVolume.StorageClass {
-	case api.StorageClassHardware:
-		return d.createSnapshot(ctx, sourceVolume, snapConfig)
-	case api.StorageClassSoftware:
-		return d.createBackup(ctx, sourceVolume, snapConfig)
-	default:
-		return nil, fmt.Errorf("unknown CVS storage class (%s) for volume %s",
-			sourceVolume.StorageClass, sourceVolume.Name)
-	}
+	return d.createSnapshot(ctx, sourceVolume, snapConfig)
 }
 
 // createSnapshot creates a snapshot of a hardware volume.
@@ -1690,7 +1590,7 @@ func (d *NFSStorageDriver) createSnapshot(
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
 	}).Info("Snapshot created.")
@@ -1703,77 +1603,6 @@ func (d *NFSStorageDriver) createSnapshot(
 	}, nil
 }
 
-// createBackup creates a C2C backup of a software volume.
-func (d *NFSStorageDriver) createBackup(
-	ctx context.Context, sourceVolume *api.Volume, snapConfig *storage.SnapshotConfig,
-) (*storage.Snapshot, error) {
-	internalSnapName := snapConfig.InternalName
-
-	// Construct a backup request
-	backupCreateRequest := &api.BackupCreateRequest{
-		VolumeID: sourceVolume.VolumeID,
-		Name:     internalSnapName,
-	}
-
-	if err := d.API.CreateBackup(ctx, backupCreateRequest); err != nil {
-		return nil, fmt.Errorf("could not create backup: %v", err)
-	}
-
-	backup, err := d.API.GetBackupForVolume(ctx, sourceVolume, internalSnapName)
-	if err != nil {
-		return nil, fmt.Errorf("could not find backup: %v", err)
-	}
-
-	// Wait for backup creation to complete
-	err = d.API.WaitForBackupStates(ctx, backup,
-		[]string{api.StateCreating, api.StateAvailable}, []string{api.StateError}, d.defaultTimeout())
-	if err != nil {
-		return nil, err
-	}
-
-	// Get backup once more to get latest completion percent, if any
-	backup, err = d.API.GetBackupByID(ctx, backup.BackupID)
-	if err != nil {
-		return nil, fmt.Errorf("could not find backup: %v", err)
-	}
-
-	return &storage.Snapshot{
-		Config:    snapConfig,
-		Created:   backup.Created.Format(storage.SnapshotTimestampFormat),
-		SizeBytes: sourceVolume.QuotaInBytes,
-		State:     d.getSnapshotStateForBackup(backup),
-	}, nil
-}
-
-// getSnapshotStateForBackup examines a software volume C2C backup and returns the state as
-// appropriate for a Trident snapshot object.
-func (d *NFSStorageDriver) getSnapshotStateForBackup(backup *api.Backup) storage.SnapshotState {
-	var state storage.SnapshotState
-
-	switch backup.LifeCycleState {
-
-	// return Online in an unexpected state so snapshot may still be deleted
-	case api.StateDisabled, api.StateDeleting, api.StateDeleted, api.StateError:
-		state = storage.SnapshotStateOnline
-
-	// If the backup is Creating but reports some data transfer, promote its status to Uploading.
-	case api.StateCreating:
-		state = storage.SnapshotStateCreating
-		if backup.ProgressPercentage > 0 {
-			state = storage.SnapshotStateUploading
-		}
-
-	// If the backup is Available but reports incomplete data transfer, demote its status to Uploading.
-	case api.StateAvailable, api.StateUpdating:
-		state = storage.SnapshotStateOnline
-		if backup.ProgressPercentage < 100 {
-			state = storage.SnapshotStateUploading
-		}
-	}
-
-	return state
-}
-
 // RestoreSnapshot restores a volume (in place) from a snapshot.
 func (d *NFSStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
@@ -1781,16 +1610,14 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1819,16 +1646,14 @@ func (d *NFSStorageDriver) DeleteSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "DeleteSnapshot",
-			"Type":         "NFSStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":       "DeleteSnapshot",
+		"Type":         "NFSStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	// Get the volume
 	creationToken := internalVolName
@@ -1841,16 +1666,7 @@ func (d *NFSStorageDriver) DeleteSnapshot(
 		// The GCP volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
 		return nil
 	}
-
-	// Use snapshot or backup API depending on CVS storage class
-	switch extantVolume.StorageClass {
-	case api.StorageClassHardware:
-		return d.deleteSnapshot(ctx, extantVolume, snapConfig)
-	case api.StorageClassSoftware:
-		return d.deleteBackup(ctx, extantVolume, snapConfig)
-	default:
-		return fmt.Errorf("unknown CVS storage class (%s) for volume %s", extantVolume.StorageClass, extantVolume.Name)
-	}
+	return d.deleteSnapshot(ctx, extantVolume, snapConfig)
 }
 
 // deleteSnapshot deletes a snapshot of a hardware volume.
@@ -1872,33 +1688,11 @@ func (d *NFSStorageDriver) deleteSnapshot(
 	return d.API.WaitForSnapshotState(ctx, snapshot, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
 }
 
-// deleteBackup deletes a C2C backup of a software volume.
-func (d *NFSStorageDriver) deleteBackup(
-	ctx context.Context, volume *api.Volume, snapConfig *storage.SnapshotConfig,
-) error {
-	internalSnapName := snapConfig.InternalName
-
-	backup, err := d.API.GetBackupForVolume(ctx, volume, internalSnapName)
-	if err != nil {
-		return fmt.Errorf("unable to find backup %s: %v", internalSnapName, err)
-	}
-
-	if err := d.API.DeleteBackup(ctx, volume, backup); err != nil {
-		return err
-	}
-
-	// Wait for backup deletion to complete
-	return d.API.WaitForBackupStates(ctx, backup,
-		[]string{api.StateDeleted}, []string{api.StateError}, d.defaultTimeout())
-}
-
 // List returns the list of volumes associated with this tenant
 func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> List")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< List")
-	}
+	fields := LogFields{"Method": "List", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> List")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< List")
 
 	volumes, err := d.API.GetVolumes(ctx)
 	if err != nil {
@@ -1929,11 +1723,9 @@ func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 
 // Get tests for the existence of a volume
 func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NFSStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "NFSStorageDriver"}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	_, err := d.API.GetVolumeByCreationToken(ctx, name)
 
@@ -1943,16 +1735,14 @@ func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 // Resize increases a volume's quota
 func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":    "Resize",
-			"Type":      "NFSStorageDriver",
-			"name":      name,
-			"sizeBytes": sizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":    "Resize",
+		"Type":      "NFSStorageDriver",
+		"name":      name,
+		"sizeBytes": sizeBytes,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	// Get the volume
 	creationToken := name
@@ -1960,6 +1750,11 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	volume, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
+	}
+
+	// Heal the ID on legacy volumes
+	if volConfig.InternalID == "" {
+		volConfig.InternalID = d.CreateGCPInternalID(volume)
 	}
 
 	// If the volume state isn't Available, return an error
@@ -2040,15 +1835,13 @@ func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name strin
 }
 
 func (d *NFSStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "CreateFollowup",
-			"Type":   "NFSStorageDriver",
-			"name":   volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
+	fields := LogFields{
+		"Method": "CreateFollowup",
+		"Type":   "NFSStorageDriver",
+		"name":   volConfig.InternalName,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
 
 	// Get the volume
 	creationToken := volConfig.InternalName
@@ -2231,24 +2024,21 @@ func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "NFSStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "NFSStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	return nil
 }
 
 func validateStoragePrefix(storagePrefix string) error {
-	matched, err := regexp.MatchString(`^[a-zA-Z][a-zA-Z0-9-]{0,70}$`, storagePrefix)
-	if err != nil {
-		return fmt.Errorf("could not check storage prefix; %v", err)
-	} else if !matched {
+	matched, _ := regexp.MatchString(`^[a-zA-Z][a-zA-Z0-9-]{0,70}$`, storagePrefix)
+	if !matched {
 		return fmt.Errorf("storage prefix may only contain letters/digits/hyphens and must begin with a letter")
 	}
 	return nil
@@ -2257,4 +2047,134 @@ func validateStoragePrefix(storagePrefix string) error {
 // GetCommonConfig returns driver's CommonConfig
 func (d NFSStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
+}
+
+// getGCPPoolMap gets all the GCP pools for particular project and returns map
+// of <GCP pool ID, *GCP pool>.
+func (d *NFSStorageDriver) getGCPPoolMap(ctx context.Context) (map[string]*api.Pool, error) {
+	pools, err := d.API.GetPools(ctx)
+	if err != nil {
+		Logc(ctx).Error("Failed to get GCP pools", err)
+		return nil, err
+	}
+
+	poolMap := make(map[string]*api.Pool, len(*pools))
+	for _, pool := range *pools {
+		poolMap[pool.PoolID] = pool
+	}
+
+	return poolMap, nil
+}
+
+// GetPoolsForCreate is called by software storage class backends only.
+// We return an array of storage pools. If no pools are found, we return error.
+func (d *NFSStorageDriver) GetPoolsForCreate(
+	ctx context.Context, sPool storage.Pool, poolServiceLevel string, volSizeBytes int64,
+) ([]*api.Pool, error) {
+	GCPPools, poolErrors, err := d.GetGCPPoolsForStoragePool(ctx, sPool, poolServiceLevel, volSizeBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	// Software class backend doesn't have pools with matching filters, so we throw error
+	if len(GCPPools) == 0 {
+		if poolErrors != "" {
+			return nil, utils.ResourceExhaustedError(fmt.Errorf(poolErrors))
+		}
+		return nil, fmt.Errorf("no GCP pools found")
+	}
+
+	// Sort GCP pools on number of volumes
+	sort.Slice(GCPPools, func(i, j int) bool {
+		return GCPPools[i].NumberOfVolumes < GCPPools[j].NumberOfVolumes
+	})
+
+	return GCPPools, nil
+}
+
+// GetGCPPoolsForStoragePool returns all discovered GCP pools matching the specified
+// storage pool and service level.
+func (d *NFSStorageDriver) GetGCPPoolsForStoragePool(
+	ctx context.Context, sPool storage.Pool, poolServiceLevel string, volSizeBytes int64,
+) ([]*api.Pool, string, error) {
+	if d.Config.DebugTraceFlags[discovery] {
+		Logc(ctx).WithField("storagePool", sPool.Name()).Debugf("Determining capacity pools for storage pool.")
+	}
+
+	GCPPoolMap, err := d.getGCPPoolMap(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+
+	// Map to track GCPPools that passes the filters
+	filteredGCPPoolMap := make(map[string]bool, len(GCPPoolMap))
+	for poolID := range GCPPoolMap {
+		filteredGCPPoolMap[poolID] = true
+	}
+
+	// If GCP pools were specified in backend, filter out non-matching GCP pools
+	poolList := utils.SplitString(ctx, sPool.InternalAttributes()[StoragePools], ",")
+	if len(poolList) > 0 {
+		for poolID := range filteredGCPPoolMap {
+			if !utils.SliceContainsString(poolList, poolID) {
+				if d.Config.DebugTraceFlags[discovery] {
+					Logc(ctx).Debugf("Ignoring GCP pool %s, not in storage pools [%s].", poolID, poolList)
+				}
+				filteredGCPPoolMap[poolID] = false
+			}
+		}
+	}
+
+	// Filter out pools with non-matching service levels
+	for _, pool := range GCPPoolMap {
+		if !strings.EqualFold(pool.ServiceLevel, poolServiceLevel) {
+			if d.Config.DebugTraceFlags[discovery] {
+				Logc(ctx).Debugf("Ignoring GCP pool %s, not in service level [%s].", pool.PoolID, poolServiceLevel)
+			}
+			filteredGCPPoolMap[pool.PoolID] = false
+		}
+	}
+
+	// Filter out pools with insufficient resources
+	var poolErrors []string
+	for _, pool := range GCPPoolMap {
+		if pool.NumberOfVolumes >= MaximumVolumesPerStoragePool {
+			errMsg := fmt.Sprintf("Ignoring GCP pool %s, volume limit reached.", pool.PoolID)
+			if d.Config.DebugTraceFlags[discovery] {
+				Logc(ctx).Debugf(errMsg)
+			}
+			if utils.SliceContainsString(poolList, pool.PoolID) {
+				poolErrors = append(poolErrors, errMsg)
+			}
+			filteredGCPPoolMap[pool.PoolID] = false
+			continue
+		}
+		if pool.AvailableCapacity() < volSizeBytes {
+			errMsg := fmt.Sprintf("Ignoring GCP pool %s, unsupported capacity range.", pool.PoolID)
+			if d.Config.DebugTraceFlags[discovery] {
+				Logc(ctx).Debugf(errMsg)
+			}
+			if utils.SliceContainsString(poolList, pool.PoolID) {
+				poolErrors = append(poolErrors, errMsg)
+			}
+			filteredGCPPoolMap[pool.PoolID] = false
+		}
+	}
+
+	// Build list of all GCP pools that have passed all filters
+	filteredGCPPoolList := make([]*api.Pool, 0)
+	for poolID, match := range filteredGCPPoolMap {
+		if match {
+			filteredGCPPoolList = append(filteredGCPPoolList, GCPPoolMap[poolID])
+		}
+	}
+
+	return filteredGCPPoolList, strings.Join(poolErrors, ", "), nil
+}
+
+func (d *NFSStorageDriver) CreateGCPInternalID(vol *api.Volume) string {
+	if vol.PoolID != "" {
+		return fmt.Sprintf("/gcpProject/%s/poolID/%s/volumeID/%s", d.Config.ProjectNumber, vol.PoolID, vol.VolumeID)
+	}
+	return fmt.Sprintf("/gcpProject/%s/poolID/none/volumeID/%s", d.Config.ProjectNumber, vol.VolumeID)
 }

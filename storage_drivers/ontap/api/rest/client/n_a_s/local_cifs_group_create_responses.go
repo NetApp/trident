@@ -52,6 +52,10 @@ LocalCifsGroupCreateCreated describes a response with status code 201, with defa
 Created
 */
 type LocalCifsGroupCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
 }
 
 // IsSuccess returns true when this local cifs group create created response has a 2xx status code
@@ -88,6 +92,13 @@ func (o *LocalCifsGroupCreateCreated) String() string {
 }
 
 func (o *LocalCifsGroupCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	return nil
 }

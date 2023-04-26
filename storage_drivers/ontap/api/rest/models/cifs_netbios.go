@@ -20,29 +20,29 @@ import (
 // swagger:model cifs_netbios
 type CifsNetbios struct {
 
-	// aliases
+	// cifs netbios inline aliases
 	// Example: ["ALIAS_1","ALIAS_2","ALIAS_3"]
 	// Max Items: 200
-	Aliases []string `json:"aliases,omitempty"`
+	CifsNetbiosInlineAliases []*string `json:"aliases,omitempty"`
+
+	// cifs netbios inline wins servers
+	// Example: ["10.224.65.20","10.224.65.21"]
+	// Max Items: 4
+	CifsNetbiosInlineWinsServers []*string `json:"wins_servers,omitempty"`
 
 	// Specifies whether NetBios name service (NBNS) is enabled for the CIFS. If this service is enabled, the CIFS server will start sending the broadcast for name registration.
 	Enabled *bool `json:"enabled,omitempty"`
-
-	// wins servers
-	// Example: ["10.224.65.20","10.224.65.21"]
-	// Max Items: 4
-	WinsServers []string `json:"wins_servers,omitempty"`
 }
 
 // Validate validates this cifs netbios
 func (m *CifsNetbios) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAliases(formats); err != nil {
+	if err := m.validateCifsNetbiosInlineAliases(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateWinsServers(formats); err != nil {
+	if err := m.validateCifsNetbiosInlineWinsServers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -52,24 +52,27 @@ func (m *CifsNetbios) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsNetbios) validateAliases(formats strfmt.Registry) error {
-	if swag.IsZero(m.Aliases) { // not required
+func (m *CifsNetbios) validateCifsNetbiosInlineAliases(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsNetbiosInlineAliases) { // not required
 		return nil
 	}
 
-	iAliasesSize := int64(len(m.Aliases))
+	iCifsNetbiosInlineAliasesSize := int64(len(m.CifsNetbiosInlineAliases))
 
-	if err := validate.MaxItems("aliases", "body", iAliasesSize, 200); err != nil {
+	if err := validate.MaxItems("aliases", "body", iCifsNetbiosInlineAliasesSize, 200); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Aliases); i++ {
+	for i := 0; i < len(m.CifsNetbiosInlineAliases); i++ {
+		if swag.IsZero(m.CifsNetbiosInlineAliases[i]) { // not required
+			continue
+		}
 
-		if err := validate.MinLength("aliases"+"."+strconv.Itoa(i), "body", m.Aliases[i], 1); err != nil {
+		if err := validate.MinLength("aliases"+"."+strconv.Itoa(i), "body", *m.CifsNetbiosInlineAliases[i], 1); err != nil {
 			return err
 		}
 
-		if err := validate.MaxLength("aliases"+"."+strconv.Itoa(i), "body", m.Aliases[i], 15); err != nil {
+		if err := validate.MaxLength("aliases"+"."+strconv.Itoa(i), "body", *m.CifsNetbiosInlineAliases[i], 15); err != nil {
 			return err
 		}
 
@@ -78,14 +81,14 @@ func (m *CifsNetbios) validateAliases(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsNetbios) validateWinsServers(formats strfmt.Registry) error {
-	if swag.IsZero(m.WinsServers) { // not required
+func (m *CifsNetbios) validateCifsNetbiosInlineWinsServers(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsNetbiosInlineWinsServers) { // not required
 		return nil
 	}
 
-	iWinsServersSize := int64(len(m.WinsServers))
+	iCifsNetbiosInlineWinsServersSize := int64(len(m.CifsNetbiosInlineWinsServers))
 
-	if err := validate.MaxItems("wins_servers", "body", iWinsServersSize, 4); err != nil {
+	if err := validate.MaxItems("wins_servers", "body", iCifsNetbiosInlineWinsServersSize, 4); err != nil {
 		return err
 	}
 

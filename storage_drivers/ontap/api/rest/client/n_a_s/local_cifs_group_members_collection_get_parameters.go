@@ -66,25 +66,25 @@ type LocalCifsGroupMembersCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LocalCifsGroupSid.
 
 	   Local group SID
 	*/
-	LocalCifsGroupSIDPathParameter string
+	LocalCifsGroupSid string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -92,7 +92,7 @@ type LocalCifsGroupMembersCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -100,13 +100,13 @@ type LocalCifsGroupMembersCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,14 +126,14 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WithDefaults() *LocalCifsGrou
 // All values with no default are reset to their zero value.
 func (o *LocalCifsGroupMembersCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LocalCifsGroupMembersCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -175,81 +175,81 @@ func (o *LocalCifsGroupMembersCollectionGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithFieldsQueryParameter(fields []string) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithFields(fields []string) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithLocalCifsGroupSIDPathParameter(localCifsGroupSid string) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetLocalCifsGroupSIDPathParameter(localCifsGroupSid)
+// WithLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithLocalCifsGroupSid(localCifsGroupSid string) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetLocalCifsGroupSid(localCifsGroupSid)
 	return o
 }
 
-// SetLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetLocalCifsGroupSIDPathParameter(localCifsGroupSid string) {
-	o.LocalCifsGroupSIDPathParameter = localCifsGroupSid
+// SetLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetLocalCifsGroupSid(localCifsGroupSid string) {
+	o.LocalCifsGroupSid = localCifsGroupSid
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithMaxRecords(maxRecords *int64) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithOrderBy(orderBy []string) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithReturnRecords(returnRecords *bool) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsGroupMembersCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) WithSvmUUID(svmUUID string) *LocalCifsGroupMembersCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs group members collection get params
-func (o *LocalCifsGroupMembersCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs group members collection get params
+func (o *LocalCifsGroupMembersCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -260,7 +260,7 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -272,17 +272,17 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param local_cifs_group.sid
-	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSIDPathParameter); err != nil {
+	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSid); err != nil {
 		return err
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -293,7 +293,7 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -304,13 +304,13 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -321,13 +321,13 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -339,7 +339,7 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -351,7 +351,7 @@ func (o *LocalCifsGroupMembersCollectionGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamLocalCifsGroupMembersCollectionGet binds the parameter fields
 func (o *LocalCifsGroupMembersCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -368,7 +368,7 @@ func (o *LocalCifsGroupMembersCollectionGetParams) bindParamFields(formats strfm
 
 // bindParamLocalCifsGroupMembersCollectionGet binds the parameter order_by
 func (o *LocalCifsGroupMembersCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

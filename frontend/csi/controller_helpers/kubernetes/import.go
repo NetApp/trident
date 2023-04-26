@@ -9,13 +9,12 @@ import (
 	"fmt"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 )
@@ -29,7 +28,8 @@ import (
 func (h *helper) ImportVolume(
 	ctx context.Context, request *storage.ImportVolumeRequest,
 ) (*storage.VolumeExternal, error) {
-	Logc(ctx).WithField("request", request).Debug("ImportVolume")
+	Logc(ctx).WithField("request", request).Trace(">>>> ImportVolume")
+	defer Logc(ctx).Trace("<<<< ImportVolume")
 
 	// Get PVC from ImportVolumeRequest
 	jsonData, err := base64.StdEncoding.DecodeString(request.PVCData)
@@ -37,7 +37,7 @@ func (h *helper) ImportVolume(
 		return nil, fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
 	}
 
-	existingVol, err := h.orchestrator.GetVolumeByInternalName(request.InternalName, ctx)
+	existingVol, err := h.orchestrator.GetVolumeByInternalName(ctx, request.InternalName)
 	if err == nil {
 		return nil, utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
 			existingVol, request.InternalName))
@@ -49,14 +49,14 @@ func (h *helper) ImportVolume(
 		return nil, fmt.Errorf("could not parse JSON PVC: %v", err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"PVC":               claim.Name,
 		"PVC_storageClass":  getStorageClassForPVC(claim),
 		"PVC_accessModes":   claim.Spec.AccessModes,
 		"PVC_annotations":   claim.Annotations,
 		"PVC_volume":        claim.Spec.VolumeName,
 		"PVC_requestedSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
-	}).Debug("ImportVolume: received PVC data.")
+	}).Trace()
 
 	if err = h.checkValidStorageClassReceived(ctx, claim); err != nil {
 		return nil, err
@@ -91,14 +91,14 @@ func (h *helper) ImportVolume(
 		claim.Spec.Resources.Requests = v1.ResourceList{}
 	}
 	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(volExternal.Config.Size)
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"size":      volExternal.Config.Size,
 		"claimSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
 	}).Debug("Volume import determined volume size")
 
 	pvc, pvcErr := h.createImportPVC(ctx, claim)
 	if pvcErr != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"claim": claim.Name,
 			"error": pvcErr,
 		}).Warn("ImportVolume: error occurred during PVC creation.")
@@ -125,10 +125,13 @@ func (h *helper) ImportVolume(
 func (h *helper) createImportPVC(
 	ctx context.Context, claim *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).Trace(">>>> createImportPVC")
+	defer Logc(ctx).Trace("<<<< createImportPVC")
+
+	Logc(ctx).WithFields(LogFields{
 		"claim":     claim,
 		"namespace": claim.Namespace,
-	}).Debug("CreateImportPVC: ready to create PVC")
+	}).Trace("CreateImportPVC: ready to create PVC")
 
 	createOpts := metav1.CreateOptions{}
 	pvc, err := h.kubeClient.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(ctx, claim, createOpts)

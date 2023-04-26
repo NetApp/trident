@@ -20,14 +20,14 @@ type IPInterfaceAndGateway struct {
 
 	// IPv4 or IPv6 address
 	// Example: 10.10.10.7
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The IPv4 or IPv6 address of the default router.
 	// Example: 10.1.1.1
-	Gateway string `json:"gateway,omitempty"`
+	Gateway *string `json:"gateway,omitempty"`
 
 	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	Netmask *IPNetmask `json:"netmask,omitempty"`
 }
 
 // Validate validates this ip interface and gateway
@@ -49,11 +49,13 @@ func (m *IPInterfaceAndGateway) validateNetmask(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
@@ -75,11 +77,13 @@ func (m *IPInterfaceAndGateway) ContextValidate(ctx context.Context, formats str
 
 func (m *IPInterfaceAndGateway) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("netmask")
+	if m.Netmask != nil {
+		if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("netmask")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

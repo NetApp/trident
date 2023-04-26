@@ -66,19 +66,19 @@ type NameMappingDeleteParams struct {
 
 	   Direction
 	*/
-	DirectionPathParameter string
+	Direction string
 
 	/* Index.
 
 	   Position of the entry in the list
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *NameMappingDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDirectionPathParameter adds the direction to the name mapping delete params
-func (o *NameMappingDeleteParams) WithDirectionPathParameter(direction string) *NameMappingDeleteParams {
-	o.SetDirectionPathParameter(direction)
+// WithDirection adds the direction to the name mapping delete params
+func (o *NameMappingDeleteParams) WithDirection(direction string) *NameMappingDeleteParams {
+	o.SetDirection(direction)
 	return o
 }
 
-// SetDirectionPathParameter adds the direction to the name mapping delete params
-func (o *NameMappingDeleteParams) SetDirectionPathParameter(direction string) {
-	o.DirectionPathParameter = direction
+// SetDirection adds the direction to the name mapping delete params
+func (o *NameMappingDeleteParams) SetDirection(direction string) {
+	o.Direction = direction
 }
 
-// WithIndexPathParameter adds the index to the name mapping delete params
-func (o *NameMappingDeleteParams) WithIndexPathParameter(index int64) *NameMappingDeleteParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the name mapping delete params
+func (o *NameMappingDeleteParams) WithIndex(index int64) *NameMappingDeleteParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the name mapping delete params
-func (o *NameMappingDeleteParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the name mapping delete params
+func (o *NameMappingDeleteParams) SetIndex(index int64) {
+	o.Index = index
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the name mapping delete params
-func (o *NameMappingDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *NameMappingDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the name mapping delete params
+func (o *NameMappingDeleteParams) WithSvmUUID(svmUUID string) *NameMappingDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the name mapping delete params
-func (o *NameMappingDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the name mapping delete params
+func (o *NameMappingDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -175,17 +175,17 @@ func (o *NameMappingDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	var res []error
 
 	// path param direction
-	if err := r.SetPathParam("direction", o.DirectionPathParameter); err != nil {
+	if err := r.SetPathParam("direction", o.Direction); err != nil {
 		return err
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

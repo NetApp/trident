@@ -17,11 +17,11 @@ import (
 // swagger:model flexcache_prepopulate
 type FlexcachePrepopulate struct {
 
-	// dir paths
-	DirPaths []string `json:"dir_paths,omitempty"`
+	// flexcache prepopulate inline dir paths
+	FlexcachePrepopulateInlineDirPaths []*string `json:"dir_paths,omitempty"`
 
-	// exclude dir paths
-	ExcludeDirPaths []string `json:"exclude_dir_paths,omitempty"`
+	// flexcache prepopulate inline exclude dir paths
+	FlexcachePrepopulateInlineExcludeDirPaths []*string `json:"exclude_dir_paths,omitempty"`
 
 	// Specifies whether or not the prepopulate action should search through the `dir_paths` recursively. If not set, the default value _true_ is used.
 	Recurse *bool `json:"recurse,omitempty"`

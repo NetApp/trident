@@ -22,12 +22,12 @@ import (
 type UserGroupPrivileges struct {
 
 	// links
-	Links *UserGroupPrivilegesLinks `json:"_links,omitempty"`
+	Links *UserGroupPrivilegesInlineLinks `json:"_links,omitempty"`
 
 	// Local or Active Directory user or group name.
 	//
 	// Example: user1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// An array of privileges associated with the local or Active Directory user or group.
 	// The available values are:
@@ -38,10 +38,10 @@ type UserGroupPrivileges struct {
 	// * SeSecurityPrivilege         - Allows user to manage auditing and viewing/dumping/clearing the security log
 	// * SeChangeNotifyPrivilege     - Allows user to bypass traverse checking
 	//
-	Privileges []string `json:"privileges,omitempty"`
+	Privileges []*string `json:"privileges,omitempty"`
 
 	// svm
-	Svm *UserGroupPrivilegesSvm `json:"svm,omitempty"`
+	Svm *UserGroupPrivilegesInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this user group privileges
@@ -108,9 +108,12 @@ func (m *UserGroupPrivileges) validatePrivileges(formats strfmt.Registry) error 
 	}
 
 	for i := 0; i < len(m.Privileges); i++ {
+		if swag.IsZero(m.Privileges[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validatePrivilegesItemsEnum("privileges"+"."+strconv.Itoa(i), "body", m.Privileges[i]); err != nil {
+		if err := m.validatePrivilegesItemsEnum("privileges"+"."+strconv.Itoa(i), "body", *m.Privileges[i]); err != nil {
 			return err
 		}
 
@@ -200,17 +203,17 @@ func (m *UserGroupPrivileges) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UserGroupPrivilegesLinks user group privileges links
+// UserGroupPrivilegesInlineLinks user group privileges inline links
 //
-// swagger:model UserGroupPrivilegesLinks
-type UserGroupPrivilegesLinks struct {
+// swagger:model user_group_privileges_inline__links
+type UserGroupPrivilegesInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this user group privileges links
-func (m *UserGroupPrivilegesLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this user group privileges inline links
+func (m *UserGroupPrivilegesInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -223,7 +226,7 @@ func (m *UserGroupPrivilegesLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UserGroupPrivilegesLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -240,8 +243,8 @@ func (m *UserGroupPrivilegesLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this user group privileges links based on the context it is used
-func (m *UserGroupPrivilegesLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this user group privileges inline links based on the context it is used
+func (m *UserGroupPrivilegesInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -254,7 +257,7 @@ func (m *UserGroupPrivilegesLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *UserGroupPrivilegesLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +272,7 @@ func (m *UserGroupPrivilegesLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *UserGroupPrivilegesLinks) MarshalBinary() ([]byte, error) {
+func (m *UserGroupPrivilegesInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +280,8 @@ func (m *UserGroupPrivilegesLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UserGroupPrivilegesLinks) UnmarshalBinary(b []byte) error {
-	var res UserGroupPrivilegesLinks
+func (m *UserGroupPrivilegesInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UserGroupPrivilegesInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,27 +289,27 @@ func (m *UserGroupPrivilegesLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UserGroupPrivilegesSvm user group privileges svm
+// UserGroupPrivilegesInlineSvm user group privileges inline svm
 //
-// swagger:model UserGroupPrivilegesSvm
-type UserGroupPrivilegesSvm struct {
+// swagger:model user_group_privileges_inline_svm
+type UserGroupPrivilegesInlineSvm struct {
 
 	// links
-	Links *UserGroupPrivilegesSvmLinks `json:"_links,omitempty"`
+	Links *UserGroupPrivilegesInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this user group privileges svm
-func (m *UserGroupPrivilegesSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this user group privileges inline svm
+func (m *UserGroupPrivilegesInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -319,7 +322,7 @@ func (m *UserGroupPrivilegesSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UserGroupPrivilegesSvm) validateLinks(formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -336,8 +339,8 @@ func (m *UserGroupPrivilegesSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this user group privileges svm based on the context it is used
-func (m *UserGroupPrivilegesSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this user group privileges inline svm based on the context it is used
+func (m *UserGroupPrivilegesInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -350,7 +353,7 @@ func (m *UserGroupPrivilegesSvm) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *UserGroupPrivilegesSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -365,7 +368,7 @@ func (m *UserGroupPrivilegesSvm) contextValidateLinks(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *UserGroupPrivilegesSvm) MarshalBinary() ([]byte, error) {
+func (m *UserGroupPrivilegesInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -373,8 +376,8 @@ func (m *UserGroupPrivilegesSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UserGroupPrivilegesSvm) UnmarshalBinary(b []byte) error {
-	var res UserGroupPrivilegesSvm
+func (m *UserGroupPrivilegesInlineSvm) UnmarshalBinary(b []byte) error {
+	var res UserGroupPrivilegesInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -382,17 +385,17 @@ func (m *UserGroupPrivilegesSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// UserGroupPrivilegesSvmLinks user group privileges svm links
+// UserGroupPrivilegesInlineSvmInlineLinks user group privileges inline svm inline links
 //
-// swagger:model UserGroupPrivilegesSvmLinks
-type UserGroupPrivilegesSvmLinks struct {
+// swagger:model user_group_privileges_inline_svm_inline__links
+type UserGroupPrivilegesInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this user group privileges svm links
-func (m *UserGroupPrivilegesSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this user group privileges inline svm inline links
+func (m *UserGroupPrivilegesInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -405,7 +408,7 @@ func (m *UserGroupPrivilegesSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UserGroupPrivilegesSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -422,8 +425,8 @@ func (m *UserGroupPrivilegesSvmLinks) validateSelf(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this user group privileges svm links based on the context it is used
-func (m *UserGroupPrivilegesSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this user group privileges inline svm inline links based on the context it is used
+func (m *UserGroupPrivilegesInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -436,7 +439,7 @@ func (m *UserGroupPrivilegesSvmLinks) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *UserGroupPrivilegesSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserGroupPrivilegesInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -451,7 +454,7 @@ func (m *UserGroupPrivilegesSvmLinks) contextValidateSelf(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *UserGroupPrivilegesSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *UserGroupPrivilegesInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -459,8 +462,8 @@ func (m *UserGroupPrivilegesSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UserGroupPrivilegesSvmLinks) UnmarshalBinary(b []byte) error {
-	var res UserGroupPrivilegesSvmLinks
+func (m *UserGroupPrivilegesInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res UserGroupPrivilegesInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

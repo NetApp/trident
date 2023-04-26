@@ -66,49 +66,49 @@ type TopMetricsSvmClientCollectionGetParams struct {
 
 	   Filter by client_ip
 	*/
-	ClientIPQueryParameter *string
+	ClientIP *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IopsErrorLowerBound.
 
 	   Filter by iops.error.lower_bound
 	*/
-	IopsErrorLowerBoundQueryParameter *int64
+	IopsErrorLowerBound *int64
 
 	/* IopsErrorUpperBound.
 
 	   Filter by iops.error.upper_bound
 	*/
-	IopsErrorUpperBoundQueryParameter *int64
+	IopsErrorUpperBound *int64
 
 	/* IopsRead.
 
 	   Filter by iops.read
 	*/
-	IopsReadQueryParameter *int64
+	IopsRead *int64
 
 	/* IopsWrite.
 
 	   Filter by iops.write
 	*/
-	IopsWriteQueryParameter *int64
+	IopsWrite *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -116,7 +116,7 @@ type TopMetricsSvmClientCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -124,43 +124,43 @@ type TopMetricsSvmClientCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* ThroughputErrorLowerBound.
 
 	   Filter by throughput.error.lower_bound
 	*/
-	ThroughputErrorLowerBoundQueryParameter *int64
+	ThroughputErrorLowerBound *int64
 
 	/* ThroughputErrorUpperBound.
 
 	   Filter by throughput.error.upper_bound
 	*/
-	ThroughputErrorUpperBoundQueryParameter *int64
+	ThroughputErrorUpperBound *int64
 
 	/* ThroughputRead.
 
 	   Filter by throughput.read
 	*/
-	ThroughputReadQueryParameter *int64
+	ThroughputRead *int64
 
 	/* ThroughputWrite.
 
 	   Filter by throughput.write
 	*/
-	ThroughputWriteQueryParameter *int64
+	ThroughputWrite *int64
 
 	/* TopMetric.
 
@@ -168,7 +168,7 @@ type TopMetricsSvmClientCollectionGetParams struct {
 
 	   Default: "iops.read"
 	*/
-	TopMetricQueryParameter *string
+	TopMetric *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -188,17 +188,17 @@ func (o *TopMetricsSvmClientCollectionGetParams) WithDefaults() *TopMetricsSvmCl
 // All values with no default are reset to their zero value.
 func (o *TopMetricsSvmClientCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 
-		topMetricQueryParameterDefault = string("iops.read")
+		topMetricDefault = string("iops.read")
 	)
 
 	val := TopMetricsSvmClientCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
-		TopMetricQueryParameter:     &topMetricQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
+		TopMetric:     &topMetricDefault,
 	}
 
 	val.timeout = o.timeout
@@ -240,191 +240,191 @@ func (o *TopMetricsSvmClientCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithClientIPQueryParameter adds the clientIP to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithClientIPQueryParameter(clientIP *string) *TopMetricsSvmClientCollectionGetParams {
-	o.SetClientIPQueryParameter(clientIP)
+// WithClientIP adds the clientIP to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithClientIP(clientIP *string) *TopMetricsSvmClientCollectionGetParams {
+	o.SetClientIP(clientIP)
 	return o
 }
 
-// SetClientIPQueryParameter adds the clientIp to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetClientIPQueryParameter(clientIP *string) {
-	o.ClientIPQueryParameter = clientIP
+// SetClientIP adds the clientIp to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetClientIP(clientIP *string) {
+	o.ClientIP = clientIP
 }
 
-// WithFieldsQueryParameter adds the fields to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithFieldsQueryParameter(fields []string) *TopMetricsSvmClientCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithFields(fields []string) *TopMetricsSvmClientCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIopsErrorLowerBoundQueryParameter adds the iopsErrorLowerBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound)
+// WithIopsErrorLowerBound adds the iopsErrorLowerBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithIopsErrorLowerBound(iopsErrorLowerBound *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetIopsErrorLowerBound(iopsErrorLowerBound)
 	return o
 }
 
-// SetIopsErrorLowerBoundQueryParameter adds the iopsErrorLowerBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetIopsErrorLowerBoundQueryParameter(iopsErrorLowerBound *int64) {
-	o.IopsErrorLowerBoundQueryParameter = iopsErrorLowerBound
+// SetIopsErrorLowerBound adds the iopsErrorLowerBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetIopsErrorLowerBound(iopsErrorLowerBound *int64) {
+	o.IopsErrorLowerBound = iopsErrorLowerBound
 }
 
-// WithIopsErrorUpperBoundQueryParameter adds the iopsErrorUpperBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound)
+// WithIopsErrorUpperBound adds the iopsErrorUpperBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithIopsErrorUpperBound(iopsErrorUpperBound *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetIopsErrorUpperBound(iopsErrorUpperBound)
 	return o
 }
 
-// SetIopsErrorUpperBoundQueryParameter adds the iopsErrorUpperBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetIopsErrorUpperBoundQueryParameter(iopsErrorUpperBound *int64) {
-	o.IopsErrorUpperBoundQueryParameter = iopsErrorUpperBound
+// SetIopsErrorUpperBound adds the iopsErrorUpperBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetIopsErrorUpperBound(iopsErrorUpperBound *int64) {
+	o.IopsErrorUpperBound = iopsErrorUpperBound
 }
 
-// WithIopsReadQueryParameter adds the iopsRead to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithIopsReadQueryParameter(iopsRead *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetIopsReadQueryParameter(iopsRead)
+// WithIopsRead adds the iopsRead to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithIopsRead(iopsRead *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetIopsRead(iopsRead)
 	return o
 }
 
-// SetIopsReadQueryParameter adds the iopsRead to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetIopsReadQueryParameter(iopsRead *int64) {
-	o.IopsReadQueryParameter = iopsRead
+// SetIopsRead adds the iopsRead to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetIopsRead(iopsRead *int64) {
+	o.IopsRead = iopsRead
 }
 
-// WithIopsWriteQueryParameter adds the iopsWrite to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithIopsWriteQueryParameter(iopsWrite *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetIopsWriteQueryParameter(iopsWrite)
+// WithIopsWrite adds the iopsWrite to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithIopsWrite(iopsWrite *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetIopsWrite(iopsWrite)
 	return o
 }
 
-// SetIopsWriteQueryParameter adds the iopsWrite to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetIopsWriteQueryParameter(iopsWrite *int64) {
-	o.IopsWriteQueryParameter = iopsWrite
+// SetIopsWrite adds the iopsWrite to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetIopsWrite(iopsWrite *int64) {
+	o.IopsWrite = iopsWrite
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithMaxRecords(maxRecords *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *TopMetricsSvmClientCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithOrderBy(orderBy []string) *TopMetricsSvmClientCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *TopMetricsSvmClientCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithReturnRecords(returnRecords *bool) *TopMetricsSvmClientCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMNameQueryParameter adds the svmName to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *TopMetricsSvmClientCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithSvmName(svmName *string) *TopMetricsSvmClientCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *TopMetricsSvmClientCollectionGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithSvmUUID(svmUUID string) *TopMetricsSvmClientCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithThroughputErrorLowerBoundQueryParameter adds the throughputErrorLowerBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound)
+// WithThroughputErrorLowerBound adds the throughputErrorLowerBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputErrorLowerBound(throughputErrorLowerBound *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetThroughputErrorLowerBound(throughputErrorLowerBound)
 	return o
 }
 
-// SetThroughputErrorLowerBoundQueryParameter adds the throughputErrorLowerBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputErrorLowerBoundQueryParameter(throughputErrorLowerBound *int64) {
-	o.ThroughputErrorLowerBoundQueryParameter = throughputErrorLowerBound
+// SetThroughputErrorLowerBound adds the throughputErrorLowerBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputErrorLowerBound(throughputErrorLowerBound *int64) {
+	o.ThroughputErrorLowerBound = throughputErrorLowerBound
 }
 
-// WithThroughputErrorUpperBoundQueryParameter adds the throughputErrorUpperBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound)
+// WithThroughputErrorUpperBound adds the throughputErrorUpperBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputErrorUpperBound(throughputErrorUpperBound *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetThroughputErrorUpperBound(throughputErrorUpperBound)
 	return o
 }
 
-// SetThroughputErrorUpperBoundQueryParameter adds the throughputErrorUpperBound to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputErrorUpperBoundQueryParameter(throughputErrorUpperBound *int64) {
-	o.ThroughputErrorUpperBoundQueryParameter = throughputErrorUpperBound
+// SetThroughputErrorUpperBound adds the throughputErrorUpperBound to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputErrorUpperBound(throughputErrorUpperBound *int64) {
+	o.ThroughputErrorUpperBound = throughputErrorUpperBound
 }
 
-// WithThroughputReadQueryParameter adds the throughputRead to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputReadQueryParameter(throughputRead *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetThroughputReadQueryParameter(throughputRead)
+// WithThroughputRead adds the throughputRead to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputRead(throughputRead *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetThroughputRead(throughputRead)
 	return o
 }
 
-// SetThroughputReadQueryParameter adds the throughputRead to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputReadQueryParameter(throughputRead *int64) {
-	o.ThroughputReadQueryParameter = throughputRead
+// SetThroughputRead adds the throughputRead to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputRead(throughputRead *int64) {
+	o.ThroughputRead = throughputRead
 }
 
-// WithThroughputWriteQueryParameter adds the throughputWrite to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputWriteQueryParameter(throughputWrite *int64) *TopMetricsSvmClientCollectionGetParams {
-	o.SetThroughputWriteQueryParameter(throughputWrite)
+// WithThroughputWrite adds the throughputWrite to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithThroughputWrite(throughputWrite *int64) *TopMetricsSvmClientCollectionGetParams {
+	o.SetThroughputWrite(throughputWrite)
 	return o
 }
 
-// SetThroughputWriteQueryParameter adds the throughputWrite to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputWriteQueryParameter(throughputWrite *int64) {
-	o.ThroughputWriteQueryParameter = throughputWrite
+// SetThroughputWrite adds the throughputWrite to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetThroughputWrite(throughputWrite *int64) {
+	o.ThroughputWrite = throughputWrite
 }
 
-// WithTopMetricQueryParameter adds the topMetric to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) WithTopMetricQueryParameter(topMetric *string) *TopMetricsSvmClientCollectionGetParams {
-	o.SetTopMetricQueryParameter(topMetric)
+// WithTopMetric adds the topMetric to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) WithTopMetric(topMetric *string) *TopMetricsSvmClientCollectionGetParams {
+	o.SetTopMetric(topMetric)
 	return o
 }
 
-// SetTopMetricQueryParameter adds the topMetric to the top metrics svm client collection get params
-func (o *TopMetricsSvmClientCollectionGetParams) SetTopMetricQueryParameter(topMetric *string) {
-	o.TopMetricQueryParameter = topMetric
+// SetTopMetric adds the topMetric to the top metrics svm client collection get params
+func (o *TopMetricsSvmClientCollectionGetParams) SetTopMetric(topMetric *string) {
+	o.TopMetric = topMetric
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -435,13 +435,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.ClientIPQueryParameter != nil {
+	if o.ClientIP != nil {
 
 		// query param client_ip
 		var qrClientIP string
 
-		if o.ClientIPQueryParameter != nil {
-			qrClientIP = *o.ClientIPQueryParameter
+		if o.ClientIP != nil {
+			qrClientIP = *o.ClientIP
 		}
 		qClientIP := qrClientIP
 		if qClientIP != "" {
@@ -452,7 +452,7 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -463,13 +463,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsErrorLowerBoundQueryParameter != nil {
+	if o.IopsErrorLowerBound != nil {
 
 		// query param iops.error.lower_bound
 		var qrIopsErrorLowerBound int64
 
-		if o.IopsErrorLowerBoundQueryParameter != nil {
-			qrIopsErrorLowerBound = *o.IopsErrorLowerBoundQueryParameter
+		if o.IopsErrorLowerBound != nil {
+			qrIopsErrorLowerBound = *o.IopsErrorLowerBound
 		}
 		qIopsErrorLowerBound := swag.FormatInt64(qrIopsErrorLowerBound)
 		if qIopsErrorLowerBound != "" {
@@ -480,13 +480,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsErrorUpperBoundQueryParameter != nil {
+	if o.IopsErrorUpperBound != nil {
 
 		// query param iops.error.upper_bound
 		var qrIopsErrorUpperBound int64
 
-		if o.IopsErrorUpperBoundQueryParameter != nil {
-			qrIopsErrorUpperBound = *o.IopsErrorUpperBoundQueryParameter
+		if o.IopsErrorUpperBound != nil {
+			qrIopsErrorUpperBound = *o.IopsErrorUpperBound
 		}
 		qIopsErrorUpperBound := swag.FormatInt64(qrIopsErrorUpperBound)
 		if qIopsErrorUpperBound != "" {
@@ -497,13 +497,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsReadQueryParameter != nil {
+	if o.IopsRead != nil {
 
 		// query param iops.read
 		var qrIopsRead int64
 
-		if o.IopsReadQueryParameter != nil {
-			qrIopsRead = *o.IopsReadQueryParameter
+		if o.IopsRead != nil {
+			qrIopsRead = *o.IopsRead
 		}
 		qIopsRead := swag.FormatInt64(qrIopsRead)
 		if qIopsRead != "" {
@@ -514,13 +514,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.IopsWriteQueryParameter != nil {
+	if o.IopsWrite != nil {
 
 		// query param iops.write
 		var qrIopsWrite int64
 
-		if o.IopsWriteQueryParameter != nil {
-			qrIopsWrite = *o.IopsWriteQueryParameter
+		if o.IopsWrite != nil {
+			qrIopsWrite = *o.IopsWrite
 		}
 		qIopsWrite := swag.FormatInt64(qrIopsWrite)
 		if qIopsWrite != "" {
@@ -531,13 +531,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -548,7 +548,7 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -559,13 +559,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -576,13 +576,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -593,13 +593,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -611,17 +611,17 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.ThroughputErrorLowerBoundQueryParameter != nil {
+	if o.ThroughputErrorLowerBound != nil {
 
 		// query param throughput.error.lower_bound
 		var qrThroughputErrorLowerBound int64
 
-		if o.ThroughputErrorLowerBoundQueryParameter != nil {
-			qrThroughputErrorLowerBound = *o.ThroughputErrorLowerBoundQueryParameter
+		if o.ThroughputErrorLowerBound != nil {
+			qrThroughputErrorLowerBound = *o.ThroughputErrorLowerBound
 		}
 		qThroughputErrorLowerBound := swag.FormatInt64(qrThroughputErrorLowerBound)
 		if qThroughputErrorLowerBound != "" {
@@ -632,13 +632,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputErrorUpperBoundQueryParameter != nil {
+	if o.ThroughputErrorUpperBound != nil {
 
 		// query param throughput.error.upper_bound
 		var qrThroughputErrorUpperBound int64
 
-		if o.ThroughputErrorUpperBoundQueryParameter != nil {
-			qrThroughputErrorUpperBound = *o.ThroughputErrorUpperBoundQueryParameter
+		if o.ThroughputErrorUpperBound != nil {
+			qrThroughputErrorUpperBound = *o.ThroughputErrorUpperBound
 		}
 		qThroughputErrorUpperBound := swag.FormatInt64(qrThroughputErrorUpperBound)
 		if qThroughputErrorUpperBound != "" {
@@ -649,13 +649,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputReadQueryParameter != nil {
+	if o.ThroughputRead != nil {
 
 		// query param throughput.read
 		var qrThroughputRead int64
 
-		if o.ThroughputReadQueryParameter != nil {
-			qrThroughputRead = *o.ThroughputReadQueryParameter
+		if o.ThroughputRead != nil {
+			qrThroughputRead = *o.ThroughputRead
 		}
 		qThroughputRead := swag.FormatInt64(qrThroughputRead)
 		if qThroughputRead != "" {
@@ -666,13 +666,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ThroughputWriteQueryParameter != nil {
+	if o.ThroughputWrite != nil {
 
 		// query param throughput.write
 		var qrThroughputWrite int64
 
-		if o.ThroughputWriteQueryParameter != nil {
-			qrThroughputWrite = *o.ThroughputWriteQueryParameter
+		if o.ThroughputWrite != nil {
+			qrThroughputWrite = *o.ThroughputWrite
 		}
 		qThroughputWrite := swag.FormatInt64(qrThroughputWrite)
 		if qThroughputWrite != "" {
@@ -683,13 +683,13 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.TopMetricQueryParameter != nil {
+	if o.TopMetric != nil {
 
 		// query param top_metric
 		var qrTopMetric string
 
-		if o.TopMetricQueryParameter != nil {
-			qrTopMetric = *o.TopMetricQueryParameter
+		if o.TopMetric != nil {
+			qrTopMetric = *o.TopMetric
 		}
 		qTopMetric := qrTopMetric
 		if qTopMetric != "" {
@@ -708,7 +708,7 @@ func (o *TopMetricsSvmClientCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamTopMetricsSvmClientCollectionGet binds the parameter fields
 func (o *TopMetricsSvmClientCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -725,7 +725,7 @@ func (o *TopMetricsSvmClientCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamTopMetricsSvmClientCollectionGet binds the parameter order_by
 func (o *TopMetricsSvmClientCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

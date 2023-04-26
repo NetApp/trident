@@ -73,7 +73,7 @@ type ScheduleModifyParams struct {
 
 	   Schedule UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *ScheduleModifyParams) SetInfo(info *models.Schedule) {
 	o.Info = info
 }
 
-// WithUUIDPathParameter adds the uuid to the schedule modify params
-func (o *ScheduleModifyParams) WithUUIDPathParameter(uuid string) *ScheduleModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the schedule modify params
+func (o *ScheduleModifyParams) WithUUID(uuid string) *ScheduleModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the schedule modify params
-func (o *ScheduleModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the schedule modify params
+func (o *ScheduleModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -164,7 +164,7 @@ func (o *ScheduleModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

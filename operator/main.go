@@ -13,9 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
-	"github.com/netapp/trident/logging"
+	. "github.com/netapp/trident/logging"
 	operatorclient "github.com/netapp/trident/operator/clients"
 	"github.com/netapp/trident/operator/config"
 	"github.com/netapp/trident/operator/controllers"
@@ -24,8 +22,8 @@ import (
 
 var (
 	// Logging
-	debug     = flag.Bool("debug", false, "Enable debugging output")
-	logLevel  = flag.String("log-level", "info", "Logging level (debug, info, warn, error, fatal)")
+	debug     = flag.Bool("debug", false, "Set log level to debug, takes precedence over log-level")
+	logLevel  = flag.String("log-level", "info", "Logging level (trace, debug, info, warn, error, fatal)")
 	logFormat = flag.String("log-format", "text", "Logging format (text, json)")
 
 	// Kubernetes
@@ -35,7 +33,7 @@ var (
 )
 
 func printFlag(f *flag.Flag) {
-	log.WithFields(log.Fields{"name": f.Name, "value": f.Value}).Debug("Flag")
+	Log().WithFields(LogFields{"name": f.Name, "value": f.Value}).Debug("Flag")
 }
 
 func main() {
@@ -48,15 +46,21 @@ func main() {
 	// Seed RNG one time
 	rand.Seed(time.Now().UnixNano())
 
+	if *debug {
+		*logLevel = "debug"
+	} else if *logLevel == "" {
+		*logLevel = "info"
+	}
+
 	// Set log level
-	err = logging.InitLogLevel(*debug, *logLevel)
+	err = InitLogLevel(*logLevel)
 	if err != nil {
-		_, _ = fmt.Fprint(os.Stderr, err)
+		_, _ = fmt.Fprint(os.Stderr, fmt.Sprintf("Error during InitLogLevel: %s, %v", *logLevel, err))
 		os.Exit(1)
 	}
 
 	// Set log format
-	err = logging.InitLogFormat(*logFormat)
+	err = InitLogFormat(*logFormat)
 	if err != nil {
 		_, _ = fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
@@ -65,10 +69,10 @@ func main() {
 	// Print all env variables
 	for _, element := range os.Environ() {
 		v := strings.Split(element, "=")
-		log.WithField(v[0], v[1]).Debug("Environment")
+		Log().WithField(v[0], v[1]).Debug("Environment")
 	}
 
-	log.WithFields(log.Fields{
+	Log().WithFields(LogFields{
 		"version":    config.OperatorVersion.String(),
 		"build_time": config.BuildTime,
 		"binary":     os.Args[0],
@@ -80,13 +84,13 @@ func main() {
 	// Create the Kubernetes clients
 	k8sClients, err := operatorclient.CreateK8SClients(*k8sAPIServer, *k8sConfigPath)
 	if err != nil {
-		log.WithField("error", err).Fatalf("Could not create Kubernetes k8sclient.")
+		Log().WithField("error", err).Fatalf("Could not create Kubernetes k8sclient.")
 	}
 
 	// Create Trident Orchestrator controller
 	tridentOrchestrator, err := orchestrator.NewController(k8sClients)
 	if err != nil {
-		log.WithField("error", err).Fatalf("Could not create Trident Orchestrator controller.")
+		Log().WithField("error", err).Fatalf("Could not create Trident Orchestrator controller.")
 	}
 	crdControllers = append(crdControllers, tridentOrchestrator)
 
@@ -99,7 +103,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
-	log.Info("Shutting down.")
+	Log().Info("Shutting down.")
 
 	// Deactivate the controllers
 	for _, c := range crdControllers {

@@ -65,7 +65,7 @@ type GcpKmsDeleteParams struct {
 
 	   Google Cloud KMS UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *GcpKmsDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUUIDPathParameter adds the uuid to the gcp kms delete params
-func (o *GcpKmsDeleteParams) WithUUIDPathParameter(uuid string) *GcpKmsDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the gcp kms delete params
+func (o *GcpKmsDeleteParams) WithUUID(uuid string) *GcpKmsDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the gcp kms delete params
-func (o *GcpKmsDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the gcp kms delete params
+func (o *GcpKmsDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *GcpKmsDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	var res []error
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

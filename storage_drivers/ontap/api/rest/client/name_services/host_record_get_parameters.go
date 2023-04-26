@@ -66,25 +66,25 @@ type HostRecordGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Host.
 
 	   Hostname or IP address.
 	*/
-	HostPathParameter string
+	Host string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UseCache.
 
 	   Enables or disables the cache.
 	*/
-	UseCacheQueryParameter *bool
+	UseCache *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,11 +104,11 @@ func (o *HostRecordGetParams) WithDefaults() *HostRecordGetParams {
 // All values with no default are reset to their zero value.
 func (o *HostRecordGetParams) SetDefaults() {
 	var (
-		useCacheQueryParameterDefault = bool(false)
+		useCacheDefault = bool(false)
 	)
 
 	val := HostRecordGetParams{
-		UseCacheQueryParameter: &useCacheQueryParameterDefault,
+		UseCache: &useCacheDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,48 +150,48 @@ func (o *HostRecordGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the host record get params
-func (o *HostRecordGetParams) WithFieldsQueryParameter(fields []string) *HostRecordGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the host record get params
+func (o *HostRecordGetParams) WithFields(fields []string) *HostRecordGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the host record get params
-func (o *HostRecordGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the host record get params
+func (o *HostRecordGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHostPathParameter adds the host to the host record get params
-func (o *HostRecordGetParams) WithHostPathParameter(host string) *HostRecordGetParams {
-	o.SetHostPathParameter(host)
+// WithHost adds the host to the host record get params
+func (o *HostRecordGetParams) WithHost(host string) *HostRecordGetParams {
+	o.SetHost(host)
 	return o
 }
 
-// SetHostPathParameter adds the host to the host record get params
-func (o *HostRecordGetParams) SetHostPathParameter(host string) {
-	o.HostPathParameter = host
+// SetHost adds the host to the host record get params
+func (o *HostRecordGetParams) SetHost(host string) {
+	o.Host = host
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the host record get params
-func (o *HostRecordGetParams) WithSVMUUIDPathParameter(svmUUID string) *HostRecordGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the host record get params
+func (o *HostRecordGetParams) WithSvmUUID(svmUUID string) *HostRecordGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the host record get params
-func (o *HostRecordGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the host record get params
+func (o *HostRecordGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUseCacheQueryParameter adds the useCache to the host record get params
-func (o *HostRecordGetParams) WithUseCacheQueryParameter(useCache *bool) *HostRecordGetParams {
-	o.SetUseCacheQueryParameter(useCache)
+// WithUseCache adds the useCache to the host record get params
+func (o *HostRecordGetParams) WithUseCache(useCache *bool) *HostRecordGetParams {
+	o.SetUseCache(useCache)
 	return o
 }
 
-// SetUseCacheQueryParameter adds the useCache to the host record get params
-func (o *HostRecordGetParams) SetUseCacheQueryParameter(useCache *bool) {
-	o.UseCacheQueryParameter = useCache
+// SetUseCache adds the useCache to the host record get params
+func (o *HostRecordGetParams) SetUseCache(useCache *bool) {
+	o.UseCache = useCache
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -202,7 +202,7 @@ func (o *HostRecordGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -214,22 +214,22 @@ func (o *HostRecordGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 
 	// path param host
-	if err := r.SetPathParam("host", o.HostPathParameter); err != nil {
+	if err := r.SetPathParam("host", o.Host); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
-	if o.UseCacheQueryParameter != nil {
+	if o.UseCache != nil {
 
 		// query param use_cache
 		var qrUseCache bool
 
-		if o.UseCacheQueryParameter != nil {
-			qrUseCache = *o.UseCacheQueryParameter
+		if o.UseCache != nil {
+			qrUseCache = *o.UseCache
 		}
 		qUseCache := swag.FormatBool(qrUseCache)
 		if qUseCache != "" {
@@ -248,7 +248,7 @@ func (o *HostRecordGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamHostRecordGet binds the parameter fields
 func (o *HostRecordGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

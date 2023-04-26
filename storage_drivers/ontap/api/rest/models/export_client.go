@@ -22,7 +22,7 @@ type ExportClient struct {
 	// Index of the rule within the export policy.
 	//
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// Client Match Hostname, IP Address, Netgroup, or Domain.
 	// You can specify the match as a string value in any of the
@@ -37,13 +37,13 @@ type ExportClient struct {
 	// * As a domain name preceded by the . character; for instance, .example.com
 	//
 	// Example: 0.0.0.0/0
-	Match string `json:"match,omitempty"`
+	Match *string `json:"match,omitempty"`
 
 	// policy
-	Policy *ExportClientPolicy `json:"policy,omitempty"`
+	Policy *ExportClientInlinePolicy `json:"policy,omitempty"`
 
 	// svm
-	Svm *ExportClientSvm `json:"svm,omitempty"`
+	Svm *ExportClientInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this export client
@@ -122,7 +122,7 @@ func (m *ExportClient) ContextValidate(ctx context.Context, formats strfmt.Regis
 
 func (m *ExportClient) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
 	}
 
@@ -175,22 +175,22 @@ func (m *ExportClient) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportClientPolicy export client policy
+// ExportClientInlinePolicy export client inline policy
 //
-// swagger:model ExportClientPolicy
-type ExportClientPolicy struct {
+// swagger:model export_client_inline_policy
+type ExportClientInlinePolicy struct {
 
 	// Export policy ID
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 }
 
-// Validate validates this export client policy
-func (m *ExportClientPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this export client inline policy
+func (m *ExportClientInlinePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export client policy based on the context it is used
-func (m *ExportClientPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export client inline policy based on the context it is used
+func (m *ExportClientInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -200,7 +200,7 @@ func (m *ExportClientPolicy) ContextValidate(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *ExportClientPolicy) MarshalBinary() ([]byte, error) {
+func (m *ExportClientInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -208,8 +208,8 @@ func (m *ExportClientPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportClientPolicy) UnmarshalBinary(b []byte) error {
-	var res ExportClientPolicy
+func (m *ExportClientInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res ExportClientInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -217,27 +217,27 @@ func (m *ExportClientPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportClientSvm export client svm
+// ExportClientInlineSvm export client inline svm
 //
-// swagger:model ExportClientSvm
-type ExportClientSvm struct {
+// swagger:model export_client_inline_svm
+type ExportClientInlineSvm struct {
 
 	// links
-	Links *ExportClientSvmLinks `json:"_links,omitempty"`
+	Links *ExportClientInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this export client svm
-func (m *ExportClientSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this export client inline svm
+func (m *ExportClientInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -250,7 +250,7 @@ func (m *ExportClientSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportClientSvm) validateLinks(formats strfmt.Registry) error {
+func (m *ExportClientInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -267,8 +267,8 @@ func (m *ExportClientSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export client svm based on the context it is used
-func (m *ExportClientSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export client inline svm based on the context it is used
+func (m *ExportClientInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -281,7 +281,7 @@ func (m *ExportClientSvm) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *ExportClientSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportClientInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -296,7 +296,7 @@ func (m *ExportClientSvm) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ExportClientSvm) MarshalBinary() ([]byte, error) {
+func (m *ExportClientInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -304,8 +304,8 @@ func (m *ExportClientSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportClientSvm) UnmarshalBinary(b []byte) error {
-	var res ExportClientSvm
+func (m *ExportClientInlineSvm) UnmarshalBinary(b []byte) error {
+	var res ExportClientInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -313,17 +313,17 @@ func (m *ExportClientSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportClientSvmLinks export client svm links
+// ExportClientInlineSvmInlineLinks export client inline svm inline links
 //
-// swagger:model ExportClientSvmLinks
-type ExportClientSvmLinks struct {
+// swagger:model export_client_inline_svm_inline__links
+type ExportClientInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this export client svm links
-func (m *ExportClientSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this export client inline svm inline links
+func (m *ExportClientInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -336,7 +336,7 @@ func (m *ExportClientSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportClientSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ExportClientInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -353,8 +353,8 @@ func (m *ExportClientSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export client svm links based on the context it is used
-func (m *ExportClientSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export client inline svm inline links based on the context it is used
+func (m *ExportClientInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -367,7 +367,7 @@ func (m *ExportClientSvmLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *ExportClientSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportClientInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -382,7 +382,7 @@ func (m *ExportClientSvmLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *ExportClientSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *ExportClientInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -390,8 +390,8 @@ func (m *ExportClientSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportClientSvmLinks) UnmarshalBinary(b []byte) error {
-	var res ExportClientSvmLinks
+func (m *ExportClientInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ExportClientInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

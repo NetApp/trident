@@ -17,10 +17,8 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	sc "github.com/netapp/trident/storage_class"
@@ -54,6 +52,7 @@ const (
 	MinimumVolumeSizeBytes       = 20971520 // 20 MiB
 	HousekeepingStartupDelaySecs = 10
 	LUNMetadataBufferMultiplier  = 1.1 // 10%
+	MaximumIgroupNameLength      = 96  // 96 characters is the maximum character count for ONTAP igroups.
 
 	// Constants for internal pool attributes
 	Size                  = "size"
@@ -140,13 +139,13 @@ func (t *Telemetry) Start(ctx context.Context) {
 		for {
 			select {
 			case tick := <-t.ticker.C:
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"tick":   tick,
 					"driver": t.Driver.Name(),
 				}).Debug("Sending EMS heartbeat.")
 				EMSHeartbeat(ctx, t.Driver)
 			case <-t.done:
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"driver": t.Driver.Name(),
 				}).Debugf("Shut down EMS logs for the driver.")
 				return
@@ -170,7 +169,7 @@ func (t *Telemetry) Stop() {
 func (t Telemetry) String() (out string) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("Panic in Telemetry#ToString; err: %v", r)
+			Log().Errorf("Panic in Telemetry#ToString; err: %v", r)
 			out = "<panic>"
 		}
 	}()
@@ -207,11 +206,11 @@ func InitializeOntapConfig(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
 ) (*drivers.OntapStorageDriverConfig, error) {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapConfig")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapConfig")
-	}
+	fields := LogFields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapConfig")
 
 	commonConfig.DriverContext = driverContext
 
@@ -256,15 +255,15 @@ func publishShare(
 	publishInfo *utils.VolumePublishInfo, volumeName string,
 	ModifyVolumeExportPolicy func(ctx context.Context, volumeName, policyName string) error,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "publishFlexVolShare",
-			"Type":   "ontap_common",
-			"Share":  volumeName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> publishFlexVolShare")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< publishFlexVolShare")
+	fields := LogFields{
+		"Method": "publishFlexVolShare",
+		"Type":   "ontap_common",
+		"Share":  volumeName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> publishFlexVolShare")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< publishFlexVolShare")
 
 	if !config.AutoExportPolicy || publishInfo.Unmanaged {
 		// Nothing to do if we're not configuring export policies automatically or volume is not managed
@@ -320,7 +319,7 @@ func reconcileNASNodeAccess(
 		Logc(ctx).Error(err)
 		return err
 	}
-	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI)
+	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, clientAPI, config)
 	if err != nil {
 		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
 		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
@@ -348,8 +347,9 @@ func getDesiredExportPolicyRules(
 
 func reconcileExportPolicyRules(
 	ctx context.Context, policyName string, desiredPolicyRules []string, clientAPI api.OntapAPI,
+	config *drivers.OntapStorageDriverConfig,
 ) error {
-	fields := log.Fields{
+	fields := LogFields{
 		"Method":             "reconcileExportPolicyRule",
 		"Type":               "ontap_common",
 		"policyName":         policyName,
@@ -367,7 +367,7 @@ func reconcileExportPolicyRules(
 			delete(rules, rule)
 		} else {
 			// Rule does not exist, so create it
-			if err = clientAPI.ExportRuleCreate(ctx, policyName, rule); err != nil {
+			if err = clientAPI.ExportRuleCreate(ctx, policyName, rule, config.NASType); err != nil {
 				return err
 			}
 		}
@@ -412,6 +412,8 @@ func resizeValidation(
 	return volSizeBytes, nil
 }
 
+// reconcileSANNodeAccess ensures active nodes have access to the SAN backend by ensuring
+// per-backend igroup exists and adding active initiators to that igroup.
 func reconcileSANNodeAccess(
 	ctx context.Context, clientAPI api.OntapAPI, igroupName string,
 	nodeIQNs []string,
@@ -489,7 +491,8 @@ func GetOntapDriverRedactList() []string {
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMapping(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
+	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int,
+	lunPath, igroupName string,
 ) error {
 	var targetIQN string
 	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
@@ -520,7 +523,7 @@ func PopulateOntapLunMapping(
 	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
 	volConfig.AccessInfo.IscsiIgroup = igroupName
 	volConfig.AccessInfo.IscsiLunSerial = serial
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"volume":          volConfig.Name,
 		"volume_internal": volConfig.InternalName,
 		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
@@ -531,8 +534,17 @@ func PopulateOntapLunMapping(
 	return nil
 }
 
+// getNodeSpecificIgroupName generates a distinct igroup name for node name.
+// Igroup names may collide if node names are over 59 characters.
 func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
-	return fmt.Sprintf("%s-%s", nodeName, tridentUUID)
+	igroupName := fmt.Sprintf("%s-%s", nodeName, tridentUUID)
+
+	if len(igroupName) > MaximumIgroupNameLength {
+		// If the new igroup name is over the igroup character limit, it means the host name is too long.
+		igroupPrefixLength := MaximumIgroupNameLength - len(tridentUUID) - 1
+		igroupName = fmt.Sprintf("%s-%s", nodeName[:igroupPrefixLength], tridentUUID)
+	}
+	return igroupName
 }
 
 // PublishLUN publishes the volume to the host specified in publishInfo from ontap-san or
@@ -545,17 +557,17 @@ func PublishLUN(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig, ips []string,
 	publishInfo *utils.VolumePublishInfo, lunPath, igroupName, iSCSINodeName string,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":        "PublishLUN",
-			"Type":          "ontap_common",
-			"lunPath":       lunPath,
-			"iSCSINodeName": iSCSINodeName,
-			"publishInfo":   publishInfo,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> PublishLUN")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< PublishLUN")
+	fields := LogFields{
+		"Method":        "PublishLUN",
+		"Type":          "ontap_common",
+		"lunPath":       lunPath,
+		"igroup":        igroupName,
+		"iSCSINodeName": iSCSINodeName,
+		"publishInfo":   publishInfo,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PublishLUN")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PublishLUN")
 
 	var iqn string
 	var err error
@@ -582,22 +594,17 @@ func PublishLUN(
 
 	// Get the fstype
 	fstype := drivers.DefaultFileSystemType
-	lunComment, parse, err := clientAPI.LunGetComment(ctx, lunPath)
-	if err != nil || lunComment == "" {
-		Logc(ctx).WithFields(log.Fields{
+	lunFSType, err := clientAPI.LunGetFSType(ctx, lunPath)
+	if err != nil || lunFSType == "" {
+		if err != nil {
+			Logc(ctx).Warnf("failed to get fstype for LUN: %v", err)
+		}
+		Logc(ctx).WithFields(LogFields{
 			"LUN":    lunPath,
 			"fstype": fstype,
 		}).Warn("LUN attribute fstype not found, using default.")
-		parse = false
-	}
-	if parse {
-		lunAttrs, err := clientAPI.ParseLunComment(ctx, lunComment)
-		if err == nil && lunAttrs != nil {
-			fstype = lunAttrs["fstype"]
-		}
-		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
-	} else if lunComment != "" {
-		fstype = lunComment
+	} else {
+		fstype = lunFSType
 	}
 
 	if config.DriverContext == tridentconfig.ContextCSI {
@@ -653,7 +660,11 @@ func PublishLUN(
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
 	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
-	publishInfo.IscsiIgroup = igroupName
+
+	if igroupName != "" {
+		addUniqueIscsiIGroupName(publishInfo, igroupName)
+	}
+
 	publishInfo.FilesystemType = fstype
 	publishInfo.UseCHAP = config.UseCHAP
 
@@ -669,11 +680,40 @@ func PublishLUN(
 	return nil
 }
 
+// addUniqueIscsiIGroupName added iscsiIgroup name in the IscsiIgroup name string if it is not present.
+func addUniqueIscsiIGroupName(publishInfo *utils.VolumePublishInfo, igroupName string) {
+	if publishInfo.IscsiIgroup == "" {
+		publishInfo.IscsiIgroup = igroupName
+	} else {
+		// Validate the iscsiGroupName present in the volume publish info. If not present, add in a string.
+		if !strings.Contains(publishInfo.IscsiIgroup, igroupName) {
+			publishInfo.IscsiIgroup += "," + igroupName
+		}
+	}
+}
+
+// removeIgroupFromIscsiIgroupList removes iscsiIgroup name in the IscsiIgroup list
+func removeIgroupFromIscsiIgroupList(iscsiIgroupList, igroup string) string {
+	if iscsiIgroupList != "" {
+		newIgroupList := make([]string, 0)
+		igroups := strings.Split(iscsiIgroupList, ",")
+
+		for _, value := range igroups {
+			if value != igroup {
+				newIgroupList = append(newIgroupList, value)
+			}
+		}
+		return strings.Join(newIgroupList, ",")
+	}
+
+	return iscsiIgroupList
+}
+
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
 func getISCSIDataLIFsForReportingNodes(
 	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath, igroupName string, unmanagedImport bool,
 ) ([]string, error) {
-	fields := log.Fields{
+	fields := LogFields{
 		"ips":     ips,
 		"lunPath": lunPath,
 		"igroup":  igroupName,
@@ -708,25 +748,16 @@ func getISCSIDataLIFsForReportingNodes(
 	return reportedDataLIFs, nil
 }
 
-// ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings
-func ValidateBidrectionalChapCredentials(
+// ValidateBidirectionalChapCredentials validates the bidirectional CHAP settings
+func ValidateBidirectionalChapCredentials(
 	defaultAuth api.IscsiInitiatorAuth,
 	config *drivers.OntapStorageDriverConfig,
 ) (*ChapCredentials, error) {
-	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(defaultAuth)
-	if err != nil {
-		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeNone := IsDefaultAuthTypeNone(defaultAuth)
 
-	isDefaultAuthTypeCHAP, err := IsDefaultAuthTypeCHAP(defaultAuth)
-	if err != nil {
-		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeCHAP := IsDefaultAuthTypeCHAP(defaultAuth)
 
-	isDefaultAuthTypeDeny, err := IsDefaultAuthTypeDeny(defaultAuth)
-	if err != nil {
-		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeDeny := IsDefaultAuthTypeDeny(defaultAuth)
 
 	// make sure it's one of the 3 types we understand
 	if !isDefaultAuthTypeNone && !isDefaultAuthTypeCHAP && !isDefaultAuthTypeDeny {
@@ -781,23 +812,23 @@ func ValidateBidrectionalChapCredentials(
 // isDefaultAuthTypeOfType returns true if the default initiator's auth-type field is set to the provided authType value
 func isDefaultAuthTypeOfType(
 	response api.IscsiInitiatorAuth, authType string,
-) (bool, error) {
+) bool {
 	// case insensitive compare
-	return strings.EqualFold(response.AuthType, authType), nil
+	return strings.EqualFold(response.AuthType, authType)
 }
 
 // IsDefaultAuthTypeNone returns true if the default initiator's auth-type field is set to the value "none"
-func IsDefaultAuthTypeNone(response api.IscsiInitiatorAuth) (bool, error) {
+func IsDefaultAuthTypeNone(response api.IscsiInitiatorAuth) bool {
 	return isDefaultAuthTypeOfType(response, "none")
 }
 
 // IsDefaultAuthTypeCHAP returns true if the default initiator's auth-type field is set to the value "CHAP"
-func IsDefaultAuthTypeCHAP(response api.IscsiInitiatorAuth) (bool, error) {
+func IsDefaultAuthTypeCHAP(response api.IscsiInitiatorAuth) bool {
 	return isDefaultAuthTypeOfType(response, "CHAP")
 }
 
 // IsDefaultAuthTypeDeny returns true if the default initiator's auth-type field is set to the value "deny"
-func IsDefaultAuthTypeDeny(response api.IscsiInitiatorAuth) (bool, error) {
+func IsDefaultAuthTypeDeny(response api.IscsiInitiatorAuth) bool {
 	return isDefaultAuthTypeOfType(response, "deny")
 }
 
@@ -806,29 +837,29 @@ func InitializeSANDriver(
 	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "InitializeSANDriver", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> InitializeSANDriver")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeSANDriver")
-	}
-
-	if config.IgroupName == "" {
-		config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
-	}
+	fields := LogFields{"Method": "InitializeSANDriver", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeSANDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeSANDriver")
 
 	// Defer validation to the driver's validate method
 	if err := validate(ctx); err != nil {
 		return err
 	}
 
-	// Create igroup
+	// TODO: Only consider a backend or default igroup at this time for non-CSI environments.
+	//  It is not trivial to remove this as periodic backend reconciliation will fail without it.
+	if config.IgroupName == "" {
+		config.IgroupName = getDefaultIgroupName(driverContext, backendUUID)
+	}
 	err := ensureIGroupExists(ctx, clientAPI, config.IgroupName)
 	if err != nil {
 		return err
 	}
 
 	getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth(ctx)
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"getDefaultAuthResponse": getDefaultAuthResponse,
 		"err":                    err,
 	}).Debug("IscsiInitiatorGetDefaultAuth result")
@@ -837,22 +868,19 @@ func InitializeSANDriver(
 		return fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
 
-	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
-	if err != nil {
-		return fmt.Errorf("error checking default initiator's auth type: %v", err)
-	}
+	isDefaultAuthTypeNone := IsDefaultAuthTypeNone(getDefaultAuthResponse)
 
 	if config.UseCHAP {
 
 		authType := "CHAP"
-		chapCredentials, err := ValidateBidrectionalChapCredentials(getDefaultAuthResponse, config)
+		chapCredentials, err := ValidateBidirectionalChapCredentials(getDefaultAuthResponse, config)
 		if err != nil {
 			return fmt.Errorf("error with CHAP credentials: %v", err)
 		}
 		Logc(ctx).Debug("Using CHAP credentials")
 
 		if isDefaultAuthTypeNone {
-			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, fmt.Sprintf("svm=%s", config.SVM))
+			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, "*")
 			if lunsResponseErr != nil {
 				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
 			}
@@ -905,11 +933,11 @@ func ensureIGroupExists(ctx context.Context, clientAPI api.OntapAPI, igroupName 
 func InitializeOntapDriver(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig,
 ) (api.OntapAPI, error) {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "InitializeOntapDriver", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapDriver")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapDriver")
-	}
+	fields := LogFields{"Method": "InitializeOntapDriver", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapDriver")
 
 	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
 	mgmtLIF := ""
@@ -928,7 +956,7 @@ func InitializeOntapDriver(
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"hostname":  mgmtLIF,
 		"addresses": addressesFromHostname,
 	}).Debug("Addresses found from ManagementLIF lookup.")
@@ -949,7 +977,7 @@ func InitializeOntapDriver(
 	if err != nil {
 		Logc(ctx).Warnf("Could not determine controller serial numbers. %v", err)
 	} else {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"serialNumbers": strings.Join(config.SerialNumbers, ","),
 		}).Info("Controller serial numbers.")
 	}
@@ -965,14 +993,14 @@ func InitializeOntapAPI(
 	var ontapAPI api.OntapAPI
 	var err error
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "InitializeOntapAPI", "Type": "ontap_common",
-			"useREST": config.UseREST,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapAPI")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapAPI")
+	fields := LogFields{
+		"Method": "InitializeOntapAPI", "Type": "ontap_common",
+		"useREST": config.UseREST,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapAPI")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapAPI")
 
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	numRecords := api.DefaultZapiRecords
@@ -998,44 +1026,32 @@ func InitializeOntapAPI(
 func ValidateSANDriver(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> ValidateSANDriver")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateSANDriver")
-	}
+	fields := LogFields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ValidateSANDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ValidateSANDriver")
 
-	// If the user sets the LIF to use in the config, disable multipathing and use just the one IP address
+	// Specifying single DataLIF is no longer supported for iSCSI attachments. Please note multipathing should
+	// be enabled by default.
 	if config.DataLIF != "" {
-		cleanDataLIF := sanitizeDataLIF(config.DataLIF)
-
-		// Make sure it's actually a valid address
-		if ip := net.ParseIP(cleanDataLIF); nil == ip {
-			return fmt.Errorf("data LIF is not a valid IP: %s", cleanDataLIF)
-		}
-		// Make sure the IP matches one of the LIFs
-		found := false
-		for _, ip := range ips {
-			if cleanDataLIF == ip {
-				found = true
-				break
-			}
-		}
-		if found {
-			Logc(ctx).WithField("ip", cleanDataLIF).Debug("Found matching Data LIF.")
-		} else {
-			Logc(ctx).WithField("ip", cleanDataLIF).Debug("Could not find matching Data LIF.")
-			return fmt.Errorf("could not find Data LIF for %s", cleanDataLIF)
-		}
-
-		// Replace the IPs with a singleton list
-		ips = []string{cleanDataLIF}
+		Logc(ctx).WithField("dataLIF", config.DataLIF).
+			Warning("Specifying data LIF is no longer supported for SAN backends.")
 	}
 
-	if config.DriverContext == tridentconfig.ContextDocker {
+	switch config.DriverContext {
+	case tridentconfig.ContextDocker:
 		// Make sure this host is logged into the ONTAP iSCSI target
 		err := utils.EnsureISCSISessionsWithPortalDiscovery(ctx, ips)
 		if err != nil {
 			return fmt.Errorf("error establishing iSCSI session: %v", err)
+		}
+	case tridentconfig.ContextCSI:
+		// ontap-san-* drivers should all support publish enforcement with CSI; if the igroup is set
+		// in the backend config, log a warning because it will not be used.
+		if config.IgroupName != "" {
+			Logc(ctx).WithField("igroup", config.IgroupName).
+				Warning("Specifying an igroup is no longer supported for SAN backends in a CSI environment.")
 		}
 	}
 
@@ -1046,21 +1062,31 @@ func ValidateSANDriver(
 func ValidateNASDriver(
 	ctx context.Context, api api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> ValidateNASDriver")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateNASDriver")
-	}
+	var dataLIFs []string
+	var protocol string
+
+	fields := LogFields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ValidateNASDriver")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ValidateNASDriver")
 
 	isLuks, err := strconv.ParseBool(config.LUKSEncryption)
 	if err != nil {
-		return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", config.LUKSEncryption)
+		return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
+			config.LUKSEncryption)
 	}
 	if isLuks {
 		return fmt.Errorf("ONTAP NAS drivers do not support LUKS encrypted volumes")
 	}
 
-	dataLIFs, err := api.NetInterfaceGetDataLIFs(ctx, "nfs")
+	if config.NASType == sa.SMB {
+		protocol = "cifs"
+	} else {
+		protocol = "nfs"
+	}
+
+	dataLIFs, err = api.NetInterfaceGetDataLIFs(ctx, protocol)
 	if err != nil {
 		return err
 	}
@@ -1071,7 +1097,7 @@ func ValidateNASDriver(
 		Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 	}
 
-	// If they didn't set a LIF to use in the config, we'll set it to the first nfs LIF we happen to find
+	// If they didn't set a LIF to use in the config, we'll set it to the first NFS/SMB LIF we happen to find
 	if config.DataLIF == "" {
 		if utils.IPv6Check(dataLIFs[0]) {
 			config.DataLIF = "[" + dataLIFs[0] + "]"
@@ -1119,7 +1145,8 @@ const (
 	DefaultUnixPermissions           = "---rwxrwxrwx"
 	DefaultSnapshotDir               = "false"
 	DefaultExportPolicy              = "default"
-	DefaultSecurityStyle             = "unix"
+	DefaultSecurityStyleNFS          = "unix"
+	DefaultSecurityStyleSMB          = "ntfs"
 	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
 	DefaultNfsMountOptionsKubernetes = ""
 	DefaultSplitOnClone              = "false"
@@ -1132,11 +1159,11 @@ const (
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "PopulateConfigurationDefaults", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> PopulateConfigurationDefaults")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< PopulateConfigurationDefaults")
-	}
+	fields := LogFields{"Method": "PopulateConfigurationDefaults", "Type": "ontap_common"}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> PopulateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< PopulateConfigurationDefaults")
 
 	// Ensure the default volume size is valid, using a "default default" of 1G if not set
 	if config.Size == "" {
@@ -1173,10 +1200,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
-	if config.UnixPermissions == "" {
-		config.UnixPermissions = DefaultUnixPermissions
-	}
-
 	if config.SnapshotDir == "" {
 		config.SnapshotDir = DefaultSnapshotDir
 	}
@@ -1189,10 +1212,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.ExportPolicy = "<automatic>"
 	} else if config.ExportPolicy == "" {
 		config.ExportPolicy = DefaultExportPolicy
-	}
-
-	if config.SecurityStyle == "" {
-		config.SecurityStyle = DefaultSecurityStyle
 	}
 
 	if config.NfsMountOptions == "" {
@@ -1245,7 +1264,35 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.FlexGroupAggregateList = []string{}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	// If NASType is not provided in the backend config, default to NFS
+	if config.NASType == "" {
+		config.NASType = sa.NFS
+	}
+
+	switch config.NASType {
+	case sa.SMB:
+		if config.SecurityStyle == "" {
+			config.SecurityStyle = DefaultSecurityStyleSMB
+		}
+		// SMB supports "mixed" and "ntfs" security styles.
+		// ONTAP supports unix permissions only with security style "mixed" on SMB volume.
+		if config.SecurityStyle == "mixed" {
+			if config.UnixPermissions == "" {
+				config.UnixPermissions = DefaultUnixPermissions
+			}
+		} else {
+			config.UnixPermissions = ""
+		}
+	case sa.NFS:
+		if config.UnixPermissions == "" {
+			config.UnixPermissions = DefaultUnixPermissions
+		}
+		if config.SecurityStyle == "" {
+			config.SecurityStyle = DefaultSecurityStyleNFS
+		}
+	}
+
+	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":          *config.StoragePrefix,
 		"SpaceAllocation":        config.SpaceAllocation,
 		"SpaceReserve":           config.SpaceReserve,
@@ -1299,7 +1346,7 @@ func checkAggregateLimits(
 	limitAggregateUsage := config.LimitAggregateUsage
 	limitAggregateUsage = strings.Replace(limitAggregateUsage, "%", "", -1) // strip off any %
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"aggregate":           aggregate,
 		"requestedSize":       requestedSize,
 		"limitAggregateUsage": limitAggregateUsage,
@@ -1339,7 +1386,7 @@ func checkAggregateLimits(
 			if spaceReserveIsThick {
 				// we SHOULD include the requestedSize in our computation
 				percentUsedWithRequest := ((usedIncludingSnapshotReserve + requestedSize) / aggregateSize) * 100.0
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"percentUsedWithRequest": percentUsedWithRequest,
 					"percentLimit":           percentLimit,
 					"spaceReserve":           spaceReserve,
@@ -1353,7 +1400,7 @@ func checkAggregateLimits(
 			} else {
 				// we should NOT include the requestedSize in our computation
 				percentUsedWithoutRequest := ((usedIncludingSnapshotReserve) / aggregateSize) * 100.0
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"percentUsedWithoutRequest": percentUsedWithoutRequest,
 					"percentLimit":              percentLimit,
 					"spaceReserve":              spaceReserve,
@@ -1437,22 +1484,22 @@ func RestoreSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "ontap_common",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	if err := client.SnapshotRestoreVolume(ctx, internalSnapName, internalVolName); err != nil {
 		return err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
 	}).Debug("Restored snapshot.")
@@ -1466,16 +1513,16 @@ func SplitVolumeFromBusySnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "SplitVolumeFromBusySnapshot",
-			"Type":         "ontap_common",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> SplitVolumeFromBusySnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< SplitVolumeFromBusySnapshot")
+	fields := LogFields{
+		"Method":       "SplitVolumeFromBusySnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SplitVolumeFromBusySnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SplitVolumeFromBusySnapshot")
 
 	childVolumes, err := client.VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName)
@@ -1486,7 +1533,7 @@ func SplitVolumeFromBusySnapshot(
 	}
 
 	if err := cloneSplitStart(ctx, childVolumes[0]); err != nil {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName":     snapConfig.InternalName,
 			"parentVolumeName": snapConfig.VolumeInternalName,
 			"cloneVolumeName":  childVolumes[0],
@@ -1495,7 +1542,7 @@ func SplitVolumeFromBusySnapshot(
 		return fmt.Errorf("error splitting clone: %v", err)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"snapshotName":     snapConfig.InternalName,
 		"parentVolumeName": snapConfig.VolumeInternalName,
 		"cloneVolumeName":  childVolumes[0],
@@ -1584,7 +1631,7 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"svm":   client.SVMName(),
 		"pools": vserverAggrs,
 	}).Debug("Read storage pools assigned to SVM.")
@@ -1596,7 +1643,7 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 				continue
 			}
 
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"driverName": driverName,
 				"aggregate":  config.Aggregate,
 			}).Debug("Provisioning will be restricted to the aggregate set in the backend config.")
@@ -1634,7 +1681,7 @@ func getVserverAggrAttributes(
 				continue
 			}
 
-			fields := log.Fields{"aggregate": aggrName, "mediaType": aggrType}
+			fields := LogFields{"aggregate": aggrName, "mediaType": aggrType}
 
 			// Get the storage attributes (i.e. MediaType) corresponding to the aggregate type
 			storageAttrs, ok := ontapPerformanceClasses[ontapPerformanceClass(aggrType)]
@@ -1686,7 +1733,7 @@ func InitializeStoragePoolsCommon(
 	aggrErr := getVserverAggrAttributes(ctx, d, &physicalStoragePoolAttributes)
 
 	if zerr, ok := aggrErr.(azgo.ZapiError); ok && zerr.IsScopeError() {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"username": config.Username,
 		}).Warn("User has insufficient privileges to obtain aggregate info. " +
 			"Storage classes with physical attributes such as 'media' will not match pools on this backend.")
@@ -1728,6 +1775,7 @@ func InitializeStoragePoolsCommon(
 		}
 
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
+		pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
 
 		pool.InternalAttributes()[Size] = config.Size
 		pool.InternalAttributes()[Region] = config.Region
@@ -1748,7 +1796,7 @@ func InitializeStoragePoolsCommon(
 
 		pool.SetSupportedTopologies(config.SupportedTopologies)
 
-		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
+		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
 			pool.InternalAttributes()[FileSystemType] = config.FileSystemType
 		}
@@ -1863,7 +1911,13 @@ func InitializeStoragePoolsCommon(
 			pool.Attributes()[attrName] = offer
 		}
 
+		nasType := config.NASType
+		if vpool.NASType != "" {
+			nasType = vpool.NASType
+		}
+
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
+		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 
 		if region != "" {
 			pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
@@ -1902,7 +1956,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
 		pool.SetSupportedTopologies(supportedTopologies)
 
-		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
+		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
 			pool.InternalAttributes()[SpaceAllocation] = spaceAllocation
 			pool.InternalAttributes()[FileSystemType] = fileSystemType
 		}
@@ -1918,6 +1972,8 @@ func InitializeStoragePoolsCommon(
 func ValidateStoragePools(
 	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
 ) error {
+	config := d.GetConfig()
+
 	// Validate pool-level attributes
 	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))
 
@@ -1968,11 +2024,24 @@ func ValidateStoragePools(
 		}
 
 		// Validate SecurityStyles
-		switch pool.InternalAttributes()[SecurityStyle] {
-		case "unix", "mixed":
-			break
-		default:
-			return fmt.Errorf("invalid securityStyle %s in pool %s", pool.InternalAttributes()[SecurityStyle], poolName)
+		// SMB supports "mixed" and "ntfs" security styles.
+		// NFS supports "mixed" and "unix" security styles.
+		if config.NASType == sa.SMB {
+			switch pool.InternalAttributes()[SecurityStyle] {
+			case "mixed", "ntfs":
+				break
+			default:
+				return fmt.Errorf("invalid securityStyle %s, for NASType %s in pool %s",
+					pool.InternalAttributes()[SecurityStyle], config.NASType, poolName)
+			}
+		} else {
+			switch pool.InternalAttributes()[SecurityStyle] {
+			case "mixed", "unix":
+				break
+			default:
+				return fmt.Errorf("invalid securityStyle %s, for NASType %s in pool %s",
+					pool.InternalAttributes()[SecurityStyle], config.NASType, poolName)
+			}
 		}
 
 		// Validate ExportPolicy
@@ -1981,8 +2050,10 @@ func ValidateStoragePools(
 		}
 
 		// Validate UnixPermissions
-		if pool.InternalAttributes()[UnixPermissions] == "" {
-			return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
+		if config.NASType == sa.NFS {
+			if pool.InternalAttributes()[UnixPermissions] == "" {
+				return fmt.Errorf("UNIX permissions cannot by empty in pool %s", poolName)
+			}
 		}
 
 		// Validate TieringPolicy
@@ -2005,7 +2076,7 @@ func ValidateStoragePools(
 				return err
 			}
 
-			if d.Name() == drivers.OntapNASQtreeStorageDriverName && pool.InternalAttributes()[AdaptiveQosPolicy] != "" {
+			if d.Name() == tridentconfig.OntapNASQtreeStorageDriverName && pool.InternalAttributes()[AdaptiveQosPolicy] != "" {
 				return fmt.Errorf("qtrees do not support adaptive QoS policies")
 			}
 		}
@@ -2036,7 +2107,7 @@ func ValidateStoragePools(
 		}
 
 		// Cloning is not supported on ONTAP FlexGroups driver
-		if d.Name() != drivers.OntapNASFlexGroupStorageDriverName {
+		if d.Name() != tridentconfig.OntapNASFlexGroupStorageDriverName {
 			// Validate splitOnClone
 			if pool.InternalAttributes()[SplitOnClone] == "" {
 				return fmt.Errorf("splitOnClone cannot by empty in pool %s", poolName)
@@ -2052,15 +2123,16 @@ func ValidateStoragePools(
 		if _, ok := pool.InternalAttributes()[LUKSEncryption]; ok {
 			isLuks, err := strconv.ParseBool(pool.InternalAttributes()[LUKSEncryption])
 			if err != nil {
-				return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", pool.InternalAttributes()[LUKSEncryption])
+				return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v",
+					pool.InternalAttributes()[LUKSEncryption])
 			}
-			if isLuks && !(d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName) {
+			if isLuks && !(d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName) {
 				return fmt.Errorf("LUKS encrypted volumes are only supported by the following drivers: %s, %s",
-					drivers.OntapSANStorageDriverName, drivers.OntapSANEconomyStorageDriverName)
+					tridentconfig.OntapSANStorageDriverName, tridentconfig.OntapSANEconomyStorageDriverName)
 			}
 		}
 
-		if d.Name() == drivers.OntapSANStorageDriverName || d.Name() == drivers.OntapSANEconomyStorageDriverName {
+		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
 
 			// Validate SpaceAllocation
 			if pool.InternalAttributes()[SpaceAllocation] == "" {
@@ -2124,7 +2196,7 @@ func getVolumeOptsCommon(
 				// p will equal "thick" here
 				opts["spaceReserve"] = "volume"
 			} else {
-				Logc(ctx).WithFields(log.Fields{
+				Logc(ctx).WithFields(LogFields{
 					"provisioner":      "ONTAP",
 					"method":           "getVolumeOptsCommon",
 					"provisioningType": provisioningTypeReq.Value(),
@@ -2132,7 +2204,7 @@ func getVolumeOptsCommon(
 					sa.ProvisioningType)
 			}
 		} else {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"provisioner":      "ONTAP",
 				"method":           "getVolumeOptsCommon",
 				"provisioningType": provisioningTypeReq.Value(),
@@ -2147,7 +2219,7 @@ func getVolumeOptsCommon(
 				opts["encryption"] = "false"
 			}
 		} else {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"provisioner": "ONTAP",
 				"method":      "getVolumeOptsCommon",
 				"encryption":  encryptionReq.Value(),
@@ -2302,7 +2374,7 @@ func calculateFlexvolEconomySizeBytes(
 		flexvolSizeBytes = uint64(usableSpaceSnapReserve)
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"flexvol":                flexvol,
 		"snapshotReserve":        volAttrs.SnapshotReserve,
 		"snapReserveDivisor":     snapReserveDivisor,
@@ -2327,7 +2399,7 @@ func calculateFlexvolSizeBytes(
 
 	flexvolSizeBytes := uint64(sizeWithSnapReserve)
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"flexvol":             flexvol,
 		"snapReserveDivisor":  snapReserveDivisor,
 		"requestedSize":       requestedSizeBytes,
@@ -2385,16 +2457,15 @@ func getVolumeSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "getVolumeSnapshot",
-			"Type":         "NASStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "getVolumeSnapshot",
+		"Type":         "NASStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
@@ -2407,7 +2478,7 @@ func getVolumeSnapshot(
 	}
 
 	for _, snap := range snapshots {
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 			"created":      snap.CreateTime,
@@ -2432,15 +2503,15 @@ func getVolumeSnapshotList(
 ) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "getVolumeSnapshotList",
-			"Type":       "NASStorageDriver",
-			"volumeName": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getVolumeSnapshotList")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getVolumeSnapshotList")
+	fields := LogFields{
+		"Method":     "getVolumeSnapshotList",
+		"Type":       "NASStorageDriver",
+		"volumeName": internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getVolumeSnapshotList")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getVolumeSnapshotList")
 
 	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
@@ -2456,7 +2527,7 @@ func getVolumeSnapshotList(
 
 	for _, snap := range snapshots {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":       snap.Name,
 			"accessTime": snap.CreateTime,
 		}).Debug("Snapshot")
@@ -2488,16 +2559,16 @@ func createFlexvolSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "ontap_common",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	// If the specified volume doesn't exist, return error
 	volExists, err := client.VolumeExists(ctx, internalVolName)
@@ -2524,7 +2595,7 @@ func createFlexvolSnapshot(
 
 	for _, snap := range snapshots {
 		if snap.Name == internalSnapName {
-			Logc(ctx).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"snapshotName": snapConfig.InternalName,
 				"volumeName":   snapConfig.VolumeInternalName,
 			}).Info("Snapshot created.")
@@ -2545,18 +2616,17 @@ func cloneFlexvol(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
 ) error {
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":   "cloneFlexvol",
-			"Type":     "ontap_common",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
-			"split":    split,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> cloneFlexvol")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< cloneFlexvol")
+	fields := LogFields{
+		"Method":   "cloneFlexvol",
+		"Type":     "ontap_common",
+		"name":     name,
+		"source":   source,
+		"snapshot": snapshot,
+		"split":    split,
 	}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cloneFlexvol")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneFlexvol")
 
 	// If the specified volume already exists, return an error
 	volExists, err := client.VolumeExists(ctx, name)
@@ -2584,7 +2654,7 @@ func cloneFlexvol(
 		return err
 	}
 
-	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
+	if config.StorageDriverName == tridentconfig.OntapNASStorageDriverName {
 		// Mount the new volume
 		if err = client.VolumeMount(ctx, name, "/"+name); err != nil {
 			return err
@@ -2610,26 +2680,110 @@ func cloneFlexvol(
 
 // LunUnmapAllIgroups removes all maps from a given LUN
 func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath string) error {
+	Logc(ctx).WithField("LUN", lunPath).Debug("Unmapping LUN from all igroups.")
+
 	igroups, err := clientAPI.LunListIgroupsMapped(ctx, lunPath)
 	if err != nil {
 		msg := "error listing igroup mappings"
 		Logc(ctx).WithError(err).Errorf(msg)
 		return fmt.Errorf(msg)
 	}
+
 	errored := false
 	for _, igroup := range igroups {
 		err = clientAPI.LunUnmap(ctx, igroup, lunPath)
 		if err != nil {
 			errored = true
-			Logc(ctx).WithError(err).WithFields(log.Fields{
+			Logc(ctx).WithFields(LogFields{
 				"LUN":    lunPath,
 				"igroup": igroup,
-			}).Warn("error unmapping LUN from igroup")
+			}).WithError(err).Error("Error unmapping LUN from igroup.")
 		}
 	}
 	if errored {
 		return fmt.Errorf("error unmapping one or more LUN mappings")
 	}
+	return nil
+}
+
+// LunUnmapIgroup removes a LUN from an igroup.
+func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath string) error {
+	Logc(ctx).WithFields(LogFields{
+		"LUN":    lunPath,
+		"igroup": igroup,
+	}).Debugf("Unmapping LUN from igroup.")
+
+	lunID, err := clientAPI.LunMapInfo(ctx, igroup, lunPath)
+	if err != nil {
+		msg := fmt.Sprintf("error reading LUN maps")
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	if lunID >= 0 {
+		err := clientAPI.LunUnmap(ctx, igroup, lunPath)
+		if err != nil {
+			msg := "error unmapping LUN"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	return nil
+}
+
+// DestroyUnmappedIgroup removes an igroup iff no LUNs are mapped to it.
+func DestroyUnmappedIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup string) error {
+	luns, err := clientAPI.IgroupListLUNsMapped(ctx, igroup)
+	if err != nil {
+		msg := fmt.Sprintf("error listing LUNs mapped to igroup %s", igroup)
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	if len(luns) == 0 {
+		Logc(ctx).WithField(
+			"igroup", igroup,
+		).Debugf("No LUNs mapped to this igroup; deleting igroup.")
+		if err := clientAPI.IgroupDestroy(ctx, igroup); err != nil {
+			msg := fmt.Sprintf("error deleting igroup %s", igroup)
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	} else {
+		Logc(ctx).WithField(
+			"igroup", igroup,
+		).Debugf("Found LUNs mapped to this igroup; igroup deletion is not safe.")
+	}
+
+	return nil
+}
+
+// EnableSANPublishEnforcement unmaps a LUN from all igroups to allow per-node igroup mappings during publish volume.
+func EnableSANPublishEnforcement(
+	ctx context.Context, clientAPI api.OntapAPI, volumeConfig *storage.VolumeConfig, lunPath string,
+) error {
+	fields := LogFields{
+		"volume": volumeConfig.Name,
+		"LUN":    volumeConfig.InternalName,
+	}
+	Logc(ctx).WithFields(fields).Debug("Unmapping igroups for publish enforcement.")
+
+	// Do not enable publish enforcement on unmanaged imports.
+	if volumeConfig.ImportNotManaged {
+		Logc(ctx).WithFields(fields).Debug("Unable to remove igroup mappings; imported LUN is not managed.")
+		return nil
+	}
+	err := LunUnmapAllIgroups(ctx, clientAPI, lunPath)
+	if err != nil {
+		msg := "error removing all igroup mappings from LUN"
+		Logc(ctx).WithFields(fields).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	volumeConfig.AccessInfo.IscsiLunNumber = -1
+	volumeConfig.AccessInfo.PublishEnforcement = true
+	volumeConfig.AccessInfo.IscsiIgroup = ""
 	return nil
 }
 
@@ -2660,7 +2814,7 @@ func ValidateDataLIF(ctx context.Context, dataLIF string, dataLIFs []string) ([]
 		return nil, err
 	}
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"hostname":  dataLIF,
 		"addresses": addressesFromHostname,
 	}).Debug("Addresses found from hostname lookup.")
@@ -2697,13 +2851,77 @@ func sanitizeDataLIF(dataLIF string) string {
 // GetEncryptionValue: Returns "true"/"false" if encryption is explicitely mentioned in the
 // backend or storage class. Otherwise, it returns "nil" which enables NAE/NVE on the volume
 // depending on the aggregate properties.
-func GetEncryptionValue(encryption string) (*bool, error) {
+func GetEncryptionValue(encryption string) (*bool, string, error) {
 	if encryption != "" {
 		enable, err := strconv.ParseBool(encryption)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
-		return &enable, err
+		return &enable, encryption, err
 	}
-	return nil, nil
+	return nil, "", nil
+}
+
+// ConstructOntapNASSMBVolumePath returns windows compatible volume path for Ontap NAS.
+// Function accepts parameters in following way:
+// 1.smbShare : This takes the value given in backend config, without path prefix.
+// 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
+// Example, ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
+func ConstructOntapNASSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASSMBVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASSMBVolumePath")
+
+	var completeVolumePath string
+	if smbShare != "" {
+		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
+	} else {
+		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
+		completeVolumePath = volumeName
+	}
+
+	// Replace unix styled path separator, if exists
+	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+}
+
+// ConstructOntapNASFlexGroupSMBVolumePath returns windows compatible volume path for Ontap NAS FlexGroup
+// Function accepts parameters in following way:
+// 1.smbShare : This takes the value given in backend config, without path prefix.
+// 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
+// Example, ConstructOntapNASFlexGroupSMBVolumePath(ctx, "test_share", "/vol")
+func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASFlexGroupSMBVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASFlexGroupSMBVolumePath")
+
+	var completeVolumePath string
+	if smbShare != "" {
+		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
+	} else {
+		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexGroup volume name.
+		completeVolumePath = volumeName
+	}
+
+	// Replace unix styled path separator, if exists
+	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+}
+
+// ConstructOntapNASQTreeSMBVolumePath returns windows compatible volume path for Ontap NAS QTree
+// Function accepts parameters in following way:
+// 1.smbShare : This takes the value given in backend config, without path prefix.
+// 2.flexVol : This takes the value of the parent volume, without path prefix.
+// 3.volumeName : This takes the value of volume's internal name,  without path prefix.
+// Example, ConstructOntapNASQTreeSMBVolumePath(ctx, "test_share", "flex-vol", "vol")
+func ConstructOntapNASQTreeSMBVolumePath(ctx context.Context, smbShare, flexVol, volumeName string) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeSMBVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeSMBVolumePath")
+
+	var completeVolumePath string
+	if smbShare != "" {
+		completeVolumePath = utils.WindowsPathSeparator + smbShare + utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	} else {
+		// If the user does not specify an SMB Share, Trident creates it with the same name as the parent flexVol volume name.
+		completeVolumePath = utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	}
+
+	// Replace unix styled path separator, if exists
+	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }

@@ -62,359 +62,395 @@ S3ServiceCollectionGetParams contains all the parameters to send to the API endp
 */
 type S3ServiceCollectionGetParams struct {
 
+	/* BucketsAllowed.
+
+	   Filter by buckets.allowed
+	*/
+	BucketsAllowed *bool
+
 	/* BucketsAuditEventSelectorAccess.
 
 	   Filter by buckets.audit_event_selector.access
 	*/
-	BucketsAuditEventSelectorAccessQueryParameter *string
+	BucketsAuditEventSelectorAccess *string
 
 	/* BucketsAuditEventSelectorPermission.
 
 	   Filter by buckets.audit_event_selector.permission
 	*/
-	BucketsAuditEventSelectorPermissionQueryParameter *string
+	BucketsAuditEventSelectorPermission *string
 
 	/* BucketsComment.
 
 	   Filter by buckets.comment
 	*/
-	BucketsCommentQueryParameter *string
+	BucketsComment *string
 
 	/* BucketsEncryptionEnabled.
 
 	   Filter by buckets.encryption.enabled
 	*/
-	BucketsEncryptionEnabledQueryParameter *bool
+	BucketsEncryptionEnabled *bool
 
 	/* BucketsLogicalUsedSize.
 
 	   Filter by buckets.logical_used_size
 	*/
-	BucketsLogicalUsedSizeQueryParameter *int64
+	BucketsLogicalUsedSize *int64
 
 	/* BucketsName.
 
 	   Filter by buckets.name
 	*/
-	BucketsNameQueryParameter *string
+	BucketsName *string
+
+	/* BucketsNasPath.
+
+	   Filter by buckets.nas_path
+	*/
+	BucketsNasPath *string
 
 	/* BucketsPolicyStatementsActions.
 
 	   Filter by buckets.policy.statements.actions
 	*/
-	BucketsPolicyStatementsActionsQueryParameter *string
+	BucketsPolicyStatementsActions *string
 
 	/* BucketsPolicyStatementsConditionsDelimiters.
 
 	   Filter by buckets.policy.statements.conditions.delimiters
 	*/
-	BucketsPolicyStatementsConditionsDelimitersQueryParameter *string
+	BucketsPolicyStatementsConditionsDelimiters *string
 
 	/* BucketsPolicyStatementsConditionsMaxKeys.
 
 	   Filter by buckets.policy.statements.conditions.max_keys
 	*/
-	BucketsPolicyStatementsConditionsMaxKeysQueryParameter *int64
+	BucketsPolicyStatementsConditionsMaxKeys *int64
 
 	/* BucketsPolicyStatementsConditionsOperator.
 
 	   Filter by buckets.policy.statements.conditions.operator
 	*/
-	BucketsPolicyStatementsConditionsOperatorQueryParameter *string
+	BucketsPolicyStatementsConditionsOperator *string
 
 	/* BucketsPolicyStatementsConditionsPrefixes.
 
 	   Filter by buckets.policy.statements.conditions.prefixes
 	*/
-	BucketsPolicyStatementsConditionsPrefixesQueryParameter *string
+	BucketsPolicyStatementsConditionsPrefixes *string
 
 	/* BucketsPolicyStatementsConditionsSourceIps.
 
 	   Filter by buckets.policy.statements.conditions.source_ips
 	*/
-	BucketsPolicyStatementsConditionsSourceIPsQueryParameter *string
+	BucketsPolicyStatementsConditionsSourceIps *string
 
 	/* BucketsPolicyStatementsConditionsUsernames.
 
 	   Filter by buckets.policy.statements.conditions.usernames
 	*/
-	BucketsPolicyStatementsConditionsUsernamesQueryParameter *string
+	BucketsPolicyStatementsConditionsUsernames *string
 
 	/* BucketsPolicyStatementsEffect.
 
 	   Filter by buckets.policy.statements.effect
 	*/
-	BucketsPolicyStatementsEffectQueryParameter *string
+	BucketsPolicyStatementsEffect *string
 
 	/* BucketsPolicyStatementsPrincipals.
 
 	   Filter by buckets.policy.statements.principals
 	*/
-	BucketsPolicyStatementsPrincipalsQueryParameter *string
+	BucketsPolicyStatementsPrincipals *string
 
 	/* BucketsPolicyStatementsResources.
 
 	   Filter by buckets.policy.statements.resources
 	*/
-	BucketsPolicyStatementsResourcesQueryParameter *string
+	BucketsPolicyStatementsResources *string
 
 	/* BucketsPolicyStatementsSid.
 
 	   Filter by buckets.policy.statements.sid
 	*/
-	BucketsPolicyStatementsSIDQueryParameter *string
+	BucketsPolicyStatementsSid *string
 
 	/* BucketsProtectionStatusDestinationIsCloud.
 
 	   Filter by buckets.protection_status.destination.is_cloud
 	*/
-	BucketsProtectionStatusDestinationIsCloudQueryParameter *bool
+	BucketsProtectionStatusDestinationIsCloud *bool
+
+	/* BucketsProtectionStatusDestinationIsExternalCloud.
+
+	   Filter by buckets.protection_status.destination.is_external_cloud
+	*/
+	BucketsProtectionStatusDestinationIsExternalCloud *bool
 
 	/* BucketsProtectionStatusDestinationIsOntap.
 
 	   Filter by buckets.protection_status.destination.is_ontap
 	*/
-	BucketsProtectionStatusDestinationIsOntapQueryParameter *bool
+	BucketsProtectionStatusDestinationIsOntap *bool
 
 	/* BucketsProtectionStatusIsProtected.
 
 	   Filter by buckets.protection_status.is_protected
 	*/
-	BucketsProtectionStatusIsProtectedQueryParameter *bool
+	BucketsProtectionStatusIsProtected *bool
 
 	/* BucketsQosPolicyMaxThroughputIops.
 
 	   Filter by buckets.qos_policy.max_throughput_iops
 	*/
-	BucketsQosPolicyMaxThroughputIopsQueryParameter *int64
+	BucketsQosPolicyMaxThroughputIops *int64
 
 	/* BucketsQosPolicyMaxThroughputMbps.
 
 	   Filter by buckets.qos_policy.max_throughput_mbps
 	*/
-	BucketsQosPolicyMaxThroughputMbpsQueryParameter *int64
+	BucketsQosPolicyMaxThroughputMbps *int64
 
 	/* BucketsQosPolicyMinThroughputIops.
 
 	   Filter by buckets.qos_policy.min_throughput_iops
 	*/
-	BucketsQosPolicyMinThroughputIopsQueryParameter *int64
+	BucketsQosPolicyMinThroughputIops *int64
 
 	/* BucketsQosPolicyMinThroughputMbps.
 
 	   Filter by buckets.qos_policy.min_throughput_mbps
 	*/
-	BucketsQosPolicyMinThroughputMbpsQueryParameter *int64
+	BucketsQosPolicyMinThroughputMbps *int64
 
 	/* BucketsQosPolicyName.
 
 	   Filter by buckets.qos_policy.name
 	*/
-	BucketsQosPolicyNameQueryParameter *string
+	BucketsQosPolicyName *string
 
 	/* BucketsQosPolicyUUID.
 
 	   Filter by buckets.qos_policy.uuid
 	*/
-	BucketsQosPolicyUUIDQueryParameter *string
+	BucketsQosPolicyUUID *string
 
 	/* BucketsRole.
 
 	   Filter by buckets.role
 	*/
-	BucketsRoleQueryParameter *string
+	BucketsRole *string
 
 	/* BucketsSize.
 
 	   Filter by buckets.size
 	*/
-	BucketsSizeQueryParameter *int64
+	BucketsSize *int64
 
 	/* BucketsSvmName.
 
 	   Filter by buckets.svm.name
 	*/
-	BucketsSVMNameQueryParameter *string
+	BucketsSvmName *string
 
 	/* BucketsSvmUUID.
 
 	   Filter by buckets.svm.uuid
 	*/
-	BucketsSVMUUIDQueryParameter *string
+	BucketsSvmUUID *string
+
+	/* BucketsType.
+
+	   Filter by buckets.type
+	*/
+	BucketsType *string
 
 	/* BucketsUUID.
 
 	   Filter by buckets.uuid
 	*/
-	BucketsUUIDQueryParameter *string
+	BucketsUUID *string
 
 	/* BucketsVersioningState.
 
 	   Filter by buckets.versioning_state
 	*/
-	BucketsVersioningStateQueryParameter *string
+	BucketsVersioningState *string
 
 	/* BucketsVolumeName.
 
 	   Filter by buckets.volume.name
 	*/
-	BucketsVolumeNameQueryParameter *string
+	BucketsVolumeName *string
 
 	/* BucketsVolumeUUID.
 
 	   Filter by buckets.volume.uuid
 	*/
-	BucketsVolumeUUIDQueryParameter *string
+	BucketsVolumeUUID *string
 
 	/* CertificateName.
 
 	   Filter by certificate.name
 	*/
-	CertificateNameQueryParameter *string
+	CertificateName *string
 
 	/* CertificateUUID.
 
 	   Filter by certificate.uuid
 	*/
-	CertificateUUIDQueryParameter *string
+	CertificateUUID *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
+
+	/* DefaultUnixUser.
+
+	   Filter by default_unix_user
+	*/
+	DefaultUnixUser *string
+
+	/* DefaultWinUser.
+
+	   Filter by default_win_user
+	*/
+	DefaultWinUser *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IsHTTPEnabled.
 
 	   Filter by is_http_enabled
 	*/
-	IsHTTPEnabledQueryParameter *bool
+	IsHTTPEnabled *bool
 
 	/* IsHTTPSEnabled.
 
 	   Filter by is_https_enabled
 	*/
-	IsHTTPsEnabledQueryParameter *bool
+	IsHTTPSEnabled *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricIopsOther.
 
 	   Filter by metric.iops.other
 	*/
-	MetricIopsOtherQueryParameter *int64
+	MetricIopsOther *int64
 
 	/* MetricIopsRead.
 
 	   Filter by metric.iops.read
 	*/
-	MetricIopsReadQueryParameter *int64
+	MetricIopsRead *int64
 
 	/* MetricIopsTotal.
 
 	   Filter by metric.iops.total
 	*/
-	MetricIopsTotalQueryParameter *int64
+	MetricIopsTotal *int64
 
 	/* MetricIopsWrite.
 
 	   Filter by metric.iops.write
 	*/
-	MetricIopsWriteQueryParameter *int64
+	MetricIopsWrite *int64
 
 	/* MetricLatencyOther.
 
 	   Filter by metric.latency.other
 	*/
-	MetricLatencyOtherQueryParameter *int64
+	MetricLatencyOther *int64
 
 	/* MetricLatencyRead.
 
 	   Filter by metric.latency.read
 	*/
-	MetricLatencyReadQueryParameter *int64
+	MetricLatencyRead *int64
 
 	/* MetricLatencyTotal.
 
 	   Filter by metric.latency.total
 	*/
-	MetricLatencyTotalQueryParameter *int64
+	MetricLatencyTotal *int64
 
 	/* MetricLatencyWrite.
 
 	   Filter by metric.latency.write
 	*/
-	MetricLatencyWriteQueryParameter *int64
+	MetricLatencyWrite *int64
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Port.
 
 	   Filter by port
 	*/
-	PortQueryParameter *int64
+	Port *int64
 
 	/* ReturnRecords.
 
@@ -422,7 +458,7 @@ type S3ServiceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -430,133 +466,133 @@ type S3ServiceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SecurePort.
 
 	   Filter by secure_port
 	*/
-	SecurePortQueryParameter *int64
+	SecurePort *int64
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsLatencyRawOther.
 
 	   Filter by statistics.latency_raw.other
 	*/
-	StatisticsLatencyRawOtherQueryParameter *int64
+	StatisticsLatencyRawOther *int64
 
 	/* StatisticsLatencyRawRead.
 
 	   Filter by statistics.latency_raw.read
 	*/
-	StatisticsLatencyRawReadQueryParameter *int64
+	StatisticsLatencyRawRead *int64
 
 	/* StatisticsLatencyRawTotal.
 
 	   Filter by statistics.latency_raw.total
 	*/
-	StatisticsLatencyRawTotalQueryParameter *int64
+	StatisticsLatencyRawTotal *int64
 
 	/* StatisticsLatencyRawWrite.
 
 	   Filter by statistics.latency_raw.write
 	*/
-	StatisticsLatencyRawWriteQueryParameter *int64
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UsersAccessKey.
 
 	   Filter by users.access_key
 	*/
-	UsersAccessKeyQueryParameter *string
+	UsersAccessKey *string
 
 	/* UsersComment.
 
 	   Filter by users.comment
 	*/
-	UsersCommentQueryParameter *string
+	UsersComment *string
 
 	/* UsersName.
 
 	   Filter by users.name
 	*/
-	UsersNameQueryParameter *string
+	UsersName *string
 
 	/* UsersSvmName.
 
 	   Filter by users.svm.name
 	*/
-	UsersSVMNameQueryParameter *string
+	UsersSvmName *string
 
 	/* UsersSvmUUID.
 
 	   Filter by users.svm.uuid
 	*/
-	UsersSVMUUIDQueryParameter *string
+	UsersSvmUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -576,14 +612,14 @@ func (o *S3ServiceCollectionGetParams) WithDefaults() *S3ServiceCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *S3ServiceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := S3ServiceCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -625,906 +661,972 @@ func (o *S3ServiceCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithBucketsAuditEventSelectorAccessQueryParameter adds the bucketsAuditEventSelectorAccess to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsAuditEventSelectorAccessQueryParameter(bucketsAuditEventSelectorAccess *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsAuditEventSelectorAccessQueryParameter(bucketsAuditEventSelectorAccess)
+// WithBucketsAllowed adds the bucketsAllowed to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsAllowed(bucketsAllowed *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsAllowed(bucketsAllowed)
 	return o
 }
 
-// SetBucketsAuditEventSelectorAccessQueryParameter adds the bucketsAuditEventSelectorAccess to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsAuditEventSelectorAccessQueryParameter(bucketsAuditEventSelectorAccess *string) {
-	o.BucketsAuditEventSelectorAccessQueryParameter = bucketsAuditEventSelectorAccess
+// SetBucketsAllowed adds the bucketsAllowed to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsAllowed(bucketsAllowed *bool) {
+	o.BucketsAllowed = bucketsAllowed
 }
 
-// WithBucketsAuditEventSelectorPermissionQueryParameter adds the bucketsAuditEventSelectorPermission to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsAuditEventSelectorPermissionQueryParameter(bucketsAuditEventSelectorPermission *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsAuditEventSelectorPermissionQueryParameter(bucketsAuditEventSelectorPermission)
+// WithBucketsAuditEventSelectorAccess adds the bucketsAuditEventSelectorAccess to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsAuditEventSelectorAccess(bucketsAuditEventSelectorAccess *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsAuditEventSelectorAccess(bucketsAuditEventSelectorAccess)
 	return o
 }
 
-// SetBucketsAuditEventSelectorPermissionQueryParameter adds the bucketsAuditEventSelectorPermission to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsAuditEventSelectorPermissionQueryParameter(bucketsAuditEventSelectorPermission *string) {
-	o.BucketsAuditEventSelectorPermissionQueryParameter = bucketsAuditEventSelectorPermission
+// SetBucketsAuditEventSelectorAccess adds the bucketsAuditEventSelectorAccess to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsAuditEventSelectorAccess(bucketsAuditEventSelectorAccess *string) {
+	o.BucketsAuditEventSelectorAccess = bucketsAuditEventSelectorAccess
 }
 
-// WithBucketsCommentQueryParameter adds the bucketsComment to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsCommentQueryParameter(bucketsComment *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsCommentQueryParameter(bucketsComment)
+// WithBucketsAuditEventSelectorPermission adds the bucketsAuditEventSelectorPermission to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsAuditEventSelectorPermission(bucketsAuditEventSelectorPermission *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsAuditEventSelectorPermission(bucketsAuditEventSelectorPermission)
 	return o
 }
 
-// SetBucketsCommentQueryParameter adds the bucketsComment to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsCommentQueryParameter(bucketsComment *string) {
-	o.BucketsCommentQueryParameter = bucketsComment
+// SetBucketsAuditEventSelectorPermission adds the bucketsAuditEventSelectorPermission to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsAuditEventSelectorPermission(bucketsAuditEventSelectorPermission *string) {
+	o.BucketsAuditEventSelectorPermission = bucketsAuditEventSelectorPermission
 }
 
-// WithBucketsEncryptionEnabledQueryParameter adds the bucketsEncryptionEnabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsEncryptionEnabledQueryParameter(bucketsEncryptionEnabled *bool) *S3ServiceCollectionGetParams {
-	o.SetBucketsEncryptionEnabledQueryParameter(bucketsEncryptionEnabled)
+// WithBucketsComment adds the bucketsComment to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsComment(bucketsComment *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsComment(bucketsComment)
 	return o
 }
 
-// SetBucketsEncryptionEnabledQueryParameter adds the bucketsEncryptionEnabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsEncryptionEnabledQueryParameter(bucketsEncryptionEnabled *bool) {
-	o.BucketsEncryptionEnabledQueryParameter = bucketsEncryptionEnabled
+// SetBucketsComment adds the bucketsComment to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsComment(bucketsComment *string) {
+	o.BucketsComment = bucketsComment
 }
 
-// WithBucketsLogicalUsedSizeQueryParameter adds the bucketsLogicalUsedSize to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsLogicalUsedSizeQueryParameter(bucketsLogicalUsedSize *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsLogicalUsedSizeQueryParameter(bucketsLogicalUsedSize)
+// WithBucketsEncryptionEnabled adds the bucketsEncryptionEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsEncryptionEnabled(bucketsEncryptionEnabled *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsEncryptionEnabled(bucketsEncryptionEnabled)
 	return o
 }
 
-// SetBucketsLogicalUsedSizeQueryParameter adds the bucketsLogicalUsedSize to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsLogicalUsedSizeQueryParameter(bucketsLogicalUsedSize *int64) {
-	o.BucketsLogicalUsedSizeQueryParameter = bucketsLogicalUsedSize
+// SetBucketsEncryptionEnabled adds the bucketsEncryptionEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsEncryptionEnabled(bucketsEncryptionEnabled *bool) {
+	o.BucketsEncryptionEnabled = bucketsEncryptionEnabled
 }
 
-// WithBucketsNameQueryParameter adds the bucketsName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsNameQueryParameter(bucketsName *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsNameQueryParameter(bucketsName)
+// WithBucketsLogicalUsedSize adds the bucketsLogicalUsedSize to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsLogicalUsedSize(bucketsLogicalUsedSize *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsLogicalUsedSize(bucketsLogicalUsedSize)
 	return o
 }
 
-// SetBucketsNameQueryParameter adds the bucketsName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsNameQueryParameter(bucketsName *string) {
-	o.BucketsNameQueryParameter = bucketsName
+// SetBucketsLogicalUsedSize adds the bucketsLogicalUsedSize to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsLogicalUsedSize(bucketsLogicalUsedSize *int64) {
+	o.BucketsLogicalUsedSize = bucketsLogicalUsedSize
 }
 
-// WithBucketsPolicyStatementsActionsQueryParameter adds the bucketsPolicyStatementsActions to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsActionsQueryParameter(bucketsPolicyStatementsActions *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsActionsQueryParameter(bucketsPolicyStatementsActions)
+// WithBucketsName adds the bucketsName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsName(bucketsName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsName(bucketsName)
 	return o
 }
 
-// SetBucketsPolicyStatementsActionsQueryParameter adds the bucketsPolicyStatementsActions to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsActionsQueryParameter(bucketsPolicyStatementsActions *string) {
-	o.BucketsPolicyStatementsActionsQueryParameter = bucketsPolicyStatementsActions
+// SetBucketsName adds the bucketsName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsName(bucketsName *string) {
+	o.BucketsName = bucketsName
 }
 
-// WithBucketsPolicyStatementsConditionsDelimitersQueryParameter adds the bucketsPolicyStatementsConditionsDelimiters to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsDelimitersQueryParameter(bucketsPolicyStatementsConditionsDelimiters *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsConditionsDelimitersQueryParameter(bucketsPolicyStatementsConditionsDelimiters)
+// WithBucketsNasPath adds the bucketsNasPath to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsNasPath(bucketsNasPath *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsNasPath(bucketsNasPath)
 	return o
 }
 
-// SetBucketsPolicyStatementsConditionsDelimitersQueryParameter adds the bucketsPolicyStatementsConditionsDelimiters to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsDelimitersQueryParameter(bucketsPolicyStatementsConditionsDelimiters *string) {
-	o.BucketsPolicyStatementsConditionsDelimitersQueryParameter = bucketsPolicyStatementsConditionsDelimiters
+// SetBucketsNasPath adds the bucketsNasPath to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsNasPath(bucketsNasPath *string) {
+	o.BucketsNasPath = bucketsNasPath
 }
 
-// WithBucketsPolicyStatementsConditionsMaxKeysQueryParameter adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsMaxKeysQueryParameter(bucketsPolicyStatementsConditionsMaxKeys *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsConditionsMaxKeysQueryParameter(bucketsPolicyStatementsConditionsMaxKeys)
+// WithBucketsPolicyStatementsActions adds the bucketsPolicyStatementsActions to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsActions(bucketsPolicyStatementsActions *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsActions(bucketsPolicyStatementsActions)
 	return o
 }
 
-// SetBucketsPolicyStatementsConditionsMaxKeysQueryParameter adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsMaxKeysQueryParameter(bucketsPolicyStatementsConditionsMaxKeys *int64) {
-	o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter = bucketsPolicyStatementsConditionsMaxKeys
+// SetBucketsPolicyStatementsActions adds the bucketsPolicyStatementsActions to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsActions(bucketsPolicyStatementsActions *string) {
+	o.BucketsPolicyStatementsActions = bucketsPolicyStatementsActions
 }
 
-// WithBucketsPolicyStatementsConditionsOperatorQueryParameter adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsOperatorQueryParameter(bucketsPolicyStatementsConditionsOperator *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsConditionsOperatorQueryParameter(bucketsPolicyStatementsConditionsOperator)
+// WithBucketsPolicyStatementsConditionsDelimiters adds the bucketsPolicyStatementsConditionsDelimiters to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsDelimiters(bucketsPolicyStatementsConditionsDelimiters *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsDelimiters(bucketsPolicyStatementsConditionsDelimiters)
 	return o
 }
 
-// SetBucketsPolicyStatementsConditionsOperatorQueryParameter adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsOperatorQueryParameter(bucketsPolicyStatementsConditionsOperator *string) {
-	o.BucketsPolicyStatementsConditionsOperatorQueryParameter = bucketsPolicyStatementsConditionsOperator
+// SetBucketsPolicyStatementsConditionsDelimiters adds the bucketsPolicyStatementsConditionsDelimiters to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsDelimiters(bucketsPolicyStatementsConditionsDelimiters *string) {
+	o.BucketsPolicyStatementsConditionsDelimiters = bucketsPolicyStatementsConditionsDelimiters
 }
 
-// WithBucketsPolicyStatementsConditionsPrefixesQueryParameter adds the bucketsPolicyStatementsConditionsPrefixes to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsPrefixesQueryParameter(bucketsPolicyStatementsConditionsPrefixes *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsConditionsPrefixesQueryParameter(bucketsPolicyStatementsConditionsPrefixes)
+// WithBucketsPolicyStatementsConditionsMaxKeys adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsMaxKeys(bucketsPolicyStatementsConditionsMaxKeys *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsMaxKeys(bucketsPolicyStatementsConditionsMaxKeys)
 	return o
 }
 
-// SetBucketsPolicyStatementsConditionsPrefixesQueryParameter adds the bucketsPolicyStatementsConditionsPrefixes to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsPrefixesQueryParameter(bucketsPolicyStatementsConditionsPrefixes *string) {
-	o.BucketsPolicyStatementsConditionsPrefixesQueryParameter = bucketsPolicyStatementsConditionsPrefixes
+// SetBucketsPolicyStatementsConditionsMaxKeys adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsMaxKeys(bucketsPolicyStatementsConditionsMaxKeys *int64) {
+	o.BucketsPolicyStatementsConditionsMaxKeys = bucketsPolicyStatementsConditionsMaxKeys
 }
 
-// WithBucketsPolicyStatementsConditionsSourceIPsQueryParameter adds the bucketsPolicyStatementsConditionsSourceIps to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsSourceIPsQueryParameter(bucketsPolicyStatementsConditionsSourceIps *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsConditionsSourceIPsQueryParameter(bucketsPolicyStatementsConditionsSourceIps)
+// WithBucketsPolicyStatementsConditionsOperator adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsOperator(bucketsPolicyStatementsConditionsOperator *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsOperator(bucketsPolicyStatementsConditionsOperator)
 	return o
 }
 
-// SetBucketsPolicyStatementsConditionsSourceIPsQueryParameter adds the bucketsPolicyStatementsConditionsSourceIps to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsSourceIPsQueryParameter(bucketsPolicyStatementsConditionsSourceIps *string) {
-	o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter = bucketsPolicyStatementsConditionsSourceIps
+// SetBucketsPolicyStatementsConditionsOperator adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsOperator(bucketsPolicyStatementsConditionsOperator *string) {
+	o.BucketsPolicyStatementsConditionsOperator = bucketsPolicyStatementsConditionsOperator
 }
 
-// WithBucketsPolicyStatementsConditionsUsernamesQueryParameter adds the bucketsPolicyStatementsConditionsUsernames to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsUsernamesQueryParameter(bucketsPolicyStatementsConditionsUsernames *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsConditionsUsernamesQueryParameter(bucketsPolicyStatementsConditionsUsernames)
+// WithBucketsPolicyStatementsConditionsPrefixes adds the bucketsPolicyStatementsConditionsPrefixes to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsPrefixes(bucketsPolicyStatementsConditionsPrefixes *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsPrefixes(bucketsPolicyStatementsConditionsPrefixes)
 	return o
 }
 
-// SetBucketsPolicyStatementsConditionsUsernamesQueryParameter adds the bucketsPolicyStatementsConditionsUsernames to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsUsernamesQueryParameter(bucketsPolicyStatementsConditionsUsernames *string) {
-	o.BucketsPolicyStatementsConditionsUsernamesQueryParameter = bucketsPolicyStatementsConditionsUsernames
+// SetBucketsPolicyStatementsConditionsPrefixes adds the bucketsPolicyStatementsConditionsPrefixes to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsPrefixes(bucketsPolicyStatementsConditionsPrefixes *string) {
+	o.BucketsPolicyStatementsConditionsPrefixes = bucketsPolicyStatementsConditionsPrefixes
 }
 
-// WithBucketsPolicyStatementsEffectQueryParameter adds the bucketsPolicyStatementsEffect to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsEffectQueryParameter(bucketsPolicyStatementsEffect *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsEffectQueryParameter(bucketsPolicyStatementsEffect)
+// WithBucketsPolicyStatementsConditionsSourceIps adds the bucketsPolicyStatementsConditionsSourceIps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsSourceIps(bucketsPolicyStatementsConditionsSourceIps *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsSourceIps(bucketsPolicyStatementsConditionsSourceIps)
 	return o
 }
 
-// SetBucketsPolicyStatementsEffectQueryParameter adds the bucketsPolicyStatementsEffect to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsEffectQueryParameter(bucketsPolicyStatementsEffect *string) {
-	o.BucketsPolicyStatementsEffectQueryParameter = bucketsPolicyStatementsEffect
+// SetBucketsPolicyStatementsConditionsSourceIps adds the bucketsPolicyStatementsConditionsSourceIps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsSourceIps(bucketsPolicyStatementsConditionsSourceIps *string) {
+	o.BucketsPolicyStatementsConditionsSourceIps = bucketsPolicyStatementsConditionsSourceIps
 }
 
-// WithBucketsPolicyStatementsPrincipalsQueryParameter adds the bucketsPolicyStatementsPrincipals to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsPrincipalsQueryParameter(bucketsPolicyStatementsPrincipals *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsPrincipalsQueryParameter(bucketsPolicyStatementsPrincipals)
+// WithBucketsPolicyStatementsConditionsUsernames adds the bucketsPolicyStatementsConditionsUsernames to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsUsernames(bucketsPolicyStatementsConditionsUsernames *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsUsernames(bucketsPolicyStatementsConditionsUsernames)
 	return o
 }
 
-// SetBucketsPolicyStatementsPrincipalsQueryParameter adds the bucketsPolicyStatementsPrincipals to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsPrincipalsQueryParameter(bucketsPolicyStatementsPrincipals *string) {
-	o.BucketsPolicyStatementsPrincipalsQueryParameter = bucketsPolicyStatementsPrincipals
+// SetBucketsPolicyStatementsConditionsUsernames adds the bucketsPolicyStatementsConditionsUsernames to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsUsernames(bucketsPolicyStatementsConditionsUsernames *string) {
+	o.BucketsPolicyStatementsConditionsUsernames = bucketsPolicyStatementsConditionsUsernames
 }
 
-// WithBucketsPolicyStatementsResourcesQueryParameter adds the bucketsPolicyStatementsResources to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsResourcesQueryParameter(bucketsPolicyStatementsResources *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsResourcesQueryParameter(bucketsPolicyStatementsResources)
+// WithBucketsPolicyStatementsEffect adds the bucketsPolicyStatementsEffect to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsEffect(bucketsPolicyStatementsEffect *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsEffect(bucketsPolicyStatementsEffect)
 	return o
 }
 
-// SetBucketsPolicyStatementsResourcesQueryParameter adds the bucketsPolicyStatementsResources to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsResourcesQueryParameter(bucketsPolicyStatementsResources *string) {
-	o.BucketsPolicyStatementsResourcesQueryParameter = bucketsPolicyStatementsResources
+// SetBucketsPolicyStatementsEffect adds the bucketsPolicyStatementsEffect to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsEffect(bucketsPolicyStatementsEffect *string) {
+	o.BucketsPolicyStatementsEffect = bucketsPolicyStatementsEffect
 }
 
-// WithBucketsPolicyStatementsSIDQueryParameter adds the bucketsPolicyStatementsSid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsSIDQueryParameter(bucketsPolicyStatementsSid *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsPolicyStatementsSIDQueryParameter(bucketsPolicyStatementsSid)
+// WithBucketsPolicyStatementsPrincipals adds the bucketsPolicyStatementsPrincipals to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsPrincipals(bucketsPolicyStatementsPrincipals *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsPrincipals(bucketsPolicyStatementsPrincipals)
 	return o
 }
 
-// SetBucketsPolicyStatementsSIDQueryParameter adds the bucketsPolicyStatementsSid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsSIDQueryParameter(bucketsPolicyStatementsSid *string) {
-	o.BucketsPolicyStatementsSIDQueryParameter = bucketsPolicyStatementsSid
+// SetBucketsPolicyStatementsPrincipals adds the bucketsPolicyStatementsPrincipals to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsPrincipals(bucketsPolicyStatementsPrincipals *string) {
+	o.BucketsPolicyStatementsPrincipals = bucketsPolicyStatementsPrincipals
 }
 
-// WithBucketsProtectionStatusDestinationIsCloudQueryParameter adds the bucketsProtectionStatusDestinationIsCloud to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsCloudQueryParameter(bucketsProtectionStatusDestinationIsCloud *bool) *S3ServiceCollectionGetParams {
-	o.SetBucketsProtectionStatusDestinationIsCloudQueryParameter(bucketsProtectionStatusDestinationIsCloud)
+// WithBucketsPolicyStatementsResources adds the bucketsPolicyStatementsResources to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsResources(bucketsPolicyStatementsResources *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsResources(bucketsPolicyStatementsResources)
 	return o
 }
 
-// SetBucketsProtectionStatusDestinationIsCloudQueryParameter adds the bucketsProtectionStatusDestinationIsCloud to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsCloudQueryParameter(bucketsProtectionStatusDestinationIsCloud *bool) {
-	o.BucketsProtectionStatusDestinationIsCloudQueryParameter = bucketsProtectionStatusDestinationIsCloud
+// SetBucketsPolicyStatementsResources adds the bucketsPolicyStatementsResources to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsResources(bucketsPolicyStatementsResources *string) {
+	o.BucketsPolicyStatementsResources = bucketsPolicyStatementsResources
 }
 
-// WithBucketsProtectionStatusDestinationIsOntapQueryParameter adds the bucketsProtectionStatusDestinationIsOntap to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsOntapQueryParameter(bucketsProtectionStatusDestinationIsOntap *bool) *S3ServiceCollectionGetParams {
-	o.SetBucketsProtectionStatusDestinationIsOntapQueryParameter(bucketsProtectionStatusDestinationIsOntap)
+// WithBucketsPolicyStatementsSid adds the bucketsPolicyStatementsSid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsSid(bucketsPolicyStatementsSid *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsSid(bucketsPolicyStatementsSid)
 	return o
 }
 
-// SetBucketsProtectionStatusDestinationIsOntapQueryParameter adds the bucketsProtectionStatusDestinationIsOntap to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsOntapQueryParameter(bucketsProtectionStatusDestinationIsOntap *bool) {
-	o.BucketsProtectionStatusDestinationIsOntapQueryParameter = bucketsProtectionStatusDestinationIsOntap
+// SetBucketsPolicyStatementsSid adds the bucketsPolicyStatementsSid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsSid(bucketsPolicyStatementsSid *string) {
+	o.BucketsPolicyStatementsSid = bucketsPolicyStatementsSid
 }
 
-// WithBucketsProtectionStatusIsProtectedQueryParameter adds the bucketsProtectionStatusIsProtected to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusIsProtectedQueryParameter(bucketsProtectionStatusIsProtected *bool) *S3ServiceCollectionGetParams {
-	o.SetBucketsProtectionStatusIsProtectedQueryParameter(bucketsProtectionStatusIsProtected)
+// WithBucketsProtectionStatusDestinationIsCloud adds the bucketsProtectionStatusDestinationIsCloud to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsCloud(bucketsProtectionStatusDestinationIsCloud *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusDestinationIsCloud(bucketsProtectionStatusDestinationIsCloud)
 	return o
 }
 
-// SetBucketsProtectionStatusIsProtectedQueryParameter adds the bucketsProtectionStatusIsProtected to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusIsProtectedQueryParameter(bucketsProtectionStatusIsProtected *bool) {
-	o.BucketsProtectionStatusIsProtectedQueryParameter = bucketsProtectionStatusIsProtected
+// SetBucketsProtectionStatusDestinationIsCloud adds the bucketsProtectionStatusDestinationIsCloud to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsCloud(bucketsProtectionStatusDestinationIsCloud *bool) {
+	o.BucketsProtectionStatusDestinationIsCloud = bucketsProtectionStatusDestinationIsCloud
 }
 
-// WithBucketsQosPolicyMaxThroughputIopsQueryParameter adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops)
+// WithBucketsProtectionStatusDestinationIsExternalCloud adds the bucketsProtectionStatusDestinationIsExternalCloud to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsExternalCloud(bucketsProtectionStatusDestinationIsExternalCloud *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusDestinationIsExternalCloud(bucketsProtectionStatusDestinationIsExternalCloud)
 	return o
 }
 
-// SetBucketsQosPolicyMaxThroughputIopsQueryParameter adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops *int64) {
-	o.BucketsQosPolicyMaxThroughputIopsQueryParameter = bucketsQosPolicyMaxThroughputIops
+// SetBucketsProtectionStatusDestinationIsExternalCloud adds the bucketsProtectionStatusDestinationIsExternalCloud to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsExternalCloud(bucketsProtectionStatusDestinationIsExternalCloud *bool) {
+	o.BucketsProtectionStatusDestinationIsExternalCloud = bucketsProtectionStatusDestinationIsExternalCloud
 }
 
-// WithBucketsQosPolicyMaxThroughputMbpsQueryParameter adds the bucketsQosPolicyMaxThroughputMbps to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputMbpsQueryParameter(bucketsQosPolicyMaxThroughputMbps *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsQosPolicyMaxThroughputMbpsQueryParameter(bucketsQosPolicyMaxThroughputMbps)
+// WithBucketsProtectionStatusDestinationIsOntap adds the bucketsProtectionStatusDestinationIsOntap to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsOntap(bucketsProtectionStatusDestinationIsOntap *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusDestinationIsOntap(bucketsProtectionStatusDestinationIsOntap)
 	return o
 }
 
-// SetBucketsQosPolicyMaxThroughputMbpsQueryParameter adds the bucketsQosPolicyMaxThroughputMbps to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMaxThroughputMbpsQueryParameter(bucketsQosPolicyMaxThroughputMbps *int64) {
-	o.BucketsQosPolicyMaxThroughputMbpsQueryParameter = bucketsQosPolicyMaxThroughputMbps
+// SetBucketsProtectionStatusDestinationIsOntap adds the bucketsProtectionStatusDestinationIsOntap to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsOntap(bucketsProtectionStatusDestinationIsOntap *bool) {
+	o.BucketsProtectionStatusDestinationIsOntap = bucketsProtectionStatusDestinationIsOntap
 }
 
-// WithBucketsQosPolicyMinThroughputIopsQueryParameter adds the bucketsQosPolicyMinThroughputIops to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMinThroughputIopsQueryParameter(bucketsQosPolicyMinThroughputIops *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsQosPolicyMinThroughputIopsQueryParameter(bucketsQosPolicyMinThroughputIops)
+// WithBucketsProtectionStatusIsProtected adds the bucketsProtectionStatusIsProtected to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusIsProtected(bucketsProtectionStatusIsProtected *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusIsProtected(bucketsProtectionStatusIsProtected)
 	return o
 }
 
-// SetBucketsQosPolicyMinThroughputIopsQueryParameter adds the bucketsQosPolicyMinThroughputIops to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMinThroughputIopsQueryParameter(bucketsQosPolicyMinThroughputIops *int64) {
-	o.BucketsQosPolicyMinThroughputIopsQueryParameter = bucketsQosPolicyMinThroughputIops
+// SetBucketsProtectionStatusIsProtected adds the bucketsProtectionStatusIsProtected to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusIsProtected(bucketsProtectionStatusIsProtected *bool) {
+	o.BucketsProtectionStatusIsProtected = bucketsProtectionStatusIsProtected
 }
 
-// WithBucketsQosPolicyMinThroughputMbpsQueryParameter adds the bucketsQosPolicyMinThroughputMbps to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMinThroughputMbpsQueryParameter(bucketsQosPolicyMinThroughputMbps *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsQosPolicyMinThroughputMbpsQueryParameter(bucketsQosPolicyMinThroughputMbps)
+// WithBucketsQosPolicyMaxThroughputIops adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputIops(bucketsQosPolicyMaxThroughputIops *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMaxThroughputIops(bucketsQosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetBucketsQosPolicyMinThroughputMbpsQueryParameter adds the bucketsQosPolicyMinThroughputMbps to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMinThroughputMbpsQueryParameter(bucketsQosPolicyMinThroughputMbps *int64) {
-	o.BucketsQosPolicyMinThroughputMbpsQueryParameter = bucketsQosPolicyMinThroughputMbps
+// SetBucketsQosPolicyMaxThroughputIops adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMaxThroughputIops(bucketsQosPolicyMaxThroughputIops *int64) {
+	o.BucketsQosPolicyMaxThroughputIops = bucketsQosPolicyMaxThroughputIops
 }
 
-// WithBucketsQosPolicyNameQueryParameter adds the bucketsQosPolicyName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyNameQueryParameter(bucketsQosPolicyName *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsQosPolicyNameQueryParameter(bucketsQosPolicyName)
+// WithBucketsQosPolicyMaxThroughputMbps adds the bucketsQosPolicyMaxThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputMbps(bucketsQosPolicyMaxThroughputMbps *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMaxThroughputMbps(bucketsQosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetBucketsQosPolicyNameQueryParameter adds the bucketsQosPolicyName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyNameQueryParameter(bucketsQosPolicyName *string) {
-	o.BucketsQosPolicyNameQueryParameter = bucketsQosPolicyName
+// SetBucketsQosPolicyMaxThroughputMbps adds the bucketsQosPolicyMaxThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMaxThroughputMbps(bucketsQosPolicyMaxThroughputMbps *int64) {
+	o.BucketsQosPolicyMaxThroughputMbps = bucketsQosPolicyMaxThroughputMbps
 }
 
-// WithBucketsQosPolicyUUIDQueryParameter adds the bucketsQosPolicyUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID)
+// WithBucketsQosPolicyMinThroughputIops adds the bucketsQosPolicyMinThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMinThroughputIops(bucketsQosPolicyMinThroughputIops *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMinThroughputIops(bucketsQosPolicyMinThroughputIops)
 	return o
 }
 
-// SetBucketsQosPolicyUUIDQueryParameter adds the bucketsQosPolicyUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID *string) {
-	o.BucketsQosPolicyUUIDQueryParameter = bucketsQosPolicyUUID
+// SetBucketsQosPolicyMinThroughputIops adds the bucketsQosPolicyMinThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMinThroughputIops(bucketsQosPolicyMinThroughputIops *int64) {
+	o.BucketsQosPolicyMinThroughputIops = bucketsQosPolicyMinThroughputIops
 }
 
-// WithBucketsRoleQueryParameter adds the bucketsRole to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsRoleQueryParameter(bucketsRole *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsRoleQueryParameter(bucketsRole)
+// WithBucketsQosPolicyMinThroughputMbps adds the bucketsQosPolicyMinThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMinThroughputMbps(bucketsQosPolicyMinThroughputMbps *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMinThroughputMbps(bucketsQosPolicyMinThroughputMbps)
 	return o
 }
 
-// SetBucketsRoleQueryParameter adds the bucketsRole to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsRoleQueryParameter(bucketsRole *string) {
-	o.BucketsRoleQueryParameter = bucketsRole
+// SetBucketsQosPolicyMinThroughputMbps adds the bucketsQosPolicyMinThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMinThroughputMbps(bucketsQosPolicyMinThroughputMbps *int64) {
+	o.BucketsQosPolicyMinThroughputMbps = bucketsQosPolicyMinThroughputMbps
 }
 
-// WithBucketsSizeQueryParameter adds the bucketsSize to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsSizeQueryParameter(bucketsSize *int64) *S3ServiceCollectionGetParams {
-	o.SetBucketsSizeQueryParameter(bucketsSize)
+// WithBucketsQosPolicyName adds the bucketsQosPolicyName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyName(bucketsQosPolicyName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyName(bucketsQosPolicyName)
 	return o
 }
 
-// SetBucketsSizeQueryParameter adds the bucketsSize to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsSizeQueryParameter(bucketsSize *int64) {
-	o.BucketsSizeQueryParameter = bucketsSize
+// SetBucketsQosPolicyName adds the bucketsQosPolicyName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyName(bucketsQosPolicyName *string) {
+	o.BucketsQosPolicyName = bucketsQosPolicyName
 }
 
-// WithBucketsSVMNameQueryParameter adds the bucketsSvmName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsSVMNameQueryParameter(bucketsSvmName *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsSVMNameQueryParameter(bucketsSvmName)
+// WithBucketsQosPolicyUUID adds the bucketsQosPolicyUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyUUID(bucketsQosPolicyUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyUUID(bucketsQosPolicyUUID)
 	return o
 }
 
-// SetBucketsSVMNameQueryParameter adds the bucketsSvmName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsSVMNameQueryParameter(bucketsSvmName *string) {
-	o.BucketsSVMNameQueryParameter = bucketsSvmName
+// SetBucketsQosPolicyUUID adds the bucketsQosPolicyUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyUUID(bucketsQosPolicyUUID *string) {
+	o.BucketsQosPolicyUUID = bucketsQosPolicyUUID
 }
 
-// WithBucketsSVMUUIDQueryParameter adds the bucketsSvmUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsSVMUUIDQueryParameter(bucketsSvmUUID *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsSVMUUIDQueryParameter(bucketsSvmUUID)
+// WithBucketsRole adds the bucketsRole to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsRole(bucketsRole *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsRole(bucketsRole)
 	return o
 }
 
-// SetBucketsSVMUUIDQueryParameter adds the bucketsSvmUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsSVMUUIDQueryParameter(bucketsSvmUUID *string) {
-	o.BucketsSVMUUIDQueryParameter = bucketsSvmUUID
+// SetBucketsRole adds the bucketsRole to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsRole(bucketsRole *string) {
+	o.BucketsRole = bucketsRole
 }
 
-// WithBucketsUUIDQueryParameter adds the bucketsUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsUUIDQueryParameter(bucketsUUID *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsUUIDQueryParameter(bucketsUUID)
+// WithBucketsSize adds the bucketsSize to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSize(bucketsSize *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsSize(bucketsSize)
 	return o
 }
 
-// SetBucketsUUIDQueryParameter adds the bucketsUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsUUIDQueryParameter(bucketsUUID *string) {
-	o.BucketsUUIDQueryParameter = bucketsUUID
+// SetBucketsSize adds the bucketsSize to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSize(bucketsSize *int64) {
+	o.BucketsSize = bucketsSize
 }
 
-// WithBucketsVersioningStateQueryParameter adds the bucketsVersioningState to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsVersioningStateQueryParameter(bucketsVersioningState *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsVersioningStateQueryParameter(bucketsVersioningState)
+// WithBucketsSvmName adds the bucketsSvmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSvmName(bucketsSvmName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsSvmName(bucketsSvmName)
 	return o
 }
 
-// SetBucketsVersioningStateQueryParameter adds the bucketsVersioningState to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsVersioningStateQueryParameter(bucketsVersioningState *string) {
-	o.BucketsVersioningStateQueryParameter = bucketsVersioningState
+// SetBucketsSvmName adds the bucketsSvmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSvmName(bucketsSvmName *string) {
+	o.BucketsSvmName = bucketsSvmName
 }
 
-// WithBucketsVolumeNameQueryParameter adds the bucketsVolumeName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsVolumeNameQueryParameter(bucketsVolumeName *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsVolumeNameQueryParameter(bucketsVolumeName)
+// WithBucketsSvmUUID adds the bucketsSvmUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSvmUUID(bucketsSvmUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsSvmUUID(bucketsSvmUUID)
 	return o
 }
 
-// SetBucketsVolumeNameQueryParameter adds the bucketsVolumeName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsVolumeNameQueryParameter(bucketsVolumeName *string) {
-	o.BucketsVolumeNameQueryParameter = bucketsVolumeName
+// SetBucketsSvmUUID adds the bucketsSvmUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSvmUUID(bucketsSvmUUID *string) {
+	o.BucketsSvmUUID = bucketsSvmUUID
 }
 
-// WithBucketsVolumeUUIDQueryParameter adds the bucketsVolumeUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithBucketsVolumeUUIDQueryParameter(bucketsVolumeUUID *string) *S3ServiceCollectionGetParams {
-	o.SetBucketsVolumeUUIDQueryParameter(bucketsVolumeUUID)
+// WithBucketsType adds the bucketsType to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsType(bucketsType *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsType(bucketsType)
 	return o
 }
 
-// SetBucketsVolumeUUIDQueryParameter adds the bucketsVolumeUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetBucketsVolumeUUIDQueryParameter(bucketsVolumeUUID *string) {
-	o.BucketsVolumeUUIDQueryParameter = bucketsVolumeUUID
+// SetBucketsType adds the bucketsType to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsType(bucketsType *string) {
+	o.BucketsType = bucketsType
 }
 
-// WithCertificateNameQueryParameter adds the certificateName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *S3ServiceCollectionGetParams {
-	o.SetCertificateNameQueryParameter(certificateName)
+// WithBucketsUUID adds the bucketsUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsUUID(bucketsUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsUUID(bucketsUUID)
 	return o
 }
 
-// SetCertificateNameQueryParameter adds the certificateName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
-	o.CertificateNameQueryParameter = certificateName
+// SetBucketsUUID adds the bucketsUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsUUID(bucketsUUID *string) {
+	o.BucketsUUID = bucketsUUID
 }
 
-// WithCertificateUUIDQueryParameter adds the certificateUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithCertificateUUIDQueryParameter(certificateUUID *string) *S3ServiceCollectionGetParams {
-	o.SetCertificateUUIDQueryParameter(certificateUUID)
+// WithBucketsVersioningState adds the bucketsVersioningState to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsVersioningState(bucketsVersioningState *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsVersioningState(bucketsVersioningState)
 	return o
 }
 
-// SetCertificateUUIDQueryParameter adds the certificateUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetCertificateUUIDQueryParameter(certificateUUID *string) {
-	o.CertificateUUIDQueryParameter = certificateUUID
+// SetBucketsVersioningState adds the bucketsVersioningState to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsVersioningState(bucketsVersioningState *string) {
+	o.BucketsVersioningState = bucketsVersioningState
 }
 
-// WithCommentQueryParameter adds the comment to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithCommentQueryParameter(comment *string) *S3ServiceCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithBucketsVolumeName adds the bucketsVolumeName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsVolumeName(bucketsVolumeName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsVolumeName(bucketsVolumeName)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetBucketsVolumeName adds the bucketsVolumeName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsVolumeName(bucketsVolumeName *string) {
+	o.BucketsVolumeName = bucketsVolumeName
 }
 
-// WithEnabledQueryParameter adds the enabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *S3ServiceCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithBucketsVolumeUUID adds the bucketsVolumeUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsVolumeUUID(bucketsVolumeUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsVolumeUUID(bucketsVolumeUUID)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetBucketsVolumeUUID adds the bucketsVolumeUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsVolumeUUID(bucketsVolumeUUID *string) {
+	o.BucketsVolumeUUID = bucketsVolumeUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithFieldsQueryParameter(fields []string) *S3ServiceCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithCertificateName adds the certificateName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithCertificateName(certificateName *string) *S3ServiceCollectionGetParams {
+	o.SetCertificateName(certificateName)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetCertificateName adds the certificateName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetCertificateName(certificateName *string) {
+	o.CertificateName = certificateName
 }
 
-// WithIsHTTPEnabledQueryParameter adds the isHTTPEnabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithIsHTTPEnabledQueryParameter(isHTTPEnabled *bool) *S3ServiceCollectionGetParams {
-	o.SetIsHTTPEnabledQueryParameter(isHTTPEnabled)
+// WithCertificateUUID adds the certificateUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithCertificateUUID(certificateUUID *string) *S3ServiceCollectionGetParams {
+	o.SetCertificateUUID(certificateUUID)
 	return o
 }
 
-// SetIsHTTPEnabledQueryParameter adds the isHttpEnabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetIsHTTPEnabledQueryParameter(isHTTPEnabled *bool) {
-	o.IsHTTPEnabledQueryParameter = isHTTPEnabled
+// SetCertificateUUID adds the certificateUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetCertificateUUID(certificateUUID *string) {
+	o.CertificateUUID = certificateUUID
 }
 
-// WithIsHTTPsEnabledQueryParameter adds the isHTTPSEnabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithIsHTTPsEnabledQueryParameter(isHTTPSEnabled *bool) *S3ServiceCollectionGetParams {
-	o.SetIsHTTPsEnabledQueryParameter(isHTTPSEnabled)
+// WithComment adds the comment to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithComment(comment *string) *S3ServiceCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetIsHTTPsEnabledQueryParameter adds the isHttpsEnabled to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetIsHTTPsEnabledQueryParameter(isHTTPSEnabled *bool) {
-	o.IsHTTPsEnabledQueryParameter = isHTTPSEnabled
+// SetComment adds the comment to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *S3ServiceCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithDefaultUnixUser adds the defaultUnixUser to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithDefaultUnixUser(defaultUnixUser *string) *S3ServiceCollectionGetParams {
+	o.SetDefaultUnixUser(defaultUnixUser)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetDefaultUnixUser adds the defaultUnixUser to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetDefaultUnixUser(defaultUnixUser *string) {
+	o.DefaultUnixUser = defaultUnixUser
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *S3ServiceCollectionGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithDefaultWinUser adds the defaultWinUser to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithDefaultWinUser(defaultWinUser *string) *S3ServiceCollectionGetParams {
+	o.SetDefaultWinUser(defaultWinUser)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetDefaultWinUser adds the defaultWinUser to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetDefaultWinUser(defaultWinUser *string) {
+	o.DefaultWinUser = defaultWinUser
 }
 
-// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+// WithEnabled adds the enabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithEnabled(enabled *bool) *S3ServiceCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
-	o.MetricIopsOtherQueryParameter = metricIopsOther
+// SetEnabled adds the enabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithMetricIopsReadQueryParameter adds the metricIopsRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+// WithFields adds the fields to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithFields(fields []string) *S3ServiceCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetMetricIopsReadQueryParameter adds the metricIopsRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
-	o.MetricIopsReadQueryParameter = metricIopsRead
+// SetFields adds the fields to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+// WithIsHTTPEnabled adds the isHTTPEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithIsHTTPEnabled(isHTTPEnabled *bool) *S3ServiceCollectionGetParams {
+	o.SetIsHTTPEnabled(isHTTPEnabled)
 	return o
 }
 
-// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
-	o.MetricIopsTotalQueryParameter = metricIopsTotal
+// SetIsHTTPEnabled adds the isHttpEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetIsHTTPEnabled(isHTTPEnabled *bool) {
+	o.IsHTTPEnabled = isHTTPEnabled
 }
 
-// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+// WithIsHTTPSEnabled adds the isHTTPSEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithIsHTTPSEnabled(isHTTPSEnabled *bool) *S3ServiceCollectionGetParams {
+	o.SetIsHTTPSEnabled(isHTTPSEnabled)
 	return o
 }
 
-// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
-	o.MetricIopsWriteQueryParameter = metricIopsWrite
+// SetIsHTTPSEnabled adds the isHttpsEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetIsHTTPSEnabled(isHTTPSEnabled *bool) {
+	o.IsHTTPSEnabled = isHTTPSEnabled
 }
 
-// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+// WithMaxRecords adds the maxRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3ServiceCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
-	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+// SetMaxRecords adds the maxRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+// WithMetricDuration adds the metricDuration to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricDuration(metricDuration *string) *S3ServiceCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
-	o.MetricLatencyReadQueryParameter = metricLatencyRead
+// SetMetricDuration adds the metricDuration to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+// WithMetricIopsOther adds the metricIopsOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
 	return o
 }
 
-// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
-	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+// SetMetricIopsOther adds the metricIopsOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
 }
 
-// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+// WithMetricIopsRead adds the metricIopsRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
 	return o
 }
 
-// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
-	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+// SetMetricIopsRead adds the metricIopsRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *S3ServiceCollectionGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricIopsTotal adds the metricIopsTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricIopsTotal adds the metricIopsTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricIopsWrite adds the metricIopsWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricIopsWrite adds the metricIopsWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricLatencyOther adds the metricLatencyOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricLatencyOther adds the metricLatencyOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *S3ServiceCollectionGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricLatencyRead adds the metricLatencyRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricLatencyRead adds the metricLatencyRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *S3ServiceCollectionGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricLatencyTotal adds the metricLatencyTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricLatencyTotal adds the metricLatencyTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
 }
 
-// WithNameQueryParameter adds the name to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithNameQueryParameter(name *string) *S3ServiceCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithMetricLatencyWrite adds the metricLatencyWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetMetricLatencyWrite adds the metricLatencyWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
 }
 
-// WithOrderByQueryParameter adds the orderBy to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *S3ServiceCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithMetricStatus adds the metricStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricStatus(metricStatus *string) *S3ServiceCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetMetricStatus adds the metricStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithPortQueryParameter adds the port to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithPortQueryParameter(port *int64) *S3ServiceCollectionGetParams {
-	o.SetPortQueryParameter(port)
+// WithMetricThroughputRead adds the metricThroughputRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetPortQueryParameter adds the port to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetPortQueryParameter(port *int64) {
-	o.PortQueryParameter = port
+// SetMetricThroughputRead adds the metricThroughputRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3ServiceCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetMetricThroughputTotal adds the metricThroughputTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3ServiceCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetMetricThroughputWrite adds the metricThroughputWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithSecurePortQueryParameter adds the securePort to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithSecurePortQueryParameter(securePort *int64) *S3ServiceCollectionGetParams {
-	o.SetSecurePortQueryParameter(securePort)
+// WithMetricTimestamp adds the metricTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *S3ServiceCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetSecurePortQueryParameter adds the securePort to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetSecurePortQueryParameter(securePort *int64) {
-	o.SecurePortQueryParameter = securePort
+// SetMetricTimestamp adds the metricTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithName adds the name to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithName(name *string) *S3ServiceCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetName adds the name to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithOrderBy adds the orderBy to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithOrderBy(orderBy []string) *S3ServiceCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetOrderBy adds the orderBy to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithPort adds the port to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithPort(port *int64) *S3ServiceCollectionGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetPort adds the port to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithReturnRecords adds the returnRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithReturnRecords(returnRecords *bool) *S3ServiceCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetReturnRecords adds the returnRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+// WithReturnTimeout adds the returnTimeout to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *S3ServiceCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
-	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+// SetReturnTimeout adds the returnTimeout to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+// WithSecurePort adds the securePort to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithSecurePort(securePort *int64) *S3ServiceCollectionGetParams {
+	o.SetSecurePort(securePort)
 	return o
 }
 
-// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
-	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+// SetSecurePort adds the securePort to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetSecurePort(securePort *int64) {
+	o.SecurePort = securePort
 }
 
-// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
-	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
-	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *S3ServiceCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *S3ServiceCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *S3ServiceCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
 }
 
-// WithSVMNameQueryParameter adds the svmName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *S3ServiceCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *S3ServiceCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithStatisticsStatus adds the statisticsStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *S3ServiceCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetStatisticsStatus adds the statisticsStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithUsersAccessKeyQueryParameter adds the usersAccessKey to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithUsersAccessKeyQueryParameter(usersAccessKey *string) *S3ServiceCollectionGetParams {
-	o.SetUsersAccessKeyQueryParameter(usersAccessKey)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetUsersAccessKeyQueryParameter adds the usersAccessKey to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetUsersAccessKeyQueryParameter(usersAccessKey *string) {
-	o.UsersAccessKeyQueryParameter = usersAccessKey
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithUsersCommentQueryParameter adds the usersComment to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithUsersCommentQueryParameter(usersComment *string) *S3ServiceCollectionGetParams {
-	o.SetUsersCommentQueryParameter(usersComment)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetUsersCommentQueryParameter adds the usersComment to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetUsersCommentQueryParameter(usersComment *string) {
-	o.UsersCommentQueryParameter = usersComment
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithUsersNameQueryParameter adds the usersName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithUsersNameQueryParameter(usersName *string) *S3ServiceCollectionGetParams {
-	o.SetUsersNameQueryParameter(usersName)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetUsersNameQueryParameter adds the usersName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetUsersNameQueryParameter(usersName *string) {
-	o.UsersNameQueryParameter = usersName
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithUsersSVMNameQueryParameter adds the usersSvmName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithUsersSVMNameQueryParameter(usersSvmName *string) *S3ServiceCollectionGetParams {
-	o.SetUsersSVMNameQueryParameter(usersSvmName)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *S3ServiceCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetUsersSVMNameQueryParameter adds the usersSvmName to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetUsersSVMNameQueryParameter(usersSvmName *string) {
-	o.UsersSVMNameQueryParameter = usersSvmName
+// SetStatisticsTimestamp adds the statisticsTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithUsersSVMUUIDQueryParameter adds the usersSvmUUID to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithUsersSVMUUIDQueryParameter(usersSvmUUID *string) *S3ServiceCollectionGetParams {
-	o.SetUsersSVMUUIDQueryParameter(usersSvmUUID)
+// WithSvmName adds the svmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithSvmName(svmName *string) *S3ServiceCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetUsersSVMUUIDQueryParameter adds the usersSvmUuid to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetUsersSVMUUIDQueryParameter(usersSvmUUID *string) {
-	o.UsersSVMUUIDQueryParameter = usersSvmUUID
+// SetSvmName adds the svmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
+}
+
+// WithSvmUUID adds the svmUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithSvmUUID(svmUUID *string) *S3ServiceCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
+	return o
+}
+
+// SetSvmUUID adds the svmUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
+}
+
+// WithUsersAccessKey adds the usersAccessKey to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersAccessKey(usersAccessKey *string) *S3ServiceCollectionGetParams {
+	o.SetUsersAccessKey(usersAccessKey)
+	return o
+}
+
+// SetUsersAccessKey adds the usersAccessKey to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersAccessKey(usersAccessKey *string) {
+	o.UsersAccessKey = usersAccessKey
+}
+
+// WithUsersComment adds the usersComment to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersComment(usersComment *string) *S3ServiceCollectionGetParams {
+	o.SetUsersComment(usersComment)
+	return o
+}
+
+// SetUsersComment adds the usersComment to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersComment(usersComment *string) {
+	o.UsersComment = usersComment
+}
+
+// WithUsersName adds the usersName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersName(usersName *string) *S3ServiceCollectionGetParams {
+	o.SetUsersName(usersName)
+	return o
+}
+
+// SetUsersName adds the usersName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersName(usersName *string) {
+	o.UsersName = usersName
+}
+
+// WithUsersSvmName adds the usersSvmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersSvmName(usersSvmName *string) *S3ServiceCollectionGetParams {
+	o.SetUsersSvmName(usersSvmName)
+	return o
+}
+
+// SetUsersSvmName adds the usersSvmName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersSvmName(usersSvmName *string) {
+	o.UsersSvmName = usersSvmName
+}
+
+// WithUsersSvmUUID adds the usersSvmUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersSvmUUID(usersSvmUUID *string) *S3ServiceCollectionGetParams {
+	o.SetUsersSvmUUID(usersSvmUUID)
+	return o
+}
+
+// SetUsersSvmUUID adds the usersSvmUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersSvmUUID(usersSvmUUID *string) {
+	o.UsersSvmUUID = usersSvmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1535,13 +1637,30 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.BucketsAuditEventSelectorAccessQueryParameter != nil {
+	if o.BucketsAllowed != nil {
+
+		// query param buckets.allowed
+		var qrBucketsAllowed bool
+
+		if o.BucketsAllowed != nil {
+			qrBucketsAllowed = *o.BucketsAllowed
+		}
+		qBucketsAllowed := swag.FormatBool(qrBucketsAllowed)
+		if qBucketsAllowed != "" {
+
+			if err := r.SetQueryParam("buckets.allowed", qBucketsAllowed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsAuditEventSelectorAccess != nil {
 
 		// query param buckets.audit_event_selector.access
 		var qrBucketsAuditEventSelectorAccess string
 
-		if o.BucketsAuditEventSelectorAccessQueryParameter != nil {
-			qrBucketsAuditEventSelectorAccess = *o.BucketsAuditEventSelectorAccessQueryParameter
+		if o.BucketsAuditEventSelectorAccess != nil {
+			qrBucketsAuditEventSelectorAccess = *o.BucketsAuditEventSelectorAccess
 		}
 		qBucketsAuditEventSelectorAccess := qrBucketsAuditEventSelectorAccess
 		if qBucketsAuditEventSelectorAccess != "" {
@@ -1552,13 +1671,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsAuditEventSelectorPermissionQueryParameter != nil {
+	if o.BucketsAuditEventSelectorPermission != nil {
 
 		// query param buckets.audit_event_selector.permission
 		var qrBucketsAuditEventSelectorPermission string
 
-		if o.BucketsAuditEventSelectorPermissionQueryParameter != nil {
-			qrBucketsAuditEventSelectorPermission = *o.BucketsAuditEventSelectorPermissionQueryParameter
+		if o.BucketsAuditEventSelectorPermission != nil {
+			qrBucketsAuditEventSelectorPermission = *o.BucketsAuditEventSelectorPermission
 		}
 		qBucketsAuditEventSelectorPermission := qrBucketsAuditEventSelectorPermission
 		if qBucketsAuditEventSelectorPermission != "" {
@@ -1569,13 +1688,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsCommentQueryParameter != nil {
+	if o.BucketsComment != nil {
 
 		// query param buckets.comment
 		var qrBucketsComment string
 
-		if o.BucketsCommentQueryParameter != nil {
-			qrBucketsComment = *o.BucketsCommentQueryParameter
+		if o.BucketsComment != nil {
+			qrBucketsComment = *o.BucketsComment
 		}
 		qBucketsComment := qrBucketsComment
 		if qBucketsComment != "" {
@@ -1586,13 +1705,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsEncryptionEnabledQueryParameter != nil {
+	if o.BucketsEncryptionEnabled != nil {
 
 		// query param buckets.encryption.enabled
 		var qrBucketsEncryptionEnabled bool
 
-		if o.BucketsEncryptionEnabledQueryParameter != nil {
-			qrBucketsEncryptionEnabled = *o.BucketsEncryptionEnabledQueryParameter
+		if o.BucketsEncryptionEnabled != nil {
+			qrBucketsEncryptionEnabled = *o.BucketsEncryptionEnabled
 		}
 		qBucketsEncryptionEnabled := swag.FormatBool(qrBucketsEncryptionEnabled)
 		if qBucketsEncryptionEnabled != "" {
@@ -1603,13 +1722,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsLogicalUsedSizeQueryParameter != nil {
+	if o.BucketsLogicalUsedSize != nil {
 
 		// query param buckets.logical_used_size
 		var qrBucketsLogicalUsedSize int64
 
-		if o.BucketsLogicalUsedSizeQueryParameter != nil {
-			qrBucketsLogicalUsedSize = *o.BucketsLogicalUsedSizeQueryParameter
+		if o.BucketsLogicalUsedSize != nil {
+			qrBucketsLogicalUsedSize = *o.BucketsLogicalUsedSize
 		}
 		qBucketsLogicalUsedSize := swag.FormatInt64(qrBucketsLogicalUsedSize)
 		if qBucketsLogicalUsedSize != "" {
@@ -1620,13 +1739,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsNameQueryParameter != nil {
+	if o.BucketsName != nil {
 
 		// query param buckets.name
 		var qrBucketsName string
 
-		if o.BucketsNameQueryParameter != nil {
-			qrBucketsName = *o.BucketsNameQueryParameter
+		if o.BucketsName != nil {
+			qrBucketsName = *o.BucketsName
 		}
 		qBucketsName := qrBucketsName
 		if qBucketsName != "" {
@@ -1637,13 +1756,30 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsActionsQueryParameter != nil {
+	if o.BucketsNasPath != nil {
+
+		// query param buckets.nas_path
+		var qrBucketsNasPath string
+
+		if o.BucketsNasPath != nil {
+			qrBucketsNasPath = *o.BucketsNasPath
+		}
+		qBucketsNasPath := qrBucketsNasPath
+		if qBucketsNasPath != "" {
+
+			if err := r.SetQueryParam("buckets.nas_path", qBucketsNasPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsActions != nil {
 
 		// query param buckets.policy.statements.actions
 		var qrBucketsPolicyStatementsActions string
 
-		if o.BucketsPolicyStatementsActionsQueryParameter != nil {
-			qrBucketsPolicyStatementsActions = *o.BucketsPolicyStatementsActionsQueryParameter
+		if o.BucketsPolicyStatementsActions != nil {
+			qrBucketsPolicyStatementsActions = *o.BucketsPolicyStatementsActions
 		}
 		qBucketsPolicyStatementsActions := qrBucketsPolicyStatementsActions
 		if qBucketsPolicyStatementsActions != "" {
@@ -1654,13 +1790,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsConditionsDelimitersQueryParameter != nil {
+	if o.BucketsPolicyStatementsConditionsDelimiters != nil {
 
 		// query param buckets.policy.statements.conditions.delimiters
 		var qrBucketsPolicyStatementsConditionsDelimiters string
 
-		if o.BucketsPolicyStatementsConditionsDelimitersQueryParameter != nil {
-			qrBucketsPolicyStatementsConditionsDelimiters = *o.BucketsPolicyStatementsConditionsDelimitersQueryParameter
+		if o.BucketsPolicyStatementsConditionsDelimiters != nil {
+			qrBucketsPolicyStatementsConditionsDelimiters = *o.BucketsPolicyStatementsConditionsDelimiters
 		}
 		qBucketsPolicyStatementsConditionsDelimiters := qrBucketsPolicyStatementsConditionsDelimiters
 		if qBucketsPolicyStatementsConditionsDelimiters != "" {
@@ -1671,13 +1807,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter != nil {
+	if o.BucketsPolicyStatementsConditionsMaxKeys != nil {
 
 		// query param buckets.policy.statements.conditions.max_keys
 		var qrBucketsPolicyStatementsConditionsMaxKeys int64
 
-		if o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter != nil {
-			qrBucketsPolicyStatementsConditionsMaxKeys = *o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter
+		if o.BucketsPolicyStatementsConditionsMaxKeys != nil {
+			qrBucketsPolicyStatementsConditionsMaxKeys = *o.BucketsPolicyStatementsConditionsMaxKeys
 		}
 		qBucketsPolicyStatementsConditionsMaxKeys := swag.FormatInt64(qrBucketsPolicyStatementsConditionsMaxKeys)
 		if qBucketsPolicyStatementsConditionsMaxKeys != "" {
@@ -1688,13 +1824,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsConditionsOperatorQueryParameter != nil {
+	if o.BucketsPolicyStatementsConditionsOperator != nil {
 
 		// query param buckets.policy.statements.conditions.operator
 		var qrBucketsPolicyStatementsConditionsOperator string
 
-		if o.BucketsPolicyStatementsConditionsOperatorQueryParameter != nil {
-			qrBucketsPolicyStatementsConditionsOperator = *o.BucketsPolicyStatementsConditionsOperatorQueryParameter
+		if o.BucketsPolicyStatementsConditionsOperator != nil {
+			qrBucketsPolicyStatementsConditionsOperator = *o.BucketsPolicyStatementsConditionsOperator
 		}
 		qBucketsPolicyStatementsConditionsOperator := qrBucketsPolicyStatementsConditionsOperator
 		if qBucketsPolicyStatementsConditionsOperator != "" {
@@ -1705,13 +1841,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsConditionsPrefixesQueryParameter != nil {
+	if o.BucketsPolicyStatementsConditionsPrefixes != nil {
 
 		// query param buckets.policy.statements.conditions.prefixes
 		var qrBucketsPolicyStatementsConditionsPrefixes string
 
-		if o.BucketsPolicyStatementsConditionsPrefixesQueryParameter != nil {
-			qrBucketsPolicyStatementsConditionsPrefixes = *o.BucketsPolicyStatementsConditionsPrefixesQueryParameter
+		if o.BucketsPolicyStatementsConditionsPrefixes != nil {
+			qrBucketsPolicyStatementsConditionsPrefixes = *o.BucketsPolicyStatementsConditionsPrefixes
 		}
 		qBucketsPolicyStatementsConditionsPrefixes := qrBucketsPolicyStatementsConditionsPrefixes
 		if qBucketsPolicyStatementsConditionsPrefixes != "" {
@@ -1722,13 +1858,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter != nil {
+	if o.BucketsPolicyStatementsConditionsSourceIps != nil {
 
 		// query param buckets.policy.statements.conditions.source_ips
 		var qrBucketsPolicyStatementsConditionsSourceIps string
 
-		if o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter != nil {
-			qrBucketsPolicyStatementsConditionsSourceIps = *o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter
+		if o.BucketsPolicyStatementsConditionsSourceIps != nil {
+			qrBucketsPolicyStatementsConditionsSourceIps = *o.BucketsPolicyStatementsConditionsSourceIps
 		}
 		qBucketsPolicyStatementsConditionsSourceIps := qrBucketsPolicyStatementsConditionsSourceIps
 		if qBucketsPolicyStatementsConditionsSourceIps != "" {
@@ -1739,13 +1875,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsConditionsUsernamesQueryParameter != nil {
+	if o.BucketsPolicyStatementsConditionsUsernames != nil {
 
 		// query param buckets.policy.statements.conditions.usernames
 		var qrBucketsPolicyStatementsConditionsUsernames string
 
-		if o.BucketsPolicyStatementsConditionsUsernamesQueryParameter != nil {
-			qrBucketsPolicyStatementsConditionsUsernames = *o.BucketsPolicyStatementsConditionsUsernamesQueryParameter
+		if o.BucketsPolicyStatementsConditionsUsernames != nil {
+			qrBucketsPolicyStatementsConditionsUsernames = *o.BucketsPolicyStatementsConditionsUsernames
 		}
 		qBucketsPolicyStatementsConditionsUsernames := qrBucketsPolicyStatementsConditionsUsernames
 		if qBucketsPolicyStatementsConditionsUsernames != "" {
@@ -1756,13 +1892,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsEffectQueryParameter != nil {
+	if o.BucketsPolicyStatementsEffect != nil {
 
 		// query param buckets.policy.statements.effect
 		var qrBucketsPolicyStatementsEffect string
 
-		if o.BucketsPolicyStatementsEffectQueryParameter != nil {
-			qrBucketsPolicyStatementsEffect = *o.BucketsPolicyStatementsEffectQueryParameter
+		if o.BucketsPolicyStatementsEffect != nil {
+			qrBucketsPolicyStatementsEffect = *o.BucketsPolicyStatementsEffect
 		}
 		qBucketsPolicyStatementsEffect := qrBucketsPolicyStatementsEffect
 		if qBucketsPolicyStatementsEffect != "" {
@@ -1773,13 +1909,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsPrincipalsQueryParameter != nil {
+	if o.BucketsPolicyStatementsPrincipals != nil {
 
 		// query param buckets.policy.statements.principals
 		var qrBucketsPolicyStatementsPrincipals string
 
-		if o.BucketsPolicyStatementsPrincipalsQueryParameter != nil {
-			qrBucketsPolicyStatementsPrincipals = *o.BucketsPolicyStatementsPrincipalsQueryParameter
+		if o.BucketsPolicyStatementsPrincipals != nil {
+			qrBucketsPolicyStatementsPrincipals = *o.BucketsPolicyStatementsPrincipals
 		}
 		qBucketsPolicyStatementsPrincipals := qrBucketsPolicyStatementsPrincipals
 		if qBucketsPolicyStatementsPrincipals != "" {
@@ -1790,13 +1926,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsResourcesQueryParameter != nil {
+	if o.BucketsPolicyStatementsResources != nil {
 
 		// query param buckets.policy.statements.resources
 		var qrBucketsPolicyStatementsResources string
 
-		if o.BucketsPolicyStatementsResourcesQueryParameter != nil {
-			qrBucketsPolicyStatementsResources = *o.BucketsPolicyStatementsResourcesQueryParameter
+		if o.BucketsPolicyStatementsResources != nil {
+			qrBucketsPolicyStatementsResources = *o.BucketsPolicyStatementsResources
 		}
 		qBucketsPolicyStatementsResources := qrBucketsPolicyStatementsResources
 		if qBucketsPolicyStatementsResources != "" {
@@ -1807,13 +1943,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsPolicyStatementsSIDQueryParameter != nil {
+	if o.BucketsPolicyStatementsSid != nil {
 
 		// query param buckets.policy.statements.sid
 		var qrBucketsPolicyStatementsSid string
 
-		if o.BucketsPolicyStatementsSIDQueryParameter != nil {
-			qrBucketsPolicyStatementsSid = *o.BucketsPolicyStatementsSIDQueryParameter
+		if o.BucketsPolicyStatementsSid != nil {
+			qrBucketsPolicyStatementsSid = *o.BucketsPolicyStatementsSid
 		}
 		qBucketsPolicyStatementsSid := qrBucketsPolicyStatementsSid
 		if qBucketsPolicyStatementsSid != "" {
@@ -1824,13 +1960,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsProtectionStatusDestinationIsCloudQueryParameter != nil {
+	if o.BucketsProtectionStatusDestinationIsCloud != nil {
 
 		// query param buckets.protection_status.destination.is_cloud
 		var qrBucketsProtectionStatusDestinationIsCloud bool
 
-		if o.BucketsProtectionStatusDestinationIsCloudQueryParameter != nil {
-			qrBucketsProtectionStatusDestinationIsCloud = *o.BucketsProtectionStatusDestinationIsCloudQueryParameter
+		if o.BucketsProtectionStatusDestinationIsCloud != nil {
+			qrBucketsProtectionStatusDestinationIsCloud = *o.BucketsProtectionStatusDestinationIsCloud
 		}
 		qBucketsProtectionStatusDestinationIsCloud := swag.FormatBool(qrBucketsProtectionStatusDestinationIsCloud)
 		if qBucketsProtectionStatusDestinationIsCloud != "" {
@@ -1841,13 +1977,30 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsProtectionStatusDestinationIsOntapQueryParameter != nil {
+	if o.BucketsProtectionStatusDestinationIsExternalCloud != nil {
+
+		// query param buckets.protection_status.destination.is_external_cloud
+		var qrBucketsProtectionStatusDestinationIsExternalCloud bool
+
+		if o.BucketsProtectionStatusDestinationIsExternalCloud != nil {
+			qrBucketsProtectionStatusDestinationIsExternalCloud = *o.BucketsProtectionStatusDestinationIsExternalCloud
+		}
+		qBucketsProtectionStatusDestinationIsExternalCloud := swag.FormatBool(qrBucketsProtectionStatusDestinationIsExternalCloud)
+		if qBucketsProtectionStatusDestinationIsExternalCloud != "" {
+
+			if err := r.SetQueryParam("buckets.protection_status.destination.is_external_cloud", qBucketsProtectionStatusDestinationIsExternalCloud); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsProtectionStatusDestinationIsOntap != nil {
 
 		// query param buckets.protection_status.destination.is_ontap
 		var qrBucketsProtectionStatusDestinationIsOntap bool
 
-		if o.BucketsProtectionStatusDestinationIsOntapQueryParameter != nil {
-			qrBucketsProtectionStatusDestinationIsOntap = *o.BucketsProtectionStatusDestinationIsOntapQueryParameter
+		if o.BucketsProtectionStatusDestinationIsOntap != nil {
+			qrBucketsProtectionStatusDestinationIsOntap = *o.BucketsProtectionStatusDestinationIsOntap
 		}
 		qBucketsProtectionStatusDestinationIsOntap := swag.FormatBool(qrBucketsProtectionStatusDestinationIsOntap)
 		if qBucketsProtectionStatusDestinationIsOntap != "" {
@@ -1858,13 +2011,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsProtectionStatusIsProtectedQueryParameter != nil {
+	if o.BucketsProtectionStatusIsProtected != nil {
 
 		// query param buckets.protection_status.is_protected
 		var qrBucketsProtectionStatusIsProtected bool
 
-		if o.BucketsProtectionStatusIsProtectedQueryParameter != nil {
-			qrBucketsProtectionStatusIsProtected = *o.BucketsProtectionStatusIsProtectedQueryParameter
+		if o.BucketsProtectionStatusIsProtected != nil {
+			qrBucketsProtectionStatusIsProtected = *o.BucketsProtectionStatusIsProtected
 		}
 		qBucketsProtectionStatusIsProtected := swag.FormatBool(qrBucketsProtectionStatusIsProtected)
 		if qBucketsProtectionStatusIsProtected != "" {
@@ -1875,13 +2028,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsQosPolicyMaxThroughputIopsQueryParameter != nil {
+	if o.BucketsQosPolicyMaxThroughputIops != nil {
 
 		// query param buckets.qos_policy.max_throughput_iops
 		var qrBucketsQosPolicyMaxThroughputIops int64
 
-		if o.BucketsQosPolicyMaxThroughputIopsQueryParameter != nil {
-			qrBucketsQosPolicyMaxThroughputIops = *o.BucketsQosPolicyMaxThroughputIopsQueryParameter
+		if o.BucketsQosPolicyMaxThroughputIops != nil {
+			qrBucketsQosPolicyMaxThroughputIops = *o.BucketsQosPolicyMaxThroughputIops
 		}
 		qBucketsQosPolicyMaxThroughputIops := swag.FormatInt64(qrBucketsQosPolicyMaxThroughputIops)
 		if qBucketsQosPolicyMaxThroughputIops != "" {
@@ -1892,13 +2045,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsQosPolicyMaxThroughputMbpsQueryParameter != nil {
+	if o.BucketsQosPolicyMaxThroughputMbps != nil {
 
 		// query param buckets.qos_policy.max_throughput_mbps
 		var qrBucketsQosPolicyMaxThroughputMbps int64
 
-		if o.BucketsQosPolicyMaxThroughputMbpsQueryParameter != nil {
-			qrBucketsQosPolicyMaxThroughputMbps = *o.BucketsQosPolicyMaxThroughputMbpsQueryParameter
+		if o.BucketsQosPolicyMaxThroughputMbps != nil {
+			qrBucketsQosPolicyMaxThroughputMbps = *o.BucketsQosPolicyMaxThroughputMbps
 		}
 		qBucketsQosPolicyMaxThroughputMbps := swag.FormatInt64(qrBucketsQosPolicyMaxThroughputMbps)
 		if qBucketsQosPolicyMaxThroughputMbps != "" {
@@ -1909,13 +2062,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsQosPolicyMinThroughputIopsQueryParameter != nil {
+	if o.BucketsQosPolicyMinThroughputIops != nil {
 
 		// query param buckets.qos_policy.min_throughput_iops
 		var qrBucketsQosPolicyMinThroughputIops int64
 
-		if o.BucketsQosPolicyMinThroughputIopsQueryParameter != nil {
-			qrBucketsQosPolicyMinThroughputIops = *o.BucketsQosPolicyMinThroughputIopsQueryParameter
+		if o.BucketsQosPolicyMinThroughputIops != nil {
+			qrBucketsQosPolicyMinThroughputIops = *o.BucketsQosPolicyMinThroughputIops
 		}
 		qBucketsQosPolicyMinThroughputIops := swag.FormatInt64(qrBucketsQosPolicyMinThroughputIops)
 		if qBucketsQosPolicyMinThroughputIops != "" {
@@ -1926,13 +2079,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsQosPolicyMinThroughputMbpsQueryParameter != nil {
+	if o.BucketsQosPolicyMinThroughputMbps != nil {
 
 		// query param buckets.qos_policy.min_throughput_mbps
 		var qrBucketsQosPolicyMinThroughputMbps int64
 
-		if o.BucketsQosPolicyMinThroughputMbpsQueryParameter != nil {
-			qrBucketsQosPolicyMinThroughputMbps = *o.BucketsQosPolicyMinThroughputMbpsQueryParameter
+		if o.BucketsQosPolicyMinThroughputMbps != nil {
+			qrBucketsQosPolicyMinThroughputMbps = *o.BucketsQosPolicyMinThroughputMbps
 		}
 		qBucketsQosPolicyMinThroughputMbps := swag.FormatInt64(qrBucketsQosPolicyMinThroughputMbps)
 		if qBucketsQosPolicyMinThroughputMbps != "" {
@@ -1943,13 +2096,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsQosPolicyNameQueryParameter != nil {
+	if o.BucketsQosPolicyName != nil {
 
 		// query param buckets.qos_policy.name
 		var qrBucketsQosPolicyName string
 
-		if o.BucketsQosPolicyNameQueryParameter != nil {
-			qrBucketsQosPolicyName = *o.BucketsQosPolicyNameQueryParameter
+		if o.BucketsQosPolicyName != nil {
+			qrBucketsQosPolicyName = *o.BucketsQosPolicyName
 		}
 		qBucketsQosPolicyName := qrBucketsQosPolicyName
 		if qBucketsQosPolicyName != "" {
@@ -1960,13 +2113,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsQosPolicyUUIDQueryParameter != nil {
+	if o.BucketsQosPolicyUUID != nil {
 
 		// query param buckets.qos_policy.uuid
 		var qrBucketsQosPolicyUUID string
 
-		if o.BucketsQosPolicyUUIDQueryParameter != nil {
-			qrBucketsQosPolicyUUID = *o.BucketsQosPolicyUUIDQueryParameter
+		if o.BucketsQosPolicyUUID != nil {
+			qrBucketsQosPolicyUUID = *o.BucketsQosPolicyUUID
 		}
 		qBucketsQosPolicyUUID := qrBucketsQosPolicyUUID
 		if qBucketsQosPolicyUUID != "" {
@@ -1977,13 +2130,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsRoleQueryParameter != nil {
+	if o.BucketsRole != nil {
 
 		// query param buckets.role
 		var qrBucketsRole string
 
-		if o.BucketsRoleQueryParameter != nil {
-			qrBucketsRole = *o.BucketsRoleQueryParameter
+		if o.BucketsRole != nil {
+			qrBucketsRole = *o.BucketsRole
 		}
 		qBucketsRole := qrBucketsRole
 		if qBucketsRole != "" {
@@ -1994,13 +2147,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsSizeQueryParameter != nil {
+	if o.BucketsSize != nil {
 
 		// query param buckets.size
 		var qrBucketsSize int64
 
-		if o.BucketsSizeQueryParameter != nil {
-			qrBucketsSize = *o.BucketsSizeQueryParameter
+		if o.BucketsSize != nil {
+			qrBucketsSize = *o.BucketsSize
 		}
 		qBucketsSize := swag.FormatInt64(qrBucketsSize)
 		if qBucketsSize != "" {
@@ -2011,13 +2164,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsSVMNameQueryParameter != nil {
+	if o.BucketsSvmName != nil {
 
 		// query param buckets.svm.name
 		var qrBucketsSvmName string
 
-		if o.BucketsSVMNameQueryParameter != nil {
-			qrBucketsSvmName = *o.BucketsSVMNameQueryParameter
+		if o.BucketsSvmName != nil {
+			qrBucketsSvmName = *o.BucketsSvmName
 		}
 		qBucketsSvmName := qrBucketsSvmName
 		if qBucketsSvmName != "" {
@@ -2028,13 +2181,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsSVMUUIDQueryParameter != nil {
+	if o.BucketsSvmUUID != nil {
 
 		// query param buckets.svm.uuid
 		var qrBucketsSvmUUID string
 
-		if o.BucketsSVMUUIDQueryParameter != nil {
-			qrBucketsSvmUUID = *o.BucketsSVMUUIDQueryParameter
+		if o.BucketsSvmUUID != nil {
+			qrBucketsSvmUUID = *o.BucketsSvmUUID
 		}
 		qBucketsSvmUUID := qrBucketsSvmUUID
 		if qBucketsSvmUUID != "" {
@@ -2045,13 +2198,30 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsUUIDQueryParameter != nil {
+	if o.BucketsType != nil {
+
+		// query param buckets.type
+		var qrBucketsType string
+
+		if o.BucketsType != nil {
+			qrBucketsType = *o.BucketsType
+		}
+		qBucketsType := qrBucketsType
+		if qBucketsType != "" {
+
+			if err := r.SetQueryParam("buckets.type", qBucketsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsUUID != nil {
 
 		// query param buckets.uuid
 		var qrBucketsUUID string
 
-		if o.BucketsUUIDQueryParameter != nil {
-			qrBucketsUUID = *o.BucketsUUIDQueryParameter
+		if o.BucketsUUID != nil {
+			qrBucketsUUID = *o.BucketsUUID
 		}
 		qBucketsUUID := qrBucketsUUID
 		if qBucketsUUID != "" {
@@ -2062,13 +2232,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsVersioningStateQueryParameter != nil {
+	if o.BucketsVersioningState != nil {
 
 		// query param buckets.versioning_state
 		var qrBucketsVersioningState string
 
-		if o.BucketsVersioningStateQueryParameter != nil {
-			qrBucketsVersioningState = *o.BucketsVersioningStateQueryParameter
+		if o.BucketsVersioningState != nil {
+			qrBucketsVersioningState = *o.BucketsVersioningState
 		}
 		qBucketsVersioningState := qrBucketsVersioningState
 		if qBucketsVersioningState != "" {
@@ -2079,13 +2249,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsVolumeNameQueryParameter != nil {
+	if o.BucketsVolumeName != nil {
 
 		// query param buckets.volume.name
 		var qrBucketsVolumeName string
 
-		if o.BucketsVolumeNameQueryParameter != nil {
-			qrBucketsVolumeName = *o.BucketsVolumeNameQueryParameter
+		if o.BucketsVolumeName != nil {
+			qrBucketsVolumeName = *o.BucketsVolumeName
 		}
 		qBucketsVolumeName := qrBucketsVolumeName
 		if qBucketsVolumeName != "" {
@@ -2096,13 +2266,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.BucketsVolumeUUIDQueryParameter != nil {
+	if o.BucketsVolumeUUID != nil {
 
 		// query param buckets.volume.uuid
 		var qrBucketsVolumeUUID string
 
-		if o.BucketsVolumeUUIDQueryParameter != nil {
-			qrBucketsVolumeUUID = *o.BucketsVolumeUUIDQueryParameter
+		if o.BucketsVolumeUUID != nil {
+			qrBucketsVolumeUUID = *o.BucketsVolumeUUID
 		}
 		qBucketsVolumeUUID := qrBucketsVolumeUUID
 		if qBucketsVolumeUUID != "" {
@@ -2113,13 +2283,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.CertificateNameQueryParameter != nil {
+	if o.CertificateName != nil {
 
 		// query param certificate.name
 		var qrCertificateName string
 
-		if o.CertificateNameQueryParameter != nil {
-			qrCertificateName = *o.CertificateNameQueryParameter
+		if o.CertificateName != nil {
+			qrCertificateName = *o.CertificateName
 		}
 		qCertificateName := qrCertificateName
 		if qCertificateName != "" {
@@ -2130,13 +2300,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.CertificateUUIDQueryParameter != nil {
+	if o.CertificateUUID != nil {
 
 		// query param certificate.uuid
 		var qrCertificateUUID string
 
-		if o.CertificateUUIDQueryParameter != nil {
-			qrCertificateUUID = *o.CertificateUUIDQueryParameter
+		if o.CertificateUUID != nil {
+			qrCertificateUUID = *o.CertificateUUID
 		}
 		qCertificateUUID := qrCertificateUUID
 		if qCertificateUUID != "" {
@@ -2147,13 +2317,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -2164,13 +2334,47 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.DefaultUnixUser != nil {
+
+		// query param default_unix_user
+		var qrDefaultUnixUser string
+
+		if o.DefaultUnixUser != nil {
+			qrDefaultUnixUser = *o.DefaultUnixUser
+		}
+		qDefaultUnixUser := qrDefaultUnixUser
+		if qDefaultUnixUser != "" {
+
+			if err := r.SetQueryParam("default_unix_user", qDefaultUnixUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DefaultWinUser != nil {
+
+		// query param default_win_user
+		var qrDefaultWinUser string
+
+		if o.DefaultWinUser != nil {
+			qrDefaultWinUser = *o.DefaultWinUser
+		}
+		qDefaultWinUser := qrDefaultWinUser
+		if qDefaultWinUser != "" {
+
+			if err := r.SetQueryParam("default_win_user", qDefaultWinUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -2181,7 +2385,7 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -2192,13 +2396,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IsHTTPEnabledQueryParameter != nil {
+	if o.IsHTTPEnabled != nil {
 
 		// query param is_http_enabled
 		var qrIsHTTPEnabled bool
 
-		if o.IsHTTPEnabledQueryParameter != nil {
-			qrIsHTTPEnabled = *o.IsHTTPEnabledQueryParameter
+		if o.IsHTTPEnabled != nil {
+			qrIsHTTPEnabled = *o.IsHTTPEnabled
 		}
 		qIsHTTPEnabled := swag.FormatBool(qrIsHTTPEnabled)
 		if qIsHTTPEnabled != "" {
@@ -2209,13 +2413,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.IsHTTPsEnabledQueryParameter != nil {
+	if o.IsHTTPSEnabled != nil {
 
 		// query param is_https_enabled
 		var qrIsHTTPSEnabled bool
 
-		if o.IsHTTPsEnabledQueryParameter != nil {
-			qrIsHTTPSEnabled = *o.IsHTTPsEnabledQueryParameter
+		if o.IsHTTPSEnabled != nil {
+			qrIsHTTPSEnabled = *o.IsHTTPSEnabled
 		}
 		qIsHTTPSEnabled := swag.FormatBool(qrIsHTTPSEnabled)
 		if qIsHTTPSEnabled != "" {
@@ -2226,13 +2430,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -2243,13 +2447,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -2260,13 +2464,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsOtherQueryParameter != nil {
+	if o.MetricIopsOther != nil {
 
 		// query param metric.iops.other
 		var qrMetricIopsOther int64
 
-		if o.MetricIopsOtherQueryParameter != nil {
-			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
 		}
 		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
 		if qMetricIopsOther != "" {
@@ -2277,13 +2481,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsReadQueryParameter != nil {
+	if o.MetricIopsRead != nil {
 
 		// query param metric.iops.read
 		var qrMetricIopsRead int64
 
-		if o.MetricIopsReadQueryParameter != nil {
-			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
 		}
 		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
 		if qMetricIopsRead != "" {
@@ -2294,13 +2498,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsTotalQueryParameter != nil {
+	if o.MetricIopsTotal != nil {
 
 		// query param metric.iops.total
 		var qrMetricIopsTotal int64
 
-		if o.MetricIopsTotalQueryParameter != nil {
-			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
 		}
 		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
 		if qMetricIopsTotal != "" {
@@ -2311,13 +2515,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricIopsWriteQueryParameter != nil {
+	if o.MetricIopsWrite != nil {
 
 		// query param metric.iops.write
 		var qrMetricIopsWrite int64
 
-		if o.MetricIopsWriteQueryParameter != nil {
-			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
 		}
 		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
 		if qMetricIopsWrite != "" {
@@ -2328,13 +2532,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyOtherQueryParameter != nil {
+	if o.MetricLatencyOther != nil {
 
 		// query param metric.latency.other
 		var qrMetricLatencyOther int64
 
-		if o.MetricLatencyOtherQueryParameter != nil {
-			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
 		}
 		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
 		if qMetricLatencyOther != "" {
@@ -2345,13 +2549,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyReadQueryParameter != nil {
+	if o.MetricLatencyRead != nil {
 
 		// query param metric.latency.read
 		var qrMetricLatencyRead int64
 
-		if o.MetricLatencyReadQueryParameter != nil {
-			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
 		}
 		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
 		if qMetricLatencyRead != "" {
@@ -2362,13 +2566,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyTotalQueryParameter != nil {
+	if o.MetricLatencyTotal != nil {
 
 		// query param metric.latency.total
 		var qrMetricLatencyTotal int64
 
-		if o.MetricLatencyTotalQueryParameter != nil {
-			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
 		}
 		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
 		if qMetricLatencyTotal != "" {
@@ -2379,13 +2583,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricLatencyWriteQueryParameter != nil {
+	if o.MetricLatencyWrite != nil {
 
 		// query param metric.latency.write
 		var qrMetricLatencyWrite int64
 
-		if o.MetricLatencyWriteQueryParameter != nil {
-			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
 		}
 		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
 		if qMetricLatencyWrite != "" {
@@ -2396,13 +2600,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -2413,13 +2617,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -2430,13 +2634,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -2447,13 +2651,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -2464,13 +2668,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -2481,13 +2685,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -2498,7 +2702,7 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -2509,13 +2713,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.PortQueryParameter != nil {
+	if o.Port != nil {
 
 		// query param port
 		var qrPort int64
 
-		if o.PortQueryParameter != nil {
-			qrPort = *o.PortQueryParameter
+		if o.Port != nil {
+			qrPort = *o.Port
 		}
 		qPort := swag.FormatInt64(qrPort)
 		if qPort != "" {
@@ -2526,13 +2730,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -2543,13 +2747,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2560,13 +2764,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SecurePortQueryParameter != nil {
+	if o.SecurePort != nil {
 
 		// query param secure_port
 		var qrSecurePort int64
 
-		if o.SecurePortQueryParameter != nil {
-			qrSecurePort = *o.SecurePortQueryParameter
+		if o.SecurePort != nil {
+			qrSecurePort = *o.SecurePort
 		}
 		qSecurePort := swag.FormatInt64(qrSecurePort)
 		if qSecurePort != "" {
@@ -2577,13 +2781,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -2594,13 +2798,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -2611,13 +2815,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -2628,13 +2832,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -2645,13 +2849,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsLatencyRawOther != nil {
 
 		// query param statistics.latency_raw.other
 		var qrStatisticsLatencyRawOther int64
 
-		if o.StatisticsLatencyRawOtherQueryParameter != nil {
-			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
 		}
 		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
 		if qStatisticsLatencyRawOther != "" {
@@ -2662,13 +2866,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawReadQueryParameter != nil {
+	if o.StatisticsLatencyRawRead != nil {
 
 		// query param statistics.latency_raw.read
 		var qrStatisticsLatencyRawRead int64
 
-		if o.StatisticsLatencyRawReadQueryParameter != nil {
-			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
 		}
 		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
 		if qStatisticsLatencyRawRead != "" {
@@ -2679,13 +2883,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsLatencyRawTotal != nil {
 
 		// query param statistics.latency_raw.total
 		var qrStatisticsLatencyRawTotal int64
 
-		if o.StatisticsLatencyRawTotalQueryParameter != nil {
-			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
 		}
 		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
 		if qStatisticsLatencyRawTotal != "" {
@@ -2696,13 +2900,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsLatencyRawWrite != nil {
 
 		// query param statistics.latency_raw.write
 		var qrStatisticsLatencyRawWrite int64
 
-		if o.StatisticsLatencyRawWriteQueryParameter != nil {
-			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
 		}
 		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
 		if qStatisticsLatencyRawWrite != "" {
@@ -2713,13 +2917,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -2730,13 +2934,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -2747,13 +2951,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -2764,13 +2968,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -2781,13 +2985,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -2798,13 +3002,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -2815,13 +3019,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -2832,13 +3036,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersAccessKeyQueryParameter != nil {
+	if o.UsersAccessKey != nil {
 
 		// query param users.access_key
 		var qrUsersAccessKey string
 
-		if o.UsersAccessKeyQueryParameter != nil {
-			qrUsersAccessKey = *o.UsersAccessKeyQueryParameter
+		if o.UsersAccessKey != nil {
+			qrUsersAccessKey = *o.UsersAccessKey
 		}
 		qUsersAccessKey := qrUsersAccessKey
 		if qUsersAccessKey != "" {
@@ -2849,13 +3053,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersCommentQueryParameter != nil {
+	if o.UsersComment != nil {
 
 		// query param users.comment
 		var qrUsersComment string
 
-		if o.UsersCommentQueryParameter != nil {
-			qrUsersComment = *o.UsersCommentQueryParameter
+		if o.UsersComment != nil {
+			qrUsersComment = *o.UsersComment
 		}
 		qUsersComment := qrUsersComment
 		if qUsersComment != "" {
@@ -2866,13 +3070,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersNameQueryParameter != nil {
+	if o.UsersName != nil {
 
 		// query param users.name
 		var qrUsersName string
 
-		if o.UsersNameQueryParameter != nil {
-			qrUsersName = *o.UsersNameQueryParameter
+		if o.UsersName != nil {
+			qrUsersName = *o.UsersName
 		}
 		qUsersName := qrUsersName
 		if qUsersName != "" {
@@ -2883,13 +3087,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersSVMNameQueryParameter != nil {
+	if o.UsersSvmName != nil {
 
 		// query param users.svm.name
 		var qrUsersSvmName string
 
-		if o.UsersSVMNameQueryParameter != nil {
-			qrUsersSvmName = *o.UsersSVMNameQueryParameter
+		if o.UsersSvmName != nil {
+			qrUsersSvmName = *o.UsersSvmName
 		}
 		qUsersSvmName := qrUsersSvmName
 		if qUsersSvmName != "" {
@@ -2900,13 +3104,13 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.UsersSVMUUIDQueryParameter != nil {
+	if o.UsersSvmUUID != nil {
 
 		// query param users.svm.uuid
 		var qrUsersSvmUUID string
 
-		if o.UsersSVMUUIDQueryParameter != nil {
-			qrUsersSvmUUID = *o.UsersSVMUUIDQueryParameter
+		if o.UsersSvmUUID != nil {
+			qrUsersSvmUUID = *o.UsersSvmUUID
 		}
 		qUsersSvmUUID := qrUsersSvmUUID
 		if qUsersSvmUUID != "" {
@@ -2925,7 +3129,7 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamS3ServiceCollectionGet binds the parameter fields
 func (o *S3ServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2942,7 +3146,7 @@ func (o *S3ServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamS3ServiceCollectionGet binds the parameter order_by
 func (o *S3ServiceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

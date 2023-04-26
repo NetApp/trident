@@ -74,19 +74,19 @@ type RolePrivilegeCreateParams struct {
 
 	   Role name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* OwnerUUID.
 
 	   Role owner UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *RolePrivilegeCreateParams) WithDefaults() *RolePrivilegeCreateParams {
 // All values with no default are reset to their zero value.
 func (o *RolePrivilegeCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := RolePrivilegeCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -163,37 +163,37 @@ func (o *RolePrivilegeCreateParams) SetInfo(info *models.RolePrivilege) {
 	o.Info = info
 }
 
-// WithNamePathParameter adds the name to the role privilege create params
-func (o *RolePrivilegeCreateParams) WithNamePathParameter(name string) *RolePrivilegeCreateParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the role privilege create params
+func (o *RolePrivilegeCreateParams) WithName(name string) *RolePrivilegeCreateParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the role privilege create params
-func (o *RolePrivilegeCreateParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the role privilege create params
+func (o *RolePrivilegeCreateParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the role privilege create params
-func (o *RolePrivilegeCreateParams) WithOwnerUUIDPathParameter(ownerUUID string) *RolePrivilegeCreateParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the role privilege create params
+func (o *RolePrivilegeCreateParams) WithOwnerUUID(ownerUUID string) *RolePrivilegeCreateParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the role privilege create params
-func (o *RolePrivilegeCreateParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the role privilege create params
+func (o *RolePrivilegeCreateParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the role privilege create params
-func (o *RolePrivilegeCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *RolePrivilegeCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the role privilege create params
+func (o *RolePrivilegeCreateParams) WithReturnRecords(returnRecords *bool) *RolePrivilegeCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the role privilege create params
-func (o *RolePrivilegeCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the role privilege create params
+func (o *RolePrivilegeCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -210,22 +210,22 @@ func (o *RolePrivilegeCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

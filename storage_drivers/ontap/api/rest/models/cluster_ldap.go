@@ -21,10 +21,10 @@ import (
 type ClusterLdap struct {
 
 	// links
-	Links *ClusterLdapLinks `json:"_links,omitempty"`
+	Links *ClusterLdapInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the default base DN for all searches.
-	BaseDn string `json:"base_dn,omitempty"`
+	BaseDn *string `json:"base_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP queries:
 	// * base - search the named entry only
@@ -36,20 +36,23 @@ type ClusterLdap struct {
 
 	// Specifies whether or not CIFS server's credentials are used to bind to the LDAP server.
 	//
-	BindAsCifsServer bool `json:"bind_as_cifs_server,omitempty"`
+	BindAsCifsServer *bool `json:"bind_as_cifs_server,omitempty"`
 
 	// Specifies the user that binds to the LDAP servers.
-	BindDn string `json:"bind_dn,omitempty"`
+	BindDn *string `json:"bind_dn,omitempty"`
 
 	// Specifies the bind password for the LDAP servers.
-	BindPassword string `json:"bind_password,omitempty"`
+	BindPassword *string `json:"bind_password,omitempty"`
+
+	// cluster ldap inline servers
+	ClusterLdapInlineServers []*string `json:"servers,omitempty"`
 
 	// Specifies the group Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for group lookups.
-	GroupDn string `json:"group_dn,omitempty"`
+	GroupDn *string `json:"group_dn,omitempty"`
 
 	// Specifies the custom filter used for group membership lookups from an LDAP server.
 	//
-	GroupMembershipFilter string `json:"group_membership_filter,omitempty"`
+	GroupMembershipFilter *string `json:"group_membership_filter,omitempty"`
 
 	// Specifies the default search scope for LDAP for group lookups:
 	// * base - search the named entry only
@@ -81,7 +84,7 @@ type ClusterLdap struct {
 	MinBindLevel *string `json:"min_bind_level,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup by host lookups.
-	NetgroupByhostDn string `json:"netgroup_byhost_dn,omitempty"`
+	NetgroupByhostDn *string `json:"netgroup_byhost_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for netgroup by host lookups:
 	// * base - search the named entry only
@@ -92,7 +95,7 @@ type ClusterLdap struct {
 	NetgroupByhostScope *string `json:"netgroup_byhost_scope,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup lookups.
-	NetgroupDn string `json:"netgroup_dn,omitempty"`
+	NetgroupDn *string `json:"netgroup_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for netgroup lookups:
 	// * base - search the named entry only
@@ -106,7 +109,7 @@ type ClusterLdap struct {
 	// Example: 389
 	// Maximum: 65535
 	// Minimum: 1
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Specifies the maximum time to wait for a query response from the LDAP server, in seconds.
 	//
@@ -121,9 +124,6 @@ type ClusterLdap struct {
 	//
 	Schema *string `json:"schema,omitempty"`
 
-	// servers
-	Servers []string `json:"servers,omitempty"`
-
 	// Specifies the level of security to be used for LDAP communications:
 	// * none - no signing or sealing
 	// * sign - sign LDAP traffic
@@ -137,7 +137,7 @@ type ClusterLdap struct {
 	SkipConfigValidation *bool `json:"skip_config_validation,omitempty"`
 
 	// status
-	Status *ClusterLdapStatus `json:"status,omitempty"`
+	Status *ClusterLdapInlineStatus `json:"status,omitempty"`
 
 	// Specifies whether or not channel binding is attempted in the case of TLS/LDAPS.
 	//
@@ -148,7 +148,7 @@ type ClusterLdap struct {
 	UseStartTLS *bool `json:"use_start_tls,omitempty"`
 
 	// Specifies the user Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for user lookups.
-	UserDn string `json:"user_dn,omitempty"`
+	UserDn *string `json:"user_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for user lookups:
 	// * base - search the named entry only
@@ -561,11 +561,11 @@ func (m *ClusterLdap) validatePort(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("port", "body", m.Port, 1, false); err != nil {
+	if err := validate.MinimumInt("port", "body", *m.Port, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("port", "body", m.Port, 65535, false); err != nil {
+	if err := validate.MaximumInt("port", "body", *m.Port, 65535, false); err != nil {
 		return err
 	}
 
@@ -798,17 +798,17 @@ func (m *ClusterLdap) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterLdapLinks cluster ldap links
+// ClusterLdapInlineLinks cluster ldap inline links
 //
-// swagger:model ClusterLdapLinks
-type ClusterLdapLinks struct {
+// swagger:model cluster_ldap_inline__links
+type ClusterLdapInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cluster ldap links
-func (m *ClusterLdapLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ldap inline links
+func (m *ClusterLdapInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -821,7 +821,7 @@ func (m *ClusterLdapLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterLdapLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ClusterLdapInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -838,8 +838,8 @@ func (m *ClusterLdapLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cluster ldap links based on the context it is used
-func (m *ClusterLdapLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ldap inline links based on the context it is used
+func (m *ClusterLdapInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -852,7 +852,7 @@ func (m *ClusterLdapLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ClusterLdapLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ClusterLdapInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -867,7 +867,7 @@ func (m *ClusterLdapLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterLdapLinks) MarshalBinary() ([]byte, error) {
+func (m *ClusterLdapInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -875,8 +875,8 @@ func (m *ClusterLdapLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterLdapLinks) UnmarshalBinary(b []byte) error {
-	var res ClusterLdapLinks
+func (m *ClusterLdapInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterLdapInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -884,31 +884,31 @@ func (m *ClusterLdapLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterLdapStatus cluster ldap status
+// ClusterLdapInlineStatus cluster ldap inline status
 //
-// swagger:model ClusterLdapStatus
-type ClusterLdapStatus struct {
+// swagger:model cluster_ldap_inline_status
+type ClusterLdapInlineStatus struct {
 
 	// Code corresponding to the status message.
 	//
 	// Example: 65537300
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// dn message
-	DnMessage []string `json:"dn_message,omitempty"`
+	DnMessage []*string `json:"dn_message,omitempty"`
 
 	// Provides additional details on the status of the LDAP service.
 	//
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Specifies the status of the LDAP service.
 	//
 	// Enum: [up down]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this cluster ldap status
-func (m *ClusterLdapStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this cluster ldap inline status
+func (m *ClusterLdapInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -921,7 +921,7 @@ func (m *ClusterLdapStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var clusterLdapStatusTypeStatePropEnum []interface{}
+var clusterLdapInlineStatusTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -929,56 +929,56 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		clusterLdapStatusTypeStatePropEnum = append(clusterLdapStatusTypeStatePropEnum, v)
+		clusterLdapInlineStatusTypeStatePropEnum = append(clusterLdapInlineStatusTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// ClusterLdapStatus
-	// ClusterLdapStatus
+	// cluster_ldap_inline_status
+	// ClusterLdapInlineStatus
 	// state
 	// State
 	// up
 	// END DEBUGGING
-	// ClusterLdapStatusStateUp captures enum value "up"
-	ClusterLdapStatusStateUp string = "up"
+	// ClusterLdapInlineStatusStateUp captures enum value "up"
+	ClusterLdapInlineStatusStateUp string = "up"
 
 	// BEGIN DEBUGGING
-	// ClusterLdapStatus
-	// ClusterLdapStatus
+	// cluster_ldap_inline_status
+	// ClusterLdapInlineStatus
 	// state
 	// State
 	// down
 	// END DEBUGGING
-	// ClusterLdapStatusStateDown captures enum value "down"
-	ClusterLdapStatusStateDown string = "down"
+	// ClusterLdapInlineStatusStateDown captures enum value "down"
+	ClusterLdapInlineStatusStateDown string = "down"
 )
 
 // prop value enum
-func (m *ClusterLdapStatus) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, clusterLdapStatusTypeStatePropEnum, true); err != nil {
+func (m *ClusterLdapInlineStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapInlineStatusTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *ClusterLdapStatus) validateState(formats strfmt.Registry) error {
+func (m *ClusterLdapInlineStatus) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("status"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("status"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this cluster ldap status based on the context it is used
-func (m *ClusterLdapStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cluster ldap inline status based on the context it is used
+func (m *ClusterLdapInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -988,7 +988,7 @@ func (m *ClusterLdapStatus) ContextValidate(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *ClusterLdapStatus) MarshalBinary() ([]byte, error) {
+func (m *ClusterLdapInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -996,8 +996,8 @@ func (m *ClusterLdapStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ClusterLdapStatus) UnmarshalBinary(b []byte) error {
-	var res ClusterLdapStatus
+func (m *ClusterLdapInlineStatus) UnmarshalBinary(b []byte) error {
+	var res ClusterLdapInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

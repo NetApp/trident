@@ -66,7 +66,7 @@ type ClusterLdapGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,15 +121,15 @@ func (o *ClusterLdapGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cluster ldap get params
-func (o *ClusterLdapGetParams) WithFieldsQueryParameter(fields []string) *ClusterLdapGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cluster ldap get params
+func (o *ClusterLdapGetParams) WithFields(fields []string) *ClusterLdapGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cluster ldap get params
-func (o *ClusterLdapGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cluster ldap get params
+func (o *ClusterLdapGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *ClusterLdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -159,7 +159,7 @@ func (o *ClusterLdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamClusterLdapGet binds the parameter fields
 func (o *ClusterLdapGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

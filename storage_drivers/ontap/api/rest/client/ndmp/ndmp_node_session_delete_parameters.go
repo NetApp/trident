@@ -65,13 +65,13 @@ type NdmpNodeSessionDeleteParams struct {
 
 	   NDMP node UUID
 	*/
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	/* SessionID.
 
 	   Session identifier
 	*/
-	SessionIDPathParameter string
+	SessionID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *NdmpNodeSessionDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the ndmp node session delete params
-func (o *NdmpNodeSessionDeleteParams) WithOwnerUUIDPathParameter(ownerUUID string) *NdmpNodeSessionDeleteParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the ndmp node session delete params
+func (o *NdmpNodeSessionDeleteParams) WithOwnerUUID(ownerUUID string) *NdmpNodeSessionDeleteParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the ndmp node session delete params
-func (o *NdmpNodeSessionDeleteParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the ndmp node session delete params
+func (o *NdmpNodeSessionDeleteParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
-// WithSessionIDPathParameter adds the sessionID to the ndmp node session delete params
-func (o *NdmpNodeSessionDeleteParams) WithSessionIDPathParameter(sessionID string) *NdmpNodeSessionDeleteParams {
-	o.SetSessionIDPathParameter(sessionID)
+// WithSessionID adds the sessionID to the ndmp node session delete params
+func (o *NdmpNodeSessionDeleteParams) WithSessionID(sessionID string) *NdmpNodeSessionDeleteParams {
+	o.SetSessionID(sessionID)
 	return o
 }
 
-// SetSessionIDPathParameter adds the sessionId to the ndmp node session delete params
-func (o *NdmpNodeSessionDeleteParams) SetSessionIDPathParameter(sessionID string) {
-	o.SessionIDPathParameter = sessionID
+// SetSessionID adds the sessionId to the ndmp node session delete params
+func (o *NdmpNodeSessionDeleteParams) SetSessionID(sessionID string) {
+	o.SessionID = sessionID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *NdmpNodeSessionDeleteParams) WriteToRequest(r runtime.ClientRequest, re
 	var res []error
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
 	// path param session.id
-	if err := r.SetPathParam("session.id", o.SessionIDPathParameter); err != nil {
+	if err := r.SetPathParam("session.id", o.SessionID); err != nil {
 		return err
 	}
 

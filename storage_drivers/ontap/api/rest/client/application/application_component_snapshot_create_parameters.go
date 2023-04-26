@@ -68,13 +68,13 @@ type ApplicationComponentSnapshotCreateParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* ComponentUUID.
 
 	   Application Component UUID
 	*/
-	ComponentUUIDPathParameter string
+	ComponentUUID string
 
 	/* Info.
 
@@ -86,13 +86,13 @@ type ApplicationComponentSnapshotCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -112,14 +112,14 @@ func (o *ApplicationComponentSnapshotCreateParams) WithDefaults() *ApplicationCo
 // All values with no default are reset to their zero value.
 func (o *ApplicationComponentSnapshotCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := ApplicationComponentSnapshotCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -161,26 +161,26 @@ func (o *ApplicationComponentSnapshotCreateParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationComponentSnapshotCreateParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) WithApplicationUUID(applicationUUID string) *ApplicationComponentSnapshotCreateParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithComponentUUIDPathParameter adds the componentUUID to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) WithComponentUUIDPathParameter(componentUUID string) *ApplicationComponentSnapshotCreateParams {
-	o.SetComponentUUIDPathParameter(componentUUID)
+// WithComponentUUID adds the componentUUID to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) WithComponentUUID(componentUUID string) *ApplicationComponentSnapshotCreateParams {
+	o.SetComponentUUID(componentUUID)
 	return o
 }
 
-// SetComponentUUIDPathParameter adds the componentUuid to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) SetComponentUUIDPathParameter(componentUUID string) {
-	o.ComponentUUIDPathParameter = componentUUID
+// SetComponentUUID adds the componentUuid to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) SetComponentUUID(componentUUID string) {
+	o.ComponentUUID = componentUUID
 }
 
 // WithInfo adds the info to the application component snapshot create params
@@ -194,26 +194,26 @@ func (o *ApplicationComponentSnapshotCreateParams) SetInfo(info *models.Applicat
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationComponentSnapshotCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) WithReturnRecords(returnRecords *bool) *ApplicationComponentSnapshotCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationComponentSnapshotCreateParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) WithReturnTimeout(returnTimeout *int64) *ApplicationComponentSnapshotCreateParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot create params
-func (o *ApplicationComponentSnapshotCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application component snapshot create params
+func (o *ApplicationComponentSnapshotCreateParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -225,12 +225,12 @@ func (o *ApplicationComponentSnapshotCreateParams) WriteToRequest(r runtime.Clie
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
 	// path param component.uuid
-	if err := r.SetPathParam("component.uuid", o.ComponentUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("component.uuid", o.ComponentUUID); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -239,13 +239,13 @@ func (o *ApplicationComponentSnapshotCreateParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -256,13 +256,13 @@ func (o *ApplicationComponentSnapshotCreateParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

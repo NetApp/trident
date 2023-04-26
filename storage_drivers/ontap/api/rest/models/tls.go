@@ -21,11 +21,11 @@ import (
 // swagger:model tls
 type TLS struct {
 
-	// Names a cipher suite that the system can select during TLS handshakes. A list of available options can be found on the Internet Assigned Number Authority (IANA) website.
-	CipherSuites []string `json:"cipher_suites,omitempty"`
-
 	// Names a TLS protocol version that the system can select during TLS handshakes. The use of SSLv3 or TLSv1 is discouraged.
-	ProtocolVersions []string `json:"protocol_versions,omitempty"`
+	ProtocolVersions []*string `json:"protocol_versions,omitempty"`
+
+	// Names a cipher suite that the system can select during TLS handshakes. A list of available options can be found on the Internet Assigned Number Authority (IANA) website.
+	TLSInlineCipherSuites []*string `json:"cipher_suites,omitempty"`
 }
 
 // Validate validates this tls
@@ -67,9 +67,12 @@ func (m *TLS) validateProtocolVersions(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.ProtocolVersions); i++ {
+		if swag.IsZero(m.ProtocolVersions[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateProtocolVersionsItemsEnum("protocol_versions"+"."+strconv.Itoa(i), "body", m.ProtocolVersions[i]); err != nil {
+		if err := m.validateProtocolVersionsItemsEnum("protocol_versions"+"."+strconv.Itoa(i), "body", *m.ProtocolVersions[i]); err != nil {
 			return err
 		}
 

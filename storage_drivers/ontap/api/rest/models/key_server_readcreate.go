@@ -25,23 +25,23 @@ type KeyServerReadcreate struct {
 	// A comma delimited string of the secondary key servers associated with the primary key server.
 	// Example: secondary1.com, 10.2.3.4
 	// Read Only: true
-	SecondaryKeyServers string `json:"secondary_key_servers,omitempty"`
+	SecondaryKeyServers *string `json:"secondary_key_servers,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used.
 	// Example: keyserver1.com:5698
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// I/O timeout in seconds for communicating with the key server.
 	// Example: 60
 	// Read Only: true
 	// Maximum: 60
 	// Minimum: 1
-	Timeout int64 `json:"timeout,omitempty"`
+	Timeout *int64 `json:"timeout,omitempty"`
 
 	// Username credentials for connecting with the key server.
 	// Example: admin
 	// Read Only: true
-	Username string `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // Validate validates this key server readcreate
@@ -84,11 +84,11 @@ func (m *KeyServerReadcreate) validateTimeout(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("timeout", "body", m.Timeout, 1, false); err != nil {
+	if err := validate.MinimumInt("timeout", "body", *m.Timeout, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("timeout", "body", m.Timeout, 60, false); err != nil {
+	if err := validate.MaximumInt("timeout", "body", *m.Timeout, 60, false); err != nil {
 		return err
 	}
 
@@ -137,7 +137,7 @@ func (m *KeyServerReadcreate) contextValidateLinks(ctx context.Context, formats 
 
 func (m *KeyServerReadcreate) contextValidateSecondaryKeyServers(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "secondary_key_servers", "body", string(m.SecondaryKeyServers)); err != nil {
+	if err := validate.ReadOnly(ctx, "secondary_key_servers", "body", m.SecondaryKeyServers); err != nil {
 		return err
 	}
 
@@ -146,7 +146,7 @@ func (m *KeyServerReadcreate) contextValidateSecondaryKeyServers(ctx context.Con
 
 func (m *KeyServerReadcreate) contextValidateTimeout(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "timeout", "body", int64(m.Timeout)); err != nil {
+	if err := validate.ReadOnly(ctx, "timeout", "body", m.Timeout); err != nil {
 		return err
 	}
 
@@ -155,7 +155,7 @@ func (m *KeyServerReadcreate) contextValidateTimeout(ctx context.Context, format
 
 func (m *KeyServerReadcreate) contextValidateUsername(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "username", "body", string(m.Username)); err != nil {
+	if err := validate.ReadOnly(ctx, "username", "body", m.Username); err != nil {
 		return err
 	}
 

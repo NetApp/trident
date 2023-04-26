@@ -22,16 +22,16 @@ type S3Audit struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// events
-	Events *S3AuditEvents `json:"events,omitempty"`
+	Events *S3AuditInlineEvents `json:"events,omitempty"`
 
 	// log
 	Log *S3Log `json:"log,omitempty"`
 
 	// The audit log destination path where consolidated audit logs are stored.
-	LogPath string `json:"log_path,omitempty"`
+	LogPath *string `json:"log_path,omitempty"`
 
 	// svm
-	Svm *S3AuditSvm `json:"svm,omitempty"`
+	Svm *S3AuditInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this s3 audit
@@ -189,10 +189,10 @@ func (m *S3Audit) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3AuditEvents s3 audit events
+// S3AuditInlineEvents s3 audit inline events
 //
-// swagger:model S3AuditEvents
-type S3AuditEvents struct {
+// swagger:model s3_audit_inline_events
+type S3AuditInlineEvents struct {
 
 	// Data events
 	Data *bool `json:"data,omitempty"`
@@ -201,18 +201,18 @@ type S3AuditEvents struct {
 	Management *bool `json:"management,omitempty"`
 }
 
-// Validate validates this s3 audit events
-func (m *S3AuditEvents) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 audit inline events
+func (m *S3AuditInlineEvents) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this s3 audit events based on context it is used
-func (m *S3AuditEvents) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this s3 audit inline events based on context it is used
+func (m *S3AuditInlineEvents) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *S3AuditEvents) MarshalBinary() ([]byte, error) {
+func (m *S3AuditInlineEvents) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -220,8 +220,8 @@ func (m *S3AuditEvents) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3AuditEvents) UnmarshalBinary(b []byte) error {
-	var res S3AuditEvents
+func (m *S3AuditInlineEvents) UnmarshalBinary(b []byte) error {
+	var res S3AuditInlineEvents
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -229,27 +229,27 @@ func (m *S3AuditEvents) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3AuditSvm s3 audit svm
+// S3AuditInlineSvm s3 audit inline svm
 //
-// swagger:model S3AuditSvm
-type S3AuditSvm struct {
+// swagger:model s3_audit_inline_svm
+type S3AuditInlineSvm struct {
 
 	// links
-	Links *S3AuditSvmLinks `json:"_links,omitempty"`
+	Links *S3AuditInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 audit svm
-func (m *S3AuditSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 audit inline svm
+func (m *S3AuditInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -262,7 +262,7 @@ func (m *S3AuditSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3AuditSvm) validateLinks(formats strfmt.Registry) error {
+func (m *S3AuditInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -279,8 +279,8 @@ func (m *S3AuditSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 audit svm based on the context it is used
-func (m *S3AuditSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 audit inline svm based on the context it is used
+func (m *S3AuditInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -293,7 +293,7 @@ func (m *S3AuditSvm) ContextValidate(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *S3AuditSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3AuditInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -308,7 +308,7 @@ func (m *S3AuditSvm) contextValidateLinks(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *S3AuditSvm) MarshalBinary() ([]byte, error) {
+func (m *S3AuditInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -316,8 +316,8 @@ func (m *S3AuditSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3AuditSvm) UnmarshalBinary(b []byte) error {
-	var res S3AuditSvm
+func (m *S3AuditInlineSvm) UnmarshalBinary(b []byte) error {
+	var res S3AuditInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -325,17 +325,17 @@ func (m *S3AuditSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3AuditSvmLinks s3 audit svm links
+// S3AuditInlineSvmInlineLinks s3 audit inline svm inline links
 //
-// swagger:model S3AuditSvmLinks
-type S3AuditSvmLinks struct {
+// swagger:model s3_audit_inline_svm_inline__links
+type S3AuditInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 audit svm links
-func (m *S3AuditSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 audit inline svm inline links
+func (m *S3AuditInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -348,7 +348,7 @@ func (m *S3AuditSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3AuditSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3AuditInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -365,8 +365,8 @@ func (m *S3AuditSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 audit svm links based on the context it is used
-func (m *S3AuditSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 audit inline svm inline links based on the context it is used
+func (m *S3AuditInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -379,7 +379,7 @@ func (m *S3AuditSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *S3AuditSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3AuditInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -394,7 +394,7 @@ func (m *S3AuditSvmLinks) contextValidateSelf(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *S3AuditSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *S3AuditInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -402,8 +402,8 @@ func (m *S3AuditSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3AuditSvmLinks) UnmarshalBinary(b []byte) error {
-	var res S3AuditSvmLinks
+func (m *S3AuditInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3AuditInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

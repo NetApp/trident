@@ -66,13 +66,13 @@ type QuotaRuleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Rule UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *QuotaRuleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the quota rule get params
-func (o *QuotaRuleGetParams) WithFieldsQueryParameter(fields []string) *QuotaRuleGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the quota rule get params
+func (o *QuotaRuleGetParams) WithFields(fields []string) *QuotaRuleGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the quota rule get params
-func (o *QuotaRuleGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the quota rule get params
+func (o *QuotaRuleGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the quota rule get params
-func (o *QuotaRuleGetParams) WithUUIDPathParameter(uuid string) *QuotaRuleGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the quota rule get params
+func (o *QuotaRuleGetParams) WithUUID(uuid string) *QuotaRuleGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the quota rule get params
-func (o *QuotaRuleGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the quota rule get params
+func (o *QuotaRuleGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *QuotaRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *QuotaRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *QuotaRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamQuotaRuleGet binds the parameter fields
 func (o *QuotaRuleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

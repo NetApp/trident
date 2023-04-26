@@ -66,13 +66,13 @@ type EmsDestinationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   Destination name
 	*/
-	NamePathParameter string
+	Name string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *EmsDestinationGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ems destination get params
-func (o *EmsDestinationGetParams) WithFieldsQueryParameter(fields []string) *EmsDestinationGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ems destination get params
+func (o *EmsDestinationGetParams) WithFields(fields []string) *EmsDestinationGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ems destination get params
-func (o *EmsDestinationGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ems destination get params
+func (o *EmsDestinationGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the ems destination get params
-func (o *EmsDestinationGetParams) WithNamePathParameter(name string) *EmsDestinationGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the ems destination get params
+func (o *EmsDestinationGetParams) WithName(name string) *EmsDestinationGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the ems destination get params
-func (o *EmsDestinationGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the ems destination get params
+func (o *EmsDestinationGetParams) SetName(name string) {
+	o.Name = name
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *EmsDestinationGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *EmsDestinationGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *EmsDestinationGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamEmsDestinationGet binds the parameter fields
 func (o *EmsDestinationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

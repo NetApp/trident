@@ -21,87 +21,96 @@ import (
 type CloudTarget struct {
 
 	// links
-	Links *CloudTargetLinks `json:"_links,omitempty"`
+	Links *CloudTargetInlineLinks `json:"_links,omitempty"`
 
 	// Access key ID for AWS_S3 and other S3 compatible provider types.
-	AccessKey string `json:"access_key,omitempty"`
+	AccessKey *string `json:"access_key,omitempty"`
 
 	// Authentication used to access the target. SnapMirror does not yet support CAP. Required in POST.
 	// Enum: [key cap ec2_iam gcp_sa azure_msi]
-	AuthenticationType string `json:"authentication_type,omitempty"`
+	AuthenticationType *string `json:"authentication_type,omitempty"`
 
 	// Azure account
-	AzureAccount string `json:"azure_account,omitempty"`
+	AzureAccount *string `json:"azure_account,omitempty"`
 
 	// Azure access key
 	// Format: password
-	AzurePrivateKey strfmt.Password `json:"azure_private_key,omitempty"`
+	AzurePrivateKey *strfmt.Password `json:"azure_private_key,omitempty"`
+
+	// Shared access signature token to access Azure containers and blobs.
+	// Format: password
+	AzureSasToken *strfmt.Password `json:"azure_sas_token,omitempty"`
 
 	// This parameter is available only when auth-type is CAP. It specifies a full URL of the request to a CAP server for retrieving temporary credentials (access-key, secret-pasword, and session token) for accessing the object store.
 	// Example: https://123.45.67.89:1234/CAP/api/v1/credentials?agency=myagency\u0026mission=mymission\u0026role=myrole
-	CapURL string `json:"cap_url,omitempty"`
+	CapURL *string `json:"cap_url,omitempty"`
 
 	// Is SSL/TLS certificate validation enabled? The default value is true. This can only be modified for SGWS, IBM_COS, and ONTAP_S3 provider types.
-	CertificateValidationEnabled bool `json:"certificate_validation_enabled,omitempty"`
+	CertificateValidationEnabled *bool `json:"certificate_validation_enabled,omitempty"`
 
 	// cluster
-	Cluster *CloudTargetCluster `json:"cluster,omitempty"`
+	Cluster *CloudTargetInlineCluster `json:"cluster,omitempty"`
 
 	// Data bucket/container name. For FabricLink, a wildcard character "*" can also be specified to indicate that all the buckets in an SVM can use the same target information. However, for containers other than ONTAP, an exact name should be specified.
 	// Example: bucket1
-	Container string `json:"container,omitempty"`
+	Container *string `json:"container,omitempty"`
 
 	// ipspace
-	Ipspace *CloudTargetIpspace `json:"ipspace,omitempty"`
+	Ipspace *CloudTargetInlineIpspace `json:"ipspace,omitempty"`
 
 	// Cloud target name
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Owner of the target. Allowed values are FabricPool, SnapMirror or S3_SnapMirror. A target can be used by only one feature.
 	// Enum: [fabricpool snapmirror s3_snapmirror]
-	Owner string `json:"owner,omitempty"`
+	Owner *string `json:"owner,omitempty"`
 
 	// Port number of the object store that ONTAP uses when establishing a connection. Required in POST.
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoggleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
-	ProviderType string `json:"provider_type,omitempty"`
+	ProviderType *string `json:"provider_type,omitempty"`
+
+	// If the cloud target is owned by a data SVM, then the scope is set to svm. Otherwise it will be set to cluster.
+	// Read Only: true
+	// Enum: [cluster svm]
+	Scope *string `json:"scope,omitempty"`
 
 	// Secret access key for AWS_S3 and other S3 compatible provider types.
 	// Format: password
-	SecretPassword strfmt.Password `json:"secret_password,omitempty"`
+	SecretPassword *strfmt.Password `json:"secret_password,omitempty"`
 
 	// Fully qualified domain name of the object store server. Required on POST.  For Amazon S3, server name must be an AWS regional endpoint in the format s3.amazonaws.com or s3-<region>.amazonaws.com, for example, s3-us-west-2.amazonaws.com. The region of the server and the bucket must match. For Azure, if the server is a "blob.core.windows.net" or a "blob.core.usgovcloudapi.net", then a value of azure-account followed by a period is added in front of the server.
-	Server string `json:"server,omitempty"`
+	Server *string `json:"server,omitempty"`
 
 	// Encryption of data at rest by the object store server for AWS_S3 and other S3 compatible provider types. This is an advanced property. In most cases it is best not to change default value of "sse_s3" for object store servers which support SSE-S3 encryption. The encryption is in addition to any encryption done by ONTAP at a volume or at an aggregate level. Note that changing this option does not change encryption of data which already exist in the object store.
 	// Enum: [none sse_s3]
-	ServerSideEncryption string `json:"server_side_encryption,omitempty"`
+	ServerSideEncryption *string `json:"server_side_encryption,omitempty"`
 
 	// Use of the cloud target by SnapMirror.
 	// Enum: [data metadata]
-	SnapmirrorUse string `json:"snapmirror_use,omitempty"`
+	SnapmirrorUse *string `json:"snapmirror_use,omitempty"`
 
 	// SSL/HTTPS enabled or not
 	SslEnabled *bool `json:"ssl_enabled,omitempty"`
 
 	// svm
-	Svm *CloudTargetSvm `json:"svm,omitempty"`
+	Svm *CloudTargetInlineSvm `json:"svm,omitempty"`
 
 	// URL style used to access S3 bucket.
 	// Enum: [path_style virtual_hosted_style]
-	URLStyle string `json:"url_style,omitempty"`
+	URLStyle *string `json:"url_style,omitempty"`
 
 	// Use HTTP proxy when connecting to the object store.
 	UseHTTPProxy *bool `json:"use_http_proxy,omitempty"`
 
 	// The amount of cloud space used by all the aggregates attached to the target, in bytes. This field is only populated for FabricPool targets. The value is recalculated once every 5 minutes.
 	// Read Only: true
-	Used int64 `json:"used,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 
 	// Cloud target UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this cloud target
@@ -120,6 +129,10 @@ func (m *CloudTarget) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAzureSasToken(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCluster(formats); err != nil {
 		res = append(res, err)
 	}
@@ -129,6 +142,10 @@ func (m *CloudTarget) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOwner(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -254,7 +271,7 @@ func (m *CloudTarget) validateAuthenticationType(formats strfmt.Registry) error 
 	}
 
 	// value enum
-	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", m.AuthenticationType); err != nil {
+	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", *m.AuthenticationType); err != nil {
 		return err
 	}
 
@@ -267,6 +284,18 @@ func (m *CloudTarget) validateAzurePrivateKey(formats strfmt.Registry) error {
 	}
 
 	if err := validate.FormatOf("azure_private_key", "body", "password", m.AzurePrivateKey.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CloudTarget) validateAzureSasToken(formats strfmt.Registry) error {
+	if swag.IsZero(m.AzureSasToken) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("azure_sas_token", "body", "password", m.AzureSasToken.String(), formats); err != nil {
 		return err
 	}
 
@@ -366,7 +395,63 @@ func (m *CloudTarget) validateOwner(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateOwnerEnum("owner", "body", m.Owner); err != nil {
+	if err := m.validateOwnerEnum("owner", "body", *m.Owner); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cloudTargetTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cluster","svm"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cloudTargetTypeScopePropEnum = append(cloudTargetTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// CloudTargetScopeCluster captures enum value "cluster"
+	CloudTargetScopeCluster string = "cluster"
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// CloudTargetScopeSvm captures enum value "svm"
+	CloudTargetScopeSvm string = "svm"
+)
+
+// prop value enum
+func (m *CloudTarget) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cloudTargetTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CloudTarget) validateScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.Scope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -434,7 +519,7 @@ func (m *CloudTarget) validateServerSideEncryption(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateServerSideEncryptionEnum("server_side_encryption", "body", m.ServerSideEncryption); err != nil {
+	if err := m.validateServerSideEncryptionEnum("server_side_encryption", "body", *m.ServerSideEncryption); err != nil {
 		return err
 	}
 
@@ -490,7 +575,7 @@ func (m *CloudTarget) validateSnapmirrorUse(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSnapmirrorUseEnum("snapmirror_use", "body", m.SnapmirrorUse); err != nil {
+	if err := m.validateSnapmirrorUseEnum("snapmirror_use", "body", *m.SnapmirrorUse); err != nil {
 		return err
 	}
 
@@ -563,7 +648,7 @@ func (m *CloudTarget) validateURLStyle(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateURLStyleEnum("url_style", "body", m.URLStyle); err != nil {
+	if err := m.validateURLStyleEnum("url_style", "body", *m.URLStyle); err != nil {
 		return err
 	}
 
@@ -583,6 +668,10 @@ func (m *CloudTarget) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateIpspace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScope(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -646,6 +735,15 @@ func (m *CloudTarget) contextValidateIpspace(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *CloudTarget) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *CloudTarget) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -662,7 +760,7 @@ func (m *CloudTarget) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *CloudTarget) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "used", "body", int64(m.Used)); err != nil {
+	if err := validate.ReadOnly(ctx, "used", "body", m.Used); err != nil {
 		return err
 	}
 
@@ -671,7 +769,7 @@ func (m *CloudTarget) contextValidateUsed(ctx context.Context, formats strfmt.Re
 
 func (m *CloudTarget) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -696,30 +794,30 @@ func (m *CloudTarget) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetCluster cloud target cluster
+// CloudTargetInlineCluster cloud target inline cluster
 //
-// swagger:model CloudTargetCluster
-type CloudTargetCluster struct {
+// swagger:model cloud_target_inline_cluster
+type CloudTargetInlineCluster struct {
 
 	// The name of the cluster that owns the cloud target. For POST, this accepts the name of the peer cluster only if the cluster is in switchover state.
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID of the cluster that owns the cloud target. For POST, this accepts the UUID of the peer cluster only if the cluster is in switchover state.
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cloud target cluster
-func (m *CloudTargetCluster) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target inline cluster
+func (m *CloudTargetInlineCluster) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this cloud target cluster based on context it is used
-func (m *CloudTargetCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this cloud target inline cluster based on context it is used
+func (m *CloudTargetInlineCluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetCluster) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetInlineCluster) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -727,8 +825,8 @@ func (m *CloudTargetCluster) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetCluster) UnmarshalBinary(b []byte) error {
-	var res CloudTargetCluster
+func (m *CloudTargetInlineCluster) UnmarshalBinary(b []byte) error {
+	var res CloudTargetInlineCluster
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -736,25 +834,25 @@ func (m *CloudTargetCluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetIpspace IPspace to use in order to reach the cloud target.
+// CloudTargetInlineIpspace IPspace to use in order to reach the cloud target.
 //
-// swagger:model CloudTargetIpspace
-type CloudTargetIpspace struct {
+// swagger:model cloud_target_inline_ipspace
+type CloudTargetInlineIpspace struct {
 
 	// links
-	Links *CloudTargetIpspaceLinks `json:"_links,omitempty"`
+	Links *CloudTargetInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cloud target ipspace
-func (m *CloudTargetIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target inline ipspace
+func (m *CloudTargetInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -767,7 +865,7 @@ func (m *CloudTargetIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *CloudTargetInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -784,8 +882,8 @@ func (m *CloudTargetIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud target ipspace based on the context it is used
-func (m *CloudTargetIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target inline ipspace based on the context it is used
+func (m *CloudTargetInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -798,7 +896,7 @@ func (m *CloudTargetIpspace) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *CloudTargetIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -813,7 +911,7 @@ func (m *CloudTargetIpspace) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetIpspace) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -821,8 +919,8 @@ func (m *CloudTargetIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetIpspace) UnmarshalBinary(b []byte) error {
-	var res CloudTargetIpspace
+func (m *CloudTargetInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res CloudTargetInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -830,17 +928,17 @@ func (m *CloudTargetIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetIpspaceLinks cloud target ipspace links
+// CloudTargetInlineIpspaceInlineLinks cloud target inline ipspace inline links
 //
-// swagger:model CloudTargetIpspaceLinks
-type CloudTargetIpspaceLinks struct {
+// swagger:model cloud_target_inline_ipspace_inline__links
+type CloudTargetInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud target ipspace links
-func (m *CloudTargetIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target inline ipspace inline links
+func (m *CloudTargetInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -853,7 +951,7 @@ func (m *CloudTargetIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudTargetInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -870,8 +968,8 @@ func (m *CloudTargetIpspaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud target ipspace links based on the context it is used
-func (m *CloudTargetIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target inline ipspace inline links based on the context it is used
+func (m *CloudTargetInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -884,7 +982,7 @@ func (m *CloudTargetIpspaceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CloudTargetIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -899,7 +997,7 @@ func (m *CloudTargetIpspaceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -907,8 +1005,8 @@ func (m *CloudTargetIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res CloudTargetIpspaceLinks
+func (m *CloudTargetInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudTargetInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -916,17 +1014,17 @@ func (m *CloudTargetIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetLinks cloud target links
+// CloudTargetInlineLinks cloud target inline links
 //
-// swagger:model CloudTargetLinks
-type CloudTargetLinks struct {
+// swagger:model cloud_target_inline__links
+type CloudTargetInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud target links
-func (m *CloudTargetLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target inline links
+func (m *CloudTargetInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -939,7 +1037,7 @@ func (m *CloudTargetLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudTargetInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -956,8 +1054,8 @@ func (m *CloudTargetLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud target links based on the context it is used
-func (m *CloudTargetLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target inline links based on the context it is used
+func (m *CloudTargetInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -970,7 +1068,7 @@ func (m *CloudTargetLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *CloudTargetLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -985,7 +1083,7 @@ func (m *CloudTargetLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -993,8 +1091,8 @@ func (m *CloudTargetLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetLinks) UnmarshalBinary(b []byte) error {
-	var res CloudTargetLinks
+func (m *CloudTargetInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudTargetInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1002,27 +1100,27 @@ func (m *CloudTargetLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetSvm This field is only applicable when used for SnapMirror and FabricLink. For POST and PATCH, SVM information is required for SnapMirror and FabricLink targets and not allowed for FabricPool targets.
+// CloudTargetInlineSvm This field is only applicable when used for SnapMirror and FabricLink. For POST and PATCH, SVM information is required for SnapMirror and FabricLink targets and not allowed for FabricPool targets.
 //
-// swagger:model CloudTargetSvm
-type CloudTargetSvm struct {
+// swagger:model cloud_target_inline_svm
+type CloudTargetInlineSvm struct {
 
 	// links
-	Links *CloudTargetSvmLinks `json:"_links,omitempty"`
+	Links *CloudTargetInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this cloud target svm
-func (m *CloudTargetSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target inline svm
+func (m *CloudTargetInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1035,7 +1133,7 @@ func (m *CloudTargetSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetSvm) validateLinks(formats strfmt.Registry) error {
+func (m *CloudTargetInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1052,8 +1150,8 @@ func (m *CloudTargetSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud target svm based on the context it is used
-func (m *CloudTargetSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target inline svm based on the context it is used
+func (m *CloudTargetInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1066,7 +1164,7 @@ func (m *CloudTargetSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *CloudTargetSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1081,7 +1179,7 @@ func (m *CloudTargetSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetSvm) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1089,8 +1187,8 @@ func (m *CloudTargetSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetSvm) UnmarshalBinary(b []byte) error {
-	var res CloudTargetSvm
+func (m *CloudTargetInlineSvm) UnmarshalBinary(b []byte) error {
+	var res CloudTargetInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1098,17 +1196,17 @@ func (m *CloudTargetSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetSvmLinks cloud target svm links
+// CloudTargetInlineSvmInlineLinks cloud target inline svm inline links
 //
-// swagger:model CloudTargetSvmLinks
-type CloudTargetSvmLinks struct {
+// swagger:model cloud_target_inline_svm_inline__links
+type CloudTargetInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cloud target svm links
-func (m *CloudTargetSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cloud target inline svm inline links
+func (m *CloudTargetInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1121,7 +1219,7 @@ func (m *CloudTargetSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CloudTargetSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CloudTargetInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1138,8 +1236,8 @@ func (m *CloudTargetSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cloud target svm links based on the context it is used
-func (m *CloudTargetSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cloud target inline svm inline links based on the context it is used
+func (m *CloudTargetInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1152,7 +1250,7 @@ func (m *CloudTargetSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *CloudTargetSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CloudTargetInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1167,7 +1265,7 @@ func (m *CloudTargetSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *CloudTargetSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *CloudTargetInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1175,8 +1273,8 @@ func (m *CloudTargetSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CloudTargetSvmLinks) UnmarshalBinary(b []byte) error {
-	var res CloudTargetSvmLinks
+func (m *CloudTargetInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CloudTargetInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

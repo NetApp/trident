@@ -70,7 +70,7 @@ type NfsModifyParams struct {
 	Info *models.NfsService
 
 	// SvmUUID.
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *NfsModifyParams) SetInfo(info *models.NfsService) {
 	o.Info = info
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nfs modify params
-func (o *NfsModifyParams) WithSVMUUIDPathParameter(svmUUID string) *NfsModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nfs modify params
+func (o *NfsModifyParams) WithSvmUUID(svmUUID string) *NfsModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nfs modify params
-func (o *NfsModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nfs modify params
+func (o *NfsModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *NfsModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

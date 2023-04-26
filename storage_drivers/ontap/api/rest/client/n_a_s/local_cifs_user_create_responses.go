@@ -52,6 +52,11 @@ LocalCifsUserCreateCreated describes a response with status code 201, with defau
 Created
 */
 type LocalCifsUserCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.LocalCifsUserResponse
 }
 
@@ -93,6 +98,13 @@ func (o *LocalCifsUserCreateCreated) GetPayload() *models.LocalCifsUserResponse 
 }
 
 func (o *LocalCifsUserCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.LocalCifsUserResponse)
 

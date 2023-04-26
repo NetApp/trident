@@ -66,139 +66,139 @@ type LdapCollectionGetParams struct {
 
 	   Filter by ad_domain
 	*/
-	AdDomainQueryParameter *string
+	AdDomain *string
 
 	/* BaseDn.
 
 	   Filter by base_dn
 	*/
-	BaseDnQueryParameter *string
+	BaseDn *string
 
 	/* BaseScope.
 
 	   Filter by base_scope
 	*/
-	BaseScopeQueryParameter *string
+	BaseScope *string
 
 	/* BindAsCifsServer.
 
 	   Filter by bind_as_cifs_server
 	*/
-	BindAsCifsServerQueryParameter *bool
+	BindAsCifsServer *bool
 
 	/* BindDn.
 
 	   Filter by bind_dn
 	*/
-	BindDnQueryParameter *string
+	BindDn *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* GroupDn.
 
 	   Filter by group_dn
 	*/
-	GroupDnQueryParameter *string
+	GroupDn *string
 
 	/* GroupMembershipFilter.
 
 	   Filter by group_membership_filter
 	*/
-	GroupMembershIPFilterQueryParameter *string
+	GroupMembershipFilter *string
 
 	/* GroupScope.
 
 	   Filter by group_scope
 	*/
-	GroupScopeQueryParameter *string
+	GroupScope *string
 
 	/* IsNetgroupByhostEnabled.
 
 	   Filter by is_netgroup_byhost_enabled
 	*/
-	IsNetgroupByhostEnabledQueryParameter *bool
+	IsNetgroupByhostEnabled *bool
 
 	/* IsOwner.
 
 	   Filter by is_owner
 	*/
-	IsOwnerQueryParameter *bool
+	IsOwner *bool
 
 	/* LdapsEnabled.
 
 	   Filter by ldaps_enabled
 	*/
-	LdapsEnabledQueryParameter *bool
+	LdapsEnabled *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MinBindLevel.
 
 	   Filter by min_bind_level
 	*/
-	MinBindLevelQueryParameter *string
+	MinBindLevel *string
 
 	/* NetgroupByhostDn.
 
 	   Filter by netgroup_byhost_dn
 	*/
-	NetgroupByhostDnQueryParameter *string
+	NetgroupByhostDn *string
 
 	/* NetgroupByhostScope.
 
 	   Filter by netgroup_byhost_scope
 	*/
-	NetgroupByhostScopeQueryParameter *string
+	NetgroupByhostScope *string
 
 	/* NetgroupDn.
 
 	   Filter by netgroup_dn
 	*/
-	NetgroupDnQueryParameter *string
+	NetgroupDn *string
 
 	/* NetgroupScope.
 
 	   Filter by netgroup_scope
 	*/
-	NetgroupScopeQueryParameter *string
+	NetgroupScope *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Port.
 
 	   Filter by port
 	*/
-	PortQueryParameter *int64
+	Port *int64
 
 	/* PreferredAdServers.
 
 	   Filter by preferred_ad_servers
 	*/
-	PreferredAdServersQueryParameter *string
+	PreferredAdServers *string
 
 	/* QueryTimeout.
 
 	   Filter by query_timeout
 	*/
-	QueryTimeoutQueryParameter *int64
+	QueryTimeout *int64
 
 	/* ReferralEnabled.
 
 	   Filter by referral_enabled
 	*/
-	ReferralEnabledQueryParameter *bool
+	ReferralEnabled *bool
 
 	/* ReturnRecords.
 
@@ -206,7 +206,7 @@ type LdapCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -214,85 +214,85 @@ type LdapCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Schema.
 
 	   Filter by schema
 	*/
-	SchemaQueryParameter *string
+	Schema *string
 
 	/* Servers.
 
 	   Filter by servers
 	*/
-	ServersQueryParameter *string
+	Servers *string
 
 	/* SessionSecurity.
 
 	   Filter by session_security
 	*/
-	SessionSecurityQueryParameter *string
+	SessionSecurity *string
 
 	/* StatusCode.
 
 	   Filter by status.code
 	*/
-	StatusCodeQueryParameter *int64
+	StatusCode *int64
 
 	/* StatusDnMessage.
 
 	   Filter by status.dn_message
 	*/
-	StatusDnMessageQueryParameter *string
+	StatusDnMessage *string
 
 	/* StatusMessage.
 
 	   Filter by status.message
 	*/
-	StatusMessageQueryParameter *string
+	StatusMessage *string
 
 	/* StatusState.
 
 	   Filter by status.state
 	*/
-	StatusStateQueryParameter *string
+	StatusState *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TryChannelBinding.
 
 	   Filter by try_channel_binding
 	*/
-	TryChannelBindingQueryParameter *bool
+	TryChannelBinding *bool
 
 	/* UseStartTLS.
 
 	   Filter by use_start_tls
 	*/
-	UseStartTLSQueryParameter *bool
+	UseStartTLS *bool
 
 	/* UserDn.
 
 	   Filter by user_dn
 	*/
-	UserDnQueryParameter *string
+	UserDn *string
 
 	/* UserScope.
 
 	   Filter by user_scope
 	*/
-	UserScopeQueryParameter *string
+	UserScope *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -312,14 +312,14 @@ func (o *LdapCollectionGetParams) WithDefaults() *LdapCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *LdapCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LdapCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -361,422 +361,422 @@ func (o *LdapCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAdDomainQueryParameter adds the adDomain to the ldap collection get params
-func (o *LdapCollectionGetParams) WithAdDomainQueryParameter(adDomain *string) *LdapCollectionGetParams {
-	o.SetAdDomainQueryParameter(adDomain)
+// WithAdDomain adds the adDomain to the ldap collection get params
+func (o *LdapCollectionGetParams) WithAdDomain(adDomain *string) *LdapCollectionGetParams {
+	o.SetAdDomain(adDomain)
 	return o
 }
 
-// SetAdDomainQueryParameter adds the adDomain to the ldap collection get params
-func (o *LdapCollectionGetParams) SetAdDomainQueryParameter(adDomain *string) {
-	o.AdDomainQueryParameter = adDomain
+// SetAdDomain adds the adDomain to the ldap collection get params
+func (o *LdapCollectionGetParams) SetAdDomain(adDomain *string) {
+	o.AdDomain = adDomain
 }
 
-// WithBaseDnQueryParameter adds the baseDn to the ldap collection get params
-func (o *LdapCollectionGetParams) WithBaseDnQueryParameter(baseDn *string) *LdapCollectionGetParams {
-	o.SetBaseDnQueryParameter(baseDn)
+// WithBaseDn adds the baseDn to the ldap collection get params
+func (o *LdapCollectionGetParams) WithBaseDn(baseDn *string) *LdapCollectionGetParams {
+	o.SetBaseDn(baseDn)
 	return o
 }
 
-// SetBaseDnQueryParameter adds the baseDn to the ldap collection get params
-func (o *LdapCollectionGetParams) SetBaseDnQueryParameter(baseDn *string) {
-	o.BaseDnQueryParameter = baseDn
+// SetBaseDn adds the baseDn to the ldap collection get params
+func (o *LdapCollectionGetParams) SetBaseDn(baseDn *string) {
+	o.BaseDn = baseDn
 }
 
-// WithBaseScopeQueryParameter adds the baseScope to the ldap collection get params
-func (o *LdapCollectionGetParams) WithBaseScopeQueryParameter(baseScope *string) *LdapCollectionGetParams {
-	o.SetBaseScopeQueryParameter(baseScope)
+// WithBaseScope adds the baseScope to the ldap collection get params
+func (o *LdapCollectionGetParams) WithBaseScope(baseScope *string) *LdapCollectionGetParams {
+	o.SetBaseScope(baseScope)
 	return o
 }
 
-// SetBaseScopeQueryParameter adds the baseScope to the ldap collection get params
-func (o *LdapCollectionGetParams) SetBaseScopeQueryParameter(baseScope *string) {
-	o.BaseScopeQueryParameter = baseScope
+// SetBaseScope adds the baseScope to the ldap collection get params
+func (o *LdapCollectionGetParams) SetBaseScope(baseScope *string) {
+	o.BaseScope = baseScope
 }
 
-// WithBindAsCifsServerQueryParameter adds the bindAsCifsServer to the ldap collection get params
-func (o *LdapCollectionGetParams) WithBindAsCifsServerQueryParameter(bindAsCifsServer *bool) *LdapCollectionGetParams {
-	o.SetBindAsCifsServerQueryParameter(bindAsCifsServer)
+// WithBindAsCifsServer adds the bindAsCifsServer to the ldap collection get params
+func (o *LdapCollectionGetParams) WithBindAsCifsServer(bindAsCifsServer *bool) *LdapCollectionGetParams {
+	o.SetBindAsCifsServer(bindAsCifsServer)
 	return o
 }
 
-// SetBindAsCifsServerQueryParameter adds the bindAsCifsServer to the ldap collection get params
-func (o *LdapCollectionGetParams) SetBindAsCifsServerQueryParameter(bindAsCifsServer *bool) {
-	o.BindAsCifsServerQueryParameter = bindAsCifsServer
+// SetBindAsCifsServer adds the bindAsCifsServer to the ldap collection get params
+func (o *LdapCollectionGetParams) SetBindAsCifsServer(bindAsCifsServer *bool) {
+	o.BindAsCifsServer = bindAsCifsServer
 }
 
-// WithBindDnQueryParameter adds the bindDn to the ldap collection get params
-func (o *LdapCollectionGetParams) WithBindDnQueryParameter(bindDn *string) *LdapCollectionGetParams {
-	o.SetBindDnQueryParameter(bindDn)
+// WithBindDn adds the bindDn to the ldap collection get params
+func (o *LdapCollectionGetParams) WithBindDn(bindDn *string) *LdapCollectionGetParams {
+	o.SetBindDn(bindDn)
 	return o
 }
 
-// SetBindDnQueryParameter adds the bindDn to the ldap collection get params
-func (o *LdapCollectionGetParams) SetBindDnQueryParameter(bindDn *string) {
-	o.BindDnQueryParameter = bindDn
+// SetBindDn adds the bindDn to the ldap collection get params
+func (o *LdapCollectionGetParams) SetBindDn(bindDn *string) {
+	o.BindDn = bindDn
 }
 
-// WithFieldsQueryParameter adds the fields to the ldap collection get params
-func (o *LdapCollectionGetParams) WithFieldsQueryParameter(fields []string) *LdapCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ldap collection get params
+func (o *LdapCollectionGetParams) WithFields(fields []string) *LdapCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ldap collection get params
-func (o *LdapCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ldap collection get params
+func (o *LdapCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithGroupDnQueryParameter adds the groupDn to the ldap collection get params
-func (o *LdapCollectionGetParams) WithGroupDnQueryParameter(groupDn *string) *LdapCollectionGetParams {
-	o.SetGroupDnQueryParameter(groupDn)
+// WithGroupDn adds the groupDn to the ldap collection get params
+func (o *LdapCollectionGetParams) WithGroupDn(groupDn *string) *LdapCollectionGetParams {
+	o.SetGroupDn(groupDn)
 	return o
 }
 
-// SetGroupDnQueryParameter adds the groupDn to the ldap collection get params
-func (o *LdapCollectionGetParams) SetGroupDnQueryParameter(groupDn *string) {
-	o.GroupDnQueryParameter = groupDn
+// SetGroupDn adds the groupDn to the ldap collection get params
+func (o *LdapCollectionGetParams) SetGroupDn(groupDn *string) {
+	o.GroupDn = groupDn
 }
 
-// WithGroupMembershIPFilterQueryParameter adds the groupMembershipFilter to the ldap collection get params
-func (o *LdapCollectionGetParams) WithGroupMembershIPFilterQueryParameter(groupMembershipFilter *string) *LdapCollectionGetParams {
-	o.SetGroupMembershIPFilterQueryParameter(groupMembershipFilter)
+// WithGroupMembershipFilter adds the groupMembershipFilter to the ldap collection get params
+func (o *LdapCollectionGetParams) WithGroupMembershipFilter(groupMembershipFilter *string) *LdapCollectionGetParams {
+	o.SetGroupMembershipFilter(groupMembershipFilter)
 	return o
 }
 
-// SetGroupMembershIPFilterQueryParameter adds the groupMembershipFilter to the ldap collection get params
-func (o *LdapCollectionGetParams) SetGroupMembershIPFilterQueryParameter(groupMembershipFilter *string) {
-	o.GroupMembershIPFilterQueryParameter = groupMembershipFilter
+// SetGroupMembershipFilter adds the groupMembershipFilter to the ldap collection get params
+func (o *LdapCollectionGetParams) SetGroupMembershipFilter(groupMembershipFilter *string) {
+	o.GroupMembershipFilter = groupMembershipFilter
 }
 
-// WithGroupScopeQueryParameter adds the groupScope to the ldap collection get params
-func (o *LdapCollectionGetParams) WithGroupScopeQueryParameter(groupScope *string) *LdapCollectionGetParams {
-	o.SetGroupScopeQueryParameter(groupScope)
+// WithGroupScope adds the groupScope to the ldap collection get params
+func (o *LdapCollectionGetParams) WithGroupScope(groupScope *string) *LdapCollectionGetParams {
+	o.SetGroupScope(groupScope)
 	return o
 }
 
-// SetGroupScopeQueryParameter adds the groupScope to the ldap collection get params
-func (o *LdapCollectionGetParams) SetGroupScopeQueryParameter(groupScope *string) {
-	o.GroupScopeQueryParameter = groupScope
+// SetGroupScope adds the groupScope to the ldap collection get params
+func (o *LdapCollectionGetParams) SetGroupScope(groupScope *string) {
+	o.GroupScope = groupScope
 }
 
-// WithIsNetgroupByhostEnabledQueryParameter adds the isNetgroupByhostEnabled to the ldap collection get params
-func (o *LdapCollectionGetParams) WithIsNetgroupByhostEnabledQueryParameter(isNetgroupByhostEnabled *bool) *LdapCollectionGetParams {
-	o.SetIsNetgroupByhostEnabledQueryParameter(isNetgroupByhostEnabled)
+// WithIsNetgroupByhostEnabled adds the isNetgroupByhostEnabled to the ldap collection get params
+func (o *LdapCollectionGetParams) WithIsNetgroupByhostEnabled(isNetgroupByhostEnabled *bool) *LdapCollectionGetParams {
+	o.SetIsNetgroupByhostEnabled(isNetgroupByhostEnabled)
 	return o
 }
 
-// SetIsNetgroupByhostEnabledQueryParameter adds the isNetgroupByhostEnabled to the ldap collection get params
-func (o *LdapCollectionGetParams) SetIsNetgroupByhostEnabledQueryParameter(isNetgroupByhostEnabled *bool) {
-	o.IsNetgroupByhostEnabledQueryParameter = isNetgroupByhostEnabled
+// SetIsNetgroupByhostEnabled adds the isNetgroupByhostEnabled to the ldap collection get params
+func (o *LdapCollectionGetParams) SetIsNetgroupByhostEnabled(isNetgroupByhostEnabled *bool) {
+	o.IsNetgroupByhostEnabled = isNetgroupByhostEnabled
 }
 
-// WithIsOwnerQueryParameter adds the isOwner to the ldap collection get params
-func (o *LdapCollectionGetParams) WithIsOwnerQueryParameter(isOwner *bool) *LdapCollectionGetParams {
-	o.SetIsOwnerQueryParameter(isOwner)
+// WithIsOwner adds the isOwner to the ldap collection get params
+func (o *LdapCollectionGetParams) WithIsOwner(isOwner *bool) *LdapCollectionGetParams {
+	o.SetIsOwner(isOwner)
 	return o
 }
 
-// SetIsOwnerQueryParameter adds the isOwner to the ldap collection get params
-func (o *LdapCollectionGetParams) SetIsOwnerQueryParameter(isOwner *bool) {
-	o.IsOwnerQueryParameter = isOwner
+// SetIsOwner adds the isOwner to the ldap collection get params
+func (o *LdapCollectionGetParams) SetIsOwner(isOwner *bool) {
+	o.IsOwner = isOwner
 }
 
-// WithLdapsEnabledQueryParameter adds the ldapsEnabled to the ldap collection get params
-func (o *LdapCollectionGetParams) WithLdapsEnabledQueryParameter(ldapsEnabled *bool) *LdapCollectionGetParams {
-	o.SetLdapsEnabledQueryParameter(ldapsEnabled)
+// WithLdapsEnabled adds the ldapsEnabled to the ldap collection get params
+func (o *LdapCollectionGetParams) WithLdapsEnabled(ldapsEnabled *bool) *LdapCollectionGetParams {
+	o.SetLdapsEnabled(ldapsEnabled)
 	return o
 }
 
-// SetLdapsEnabledQueryParameter adds the ldapsEnabled to the ldap collection get params
-func (o *LdapCollectionGetParams) SetLdapsEnabledQueryParameter(ldapsEnabled *bool) {
-	o.LdapsEnabledQueryParameter = ldapsEnabled
+// SetLdapsEnabled adds the ldapsEnabled to the ldap collection get params
+func (o *LdapCollectionGetParams) SetLdapsEnabled(ldapsEnabled *bool) {
+	o.LdapsEnabled = ldapsEnabled
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ldap collection get params
-func (o *LdapCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LdapCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ldap collection get params
+func (o *LdapCollectionGetParams) WithMaxRecords(maxRecords *int64) *LdapCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ldap collection get params
-func (o *LdapCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ldap collection get params
+func (o *LdapCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMinBindLevelQueryParameter adds the minBindLevel to the ldap collection get params
-func (o *LdapCollectionGetParams) WithMinBindLevelQueryParameter(minBindLevel *string) *LdapCollectionGetParams {
-	o.SetMinBindLevelQueryParameter(minBindLevel)
+// WithMinBindLevel adds the minBindLevel to the ldap collection get params
+func (o *LdapCollectionGetParams) WithMinBindLevel(minBindLevel *string) *LdapCollectionGetParams {
+	o.SetMinBindLevel(minBindLevel)
 	return o
 }
 
-// SetMinBindLevelQueryParameter adds the minBindLevel to the ldap collection get params
-func (o *LdapCollectionGetParams) SetMinBindLevelQueryParameter(minBindLevel *string) {
-	o.MinBindLevelQueryParameter = minBindLevel
+// SetMinBindLevel adds the minBindLevel to the ldap collection get params
+func (o *LdapCollectionGetParams) SetMinBindLevel(minBindLevel *string) {
+	o.MinBindLevel = minBindLevel
 }
 
-// WithNetgroupByhostDnQueryParameter adds the netgroupByhostDn to the ldap collection get params
-func (o *LdapCollectionGetParams) WithNetgroupByhostDnQueryParameter(netgroupByhostDn *string) *LdapCollectionGetParams {
-	o.SetNetgroupByhostDnQueryParameter(netgroupByhostDn)
+// WithNetgroupByhostDn adds the netgroupByhostDn to the ldap collection get params
+func (o *LdapCollectionGetParams) WithNetgroupByhostDn(netgroupByhostDn *string) *LdapCollectionGetParams {
+	o.SetNetgroupByhostDn(netgroupByhostDn)
 	return o
 }
 
-// SetNetgroupByhostDnQueryParameter adds the netgroupByhostDn to the ldap collection get params
-func (o *LdapCollectionGetParams) SetNetgroupByhostDnQueryParameter(netgroupByhostDn *string) {
-	o.NetgroupByhostDnQueryParameter = netgroupByhostDn
+// SetNetgroupByhostDn adds the netgroupByhostDn to the ldap collection get params
+func (o *LdapCollectionGetParams) SetNetgroupByhostDn(netgroupByhostDn *string) {
+	o.NetgroupByhostDn = netgroupByhostDn
 }
 
-// WithNetgroupByhostScopeQueryParameter adds the netgroupByhostScope to the ldap collection get params
-func (o *LdapCollectionGetParams) WithNetgroupByhostScopeQueryParameter(netgroupByhostScope *string) *LdapCollectionGetParams {
-	o.SetNetgroupByhostScopeQueryParameter(netgroupByhostScope)
+// WithNetgroupByhostScope adds the netgroupByhostScope to the ldap collection get params
+func (o *LdapCollectionGetParams) WithNetgroupByhostScope(netgroupByhostScope *string) *LdapCollectionGetParams {
+	o.SetNetgroupByhostScope(netgroupByhostScope)
 	return o
 }
 
-// SetNetgroupByhostScopeQueryParameter adds the netgroupByhostScope to the ldap collection get params
-func (o *LdapCollectionGetParams) SetNetgroupByhostScopeQueryParameter(netgroupByhostScope *string) {
-	o.NetgroupByhostScopeQueryParameter = netgroupByhostScope
+// SetNetgroupByhostScope adds the netgroupByhostScope to the ldap collection get params
+func (o *LdapCollectionGetParams) SetNetgroupByhostScope(netgroupByhostScope *string) {
+	o.NetgroupByhostScope = netgroupByhostScope
 }
 
-// WithNetgroupDnQueryParameter adds the netgroupDn to the ldap collection get params
-func (o *LdapCollectionGetParams) WithNetgroupDnQueryParameter(netgroupDn *string) *LdapCollectionGetParams {
-	o.SetNetgroupDnQueryParameter(netgroupDn)
+// WithNetgroupDn adds the netgroupDn to the ldap collection get params
+func (o *LdapCollectionGetParams) WithNetgroupDn(netgroupDn *string) *LdapCollectionGetParams {
+	o.SetNetgroupDn(netgroupDn)
 	return o
 }
 
-// SetNetgroupDnQueryParameter adds the netgroupDn to the ldap collection get params
-func (o *LdapCollectionGetParams) SetNetgroupDnQueryParameter(netgroupDn *string) {
-	o.NetgroupDnQueryParameter = netgroupDn
+// SetNetgroupDn adds the netgroupDn to the ldap collection get params
+func (o *LdapCollectionGetParams) SetNetgroupDn(netgroupDn *string) {
+	o.NetgroupDn = netgroupDn
 }
 
-// WithNetgroupScopeQueryParameter adds the netgroupScope to the ldap collection get params
-func (o *LdapCollectionGetParams) WithNetgroupScopeQueryParameter(netgroupScope *string) *LdapCollectionGetParams {
-	o.SetNetgroupScopeQueryParameter(netgroupScope)
+// WithNetgroupScope adds the netgroupScope to the ldap collection get params
+func (o *LdapCollectionGetParams) WithNetgroupScope(netgroupScope *string) *LdapCollectionGetParams {
+	o.SetNetgroupScope(netgroupScope)
 	return o
 }
 
-// SetNetgroupScopeQueryParameter adds the netgroupScope to the ldap collection get params
-func (o *LdapCollectionGetParams) SetNetgroupScopeQueryParameter(netgroupScope *string) {
-	o.NetgroupScopeQueryParameter = netgroupScope
+// SetNetgroupScope adds the netgroupScope to the ldap collection get params
+func (o *LdapCollectionGetParams) SetNetgroupScope(netgroupScope *string) {
+	o.NetgroupScope = netgroupScope
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ldap collection get params
-func (o *LdapCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LdapCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ldap collection get params
+func (o *LdapCollectionGetParams) WithOrderBy(orderBy []string) *LdapCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ldap collection get params
-func (o *LdapCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ldap collection get params
+func (o *LdapCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithPortQueryParameter adds the port to the ldap collection get params
-func (o *LdapCollectionGetParams) WithPortQueryParameter(port *int64) *LdapCollectionGetParams {
-	o.SetPortQueryParameter(port)
+// WithPort adds the port to the ldap collection get params
+func (o *LdapCollectionGetParams) WithPort(port *int64) *LdapCollectionGetParams {
+	o.SetPort(port)
 	return o
 }
 
-// SetPortQueryParameter adds the port to the ldap collection get params
-func (o *LdapCollectionGetParams) SetPortQueryParameter(port *int64) {
-	o.PortQueryParameter = port
+// SetPort adds the port to the ldap collection get params
+func (o *LdapCollectionGetParams) SetPort(port *int64) {
+	o.Port = port
 }
 
-// WithPreferredAdServersQueryParameter adds the preferredAdServers to the ldap collection get params
-func (o *LdapCollectionGetParams) WithPreferredAdServersQueryParameter(preferredAdServers *string) *LdapCollectionGetParams {
-	o.SetPreferredAdServersQueryParameter(preferredAdServers)
+// WithPreferredAdServers adds the preferredAdServers to the ldap collection get params
+func (o *LdapCollectionGetParams) WithPreferredAdServers(preferredAdServers *string) *LdapCollectionGetParams {
+	o.SetPreferredAdServers(preferredAdServers)
 	return o
 }
 
-// SetPreferredAdServersQueryParameter adds the preferredAdServers to the ldap collection get params
-func (o *LdapCollectionGetParams) SetPreferredAdServersQueryParameter(preferredAdServers *string) {
-	o.PreferredAdServersQueryParameter = preferredAdServers
+// SetPreferredAdServers adds the preferredAdServers to the ldap collection get params
+func (o *LdapCollectionGetParams) SetPreferredAdServers(preferredAdServers *string) {
+	o.PreferredAdServers = preferredAdServers
 }
 
-// WithQueryTimeoutQueryParameter adds the queryTimeout to the ldap collection get params
-func (o *LdapCollectionGetParams) WithQueryTimeoutQueryParameter(queryTimeout *int64) *LdapCollectionGetParams {
-	o.SetQueryTimeoutQueryParameter(queryTimeout)
+// WithQueryTimeout adds the queryTimeout to the ldap collection get params
+func (o *LdapCollectionGetParams) WithQueryTimeout(queryTimeout *int64) *LdapCollectionGetParams {
+	o.SetQueryTimeout(queryTimeout)
 	return o
 }
 
-// SetQueryTimeoutQueryParameter adds the queryTimeout to the ldap collection get params
-func (o *LdapCollectionGetParams) SetQueryTimeoutQueryParameter(queryTimeout *int64) {
-	o.QueryTimeoutQueryParameter = queryTimeout
+// SetQueryTimeout adds the queryTimeout to the ldap collection get params
+func (o *LdapCollectionGetParams) SetQueryTimeout(queryTimeout *int64) {
+	o.QueryTimeout = queryTimeout
 }
 
-// WithReferralEnabledQueryParameter adds the referralEnabled to the ldap collection get params
-func (o *LdapCollectionGetParams) WithReferralEnabledQueryParameter(referralEnabled *bool) *LdapCollectionGetParams {
-	o.SetReferralEnabledQueryParameter(referralEnabled)
+// WithReferralEnabled adds the referralEnabled to the ldap collection get params
+func (o *LdapCollectionGetParams) WithReferralEnabled(referralEnabled *bool) *LdapCollectionGetParams {
+	o.SetReferralEnabled(referralEnabled)
 	return o
 }
 
-// SetReferralEnabledQueryParameter adds the referralEnabled to the ldap collection get params
-func (o *LdapCollectionGetParams) SetReferralEnabledQueryParameter(referralEnabled *bool) {
-	o.ReferralEnabledQueryParameter = referralEnabled
+// SetReferralEnabled adds the referralEnabled to the ldap collection get params
+func (o *LdapCollectionGetParams) SetReferralEnabled(referralEnabled *bool) {
+	o.ReferralEnabled = referralEnabled
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ldap collection get params
-func (o *LdapCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LdapCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ldap collection get params
+func (o *LdapCollectionGetParams) WithReturnRecords(returnRecords *bool) *LdapCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ldap collection get params
-func (o *LdapCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ldap collection get params
+func (o *LdapCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ldap collection get params
-func (o *LdapCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LdapCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ldap collection get params
+func (o *LdapCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LdapCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ldap collection get params
-func (o *LdapCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ldap collection get params
+func (o *LdapCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSchemaQueryParameter adds the schema to the ldap collection get params
-func (o *LdapCollectionGetParams) WithSchemaQueryParameter(schema *string) *LdapCollectionGetParams {
-	o.SetSchemaQueryParameter(schema)
+// WithSchema adds the schema to the ldap collection get params
+func (o *LdapCollectionGetParams) WithSchema(schema *string) *LdapCollectionGetParams {
+	o.SetSchema(schema)
 	return o
 }
 
-// SetSchemaQueryParameter adds the schema to the ldap collection get params
-func (o *LdapCollectionGetParams) SetSchemaQueryParameter(schema *string) {
-	o.SchemaQueryParameter = schema
+// SetSchema adds the schema to the ldap collection get params
+func (o *LdapCollectionGetParams) SetSchema(schema *string) {
+	o.Schema = schema
 }
 
-// WithServersQueryParameter adds the servers to the ldap collection get params
-func (o *LdapCollectionGetParams) WithServersQueryParameter(servers *string) *LdapCollectionGetParams {
-	o.SetServersQueryParameter(servers)
+// WithServers adds the servers to the ldap collection get params
+func (o *LdapCollectionGetParams) WithServers(servers *string) *LdapCollectionGetParams {
+	o.SetServers(servers)
 	return o
 }
 
-// SetServersQueryParameter adds the servers to the ldap collection get params
-func (o *LdapCollectionGetParams) SetServersQueryParameter(servers *string) {
-	o.ServersQueryParameter = servers
+// SetServers adds the servers to the ldap collection get params
+func (o *LdapCollectionGetParams) SetServers(servers *string) {
+	o.Servers = servers
 }
 
-// WithSessionSecurityQueryParameter adds the sessionSecurity to the ldap collection get params
-func (o *LdapCollectionGetParams) WithSessionSecurityQueryParameter(sessionSecurity *string) *LdapCollectionGetParams {
-	o.SetSessionSecurityQueryParameter(sessionSecurity)
+// WithSessionSecurity adds the sessionSecurity to the ldap collection get params
+func (o *LdapCollectionGetParams) WithSessionSecurity(sessionSecurity *string) *LdapCollectionGetParams {
+	o.SetSessionSecurity(sessionSecurity)
 	return o
 }
 
-// SetSessionSecurityQueryParameter adds the sessionSecurity to the ldap collection get params
-func (o *LdapCollectionGetParams) SetSessionSecurityQueryParameter(sessionSecurity *string) {
-	o.SessionSecurityQueryParameter = sessionSecurity
+// SetSessionSecurity adds the sessionSecurity to the ldap collection get params
+func (o *LdapCollectionGetParams) SetSessionSecurity(sessionSecurity *string) {
+	o.SessionSecurity = sessionSecurity
 }
 
-// WithStatusCodeQueryParameter adds the statusCode to the ldap collection get params
-func (o *LdapCollectionGetParams) WithStatusCodeQueryParameter(statusCode *int64) *LdapCollectionGetParams {
-	o.SetStatusCodeQueryParameter(statusCode)
+// WithStatusCode adds the statusCode to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusCode(statusCode *int64) *LdapCollectionGetParams {
+	o.SetStatusCode(statusCode)
 	return o
 }
 
-// SetStatusCodeQueryParameter adds the statusCode to the ldap collection get params
-func (o *LdapCollectionGetParams) SetStatusCodeQueryParameter(statusCode *int64) {
-	o.StatusCodeQueryParameter = statusCode
+// SetStatusCode adds the statusCode to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusCode(statusCode *int64) {
+	o.StatusCode = statusCode
 }
 
-// WithStatusDnMessageQueryParameter adds the statusDnMessage to the ldap collection get params
-func (o *LdapCollectionGetParams) WithStatusDnMessageQueryParameter(statusDnMessage *string) *LdapCollectionGetParams {
-	o.SetStatusDnMessageQueryParameter(statusDnMessage)
+// WithStatusDnMessage adds the statusDnMessage to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusDnMessage(statusDnMessage *string) *LdapCollectionGetParams {
+	o.SetStatusDnMessage(statusDnMessage)
 	return o
 }
 
-// SetStatusDnMessageQueryParameter adds the statusDnMessage to the ldap collection get params
-func (o *LdapCollectionGetParams) SetStatusDnMessageQueryParameter(statusDnMessage *string) {
-	o.StatusDnMessageQueryParameter = statusDnMessage
+// SetStatusDnMessage adds the statusDnMessage to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusDnMessage(statusDnMessage *string) {
+	o.StatusDnMessage = statusDnMessage
 }
 
-// WithStatusMessageQueryParameter adds the statusMessage to the ldap collection get params
-func (o *LdapCollectionGetParams) WithStatusMessageQueryParameter(statusMessage *string) *LdapCollectionGetParams {
-	o.SetStatusMessageQueryParameter(statusMessage)
+// WithStatusMessage adds the statusMessage to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusMessage(statusMessage *string) *LdapCollectionGetParams {
+	o.SetStatusMessage(statusMessage)
 	return o
 }
 
-// SetStatusMessageQueryParameter adds the statusMessage to the ldap collection get params
-func (o *LdapCollectionGetParams) SetStatusMessageQueryParameter(statusMessage *string) {
-	o.StatusMessageQueryParameter = statusMessage
+// SetStatusMessage adds the statusMessage to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusMessage(statusMessage *string) {
+	o.StatusMessage = statusMessage
 }
 
-// WithStatusStateQueryParameter adds the statusState to the ldap collection get params
-func (o *LdapCollectionGetParams) WithStatusStateQueryParameter(statusState *string) *LdapCollectionGetParams {
-	o.SetStatusStateQueryParameter(statusState)
+// WithStatusState adds the statusState to the ldap collection get params
+func (o *LdapCollectionGetParams) WithStatusState(statusState *string) *LdapCollectionGetParams {
+	o.SetStatusState(statusState)
 	return o
 }
 
-// SetStatusStateQueryParameter adds the statusState to the ldap collection get params
-func (o *LdapCollectionGetParams) SetStatusStateQueryParameter(statusState *string) {
-	o.StatusStateQueryParameter = statusState
+// SetStatusState adds the statusState to the ldap collection get params
+func (o *LdapCollectionGetParams) SetStatusState(statusState *string) {
+	o.StatusState = statusState
 }
 
-// WithSVMNameQueryParameter adds the svmName to the ldap collection get params
-func (o *LdapCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *LdapCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the ldap collection get params
+func (o *LdapCollectionGetParams) WithSvmName(svmName *string) *LdapCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the ldap collection get params
-func (o *LdapCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the ldap collection get params
+func (o *LdapCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the ldap collection get params
-func (o *LdapCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *LdapCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ldap collection get params
+func (o *LdapCollectionGetParams) WithSvmUUID(svmUUID *string) *LdapCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the ldap collection get params
-func (o *LdapCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ldap collection get params
+func (o *LdapCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTryChannelBindingQueryParameter adds the tryChannelBinding to the ldap collection get params
-func (o *LdapCollectionGetParams) WithTryChannelBindingQueryParameter(tryChannelBinding *bool) *LdapCollectionGetParams {
-	o.SetTryChannelBindingQueryParameter(tryChannelBinding)
+// WithTryChannelBinding adds the tryChannelBinding to the ldap collection get params
+func (o *LdapCollectionGetParams) WithTryChannelBinding(tryChannelBinding *bool) *LdapCollectionGetParams {
+	o.SetTryChannelBinding(tryChannelBinding)
 	return o
 }
 
-// SetTryChannelBindingQueryParameter adds the tryChannelBinding to the ldap collection get params
-func (o *LdapCollectionGetParams) SetTryChannelBindingQueryParameter(tryChannelBinding *bool) {
-	o.TryChannelBindingQueryParameter = tryChannelBinding
+// SetTryChannelBinding adds the tryChannelBinding to the ldap collection get params
+func (o *LdapCollectionGetParams) SetTryChannelBinding(tryChannelBinding *bool) {
+	o.TryChannelBinding = tryChannelBinding
 }
 
-// WithUseStartTLSQueryParameter adds the useStartTLS to the ldap collection get params
-func (o *LdapCollectionGetParams) WithUseStartTLSQueryParameter(useStartTLS *bool) *LdapCollectionGetParams {
-	o.SetUseStartTLSQueryParameter(useStartTLS)
+// WithUseStartTLS adds the useStartTLS to the ldap collection get params
+func (o *LdapCollectionGetParams) WithUseStartTLS(useStartTLS *bool) *LdapCollectionGetParams {
+	o.SetUseStartTLS(useStartTLS)
 	return o
 }
 
-// SetUseStartTLSQueryParameter adds the useStartTls to the ldap collection get params
-func (o *LdapCollectionGetParams) SetUseStartTLSQueryParameter(useStartTLS *bool) {
-	o.UseStartTLSQueryParameter = useStartTLS
+// SetUseStartTLS adds the useStartTls to the ldap collection get params
+func (o *LdapCollectionGetParams) SetUseStartTLS(useStartTLS *bool) {
+	o.UseStartTLS = useStartTLS
 }
 
-// WithUserDnQueryParameter adds the userDn to the ldap collection get params
-func (o *LdapCollectionGetParams) WithUserDnQueryParameter(userDn *string) *LdapCollectionGetParams {
-	o.SetUserDnQueryParameter(userDn)
+// WithUserDn adds the userDn to the ldap collection get params
+func (o *LdapCollectionGetParams) WithUserDn(userDn *string) *LdapCollectionGetParams {
+	o.SetUserDn(userDn)
 	return o
 }
 
-// SetUserDnQueryParameter adds the userDn to the ldap collection get params
-func (o *LdapCollectionGetParams) SetUserDnQueryParameter(userDn *string) {
-	o.UserDnQueryParameter = userDn
+// SetUserDn adds the userDn to the ldap collection get params
+func (o *LdapCollectionGetParams) SetUserDn(userDn *string) {
+	o.UserDn = userDn
 }
 
-// WithUserScopeQueryParameter adds the userScope to the ldap collection get params
-func (o *LdapCollectionGetParams) WithUserScopeQueryParameter(userScope *string) *LdapCollectionGetParams {
-	o.SetUserScopeQueryParameter(userScope)
+// WithUserScope adds the userScope to the ldap collection get params
+func (o *LdapCollectionGetParams) WithUserScope(userScope *string) *LdapCollectionGetParams {
+	o.SetUserScope(userScope)
 	return o
 }
 
-// SetUserScopeQueryParameter adds the userScope to the ldap collection get params
-func (o *LdapCollectionGetParams) SetUserScopeQueryParameter(userScope *string) {
-	o.UserScopeQueryParameter = userScope
+// SetUserScope adds the userScope to the ldap collection get params
+func (o *LdapCollectionGetParams) SetUserScope(userScope *string) {
+	o.UserScope = userScope
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -787,13 +787,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.AdDomainQueryParameter != nil {
+	if o.AdDomain != nil {
 
 		// query param ad_domain
 		var qrAdDomain string
 
-		if o.AdDomainQueryParameter != nil {
-			qrAdDomain = *o.AdDomainQueryParameter
+		if o.AdDomain != nil {
+			qrAdDomain = *o.AdDomain
 		}
 		qAdDomain := qrAdDomain
 		if qAdDomain != "" {
@@ -804,13 +804,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.BaseDnQueryParameter != nil {
+	if o.BaseDn != nil {
 
 		// query param base_dn
 		var qrBaseDn string
 
-		if o.BaseDnQueryParameter != nil {
-			qrBaseDn = *o.BaseDnQueryParameter
+		if o.BaseDn != nil {
+			qrBaseDn = *o.BaseDn
 		}
 		qBaseDn := qrBaseDn
 		if qBaseDn != "" {
@@ -821,13 +821,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.BaseScopeQueryParameter != nil {
+	if o.BaseScope != nil {
 
 		// query param base_scope
 		var qrBaseScope string
 
-		if o.BaseScopeQueryParameter != nil {
-			qrBaseScope = *o.BaseScopeQueryParameter
+		if o.BaseScope != nil {
+			qrBaseScope = *o.BaseScope
 		}
 		qBaseScope := qrBaseScope
 		if qBaseScope != "" {
@@ -838,13 +838,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.BindAsCifsServerQueryParameter != nil {
+	if o.BindAsCifsServer != nil {
 
 		// query param bind_as_cifs_server
 		var qrBindAsCifsServer bool
 
-		if o.BindAsCifsServerQueryParameter != nil {
-			qrBindAsCifsServer = *o.BindAsCifsServerQueryParameter
+		if o.BindAsCifsServer != nil {
+			qrBindAsCifsServer = *o.BindAsCifsServer
 		}
 		qBindAsCifsServer := swag.FormatBool(qrBindAsCifsServer)
 		if qBindAsCifsServer != "" {
@@ -855,13 +855,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.BindDnQueryParameter != nil {
+	if o.BindDn != nil {
 
 		// query param bind_dn
 		var qrBindDn string
 
-		if o.BindDnQueryParameter != nil {
-			qrBindDn = *o.BindDnQueryParameter
+		if o.BindDn != nil {
+			qrBindDn = *o.BindDn
 		}
 		qBindDn := qrBindDn
 		if qBindDn != "" {
@@ -872,7 +872,7 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -883,13 +883,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.GroupDnQueryParameter != nil {
+	if o.GroupDn != nil {
 
 		// query param group_dn
 		var qrGroupDn string
 
-		if o.GroupDnQueryParameter != nil {
-			qrGroupDn = *o.GroupDnQueryParameter
+		if o.GroupDn != nil {
+			qrGroupDn = *o.GroupDn
 		}
 		qGroupDn := qrGroupDn
 		if qGroupDn != "" {
@@ -900,13 +900,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.GroupMembershIPFilterQueryParameter != nil {
+	if o.GroupMembershipFilter != nil {
 
 		// query param group_membership_filter
 		var qrGroupMembershipFilter string
 
-		if o.GroupMembershIPFilterQueryParameter != nil {
-			qrGroupMembershipFilter = *o.GroupMembershIPFilterQueryParameter
+		if o.GroupMembershipFilter != nil {
+			qrGroupMembershipFilter = *o.GroupMembershipFilter
 		}
 		qGroupMembershipFilter := qrGroupMembershipFilter
 		if qGroupMembershipFilter != "" {
@@ -917,13 +917,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.GroupScopeQueryParameter != nil {
+	if o.GroupScope != nil {
 
 		// query param group_scope
 		var qrGroupScope string
 
-		if o.GroupScopeQueryParameter != nil {
-			qrGroupScope = *o.GroupScopeQueryParameter
+		if o.GroupScope != nil {
+			qrGroupScope = *o.GroupScope
 		}
 		qGroupScope := qrGroupScope
 		if qGroupScope != "" {
@@ -934,13 +934,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.IsNetgroupByhostEnabledQueryParameter != nil {
+	if o.IsNetgroupByhostEnabled != nil {
 
 		// query param is_netgroup_byhost_enabled
 		var qrIsNetgroupByhostEnabled bool
 
-		if o.IsNetgroupByhostEnabledQueryParameter != nil {
-			qrIsNetgroupByhostEnabled = *o.IsNetgroupByhostEnabledQueryParameter
+		if o.IsNetgroupByhostEnabled != nil {
+			qrIsNetgroupByhostEnabled = *o.IsNetgroupByhostEnabled
 		}
 		qIsNetgroupByhostEnabled := swag.FormatBool(qrIsNetgroupByhostEnabled)
 		if qIsNetgroupByhostEnabled != "" {
@@ -951,13 +951,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.IsOwnerQueryParameter != nil {
+	if o.IsOwner != nil {
 
 		// query param is_owner
 		var qrIsOwner bool
 
-		if o.IsOwnerQueryParameter != nil {
-			qrIsOwner = *o.IsOwnerQueryParameter
+		if o.IsOwner != nil {
+			qrIsOwner = *o.IsOwner
 		}
 		qIsOwner := swag.FormatBool(qrIsOwner)
 		if qIsOwner != "" {
@@ -968,13 +968,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.LdapsEnabledQueryParameter != nil {
+	if o.LdapsEnabled != nil {
 
 		// query param ldaps_enabled
 		var qrLdapsEnabled bool
 
-		if o.LdapsEnabledQueryParameter != nil {
-			qrLdapsEnabled = *o.LdapsEnabledQueryParameter
+		if o.LdapsEnabled != nil {
+			qrLdapsEnabled = *o.LdapsEnabled
 		}
 		qLdapsEnabled := swag.FormatBool(qrLdapsEnabled)
 		if qLdapsEnabled != "" {
@@ -985,13 +985,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1002,13 +1002,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MinBindLevelQueryParameter != nil {
+	if o.MinBindLevel != nil {
 
 		// query param min_bind_level
 		var qrMinBindLevel string
 
-		if o.MinBindLevelQueryParameter != nil {
-			qrMinBindLevel = *o.MinBindLevelQueryParameter
+		if o.MinBindLevel != nil {
+			qrMinBindLevel = *o.MinBindLevel
 		}
 		qMinBindLevel := qrMinBindLevel
 		if qMinBindLevel != "" {
@@ -1019,13 +1019,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NetgroupByhostDnQueryParameter != nil {
+	if o.NetgroupByhostDn != nil {
 
 		// query param netgroup_byhost_dn
 		var qrNetgroupByhostDn string
 
-		if o.NetgroupByhostDnQueryParameter != nil {
-			qrNetgroupByhostDn = *o.NetgroupByhostDnQueryParameter
+		if o.NetgroupByhostDn != nil {
+			qrNetgroupByhostDn = *o.NetgroupByhostDn
 		}
 		qNetgroupByhostDn := qrNetgroupByhostDn
 		if qNetgroupByhostDn != "" {
@@ -1036,13 +1036,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NetgroupByhostScopeQueryParameter != nil {
+	if o.NetgroupByhostScope != nil {
 
 		// query param netgroup_byhost_scope
 		var qrNetgroupByhostScope string
 
-		if o.NetgroupByhostScopeQueryParameter != nil {
-			qrNetgroupByhostScope = *o.NetgroupByhostScopeQueryParameter
+		if o.NetgroupByhostScope != nil {
+			qrNetgroupByhostScope = *o.NetgroupByhostScope
 		}
 		qNetgroupByhostScope := qrNetgroupByhostScope
 		if qNetgroupByhostScope != "" {
@@ -1053,13 +1053,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NetgroupDnQueryParameter != nil {
+	if o.NetgroupDn != nil {
 
 		// query param netgroup_dn
 		var qrNetgroupDn string
 
-		if o.NetgroupDnQueryParameter != nil {
-			qrNetgroupDn = *o.NetgroupDnQueryParameter
+		if o.NetgroupDn != nil {
+			qrNetgroupDn = *o.NetgroupDn
 		}
 		qNetgroupDn := qrNetgroupDn
 		if qNetgroupDn != "" {
@@ -1070,13 +1070,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NetgroupScopeQueryParameter != nil {
+	if o.NetgroupScope != nil {
 
 		// query param netgroup_scope
 		var qrNetgroupScope string
 
-		if o.NetgroupScopeQueryParameter != nil {
-			qrNetgroupScope = *o.NetgroupScopeQueryParameter
+		if o.NetgroupScope != nil {
+			qrNetgroupScope = *o.NetgroupScope
 		}
 		qNetgroupScope := qrNetgroupScope
 		if qNetgroupScope != "" {
@@ -1087,7 +1087,7 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1098,13 +1098,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PortQueryParameter != nil {
+	if o.Port != nil {
 
 		// query param port
 		var qrPort int64
 
-		if o.PortQueryParameter != nil {
-			qrPort = *o.PortQueryParameter
+		if o.Port != nil {
+			qrPort = *o.Port
 		}
 		qPort := swag.FormatInt64(qrPort)
 		if qPort != "" {
@@ -1115,13 +1115,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PreferredAdServersQueryParameter != nil {
+	if o.PreferredAdServers != nil {
 
 		// query param preferred_ad_servers
 		var qrPreferredAdServers string
 
-		if o.PreferredAdServersQueryParameter != nil {
-			qrPreferredAdServers = *o.PreferredAdServersQueryParameter
+		if o.PreferredAdServers != nil {
+			qrPreferredAdServers = *o.PreferredAdServers
 		}
 		qPreferredAdServers := qrPreferredAdServers
 		if qPreferredAdServers != "" {
@@ -1132,13 +1132,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.QueryTimeoutQueryParameter != nil {
+	if o.QueryTimeout != nil {
 
 		// query param query_timeout
 		var qrQueryTimeout int64
 
-		if o.QueryTimeoutQueryParameter != nil {
-			qrQueryTimeout = *o.QueryTimeoutQueryParameter
+		if o.QueryTimeout != nil {
+			qrQueryTimeout = *o.QueryTimeout
 		}
 		qQueryTimeout := swag.FormatInt64(qrQueryTimeout)
 		if qQueryTimeout != "" {
@@ -1149,13 +1149,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReferralEnabledQueryParameter != nil {
+	if o.ReferralEnabled != nil {
 
 		// query param referral_enabled
 		var qrReferralEnabled bool
 
-		if o.ReferralEnabledQueryParameter != nil {
-			qrReferralEnabled = *o.ReferralEnabledQueryParameter
+		if o.ReferralEnabled != nil {
+			qrReferralEnabled = *o.ReferralEnabled
 		}
 		qReferralEnabled := swag.FormatBool(qrReferralEnabled)
 		if qReferralEnabled != "" {
@@ -1166,13 +1166,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1183,13 +1183,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1200,13 +1200,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SchemaQueryParameter != nil {
+	if o.Schema != nil {
 
 		// query param schema
 		var qrSchema string
 
-		if o.SchemaQueryParameter != nil {
-			qrSchema = *o.SchemaQueryParameter
+		if o.Schema != nil {
+			qrSchema = *o.Schema
 		}
 		qSchema := qrSchema
 		if qSchema != "" {
@@ -1217,13 +1217,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ServersQueryParameter != nil {
+	if o.Servers != nil {
 
 		// query param servers
 		var qrServers string
 
-		if o.ServersQueryParameter != nil {
-			qrServers = *o.ServersQueryParameter
+		if o.Servers != nil {
+			qrServers = *o.Servers
 		}
 		qServers := qrServers
 		if qServers != "" {
@@ -1234,13 +1234,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SessionSecurityQueryParameter != nil {
+	if o.SessionSecurity != nil {
 
 		// query param session_security
 		var qrSessionSecurity string
 
-		if o.SessionSecurityQueryParameter != nil {
-			qrSessionSecurity = *o.SessionSecurityQueryParameter
+		if o.SessionSecurity != nil {
+			qrSessionSecurity = *o.SessionSecurity
 		}
 		qSessionSecurity := qrSessionSecurity
 		if qSessionSecurity != "" {
@@ -1251,13 +1251,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatusCodeQueryParameter != nil {
+	if o.StatusCode != nil {
 
 		// query param status.code
 		var qrStatusCode int64
 
-		if o.StatusCodeQueryParameter != nil {
-			qrStatusCode = *o.StatusCodeQueryParameter
+		if o.StatusCode != nil {
+			qrStatusCode = *o.StatusCode
 		}
 		qStatusCode := swag.FormatInt64(qrStatusCode)
 		if qStatusCode != "" {
@@ -1268,13 +1268,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatusDnMessageQueryParameter != nil {
+	if o.StatusDnMessage != nil {
 
 		// query param status.dn_message
 		var qrStatusDnMessage string
 
-		if o.StatusDnMessageQueryParameter != nil {
-			qrStatusDnMessage = *o.StatusDnMessageQueryParameter
+		if o.StatusDnMessage != nil {
+			qrStatusDnMessage = *o.StatusDnMessage
 		}
 		qStatusDnMessage := qrStatusDnMessage
 		if qStatusDnMessage != "" {
@@ -1285,13 +1285,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatusMessageQueryParameter != nil {
+	if o.StatusMessage != nil {
 
 		// query param status.message
 		var qrStatusMessage string
 
-		if o.StatusMessageQueryParameter != nil {
-			qrStatusMessage = *o.StatusMessageQueryParameter
+		if o.StatusMessage != nil {
+			qrStatusMessage = *o.StatusMessage
 		}
 		qStatusMessage := qrStatusMessage
 		if qStatusMessage != "" {
@@ -1302,13 +1302,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.StatusStateQueryParameter != nil {
+	if o.StatusState != nil {
 
 		// query param status.state
 		var qrStatusState string
 
-		if o.StatusStateQueryParameter != nil {
-			qrStatusState = *o.StatusStateQueryParameter
+		if o.StatusState != nil {
+			qrStatusState = *o.StatusState
 		}
 		qStatusState := qrStatusState
 		if qStatusState != "" {
@@ -1319,13 +1319,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1336,13 +1336,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1353,13 +1353,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.TryChannelBindingQueryParameter != nil {
+	if o.TryChannelBinding != nil {
 
 		// query param try_channel_binding
 		var qrTryChannelBinding bool
 
-		if o.TryChannelBindingQueryParameter != nil {
-			qrTryChannelBinding = *o.TryChannelBindingQueryParameter
+		if o.TryChannelBinding != nil {
+			qrTryChannelBinding = *o.TryChannelBinding
 		}
 		qTryChannelBinding := swag.FormatBool(qrTryChannelBinding)
 		if qTryChannelBinding != "" {
@@ -1370,13 +1370,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.UseStartTLSQueryParameter != nil {
+	if o.UseStartTLS != nil {
 
 		// query param use_start_tls
 		var qrUseStartTLS bool
 
-		if o.UseStartTLSQueryParameter != nil {
-			qrUseStartTLS = *o.UseStartTLSQueryParameter
+		if o.UseStartTLS != nil {
+			qrUseStartTLS = *o.UseStartTLS
 		}
 		qUseStartTLS := swag.FormatBool(qrUseStartTLS)
 		if qUseStartTLS != "" {
@@ -1387,13 +1387,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.UserDnQueryParameter != nil {
+	if o.UserDn != nil {
 
 		// query param user_dn
 		var qrUserDn string
 
-		if o.UserDnQueryParameter != nil {
-			qrUserDn = *o.UserDnQueryParameter
+		if o.UserDn != nil {
+			qrUserDn = *o.UserDn
 		}
 		qUserDn := qrUserDn
 		if qUserDn != "" {
@@ -1404,13 +1404,13 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.UserScopeQueryParameter != nil {
+	if o.UserScope != nil {
 
 		// query param user_scope
 		var qrUserScope string
 
-		if o.UserScopeQueryParameter != nil {
-			qrUserScope = *o.UserScopeQueryParameter
+		if o.UserScope != nil {
+			qrUserScope = *o.UserScope
 		}
 		qUserScope := qrUserScope
 		if qUserScope != "" {
@@ -1429,7 +1429,7 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamLdapCollectionGet binds the parameter fields
 func (o *LdapCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1446,7 +1446,7 @@ func (o *LdapCollectionGetParams) bindParamFields(formats strfmt.Registry) []str
 
 // bindParamLdapCollectionGet binds the parameter order_by
 func (o *LdapCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

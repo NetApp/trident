@@ -24,17 +24,20 @@ type S3Service struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// buckets
-	Buckets []*S3Bucket `json:"buckets,omitempty"`
-
 	// certificate
-	Certificate *S3ServiceCertificate `json:"certificate,omitempty"`
+	Certificate *S3ServiceInlineCertificate `json:"certificate,omitempty"`
 
 	// Can contain any additional information about the server being created or modified.
 	// Example: S3 server
 	// Max Length: 256
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
+
+	// Specifies the default UNIX user for NAS Access.
+	DefaultUnixUser *string `json:"default_unix_user,omitempty"`
+
+	// Specifies the default Windows user for NAS Access.
+	DefaultWinUser *string `json:"default_win_user,omitempty"`
 
 	// Specifies whether the S3 server being created or modified should be up or down.
 	Enabled *bool `json:"enabled,omitempty"`
@@ -46,28 +49,31 @@ type S3Service struct {
 	IsHTTPSEnabled *bool `json:"is_https_enabled,omitempty"`
 
 	// metric
-	Metric *S3ServiceMetric `json:"metric,omitempty"`
+	Metric *S3ServiceInlineMetric `json:"metric,omitempty"`
 
 	// Specifies the name of the S3 server. A server name can contain 1 to 253 characters using only the following combination of characters':' 0-9, A-Z, a-z, ".", and "-".
 	// Example: Server-1
 	// Max Length: 253
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the HTTP listener port for the S3 server. By default, HTTP is enabled on port 80.
 	Port *int64 `json:"port,omitempty"`
+
+	// s3 service inline buckets
+	S3ServiceInlineBuckets []*S3Bucket `json:"buckets,omitempty"`
+
+	// s3 service inline users
+	S3ServiceInlineUsers []*S3User `json:"users,omitempty"`
 
 	// Specifies the HTTPS listener port for the S3 server. By default, HTTPS is enabled on port 443.
 	SecurePort *int64 `json:"secure_port,omitempty"`
 
 	// statistics
-	Statistics *S3ServiceStatistics `json:"statistics,omitempty"`
+	Statistics *S3ServiceInlineStatistics `json:"statistics,omitempty"`
 
 	// svm
-	Svm *S3ServiceSvm `json:"svm,omitempty"`
-
-	// users
-	Users []*S3User `json:"users,omitempty"`
+	Svm *S3ServiceInlineSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this s3 service
@@ -75,10 +81,6 @@ func (m *S3Service) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateBuckets(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -98,15 +100,19 @@ func (m *S3Service) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateS3ServiceInlineBuckets(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateS3ServiceInlineUsers(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStatistics(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSvm(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateUsers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -128,30 +134,6 @@ func (m *S3Service) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *S3Service) validateBuckets(formats strfmt.Registry) error {
-	if swag.IsZero(m.Buckets) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Buckets); i++ {
-		if swag.IsZero(m.Buckets[i]) { // not required
-			continue
-		}
-
-		if m.Buckets[i] != nil {
-			if err := m.Buckets[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("buckets" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -212,12 +194,60 @@ func (m *S3Service) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 253); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 253); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3Service) validateS3ServiceInlineBuckets(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3ServiceInlineBuckets) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.S3ServiceInlineBuckets); i++ {
+		if swag.IsZero(m.S3ServiceInlineBuckets[i]) { // not required
+			continue
+		}
+
+		if m.S3ServiceInlineBuckets[i] != nil {
+			if err := m.S3ServiceInlineBuckets[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("buckets" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *S3Service) validateS3ServiceInlineUsers(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3ServiceInlineUsers) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.S3ServiceInlineUsers); i++ {
+		if swag.IsZero(m.S3ServiceInlineUsers[i]) { // not required
+			continue
+		}
+
+		if m.S3ServiceInlineUsers[i] != nil {
+			if err := m.S3ServiceInlineUsers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -257,39 +287,11 @@ func (m *S3Service) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3Service) validateUsers(formats strfmt.Registry) error {
-	if swag.IsZero(m.Users) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Users); i++ {
-		if swag.IsZero(m.Users[i]) { // not required
-			continue
-		}
-
-		if m.Users[i] != nil {
-			if err := m.Users[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("users" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this s3 service based on the context it is used
 func (m *S3Service) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateBuckets(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -301,15 +303,19 @@ func (m *S3Service) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateS3ServiceInlineBuckets(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateS3ServiceInlineUsers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStatistics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUsers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -328,24 +334,6 @@ func (m *S3Service) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *S3Service) contextValidateBuckets(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Buckets); i++ {
-
-		if m.Buckets[i] != nil {
-			if err := m.Buckets[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("buckets" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -379,6 +367,42 @@ func (m *S3Service) contextValidateMetric(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
+func (m *S3Service) contextValidateS3ServiceInlineBuckets(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.S3ServiceInlineBuckets); i++ {
+
+		if m.S3ServiceInlineBuckets[i] != nil {
+			if err := m.S3ServiceInlineBuckets[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("buckets" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *S3Service) contextValidateS3ServiceInlineUsers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.S3ServiceInlineUsers); i++ {
+
+		if m.S3ServiceInlineUsers[i] != nil {
+			if err := m.S3ServiceInlineUsers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *S3Service) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Statistics != nil {
@@ -407,24 +431,6 @@ func (m *S3Service) contextValidateSvm(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *S3Service) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Users); i++ {
-
-		if m.Users[i] != nil {
-			if err := m.Users[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("users" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *S3Service) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -443,25 +449,25 @@ func (m *S3Service) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceCertificate Specifies the certificate that will be used for creating HTTPS connections to the S3 server.
+// S3ServiceInlineCertificate Specifies the certificate that will be used for creating HTTPS connections to the S3 server.
 //
-// swagger:model S3ServiceCertificate
-type S3ServiceCertificate struct {
+// swagger:model s3_service_inline_certificate
+type S3ServiceInlineCertificate struct {
 
 	// links
-	Links *S3ServiceCertificateLinks `json:"_links,omitempty"`
+	Links *S3ServiceInlineCertificateInlineLinks `json:"_links,omitempty"`
 
 	// Certificate name
 	// Example: cert1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 service certificate
-func (m *S3ServiceCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline certificate
+func (m *S3ServiceInlineCertificate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -474,7 +480,7 @@ func (m *S3ServiceCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceCertificate) validateLinks(formats strfmt.Registry) error {
+func (m *S3ServiceInlineCertificate) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -491,8 +497,8 @@ func (m *S3ServiceCertificate) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service certificate based on the context it is used
-func (m *S3ServiceCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline certificate based on the context it is used
+func (m *S3ServiceInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -505,7 +511,7 @@ func (m *S3ServiceCertificate) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *S3ServiceCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -520,7 +526,7 @@ func (m *S3ServiceCertificate) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceCertificate) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -528,8 +534,8 @@ func (m *S3ServiceCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceCertificate) UnmarshalBinary(b []byte) error {
-	var res S3ServiceCertificate
+func (m *S3ServiceInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -537,17 +543,17 @@ func (m *S3ServiceCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceCertificateLinks s3 service certificate links
+// S3ServiceInlineCertificateInlineLinks s3 service inline certificate inline links
 //
-// swagger:model S3ServiceCertificateLinks
-type S3ServiceCertificateLinks struct {
+// swagger:model s3_service_inline_certificate_inline__links
+type S3ServiceInlineCertificateInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 service certificate links
-func (m *S3ServiceCertificateLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline certificate inline links
+func (m *S3ServiceInlineCertificateInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -560,7 +566,7 @@ func (m *S3ServiceCertificateLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceCertificateLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3ServiceInlineCertificateInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -577,8 +583,8 @@ func (m *S3ServiceCertificateLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this s3 service certificate links based on the context it is used
-func (m *S3ServiceCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline certificate inline links based on the context it is used
+func (m *S3ServiceInlineCertificateInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -591,7 +597,7 @@ func (m *S3ServiceCertificateLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *S3ServiceCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineCertificateInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -606,7 +612,7 @@ func (m *S3ServiceCertificateLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceCertificateLinks) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineCertificateInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -614,8 +620,8 @@ func (m *S3ServiceCertificateLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceCertificateLinks) UnmarshalBinary(b []byte) error {
-	var res S3ServiceCertificateLinks
+func (m *S3ServiceInlineCertificateInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineCertificateInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -623,35 +629,35 @@ func (m *S3ServiceCertificateLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceMetric Performance numbers, such as IOPS latency and throughput, for SVM protocols.
+// S3ServiceInlineMetric Performance numbers, such as IOPS latency and throughput, for SVM protocols.
 //
-// swagger:model S3ServiceMetric
-type S3ServiceMetric struct {
+// swagger:model s3_service_inline_metric
+type S3ServiceInlineMetric struct {
 
 	// links
-	Links *S3ServiceMetricLinks `json:"_links,omitempty"`
+	Links *S3ServiceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *S3ServiceMetricIops `json:"iops,omitempty"`
+	Iops *S3ServiceInlineMetricInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *S3ServiceMetricLatency `json:"latency,omitempty"`
+	Latency *S3ServiceInlineMetricInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *S3ServiceMetricThroughput `json:"throughput,omitempty"`
+	Throughput *S3ServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -660,8 +666,8 @@ type S3ServiceMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this s3 service metric
-func (m *S3ServiceMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline metric
+func (m *S3ServiceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -698,7 +704,7 @@ func (m *S3ServiceMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceMetric) validateLinks(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -715,7 +721,7 @@ func (m *S3ServiceMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var s3ServiceMetricTypeDurationPropEnum []interface{}
+var s3ServiceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -723,95 +729,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		s3ServiceMetricTypeDurationPropEnum = append(s3ServiceMetricTypeDurationPropEnum, v)
+		s3ServiceInlineMetricTypeDurationPropEnum = append(s3ServiceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// S3ServiceMetricDurationPT15S captures enum value "PT15S"
-	S3ServiceMetricDurationPT15S string = "PT15S"
+	// S3ServiceInlineMetricDurationPT15S captures enum value "PT15S"
+	S3ServiceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// S3ServiceMetricDurationPT4M captures enum value "PT4M"
-	S3ServiceMetricDurationPT4M string = "PT4M"
+	// S3ServiceInlineMetricDurationPT4M captures enum value "PT4M"
+	S3ServiceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// S3ServiceMetricDurationPT30M captures enum value "PT30M"
-	S3ServiceMetricDurationPT30M string = "PT30M"
+	// S3ServiceInlineMetricDurationPT30M captures enum value "PT30M"
+	S3ServiceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// S3ServiceMetricDurationPT2H captures enum value "PT2H"
-	S3ServiceMetricDurationPT2H string = "PT2H"
+	// S3ServiceInlineMetricDurationPT2H captures enum value "PT2H"
+	S3ServiceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// S3ServiceMetricDurationP1D captures enum value "P1D"
-	S3ServiceMetricDurationP1D string = "P1D"
+	// S3ServiceInlineMetricDurationP1D captures enum value "P1D"
+	S3ServiceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// S3ServiceMetricDurationPT5M captures enum value "PT5M"
-	S3ServiceMetricDurationPT5M string = "PT5M"
+	// S3ServiceInlineMetricDurationPT5M captures enum value "PT5M"
+	S3ServiceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *S3ServiceMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, s3ServiceMetricTypeDurationPropEnum, true); err != nil {
+func (m *S3ServiceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3ServiceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *S3ServiceMetric) validateDuration(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3ServiceMetric) validateIops(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateIops(formats strfmt.Registry) error {
 	if swag.IsZero(m.Iops) { // not required
 		return nil
 	}
@@ -828,7 +834,7 @@ func (m *S3ServiceMetric) validateIops(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceMetric) validateLatency(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateLatency(formats strfmt.Registry) error {
 	if swag.IsZero(m.Latency) { // not required
 		return nil
 	}
@@ -845,7 +851,7 @@ func (m *S3ServiceMetric) validateLatency(formats strfmt.Registry) error {
 	return nil
 }
 
-var s3ServiceMetricTypeStatusPropEnum []interface{}
+var s3ServiceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -853,145 +859,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		s3ServiceMetricTypeStatusPropEnum = append(s3ServiceMetricTypeStatusPropEnum, v)
+		s3ServiceInlineMetricTypeStatusPropEnum = append(s3ServiceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// S3ServiceMetricStatusOk captures enum value "ok"
-	S3ServiceMetricStatusOk string = "ok"
+	// S3ServiceInlineMetricStatusOk captures enum value "ok"
+	S3ServiceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// S3ServiceMetricStatusError captures enum value "error"
-	S3ServiceMetricStatusError string = "error"
+	// S3ServiceInlineMetricStatusError captures enum value "error"
+	S3ServiceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// S3ServiceMetricStatusPartialNoData captures enum value "partial_no_data"
-	S3ServiceMetricStatusPartialNoData string = "partial_no_data"
+	// S3ServiceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	S3ServiceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// S3ServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	S3ServiceMetricStatusPartialNoResponse string = "partial_no_response"
+	// S3ServiceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	S3ServiceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// S3ServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
-	S3ServiceMetricStatusPartialOtherError string = "partial_other_error"
+	// S3ServiceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	S3ServiceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// S3ServiceMetricStatusNegativeDelta captures enum value "negative_delta"
-	S3ServiceMetricStatusNegativeDelta string = "negative_delta"
+	// S3ServiceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	S3ServiceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// S3ServiceMetricStatusNotFound captures enum value "not_found"
-	S3ServiceMetricStatusNotFound string = "not_found"
+	// S3ServiceInlineMetricStatusNotFound captures enum value "not_found"
+	S3ServiceInlineMetricStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// S3ServiceMetricStatusBackfilledData captures enum value "backfilled_data"
-	S3ServiceMetricStatusBackfilledData string = "backfilled_data"
+	// S3ServiceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	S3ServiceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// S3ServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	S3ServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// S3ServiceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	S3ServiceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// S3ServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	S3ServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// S3ServiceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	S3ServiceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// S3ServiceMetric
-	// S3ServiceMetric
+	// s3_service_inline_metric
+	// S3ServiceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// S3ServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	S3ServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// S3ServiceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	S3ServiceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *S3ServiceMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, s3ServiceMetricTypeStatusPropEnum, true); err != nil {
+func (m *S3ServiceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3ServiceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *S3ServiceMetric) validateStatus(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3ServiceMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -1008,7 +1014,7 @@ func (m *S3ServiceMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1020,8 +1026,8 @@ func (m *S3ServiceMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service metric based on the context it is used
-func (m *S3ServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline metric based on the context it is used
+func (m *S3ServiceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1058,7 +1064,7 @@ func (m *S3ServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1072,16 +1078,16 @@ func (m *S3ServiceMetric) contextValidateLinks(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Iops != nil {
 		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
@@ -1095,7 +1101,7 @@ func (m *S3ServiceMetric) contextValidateIops(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Latency != nil {
 		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
@@ -1109,16 +1115,16 @@ func (m *S3ServiceMetric) contextValidateLatency(ctx context.Context, formats st
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -1132,7 +1138,7 @@ func (m *S3ServiceMetric) contextValidateThroughput(ctx context.Context, formats
 	return nil
 }
 
-func (m *S3ServiceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1142,7 +1148,7 @@ func (m *S3ServiceMetric) contextValidateTimestamp(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceMetric) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1150,8 +1156,8 @@ func (m *S3ServiceMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceMetric) UnmarshalBinary(b []byte) error {
-	var res S3ServiceMetric
+func (m *S3ServiceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1159,34 +1165,34 @@ func (m *S3ServiceMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceMetricIops The rate of I/O operations observed at the storage object.
+// S3ServiceInlineMetricInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model S3ServiceMetricIops
-type S3ServiceMetricIops struct {
+// swagger:model s3_service_inline_metric_inline_iops
+type S3ServiceInlineMetricInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this s3 service metric iops
-func (m *S3ServiceMetricIops) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline metric inline iops
+func (m *S3ServiceInlineMetricInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service metric iops based on the context it is used
-func (m *S3ServiceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline metric inline iops based on the context it is used
+func (m *S3ServiceInlineMetricInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1196,7 +1202,7 @@ func (m *S3ServiceMetricIops) ContextValidate(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceMetricIops) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineMetricInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1204,8 +1210,8 @@ func (m *S3ServiceMetricIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceMetricIops) UnmarshalBinary(b []byte) error {
-	var res S3ServiceMetricIops
+func (m *S3ServiceInlineMetricInlineIops) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineMetricInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1213,34 +1219,34 @@ func (m *S3ServiceMetricIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceMetricLatency The round trip latency in microseconds observed at the storage object.
+// S3ServiceInlineMetricInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model S3ServiceMetricLatency
-type S3ServiceMetricLatency struct {
+// swagger:model s3_service_inline_metric_inline_latency
+type S3ServiceInlineMetricInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this s3 service metric latency
-func (m *S3ServiceMetricLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline metric inline latency
+func (m *S3ServiceInlineMetricInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service metric latency based on the context it is used
-func (m *S3ServiceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline metric inline latency based on the context it is used
+func (m *S3ServiceInlineMetricInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1250,7 +1256,7 @@ func (m *S3ServiceMetricLatency) ContextValidate(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceMetricLatency) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineMetricInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1258,8 +1264,8 @@ func (m *S3ServiceMetricLatency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceMetricLatency) UnmarshalBinary(b []byte) error {
-	var res S3ServiceMetricLatency
+func (m *S3ServiceInlineMetricInlineLatency) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineMetricInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1267,17 +1273,17 @@ func (m *S3ServiceMetricLatency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceMetricLinks s3 service metric links
+// S3ServiceInlineMetricInlineLinks s3 service inline metric inline links
 //
-// swagger:model S3ServiceMetricLinks
-type S3ServiceMetricLinks struct {
+// swagger:model s3_service_inline_metric_inline__links
+type S3ServiceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 service metric links
-func (m *S3ServiceMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline metric inline links
+func (m *S3ServiceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1290,7 +1296,7 @@ func (m *S3ServiceMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1307,8 +1313,8 @@ func (m *S3ServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service metric links based on the context it is used
-func (m *S3ServiceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline metric inline links based on the context it is used
+func (m *S3ServiceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1321,7 +1327,7 @@ func (m *S3ServiceMetricLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *S3ServiceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1336,7 +1342,7 @@ func (m *S3ServiceMetricLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1344,8 +1350,8 @@ func (m *S3ServiceMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceMetricLinks) UnmarshalBinary(b []byte) error {
-	var res S3ServiceMetricLinks
+func (m *S3ServiceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1353,31 +1359,31 @@ func (m *S3ServiceMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+// S3ServiceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model S3ServiceMetricThroughput
-type S3ServiceMetricThroughput struct {
+// swagger:model s3_service_inline_metric_inline_throughput
+type S3ServiceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this s3 service metric throughput
-func (m *S3ServiceMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline metric inline throughput
+func (m *S3ServiceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service metric throughput based on the context it is used
-func (m *S3ServiceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline metric inline throughput based on the context it is used
+func (m *S3ServiceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1387,7 +1393,7 @@ func (m *S3ServiceMetricThroughput) ContextValidate(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1395,8 +1401,8 @@ func (m *S3ServiceMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res S3ServiceMetricThroughput
+func (m *S3ServiceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1404,25 +1410,25 @@ func (m *S3ServiceMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceStatistics These are raw performance numbers, such as IOPS latency and throughput for SVM protocols. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+// S3ServiceInlineStatistics These are raw performance numbers, such as IOPS latency and throughput for SVM protocols. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
 //
-// swagger:model S3ServiceStatistics
-type S3ServiceStatistics struct {
+// swagger:model s3_service_inline_statistics
+type S3ServiceInlineStatistics struct {
 
 	// iops raw
-	IopsRaw *S3ServiceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *S3ServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *S3ServiceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *S3ServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *S3ServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *S3ServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -1431,8 +1437,8 @@ type S3ServiceStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this s3 service statistics
-func (m *S3ServiceStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline statistics
+func (m *S3ServiceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIopsRaw(formats); err != nil {
@@ -1461,7 +1467,7 @@ func (m *S3ServiceStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.IopsRaw) { // not required
 		return nil
 	}
@@ -1478,7 +1484,7 @@ func (m *S3ServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) validateLatencyRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.LatencyRaw) { // not required
 		return nil
 	}
@@ -1495,7 +1501,7 @@ func (m *S3ServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error 
 	return nil
 }
 
-var s3ServiceStatisticsTypeStatusPropEnum []interface{}
+var s3ServiceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1503,145 +1509,145 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		s3ServiceStatisticsTypeStatusPropEnum = append(s3ServiceStatisticsTypeStatusPropEnum, v)
+		s3ServiceInlineStatisticsTypeStatusPropEnum = append(s3ServiceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusOk captures enum value "ok"
-	S3ServiceStatisticsStatusOk string = "ok"
+	// S3ServiceInlineStatisticsStatusOk captures enum value "ok"
+	S3ServiceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusError captures enum value "error"
-	S3ServiceStatisticsStatusError string = "error"
+	// S3ServiceInlineStatisticsStatusError captures enum value "error"
+	S3ServiceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	S3ServiceStatisticsStatusPartialNoData string = "partial_no_data"
+	// S3ServiceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	S3ServiceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	S3ServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// S3ServiceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	S3ServiceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	S3ServiceStatisticsStatusPartialOtherError string = "partial_other_error"
+	// S3ServiceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	S3ServiceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	S3ServiceStatisticsStatusNegativeDelta string = "negative_delta"
+	// S3ServiceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	S3ServiceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// not_found
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusNotFound captures enum value "not_found"
-	S3ServiceStatisticsStatusNotFound string = "not_found"
+	// S3ServiceInlineStatisticsStatusNotFound captures enum value "not_found"
+	S3ServiceInlineStatisticsStatusNotFound string = "not_found"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	S3ServiceStatisticsStatusBackfilledData string = "backfilled_data"
+	// S3ServiceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	S3ServiceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	S3ServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// S3ServiceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	S3ServiceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	S3ServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// S3ServiceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	S3ServiceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 
 	// BEGIN DEBUGGING
-	// S3ServiceStatistics
-	// S3ServiceStatistics
+	// s3_service_inline_statistics
+	// S3ServiceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// S3ServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	S3ServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// S3ServiceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	S3ServiceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
-func (m *S3ServiceStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, s3ServiceStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *S3ServiceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3ServiceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *S3ServiceStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3ServiceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -1658,7 +1664,7 @@ func (m *S3ServiceStatistics) validateThroughputRaw(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *S3ServiceStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -1670,8 +1676,8 @@ func (m *S3ServiceStatistics) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service statistics based on the context it is used
-func (m *S3ServiceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline statistics based on the context it is used
+func (m *S3ServiceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
@@ -1700,7 +1706,7 @@ func (m *S3ServiceStatistics) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *S3ServiceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IopsRaw != nil {
 		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
@@ -1714,7 +1720,7 @@ func (m *S3ServiceStatistics) contextValidateIopsRaw(ctx context.Context, format
 	return nil
 }
 
-func (m *S3ServiceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.LatencyRaw != nil {
 		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
@@ -1728,16 +1734,16 @@ func (m *S3ServiceStatistics) contextValidateLatencyRaw(ctx context.Context, for
 	return nil
 }
 
-func (m *S3ServiceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *S3ServiceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -1751,7 +1757,7 @@ func (m *S3ServiceStatistics) contextValidateThroughputRaw(ctx context.Context, 
 	return nil
 }
 
-func (m *S3ServiceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
 		return err
@@ -1761,7 +1767,7 @@ func (m *S3ServiceStatistics) contextValidateTimestamp(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceStatistics) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1769,8 +1775,8 @@ func (m *S3ServiceStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceStatistics) UnmarshalBinary(b []byte) error {
-	var res S3ServiceStatistics
+func (m *S3ServiceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1778,34 +1784,34 @@ func (m *S3ServiceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+// S3ServiceInlineStatisticsInlineIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
 //
-// swagger:model S3ServiceStatisticsIopsRaw
-type S3ServiceStatisticsIopsRaw struct {
+// swagger:model s3_service_inline_statistics_inline_iops_raw
+type S3ServiceInlineStatisticsInlineIopsRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this s3 service statistics iops raw
-func (m *S3ServiceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline statistics inline iops raw
+func (m *S3ServiceInlineStatisticsInlineIopsRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service statistics iops raw based on the context it is used
-func (m *S3ServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline statistics inline iops raw based on the context it is used
+func (m *S3ServiceInlineStatisticsInlineIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1815,7 +1821,7 @@ func (m *S3ServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineStatisticsInlineIopsRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1823,8 +1829,8 @@ func (m *S3ServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
-	var res S3ServiceStatisticsIopsRaw
+func (m *S3ServiceInlineStatisticsInlineIopsRaw) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineStatisticsInlineIopsRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1832,34 +1838,34 @@ func (m *S3ServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+// S3ServiceInlineStatisticsInlineLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
 //
-// swagger:model S3ServiceStatisticsLatencyRaw
-type S3ServiceStatisticsLatencyRaw struct {
+// swagger:model s3_service_inline_statistics_inline_latency_raw
+type S3ServiceInlineStatisticsInlineLatencyRaw struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this s3 service statistics latency raw
-func (m *S3ServiceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline statistics inline latency raw
+func (m *S3ServiceInlineStatisticsInlineLatencyRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service statistics latency raw based on the context it is used
-func (m *S3ServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline statistics inline latency raw based on the context it is used
+func (m *S3ServiceInlineStatisticsInlineLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1869,7 +1875,7 @@ func (m *S3ServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineStatisticsInlineLatencyRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1877,8 +1883,8 @@ func (m *S3ServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
-	var res S3ServiceStatisticsLatencyRaw
+func (m *S3ServiceInlineStatisticsInlineLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineStatisticsInlineLatencyRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1886,31 +1892,31 @@ func (m *S3ServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// S3ServiceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model S3ServiceStatisticsThroughputRaw
-type S3ServiceStatisticsThroughputRaw struct {
+// swagger:model s3_service_inline_statistics_inline_throughput_raw
+type S3ServiceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this s3 service statistics throughput raw
-func (m *S3ServiceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline statistics inline throughput raw
+func (m *S3ServiceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service statistics throughput raw based on the context it is used
-func (m *S3ServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline statistics inline throughput raw based on the context it is used
+func (m *S3ServiceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1920,7 +1926,7 @@ func (m *S3ServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1928,8 +1934,8 @@ func (m *S3ServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res S3ServiceStatisticsThroughputRaw
+func (m *S3ServiceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1937,27 +1943,27 @@ func (m *S3ServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceSvm s3 service svm
+// S3ServiceInlineSvm s3 service inline svm
 //
-// swagger:model S3ServiceSvm
-type S3ServiceSvm struct {
+// swagger:model s3_service_inline_svm
+type S3ServiceInlineSvm struct {
 
 	// links
-	Links *S3ServiceSvmLinks `json:"_links,omitempty"`
+	Links *S3ServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 service svm
-func (m *S3ServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline svm
+func (m *S3ServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1970,7 +1976,7 @@ func (m *S3ServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *S3ServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1987,8 +1993,8 @@ func (m *S3ServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service svm based on the context it is used
-func (m *S3ServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline svm based on the context it is used
+func (m *S3ServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2001,7 +2007,7 @@ func (m *S3ServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *S3ServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2016,7 +2022,7 @@ func (m *S3ServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2024,8 +2030,8 @@ func (m *S3ServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceSvm) UnmarshalBinary(b []byte) error {
-	var res S3ServiceSvm
+func (m *S3ServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2033,17 +2039,17 @@ func (m *S3ServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceSvmLinks s3 service svm links
+// S3ServiceInlineSvmInlineLinks s3 service inline svm inline links
 //
-// swagger:model S3ServiceSvmLinks
-type S3ServiceSvmLinks struct {
+// swagger:model s3_service_inline_svm_inline__links
+type S3ServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 service svm links
-func (m *S3ServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service inline svm inline links
+func (m *S3ServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2056,7 +2062,7 @@ func (m *S3ServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3ServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2073,8 +2079,8 @@ func (m *S3ServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 service svm links based on the context it is used
-func (m *S3ServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service inline svm inline links based on the context it is used
+func (m *S3ServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2087,7 +2093,7 @@ func (m *S3ServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *S3ServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2102,7 +2108,7 @@ func (m *S3ServiceSvmLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2110,8 +2116,8 @@ func (m *S3ServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res S3ServiceSvmLinks
+func (m *S3ServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3ServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

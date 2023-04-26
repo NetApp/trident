@@ -21,47 +21,47 @@ import (
 type SnaplockLegalHoldOperation struct {
 
 	// links
-	Links *SnaplockLegalHoldOperationLinks `json:"_links,omitempty"`
+	Links *SnaplockLegalHoldOperationInlineLinks `json:"_links,omitempty"`
 
 	// Operation ID.
 	// Example: 16842759
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// Specifies the number of files on which legal-hold operation failed.
 	// Example: 0
 	// Read Only: true
-	NumFilesFailed string `json:"num_files_failed,omitempty"`
+	NumFilesFailed *string `json:"num_files_failed,omitempty"`
 
 	// Specifies the number of files on which legal-hold operation was successful.
 	// Example: 30
 	// Read Only: true
-	NumFilesProcessed string `json:"num_files_processed,omitempty"`
+	NumFilesProcessed *string `json:"num_files_processed,omitempty"`
 
 	// Specifies the number of files on which legal-hold begin operation was skipped. The legal-hold begin operation is skipped on a file if it is already under hold for a given litigation.
 	// Example: 10
 	// Read Only: true
-	NumFilesSkipped string `json:"num_files_skipped,omitempty"`
+	NumFilesSkipped *string `json:"num_files_skipped,omitempty"`
 
 	// Specifies the number of inodes on which the legal-hold operation was not attempted because they were not regular files.
 	// Example: 10
 	// Read Only: true
-	NumInodesIgnored string `json:"num_inodes_ignored,omitempty"`
+	NumInodesIgnored *string `json:"num_inodes_ignored,omitempty"`
 
 	// Specifies the path on which legal-hold operation is applied.
 	// Example: /dir1
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Specifies the status of legal-hold operation.
 	// Example: completed
 	// Read Only: true
 	// Enum: [in_progress failed aborting completed]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Specifies the type of legal-hold operation.
 	// Example: begin
 	// Enum: [begin end]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this snaplock legal hold operation
@@ -172,7 +172,7 @@ func (m *SnaplockLegalHoldOperation) validateState(formats strfmt.Registry) erro
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -228,7 +228,7 @@ func (m *SnaplockLegalHoldOperation) validateType(formats strfmt.Registry) error
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -289,7 +289,7 @@ func (m *SnaplockLegalHoldOperation) contextValidateLinks(ctx context.Context, f
 
 func (m *SnaplockLegalHoldOperation) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -298,7 +298,7 @@ func (m *SnaplockLegalHoldOperation) contextValidateID(ctx context.Context, form
 
 func (m *SnaplockLegalHoldOperation) contextValidateNumFilesFailed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_files_failed", "body", string(m.NumFilesFailed)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_files_failed", "body", m.NumFilesFailed); err != nil {
 		return err
 	}
 
@@ -307,7 +307,7 @@ func (m *SnaplockLegalHoldOperation) contextValidateNumFilesFailed(ctx context.C
 
 func (m *SnaplockLegalHoldOperation) contextValidateNumFilesProcessed(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_files_processed", "body", string(m.NumFilesProcessed)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_files_processed", "body", m.NumFilesProcessed); err != nil {
 		return err
 	}
 
@@ -316,7 +316,7 @@ func (m *SnaplockLegalHoldOperation) contextValidateNumFilesProcessed(ctx contex
 
 func (m *SnaplockLegalHoldOperation) contextValidateNumFilesSkipped(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_files_skipped", "body", string(m.NumFilesSkipped)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_files_skipped", "body", m.NumFilesSkipped); err != nil {
 		return err
 	}
 
@@ -325,7 +325,7 @@ func (m *SnaplockLegalHoldOperation) contextValidateNumFilesSkipped(ctx context.
 
 func (m *SnaplockLegalHoldOperation) contextValidateNumInodesIgnored(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "num_inodes_ignored", "body", string(m.NumInodesIgnored)); err != nil {
+	if err := validate.ReadOnly(ctx, "num_inodes_ignored", "body", m.NumInodesIgnored); err != nil {
 		return err
 	}
 
@@ -334,7 +334,7 @@ func (m *SnaplockLegalHoldOperation) contextValidateNumInodesIgnored(ctx context
 
 func (m *SnaplockLegalHoldOperation) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -359,17 +359,17 @@ func (m *SnaplockLegalHoldOperation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnaplockLegalHoldOperationLinks snaplock legal hold operation links
+// SnaplockLegalHoldOperationInlineLinks snaplock legal hold operation inline links
 //
-// swagger:model SnaplockLegalHoldOperationLinks
-type SnaplockLegalHoldOperationLinks struct {
+// swagger:model snaplock_legal_hold_operation_inline__links
+type SnaplockLegalHoldOperationInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this snaplock legal hold operation links
-func (m *SnaplockLegalHoldOperationLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this snaplock legal hold operation inline links
+func (m *SnaplockLegalHoldOperationInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -382,7 +382,7 @@ func (m *SnaplockLegalHoldOperationLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *SnaplockLegalHoldOperationLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SnaplockLegalHoldOperationInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -399,8 +399,8 @@ func (m *SnaplockLegalHoldOperationLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this snaplock legal hold operation links based on the context it is used
-func (m *SnaplockLegalHoldOperationLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this snaplock legal hold operation inline links based on the context it is used
+func (m *SnaplockLegalHoldOperationInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -413,7 +413,7 @@ func (m *SnaplockLegalHoldOperationLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *SnaplockLegalHoldOperationLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SnaplockLegalHoldOperationInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -428,7 +428,7 @@ func (m *SnaplockLegalHoldOperationLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *SnaplockLegalHoldOperationLinks) MarshalBinary() ([]byte, error) {
+func (m *SnaplockLegalHoldOperationInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -436,8 +436,8 @@ func (m *SnaplockLegalHoldOperationLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SnaplockLegalHoldOperationLinks) UnmarshalBinary(b []byte) error {
-	var res SnaplockLegalHoldOperationLinks
+func (m *SnaplockLegalHoldOperationInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SnaplockLegalHoldOperationInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

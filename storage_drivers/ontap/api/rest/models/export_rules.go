@@ -22,7 +22,7 @@ import (
 type ExportRules struct {
 
 	// links
-	Links *ExportRulesLinks `json:"_links,omitempty"`
+	Links *ExportRulesInlineLinks `json:"_links,omitempty"`
 
 	// Specifies whether or not device creation is allowed.
 	AllowDeviceCreation *bool `json:"allow_device_creation,omitempty"`
@@ -38,12 +38,24 @@ type ExportRules struct {
 	ChownMode *string `json:"chown_mode,omitempty"`
 
 	// Array of client matches
-	Clients []*ExportClients `json:"clients,omitempty"`
+	ExportRulesInlineClients []*ExportClients `json:"clients,omitempty"`
+
+	// Authentication flavors that the read-only access rule governs
+	//
+	ExportRulesInlineRoRule []*ExportAuthenticationFlavor `json:"ro_rule,omitempty"`
+
+	// Authentication flavors that the read/write access rule governs
+	//
+	ExportRulesInlineRwRule []*ExportAuthenticationFlavor `json:"rw_rule,omitempty"`
+
+	// Authentication flavors that the superuser security type governs
+	//
+	ExportRulesInlineSuperuser []*ExportAuthenticationFlavor `json:"superuser,omitempty"`
 
 	// Index of the rule within the export policy.
 	//
 	// Read Only: true
-	Index int64 `json:"index,omitempty"`
+	Index *int64 `json:"index,omitempty"`
 
 	// NTFS export UNIX security options.
 	// Enum: [fail ignore]
@@ -51,18 +63,6 @@ type ExportRules struct {
 
 	// protocols
 	Protocols []*string `json:"protocols,omitempty"`
-
-	// Authentication flavors that the read-only access rule governs
-	//
-	RoRule []ExportAuthenticationFlavor `json:"ro_rule,omitempty"`
-
-	// Authentication flavors that the read/write access rule governs
-	//
-	RwRule []ExportAuthenticationFlavor `json:"rw_rule,omitempty"`
-
-	// Authentication flavors that the superuser security type governs
-	//
-	Superuser []ExportAuthenticationFlavor `json:"superuser,omitempty"`
 }
 
 // Validate validates this export rules
@@ -77,7 +77,19 @@ func (m *ExportRules) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateClients(formats); err != nil {
+	if err := m.validateExportRulesInlineClients(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExportRulesInlineRoRule(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExportRulesInlineRwRule(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExportRulesInlineSuperuser(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -86,18 +98,6 @@ func (m *ExportRules) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProtocols(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRoRule(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRwRule(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSuperuser(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -180,20 +180,92 @@ func (m *ExportRules) validateChownMode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportRules) validateClients(formats strfmt.Registry) error {
-	if swag.IsZero(m.Clients) { // not required
+func (m *ExportRules) validateExportRulesInlineClients(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportRulesInlineClients) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Clients); i++ {
-		if swag.IsZero(m.Clients[i]) { // not required
+	for i := 0; i < len(m.ExportRulesInlineClients); i++ {
+		if swag.IsZero(m.ExportRulesInlineClients[i]) { // not required
 			continue
 		}
 
-		if m.Clients[i] != nil {
-			if err := m.Clients[i].Validate(formats); err != nil {
+		if m.ExportRulesInlineClients[i] != nil {
+			if err := m.ExportRulesInlineClients[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("clients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExportRules) validateExportRulesInlineRoRule(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportRulesInlineRoRule) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ExportRulesInlineRoRule); i++ {
+		if swag.IsZero(m.ExportRulesInlineRoRule[i]) { // not required
+			continue
+		}
+
+		if m.ExportRulesInlineRoRule[i] != nil {
+			if err := m.ExportRulesInlineRoRule[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ro_rule" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExportRules) validateExportRulesInlineRwRule(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportRulesInlineRwRule) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ExportRulesInlineRwRule); i++ {
+		if swag.IsZero(m.ExportRulesInlineRwRule[i]) { // not required
+			continue
+		}
+
+		if m.ExportRulesInlineRwRule[i] != nil {
+			if err := m.ExportRulesInlineRwRule[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("rw_rule" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExportRules) validateExportRulesInlineSuperuser(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportRulesInlineSuperuser) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ExportRulesInlineSuperuser); i++ {
+		if swag.IsZero(m.ExportRulesInlineSuperuser[i]) { // not required
+			continue
+		}
+
+		if m.ExportRulesInlineSuperuser[i] != nil {
+			if err := m.ExportRulesInlineSuperuser[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("superuser" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -299,63 +371,6 @@ func (m *ExportRules) validateProtocols(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportRules) validateRoRule(formats strfmt.Registry) error {
-	if swag.IsZero(m.RoRule) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.RoRule); i++ {
-
-		if err := m.RoRule[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ro_rule" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ExportRules) validateRwRule(formats strfmt.Registry) error {
-	if swag.IsZero(m.RwRule) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.RwRule); i++ {
-
-		if err := m.RwRule[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("rw_rule" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ExportRules) validateSuperuser(formats strfmt.Registry) error {
-	if swag.IsZero(m.Superuser) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Superuser); i++ {
-
-		if err := m.Superuser[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("superuser" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 // ContextValidate validate this export rules based on the context it is used
 func (m *ExportRules) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -364,23 +379,23 @@ func (m *ExportRules) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateClients(ctx, formats); err != nil {
+	if err := m.contextValidateExportRulesInlineClients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExportRulesInlineRoRule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExportRulesInlineRwRule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExportRulesInlineSuperuser(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateIndex(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRoRule(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRwRule(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateSuperuser(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -404,12 +419,12 @@ func (m *ExportRules) contextValidateLinks(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ExportRules) contextValidateClients(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportRules) contextValidateExportRulesInlineClients(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Clients); i++ {
+	for i := 0; i < len(m.ExportRulesInlineClients); i++ {
 
-		if m.Clients[i] != nil {
-			if err := m.Clients[i].ContextValidate(ctx, formats); err != nil {
+		if m.ExportRulesInlineClients[i] != nil {
+			if err := m.ExportRulesInlineClients[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("clients" + "." + strconv.Itoa(i))
 				}
@@ -422,58 +437,64 @@ func (m *ExportRules) contextValidateClients(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *ExportRules) contextValidateExportRulesInlineRoRule(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExportRulesInlineRoRule); i++ {
+
+		if m.ExportRulesInlineRoRule[i] != nil {
+			if err := m.ExportRulesInlineRoRule[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ro_rule" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExportRules) contextValidateExportRulesInlineRwRule(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExportRulesInlineRwRule); i++ {
+
+		if m.ExportRulesInlineRwRule[i] != nil {
+			if err := m.ExportRulesInlineRwRule[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("rw_rule" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ExportRules) contextValidateExportRulesInlineSuperuser(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExportRulesInlineSuperuser); i++ {
+
+		if m.ExportRulesInlineSuperuser[i] != nil {
+			if err := m.ExportRulesInlineSuperuser[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("superuser" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *ExportRules) contextValidateIndex(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "index", "body", int64(m.Index)); err != nil {
+	if err := validate.ReadOnly(ctx, "index", "body", m.Index); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ExportRules) contextValidateRoRule(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.RoRule); i++ {
-
-		if err := m.RoRule[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("ro_rule" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ExportRules) contextValidateRwRule(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.RwRule); i++ {
-
-		if err := m.RwRule[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("rw_rule" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (m *ExportRules) contextValidateSuperuser(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Superuser); i++ {
-
-		if err := m.Superuser[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("superuser" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -497,17 +518,17 @@ func (m *ExportRules) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ExportRulesLinks export rules links
+// ExportRulesInlineLinks export rules inline links
 //
-// swagger:model ExportRulesLinks
-type ExportRulesLinks struct {
+// swagger:model export_rules_inline__links
+type ExportRulesInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this export rules links
-func (m *ExportRulesLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this export rules inline links
+func (m *ExportRulesInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -520,7 +541,7 @@ func (m *ExportRulesLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ExportRulesLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ExportRulesInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -537,8 +558,8 @@ func (m *ExportRulesLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this export rules links based on the context it is used
-func (m *ExportRulesLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this export rules inline links based on the context it is used
+func (m *ExportRulesInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -551,7 +572,7 @@ func (m *ExportRulesLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ExportRulesLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ExportRulesInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -566,7 +587,7 @@ func (m *ExportRulesLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *ExportRulesLinks) MarshalBinary() ([]byte, error) {
+func (m *ExportRulesInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -574,8 +595,8 @@ func (m *ExportRulesLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ExportRulesLinks) UnmarshalBinary(b []byte) error {
-	var res ExportRulesLinks
+func (m *ExportRulesInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ExportRulesInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -22,13 +22,13 @@ import (
 type Account struct {
 
 	// links
-	Links *AccountLinks `json:"_links,omitempty"`
+	Links *AccountInlineLinks `json:"_links,omitempty"`
 
-	// applications
-	Applications []*AccountApplication `json:"applications,omitempty"`
+	// account inline applications
+	AccountInlineApplications []*AccountApplication `json:"applications,omitempty"`
 
 	// Optional comment for the user account.
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 
 	// Optional property that specifies the mode of authentication is LDAP Fastbind.
 	LdapFastbind *bool `json:"ldap_fastbind,omitempty"`
@@ -40,16 +40,16 @@ type Account struct {
 	// Example: joe.smith
 	// Max Length: 64
 	// Min Length: 3
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// owner
-	Owner *AccountOwner `json:"owner,omitempty"`
+	Owner *AccountInlineOwner `json:"owner,omitempty"`
 
 	// Password for the account. The password can contain a mix of lower and upper case alphabetic characters, digits, and special characters.
 	// Max Length: 128
 	// Min Length: 8
 	// Format: password
-	Password strfmt.Password `json:"password,omitempty"`
+	Password *strfmt.Password `json:"password,omitempty"`
 
 	// Optional property that specifies the password hash algorithm used to generate a hash of the user's password for password matching.
 	// Example: sha512
@@ -57,12 +57,12 @@ type Account struct {
 	PasswordHashAlgorithm *string `json:"password_hash_algorithm,omitempty"`
 
 	// role
-	Role *AccountRole `json:"role,omitempty"`
+	Role *AccountInlineRole `json:"role,omitempty"`
 
 	// Scope of the entity. Set to "cluster" for cluster owned objects and to "svm" for SVM owned objects.
 	// Read Only: true
 	// Enum: [cluster svm]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 }
 
 // Validate validates this account
@@ -73,7 +73,7 @@ func (m *Account) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateApplications(formats); err != nil {
+	if err := m.validateAccountInlineApplications(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -124,18 +124,18 @@ func (m *Account) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Account) validateApplications(formats strfmt.Registry) error {
-	if swag.IsZero(m.Applications) { // not required
+func (m *Account) validateAccountInlineApplications(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccountInlineApplications) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Applications); i++ {
-		if swag.IsZero(m.Applications[i]) { // not required
+	for i := 0; i < len(m.AccountInlineApplications); i++ {
+		if swag.IsZero(m.AccountInlineApplications[i]) { // not required
 			continue
 		}
 
-		if m.Applications[i] != nil {
-			if err := m.Applications[i].Validate(formats); err != nil {
+		if m.AccountInlineApplications[i] != nil {
+			if err := m.AccountInlineApplications[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("applications" + "." + strconv.Itoa(i))
 				}
@@ -153,11 +153,11 @@ func (m *Account) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 3); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 3); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 64); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 64); err != nil {
 		return err
 	}
 
@@ -333,7 +333,7 @@ func (m *Account) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -348,7 +348,7 @@ func (m *Account) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateApplications(ctx, formats); err != nil {
+	if err := m.contextValidateAccountInlineApplications(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -384,12 +384,12 @@ func (m *Account) contextValidateLinks(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *Account) contextValidateApplications(ctx context.Context, formats strfmt.Registry) error {
+func (m *Account) contextValidateAccountInlineApplications(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Applications); i++ {
+	for i := 0; i < len(m.AccountInlineApplications); i++ {
 
-		if m.Applications[i] != nil {
-			if err := m.Applications[i].ContextValidate(ctx, formats); err != nil {
+		if m.AccountInlineApplications[i] != nil {
+			if err := m.AccountInlineApplications[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("applications" + "." + strconv.Itoa(i))
 				}
@@ -432,7 +432,7 @@ func (m *Account) contextValidateRole(ctx context.Context, formats strfmt.Regist
 
 func (m *Account) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+	if err := validate.ReadOnly(ctx, "scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -457,17 +457,17 @@ func (m *Account) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountLinks account links
+// AccountInlineLinks account inline links
 //
-// swagger:model AccountLinks
-type AccountLinks struct {
+// swagger:model account_inline__links
+type AccountInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this account links
-func (m *AccountLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this account inline links
+func (m *AccountInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -480,7 +480,7 @@ func (m *AccountLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AccountInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -497,8 +497,8 @@ func (m *AccountLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account links based on the context it is used
-func (m *AccountLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account inline links based on the context it is used
+func (m *AccountInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -511,7 +511,7 @@ func (m *AccountLinks) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *AccountLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -526,7 +526,7 @@ func (m *AccountLinks) contextValidateSelf(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *AccountLinks) MarshalBinary() ([]byte, error) {
+func (m *AccountInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -534,8 +534,8 @@ func (m *AccountLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountLinks) UnmarshalBinary(b []byte) error {
-	var res AccountLinks
+func (m *AccountInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AccountInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -543,27 +543,27 @@ func (m *AccountLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountOwner Owner name and UUID that uniquely identifies the user account.
+// AccountInlineOwner Owner name and UUID that uniquely identifies the user account.
 //
-// swagger:model AccountOwner
-type AccountOwner struct {
+// swagger:model account_inline_owner
+type AccountInlineOwner struct {
 
 	// links
-	Links *AccountOwnerLinks `json:"_links,omitempty"`
+	Links *AccountInlineOwnerInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this account owner
-func (m *AccountOwner) Validate(formats strfmt.Registry) error {
+// Validate validates this account inline owner
+func (m *AccountInlineOwner) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -576,7 +576,7 @@ func (m *AccountOwner) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountOwner) validateLinks(formats strfmt.Registry) error {
+func (m *AccountInlineOwner) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -593,8 +593,8 @@ func (m *AccountOwner) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account owner based on the context it is used
-func (m *AccountOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account inline owner based on the context it is used
+func (m *AccountInlineOwner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -607,7 +607,7 @@ func (m *AccountOwner) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *AccountOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountInlineOwner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -622,7 +622,7 @@ func (m *AccountOwner) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *AccountOwner) MarshalBinary() ([]byte, error) {
+func (m *AccountInlineOwner) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -630,8 +630,8 @@ func (m *AccountOwner) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountOwner) UnmarshalBinary(b []byte) error {
-	var res AccountOwner
+func (m *AccountInlineOwner) UnmarshalBinary(b []byte) error {
+	var res AccountInlineOwner
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -639,17 +639,17 @@ func (m *AccountOwner) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountOwnerLinks account owner links
+// AccountInlineOwnerInlineLinks account inline owner inline links
 //
-// swagger:model AccountOwnerLinks
-type AccountOwnerLinks struct {
+// swagger:model account_inline_owner_inline__links
+type AccountInlineOwnerInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this account owner links
-func (m *AccountOwnerLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this account inline owner inline links
+func (m *AccountInlineOwnerInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -662,7 +662,7 @@ func (m *AccountOwnerLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountOwnerLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AccountInlineOwnerInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -679,8 +679,8 @@ func (m *AccountOwnerLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account owner links based on the context it is used
-func (m *AccountOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account inline owner inline links based on the context it is used
+func (m *AccountInlineOwnerInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -693,7 +693,7 @@ func (m *AccountOwnerLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *AccountOwnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountInlineOwnerInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -708,7 +708,7 @@ func (m *AccountOwnerLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *AccountOwnerLinks) MarshalBinary() ([]byte, error) {
+func (m *AccountInlineOwnerInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -716,8 +716,8 @@ func (m *AccountOwnerLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountOwnerLinks) UnmarshalBinary(b []byte) error {
-	var res AccountOwnerLinks
+func (m *AccountInlineOwnerInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AccountInlineOwnerInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -725,21 +725,21 @@ func (m *AccountOwnerLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountRole account role
+// AccountInlineRole account inline role
 //
-// swagger:model AccountRole
-type AccountRole struct {
+// swagger:model account_inline_role
+type AccountInlineRole struct {
 
 	// links
-	Links *AccountRoleLinks `json:"_links,omitempty"`
+	Links *AccountInlineRoleInlineLinks `json:"_links,omitempty"`
 
 	// Role name
 	// Example: admin
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this account role
-func (m *AccountRole) Validate(formats strfmt.Registry) error {
+// Validate validates this account inline role
+func (m *AccountInlineRole) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -752,7 +752,7 @@ func (m *AccountRole) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountRole) validateLinks(formats strfmt.Registry) error {
+func (m *AccountInlineRole) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -769,8 +769,8 @@ func (m *AccountRole) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account role based on the context it is used
-func (m *AccountRole) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account inline role based on the context it is used
+func (m *AccountInlineRole) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -783,7 +783,7 @@ func (m *AccountRole) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *AccountRole) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountInlineRole) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -798,7 +798,7 @@ func (m *AccountRole) contextValidateLinks(ctx context.Context, formats strfmt.R
 }
 
 // MarshalBinary interface implementation
-func (m *AccountRole) MarshalBinary() ([]byte, error) {
+func (m *AccountInlineRole) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -806,8 +806,8 @@ func (m *AccountRole) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountRole) UnmarshalBinary(b []byte) error {
-	var res AccountRole
+func (m *AccountInlineRole) UnmarshalBinary(b []byte) error {
+	var res AccountInlineRole
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -815,17 +815,17 @@ func (m *AccountRole) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AccountRoleLinks account role links
+// AccountInlineRoleInlineLinks account inline role inline links
 //
-// swagger:model AccountRoleLinks
-type AccountRoleLinks struct {
+// swagger:model account_inline_role_inline__links
+type AccountInlineRoleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this account role links
-func (m *AccountRoleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this account inline role inline links
+func (m *AccountInlineRoleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -838,7 +838,7 @@ func (m *AccountRoleLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AccountRoleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AccountInlineRoleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -855,8 +855,8 @@ func (m *AccountRoleLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this account role links based on the context it is used
-func (m *AccountRoleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this account inline role inline links based on the context it is used
+func (m *AccountInlineRoleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -869,7 +869,7 @@ func (m *AccountRoleLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *AccountRoleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AccountInlineRoleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -884,7 +884,7 @@ func (m *AccountRoleLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *AccountRoleLinks) MarshalBinary() ([]byte, error) {
+func (m *AccountInlineRoleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -892,8 +892,8 @@ func (m *AccountRoleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AccountRoleLinks) UnmarshalBinary(b []byte) error {
-	var res AccountRoleLinks
+func (m *AccountInlineRoleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AccountInlineRoleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

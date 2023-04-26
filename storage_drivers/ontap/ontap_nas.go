@@ -10,10 +10,9 @@ import (
 	"strings"
 
 	"github.com/RoaringBitmap/roaring"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -41,7 +40,7 @@ import (
 // via abstraction layer (ONTAPI interface)
 // //////////////////////////////////////////////////////////////////////////////////////////
 
-// NASStorageDriver is for NFS storage provisioning
+// NASStorageDriver is for NFS and SMB storage provisioning
 type NASStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
@@ -66,7 +65,7 @@ func (d *NASStorageDriver) GetTelemetry() *Telemetry {
 
 // Name is for returning the name of this driver
 func (d *NASStorageDriver) Name() string {
-	return drivers.OntapNASStorageDriverName
+	return tridentconfig.OntapNASStorageDriverName
 }
 
 // BackendName returns the name of the backend managed by this driver instance
@@ -84,11 +83,11 @@ func (d *NASStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NASStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
-	}
+	fields := LogFields{"Method": "Initialize", "Type": "NASStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -100,10 +99,14 @@ func (d *NASStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API, err = InitializeOntapDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
 	}
+
 	d.Config = *config
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
@@ -133,11 +136,10 @@ func (d *NASStorageDriver) Initialized() bool {
 }
 
 func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NASStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
-	}
+	fields := LogFields{"Method": "Terminate", "Type": "NASStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
+
 	if d.Config.AutoExportPolicy {
 		policyName := getExportPolicyName(backendUUID)
 
@@ -153,11 +155,9 @@ func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
 
 // Validate the driver configuration and execution environment
 func (d *NASStorageDriver) validate(ctx context.Context) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NASStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> validate")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
-	}
+	fields := LogFields{"Method": "validate", "Type": "NASStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
 	if err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule,
 		d.API); err != nil {
@@ -187,16 +187,14 @@ func (d *NASStorageDriver) Create(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Create",
-			"Type":   "NASStorageDriver",
-			"name":   name,
-			"attrs":  volAttributes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Create")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Create")
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "NASStorageDriver",
+		"name":   name,
+		"attrs":  volAttributes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// If the volume already exists, bail out
 	volExists, err := d.API.VolumeExists(ctx, name)
@@ -221,10 +219,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Get options
-	opts, err := d.GetVolumeOpts(ctx, volConfig, volAttributes)
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(ctx, volConfig, volAttributes)
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
@@ -257,12 +252,12 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
-
-	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 	if err != nil {
 		return err
 	}
+	// Get the flexvol size based on the snapshot reserve
+	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
+
 	size := strconv.FormatUint(flexvolSize, 10)
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -276,7 +271,7 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
-	enableEncryption, err := GetEncryptionValue(encryption)
+	enableEncryption, configEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -293,10 +288,20 @@ func (d *NASStorageDriver) Create(
 	if err != nil {
 		return err
 	}
+
+	// Update config to reflect values used to create volume
+	volConfig.SpaceReserve = spaceReserve
+	volConfig.SnapshotPolicy = snapshotPolicy
+	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.UnixPermissions = unixPermissions
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.ExportPolicy = exportPolicy
+	volConfig.SecurityStyle = securityStyle
+	volConfig.Encryption = configEncryption
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 
-	Logc(ctx).WithFields(log.Fields{
+	Logc(ctx).WithFields(LogFields{
 		"name":              name,
 		"size":              size,
 		"spaceReserve":      spaceReserve,
@@ -385,6 +390,12 @@ func (d *NASStorageDriver) Create(
 			return err
 		}
 
+		if d.Config.NASType == sa.SMB {
+			if err := d.EnsureSMBShare(ctx, name, "/"+name); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 
@@ -402,23 +413,20 @@ func (d *NASStorageDriver) CreateClone(
 		return err
 	}
 
-	if d.GetConfig().DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":      "CreateClone",
-			"Type":        "NASStorageDriver",
-			"name":        cloneVolConfig.InternalName,
-			"source":      cloneVolConfig.CloneSourceVolumeInternal,
-			"snapshot":    cloneVolConfig.CloneSourceSnapshot,
-			"storagePool": storagePool,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	fields := LogFields{
+		"Method":      "CreateClone",
+		"Type":        "NASStorageDriver",
+		"name":        cloneVolConfig.InternalName,
+		"source":      cloneVolConfig.CloneSourceVolumeInternal,
+		"snapshot":    cloneVolConfig.CloneSourceSnapshot,
+		"storagePool": storagePool,
 	}
+	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+		Trace(">>>> CreateClone")
+	defer Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+		Trace("<<<< CreateClone")
 
-	opts, err := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
-	if err != nil {
-		return err
-	}
+	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
 
 	labels := flexvol.Comment
 
@@ -463,23 +471,30 @@ func (d *NASStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	return cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup)
+	if err := cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
+		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
+		return err
+	}
+
+	if d.Config.NASType == sa.SMB {
+		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Destroy the volume
 func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "Destroy",
-			"Type":   "NASStorageDriver",
-			"name":   name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
+	fields := LogFields{
+		"Method": "Destroy",
+		"Type":   "NASStorageDriver",
+		"name":   name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// TODO: If this is the parent of one or more clones, those clones have to split from this
 	// volume before it can be deleted, which means separate copies of those volumes.
@@ -500,7 +515,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// If flexvol has been a snapmirror destination
-	if err := d.API.SnapmirrorDeleteViaDestination(name, d.API.SVMName()); err != nil {
+	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -509,6 +524,11 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
 		return err
 	}
+	if d.Config.NASType == sa.SMB {
+		if err := d.DestroySMBShare(ctx, name); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -516,17 +536,15 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 func (d *NASStorageDriver) Import(
 	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "Import",
-			"Type":         "NASStorageDriver",
-			"originalName": originalName,
-			"newName":      volConfig.InternalName,
-			"notManaged":   volConfig.ImportNotManaged,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Import")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "NASStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
+		"notManaged":   volConfig.ImportNotManaged,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
 	// Ensure the volume exists
 	flexvol, err := d.API.VolumeInfo(ctx, originalName)
@@ -580,8 +598,19 @@ func (d *NASStorageDriver) Import(
 	if !volConfig.ImportNotManaged {
 		// unixPermissions specified in PVC annotation takes precedence over backend's unixPermissions config
 		unixPerms := volConfig.UnixPermissions
-		if unixPerms == "" {
-			unixPerms = d.Config.UnixPermissions
+
+		// ONTAP supports unix permissions only with security style "mixed" on SMB volume.
+		switch d.Config.NASType {
+		case sa.SMB:
+			if unixPerms == "" && d.Config.SecurityStyle == "mixed" {
+				unixPerms = d.Config.UnixPermissions
+			} else if d.Config.SecurityStyle == "ntfs" {
+				unixPerms = ""
+			}
+		case sa.NFS:
+			if unixPerms == "" {
+				unixPerms = d.Config.UnixPermissions
+			}
 		}
 
 		if err := d.API.VolumeModifyUnixPermissions(
@@ -591,21 +620,27 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
+	if d.Config.NASType == sa.SMB {
+		if flexvol.JunctionPath != "" {
+			if err := d.EnsureSMBShare(ctx, originalName, "/"+originalName); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
 // Rename changes the name of a volume
 func (d *NASStorageDriver) Rename(ctx context.Context, name, newName string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "Rename",
-			"Type":    "NASStorageDriver",
-			"name":    name,
-			"newName": newName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Rename")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Rename")
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "NASStorageDriver",
+		"name":    name,
+		"newName": newName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
 
 	return d.API.VolumeRename(ctx, name, newName)
 }
@@ -618,16 +653,14 @@ func (d *NASStorageDriver) Publish(
 ) error {
 	name := volConfig.InternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":  "Publish",
-			"DataLIF": d.Config.DataLIF,
-			"Type":    "NASStorageDriver",
-			"name":    name,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
+	fields := LogFields{
+		"Method":  "Publish",
+		"DataLIF": d.Config.DataLIF,
+		"Type":    "NASStorageDriver",
+		"name":    name,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
 	// Determine mount options (volume config wins, followed by backend config)
 	mountOptions := d.Config.NfsMountOptions
@@ -639,10 +672,17 @@ func (d *NASStorageDriver) Publish(
 	// TODO (akerr) Figure out if this is the behavior we want or if we should be changing the junction path for
 	//  managed imports
 	// publishInfo.NfsPath = fmt.Sprintf("/%s", name)
-	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
-	publishInfo.NfsServerIP = d.Config.DataLIF
-	publishInfo.FilesystemType = "nfs"
-	publishInfo.MountOptions = mountOptions
+
+	if d.Config.NASType == sa.SMB {
+		publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
+		publishInfo.SMBServer = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.SMB
+	} else {
+		publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
+		publishInfo.NfsServerIP = d.Config.DataLIF
+		publishInfo.FilesystemType = sa.NFS
+		publishInfo.MountOptions = mountOptions
+	}
 
 	return publishShare(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
 }
@@ -661,16 +701,16 @@ func getFlexvolSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "getFlexvolSnapshot",
-			"Type":         "NASStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getFlexvolSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getFlexvolSnapshot")
+	fields := LogFields{
+		"Method":       "getFlexvolSnapshot",
+		"Type":         "NASStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexvolSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexvolSnapshot")
 
 	size, err := client.VolumeUsedSize(ctx, internalVolName)
 	if err != nil {
@@ -684,7 +724,7 @@ func getFlexvolSnapshot(
 
 	for _, snap := range snapshots {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 			"created":      snap.CreateTime,
@@ -708,16 +748,14 @@ func getFlexvolSnapshot(
 func (d *NASStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "GetSnapshot",
-			"Type":         "NASStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "NASStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
 	return getFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
@@ -728,15 +766,15 @@ func getFlexvolSnapshotList(
 ) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
 
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "getFlexvolSnapshotList",
-			"Type":       "NASStorageDriver",
-			"volumeName": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getFlexvolSnapshotList")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getFlexvolSnapshotList")
+	fields := LogFields{
+		"Method":     "getFlexvolSnapshotList",
+		"Type":       "NASStorageDriver",
+		"volumeName": internalVolName,
 	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getFlexvolSnapshotList")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getFlexvolSnapshotList")
 
 	size, err := client.VolumeUsedSize(ctx, internalVolName)
 	if err != nil {
@@ -752,7 +790,7 @@ func getFlexvolSnapshotList(
 
 	for _, snap := range snapshots {
 
-		Logc(ctx).WithFields(log.Fields{
+		Logc(ctx).WithFields(LogFields{
 			"name":       snap.Name,
 			"accessTime": snap.CreateTime,
 		}).Debug("Snapshot")
@@ -780,15 +818,13 @@ func getFlexvolSnapshotList(
 func (d *NASStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "GetSnapshots",
-			"Type":       "NASStorageDriver",
-			"volumeName": volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "NASStorageDriver",
+		"volumeName": volConfig.InternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
 	return getFlexvolSnapshotList(ctx, volConfig, &d.Config, d.API)
 }
@@ -800,16 +836,14 @@ func (d *NASStorageDriver) CreateSnapshot(
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "NASStorageDriver",
-			"snapshotName": internalSnapName,
-			"sourceVolume": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	fields := LogFields{
+		"Method":       "CreateSnapshot",
+		"Type":         "NASStorageDriver",
+		"snapshotName": internalSnapName,
+		"sourceVolume": internalVolName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
 	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
@@ -818,16 +852,14 @@ func (d *NASStorageDriver) CreateSnapshot(
 func (d *NASStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "RestoreSnapshot",
-			"Type":         "NASStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
+	fields := LogFields{
+		"Method":       "RestoreSnapshot",
+		"Type":         "NASStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
 	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
@@ -836,16 +868,14 @@ func (d *NASStorageDriver) RestoreSnapshot(
 func (d *NASStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "DeleteSnapshot",
-			"Type":         "NASStorageDriver",
-			"snapshotName": snapConfig.InternalName,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	fields := LogFields{
+		"Method":       "DeleteSnapshot",
+		"Type":         "NASStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
 	if err := d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
 		if api.IsSnapshotBusyError(err) {
@@ -862,11 +892,9 @@ func (d *NASStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *NASStorageDriver) Get(ctx context.Context, name string) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NASStorageDriver"}
-		Logc(ctx).WithFields(fields).Debug(">>>> Get")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
-	}
+	fields := LogFields{"Method": "Get", "Type": "NASStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	volExists, err := d.API.VolumeExists(ctx, name)
 	if err != nil {
@@ -907,8 +935,8 @@ func (d *NASStorageDriver) getStoragePoolAttributes(ctx context.Context) map[str
 
 func (d *NASStorageDriver) GetVolumeOpts(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
-) (map[string]string, error) {
-	return getVolumeOptsCommon(ctx, volConfig, requests), nil
+) map[string]string {
+	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
 func (d *NASStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
@@ -920,21 +948,25 @@ func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 }
 
 func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateFollowup",
-			"Type":         "NASStorageDriver",
-			"name":         volConfig.Name,
-			"internalName": volConfig.InternalName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
-	}
+	var accessPath string
 
-	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
-	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
-	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
-	volConfig.FileSystem = ""
+	fields := LogFields{
+		"Method":       "CreateFollowup",
+		"Type":         "NASStorageDriver",
+		"name":         volConfig.Name,
+		"internalName": volConfig.InternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
+
+	if d.Config.NASType == sa.SMB {
+		volConfig.AccessInfo.SMBServer = d.Config.DataLIF
+		volConfig.FileSystem = sa.SMB
+	} else {
+		volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
+		volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
+		volConfig.FileSystem = sa.NFS
+	}
 
 	// Set correct junction path
 	flexvol, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
@@ -944,21 +976,42 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 
 	if flexvol.JunctionPath == "" {
 		if flexvol.AccessType == "rw" || flexvol.AccessType == "dp" {
-			// Flexvol is not mounted, we need to mount it
-			volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
-			if err := d.API.VolumeMount(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath); err != nil {
-				// An API error is returned if we attempt to mount a DP volume that has not yet been snapmirrored,
-				// we expect this to be the case.
+			// Flexvol will not be mounted in the following scenarios, we need to mount it,
+			// 1. During Import of volume without Junction path.
+			// 2. During Create/CreateClone there is a failure and mount is not performed.
 
-				if api.IsApiError(err) && flexvol.DPVolume {
-					Logc(ctx).Debugf("Received expected API error when mounting DP volume to junction; %v", err)
-				} else {
-					return fmt.Errorf("error mounting volume to junction %s; %v", volConfig.AccessInfo.NfsPath, err)
+			if d.Config.NASType == sa.SMB {
+				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
+					volConfig.InternalName)
+				// Overwriting mount path, mounting at root instead of admin share
+				volConfig.AccessInfo.SMBPath = "/" + volConfig.InternalName
+				accessPath = volConfig.AccessInfo.SMBPath
+			} else {
+				volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+				accessPath = volConfig.AccessInfo.NfsPath
+			}
+
+			err = d.MountVolume(ctx, volConfig.InternalName, accessPath, flexvol)
+			if err != nil {
+				return err
+			}
+
+			// If smbShare is omitted in the backend configuration then,
+			// Trident tries to create sbmShare with the same name as volume InternalName.
+			// This check ensures that volume is mounted before the share is created.
+			if d.Config.NASType == sa.SMB {
+				if err := d.EnsureSMBShare(ctx, volConfig.InternalName, "/"+volConfig.InternalName); err != nil {
+					return err
 				}
 			}
 		}
 	} else {
-		volConfig.AccessInfo.NfsPath = flexvol.JunctionPath
+		if d.Config.NASType == sa.SMB {
+			volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
+				flexvol.JunctionPath)
+		} else {
+			volConfig.AccessInfo.NfsPath = flexvol.JunctionPath
+		}
 	}
 	return nil
 }
@@ -1018,14 +1071,12 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(
 
 // GetUpdateType returns a bitmap populated with updates to the driver
 func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage.Driver) *roaring.Bitmap {
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "GetUpdateType",
-			"Type":   "NASStorageDriver",
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetUpdateType")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetUpdateType")
+	fields := LogFields{
+		"Method": "GetUpdateType",
+		"Type":   "NASStorageDriver",
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetUpdateType")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetUpdateType")
 
 	bitmap := roaring.New()
 	dOrig, ok := driverOrig.(*NASStorageDriver)
@@ -1058,16 +1109,14 @@ func (d *NASStorageDriver) Resize(
 	ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64,
 ) error {
 	name := volConfig.InternalName
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":             "Resize",
-			"Type":               "NASStorageDriver",
-			"name":               name,
-			"requestedSizeBytes": requestedSizeBytes,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> Resize")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
+	fields := LogFields{
+		"Method":             "Resize",
+		"Type":               "NASStorageDriver",
+		"name":               name,
+		"requestedSizeBytes": requestedSizeBytes,
 	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
 	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.VolumeExists, d.API.VolumeSize)
 	if err != nil {
@@ -1113,15 +1162,16 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method": "ReconcileNodeAccess",
-			"Type":   "NASStorageDriver",
-			"Nodes":  nodeNames,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
+
+	fields := LogFields{
+		"Method": "ReconcileNodeAccess",
+		"Type":   "NASStorageDriver",
+		"Nodes":  nodeNames,
 	}
+	Logd(ctx, d.Config.StorageDriverName,
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
+	defer Logd(ctx, d.Config.StorageDriverName,
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
 	policyName := getExportPolicyName(backendUUID)
 
@@ -1146,7 +1196,7 @@ func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 // EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *NASStorageDriver) EstablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
@@ -1180,13 +1230,13 @@ func (d *NASStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
 func (d *NASStorageDriver) ReestablishMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
@@ -1220,33 +1270,105 @@ func (d *NASStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
 func (d *NASStorageDriver) PromoteMirror(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
 		d.API)
 }
 
 // GetMirrorStatus returns the current state of a snapmirror relationship
 func (d *NASStorageDriver) GetMirrorStatus(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
-	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+	return getMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
 // ReleaseMirror will release the snapmirror relationship data of the source volume
-func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
-	return releaseMirror(ctx, localVolumeHandle, d.API)
+func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
+	return releaseMirror(ctx, localInternalVolumeName, d.API)
 }
 
 // GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
-func (d *NASStorageDriver) GetReplicationDetails(
-	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
-) (string, string, error) {
-	return getReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+func (d *NASStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
+}
+
+// MountVolume returns the volume mount error(if any)
+func (d *NASStorageDriver) MountVolume(
+	ctx context.Context, name, junctionPath string, flexVol *api.Volume,
+) error {
+	if err := d.API.VolumeMount(ctx, name, junctionPath); err != nil {
+		// An API error is returned if we attempt to mount a DP volume that has not yet been snapmirrored,
+		// we expect this to be the case.
+
+		if api.IsApiError(err) && flexVol.DPVolume {
+			Logc(ctx).Debugf("Received expected API error when mounting DP volume to junction; %v", err)
+		} else {
+			return fmt.Errorf("error mounting volume to junction %s; %v", junctionPath, err)
+		}
+	}
+	return nil
+}
+
+// EnsureSMBShare ensures that required SMB share is made available.
+func (d *NASStorageDriver) EnsureSMBShare(
+	ctx context.Context, name, path string,
+) error {
+	if d.Config.SMBShare != "" {
+		// If user did specify SMB share, and it does not exist, create an SMB share with the specified name.
+		share, err := d.API.SMBShareExists(ctx, d.Config.SMBShare)
+		if err != nil {
+			return err
+		}
+
+		// If share is not present create it.
+		if !share {
+			if err = d.API.SMBShareCreate(ctx, d.Config.SMBShare, "/"); err != nil {
+				return err
+			}
+		}
+	} else {
+		// If user did not specify SMB share in backend configuration, create an SMB share with the name passed.
+		share, err := d.API.SMBShareExists(ctx, name)
+		if err != nil {
+			return err
+		}
+
+		// If share is not present create it.
+		if !share {
+			if err = d.API.SMBShareCreate(ctx, name, path); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// DestroySMBShare destroys an SMB share
+func (d *NASStorageDriver) DestroySMBShare(
+	ctx context.Context, name string,
+) error {
+	// If the share being deleted matches with the backend config, Trident will not delete the SMB share.
+	if d.Config.SMBShare == name {
+		return nil
+	}
+
+	shareExists, err := d.API.SMBShareExists(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	if shareExists {
+		if err := d.API.SMBShareDestroy(ctx, name); err != nil {
+			return err
+		}
+	}
+	return nil
 }

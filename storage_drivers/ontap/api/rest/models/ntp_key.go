@@ -21,13 +21,13 @@ import (
 type NtpKey struct {
 
 	// links
-	Links *NtpKeyLinks `json:"_links,omitempty"`
+	Links *NtpKeyInlineLinks `json:"_links,omitempty"`
 
 	// The type of cryptographic hash used to create and verify the NTP's message authentication code appended to each NTP packet header.
 	//
 	// Example: sha1
 	// Enum: [sha1]
-	DigestType string `json:"digest_type,omitempty"`
+	DigestType *string `json:"digest_type,omitempty"`
 
 	// NTP symmetric authentication key identifier or index number (ID). This ID is included
 	// in the NTP cryptographic hash encoded header.
@@ -35,7 +35,7 @@ type NtpKey struct {
 	// Example: 10
 	// Maximum: 65535
 	// Minimum: 1
-	ID int64 `json:"id,omitempty"`
+	ID *int64 `json:"id,omitempty"`
 
 	// A hexadecimal digit string that represents the cryptographic key that is shared with the remote NTP server.
 	// The current expected length is 40 characters.
@@ -43,7 +43,7 @@ type NtpKey struct {
 	// Use the cryptographic key and key ID to create a unique hash value used to authenticate the rest of the NTP data.
 	//
 	// Example: da39a3ee5e6b4b0d3255bfef95601890afd80709
-	Value string `json:"value,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 // Validate validates this ntp key
@@ -124,7 +124,7 @@ func (m *NtpKey) validateDigestType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateDigestTypeEnum("digest_type", "body", m.DigestType); err != nil {
+	if err := m.validateDigestTypeEnum("digest_type", "body", *m.DigestType); err != nil {
 		return err
 	}
 
@@ -136,11 +136,11 @@ func (m *NtpKey) validateID(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("id", "body", m.ID, 1, false); err != nil {
+	if err := validate.MinimumInt("id", "body", *m.ID, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("id", "body", m.ID, 65535, false); err != nil {
+	if err := validate.MaximumInt("id", "body", *m.ID, 65535, false); err != nil {
 		return err
 	}
 
@@ -193,17 +193,17 @@ func (m *NtpKey) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NtpKeyLinks ntp key links
+// NtpKeyInlineLinks ntp key inline links
 //
-// swagger:model NtpKeyLinks
-type NtpKeyLinks struct {
+// swagger:model ntp_key_inline__links
+type NtpKeyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ntp key links
-func (m *NtpKeyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ntp key inline links
+func (m *NtpKeyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -216,7 +216,7 @@ func (m *NtpKeyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NtpKeyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NtpKeyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -233,8 +233,8 @@ func (m *NtpKeyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ntp key links based on the context it is used
-func (m *NtpKeyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ntp key inline links based on the context it is used
+func (m *NtpKeyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -247,7 +247,7 @@ func (m *NtpKeyLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *NtpKeyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NtpKeyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -262,7 +262,7 @@ func (m *NtpKeyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *NtpKeyLinks) MarshalBinary() ([]byte, error) {
+func (m *NtpKeyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -270,8 +270,8 @@ func (m *NtpKeyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NtpKeyLinks) UnmarshalBinary(b []byte) error {
-	var res NtpKeyLinks
+func (m *NtpKeyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NtpKeyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

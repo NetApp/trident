@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -37,6 +37,10 @@ const (
 
 func (in *TridentBackendConfig) GetObjectMeta() metav1.ObjectMeta {
 	return in.ObjectMeta
+}
+
+func (in *TridentBackendConfig) GetKind() string {
+	return "TridentBackendConfig"
 }
 
 func (in *TridentBackendConfig) GetFinalizers() []string {
@@ -75,7 +79,7 @@ func (s *TridentBackendConfigSpec) ToString() string {
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(clone.Raw, &backendConfigSpec)
 	if err != nil {
-		log.Errorf("could not parse JSON configuration: %v", err)
+		Log().Errorf("could not parse JSON configuration: %v", err)
 		return ""
 	}
 
@@ -106,7 +110,7 @@ func (s *TridentBackendConfigSpec) SetDefaultsAndValidate(backendName string) er
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(s.Raw, &backendConfigSpec)
 	if err != nil {
-		log.Errorf("could not parse JSON configuration: %v", err)
+		Log().Errorf("could not parse JSON configuration: %v", err)
 		return fmt.Errorf("could not parse JSON configuration: %v", err)
 	}
 
@@ -129,7 +133,7 @@ func (s *TridentBackendConfigSpec) SetDefaultsAndValidate(backendName string) er
 	}
 
 	if s.Raw, err = json.Marshal(backendConfigSpec); err != nil {
-		log.Errorf("could not marshal JSON backend configuration: %v", err)
+		Log().Errorf("could not marshal JSON backend configuration: %v", err)
 		return err
 	}
 
@@ -140,7 +144,7 @@ func (s *TridentBackendConfigSpec) GetDeletionPolicy() (string, error) {
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(s.Raw, &backendConfigSpec)
 	if err != nil {
-		log.Errorf("could not parse JSON configuration: %v", err)
+		Log().Errorf("could not parse JSON configuration: %v", err)
 		return "", fmt.Errorf("could not parse JSON configuration: %v", err)
 	}
 
@@ -159,7 +163,7 @@ func (s *TridentBackendConfigSpec) GetSecretName() (string, error) {
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(s.Raw, &backendConfigSpec)
 	if err != nil {
-		log.Errorf("could not parse JSON configuration: %v", err)
+		Log().Errorf("could not parse JSON configuration: %v", err)
 		return "", fmt.Errorf("could not parse JSON configuration: %v", err)
 	}
 

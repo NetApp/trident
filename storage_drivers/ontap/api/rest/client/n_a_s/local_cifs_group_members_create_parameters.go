@@ -74,19 +74,19 @@ type LocalCifsGroupMembersCreateParams struct {
 
 	   Local group SID
 	*/
-	LocalCifsGroupSIDPathParameter string
+	LocalCifsGroupSid string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *LocalCifsGroupMembersCreateParams) WithDefaults() *LocalCifsGroupMember
 // All values with no default are reset to their zero value.
 func (o *LocalCifsGroupMembersCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
+		returnRecordsDefault = bool(false)
 	)
 
 	val := LocalCifsGroupMembersCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -163,37 +163,37 @@ func (o *LocalCifsGroupMembersCreateParams) SetInfo(info *models.LocalCifsGroupM
 	o.Info = info
 }
 
-// WithLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members create params
-func (o *LocalCifsGroupMembersCreateParams) WithLocalCifsGroupSIDPathParameter(localCifsGroupSid string) *LocalCifsGroupMembersCreateParams {
-	o.SetLocalCifsGroupSIDPathParameter(localCifsGroupSid)
+// WithLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members create params
+func (o *LocalCifsGroupMembersCreateParams) WithLocalCifsGroupSid(localCifsGroupSid string) *LocalCifsGroupMembersCreateParams {
+	o.SetLocalCifsGroupSid(localCifsGroupSid)
 	return o
 }
 
-// SetLocalCifsGroupSIDPathParameter adds the localCifsGroupSid to the local cifs group members create params
-func (o *LocalCifsGroupMembersCreateParams) SetLocalCifsGroupSIDPathParameter(localCifsGroupSid string) {
-	o.LocalCifsGroupSIDPathParameter = localCifsGroupSid
+// SetLocalCifsGroupSid adds the localCifsGroupSid to the local cifs group members create params
+func (o *LocalCifsGroupMembersCreateParams) SetLocalCifsGroupSid(localCifsGroupSid string) {
+	o.LocalCifsGroupSid = localCifsGroupSid
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the local cifs group members create params
-func (o *LocalCifsGroupMembersCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LocalCifsGroupMembersCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the local cifs group members create params
+func (o *LocalCifsGroupMembersCreateParams) WithReturnRecords(returnRecords *bool) *LocalCifsGroupMembersCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the local cifs group members create params
-func (o *LocalCifsGroupMembersCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the local cifs group members create params
+func (o *LocalCifsGroupMembersCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the local cifs group members create params
-func (o *LocalCifsGroupMembersCreateParams) WithSVMUUIDPathParameter(svmUUID string) *LocalCifsGroupMembersCreateParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the local cifs group members create params
+func (o *LocalCifsGroupMembersCreateParams) WithSvmUUID(svmUUID string) *LocalCifsGroupMembersCreateParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the local cifs group members create params
-func (o *LocalCifsGroupMembersCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the local cifs group members create params
+func (o *LocalCifsGroupMembersCreateParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -210,17 +210,17 @@ func (o *LocalCifsGroupMembersCreateParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param local_cifs_group.sid
-	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSIDPathParameter); err != nil {
+	if err := r.SetPathParam("local_cifs_group.sid", o.LocalCifsGroupSid); err != nil {
 		return err
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -232,7 +232,7 @@ func (o *LocalCifsGroupMembersCreateParams) WriteToRequest(r runtime.ClientReque
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

@@ -66,13 +66,13 @@ type IpspaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   IPspace UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *IpspaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the ipspace get params
-func (o *IpspaceGetParams) WithFieldsQueryParameter(fields []string) *IpspaceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ipspace get params
+func (o *IpspaceGetParams) WithFields(fields []string) *IpspaceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ipspace get params
-func (o *IpspaceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ipspace get params
+func (o *IpspaceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the ipspace get params
-func (o *IpspaceGetParams) WithUUIDPathParameter(uuid string) *IpspaceGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the ipspace get params
+func (o *IpspaceGetParams) WithUUID(uuid string) *IpspaceGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the ipspace get params
-func (o *IpspaceGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the ipspace get params
+func (o *IpspaceGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *IpspaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *IpspaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *IpspaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamIpspaceGet binds the parameter fields
 func (o *IpspaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

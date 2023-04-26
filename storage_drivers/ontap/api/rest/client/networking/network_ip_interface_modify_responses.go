@@ -159,6 +159,7 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 | 53281089 | LIF on SVM cannot be updated to use service policy because that service policy includes SAN services and the target LIF is not home. |
+| 53281106 | Failed checking the cluster capabilities. |
 */
 type NetworkIPInterfaceModifyDefault struct {
 	_statusCode int

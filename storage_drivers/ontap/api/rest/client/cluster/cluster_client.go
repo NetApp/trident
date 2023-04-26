@@ -2443,9 +2443,9 @@ func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnect
 }
 
 /*
-	MetroclusterModify Initiates a switchover or switchback operation.
+	MetroclusterModify Initiates a switchover, heal or switchback operation.
 
-### Related ONTAP commands * `metrocluster switchover` * `metrocluster switchback`
+### Related ONTAP commands * `metrocluster switchover` * `metrocluster switchback` * `metrocluster heal`
 */
 func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2968,7 +2968,7 @@ func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientA
 	NodesGet Retrieves the nodes in the cluster.
 
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands

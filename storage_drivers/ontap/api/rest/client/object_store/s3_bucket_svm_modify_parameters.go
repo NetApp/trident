@@ -74,19 +74,19 @@ type S3BucketSvmModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* UUID.
 
 	   The unique identifier of the bucket.
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,11 +106,11 @@ func (o *S3BucketSvmModifyParams) WithDefaults() *S3BucketSvmModifyParams {
 // All values with no default are reset to their zero value.
 func (o *S3BucketSvmModifyParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := S3BucketSvmModifyParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -163,37 +163,37 @@ func (o *S3BucketSvmModifyParams) SetInfo(info *models.S3BucketSvm) {
 	o.Info = info
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 bucket svm modify params
-func (o *S3BucketSvmModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3BucketSvmModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) WithReturnTimeout(returnTimeout *int64) *S3BucketSvmModifyParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 bucket svm modify params
-func (o *S3BucketSvmModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the s3 bucket svm modify params
-func (o *S3BucketSvmModifyParams) WithSVMUUIDPathParameter(svmUUID string) *S3BucketSvmModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) WithSvmUUID(svmUUID string) *S3BucketSvmModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the s3 bucket svm modify params
-func (o *S3BucketSvmModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the s3 bucket svm modify params
-func (o *S3BucketSvmModifyParams) WithUUIDPathParameter(uuid string) *S3BucketSvmModifyParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) WithUUID(uuid string) *S3BucketSvmModifyParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the s3 bucket svm modify params
-func (o *S3BucketSvmModifyParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -209,13 +209,13 @@ func (o *S3BucketSvmModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -227,12 +227,12 @@ func (o *S3BucketSvmModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

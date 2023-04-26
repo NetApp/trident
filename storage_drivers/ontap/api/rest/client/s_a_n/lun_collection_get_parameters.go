@@ -66,463 +66,463 @@ type LunCollectionGetParams struct {
 
 	   Filter by attributes.name
 	*/
-	AttributesNameQueryParameter *string
+	AttributesName *string
 
 	/* AttributesValue.
 
 	   Filter by attributes.value
 	*/
-	AttributesValueQueryParameter *string
+	AttributesValue *string
 
 	/* AutoDelete.
 
 	   Filter by auto_delete
 	*/
-	AutoDeleteQueryParameter *bool
+	AutoDelete *bool
 
 	/* Class.
 
 	   Filter by class
 	*/
-	ClassQueryParameter *string
+	Class *string
 
 	/* Comment.
 
 	   Filter by comment
 	*/
-	CommentQueryParameter *string
+	Comment *string
 
 	/* ConsistencyGroupName.
 
 	   Filter by consistency_group.name
 	*/
-	ConsistencyGroupNameQueryParameter *string
+	ConsistencyGroupName *string
 
 	/* ConsistencyGroupUUID.
 
 	   Filter by consistency_group.uuid
 	*/
-	ConsistencyGroupUUIDQueryParameter *string
+	ConsistencyGroupUUID *string
 
 	/* CopyDestinationsMaxThroughput.
 
 	   Filter by copy.destinations.max_throughput
 	*/
-	CopyDestinationsMaxThroughputQueryParameter *int64
+	CopyDestinationsMaxThroughput *int64
 
 	/* CopyDestinationsName.
 
 	   Filter by copy.destinations.name
 	*/
-	CopyDestinationsNameQueryParameter *string
+	CopyDestinationsName *string
 
 	/* CopyDestinationsProgressElapsed.
 
 	   Filter by copy.destinations.progress.elapsed
 	*/
-	CopyDestinationsProgressElapsedQueryParameter *int64
+	CopyDestinationsProgressElapsed *int64
 
 	/* CopyDestinationsProgressFailureArgumentsCode.
 
 	   Filter by copy.destinations.progress.failure.arguments.code
 	*/
-	CopyDestinationsProgressFailureArgumentsCodeQueryParameter *string
+	CopyDestinationsProgressFailureArgumentsCode *string
 
 	/* CopyDestinationsProgressFailureArgumentsMessage.
 
 	   Filter by copy.destinations.progress.failure.arguments.message
 	*/
-	CopyDestinationsProgressFailureArgumentsMessageQueryParameter *string
+	CopyDestinationsProgressFailureArgumentsMessage *string
 
 	/* CopyDestinationsProgressFailureCode.
 
 	   Filter by copy.destinations.progress.failure.code
 	*/
-	CopyDestinationsProgressFailureCodeQueryParameter *string
+	CopyDestinationsProgressFailureCode *string
 
 	/* CopyDestinationsProgressFailureMessage.
 
 	   Filter by copy.destinations.progress.failure.message
 	*/
-	CopyDestinationsProgressFailureMessageQueryParameter *string
+	CopyDestinationsProgressFailureMessage *string
 
 	/* CopyDestinationsProgressFailureTarget.
 
 	   Filter by copy.destinations.progress.failure.target
 	*/
-	CopyDestinationsProgressFailureTargetQueryParameter *string
+	CopyDestinationsProgressFailureTarget *string
 
 	/* CopyDestinationsProgressPercentComplete.
 
 	   Filter by copy.destinations.progress.percent_complete
 	*/
-	CopyDestinationsProgressPercentCompleteQueryParameter *int64
+	CopyDestinationsProgressPercentComplete *int64
 
 	/* CopyDestinationsProgressState.
 
 	   Filter by copy.destinations.progress.state
 	*/
-	CopyDestinationsProgressStateQueryParameter *string
+	CopyDestinationsProgressState *string
 
 	/* CopyDestinationsProgressVolumeSnapshotBlocked.
 
 	   Filter by copy.destinations.progress.volume_snapshot_blocked
 	*/
-	CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter *bool
+	CopyDestinationsProgressVolumeSnapshotBlocked *bool
 
 	/* CopyDestinationsUUID.
 
 	   Filter by copy.destinations.uuid
 	*/
-	CopyDestinationsUUIDQueryParameter *string
+	CopyDestinationsUUID *string
 
 	/* CopySourceMaxThroughput.
 
 	   Filter by copy.source.max_throughput
 	*/
-	CopySourceMaxThroughputQueryParameter *int64
+	CopySourceMaxThroughput *int64
 
 	/* CopySourceName.
 
 	   Filter by copy.source.name
 	*/
-	CopySourceNameQueryParameter *string
+	CopySourceName *string
 
 	/* CopySourceProgressElapsed.
 
 	   Filter by copy.source.progress.elapsed
 	*/
-	CopySourceProgressElapsedQueryParameter *int64
+	CopySourceProgressElapsed *int64
 
 	/* CopySourceProgressFailureArgumentsCode.
 
 	   Filter by copy.source.progress.failure.arguments.code
 	*/
-	CopySourceProgressFailureArgumentsCodeQueryParameter *string
+	CopySourceProgressFailureArgumentsCode *string
 
 	/* CopySourceProgressFailureArgumentsMessage.
 
 	   Filter by copy.source.progress.failure.arguments.message
 	*/
-	CopySourceProgressFailureArgumentsMessageQueryParameter *string
+	CopySourceProgressFailureArgumentsMessage *string
 
 	/* CopySourceProgressFailureCode.
 
 	   Filter by copy.source.progress.failure.code
 	*/
-	CopySourceProgressFailureCodeQueryParameter *string
+	CopySourceProgressFailureCode *string
 
 	/* CopySourceProgressFailureMessage.
 
 	   Filter by copy.source.progress.failure.message
 	*/
-	CopySourceProgressFailureMessageQueryParameter *string
+	CopySourceProgressFailureMessage *string
 
 	/* CopySourceProgressFailureTarget.
 
 	   Filter by copy.source.progress.failure.target
 	*/
-	CopySourceProgressFailureTargetQueryParameter *string
+	CopySourceProgressFailureTarget *string
 
 	/* CopySourceProgressPercentComplete.
 
 	   Filter by copy.source.progress.percent_complete
 	*/
-	CopySourceProgressPercentCompleteQueryParameter *int64
+	CopySourceProgressPercentComplete *int64
 
 	/* CopySourceProgressState.
 
 	   Filter by copy.source.progress.state
 	*/
-	CopySourceProgressStateQueryParameter *string
+	CopySourceProgressState *string
 
 	/* CopySourceProgressVolumeSnapshotBlocked.
 
 	   Filter by copy.source.progress.volume_snapshot_blocked
 	*/
-	CopySourceProgressVolumeSnapshotBlockedQueryParameter *bool
+	CopySourceProgressVolumeSnapshotBlocked *bool
 
 	/* CopySourceUUID.
 
 	   Filter by copy.source.uuid
 	*/
-	CopySourceUUIDQueryParameter *string
+	CopySourceUUID *string
 
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
-	CreateTimeQueryParameter *string
+	CreateTime *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* LocationLogicalUnit.
 
 	   Filter by location.logical_unit
 	*/
-	LocationLogicalUnitQueryParameter *string
+	LocationLogicalUnit *string
 
 	/* LocationNodeName.
 
 	   Filter by location.node.name
 	*/
-	LocationNodeNameQueryParameter *string
+	LocationNodeName *string
 
 	/* LocationNodeUUID.
 
 	   Filter by location.node.uuid
 	*/
-	LocationNodeUUIDQueryParameter *string
+	LocationNodeUUID *string
 
 	/* LocationQtreeID.
 
 	   Filter by location.qtree.id
 	*/
-	LocationQtreeIDQueryParameter *int64
+	LocationQtreeID *int64
 
 	/* LocationQtreeName.
 
 	   Filter by location.qtree.name
 	*/
-	LocationQtreeNameQueryParameter *string
+	LocationQtreeName *string
 
 	/* LocationVolumeName.
 
 	   Filter by location.volume.name
 	*/
-	LocationVolumeNameQueryParameter *string
+	LocationVolumeName *string
 
 	/* LocationVolumeUUID.
 
 	   Filter by location.volume.uuid
 	*/
-	LocationVolumeUUIDQueryParameter *string
+	LocationVolumeUUID *string
 
 	/* LunMapsIgroupName.
 
 	   Filter by lun_maps.igroup.name
 	*/
-	LunMapsIgroupNameQueryParameter *string
+	LunMapsIgroupName *string
 
 	/* LunMapsIgroupUUID.
 
 	   Filter by lun_maps.igroup.uuid
 	*/
-	LunMapsIgroupUUIDQueryParameter *string
+	LunMapsIgroupUUID *string
 
 	/* LunMapsLogicalUnitNumber.
 
 	   Filter by lun_maps.logical_unit_number
 	*/
-	LunMapsLogicalUnitNumberQueryParameter *int64
+	LunMapsLogicalUnitNumber *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* MetricDuration.
 
 	   Filter by metric.duration
 	*/
-	MetricDurationQueryParameter *string
+	MetricDuration *string
 
 	/* MetricIopsOther.
 
 	   Filter by metric.iops.other
 	*/
-	MetricIopsOtherQueryParameter *int64
+	MetricIopsOther *int64
 
 	/* MetricIopsRead.
 
 	   Filter by metric.iops.read
 	*/
-	MetricIopsReadQueryParameter *int64
+	MetricIopsRead *int64
 
 	/* MetricIopsTotal.
 
 	   Filter by metric.iops.total
 	*/
-	MetricIopsTotalQueryParameter *int64
+	MetricIopsTotal *int64
 
 	/* MetricIopsWrite.
 
 	   Filter by metric.iops.write
 	*/
-	MetricIopsWriteQueryParameter *int64
+	MetricIopsWrite *int64
 
 	/* MetricLatencyOther.
 
 	   Filter by metric.latency.other
 	*/
-	MetricLatencyOtherQueryParameter *int64
+	MetricLatencyOther *int64
 
 	/* MetricLatencyRead.
 
 	   Filter by metric.latency.read
 	*/
-	MetricLatencyReadQueryParameter *int64
+	MetricLatencyRead *int64
 
 	/* MetricLatencyTotal.
 
 	   Filter by metric.latency.total
 	*/
-	MetricLatencyTotalQueryParameter *int64
+	MetricLatencyTotal *int64
 
 	/* MetricLatencyWrite.
 
 	   Filter by metric.latency.write
 	*/
-	MetricLatencyWriteQueryParameter *int64
+	MetricLatencyWrite *int64
 
 	/* MetricStatus.
 
 	   Filter by metric.status
 	*/
-	MetricStatusQueryParameter *string
+	MetricStatus *string
 
 	/* MetricThroughputOther.
 
 	   Filter by metric.throughput.other
 	*/
-	MetricThroughputOtherQueryParameter *int64
+	MetricThroughputOther *int64
 
 	/* MetricThroughputRead.
 
 	   Filter by metric.throughput.read
 	*/
-	MetricThroughputReadQueryParameter *int64
+	MetricThroughputRead *int64
 
 	/* MetricThroughputTotal.
 
 	   Filter by metric.throughput.total
 	*/
-	MetricThroughputTotalQueryParameter *int64
+	MetricThroughputTotal *int64
 
 	/* MetricThroughputWrite.
 
 	   Filter by metric.throughput.write
 	*/
-	MetricThroughputWriteQueryParameter *int64
+	MetricThroughputWrite *int64
 
 	/* MetricTimestamp.
 
 	   Filter by metric.timestamp
 	*/
-	MetricTimestampQueryParameter *string
+	MetricTimestamp *string
 
 	/* MovementMaxThroughput.
 
 	   Filter by movement.max_throughput
 	*/
-	MovementMaxThroughputQueryParameter *int64
+	MovementMaxThroughput *int64
 
 	/* MovementPathsDestination.
 
 	   Filter by movement.paths.destination
 	*/
-	MovementPathsDestinationQueryParameter *string
+	MovementPathsDestination *string
 
 	/* MovementPathsSource.
 
 	   Filter by movement.paths.source
 	*/
-	MovementPathsSourceQueryParameter *string
+	MovementPathsSource *string
 
 	/* MovementProgressElapsed.
 
 	   Filter by movement.progress.elapsed
 	*/
-	MovementProgressElapsedQueryParameter *int64
+	MovementProgressElapsed *int64
 
 	/* MovementProgressFailureArgumentsCode.
 
 	   Filter by movement.progress.failure.arguments.code
 	*/
-	MovementProgressFailureArgumentsCodeQueryParameter *string
+	MovementProgressFailureArgumentsCode *string
 
 	/* MovementProgressFailureArgumentsMessage.
 
 	   Filter by movement.progress.failure.arguments.message
 	*/
-	MovementProgressFailureArgumentsMessageQueryParameter *string
+	MovementProgressFailureArgumentsMessage *string
 
 	/* MovementProgressFailureCode.
 
 	   Filter by movement.progress.failure.code
 	*/
-	MovementProgressFailureCodeQueryParameter *string
+	MovementProgressFailureCode *string
 
 	/* MovementProgressFailureMessage.
 
 	   Filter by movement.progress.failure.message
 	*/
-	MovementProgressFailureMessageQueryParameter *string
+	MovementProgressFailureMessage *string
 
 	/* MovementProgressFailureTarget.
 
 	   Filter by movement.progress.failure.target
 	*/
-	MovementProgressFailureTargetQueryParameter *string
+	MovementProgressFailureTarget *string
 
 	/* MovementProgressPercentComplete.
 
 	   Filter by movement.progress.percent_complete
 	*/
-	MovementProgressPercentCompleteQueryParameter *int64
+	MovementProgressPercentComplete *int64
 
 	/* MovementProgressState.
 
 	   Filter by movement.progress.state
 	*/
-	MovementProgressStateQueryParameter *string
+	MovementProgressState *string
 
 	/* MovementProgressVolumeSnapshotBlocked.
 
 	   Filter by movement.progress.volume_snapshot_blocked
 	*/
-	MovementProgressVolumeSnapshotBlockedQueryParameter *bool
+	MovementProgressVolumeSnapshotBlocked *bool
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* OsType.
 
 	   Filter by os_type
 	*/
-	OsTypeQueryParameter *string
+	OsType *string
 
 	/* QosPolicyName.
 
 	   Filter by qos_policy.name
 	*/
-	QosPolicyNameQueryParameter *string
+	QosPolicyName *string
 
 	/* QosPolicyUUID.
 
 	   Filter by qos_policy.uuid
 	*/
-	QosPolicyUUIDQueryParameter *string
+	QosPolicyUUID *string
 
 	/* ReturnRecords.
 
@@ -530,7 +530,7 @@ type LunCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -538,193 +538,193 @@ type LunCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SerialNumber.
 
 	   Filter by serial_number
 	*/
-	SerialNumberQueryParameter *string
+	SerialNumber *string
 
 	/* SpaceGuaranteeRequested.
 
 	   Filter by space.guarantee.requested
 	*/
-	SpaceGuaranteeRequestedQueryParameter *bool
+	SpaceGuaranteeRequested *bool
 
 	/* SpaceGuaranteeReserved.
 
 	   Filter by space.guarantee.reserved
 	*/
-	SpaceGuaranteeReservedQueryParameter *bool
+	SpaceGuaranteeReserved *bool
 
 	/* SpaceScsiThinProvisioningSupportEnabled.
 
 	   Filter by space.scsi_thin_provisioning_support_enabled
 	*/
-	SpaceScsiThinProvisioningSupportEnabledQueryParameter *bool
+	SpaceScsiThinProvisioningSupportEnabled *bool
 
 	/* SpaceSize.
 
 	   Filter by space.size
 	*/
-	SpaceSizeQueryParameter *int64
+	SpaceSize *int64
 
 	/* SpaceUsed.
 
 	   Filter by space.used
 	*/
-	SpaceUsedQueryParameter *int64
+	SpaceUsed *int64
 
 	/* StatisticsIopsRawOther.
 
 	   Filter by statistics.iops_raw.other
 	*/
-	StatisticsIopsRawOtherQueryParameter *int64
+	StatisticsIopsRawOther *int64
 
 	/* StatisticsIopsRawRead.
 
 	   Filter by statistics.iops_raw.read
 	*/
-	StatisticsIopsRawReadQueryParameter *int64
+	StatisticsIopsRawRead *int64
 
 	/* StatisticsIopsRawTotal.
 
 	   Filter by statistics.iops_raw.total
 	*/
-	StatisticsIopsRawTotalQueryParameter *int64
+	StatisticsIopsRawTotal *int64
 
 	/* StatisticsIopsRawWrite.
 
 	   Filter by statistics.iops_raw.write
 	*/
-	StatisticsIopsRawWriteQueryParameter *int64
+	StatisticsIopsRawWrite *int64
 
 	/* StatisticsLatencyRawOther.
 
 	   Filter by statistics.latency_raw.other
 	*/
-	StatisticsLatencyRawOtherQueryParameter *int64
+	StatisticsLatencyRawOther *int64
 
 	/* StatisticsLatencyRawRead.
 
 	   Filter by statistics.latency_raw.read
 	*/
-	StatisticsLatencyRawReadQueryParameter *int64
+	StatisticsLatencyRawRead *int64
 
 	/* StatisticsLatencyRawTotal.
 
 	   Filter by statistics.latency_raw.total
 	*/
-	StatisticsLatencyRawTotalQueryParameter *int64
+	StatisticsLatencyRawTotal *int64
 
 	/* StatisticsLatencyRawWrite.
 
 	   Filter by statistics.latency_raw.write
 	*/
-	StatisticsLatencyRawWriteQueryParameter *int64
+	StatisticsLatencyRawWrite *int64
 
 	/* StatisticsStatus.
 
 	   Filter by statistics.status
 	*/
-	StatisticsStatusQueryParameter *string
+	StatisticsStatus *string
 
 	/* StatisticsThroughputRawOther.
 
 	   Filter by statistics.throughput_raw.other
 	*/
-	StatisticsThroughputRawOtherQueryParameter *int64
+	StatisticsThroughputRawOther *int64
 
 	/* StatisticsThroughputRawRead.
 
 	   Filter by statistics.throughput_raw.read
 	*/
-	StatisticsThroughputRawReadQueryParameter *int64
+	StatisticsThroughputRawRead *int64
 
 	/* StatisticsThroughputRawTotal.
 
 	   Filter by statistics.throughput_raw.total
 	*/
-	StatisticsThroughputRawTotalQueryParameter *int64
+	StatisticsThroughputRawTotal *int64
 
 	/* StatisticsThroughputRawWrite.
 
 	   Filter by statistics.throughput_raw.write
 	*/
-	StatisticsThroughputRawWriteQueryParameter *int64
+	StatisticsThroughputRawWrite *int64
 
 	/* StatisticsTimestamp.
 
 	   Filter by statistics.timestamp
 	*/
-	StatisticsTimestampQueryParameter *string
+	StatisticsTimestamp *string
 
 	/* StatusContainerState.
 
 	   Filter by status.container_state
 	*/
-	StatusContainerStateQueryParameter *string
+	StatusContainerState *string
 
 	/* StatusMapped.
 
 	   Filter by status.mapped
 	*/
-	StatusMappedQueryParameter *bool
+	StatusMapped *bool
 
 	/* StatusReadOnly.
 
 	   Filter by status.read_only
 	*/
-	StatusReadOnlyQueryParameter *bool
+	StatusReadOnly *bool
 
 	/* StatusState.
 
 	   Filter by status.state
 	*/
-	StatusStateQueryParameter *string
+	StatusState *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	/* VvolBindingsID.
 
 	   Filter by vvol.bindings.id
 	*/
-	VvolBindingsIDQueryParameter *int64
+	VvolBindingsID *int64
 
 	/* VvolBindingsPartnerName.
 
 	   Filter by vvol.bindings.partner.name
 	*/
-	VvolBindingsPartnerNameQueryParameter *string
+	VvolBindingsPartnerName *string
 
 	/* VvolBindingsPartnerUUID.
 
 	   Filter by vvol.bindings.partner.uuid
 	*/
-	VvolBindingsPartnerUUIDQueryParameter *string
+	VvolBindingsPartnerUUID *string
 
 	/* VvolIsBound.
 
 	   Filter by vvol.is_bound
 	*/
-	VvolIsBoundQueryParameter *bool
+	VvolIsBound *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -744,14 +744,14 @@ func (o *LunCollectionGetParams) WithDefaults() *LunCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *LunCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := LunCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -793,1214 +793,1214 @@ func (o *LunCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAttributesNameQueryParameter adds the attributesName to the lun collection get params
-func (o *LunCollectionGetParams) WithAttributesNameQueryParameter(attributesName *string) *LunCollectionGetParams {
-	o.SetAttributesNameQueryParameter(attributesName)
+// WithAttributesName adds the attributesName to the lun collection get params
+func (o *LunCollectionGetParams) WithAttributesName(attributesName *string) *LunCollectionGetParams {
+	o.SetAttributesName(attributesName)
 	return o
 }
 
-// SetAttributesNameQueryParameter adds the attributesName to the lun collection get params
-func (o *LunCollectionGetParams) SetAttributesNameQueryParameter(attributesName *string) {
-	o.AttributesNameQueryParameter = attributesName
+// SetAttributesName adds the attributesName to the lun collection get params
+func (o *LunCollectionGetParams) SetAttributesName(attributesName *string) {
+	o.AttributesName = attributesName
 }
 
-// WithAttributesValueQueryParameter adds the attributesValue to the lun collection get params
-func (o *LunCollectionGetParams) WithAttributesValueQueryParameter(attributesValue *string) *LunCollectionGetParams {
-	o.SetAttributesValueQueryParameter(attributesValue)
+// WithAttributesValue adds the attributesValue to the lun collection get params
+func (o *LunCollectionGetParams) WithAttributesValue(attributesValue *string) *LunCollectionGetParams {
+	o.SetAttributesValue(attributesValue)
 	return o
 }
 
-// SetAttributesValueQueryParameter adds the attributesValue to the lun collection get params
-func (o *LunCollectionGetParams) SetAttributesValueQueryParameter(attributesValue *string) {
-	o.AttributesValueQueryParameter = attributesValue
+// SetAttributesValue adds the attributesValue to the lun collection get params
+func (o *LunCollectionGetParams) SetAttributesValue(attributesValue *string) {
+	o.AttributesValue = attributesValue
 }
 
-// WithAutoDeleteQueryParameter adds the autoDelete to the lun collection get params
-func (o *LunCollectionGetParams) WithAutoDeleteQueryParameter(autoDelete *bool) *LunCollectionGetParams {
-	o.SetAutoDeleteQueryParameter(autoDelete)
+// WithAutoDelete adds the autoDelete to the lun collection get params
+func (o *LunCollectionGetParams) WithAutoDelete(autoDelete *bool) *LunCollectionGetParams {
+	o.SetAutoDelete(autoDelete)
 	return o
 }
 
-// SetAutoDeleteQueryParameter adds the autoDelete to the lun collection get params
-func (o *LunCollectionGetParams) SetAutoDeleteQueryParameter(autoDelete *bool) {
-	o.AutoDeleteQueryParameter = autoDelete
+// SetAutoDelete adds the autoDelete to the lun collection get params
+func (o *LunCollectionGetParams) SetAutoDelete(autoDelete *bool) {
+	o.AutoDelete = autoDelete
 }
 
-// WithClassQueryParameter adds the class to the lun collection get params
-func (o *LunCollectionGetParams) WithClassQueryParameter(class *string) *LunCollectionGetParams {
-	o.SetClassQueryParameter(class)
+// WithClass adds the class to the lun collection get params
+func (o *LunCollectionGetParams) WithClass(class *string) *LunCollectionGetParams {
+	o.SetClass(class)
 	return o
 }
 
-// SetClassQueryParameter adds the class to the lun collection get params
-func (o *LunCollectionGetParams) SetClassQueryParameter(class *string) {
-	o.ClassQueryParameter = class
+// SetClass adds the class to the lun collection get params
+func (o *LunCollectionGetParams) SetClass(class *string) {
+	o.Class = class
 }
 
-// WithCommentQueryParameter adds the comment to the lun collection get params
-func (o *LunCollectionGetParams) WithCommentQueryParameter(comment *string) *LunCollectionGetParams {
-	o.SetCommentQueryParameter(comment)
+// WithComment adds the comment to the lun collection get params
+func (o *LunCollectionGetParams) WithComment(comment *string) *LunCollectionGetParams {
+	o.SetComment(comment)
 	return o
 }
 
-// SetCommentQueryParameter adds the comment to the lun collection get params
-func (o *LunCollectionGetParams) SetCommentQueryParameter(comment *string) {
-	o.CommentQueryParameter = comment
+// SetComment adds the comment to the lun collection get params
+func (o *LunCollectionGetParams) SetComment(comment *string) {
+	o.Comment = comment
 }
 
-// WithConsistencyGroupNameQueryParameter adds the consistencyGroupName to the lun collection get params
-func (o *LunCollectionGetParams) WithConsistencyGroupNameQueryParameter(consistencyGroupName *string) *LunCollectionGetParams {
-	o.SetConsistencyGroupNameQueryParameter(consistencyGroupName)
+// WithConsistencyGroupName adds the consistencyGroupName to the lun collection get params
+func (o *LunCollectionGetParams) WithConsistencyGroupName(consistencyGroupName *string) *LunCollectionGetParams {
+	o.SetConsistencyGroupName(consistencyGroupName)
 	return o
 }
 
-// SetConsistencyGroupNameQueryParameter adds the consistencyGroupName to the lun collection get params
-func (o *LunCollectionGetParams) SetConsistencyGroupNameQueryParameter(consistencyGroupName *string) {
-	o.ConsistencyGroupNameQueryParameter = consistencyGroupName
+// SetConsistencyGroupName adds the consistencyGroupName to the lun collection get params
+func (o *LunCollectionGetParams) SetConsistencyGroupName(consistencyGroupName *string) {
+	o.ConsistencyGroupName = consistencyGroupName
 }
 
-// WithConsistencyGroupUUIDQueryParameter adds the consistencyGroupUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithConsistencyGroupUUIDQueryParameter(consistencyGroupUUID *string) *LunCollectionGetParams {
-	o.SetConsistencyGroupUUIDQueryParameter(consistencyGroupUUID)
+// WithConsistencyGroupUUID adds the consistencyGroupUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithConsistencyGroupUUID(consistencyGroupUUID *string) *LunCollectionGetParams {
+	o.SetConsistencyGroupUUID(consistencyGroupUUID)
 	return o
 }
 
-// SetConsistencyGroupUUIDQueryParameter adds the consistencyGroupUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetConsistencyGroupUUIDQueryParameter(consistencyGroupUUID *string) {
-	o.ConsistencyGroupUUIDQueryParameter = consistencyGroupUUID
+// SetConsistencyGroupUUID adds the consistencyGroupUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetConsistencyGroupUUID(consistencyGroupUUID *string) {
+	o.ConsistencyGroupUUID = consistencyGroupUUID
 }
 
-// WithCopyDestinationsMaxThroughputQueryParameter adds the copyDestinationsMaxThroughput to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsMaxThroughputQueryParameter(copyDestinationsMaxThroughput *int64) *LunCollectionGetParams {
-	o.SetCopyDestinationsMaxThroughputQueryParameter(copyDestinationsMaxThroughput)
+// WithCopyDestinationsMaxThroughput adds the copyDestinationsMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsMaxThroughput(copyDestinationsMaxThroughput *int64) *LunCollectionGetParams {
+	o.SetCopyDestinationsMaxThroughput(copyDestinationsMaxThroughput)
 	return o
 }
 
-// SetCopyDestinationsMaxThroughputQueryParameter adds the copyDestinationsMaxThroughput to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsMaxThroughputQueryParameter(copyDestinationsMaxThroughput *int64) {
-	o.CopyDestinationsMaxThroughputQueryParameter = copyDestinationsMaxThroughput
+// SetCopyDestinationsMaxThroughput adds the copyDestinationsMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsMaxThroughput(copyDestinationsMaxThroughput *int64) {
+	o.CopyDestinationsMaxThroughput = copyDestinationsMaxThroughput
 }
 
-// WithCopyDestinationsNameQueryParameter adds the copyDestinationsName to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsNameQueryParameter(copyDestinationsName *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsNameQueryParameter(copyDestinationsName)
+// WithCopyDestinationsName adds the copyDestinationsName to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsName(copyDestinationsName *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsName(copyDestinationsName)
 	return o
 }
 
-// SetCopyDestinationsNameQueryParameter adds the copyDestinationsName to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsNameQueryParameter(copyDestinationsName *string) {
-	o.CopyDestinationsNameQueryParameter = copyDestinationsName
+// SetCopyDestinationsName adds the copyDestinationsName to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsName(copyDestinationsName *string) {
+	o.CopyDestinationsName = copyDestinationsName
 }
 
-// WithCopyDestinationsProgressElapsedQueryParameter adds the copyDestinationsProgressElapsed to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressElapsedQueryParameter(copyDestinationsProgressElapsed *int64) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressElapsedQueryParameter(copyDestinationsProgressElapsed)
+// WithCopyDestinationsProgressElapsed adds the copyDestinationsProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressElapsed(copyDestinationsProgressElapsed *int64) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressElapsed(copyDestinationsProgressElapsed)
 	return o
 }
 
-// SetCopyDestinationsProgressElapsedQueryParameter adds the copyDestinationsProgressElapsed to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressElapsedQueryParameter(copyDestinationsProgressElapsed *int64) {
-	o.CopyDestinationsProgressElapsedQueryParameter = copyDestinationsProgressElapsed
+// SetCopyDestinationsProgressElapsed adds the copyDestinationsProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressElapsed(copyDestinationsProgressElapsed *int64) {
+	o.CopyDestinationsProgressElapsed = copyDestinationsProgressElapsed
 }
 
-// WithCopyDestinationsProgressFailureArgumentsCodeQueryParameter adds the copyDestinationsProgressFailureArgumentsCode to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureArgumentsCodeQueryParameter(copyDestinationsProgressFailureArgumentsCode *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressFailureArgumentsCodeQueryParameter(copyDestinationsProgressFailureArgumentsCode)
+// WithCopyDestinationsProgressFailureArgumentsCode adds the copyDestinationsProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureArgumentsCode(copyDestinationsProgressFailureArgumentsCode *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureArgumentsCode(copyDestinationsProgressFailureArgumentsCode)
 	return o
 }
 
-// SetCopyDestinationsProgressFailureArgumentsCodeQueryParameter adds the copyDestinationsProgressFailureArgumentsCode to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureArgumentsCodeQueryParameter(copyDestinationsProgressFailureArgumentsCode *string) {
-	o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter = copyDestinationsProgressFailureArgumentsCode
+// SetCopyDestinationsProgressFailureArgumentsCode adds the copyDestinationsProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureArgumentsCode(copyDestinationsProgressFailureArgumentsCode *string) {
+	o.CopyDestinationsProgressFailureArgumentsCode = copyDestinationsProgressFailureArgumentsCode
 }
 
-// WithCopyDestinationsProgressFailureArgumentsMessageQueryParameter adds the copyDestinationsProgressFailureArgumentsMessage to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureArgumentsMessageQueryParameter(copyDestinationsProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressFailureArgumentsMessageQueryParameter(copyDestinationsProgressFailureArgumentsMessage)
+// WithCopyDestinationsProgressFailureArgumentsMessage adds the copyDestinationsProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureArgumentsMessage(copyDestinationsProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureArgumentsMessage(copyDestinationsProgressFailureArgumentsMessage)
 	return o
 }
 
-// SetCopyDestinationsProgressFailureArgumentsMessageQueryParameter adds the copyDestinationsProgressFailureArgumentsMessage to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureArgumentsMessageQueryParameter(copyDestinationsProgressFailureArgumentsMessage *string) {
-	o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter = copyDestinationsProgressFailureArgumentsMessage
+// SetCopyDestinationsProgressFailureArgumentsMessage adds the copyDestinationsProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureArgumentsMessage(copyDestinationsProgressFailureArgumentsMessage *string) {
+	o.CopyDestinationsProgressFailureArgumentsMessage = copyDestinationsProgressFailureArgumentsMessage
 }
 
-// WithCopyDestinationsProgressFailureCodeQueryParameter adds the copyDestinationsProgressFailureCode to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureCodeQueryParameter(copyDestinationsProgressFailureCode *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressFailureCodeQueryParameter(copyDestinationsProgressFailureCode)
+// WithCopyDestinationsProgressFailureCode adds the copyDestinationsProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureCode(copyDestinationsProgressFailureCode *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureCode(copyDestinationsProgressFailureCode)
 	return o
 }
 
-// SetCopyDestinationsProgressFailureCodeQueryParameter adds the copyDestinationsProgressFailureCode to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureCodeQueryParameter(copyDestinationsProgressFailureCode *string) {
-	o.CopyDestinationsProgressFailureCodeQueryParameter = copyDestinationsProgressFailureCode
+// SetCopyDestinationsProgressFailureCode adds the copyDestinationsProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureCode(copyDestinationsProgressFailureCode *string) {
+	o.CopyDestinationsProgressFailureCode = copyDestinationsProgressFailureCode
 }
 
-// WithCopyDestinationsProgressFailureMessageQueryParameter adds the copyDestinationsProgressFailureMessage to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureMessageQueryParameter(copyDestinationsProgressFailureMessage *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressFailureMessageQueryParameter(copyDestinationsProgressFailureMessage)
+// WithCopyDestinationsProgressFailureMessage adds the copyDestinationsProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureMessage(copyDestinationsProgressFailureMessage *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureMessage(copyDestinationsProgressFailureMessage)
 	return o
 }
 
-// SetCopyDestinationsProgressFailureMessageQueryParameter adds the copyDestinationsProgressFailureMessage to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureMessageQueryParameter(copyDestinationsProgressFailureMessage *string) {
-	o.CopyDestinationsProgressFailureMessageQueryParameter = copyDestinationsProgressFailureMessage
+// SetCopyDestinationsProgressFailureMessage adds the copyDestinationsProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureMessage(copyDestinationsProgressFailureMessage *string) {
+	o.CopyDestinationsProgressFailureMessage = copyDestinationsProgressFailureMessage
 }
 
-// WithCopyDestinationsProgressFailureTargetQueryParameter adds the copyDestinationsProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureTargetQueryParameter(copyDestinationsProgressFailureTarget *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressFailureTargetQueryParameter(copyDestinationsProgressFailureTarget)
+// WithCopyDestinationsProgressFailureTarget adds the copyDestinationsProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureTarget(copyDestinationsProgressFailureTarget *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureTarget(copyDestinationsProgressFailureTarget)
 	return o
 }
 
-// SetCopyDestinationsProgressFailureTargetQueryParameter adds the copyDestinationsProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureTargetQueryParameter(copyDestinationsProgressFailureTarget *string) {
-	o.CopyDestinationsProgressFailureTargetQueryParameter = copyDestinationsProgressFailureTarget
+// SetCopyDestinationsProgressFailureTarget adds the copyDestinationsProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureTarget(copyDestinationsProgressFailureTarget *string) {
+	o.CopyDestinationsProgressFailureTarget = copyDestinationsProgressFailureTarget
 }
 
-// WithCopyDestinationsProgressPercentCompleteQueryParameter adds the copyDestinationsProgressPercentComplete to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressPercentCompleteQueryParameter(copyDestinationsProgressPercentComplete *int64) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressPercentCompleteQueryParameter(copyDestinationsProgressPercentComplete)
+// WithCopyDestinationsProgressPercentComplete adds the copyDestinationsProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressPercentComplete(copyDestinationsProgressPercentComplete *int64) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressPercentComplete(copyDestinationsProgressPercentComplete)
 	return o
 }
 
-// SetCopyDestinationsProgressPercentCompleteQueryParameter adds the copyDestinationsProgressPercentComplete to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressPercentCompleteQueryParameter(copyDestinationsProgressPercentComplete *int64) {
-	o.CopyDestinationsProgressPercentCompleteQueryParameter = copyDestinationsProgressPercentComplete
+// SetCopyDestinationsProgressPercentComplete adds the copyDestinationsProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressPercentComplete(copyDestinationsProgressPercentComplete *int64) {
+	o.CopyDestinationsProgressPercentComplete = copyDestinationsProgressPercentComplete
 }
 
-// WithCopyDestinationsProgressStateQueryParameter adds the copyDestinationsProgressState to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressStateQueryParameter(copyDestinationsProgressState *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressStateQueryParameter(copyDestinationsProgressState)
+// WithCopyDestinationsProgressState adds the copyDestinationsProgressState to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressState(copyDestinationsProgressState *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressState(copyDestinationsProgressState)
 	return o
 }
 
-// SetCopyDestinationsProgressStateQueryParameter adds the copyDestinationsProgressState to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressStateQueryParameter(copyDestinationsProgressState *string) {
-	o.CopyDestinationsProgressStateQueryParameter = copyDestinationsProgressState
+// SetCopyDestinationsProgressState adds the copyDestinationsProgressState to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressState(copyDestinationsProgressState *string) {
+	o.CopyDestinationsProgressState = copyDestinationsProgressState
 }
 
-// WithCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter adds the copyDestinationsProgressVolumeSnapshotBlocked to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter(copyDestinationsProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
-	o.SetCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter(copyDestinationsProgressVolumeSnapshotBlocked)
+// WithCopyDestinationsProgressVolumeSnapshotBlocked adds the copyDestinationsProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressVolumeSnapshotBlocked(copyDestinationsProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressVolumeSnapshotBlocked(copyDestinationsProgressVolumeSnapshotBlocked)
 	return o
 }
 
-// SetCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter adds the copyDestinationsProgressVolumeSnapshotBlocked to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter(copyDestinationsProgressVolumeSnapshotBlocked *bool) {
-	o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter = copyDestinationsProgressVolumeSnapshotBlocked
+// SetCopyDestinationsProgressVolumeSnapshotBlocked adds the copyDestinationsProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressVolumeSnapshotBlocked(copyDestinationsProgressVolumeSnapshotBlocked *bool) {
+	o.CopyDestinationsProgressVolumeSnapshotBlocked = copyDestinationsProgressVolumeSnapshotBlocked
 }
 
-// WithCopyDestinationsUUIDQueryParameter adds the copyDestinationsUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithCopyDestinationsUUIDQueryParameter(copyDestinationsUUID *string) *LunCollectionGetParams {
-	o.SetCopyDestinationsUUIDQueryParameter(copyDestinationsUUID)
+// WithCopyDestinationsUUID adds the copyDestinationsUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsUUID(copyDestinationsUUID *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsUUID(copyDestinationsUUID)
 	return o
 }
 
-// SetCopyDestinationsUUIDQueryParameter adds the copyDestinationsUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetCopyDestinationsUUIDQueryParameter(copyDestinationsUUID *string) {
-	o.CopyDestinationsUUIDQueryParameter = copyDestinationsUUID
+// SetCopyDestinationsUUID adds the copyDestinationsUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsUUID(copyDestinationsUUID *string) {
+	o.CopyDestinationsUUID = copyDestinationsUUID
 }
 
-// WithCopySourceMaxThroughputQueryParameter adds the copySourceMaxThroughput to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceMaxThroughputQueryParameter(copySourceMaxThroughput *int64) *LunCollectionGetParams {
-	o.SetCopySourceMaxThroughputQueryParameter(copySourceMaxThroughput)
+// WithCopySourceMaxThroughput adds the copySourceMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceMaxThroughput(copySourceMaxThroughput *int64) *LunCollectionGetParams {
+	o.SetCopySourceMaxThroughput(copySourceMaxThroughput)
 	return o
 }
 
-// SetCopySourceMaxThroughputQueryParameter adds the copySourceMaxThroughput to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceMaxThroughputQueryParameter(copySourceMaxThroughput *int64) {
-	o.CopySourceMaxThroughputQueryParameter = copySourceMaxThroughput
+// SetCopySourceMaxThroughput adds the copySourceMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceMaxThroughput(copySourceMaxThroughput *int64) {
+	o.CopySourceMaxThroughput = copySourceMaxThroughput
 }
 
-// WithCopySourceNameQueryParameter adds the copySourceName to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceNameQueryParameter(copySourceName *string) *LunCollectionGetParams {
-	o.SetCopySourceNameQueryParameter(copySourceName)
+// WithCopySourceName adds the copySourceName to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceName(copySourceName *string) *LunCollectionGetParams {
+	o.SetCopySourceName(copySourceName)
 	return o
 }
 
-// SetCopySourceNameQueryParameter adds the copySourceName to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceNameQueryParameter(copySourceName *string) {
-	o.CopySourceNameQueryParameter = copySourceName
+// SetCopySourceName adds the copySourceName to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceName(copySourceName *string) {
+	o.CopySourceName = copySourceName
 }
 
-// WithCopySourceProgressElapsedQueryParameter adds the copySourceProgressElapsed to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressElapsedQueryParameter(copySourceProgressElapsed *int64) *LunCollectionGetParams {
-	o.SetCopySourceProgressElapsedQueryParameter(copySourceProgressElapsed)
+// WithCopySourceProgressElapsed adds the copySourceProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressElapsed(copySourceProgressElapsed *int64) *LunCollectionGetParams {
+	o.SetCopySourceProgressElapsed(copySourceProgressElapsed)
 	return o
 }
 
-// SetCopySourceProgressElapsedQueryParameter adds the copySourceProgressElapsed to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressElapsedQueryParameter(copySourceProgressElapsed *int64) {
-	o.CopySourceProgressElapsedQueryParameter = copySourceProgressElapsed
+// SetCopySourceProgressElapsed adds the copySourceProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressElapsed(copySourceProgressElapsed *int64) {
+	o.CopySourceProgressElapsed = copySourceProgressElapsed
 }
 
-// WithCopySourceProgressFailureArgumentsCodeQueryParameter adds the copySourceProgressFailureArgumentsCode to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressFailureArgumentsCodeQueryParameter(copySourceProgressFailureArgumentsCode *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressFailureArgumentsCodeQueryParameter(copySourceProgressFailureArgumentsCode)
+// WithCopySourceProgressFailureArgumentsCode adds the copySourceProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureArgumentsCode(copySourceProgressFailureArgumentsCode *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureArgumentsCode(copySourceProgressFailureArgumentsCode)
 	return o
 }
 
-// SetCopySourceProgressFailureArgumentsCodeQueryParameter adds the copySourceProgressFailureArgumentsCode to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressFailureArgumentsCodeQueryParameter(copySourceProgressFailureArgumentsCode *string) {
-	o.CopySourceProgressFailureArgumentsCodeQueryParameter = copySourceProgressFailureArgumentsCode
+// SetCopySourceProgressFailureArgumentsCode adds the copySourceProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureArgumentsCode(copySourceProgressFailureArgumentsCode *string) {
+	o.CopySourceProgressFailureArgumentsCode = copySourceProgressFailureArgumentsCode
 }
 
-// WithCopySourceProgressFailureArgumentsMessageQueryParameter adds the copySourceProgressFailureArgumentsMessage to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressFailureArgumentsMessageQueryParameter(copySourceProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressFailureArgumentsMessageQueryParameter(copySourceProgressFailureArgumentsMessage)
+// WithCopySourceProgressFailureArgumentsMessage adds the copySourceProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureArgumentsMessage(copySourceProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureArgumentsMessage(copySourceProgressFailureArgumentsMessage)
 	return o
 }
 
-// SetCopySourceProgressFailureArgumentsMessageQueryParameter adds the copySourceProgressFailureArgumentsMessage to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressFailureArgumentsMessageQueryParameter(copySourceProgressFailureArgumentsMessage *string) {
-	o.CopySourceProgressFailureArgumentsMessageQueryParameter = copySourceProgressFailureArgumentsMessage
+// SetCopySourceProgressFailureArgumentsMessage adds the copySourceProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureArgumentsMessage(copySourceProgressFailureArgumentsMessage *string) {
+	o.CopySourceProgressFailureArgumentsMessage = copySourceProgressFailureArgumentsMessage
 }
 
-// WithCopySourceProgressFailureCodeQueryParameter adds the copySourceProgressFailureCode to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressFailureCodeQueryParameter(copySourceProgressFailureCode *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressFailureCodeQueryParameter(copySourceProgressFailureCode)
+// WithCopySourceProgressFailureCode adds the copySourceProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureCode(copySourceProgressFailureCode *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureCode(copySourceProgressFailureCode)
 	return o
 }
 
-// SetCopySourceProgressFailureCodeQueryParameter adds the copySourceProgressFailureCode to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressFailureCodeQueryParameter(copySourceProgressFailureCode *string) {
-	o.CopySourceProgressFailureCodeQueryParameter = copySourceProgressFailureCode
+// SetCopySourceProgressFailureCode adds the copySourceProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureCode(copySourceProgressFailureCode *string) {
+	o.CopySourceProgressFailureCode = copySourceProgressFailureCode
 }
 
-// WithCopySourceProgressFailureMessageQueryParameter adds the copySourceProgressFailureMessage to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressFailureMessageQueryParameter(copySourceProgressFailureMessage *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressFailureMessageQueryParameter(copySourceProgressFailureMessage)
+// WithCopySourceProgressFailureMessage adds the copySourceProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureMessage(copySourceProgressFailureMessage *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureMessage(copySourceProgressFailureMessage)
 	return o
 }
 
-// SetCopySourceProgressFailureMessageQueryParameter adds the copySourceProgressFailureMessage to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressFailureMessageQueryParameter(copySourceProgressFailureMessage *string) {
-	o.CopySourceProgressFailureMessageQueryParameter = copySourceProgressFailureMessage
+// SetCopySourceProgressFailureMessage adds the copySourceProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureMessage(copySourceProgressFailureMessage *string) {
+	o.CopySourceProgressFailureMessage = copySourceProgressFailureMessage
 }
 
-// WithCopySourceProgressFailureTargetQueryParameter adds the copySourceProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressFailureTargetQueryParameter(copySourceProgressFailureTarget *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressFailureTargetQueryParameter(copySourceProgressFailureTarget)
+// WithCopySourceProgressFailureTarget adds the copySourceProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureTarget(copySourceProgressFailureTarget *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureTarget(copySourceProgressFailureTarget)
 	return o
 }
 
-// SetCopySourceProgressFailureTargetQueryParameter adds the copySourceProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressFailureTargetQueryParameter(copySourceProgressFailureTarget *string) {
-	o.CopySourceProgressFailureTargetQueryParameter = copySourceProgressFailureTarget
+// SetCopySourceProgressFailureTarget adds the copySourceProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureTarget(copySourceProgressFailureTarget *string) {
+	o.CopySourceProgressFailureTarget = copySourceProgressFailureTarget
 }
 
-// WithCopySourceProgressPercentCompleteQueryParameter adds the copySourceProgressPercentComplete to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressPercentCompleteQueryParameter(copySourceProgressPercentComplete *int64) *LunCollectionGetParams {
-	o.SetCopySourceProgressPercentCompleteQueryParameter(copySourceProgressPercentComplete)
+// WithCopySourceProgressPercentComplete adds the copySourceProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressPercentComplete(copySourceProgressPercentComplete *int64) *LunCollectionGetParams {
+	o.SetCopySourceProgressPercentComplete(copySourceProgressPercentComplete)
 	return o
 }
 
-// SetCopySourceProgressPercentCompleteQueryParameter adds the copySourceProgressPercentComplete to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressPercentCompleteQueryParameter(copySourceProgressPercentComplete *int64) {
-	o.CopySourceProgressPercentCompleteQueryParameter = copySourceProgressPercentComplete
+// SetCopySourceProgressPercentComplete adds the copySourceProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressPercentComplete(copySourceProgressPercentComplete *int64) {
+	o.CopySourceProgressPercentComplete = copySourceProgressPercentComplete
 }
 
-// WithCopySourceProgressStateQueryParameter adds the copySourceProgressState to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressStateQueryParameter(copySourceProgressState *string) *LunCollectionGetParams {
-	o.SetCopySourceProgressStateQueryParameter(copySourceProgressState)
+// WithCopySourceProgressState adds the copySourceProgressState to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressState(copySourceProgressState *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressState(copySourceProgressState)
 	return o
 }
 
-// SetCopySourceProgressStateQueryParameter adds the copySourceProgressState to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressStateQueryParameter(copySourceProgressState *string) {
-	o.CopySourceProgressStateQueryParameter = copySourceProgressState
+// SetCopySourceProgressState adds the copySourceProgressState to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressState(copySourceProgressState *string) {
+	o.CopySourceProgressState = copySourceProgressState
 }
 
-// WithCopySourceProgressVolumeSnapshotBlockedQueryParameter adds the copySourceProgressVolumeSnapshotBlocked to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceProgressVolumeSnapshotBlockedQueryParameter(copySourceProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
-	o.SetCopySourceProgressVolumeSnapshotBlockedQueryParameter(copySourceProgressVolumeSnapshotBlocked)
+// WithCopySourceProgressVolumeSnapshotBlocked adds the copySourceProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressVolumeSnapshotBlocked(copySourceProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
+	o.SetCopySourceProgressVolumeSnapshotBlocked(copySourceProgressVolumeSnapshotBlocked)
 	return o
 }
 
-// SetCopySourceProgressVolumeSnapshotBlockedQueryParameter adds the copySourceProgressVolumeSnapshotBlocked to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceProgressVolumeSnapshotBlockedQueryParameter(copySourceProgressVolumeSnapshotBlocked *bool) {
-	o.CopySourceProgressVolumeSnapshotBlockedQueryParameter = copySourceProgressVolumeSnapshotBlocked
+// SetCopySourceProgressVolumeSnapshotBlocked adds the copySourceProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressVolumeSnapshotBlocked(copySourceProgressVolumeSnapshotBlocked *bool) {
+	o.CopySourceProgressVolumeSnapshotBlocked = copySourceProgressVolumeSnapshotBlocked
 }
 
-// WithCopySourceUUIDQueryParameter adds the copySourceUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithCopySourceUUIDQueryParameter(copySourceUUID *string) *LunCollectionGetParams {
-	o.SetCopySourceUUIDQueryParameter(copySourceUUID)
+// WithCopySourceUUID adds the copySourceUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceUUID(copySourceUUID *string) *LunCollectionGetParams {
+	o.SetCopySourceUUID(copySourceUUID)
 	return o
 }
 
-// SetCopySourceUUIDQueryParameter adds the copySourceUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetCopySourceUUIDQueryParameter(copySourceUUID *string) {
-	o.CopySourceUUIDQueryParameter = copySourceUUID
+// SetCopySourceUUID adds the copySourceUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceUUID(copySourceUUID *string) {
+	o.CopySourceUUID = copySourceUUID
 }
 
-// WithCreateTimeQueryParameter adds the createTime to the lun collection get params
-func (o *LunCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *LunCollectionGetParams {
-	o.SetCreateTimeQueryParameter(createTime)
+// WithCreateTime adds the createTime to the lun collection get params
+func (o *LunCollectionGetParams) WithCreateTime(createTime *string) *LunCollectionGetParams {
+	o.SetCreateTime(createTime)
 	return o
 }
 
-// SetCreateTimeQueryParameter adds the createTime to the lun collection get params
-func (o *LunCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
-	o.CreateTimeQueryParameter = createTime
+// SetCreateTime adds the createTime to the lun collection get params
+func (o *LunCollectionGetParams) SetCreateTime(createTime *string) {
+	o.CreateTime = createTime
 }
 
-// WithEnabledQueryParameter adds the enabled to the lun collection get params
-func (o *LunCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *LunCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the lun collection get params
+func (o *LunCollectionGetParams) WithEnabled(enabled *bool) *LunCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the lun collection get params
-func (o *LunCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the lun collection get params
+func (o *LunCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the lun collection get params
-func (o *LunCollectionGetParams) WithFieldsQueryParameter(fields []string) *LunCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the lun collection get params
+func (o *LunCollectionGetParams) WithFields(fields []string) *LunCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the lun collection get params
-func (o *LunCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the lun collection get params
+func (o *LunCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithLocationLogicalUnitQueryParameter adds the locationLogicalUnit to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationLogicalUnitQueryParameter(locationLogicalUnit *string) *LunCollectionGetParams {
-	o.SetLocationLogicalUnitQueryParameter(locationLogicalUnit)
+// WithLocationLogicalUnit adds the locationLogicalUnit to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationLogicalUnit(locationLogicalUnit *string) *LunCollectionGetParams {
+	o.SetLocationLogicalUnit(locationLogicalUnit)
 	return o
 }
 
-// SetLocationLogicalUnitQueryParameter adds the locationLogicalUnit to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationLogicalUnitQueryParameter(locationLogicalUnit *string) {
-	o.LocationLogicalUnitQueryParameter = locationLogicalUnit
+// SetLocationLogicalUnit adds the locationLogicalUnit to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationLogicalUnit(locationLogicalUnit *string) {
+	o.LocationLogicalUnit = locationLogicalUnit
 }
 
-// WithLocationNodeNameQueryParameter adds the locationNodeName to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationNodeNameQueryParameter(locationNodeName *string) *LunCollectionGetParams {
-	o.SetLocationNodeNameQueryParameter(locationNodeName)
+// WithLocationNodeName adds the locationNodeName to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationNodeName(locationNodeName *string) *LunCollectionGetParams {
+	o.SetLocationNodeName(locationNodeName)
 	return o
 }
 
-// SetLocationNodeNameQueryParameter adds the locationNodeName to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationNodeNameQueryParameter(locationNodeName *string) {
-	o.LocationNodeNameQueryParameter = locationNodeName
+// SetLocationNodeName adds the locationNodeName to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationNodeName(locationNodeName *string) {
+	o.LocationNodeName = locationNodeName
 }
 
-// WithLocationNodeUUIDQueryParameter adds the locationNodeUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationNodeUUIDQueryParameter(locationNodeUUID *string) *LunCollectionGetParams {
-	o.SetLocationNodeUUIDQueryParameter(locationNodeUUID)
+// WithLocationNodeUUID adds the locationNodeUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationNodeUUID(locationNodeUUID *string) *LunCollectionGetParams {
+	o.SetLocationNodeUUID(locationNodeUUID)
 	return o
 }
 
-// SetLocationNodeUUIDQueryParameter adds the locationNodeUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationNodeUUIDQueryParameter(locationNodeUUID *string) {
-	o.LocationNodeUUIDQueryParameter = locationNodeUUID
+// SetLocationNodeUUID adds the locationNodeUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationNodeUUID(locationNodeUUID *string) {
+	o.LocationNodeUUID = locationNodeUUID
 }
 
-// WithLocationQtreeIDQueryParameter adds the locationQtreeID to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationQtreeIDQueryParameter(locationQtreeID *int64) *LunCollectionGetParams {
-	o.SetLocationQtreeIDQueryParameter(locationQtreeID)
+// WithLocationQtreeID adds the locationQtreeID to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationQtreeID(locationQtreeID *int64) *LunCollectionGetParams {
+	o.SetLocationQtreeID(locationQtreeID)
 	return o
 }
 
-// SetLocationQtreeIDQueryParameter adds the locationQtreeId to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationQtreeIDQueryParameter(locationQtreeID *int64) {
-	o.LocationQtreeIDQueryParameter = locationQtreeID
+// SetLocationQtreeID adds the locationQtreeId to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationQtreeID(locationQtreeID *int64) {
+	o.LocationQtreeID = locationQtreeID
 }
 
-// WithLocationQtreeNameQueryParameter adds the locationQtreeName to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationQtreeNameQueryParameter(locationQtreeName *string) *LunCollectionGetParams {
-	o.SetLocationQtreeNameQueryParameter(locationQtreeName)
+// WithLocationQtreeName adds the locationQtreeName to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationQtreeName(locationQtreeName *string) *LunCollectionGetParams {
+	o.SetLocationQtreeName(locationQtreeName)
 	return o
 }
 
-// SetLocationQtreeNameQueryParameter adds the locationQtreeName to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationQtreeNameQueryParameter(locationQtreeName *string) {
-	o.LocationQtreeNameQueryParameter = locationQtreeName
+// SetLocationQtreeName adds the locationQtreeName to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationQtreeName(locationQtreeName *string) {
+	o.LocationQtreeName = locationQtreeName
 }
 
-// WithLocationVolumeNameQueryParameter adds the locationVolumeName to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationVolumeNameQueryParameter(locationVolumeName *string) *LunCollectionGetParams {
-	o.SetLocationVolumeNameQueryParameter(locationVolumeName)
+// WithLocationVolumeName adds the locationVolumeName to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationVolumeName(locationVolumeName *string) *LunCollectionGetParams {
+	o.SetLocationVolumeName(locationVolumeName)
 	return o
 }
 
-// SetLocationVolumeNameQueryParameter adds the locationVolumeName to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationVolumeNameQueryParameter(locationVolumeName *string) {
-	o.LocationVolumeNameQueryParameter = locationVolumeName
+// SetLocationVolumeName adds the locationVolumeName to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationVolumeName(locationVolumeName *string) {
+	o.LocationVolumeName = locationVolumeName
 }
 
-// WithLocationVolumeUUIDQueryParameter adds the locationVolumeUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithLocationVolumeUUIDQueryParameter(locationVolumeUUID *string) *LunCollectionGetParams {
-	o.SetLocationVolumeUUIDQueryParameter(locationVolumeUUID)
+// WithLocationVolumeUUID adds the locationVolumeUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationVolumeUUID(locationVolumeUUID *string) *LunCollectionGetParams {
+	o.SetLocationVolumeUUID(locationVolumeUUID)
 	return o
 }
 
-// SetLocationVolumeUUIDQueryParameter adds the locationVolumeUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetLocationVolumeUUIDQueryParameter(locationVolumeUUID *string) {
-	o.LocationVolumeUUIDQueryParameter = locationVolumeUUID
+// SetLocationVolumeUUID adds the locationVolumeUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationVolumeUUID(locationVolumeUUID *string) {
+	o.LocationVolumeUUID = locationVolumeUUID
 }
 
-// WithLunMapsIgroupNameQueryParameter adds the lunMapsIgroupName to the lun collection get params
-func (o *LunCollectionGetParams) WithLunMapsIgroupNameQueryParameter(lunMapsIgroupName *string) *LunCollectionGetParams {
-	o.SetLunMapsIgroupNameQueryParameter(lunMapsIgroupName)
+// WithLunMapsIgroupName adds the lunMapsIgroupName to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupName(lunMapsIgroupName *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupName(lunMapsIgroupName)
 	return o
 }
 
-// SetLunMapsIgroupNameQueryParameter adds the lunMapsIgroupName to the lun collection get params
-func (o *LunCollectionGetParams) SetLunMapsIgroupNameQueryParameter(lunMapsIgroupName *string) {
-	o.LunMapsIgroupNameQueryParameter = lunMapsIgroupName
+// SetLunMapsIgroupName adds the lunMapsIgroupName to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupName(lunMapsIgroupName *string) {
+	o.LunMapsIgroupName = lunMapsIgroupName
 }
 
-// WithLunMapsIgroupUUIDQueryParameter adds the lunMapsIgroupUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithLunMapsIgroupUUIDQueryParameter(lunMapsIgroupUUID *string) *LunCollectionGetParams {
-	o.SetLunMapsIgroupUUIDQueryParameter(lunMapsIgroupUUID)
+// WithLunMapsIgroupUUID adds the lunMapsIgroupUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsIgroupUUID(lunMapsIgroupUUID *string) *LunCollectionGetParams {
+	o.SetLunMapsIgroupUUID(lunMapsIgroupUUID)
 	return o
 }
 
-// SetLunMapsIgroupUUIDQueryParameter adds the lunMapsIgroupUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetLunMapsIgroupUUIDQueryParameter(lunMapsIgroupUUID *string) {
-	o.LunMapsIgroupUUIDQueryParameter = lunMapsIgroupUUID
+// SetLunMapsIgroupUUID adds the lunMapsIgroupUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsIgroupUUID(lunMapsIgroupUUID *string) {
+	o.LunMapsIgroupUUID = lunMapsIgroupUUID
 }
 
-// WithLunMapsLogicalUnitNumberQueryParameter adds the lunMapsLogicalUnitNumber to the lun collection get params
-func (o *LunCollectionGetParams) WithLunMapsLogicalUnitNumberQueryParameter(lunMapsLogicalUnitNumber *int64) *LunCollectionGetParams {
-	o.SetLunMapsLogicalUnitNumberQueryParameter(lunMapsLogicalUnitNumber)
+// WithLunMapsLogicalUnitNumber adds the lunMapsLogicalUnitNumber to the lun collection get params
+func (o *LunCollectionGetParams) WithLunMapsLogicalUnitNumber(lunMapsLogicalUnitNumber *int64) *LunCollectionGetParams {
+	o.SetLunMapsLogicalUnitNumber(lunMapsLogicalUnitNumber)
 	return o
 }
 
-// SetLunMapsLogicalUnitNumberQueryParameter adds the lunMapsLogicalUnitNumber to the lun collection get params
-func (o *LunCollectionGetParams) SetLunMapsLogicalUnitNumberQueryParameter(lunMapsLogicalUnitNumber *int64) {
-	o.LunMapsLogicalUnitNumberQueryParameter = lunMapsLogicalUnitNumber
+// SetLunMapsLogicalUnitNumber adds the lunMapsLogicalUnitNumber to the lun collection get params
+func (o *LunCollectionGetParams) SetLunMapsLogicalUnitNumber(lunMapsLogicalUnitNumber *int64) {
+	o.LunMapsLogicalUnitNumber = lunMapsLogicalUnitNumber
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the lun collection get params
-func (o *LunCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LunCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the lun collection get params
+func (o *LunCollectionGetParams) WithMaxRecords(maxRecords *int64) *LunCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the lun collection get params
-func (o *LunCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the lun collection get params
+func (o *LunCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMetricDurationQueryParameter adds the metricDuration to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *LunCollectionGetParams {
-	o.SetMetricDurationQueryParameter(metricDuration)
+// WithMetricDuration adds the metricDuration to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricDuration(metricDuration *string) *LunCollectionGetParams {
+	o.SetMetricDuration(metricDuration)
 	return o
 }
 
-// SetMetricDurationQueryParameter adds the metricDuration to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
-	o.MetricDurationQueryParameter = metricDuration
+// SetMetricDuration adds the metricDuration to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
 }
 
-// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *LunCollectionGetParams {
-	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+// WithMetricIopsOther adds the metricIopsOther to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricIopsOther(metricIopsOther *int64) *LunCollectionGetParams {
+	o.SetMetricIopsOther(metricIopsOther)
 	return o
 }
 
-// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
-	o.MetricIopsOtherQueryParameter = metricIopsOther
+// SetMetricIopsOther adds the metricIopsOther to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricIopsOther(metricIopsOther *int64) {
+	o.MetricIopsOther = metricIopsOther
 }
 
-// WithMetricIopsReadQueryParameter adds the metricIopsRead to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *LunCollectionGetParams {
-	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+// WithMetricIopsRead adds the metricIopsRead to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricIopsRead(metricIopsRead *int64) *LunCollectionGetParams {
+	o.SetMetricIopsRead(metricIopsRead)
 	return o
 }
 
-// SetMetricIopsReadQueryParameter adds the metricIopsRead to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
-	o.MetricIopsReadQueryParameter = metricIopsRead
+// SetMetricIopsRead adds the metricIopsRead to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricIopsRead(metricIopsRead *int64) {
+	o.MetricIopsRead = metricIopsRead
 }
 
-// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *LunCollectionGetParams {
-	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+// WithMetricIopsTotal adds the metricIopsTotal to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricIopsTotal(metricIopsTotal *int64) *LunCollectionGetParams {
+	o.SetMetricIopsTotal(metricIopsTotal)
 	return o
 }
 
-// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
-	o.MetricIopsTotalQueryParameter = metricIopsTotal
+// SetMetricIopsTotal adds the metricIopsTotal to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricIopsTotal(metricIopsTotal *int64) {
+	o.MetricIopsTotal = metricIopsTotal
 }
 
-// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *LunCollectionGetParams {
-	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+// WithMetricIopsWrite adds the metricIopsWrite to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricIopsWrite(metricIopsWrite *int64) *LunCollectionGetParams {
+	o.SetMetricIopsWrite(metricIopsWrite)
 	return o
 }
 
-// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
-	o.MetricIopsWriteQueryParameter = metricIopsWrite
+// SetMetricIopsWrite adds the metricIopsWrite to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricIopsWrite(metricIopsWrite *int64) {
+	o.MetricIopsWrite = metricIopsWrite
 }
 
-// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *LunCollectionGetParams {
-	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+// WithMetricLatencyOther adds the metricLatencyOther to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricLatencyOther(metricLatencyOther *int64) *LunCollectionGetParams {
+	o.SetMetricLatencyOther(metricLatencyOther)
 	return o
 }
 
-// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
-	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+// SetMetricLatencyOther adds the metricLatencyOther to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricLatencyOther(metricLatencyOther *int64) {
+	o.MetricLatencyOther = metricLatencyOther
 }
 
-// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *LunCollectionGetParams {
-	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+// WithMetricLatencyRead adds the metricLatencyRead to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricLatencyRead(metricLatencyRead *int64) *LunCollectionGetParams {
+	o.SetMetricLatencyRead(metricLatencyRead)
 	return o
 }
 
-// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
-	o.MetricLatencyReadQueryParameter = metricLatencyRead
+// SetMetricLatencyRead adds the metricLatencyRead to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricLatencyRead(metricLatencyRead *int64) {
+	o.MetricLatencyRead = metricLatencyRead
 }
 
-// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *LunCollectionGetParams {
-	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+// WithMetricLatencyTotal adds the metricLatencyTotal to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricLatencyTotal(metricLatencyTotal *int64) *LunCollectionGetParams {
+	o.SetMetricLatencyTotal(metricLatencyTotal)
 	return o
 }
 
-// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
-	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+// SetMetricLatencyTotal adds the metricLatencyTotal to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricLatencyTotal(metricLatencyTotal *int64) {
+	o.MetricLatencyTotal = metricLatencyTotal
 }
 
-// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *LunCollectionGetParams {
-	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+// WithMetricLatencyWrite adds the metricLatencyWrite to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricLatencyWrite(metricLatencyWrite *int64) *LunCollectionGetParams {
+	o.SetMetricLatencyWrite(metricLatencyWrite)
 	return o
 }
 
-// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
-	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+// SetMetricLatencyWrite adds the metricLatencyWrite to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricLatencyWrite(metricLatencyWrite *int64) {
+	o.MetricLatencyWrite = metricLatencyWrite
 }
 
-// WithMetricStatusQueryParameter adds the metricStatus to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *LunCollectionGetParams {
-	o.SetMetricStatusQueryParameter(metricStatus)
+// WithMetricStatus adds the metricStatus to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricStatus(metricStatus *string) *LunCollectionGetParams {
+	o.SetMetricStatus(metricStatus)
 	return o
 }
 
-// SetMetricStatusQueryParameter adds the metricStatus to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
-	o.MetricStatusQueryParameter = metricStatus
+// SetMetricStatus adds the metricStatus to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
 }
 
-// WithMetricThroughputOtherQueryParameter adds the metricThroughputOther to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricThroughputOtherQueryParameter(metricThroughputOther *int64) *LunCollectionGetParams {
-	o.SetMetricThroughputOtherQueryParameter(metricThroughputOther)
+// WithMetricThroughputOther adds the metricThroughputOther to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricThroughputOther(metricThroughputOther *int64) *LunCollectionGetParams {
+	o.SetMetricThroughputOther(metricThroughputOther)
 	return o
 }
 
-// SetMetricThroughputOtherQueryParameter adds the metricThroughputOther to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricThroughputOtherQueryParameter(metricThroughputOther *int64) {
-	o.MetricThroughputOtherQueryParameter = metricThroughputOther
+// SetMetricThroughputOther adds the metricThroughputOther to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricThroughputOther(metricThroughputOther *int64) {
+	o.MetricThroughputOther = metricThroughputOther
 }
 
-// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *LunCollectionGetParams {
-	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+// WithMetricThroughputRead adds the metricThroughputRead to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricThroughputRead(metricThroughputRead *int64) *LunCollectionGetParams {
+	o.SetMetricThroughputRead(metricThroughputRead)
 	return o
 }
 
-// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
-	o.MetricThroughputReadQueryParameter = metricThroughputRead
+// SetMetricThroughputRead adds the metricThroughputRead to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricThroughputRead(metricThroughputRead *int64) {
+	o.MetricThroughputRead = metricThroughputRead
 }
 
-// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *LunCollectionGetParams {
-	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+// WithMetricThroughputTotal adds the metricThroughputTotal to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricThroughputTotal(metricThroughputTotal *int64) *LunCollectionGetParams {
+	o.SetMetricThroughputTotal(metricThroughputTotal)
 	return o
 }
 
-// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
-	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+// SetMetricThroughputTotal adds the metricThroughputTotal to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricThroughputTotal(metricThroughputTotal *int64) {
+	o.MetricThroughputTotal = metricThroughputTotal
 }
 
-// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *LunCollectionGetParams {
-	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+// WithMetricThroughputWrite adds the metricThroughputWrite to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricThroughputWrite(metricThroughputWrite *int64) *LunCollectionGetParams {
+	o.SetMetricThroughputWrite(metricThroughputWrite)
 	return o
 }
 
-// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
-	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+// SetMetricThroughputWrite adds the metricThroughputWrite to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricThroughputWrite(metricThroughputWrite *int64) {
+	o.MetricThroughputWrite = metricThroughputWrite
 }
 
-// WithMetricTimestampQueryParameter adds the metricTimestamp to the lun collection get params
-func (o *LunCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *LunCollectionGetParams {
-	o.SetMetricTimestampQueryParameter(metricTimestamp)
+// WithMetricTimestamp adds the metricTimestamp to the lun collection get params
+func (o *LunCollectionGetParams) WithMetricTimestamp(metricTimestamp *string) *LunCollectionGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
 	return o
 }
 
-// SetMetricTimestampQueryParameter adds the metricTimestamp to the lun collection get params
-func (o *LunCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
-	o.MetricTimestampQueryParameter = metricTimestamp
+// SetMetricTimestamp adds the metricTimestamp to the lun collection get params
+func (o *LunCollectionGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
 }
 
-// WithMovementMaxThroughputQueryParameter adds the movementMaxThroughput to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementMaxThroughputQueryParameter(movementMaxThroughput *int64) *LunCollectionGetParams {
-	o.SetMovementMaxThroughputQueryParameter(movementMaxThroughput)
+// WithMovementMaxThroughput adds the movementMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementMaxThroughput(movementMaxThroughput *int64) *LunCollectionGetParams {
+	o.SetMovementMaxThroughput(movementMaxThroughput)
 	return o
 }
 
-// SetMovementMaxThroughputQueryParameter adds the movementMaxThroughput to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementMaxThroughputQueryParameter(movementMaxThroughput *int64) {
-	o.MovementMaxThroughputQueryParameter = movementMaxThroughput
+// SetMovementMaxThroughput adds the movementMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementMaxThroughput(movementMaxThroughput *int64) {
+	o.MovementMaxThroughput = movementMaxThroughput
 }
 
-// WithMovementPathsDestinationQueryParameter adds the movementPathsDestination to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementPathsDestinationQueryParameter(movementPathsDestination *string) *LunCollectionGetParams {
-	o.SetMovementPathsDestinationQueryParameter(movementPathsDestination)
+// WithMovementPathsDestination adds the movementPathsDestination to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementPathsDestination(movementPathsDestination *string) *LunCollectionGetParams {
+	o.SetMovementPathsDestination(movementPathsDestination)
 	return o
 }
 
-// SetMovementPathsDestinationQueryParameter adds the movementPathsDestination to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementPathsDestinationQueryParameter(movementPathsDestination *string) {
-	o.MovementPathsDestinationQueryParameter = movementPathsDestination
+// SetMovementPathsDestination adds the movementPathsDestination to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementPathsDestination(movementPathsDestination *string) {
+	o.MovementPathsDestination = movementPathsDestination
 }
 
-// WithMovementPathsSourceQueryParameter adds the movementPathsSource to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementPathsSourceQueryParameter(movementPathsSource *string) *LunCollectionGetParams {
-	o.SetMovementPathsSourceQueryParameter(movementPathsSource)
+// WithMovementPathsSource adds the movementPathsSource to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementPathsSource(movementPathsSource *string) *LunCollectionGetParams {
+	o.SetMovementPathsSource(movementPathsSource)
 	return o
 }
 
-// SetMovementPathsSourceQueryParameter adds the movementPathsSource to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementPathsSourceQueryParameter(movementPathsSource *string) {
-	o.MovementPathsSourceQueryParameter = movementPathsSource
+// SetMovementPathsSource adds the movementPathsSource to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementPathsSource(movementPathsSource *string) {
+	o.MovementPathsSource = movementPathsSource
 }
 
-// WithMovementProgressElapsedQueryParameter adds the movementProgressElapsed to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressElapsedQueryParameter(movementProgressElapsed *int64) *LunCollectionGetParams {
-	o.SetMovementProgressElapsedQueryParameter(movementProgressElapsed)
+// WithMovementProgressElapsed adds the movementProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressElapsed(movementProgressElapsed *int64) *LunCollectionGetParams {
+	o.SetMovementProgressElapsed(movementProgressElapsed)
 	return o
 }
 
-// SetMovementProgressElapsedQueryParameter adds the movementProgressElapsed to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressElapsedQueryParameter(movementProgressElapsed *int64) {
-	o.MovementProgressElapsedQueryParameter = movementProgressElapsed
+// SetMovementProgressElapsed adds the movementProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressElapsed(movementProgressElapsed *int64) {
+	o.MovementProgressElapsed = movementProgressElapsed
 }
 
-// WithMovementProgressFailureArgumentsCodeQueryParameter adds the movementProgressFailureArgumentsCode to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressFailureArgumentsCodeQueryParameter(movementProgressFailureArgumentsCode *string) *LunCollectionGetParams {
-	o.SetMovementProgressFailureArgumentsCodeQueryParameter(movementProgressFailureArgumentsCode)
+// WithMovementProgressFailureArgumentsCode adds the movementProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureArgumentsCode(movementProgressFailureArgumentsCode *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureArgumentsCode(movementProgressFailureArgumentsCode)
 	return o
 }
 
-// SetMovementProgressFailureArgumentsCodeQueryParameter adds the movementProgressFailureArgumentsCode to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressFailureArgumentsCodeQueryParameter(movementProgressFailureArgumentsCode *string) {
-	o.MovementProgressFailureArgumentsCodeQueryParameter = movementProgressFailureArgumentsCode
+// SetMovementProgressFailureArgumentsCode adds the movementProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureArgumentsCode(movementProgressFailureArgumentsCode *string) {
+	o.MovementProgressFailureArgumentsCode = movementProgressFailureArgumentsCode
 }
 
-// WithMovementProgressFailureArgumentsMessageQueryParameter adds the movementProgressFailureArgumentsMessage to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressFailureArgumentsMessageQueryParameter(movementProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
-	o.SetMovementProgressFailureArgumentsMessageQueryParameter(movementProgressFailureArgumentsMessage)
+// WithMovementProgressFailureArgumentsMessage adds the movementProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureArgumentsMessage(movementProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureArgumentsMessage(movementProgressFailureArgumentsMessage)
 	return o
 }
 
-// SetMovementProgressFailureArgumentsMessageQueryParameter adds the movementProgressFailureArgumentsMessage to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressFailureArgumentsMessageQueryParameter(movementProgressFailureArgumentsMessage *string) {
-	o.MovementProgressFailureArgumentsMessageQueryParameter = movementProgressFailureArgumentsMessage
+// SetMovementProgressFailureArgumentsMessage adds the movementProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureArgumentsMessage(movementProgressFailureArgumentsMessage *string) {
+	o.MovementProgressFailureArgumentsMessage = movementProgressFailureArgumentsMessage
 }
 
-// WithMovementProgressFailureCodeQueryParameter adds the movementProgressFailureCode to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressFailureCodeQueryParameter(movementProgressFailureCode *string) *LunCollectionGetParams {
-	o.SetMovementProgressFailureCodeQueryParameter(movementProgressFailureCode)
+// WithMovementProgressFailureCode adds the movementProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureCode(movementProgressFailureCode *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureCode(movementProgressFailureCode)
 	return o
 }
 
-// SetMovementProgressFailureCodeQueryParameter adds the movementProgressFailureCode to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressFailureCodeQueryParameter(movementProgressFailureCode *string) {
-	o.MovementProgressFailureCodeQueryParameter = movementProgressFailureCode
+// SetMovementProgressFailureCode adds the movementProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureCode(movementProgressFailureCode *string) {
+	o.MovementProgressFailureCode = movementProgressFailureCode
 }
 
-// WithMovementProgressFailureMessageQueryParameter adds the movementProgressFailureMessage to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressFailureMessageQueryParameter(movementProgressFailureMessage *string) *LunCollectionGetParams {
-	o.SetMovementProgressFailureMessageQueryParameter(movementProgressFailureMessage)
+// WithMovementProgressFailureMessage adds the movementProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureMessage(movementProgressFailureMessage *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureMessage(movementProgressFailureMessage)
 	return o
 }
 
-// SetMovementProgressFailureMessageQueryParameter adds the movementProgressFailureMessage to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressFailureMessageQueryParameter(movementProgressFailureMessage *string) {
-	o.MovementProgressFailureMessageQueryParameter = movementProgressFailureMessage
+// SetMovementProgressFailureMessage adds the movementProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureMessage(movementProgressFailureMessage *string) {
+	o.MovementProgressFailureMessage = movementProgressFailureMessage
 }
 
-// WithMovementProgressFailureTargetQueryParameter adds the movementProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressFailureTargetQueryParameter(movementProgressFailureTarget *string) *LunCollectionGetParams {
-	o.SetMovementProgressFailureTargetQueryParameter(movementProgressFailureTarget)
+// WithMovementProgressFailureTarget adds the movementProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureTarget(movementProgressFailureTarget *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureTarget(movementProgressFailureTarget)
 	return o
 }
 
-// SetMovementProgressFailureTargetQueryParameter adds the movementProgressFailureTarget to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressFailureTargetQueryParameter(movementProgressFailureTarget *string) {
-	o.MovementProgressFailureTargetQueryParameter = movementProgressFailureTarget
+// SetMovementProgressFailureTarget adds the movementProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureTarget(movementProgressFailureTarget *string) {
+	o.MovementProgressFailureTarget = movementProgressFailureTarget
 }
 
-// WithMovementProgressPercentCompleteQueryParameter adds the movementProgressPercentComplete to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressPercentCompleteQueryParameter(movementProgressPercentComplete *int64) *LunCollectionGetParams {
-	o.SetMovementProgressPercentCompleteQueryParameter(movementProgressPercentComplete)
+// WithMovementProgressPercentComplete adds the movementProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressPercentComplete(movementProgressPercentComplete *int64) *LunCollectionGetParams {
+	o.SetMovementProgressPercentComplete(movementProgressPercentComplete)
 	return o
 }
 
-// SetMovementProgressPercentCompleteQueryParameter adds the movementProgressPercentComplete to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressPercentCompleteQueryParameter(movementProgressPercentComplete *int64) {
-	o.MovementProgressPercentCompleteQueryParameter = movementProgressPercentComplete
+// SetMovementProgressPercentComplete adds the movementProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressPercentComplete(movementProgressPercentComplete *int64) {
+	o.MovementProgressPercentComplete = movementProgressPercentComplete
 }
 
-// WithMovementProgressStateQueryParameter adds the movementProgressState to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressStateQueryParameter(movementProgressState *string) *LunCollectionGetParams {
-	o.SetMovementProgressStateQueryParameter(movementProgressState)
+// WithMovementProgressState adds the movementProgressState to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressState(movementProgressState *string) *LunCollectionGetParams {
+	o.SetMovementProgressState(movementProgressState)
 	return o
 }
 
-// SetMovementProgressStateQueryParameter adds the movementProgressState to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressStateQueryParameter(movementProgressState *string) {
-	o.MovementProgressStateQueryParameter = movementProgressState
+// SetMovementProgressState adds the movementProgressState to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressState(movementProgressState *string) {
+	o.MovementProgressState = movementProgressState
 }
 
-// WithMovementProgressVolumeSnapshotBlockedQueryParameter adds the movementProgressVolumeSnapshotBlocked to the lun collection get params
-func (o *LunCollectionGetParams) WithMovementProgressVolumeSnapshotBlockedQueryParameter(movementProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
-	o.SetMovementProgressVolumeSnapshotBlockedQueryParameter(movementProgressVolumeSnapshotBlocked)
+// WithMovementProgressVolumeSnapshotBlocked adds the movementProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressVolumeSnapshotBlocked(movementProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
+	o.SetMovementProgressVolumeSnapshotBlocked(movementProgressVolumeSnapshotBlocked)
 	return o
 }
 
-// SetMovementProgressVolumeSnapshotBlockedQueryParameter adds the movementProgressVolumeSnapshotBlocked to the lun collection get params
-func (o *LunCollectionGetParams) SetMovementProgressVolumeSnapshotBlockedQueryParameter(movementProgressVolumeSnapshotBlocked *bool) {
-	o.MovementProgressVolumeSnapshotBlockedQueryParameter = movementProgressVolumeSnapshotBlocked
+// SetMovementProgressVolumeSnapshotBlocked adds the movementProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressVolumeSnapshotBlocked(movementProgressVolumeSnapshotBlocked *bool) {
+	o.MovementProgressVolumeSnapshotBlocked = movementProgressVolumeSnapshotBlocked
 }
 
-// WithNameQueryParameter adds the name to the lun collection get params
-func (o *LunCollectionGetParams) WithNameQueryParameter(name *string) *LunCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the lun collection get params
+func (o *LunCollectionGetParams) WithName(name *string) *LunCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the lun collection get params
-func (o *LunCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the lun collection get params
+func (o *LunCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the lun collection get params
-func (o *LunCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *LunCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the lun collection get params
+func (o *LunCollectionGetParams) WithOrderBy(orderBy []string) *LunCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the lun collection get params
-func (o *LunCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the lun collection get params
+func (o *LunCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithOsTypeQueryParameter adds the osType to the lun collection get params
-func (o *LunCollectionGetParams) WithOsTypeQueryParameter(osType *string) *LunCollectionGetParams {
-	o.SetOsTypeQueryParameter(osType)
+// WithOsType adds the osType to the lun collection get params
+func (o *LunCollectionGetParams) WithOsType(osType *string) *LunCollectionGetParams {
+	o.SetOsType(osType)
 	return o
 }
 
-// SetOsTypeQueryParameter adds the osType to the lun collection get params
-func (o *LunCollectionGetParams) SetOsTypeQueryParameter(osType *string) {
-	o.OsTypeQueryParameter = osType
+// SetOsType adds the osType to the lun collection get params
+func (o *LunCollectionGetParams) SetOsType(osType *string) {
+	o.OsType = osType
 }
 
-// WithQosPolicyNameQueryParameter adds the qosPolicyName to the lun collection get params
-func (o *LunCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *LunCollectionGetParams {
-	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+// WithQosPolicyName adds the qosPolicyName to the lun collection get params
+func (o *LunCollectionGetParams) WithQosPolicyName(qosPolicyName *string) *LunCollectionGetParams {
+	o.SetQosPolicyName(qosPolicyName)
 	return o
 }
 
-// SetQosPolicyNameQueryParameter adds the qosPolicyName to the lun collection get params
-func (o *LunCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
-	o.QosPolicyNameQueryParameter = qosPolicyName
+// SetQosPolicyName adds the qosPolicyName to the lun collection get params
+func (o *LunCollectionGetParams) SetQosPolicyName(qosPolicyName *string) {
+	o.QosPolicyName = qosPolicyName
 }
 
-// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *LunCollectionGetParams {
-	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+// WithQosPolicyUUID adds the qosPolicyUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithQosPolicyUUID(qosPolicyUUID *string) *LunCollectionGetParams {
+	o.SetQosPolicyUUID(qosPolicyUUID)
 	return o
 }
 
-// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
-	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+// SetQosPolicyUUID adds the qosPolicyUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetQosPolicyUUID(qosPolicyUUID *string) {
+	o.QosPolicyUUID = qosPolicyUUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the lun collection get params
-func (o *LunCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LunCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the lun collection get params
+func (o *LunCollectionGetParams) WithReturnRecords(returnRecords *bool) *LunCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the lun collection get params
-func (o *LunCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the lun collection get params
+func (o *LunCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the lun collection get params
-func (o *LunCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LunCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the lun collection get params
+func (o *LunCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *LunCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the lun collection get params
-func (o *LunCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the lun collection get params
+func (o *LunCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSerialNumberQueryParameter adds the serialNumber to the lun collection get params
-func (o *LunCollectionGetParams) WithSerialNumberQueryParameter(serialNumber *string) *LunCollectionGetParams {
-	o.SetSerialNumberQueryParameter(serialNumber)
+// WithSerialNumber adds the serialNumber to the lun collection get params
+func (o *LunCollectionGetParams) WithSerialNumber(serialNumber *string) *LunCollectionGetParams {
+	o.SetSerialNumber(serialNumber)
 	return o
 }
 
-// SetSerialNumberQueryParameter adds the serialNumber to the lun collection get params
-func (o *LunCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
-	o.SerialNumberQueryParameter = serialNumber
+// SetSerialNumber adds the serialNumber to the lun collection get params
+func (o *LunCollectionGetParams) SetSerialNumber(serialNumber *string) {
+	o.SerialNumber = serialNumber
 }
 
-// WithSpaceGuaranteeRequestedQueryParameter adds the spaceGuaranteeRequested to the lun collection get params
-func (o *LunCollectionGetParams) WithSpaceGuaranteeRequestedQueryParameter(spaceGuaranteeRequested *bool) *LunCollectionGetParams {
-	o.SetSpaceGuaranteeRequestedQueryParameter(spaceGuaranteeRequested)
+// WithSpaceGuaranteeRequested adds the spaceGuaranteeRequested to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceGuaranteeRequested(spaceGuaranteeRequested *bool) *LunCollectionGetParams {
+	o.SetSpaceGuaranteeRequested(spaceGuaranteeRequested)
 	return o
 }
 
-// SetSpaceGuaranteeRequestedQueryParameter adds the spaceGuaranteeRequested to the lun collection get params
-func (o *LunCollectionGetParams) SetSpaceGuaranteeRequestedQueryParameter(spaceGuaranteeRequested *bool) {
-	o.SpaceGuaranteeRequestedQueryParameter = spaceGuaranteeRequested
+// SetSpaceGuaranteeRequested adds the spaceGuaranteeRequested to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceGuaranteeRequested(spaceGuaranteeRequested *bool) {
+	o.SpaceGuaranteeRequested = spaceGuaranteeRequested
 }
 
-// WithSpaceGuaranteeReservedQueryParameter adds the spaceGuaranteeReserved to the lun collection get params
-func (o *LunCollectionGetParams) WithSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved *bool) *LunCollectionGetParams {
-	o.SetSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved)
+// WithSpaceGuaranteeReserved adds the spaceGuaranteeReserved to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceGuaranteeReserved(spaceGuaranteeReserved *bool) *LunCollectionGetParams {
+	o.SetSpaceGuaranteeReserved(spaceGuaranteeReserved)
 	return o
 }
 
-// SetSpaceGuaranteeReservedQueryParameter adds the spaceGuaranteeReserved to the lun collection get params
-func (o *LunCollectionGetParams) SetSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved *bool) {
-	o.SpaceGuaranteeReservedQueryParameter = spaceGuaranteeReserved
+// SetSpaceGuaranteeReserved adds the spaceGuaranteeReserved to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceGuaranteeReserved(spaceGuaranteeReserved *bool) {
+	o.SpaceGuaranteeReserved = spaceGuaranteeReserved
 }
 
-// WithSpaceScsiThinProvisioningSupportEnabledQueryParameter adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
-func (o *LunCollectionGetParams) WithSpaceScsiThinProvisioningSupportEnabledQueryParameter(spaceScsiThinProvisioningSupportEnabled *bool) *LunCollectionGetParams {
-	o.SetSpaceScsiThinProvisioningSupportEnabledQueryParameter(spaceScsiThinProvisioningSupportEnabled)
+// WithSpaceScsiThinProvisioningSupportEnabled adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceScsiThinProvisioningSupportEnabled(spaceScsiThinProvisioningSupportEnabled *bool) *LunCollectionGetParams {
+	o.SetSpaceScsiThinProvisioningSupportEnabled(spaceScsiThinProvisioningSupportEnabled)
 	return o
 }
 
-// SetSpaceScsiThinProvisioningSupportEnabledQueryParameter adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
-func (o *LunCollectionGetParams) SetSpaceScsiThinProvisioningSupportEnabledQueryParameter(spaceScsiThinProvisioningSupportEnabled *bool) {
-	o.SpaceScsiThinProvisioningSupportEnabledQueryParameter = spaceScsiThinProvisioningSupportEnabled
+// SetSpaceScsiThinProvisioningSupportEnabled adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceScsiThinProvisioningSupportEnabled(spaceScsiThinProvisioningSupportEnabled *bool) {
+	o.SpaceScsiThinProvisioningSupportEnabled = spaceScsiThinProvisioningSupportEnabled
 }
 
-// WithSpaceSizeQueryParameter adds the spaceSize to the lun collection get params
-func (o *LunCollectionGetParams) WithSpaceSizeQueryParameter(spaceSize *int64) *LunCollectionGetParams {
-	o.SetSpaceSizeQueryParameter(spaceSize)
+// WithSpaceSize adds the spaceSize to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceSize(spaceSize *int64) *LunCollectionGetParams {
+	o.SetSpaceSize(spaceSize)
 	return o
 }
 
-// SetSpaceSizeQueryParameter adds the spaceSize to the lun collection get params
-func (o *LunCollectionGetParams) SetSpaceSizeQueryParameter(spaceSize *int64) {
-	o.SpaceSizeQueryParameter = spaceSize
+// SetSpaceSize adds the spaceSize to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceSize(spaceSize *int64) {
+	o.SpaceSize = spaceSize
 }
 
-// WithSpaceUsedQueryParameter adds the spaceUsed to the lun collection get params
-func (o *LunCollectionGetParams) WithSpaceUsedQueryParameter(spaceUsed *int64) *LunCollectionGetParams {
-	o.SetSpaceUsedQueryParameter(spaceUsed)
+// WithSpaceUsed adds the spaceUsed to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceUsed(spaceUsed *int64) *LunCollectionGetParams {
+	o.SetSpaceUsed(spaceUsed)
 	return o
 }
 
-// SetSpaceUsedQueryParameter adds the spaceUsed to the lun collection get params
-func (o *LunCollectionGetParams) SetSpaceUsedQueryParameter(spaceUsed *int64) {
-	o.SpaceUsedQueryParameter = spaceUsed
+// SetSpaceUsed adds the spaceUsed to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceUsed(spaceUsed *int64) {
+	o.SpaceUsed = spaceUsed
 }
 
-// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *LunCollectionGetParams {
-	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+// WithStatisticsIopsRawOther adds the statisticsIopsRawOther to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsIopsRawOther(statisticsIopsRawOther *int64) *LunCollectionGetParams {
+	o.SetStatisticsIopsRawOther(statisticsIopsRawOther)
 	return o
 }
 
-// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
-	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+// SetStatisticsIopsRawOther adds the statisticsIopsRawOther to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsIopsRawOther(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOther = statisticsIopsRawOther
 }
 
-// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *LunCollectionGetParams {
-	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+// WithStatisticsIopsRawRead adds the statisticsIopsRawRead to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsIopsRawRead(statisticsIopsRawRead *int64) *LunCollectionGetParams {
+	o.SetStatisticsIopsRawRead(statisticsIopsRawRead)
 	return o
 }
 
-// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
-	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+// SetStatisticsIopsRawRead adds the statisticsIopsRawRead to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsIopsRawRead(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawRead = statisticsIopsRawRead
 }
 
-// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *LunCollectionGetParams {
-	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+// WithStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) *LunCollectionGetParams {
+	o.SetStatisticsIopsRawTotal(statisticsIopsRawTotal)
 	return o
 }
 
-// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
-	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+// SetStatisticsIopsRawTotal adds the statisticsIopsRawTotal to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsIopsRawTotal(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotal = statisticsIopsRawTotal
 }
 
-// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *LunCollectionGetParams {
-	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+// WithStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) *LunCollectionGetParams {
+	o.SetStatisticsIopsRawWrite(statisticsIopsRawWrite)
 	return o
 }
 
-// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
-	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+// SetStatisticsIopsRawWrite adds the statisticsIopsRawWrite to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsIopsRawWrite(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWrite = statisticsIopsRawWrite
 }
 
-// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *LunCollectionGetParams {
-	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+// WithStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) *LunCollectionGetParams {
+	o.SetStatisticsLatencyRawOther(statisticsLatencyRawOther)
 	return o
 }
 
-// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
-	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+// SetStatisticsLatencyRawOther adds the statisticsLatencyRawOther to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsLatencyRawOther(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOther = statisticsLatencyRawOther
 }
 
-// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *LunCollectionGetParams {
-	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+// WithStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) *LunCollectionGetParams {
+	o.SetStatisticsLatencyRawRead(statisticsLatencyRawRead)
 	return o
 }
 
-// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
-	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+// SetStatisticsLatencyRawRead adds the statisticsLatencyRawRead to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsLatencyRawRead(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawRead = statisticsLatencyRawRead
 }
 
-// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *LunCollectionGetParams {
-	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+// WithStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) *LunCollectionGetParams {
+	o.SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal)
 	return o
 }
 
-// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
-	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+// SetStatisticsLatencyRawTotal adds the statisticsLatencyRawTotal to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsLatencyRawTotal(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotal = statisticsLatencyRawTotal
 }
 
-// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *LunCollectionGetParams {
-	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+// WithStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) *LunCollectionGetParams {
+	o.SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite)
 	return o
 }
 
-// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
-	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+// SetStatisticsLatencyRawWrite adds the statisticsLatencyRawWrite to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsLatencyRawWrite(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWrite = statisticsLatencyRawWrite
 }
 
-// WithStatisticsStatusQueryParameter adds the statisticsStatus to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *LunCollectionGetParams {
-	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+// WithStatisticsStatus adds the statisticsStatus to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsStatus(statisticsStatus *string) *LunCollectionGetParams {
+	o.SetStatisticsStatus(statisticsStatus)
 	return o
 }
 
-// SetStatisticsStatusQueryParameter adds the statisticsStatus to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
-	o.StatisticsStatusQueryParameter = statisticsStatus
+// SetStatisticsStatus adds the statisticsStatus to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsStatus(statisticsStatus *string) {
+	o.StatisticsStatus = statisticsStatus
 }
 
-// WithStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) *LunCollectionGetParams {
-	o.SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther)
+// WithStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) *LunCollectionGetParams {
+	o.SetStatisticsThroughputRawOther(statisticsThroughputRawOther)
 	return o
 }
 
-// SetStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) {
-	o.StatisticsThroughputRawOtherQueryParameter = statisticsThroughputRawOther
+// SetStatisticsThroughputRawOther adds the statisticsThroughputRawOther to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsThroughputRawOther(statisticsThroughputRawOther *int64) {
+	o.StatisticsThroughputRawOther = statisticsThroughputRawOther
 }
 
-// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *LunCollectionGetParams {
-	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+// WithStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) *LunCollectionGetParams {
+	o.SetStatisticsThroughputRawRead(statisticsThroughputRawRead)
 	return o
 }
 
-// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
-	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+// SetStatisticsThroughputRawRead adds the statisticsThroughputRawRead to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsThroughputRawRead(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawRead = statisticsThroughputRawRead
 }
 
-// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *LunCollectionGetParams {
-	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+// WithStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) *LunCollectionGetParams {
+	o.SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal)
 	return o
 }
 
-// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
-	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+// SetStatisticsThroughputRawTotal adds the statisticsThroughputRawTotal to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsThroughputRawTotal(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotal = statisticsThroughputRawTotal
 }
 
-// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *LunCollectionGetParams {
-	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+// WithStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) *LunCollectionGetParams {
+	o.SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite)
 	return o
 }
 
-// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
-	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+// SetStatisticsThroughputRawWrite adds the statisticsThroughputRawWrite to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsThroughputRawWrite(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWrite = statisticsThroughputRawWrite
 }
 
-// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the lun collection get params
-func (o *LunCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *LunCollectionGetParams {
-	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+// WithStatisticsTimestamp adds the statisticsTimestamp to the lun collection get params
+func (o *LunCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *LunCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
 	return o
 }
 
-// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the lun collection get params
-func (o *LunCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
-	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+// SetStatisticsTimestamp adds the statisticsTimestamp to the lun collection get params
+func (o *LunCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
-// WithStatusContainerStateQueryParameter adds the statusContainerState to the lun collection get params
-func (o *LunCollectionGetParams) WithStatusContainerStateQueryParameter(statusContainerState *string) *LunCollectionGetParams {
-	o.SetStatusContainerStateQueryParameter(statusContainerState)
+// WithStatusContainerState adds the statusContainerState to the lun collection get params
+func (o *LunCollectionGetParams) WithStatusContainerState(statusContainerState *string) *LunCollectionGetParams {
+	o.SetStatusContainerState(statusContainerState)
 	return o
 }
 
-// SetStatusContainerStateQueryParameter adds the statusContainerState to the lun collection get params
-func (o *LunCollectionGetParams) SetStatusContainerStateQueryParameter(statusContainerState *string) {
-	o.StatusContainerStateQueryParameter = statusContainerState
+// SetStatusContainerState adds the statusContainerState to the lun collection get params
+func (o *LunCollectionGetParams) SetStatusContainerState(statusContainerState *string) {
+	o.StatusContainerState = statusContainerState
 }
 
-// WithStatusMappedQueryParameter adds the statusMapped to the lun collection get params
-func (o *LunCollectionGetParams) WithStatusMappedQueryParameter(statusMapped *bool) *LunCollectionGetParams {
-	o.SetStatusMappedQueryParameter(statusMapped)
+// WithStatusMapped adds the statusMapped to the lun collection get params
+func (o *LunCollectionGetParams) WithStatusMapped(statusMapped *bool) *LunCollectionGetParams {
+	o.SetStatusMapped(statusMapped)
 	return o
 }
 
-// SetStatusMappedQueryParameter adds the statusMapped to the lun collection get params
-func (o *LunCollectionGetParams) SetStatusMappedQueryParameter(statusMapped *bool) {
-	o.StatusMappedQueryParameter = statusMapped
+// SetStatusMapped adds the statusMapped to the lun collection get params
+func (o *LunCollectionGetParams) SetStatusMapped(statusMapped *bool) {
+	o.StatusMapped = statusMapped
 }
 
-// WithStatusReadOnlyQueryParameter adds the statusReadOnly to the lun collection get params
-func (o *LunCollectionGetParams) WithStatusReadOnlyQueryParameter(statusReadOnly *bool) *LunCollectionGetParams {
-	o.SetStatusReadOnlyQueryParameter(statusReadOnly)
+// WithStatusReadOnly adds the statusReadOnly to the lun collection get params
+func (o *LunCollectionGetParams) WithStatusReadOnly(statusReadOnly *bool) *LunCollectionGetParams {
+	o.SetStatusReadOnly(statusReadOnly)
 	return o
 }
 
-// SetStatusReadOnlyQueryParameter adds the statusReadOnly to the lun collection get params
-func (o *LunCollectionGetParams) SetStatusReadOnlyQueryParameter(statusReadOnly *bool) {
-	o.StatusReadOnlyQueryParameter = statusReadOnly
+// SetStatusReadOnly adds the statusReadOnly to the lun collection get params
+func (o *LunCollectionGetParams) SetStatusReadOnly(statusReadOnly *bool) {
+	o.StatusReadOnly = statusReadOnly
 }
 
-// WithStatusStateQueryParameter adds the statusState to the lun collection get params
-func (o *LunCollectionGetParams) WithStatusStateQueryParameter(statusState *string) *LunCollectionGetParams {
-	o.SetStatusStateQueryParameter(statusState)
+// WithStatusState adds the statusState to the lun collection get params
+func (o *LunCollectionGetParams) WithStatusState(statusState *string) *LunCollectionGetParams {
+	o.SetStatusState(statusState)
 	return o
 }
 
-// SetStatusStateQueryParameter adds the statusState to the lun collection get params
-func (o *LunCollectionGetParams) SetStatusStateQueryParameter(statusState *string) {
-	o.StatusStateQueryParameter = statusState
+// SetStatusState adds the statusState to the lun collection get params
+func (o *LunCollectionGetParams) SetStatusState(statusState *string) {
+	o.StatusState = statusState
 }
 
-// WithSVMNameQueryParameter adds the svmName to the lun collection get params
-func (o *LunCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *LunCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the lun collection get params
+func (o *LunCollectionGetParams) WithSvmName(svmName *string) *LunCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the lun collection get params
-func (o *LunCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the lun collection get params
+func (o *LunCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *LunCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithSvmUUID(svmUUID *string) *LunCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the lun collection get params
-func (o *LunCollectionGetParams) WithUUIDQueryParameter(uuid *string) *LunCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the lun collection get params
+func (o *LunCollectionGetParams) WithUUID(uuid *string) *LunCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the lun collection get params
-func (o *LunCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the lun collection get params
+func (o *LunCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
-// WithVvolBindingsIDQueryParameter adds the vvolBindingsID to the lun collection get params
-func (o *LunCollectionGetParams) WithVvolBindingsIDQueryParameter(vvolBindingsID *int64) *LunCollectionGetParams {
-	o.SetVvolBindingsIDQueryParameter(vvolBindingsID)
+// WithVvolBindingsID adds the vvolBindingsID to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsID(vvolBindingsID *int64) *LunCollectionGetParams {
+	o.SetVvolBindingsID(vvolBindingsID)
 	return o
 }
 
-// SetVvolBindingsIDQueryParameter adds the vvolBindingsId to the lun collection get params
-func (o *LunCollectionGetParams) SetVvolBindingsIDQueryParameter(vvolBindingsID *int64) {
-	o.VvolBindingsIDQueryParameter = vvolBindingsID
+// SetVvolBindingsID adds the vvolBindingsId to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsID(vvolBindingsID *int64) {
+	o.VvolBindingsID = vvolBindingsID
 }
 
-// WithVvolBindingsPartnerNameQueryParameter adds the vvolBindingsPartnerName to the lun collection get params
-func (o *LunCollectionGetParams) WithVvolBindingsPartnerNameQueryParameter(vvolBindingsPartnerName *string) *LunCollectionGetParams {
-	o.SetVvolBindingsPartnerNameQueryParameter(vvolBindingsPartnerName)
+// WithVvolBindingsPartnerName adds the vvolBindingsPartnerName to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsPartnerName(vvolBindingsPartnerName *string) *LunCollectionGetParams {
+	o.SetVvolBindingsPartnerName(vvolBindingsPartnerName)
 	return o
 }
 
-// SetVvolBindingsPartnerNameQueryParameter adds the vvolBindingsPartnerName to the lun collection get params
-func (o *LunCollectionGetParams) SetVvolBindingsPartnerNameQueryParameter(vvolBindingsPartnerName *string) {
-	o.VvolBindingsPartnerNameQueryParameter = vvolBindingsPartnerName
+// SetVvolBindingsPartnerName adds the vvolBindingsPartnerName to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsPartnerName(vvolBindingsPartnerName *string) {
+	o.VvolBindingsPartnerName = vvolBindingsPartnerName
 }
 
-// WithVvolBindingsPartnerUUIDQueryParameter adds the vvolBindingsPartnerUUID to the lun collection get params
-func (o *LunCollectionGetParams) WithVvolBindingsPartnerUUIDQueryParameter(vvolBindingsPartnerUUID *string) *LunCollectionGetParams {
-	o.SetVvolBindingsPartnerUUIDQueryParameter(vvolBindingsPartnerUUID)
+// WithVvolBindingsPartnerUUID adds the vvolBindingsPartnerUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsPartnerUUID(vvolBindingsPartnerUUID *string) *LunCollectionGetParams {
+	o.SetVvolBindingsPartnerUUID(vvolBindingsPartnerUUID)
 	return o
 }
 
-// SetVvolBindingsPartnerUUIDQueryParameter adds the vvolBindingsPartnerUuid to the lun collection get params
-func (o *LunCollectionGetParams) SetVvolBindingsPartnerUUIDQueryParameter(vvolBindingsPartnerUUID *string) {
-	o.VvolBindingsPartnerUUIDQueryParameter = vvolBindingsPartnerUUID
+// SetVvolBindingsPartnerUUID adds the vvolBindingsPartnerUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsPartnerUUID(vvolBindingsPartnerUUID *string) {
+	o.VvolBindingsPartnerUUID = vvolBindingsPartnerUUID
 }
 
-// WithVvolIsBoundQueryParameter adds the vvolIsBound to the lun collection get params
-func (o *LunCollectionGetParams) WithVvolIsBoundQueryParameter(vvolIsBound *bool) *LunCollectionGetParams {
-	o.SetVvolIsBoundQueryParameter(vvolIsBound)
+// WithVvolIsBound adds the vvolIsBound to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolIsBound(vvolIsBound *bool) *LunCollectionGetParams {
+	o.SetVvolIsBound(vvolIsBound)
 	return o
 }
 
-// SetVvolIsBoundQueryParameter adds the vvolIsBound to the lun collection get params
-func (o *LunCollectionGetParams) SetVvolIsBoundQueryParameter(vvolIsBound *bool) {
-	o.VvolIsBoundQueryParameter = vvolIsBound
+// SetVvolIsBound adds the vvolIsBound to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolIsBound(vvolIsBound *bool) {
+	o.VvolIsBound = vvolIsBound
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -2011,13 +2011,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.AttributesNameQueryParameter != nil {
+	if o.AttributesName != nil {
 
 		// query param attributes.name
 		var qrAttributesName string
 
-		if o.AttributesNameQueryParameter != nil {
-			qrAttributesName = *o.AttributesNameQueryParameter
+		if o.AttributesName != nil {
+			qrAttributesName = *o.AttributesName
 		}
 		qAttributesName := qrAttributesName
 		if qAttributesName != "" {
@@ -2028,13 +2028,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.AttributesValueQueryParameter != nil {
+	if o.AttributesValue != nil {
 
 		// query param attributes.value
 		var qrAttributesValue string
 
-		if o.AttributesValueQueryParameter != nil {
-			qrAttributesValue = *o.AttributesValueQueryParameter
+		if o.AttributesValue != nil {
+			qrAttributesValue = *o.AttributesValue
 		}
 		qAttributesValue := qrAttributesValue
 		if qAttributesValue != "" {
@@ -2045,13 +2045,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.AutoDeleteQueryParameter != nil {
+	if o.AutoDelete != nil {
 
 		// query param auto_delete
 		var qrAutoDelete bool
 
-		if o.AutoDeleteQueryParameter != nil {
-			qrAutoDelete = *o.AutoDeleteQueryParameter
+		if o.AutoDelete != nil {
+			qrAutoDelete = *o.AutoDelete
 		}
 		qAutoDelete := swag.FormatBool(qrAutoDelete)
 		if qAutoDelete != "" {
@@ -2062,13 +2062,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ClassQueryParameter != nil {
+	if o.Class != nil {
 
 		// query param class
 		var qrClass string
 
-		if o.ClassQueryParameter != nil {
-			qrClass = *o.ClassQueryParameter
+		if o.Class != nil {
+			qrClass = *o.Class
 		}
 		qClass := qrClass
 		if qClass != "" {
@@ -2079,13 +2079,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CommentQueryParameter != nil {
+	if o.Comment != nil {
 
 		// query param comment
 		var qrComment string
 
-		if o.CommentQueryParameter != nil {
-			qrComment = *o.CommentQueryParameter
+		if o.Comment != nil {
+			qrComment = *o.Comment
 		}
 		qComment := qrComment
 		if qComment != "" {
@@ -2096,13 +2096,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ConsistencyGroupNameQueryParameter != nil {
+	if o.ConsistencyGroupName != nil {
 
 		// query param consistency_group.name
 		var qrConsistencyGroupName string
 
-		if o.ConsistencyGroupNameQueryParameter != nil {
-			qrConsistencyGroupName = *o.ConsistencyGroupNameQueryParameter
+		if o.ConsistencyGroupName != nil {
+			qrConsistencyGroupName = *o.ConsistencyGroupName
 		}
 		qConsistencyGroupName := qrConsistencyGroupName
 		if qConsistencyGroupName != "" {
@@ -2113,13 +2113,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ConsistencyGroupUUIDQueryParameter != nil {
+	if o.ConsistencyGroupUUID != nil {
 
 		// query param consistency_group.uuid
 		var qrConsistencyGroupUUID string
 
-		if o.ConsistencyGroupUUIDQueryParameter != nil {
-			qrConsistencyGroupUUID = *o.ConsistencyGroupUUIDQueryParameter
+		if o.ConsistencyGroupUUID != nil {
+			qrConsistencyGroupUUID = *o.ConsistencyGroupUUID
 		}
 		qConsistencyGroupUUID := qrConsistencyGroupUUID
 		if qConsistencyGroupUUID != "" {
@@ -2130,13 +2130,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsMaxThroughputQueryParameter != nil {
+	if o.CopyDestinationsMaxThroughput != nil {
 
 		// query param copy.destinations.max_throughput
 		var qrCopyDestinationsMaxThroughput int64
 
-		if o.CopyDestinationsMaxThroughputQueryParameter != nil {
-			qrCopyDestinationsMaxThroughput = *o.CopyDestinationsMaxThroughputQueryParameter
+		if o.CopyDestinationsMaxThroughput != nil {
+			qrCopyDestinationsMaxThroughput = *o.CopyDestinationsMaxThroughput
 		}
 		qCopyDestinationsMaxThroughput := swag.FormatInt64(qrCopyDestinationsMaxThroughput)
 		if qCopyDestinationsMaxThroughput != "" {
@@ -2147,13 +2147,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsNameQueryParameter != nil {
+	if o.CopyDestinationsName != nil {
 
 		// query param copy.destinations.name
 		var qrCopyDestinationsName string
 
-		if o.CopyDestinationsNameQueryParameter != nil {
-			qrCopyDestinationsName = *o.CopyDestinationsNameQueryParameter
+		if o.CopyDestinationsName != nil {
+			qrCopyDestinationsName = *o.CopyDestinationsName
 		}
 		qCopyDestinationsName := qrCopyDestinationsName
 		if qCopyDestinationsName != "" {
@@ -2164,13 +2164,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressElapsedQueryParameter != nil {
+	if o.CopyDestinationsProgressElapsed != nil {
 
 		// query param copy.destinations.progress.elapsed
 		var qrCopyDestinationsProgressElapsed int64
 
-		if o.CopyDestinationsProgressElapsedQueryParameter != nil {
-			qrCopyDestinationsProgressElapsed = *o.CopyDestinationsProgressElapsedQueryParameter
+		if o.CopyDestinationsProgressElapsed != nil {
+			qrCopyDestinationsProgressElapsed = *o.CopyDestinationsProgressElapsed
 		}
 		qCopyDestinationsProgressElapsed := swag.FormatInt64(qrCopyDestinationsProgressElapsed)
 		if qCopyDestinationsProgressElapsed != "" {
@@ -2181,13 +2181,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter != nil {
+	if o.CopyDestinationsProgressFailureArgumentsCode != nil {
 
 		// query param copy.destinations.progress.failure.arguments.code
 		var qrCopyDestinationsProgressFailureArgumentsCode string
 
-		if o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter != nil {
-			qrCopyDestinationsProgressFailureArgumentsCode = *o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter
+		if o.CopyDestinationsProgressFailureArgumentsCode != nil {
+			qrCopyDestinationsProgressFailureArgumentsCode = *o.CopyDestinationsProgressFailureArgumentsCode
 		}
 		qCopyDestinationsProgressFailureArgumentsCode := qrCopyDestinationsProgressFailureArgumentsCode
 		if qCopyDestinationsProgressFailureArgumentsCode != "" {
@@ -2198,13 +2198,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter != nil {
+	if o.CopyDestinationsProgressFailureArgumentsMessage != nil {
 
 		// query param copy.destinations.progress.failure.arguments.message
 		var qrCopyDestinationsProgressFailureArgumentsMessage string
 
-		if o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter != nil {
-			qrCopyDestinationsProgressFailureArgumentsMessage = *o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter
+		if o.CopyDestinationsProgressFailureArgumentsMessage != nil {
+			qrCopyDestinationsProgressFailureArgumentsMessage = *o.CopyDestinationsProgressFailureArgumentsMessage
 		}
 		qCopyDestinationsProgressFailureArgumentsMessage := qrCopyDestinationsProgressFailureArgumentsMessage
 		if qCopyDestinationsProgressFailureArgumentsMessage != "" {
@@ -2215,13 +2215,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressFailureCodeQueryParameter != nil {
+	if o.CopyDestinationsProgressFailureCode != nil {
 
 		// query param copy.destinations.progress.failure.code
 		var qrCopyDestinationsProgressFailureCode string
 
-		if o.CopyDestinationsProgressFailureCodeQueryParameter != nil {
-			qrCopyDestinationsProgressFailureCode = *o.CopyDestinationsProgressFailureCodeQueryParameter
+		if o.CopyDestinationsProgressFailureCode != nil {
+			qrCopyDestinationsProgressFailureCode = *o.CopyDestinationsProgressFailureCode
 		}
 		qCopyDestinationsProgressFailureCode := qrCopyDestinationsProgressFailureCode
 		if qCopyDestinationsProgressFailureCode != "" {
@@ -2232,13 +2232,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressFailureMessageQueryParameter != nil {
+	if o.CopyDestinationsProgressFailureMessage != nil {
 
 		// query param copy.destinations.progress.failure.message
 		var qrCopyDestinationsProgressFailureMessage string
 
-		if o.CopyDestinationsProgressFailureMessageQueryParameter != nil {
-			qrCopyDestinationsProgressFailureMessage = *o.CopyDestinationsProgressFailureMessageQueryParameter
+		if o.CopyDestinationsProgressFailureMessage != nil {
+			qrCopyDestinationsProgressFailureMessage = *o.CopyDestinationsProgressFailureMessage
 		}
 		qCopyDestinationsProgressFailureMessage := qrCopyDestinationsProgressFailureMessage
 		if qCopyDestinationsProgressFailureMessage != "" {
@@ -2249,13 +2249,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressFailureTargetQueryParameter != nil {
+	if o.CopyDestinationsProgressFailureTarget != nil {
 
 		// query param copy.destinations.progress.failure.target
 		var qrCopyDestinationsProgressFailureTarget string
 
-		if o.CopyDestinationsProgressFailureTargetQueryParameter != nil {
-			qrCopyDestinationsProgressFailureTarget = *o.CopyDestinationsProgressFailureTargetQueryParameter
+		if o.CopyDestinationsProgressFailureTarget != nil {
+			qrCopyDestinationsProgressFailureTarget = *o.CopyDestinationsProgressFailureTarget
 		}
 		qCopyDestinationsProgressFailureTarget := qrCopyDestinationsProgressFailureTarget
 		if qCopyDestinationsProgressFailureTarget != "" {
@@ -2266,13 +2266,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressPercentCompleteQueryParameter != nil {
+	if o.CopyDestinationsProgressPercentComplete != nil {
 
 		// query param copy.destinations.progress.percent_complete
 		var qrCopyDestinationsProgressPercentComplete int64
 
-		if o.CopyDestinationsProgressPercentCompleteQueryParameter != nil {
-			qrCopyDestinationsProgressPercentComplete = *o.CopyDestinationsProgressPercentCompleteQueryParameter
+		if o.CopyDestinationsProgressPercentComplete != nil {
+			qrCopyDestinationsProgressPercentComplete = *o.CopyDestinationsProgressPercentComplete
 		}
 		qCopyDestinationsProgressPercentComplete := swag.FormatInt64(qrCopyDestinationsProgressPercentComplete)
 		if qCopyDestinationsProgressPercentComplete != "" {
@@ -2283,13 +2283,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressStateQueryParameter != nil {
+	if o.CopyDestinationsProgressState != nil {
 
 		// query param copy.destinations.progress.state
 		var qrCopyDestinationsProgressState string
 
-		if o.CopyDestinationsProgressStateQueryParameter != nil {
-			qrCopyDestinationsProgressState = *o.CopyDestinationsProgressStateQueryParameter
+		if o.CopyDestinationsProgressState != nil {
+			qrCopyDestinationsProgressState = *o.CopyDestinationsProgressState
 		}
 		qCopyDestinationsProgressState := qrCopyDestinationsProgressState
 		if qCopyDestinationsProgressState != "" {
@@ -2300,13 +2300,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter != nil {
+	if o.CopyDestinationsProgressVolumeSnapshotBlocked != nil {
 
 		// query param copy.destinations.progress.volume_snapshot_blocked
 		var qrCopyDestinationsProgressVolumeSnapshotBlocked bool
 
-		if o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter != nil {
-			qrCopyDestinationsProgressVolumeSnapshotBlocked = *o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter
+		if o.CopyDestinationsProgressVolumeSnapshotBlocked != nil {
+			qrCopyDestinationsProgressVolumeSnapshotBlocked = *o.CopyDestinationsProgressVolumeSnapshotBlocked
 		}
 		qCopyDestinationsProgressVolumeSnapshotBlocked := swag.FormatBool(qrCopyDestinationsProgressVolumeSnapshotBlocked)
 		if qCopyDestinationsProgressVolumeSnapshotBlocked != "" {
@@ -2317,13 +2317,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopyDestinationsUUIDQueryParameter != nil {
+	if o.CopyDestinationsUUID != nil {
 
 		// query param copy.destinations.uuid
 		var qrCopyDestinationsUUID string
 
-		if o.CopyDestinationsUUIDQueryParameter != nil {
-			qrCopyDestinationsUUID = *o.CopyDestinationsUUIDQueryParameter
+		if o.CopyDestinationsUUID != nil {
+			qrCopyDestinationsUUID = *o.CopyDestinationsUUID
 		}
 		qCopyDestinationsUUID := qrCopyDestinationsUUID
 		if qCopyDestinationsUUID != "" {
@@ -2334,13 +2334,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceMaxThroughputQueryParameter != nil {
+	if o.CopySourceMaxThroughput != nil {
 
 		// query param copy.source.max_throughput
 		var qrCopySourceMaxThroughput int64
 
-		if o.CopySourceMaxThroughputQueryParameter != nil {
-			qrCopySourceMaxThroughput = *o.CopySourceMaxThroughputQueryParameter
+		if o.CopySourceMaxThroughput != nil {
+			qrCopySourceMaxThroughput = *o.CopySourceMaxThroughput
 		}
 		qCopySourceMaxThroughput := swag.FormatInt64(qrCopySourceMaxThroughput)
 		if qCopySourceMaxThroughput != "" {
@@ -2351,13 +2351,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceNameQueryParameter != nil {
+	if o.CopySourceName != nil {
 
 		// query param copy.source.name
 		var qrCopySourceName string
 
-		if o.CopySourceNameQueryParameter != nil {
-			qrCopySourceName = *o.CopySourceNameQueryParameter
+		if o.CopySourceName != nil {
+			qrCopySourceName = *o.CopySourceName
 		}
 		qCopySourceName := qrCopySourceName
 		if qCopySourceName != "" {
@@ -2368,13 +2368,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressElapsedQueryParameter != nil {
+	if o.CopySourceProgressElapsed != nil {
 
 		// query param copy.source.progress.elapsed
 		var qrCopySourceProgressElapsed int64
 
-		if o.CopySourceProgressElapsedQueryParameter != nil {
-			qrCopySourceProgressElapsed = *o.CopySourceProgressElapsedQueryParameter
+		if o.CopySourceProgressElapsed != nil {
+			qrCopySourceProgressElapsed = *o.CopySourceProgressElapsed
 		}
 		qCopySourceProgressElapsed := swag.FormatInt64(qrCopySourceProgressElapsed)
 		if qCopySourceProgressElapsed != "" {
@@ -2385,13 +2385,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressFailureArgumentsCodeQueryParameter != nil {
+	if o.CopySourceProgressFailureArgumentsCode != nil {
 
 		// query param copy.source.progress.failure.arguments.code
 		var qrCopySourceProgressFailureArgumentsCode string
 
-		if o.CopySourceProgressFailureArgumentsCodeQueryParameter != nil {
-			qrCopySourceProgressFailureArgumentsCode = *o.CopySourceProgressFailureArgumentsCodeQueryParameter
+		if o.CopySourceProgressFailureArgumentsCode != nil {
+			qrCopySourceProgressFailureArgumentsCode = *o.CopySourceProgressFailureArgumentsCode
 		}
 		qCopySourceProgressFailureArgumentsCode := qrCopySourceProgressFailureArgumentsCode
 		if qCopySourceProgressFailureArgumentsCode != "" {
@@ -2402,13 +2402,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressFailureArgumentsMessageQueryParameter != nil {
+	if o.CopySourceProgressFailureArgumentsMessage != nil {
 
 		// query param copy.source.progress.failure.arguments.message
 		var qrCopySourceProgressFailureArgumentsMessage string
 
-		if o.CopySourceProgressFailureArgumentsMessageQueryParameter != nil {
-			qrCopySourceProgressFailureArgumentsMessage = *o.CopySourceProgressFailureArgumentsMessageQueryParameter
+		if o.CopySourceProgressFailureArgumentsMessage != nil {
+			qrCopySourceProgressFailureArgumentsMessage = *o.CopySourceProgressFailureArgumentsMessage
 		}
 		qCopySourceProgressFailureArgumentsMessage := qrCopySourceProgressFailureArgumentsMessage
 		if qCopySourceProgressFailureArgumentsMessage != "" {
@@ -2419,13 +2419,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressFailureCodeQueryParameter != nil {
+	if o.CopySourceProgressFailureCode != nil {
 
 		// query param copy.source.progress.failure.code
 		var qrCopySourceProgressFailureCode string
 
-		if o.CopySourceProgressFailureCodeQueryParameter != nil {
-			qrCopySourceProgressFailureCode = *o.CopySourceProgressFailureCodeQueryParameter
+		if o.CopySourceProgressFailureCode != nil {
+			qrCopySourceProgressFailureCode = *o.CopySourceProgressFailureCode
 		}
 		qCopySourceProgressFailureCode := qrCopySourceProgressFailureCode
 		if qCopySourceProgressFailureCode != "" {
@@ -2436,13 +2436,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressFailureMessageQueryParameter != nil {
+	if o.CopySourceProgressFailureMessage != nil {
 
 		// query param copy.source.progress.failure.message
 		var qrCopySourceProgressFailureMessage string
 
-		if o.CopySourceProgressFailureMessageQueryParameter != nil {
-			qrCopySourceProgressFailureMessage = *o.CopySourceProgressFailureMessageQueryParameter
+		if o.CopySourceProgressFailureMessage != nil {
+			qrCopySourceProgressFailureMessage = *o.CopySourceProgressFailureMessage
 		}
 		qCopySourceProgressFailureMessage := qrCopySourceProgressFailureMessage
 		if qCopySourceProgressFailureMessage != "" {
@@ -2453,13 +2453,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressFailureTargetQueryParameter != nil {
+	if o.CopySourceProgressFailureTarget != nil {
 
 		// query param copy.source.progress.failure.target
 		var qrCopySourceProgressFailureTarget string
 
-		if o.CopySourceProgressFailureTargetQueryParameter != nil {
-			qrCopySourceProgressFailureTarget = *o.CopySourceProgressFailureTargetQueryParameter
+		if o.CopySourceProgressFailureTarget != nil {
+			qrCopySourceProgressFailureTarget = *o.CopySourceProgressFailureTarget
 		}
 		qCopySourceProgressFailureTarget := qrCopySourceProgressFailureTarget
 		if qCopySourceProgressFailureTarget != "" {
@@ -2470,13 +2470,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressPercentCompleteQueryParameter != nil {
+	if o.CopySourceProgressPercentComplete != nil {
 
 		// query param copy.source.progress.percent_complete
 		var qrCopySourceProgressPercentComplete int64
 
-		if o.CopySourceProgressPercentCompleteQueryParameter != nil {
-			qrCopySourceProgressPercentComplete = *o.CopySourceProgressPercentCompleteQueryParameter
+		if o.CopySourceProgressPercentComplete != nil {
+			qrCopySourceProgressPercentComplete = *o.CopySourceProgressPercentComplete
 		}
 		qCopySourceProgressPercentComplete := swag.FormatInt64(qrCopySourceProgressPercentComplete)
 		if qCopySourceProgressPercentComplete != "" {
@@ -2487,13 +2487,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressStateQueryParameter != nil {
+	if o.CopySourceProgressState != nil {
 
 		// query param copy.source.progress.state
 		var qrCopySourceProgressState string
 
-		if o.CopySourceProgressStateQueryParameter != nil {
-			qrCopySourceProgressState = *o.CopySourceProgressStateQueryParameter
+		if o.CopySourceProgressState != nil {
+			qrCopySourceProgressState = *o.CopySourceProgressState
 		}
 		qCopySourceProgressState := qrCopySourceProgressState
 		if qCopySourceProgressState != "" {
@@ -2504,13 +2504,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceProgressVolumeSnapshotBlockedQueryParameter != nil {
+	if o.CopySourceProgressVolumeSnapshotBlocked != nil {
 
 		// query param copy.source.progress.volume_snapshot_blocked
 		var qrCopySourceProgressVolumeSnapshotBlocked bool
 
-		if o.CopySourceProgressVolumeSnapshotBlockedQueryParameter != nil {
-			qrCopySourceProgressVolumeSnapshotBlocked = *o.CopySourceProgressVolumeSnapshotBlockedQueryParameter
+		if o.CopySourceProgressVolumeSnapshotBlocked != nil {
+			qrCopySourceProgressVolumeSnapshotBlocked = *o.CopySourceProgressVolumeSnapshotBlocked
 		}
 		qCopySourceProgressVolumeSnapshotBlocked := swag.FormatBool(qrCopySourceProgressVolumeSnapshotBlocked)
 		if qCopySourceProgressVolumeSnapshotBlocked != "" {
@@ -2521,13 +2521,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CopySourceUUIDQueryParameter != nil {
+	if o.CopySourceUUID != nil {
 
 		// query param copy.source.uuid
 		var qrCopySourceUUID string
 
-		if o.CopySourceUUIDQueryParameter != nil {
-			qrCopySourceUUID = *o.CopySourceUUIDQueryParameter
+		if o.CopySourceUUID != nil {
+			qrCopySourceUUID = *o.CopySourceUUID
 		}
 		qCopySourceUUID := qrCopySourceUUID
 		if qCopySourceUUID != "" {
@@ -2538,13 +2538,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.CreateTimeQueryParameter != nil {
+	if o.CreateTime != nil {
 
 		// query param create_time
 		var qrCreateTime string
 
-		if o.CreateTimeQueryParameter != nil {
-			qrCreateTime = *o.CreateTimeQueryParameter
+		if o.CreateTime != nil {
+			qrCreateTime = *o.CreateTime
 		}
 		qCreateTime := qrCreateTime
 		if qCreateTime != "" {
@@ -2555,13 +2555,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -2572,7 +2572,7 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -2583,13 +2583,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationLogicalUnitQueryParameter != nil {
+	if o.LocationLogicalUnit != nil {
 
 		// query param location.logical_unit
 		var qrLocationLogicalUnit string
 
-		if o.LocationLogicalUnitQueryParameter != nil {
-			qrLocationLogicalUnit = *o.LocationLogicalUnitQueryParameter
+		if o.LocationLogicalUnit != nil {
+			qrLocationLogicalUnit = *o.LocationLogicalUnit
 		}
 		qLocationLogicalUnit := qrLocationLogicalUnit
 		if qLocationLogicalUnit != "" {
@@ -2600,13 +2600,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationNodeNameQueryParameter != nil {
+	if o.LocationNodeName != nil {
 
 		// query param location.node.name
 		var qrLocationNodeName string
 
-		if o.LocationNodeNameQueryParameter != nil {
-			qrLocationNodeName = *o.LocationNodeNameQueryParameter
+		if o.LocationNodeName != nil {
+			qrLocationNodeName = *o.LocationNodeName
 		}
 		qLocationNodeName := qrLocationNodeName
 		if qLocationNodeName != "" {
@@ -2617,13 +2617,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationNodeUUIDQueryParameter != nil {
+	if o.LocationNodeUUID != nil {
 
 		// query param location.node.uuid
 		var qrLocationNodeUUID string
 
-		if o.LocationNodeUUIDQueryParameter != nil {
-			qrLocationNodeUUID = *o.LocationNodeUUIDQueryParameter
+		if o.LocationNodeUUID != nil {
+			qrLocationNodeUUID = *o.LocationNodeUUID
 		}
 		qLocationNodeUUID := qrLocationNodeUUID
 		if qLocationNodeUUID != "" {
@@ -2634,13 +2634,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationQtreeIDQueryParameter != nil {
+	if o.LocationQtreeID != nil {
 
 		// query param location.qtree.id
 		var qrLocationQtreeID int64
 
-		if o.LocationQtreeIDQueryParameter != nil {
-			qrLocationQtreeID = *o.LocationQtreeIDQueryParameter
+		if o.LocationQtreeID != nil {
+			qrLocationQtreeID = *o.LocationQtreeID
 		}
 		qLocationQtreeID := swag.FormatInt64(qrLocationQtreeID)
 		if qLocationQtreeID != "" {
@@ -2651,13 +2651,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationQtreeNameQueryParameter != nil {
+	if o.LocationQtreeName != nil {
 
 		// query param location.qtree.name
 		var qrLocationQtreeName string
 
-		if o.LocationQtreeNameQueryParameter != nil {
-			qrLocationQtreeName = *o.LocationQtreeNameQueryParameter
+		if o.LocationQtreeName != nil {
+			qrLocationQtreeName = *o.LocationQtreeName
 		}
 		qLocationQtreeName := qrLocationQtreeName
 		if qLocationQtreeName != "" {
@@ -2668,13 +2668,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationVolumeNameQueryParameter != nil {
+	if o.LocationVolumeName != nil {
 
 		// query param location.volume.name
 		var qrLocationVolumeName string
 
-		if o.LocationVolumeNameQueryParameter != nil {
-			qrLocationVolumeName = *o.LocationVolumeNameQueryParameter
+		if o.LocationVolumeName != nil {
+			qrLocationVolumeName = *o.LocationVolumeName
 		}
 		qLocationVolumeName := qrLocationVolumeName
 		if qLocationVolumeName != "" {
@@ -2685,13 +2685,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LocationVolumeUUIDQueryParameter != nil {
+	if o.LocationVolumeUUID != nil {
 
 		// query param location.volume.uuid
 		var qrLocationVolumeUUID string
 
-		if o.LocationVolumeUUIDQueryParameter != nil {
-			qrLocationVolumeUUID = *o.LocationVolumeUUIDQueryParameter
+		if o.LocationVolumeUUID != nil {
+			qrLocationVolumeUUID = *o.LocationVolumeUUID
 		}
 		qLocationVolumeUUID := qrLocationVolumeUUID
 		if qLocationVolumeUUID != "" {
@@ -2702,13 +2702,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LunMapsIgroupNameQueryParameter != nil {
+	if o.LunMapsIgroupName != nil {
 
 		// query param lun_maps.igroup.name
 		var qrLunMapsIgroupName string
 
-		if o.LunMapsIgroupNameQueryParameter != nil {
-			qrLunMapsIgroupName = *o.LunMapsIgroupNameQueryParameter
+		if o.LunMapsIgroupName != nil {
+			qrLunMapsIgroupName = *o.LunMapsIgroupName
 		}
 		qLunMapsIgroupName := qrLunMapsIgroupName
 		if qLunMapsIgroupName != "" {
@@ -2719,13 +2719,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LunMapsIgroupUUIDQueryParameter != nil {
+	if o.LunMapsIgroupUUID != nil {
 
 		// query param lun_maps.igroup.uuid
 		var qrLunMapsIgroupUUID string
 
-		if o.LunMapsIgroupUUIDQueryParameter != nil {
-			qrLunMapsIgroupUUID = *o.LunMapsIgroupUUIDQueryParameter
+		if o.LunMapsIgroupUUID != nil {
+			qrLunMapsIgroupUUID = *o.LunMapsIgroupUUID
 		}
 		qLunMapsIgroupUUID := qrLunMapsIgroupUUID
 		if qLunMapsIgroupUUID != "" {
@@ -2736,13 +2736,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.LunMapsLogicalUnitNumberQueryParameter != nil {
+	if o.LunMapsLogicalUnitNumber != nil {
 
 		// query param lun_maps.logical_unit_number
 		var qrLunMapsLogicalUnitNumber int64
 
-		if o.LunMapsLogicalUnitNumberQueryParameter != nil {
-			qrLunMapsLogicalUnitNumber = *o.LunMapsLogicalUnitNumberQueryParameter
+		if o.LunMapsLogicalUnitNumber != nil {
+			qrLunMapsLogicalUnitNumber = *o.LunMapsLogicalUnitNumber
 		}
 		qLunMapsLogicalUnitNumber := swag.FormatInt64(qrLunMapsLogicalUnitNumber)
 		if qLunMapsLogicalUnitNumber != "" {
@@ -2753,13 +2753,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -2770,13 +2770,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricDurationQueryParameter != nil {
+	if o.MetricDuration != nil {
 
 		// query param metric.duration
 		var qrMetricDuration string
 
-		if o.MetricDurationQueryParameter != nil {
-			qrMetricDuration = *o.MetricDurationQueryParameter
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
 		}
 		qMetricDuration := qrMetricDuration
 		if qMetricDuration != "" {
@@ -2787,13 +2787,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricIopsOtherQueryParameter != nil {
+	if o.MetricIopsOther != nil {
 
 		// query param metric.iops.other
 		var qrMetricIopsOther int64
 
-		if o.MetricIopsOtherQueryParameter != nil {
-			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		if o.MetricIopsOther != nil {
+			qrMetricIopsOther = *o.MetricIopsOther
 		}
 		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
 		if qMetricIopsOther != "" {
@@ -2804,13 +2804,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricIopsReadQueryParameter != nil {
+	if o.MetricIopsRead != nil {
 
 		// query param metric.iops.read
 		var qrMetricIopsRead int64
 
-		if o.MetricIopsReadQueryParameter != nil {
-			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		if o.MetricIopsRead != nil {
+			qrMetricIopsRead = *o.MetricIopsRead
 		}
 		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
 		if qMetricIopsRead != "" {
@@ -2821,13 +2821,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricIopsTotalQueryParameter != nil {
+	if o.MetricIopsTotal != nil {
 
 		// query param metric.iops.total
 		var qrMetricIopsTotal int64
 
-		if o.MetricIopsTotalQueryParameter != nil {
-			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		if o.MetricIopsTotal != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotal
 		}
 		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
 		if qMetricIopsTotal != "" {
@@ -2838,13 +2838,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricIopsWriteQueryParameter != nil {
+	if o.MetricIopsWrite != nil {
 
 		// query param metric.iops.write
 		var qrMetricIopsWrite int64
 
-		if o.MetricIopsWriteQueryParameter != nil {
-			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		if o.MetricIopsWrite != nil {
+			qrMetricIopsWrite = *o.MetricIopsWrite
 		}
 		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
 		if qMetricIopsWrite != "" {
@@ -2855,13 +2855,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricLatencyOtherQueryParameter != nil {
+	if o.MetricLatencyOther != nil {
 
 		// query param metric.latency.other
 		var qrMetricLatencyOther int64
 
-		if o.MetricLatencyOtherQueryParameter != nil {
-			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		if o.MetricLatencyOther != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOther
 		}
 		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
 		if qMetricLatencyOther != "" {
@@ -2872,13 +2872,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricLatencyReadQueryParameter != nil {
+	if o.MetricLatencyRead != nil {
 
 		// query param metric.latency.read
 		var qrMetricLatencyRead int64
 
-		if o.MetricLatencyReadQueryParameter != nil {
-			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		if o.MetricLatencyRead != nil {
+			qrMetricLatencyRead = *o.MetricLatencyRead
 		}
 		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
 		if qMetricLatencyRead != "" {
@@ -2889,13 +2889,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricLatencyTotalQueryParameter != nil {
+	if o.MetricLatencyTotal != nil {
 
 		// query param metric.latency.total
 		var qrMetricLatencyTotal int64
 
-		if o.MetricLatencyTotalQueryParameter != nil {
-			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		if o.MetricLatencyTotal != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotal
 		}
 		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
 		if qMetricLatencyTotal != "" {
@@ -2906,13 +2906,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricLatencyWriteQueryParameter != nil {
+	if o.MetricLatencyWrite != nil {
 
 		// query param metric.latency.write
 		var qrMetricLatencyWrite int64
 
-		if o.MetricLatencyWriteQueryParameter != nil {
-			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		if o.MetricLatencyWrite != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWrite
 		}
 		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
 		if qMetricLatencyWrite != "" {
@@ -2923,13 +2923,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricStatusQueryParameter != nil {
+	if o.MetricStatus != nil {
 
 		// query param metric.status
 		var qrMetricStatus string
 
-		if o.MetricStatusQueryParameter != nil {
-			qrMetricStatus = *o.MetricStatusQueryParameter
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
 		}
 		qMetricStatus := qrMetricStatus
 		if qMetricStatus != "" {
@@ -2940,13 +2940,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricThroughputOtherQueryParameter != nil {
+	if o.MetricThroughputOther != nil {
 
 		// query param metric.throughput.other
 		var qrMetricThroughputOther int64
 
-		if o.MetricThroughputOtherQueryParameter != nil {
-			qrMetricThroughputOther = *o.MetricThroughputOtherQueryParameter
+		if o.MetricThroughputOther != nil {
+			qrMetricThroughputOther = *o.MetricThroughputOther
 		}
 		qMetricThroughputOther := swag.FormatInt64(qrMetricThroughputOther)
 		if qMetricThroughputOther != "" {
@@ -2957,13 +2957,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricThroughputReadQueryParameter != nil {
+	if o.MetricThroughputRead != nil {
 
 		// query param metric.throughput.read
 		var qrMetricThroughputRead int64
 
-		if o.MetricThroughputReadQueryParameter != nil {
-			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		if o.MetricThroughputRead != nil {
+			qrMetricThroughputRead = *o.MetricThroughputRead
 		}
 		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
 		if qMetricThroughputRead != "" {
@@ -2974,13 +2974,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricThroughputTotalQueryParameter != nil {
+	if o.MetricThroughputTotal != nil {
 
 		// query param metric.throughput.total
 		var qrMetricThroughputTotal int64
 
-		if o.MetricThroughputTotalQueryParameter != nil {
-			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		if o.MetricThroughputTotal != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotal
 		}
 		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
 		if qMetricThroughputTotal != "" {
@@ -2991,13 +2991,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricThroughputWriteQueryParameter != nil {
+	if o.MetricThroughputWrite != nil {
 
 		// query param metric.throughput.write
 		var qrMetricThroughputWrite int64
 
-		if o.MetricThroughputWriteQueryParameter != nil {
-			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		if o.MetricThroughputWrite != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWrite
 		}
 		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
 		if qMetricThroughputWrite != "" {
@@ -3008,13 +3008,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MetricTimestampQueryParameter != nil {
+	if o.MetricTimestamp != nil {
 
 		// query param metric.timestamp
 		var qrMetricTimestamp string
 
-		if o.MetricTimestampQueryParameter != nil {
-			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
 		}
 		qMetricTimestamp := qrMetricTimestamp
 		if qMetricTimestamp != "" {
@@ -3025,13 +3025,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementMaxThroughputQueryParameter != nil {
+	if o.MovementMaxThroughput != nil {
 
 		// query param movement.max_throughput
 		var qrMovementMaxThroughput int64
 
-		if o.MovementMaxThroughputQueryParameter != nil {
-			qrMovementMaxThroughput = *o.MovementMaxThroughputQueryParameter
+		if o.MovementMaxThroughput != nil {
+			qrMovementMaxThroughput = *o.MovementMaxThroughput
 		}
 		qMovementMaxThroughput := swag.FormatInt64(qrMovementMaxThroughput)
 		if qMovementMaxThroughput != "" {
@@ -3042,13 +3042,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementPathsDestinationQueryParameter != nil {
+	if o.MovementPathsDestination != nil {
 
 		// query param movement.paths.destination
 		var qrMovementPathsDestination string
 
-		if o.MovementPathsDestinationQueryParameter != nil {
-			qrMovementPathsDestination = *o.MovementPathsDestinationQueryParameter
+		if o.MovementPathsDestination != nil {
+			qrMovementPathsDestination = *o.MovementPathsDestination
 		}
 		qMovementPathsDestination := qrMovementPathsDestination
 		if qMovementPathsDestination != "" {
@@ -3059,13 +3059,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementPathsSourceQueryParameter != nil {
+	if o.MovementPathsSource != nil {
 
 		// query param movement.paths.source
 		var qrMovementPathsSource string
 
-		if o.MovementPathsSourceQueryParameter != nil {
-			qrMovementPathsSource = *o.MovementPathsSourceQueryParameter
+		if o.MovementPathsSource != nil {
+			qrMovementPathsSource = *o.MovementPathsSource
 		}
 		qMovementPathsSource := qrMovementPathsSource
 		if qMovementPathsSource != "" {
@@ -3076,13 +3076,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressElapsedQueryParameter != nil {
+	if o.MovementProgressElapsed != nil {
 
 		// query param movement.progress.elapsed
 		var qrMovementProgressElapsed int64
 
-		if o.MovementProgressElapsedQueryParameter != nil {
-			qrMovementProgressElapsed = *o.MovementProgressElapsedQueryParameter
+		if o.MovementProgressElapsed != nil {
+			qrMovementProgressElapsed = *o.MovementProgressElapsed
 		}
 		qMovementProgressElapsed := swag.FormatInt64(qrMovementProgressElapsed)
 		if qMovementProgressElapsed != "" {
@@ -3093,13 +3093,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressFailureArgumentsCodeQueryParameter != nil {
+	if o.MovementProgressFailureArgumentsCode != nil {
 
 		// query param movement.progress.failure.arguments.code
 		var qrMovementProgressFailureArgumentsCode string
 
-		if o.MovementProgressFailureArgumentsCodeQueryParameter != nil {
-			qrMovementProgressFailureArgumentsCode = *o.MovementProgressFailureArgumentsCodeQueryParameter
+		if o.MovementProgressFailureArgumentsCode != nil {
+			qrMovementProgressFailureArgumentsCode = *o.MovementProgressFailureArgumentsCode
 		}
 		qMovementProgressFailureArgumentsCode := qrMovementProgressFailureArgumentsCode
 		if qMovementProgressFailureArgumentsCode != "" {
@@ -3110,13 +3110,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressFailureArgumentsMessageQueryParameter != nil {
+	if o.MovementProgressFailureArgumentsMessage != nil {
 
 		// query param movement.progress.failure.arguments.message
 		var qrMovementProgressFailureArgumentsMessage string
 
-		if o.MovementProgressFailureArgumentsMessageQueryParameter != nil {
-			qrMovementProgressFailureArgumentsMessage = *o.MovementProgressFailureArgumentsMessageQueryParameter
+		if o.MovementProgressFailureArgumentsMessage != nil {
+			qrMovementProgressFailureArgumentsMessage = *o.MovementProgressFailureArgumentsMessage
 		}
 		qMovementProgressFailureArgumentsMessage := qrMovementProgressFailureArgumentsMessage
 		if qMovementProgressFailureArgumentsMessage != "" {
@@ -3127,13 +3127,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressFailureCodeQueryParameter != nil {
+	if o.MovementProgressFailureCode != nil {
 
 		// query param movement.progress.failure.code
 		var qrMovementProgressFailureCode string
 
-		if o.MovementProgressFailureCodeQueryParameter != nil {
-			qrMovementProgressFailureCode = *o.MovementProgressFailureCodeQueryParameter
+		if o.MovementProgressFailureCode != nil {
+			qrMovementProgressFailureCode = *o.MovementProgressFailureCode
 		}
 		qMovementProgressFailureCode := qrMovementProgressFailureCode
 		if qMovementProgressFailureCode != "" {
@@ -3144,13 +3144,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressFailureMessageQueryParameter != nil {
+	if o.MovementProgressFailureMessage != nil {
 
 		// query param movement.progress.failure.message
 		var qrMovementProgressFailureMessage string
 
-		if o.MovementProgressFailureMessageQueryParameter != nil {
-			qrMovementProgressFailureMessage = *o.MovementProgressFailureMessageQueryParameter
+		if o.MovementProgressFailureMessage != nil {
+			qrMovementProgressFailureMessage = *o.MovementProgressFailureMessage
 		}
 		qMovementProgressFailureMessage := qrMovementProgressFailureMessage
 		if qMovementProgressFailureMessage != "" {
@@ -3161,13 +3161,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressFailureTargetQueryParameter != nil {
+	if o.MovementProgressFailureTarget != nil {
 
 		// query param movement.progress.failure.target
 		var qrMovementProgressFailureTarget string
 
-		if o.MovementProgressFailureTargetQueryParameter != nil {
-			qrMovementProgressFailureTarget = *o.MovementProgressFailureTargetQueryParameter
+		if o.MovementProgressFailureTarget != nil {
+			qrMovementProgressFailureTarget = *o.MovementProgressFailureTarget
 		}
 		qMovementProgressFailureTarget := qrMovementProgressFailureTarget
 		if qMovementProgressFailureTarget != "" {
@@ -3178,13 +3178,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressPercentCompleteQueryParameter != nil {
+	if o.MovementProgressPercentComplete != nil {
 
 		// query param movement.progress.percent_complete
 		var qrMovementProgressPercentComplete int64
 
-		if o.MovementProgressPercentCompleteQueryParameter != nil {
-			qrMovementProgressPercentComplete = *o.MovementProgressPercentCompleteQueryParameter
+		if o.MovementProgressPercentComplete != nil {
+			qrMovementProgressPercentComplete = *o.MovementProgressPercentComplete
 		}
 		qMovementProgressPercentComplete := swag.FormatInt64(qrMovementProgressPercentComplete)
 		if qMovementProgressPercentComplete != "" {
@@ -3195,13 +3195,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressStateQueryParameter != nil {
+	if o.MovementProgressState != nil {
 
 		// query param movement.progress.state
 		var qrMovementProgressState string
 
-		if o.MovementProgressStateQueryParameter != nil {
-			qrMovementProgressState = *o.MovementProgressStateQueryParameter
+		if o.MovementProgressState != nil {
+			qrMovementProgressState = *o.MovementProgressState
 		}
 		qMovementProgressState := qrMovementProgressState
 		if qMovementProgressState != "" {
@@ -3212,13 +3212,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MovementProgressVolumeSnapshotBlockedQueryParameter != nil {
+	if o.MovementProgressVolumeSnapshotBlocked != nil {
 
 		// query param movement.progress.volume_snapshot_blocked
 		var qrMovementProgressVolumeSnapshotBlocked bool
 
-		if o.MovementProgressVolumeSnapshotBlockedQueryParameter != nil {
-			qrMovementProgressVolumeSnapshotBlocked = *o.MovementProgressVolumeSnapshotBlockedQueryParameter
+		if o.MovementProgressVolumeSnapshotBlocked != nil {
+			qrMovementProgressVolumeSnapshotBlocked = *o.MovementProgressVolumeSnapshotBlocked
 		}
 		qMovementProgressVolumeSnapshotBlocked := swag.FormatBool(qrMovementProgressVolumeSnapshotBlocked)
 		if qMovementProgressVolumeSnapshotBlocked != "" {
@@ -3229,13 +3229,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -3246,7 +3246,7 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -3257,13 +3257,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OsTypeQueryParameter != nil {
+	if o.OsType != nil {
 
 		// query param os_type
 		var qrOsType string
 
-		if o.OsTypeQueryParameter != nil {
-			qrOsType = *o.OsTypeQueryParameter
+		if o.OsType != nil {
+			qrOsType = *o.OsType
 		}
 		qOsType := qrOsType
 		if qOsType != "" {
@@ -3274,13 +3274,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.QosPolicyNameQueryParameter != nil {
+	if o.QosPolicyName != nil {
 
 		// query param qos_policy.name
 		var qrQosPolicyName string
 
-		if o.QosPolicyNameQueryParameter != nil {
-			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		if o.QosPolicyName != nil {
+			qrQosPolicyName = *o.QosPolicyName
 		}
 		qQosPolicyName := qrQosPolicyName
 		if qQosPolicyName != "" {
@@ -3291,13 +3291,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.QosPolicyUUIDQueryParameter != nil {
+	if o.QosPolicyUUID != nil {
 
 		// query param qos_policy.uuid
 		var qrQosPolicyUUID string
 
-		if o.QosPolicyUUIDQueryParameter != nil {
-			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		if o.QosPolicyUUID != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUID
 		}
 		qQosPolicyUUID := qrQosPolicyUUID
 		if qQosPolicyUUID != "" {
@@ -3308,13 +3308,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -3325,13 +3325,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -3342,13 +3342,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SerialNumberQueryParameter != nil {
+	if o.SerialNumber != nil {
 
 		// query param serial_number
 		var qrSerialNumber string
 
-		if o.SerialNumberQueryParameter != nil {
-			qrSerialNumber = *o.SerialNumberQueryParameter
+		if o.SerialNumber != nil {
+			qrSerialNumber = *o.SerialNumber
 		}
 		qSerialNumber := qrSerialNumber
 		if qSerialNumber != "" {
@@ -3359,13 +3359,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SpaceGuaranteeRequestedQueryParameter != nil {
+	if o.SpaceGuaranteeRequested != nil {
 
 		// query param space.guarantee.requested
 		var qrSpaceGuaranteeRequested bool
 
-		if o.SpaceGuaranteeRequestedQueryParameter != nil {
-			qrSpaceGuaranteeRequested = *o.SpaceGuaranteeRequestedQueryParameter
+		if o.SpaceGuaranteeRequested != nil {
+			qrSpaceGuaranteeRequested = *o.SpaceGuaranteeRequested
 		}
 		qSpaceGuaranteeRequested := swag.FormatBool(qrSpaceGuaranteeRequested)
 		if qSpaceGuaranteeRequested != "" {
@@ -3376,13 +3376,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SpaceGuaranteeReservedQueryParameter != nil {
+	if o.SpaceGuaranteeReserved != nil {
 
 		// query param space.guarantee.reserved
 		var qrSpaceGuaranteeReserved bool
 
-		if o.SpaceGuaranteeReservedQueryParameter != nil {
-			qrSpaceGuaranteeReserved = *o.SpaceGuaranteeReservedQueryParameter
+		if o.SpaceGuaranteeReserved != nil {
+			qrSpaceGuaranteeReserved = *o.SpaceGuaranteeReserved
 		}
 		qSpaceGuaranteeReserved := swag.FormatBool(qrSpaceGuaranteeReserved)
 		if qSpaceGuaranteeReserved != "" {
@@ -3393,13 +3393,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SpaceScsiThinProvisioningSupportEnabledQueryParameter != nil {
+	if o.SpaceScsiThinProvisioningSupportEnabled != nil {
 
 		// query param space.scsi_thin_provisioning_support_enabled
 		var qrSpaceScsiThinProvisioningSupportEnabled bool
 
-		if o.SpaceScsiThinProvisioningSupportEnabledQueryParameter != nil {
-			qrSpaceScsiThinProvisioningSupportEnabled = *o.SpaceScsiThinProvisioningSupportEnabledQueryParameter
+		if o.SpaceScsiThinProvisioningSupportEnabled != nil {
+			qrSpaceScsiThinProvisioningSupportEnabled = *o.SpaceScsiThinProvisioningSupportEnabled
 		}
 		qSpaceScsiThinProvisioningSupportEnabled := swag.FormatBool(qrSpaceScsiThinProvisioningSupportEnabled)
 		if qSpaceScsiThinProvisioningSupportEnabled != "" {
@@ -3410,13 +3410,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SpaceSizeQueryParameter != nil {
+	if o.SpaceSize != nil {
 
 		// query param space.size
 		var qrSpaceSize int64
 
-		if o.SpaceSizeQueryParameter != nil {
-			qrSpaceSize = *o.SpaceSizeQueryParameter
+		if o.SpaceSize != nil {
+			qrSpaceSize = *o.SpaceSize
 		}
 		qSpaceSize := swag.FormatInt64(qrSpaceSize)
 		if qSpaceSize != "" {
@@ -3427,13 +3427,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SpaceUsedQueryParameter != nil {
+	if o.SpaceUsed != nil {
 
 		// query param space.used
 		var qrSpaceUsed int64
 
-		if o.SpaceUsedQueryParameter != nil {
-			qrSpaceUsed = *o.SpaceUsedQueryParameter
+		if o.SpaceUsed != nil {
+			qrSpaceUsed = *o.SpaceUsed
 		}
 		qSpaceUsed := swag.FormatInt64(qrSpaceUsed)
 		if qSpaceUsed != "" {
@@ -3444,13 +3444,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsIopsRawOtherQueryParameter != nil {
+	if o.StatisticsIopsRawOther != nil {
 
 		// query param statistics.iops_raw.other
 		var qrStatisticsIopsRawOther int64
 
-		if o.StatisticsIopsRawOtherQueryParameter != nil {
-			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		if o.StatisticsIopsRawOther != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOther
 		}
 		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
 		if qStatisticsIopsRawOther != "" {
@@ -3461,13 +3461,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsIopsRawReadQueryParameter != nil {
+	if o.StatisticsIopsRawRead != nil {
 
 		// query param statistics.iops_raw.read
 		var qrStatisticsIopsRawRead int64
 
-		if o.StatisticsIopsRawReadQueryParameter != nil {
-			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		if o.StatisticsIopsRawRead != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawRead
 		}
 		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
 		if qStatisticsIopsRawRead != "" {
@@ -3478,13 +3478,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsIopsRawTotalQueryParameter != nil {
+	if o.StatisticsIopsRawTotal != nil {
 
 		// query param statistics.iops_raw.total
 		var qrStatisticsIopsRawTotal int64
 
-		if o.StatisticsIopsRawTotalQueryParameter != nil {
-			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		if o.StatisticsIopsRawTotal != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotal
 		}
 		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
 		if qStatisticsIopsRawTotal != "" {
@@ -3495,13 +3495,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsIopsRawWriteQueryParameter != nil {
+	if o.StatisticsIopsRawWrite != nil {
 
 		// query param statistics.iops_raw.write
 		var qrStatisticsIopsRawWrite int64
 
-		if o.StatisticsIopsRawWriteQueryParameter != nil {
-			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		if o.StatisticsIopsRawWrite != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWrite
 		}
 		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
 		if qStatisticsIopsRawWrite != "" {
@@ -3512,13 +3512,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+	if o.StatisticsLatencyRawOther != nil {
 
 		// query param statistics.latency_raw.other
 		var qrStatisticsLatencyRawOther int64
 
-		if o.StatisticsLatencyRawOtherQueryParameter != nil {
-			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		if o.StatisticsLatencyRawOther != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOther
 		}
 		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
 		if qStatisticsLatencyRawOther != "" {
@@ -3529,13 +3529,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsLatencyRawReadQueryParameter != nil {
+	if o.StatisticsLatencyRawRead != nil {
 
 		// query param statistics.latency_raw.read
 		var qrStatisticsLatencyRawRead int64
 
-		if o.StatisticsLatencyRawReadQueryParameter != nil {
-			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		if o.StatisticsLatencyRawRead != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawRead
 		}
 		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
 		if qStatisticsLatencyRawRead != "" {
@@ -3546,13 +3546,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+	if o.StatisticsLatencyRawTotal != nil {
 
 		// query param statistics.latency_raw.total
 		var qrStatisticsLatencyRawTotal int64
 
-		if o.StatisticsLatencyRawTotalQueryParameter != nil {
-			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		if o.StatisticsLatencyRawTotal != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotal
 		}
 		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
 		if qStatisticsLatencyRawTotal != "" {
@@ -3563,13 +3563,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+	if o.StatisticsLatencyRawWrite != nil {
 
 		// query param statistics.latency_raw.write
 		var qrStatisticsLatencyRawWrite int64
 
-		if o.StatisticsLatencyRawWriteQueryParameter != nil {
-			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		if o.StatisticsLatencyRawWrite != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWrite
 		}
 		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
 		if qStatisticsLatencyRawWrite != "" {
@@ -3580,13 +3580,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsStatusQueryParameter != nil {
+	if o.StatisticsStatus != nil {
 
 		// query param statistics.status
 		var qrStatisticsStatus string
 
-		if o.StatisticsStatusQueryParameter != nil {
-			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		if o.StatisticsStatus != nil {
+			qrStatisticsStatus = *o.StatisticsStatus
 		}
 		qStatisticsStatus := qrStatisticsStatus
 		if qStatisticsStatus != "" {
@@ -3597,13 +3597,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsThroughputRawOtherQueryParameter != nil {
+	if o.StatisticsThroughputRawOther != nil {
 
 		// query param statistics.throughput_raw.other
 		var qrStatisticsThroughputRawOther int64
 
-		if o.StatisticsThroughputRawOtherQueryParameter != nil {
-			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOtherQueryParameter
+		if o.StatisticsThroughputRawOther != nil {
+			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOther
 		}
 		qStatisticsThroughputRawOther := swag.FormatInt64(qrStatisticsThroughputRawOther)
 		if qStatisticsThroughputRawOther != "" {
@@ -3614,13 +3614,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsThroughputRawReadQueryParameter != nil {
+	if o.StatisticsThroughputRawRead != nil {
 
 		// query param statistics.throughput_raw.read
 		var qrStatisticsThroughputRawRead int64
 
-		if o.StatisticsThroughputRawReadQueryParameter != nil {
-			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		if o.StatisticsThroughputRawRead != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawRead
 		}
 		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
 		if qStatisticsThroughputRawRead != "" {
@@ -3631,13 +3631,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+	if o.StatisticsThroughputRawTotal != nil {
 
 		// query param statistics.throughput_raw.total
 		var qrStatisticsThroughputRawTotal int64
 
-		if o.StatisticsThroughputRawTotalQueryParameter != nil {
-			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		if o.StatisticsThroughputRawTotal != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotal
 		}
 		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
 		if qStatisticsThroughputRawTotal != "" {
@@ -3648,13 +3648,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+	if o.StatisticsThroughputRawWrite != nil {
 
 		// query param statistics.throughput_raw.write
 		var qrStatisticsThroughputRawWrite int64
 
-		if o.StatisticsThroughputRawWriteQueryParameter != nil {
-			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		if o.StatisticsThroughputRawWrite != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWrite
 		}
 		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
 		if qStatisticsThroughputRawWrite != "" {
@@ -3665,13 +3665,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatisticsTimestampQueryParameter != nil {
+	if o.StatisticsTimestamp != nil {
 
 		// query param statistics.timestamp
 		var qrStatisticsTimestamp string
 
-		if o.StatisticsTimestampQueryParameter != nil {
-			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
 		}
 		qStatisticsTimestamp := qrStatisticsTimestamp
 		if qStatisticsTimestamp != "" {
@@ -3682,13 +3682,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusContainerStateQueryParameter != nil {
+	if o.StatusContainerState != nil {
 
 		// query param status.container_state
 		var qrStatusContainerState string
 
-		if o.StatusContainerStateQueryParameter != nil {
-			qrStatusContainerState = *o.StatusContainerStateQueryParameter
+		if o.StatusContainerState != nil {
+			qrStatusContainerState = *o.StatusContainerState
 		}
 		qStatusContainerState := qrStatusContainerState
 		if qStatusContainerState != "" {
@@ -3699,13 +3699,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusMappedQueryParameter != nil {
+	if o.StatusMapped != nil {
 
 		// query param status.mapped
 		var qrStatusMapped bool
 
-		if o.StatusMappedQueryParameter != nil {
-			qrStatusMapped = *o.StatusMappedQueryParameter
+		if o.StatusMapped != nil {
+			qrStatusMapped = *o.StatusMapped
 		}
 		qStatusMapped := swag.FormatBool(qrStatusMapped)
 		if qStatusMapped != "" {
@@ -3716,13 +3716,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusReadOnlyQueryParameter != nil {
+	if o.StatusReadOnly != nil {
 
 		// query param status.read_only
 		var qrStatusReadOnly bool
 
-		if o.StatusReadOnlyQueryParameter != nil {
-			qrStatusReadOnly = *o.StatusReadOnlyQueryParameter
+		if o.StatusReadOnly != nil {
+			qrStatusReadOnly = *o.StatusReadOnly
 		}
 		qStatusReadOnly := swag.FormatBool(qrStatusReadOnly)
 		if qStatusReadOnly != "" {
@@ -3733,13 +3733,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.StatusStateQueryParameter != nil {
+	if o.StatusState != nil {
 
 		// query param status.state
 		var qrStatusState string
 
-		if o.StatusStateQueryParameter != nil {
-			qrStatusState = *o.StatusStateQueryParameter
+		if o.StatusState != nil {
+			qrStatusState = *o.StatusState
 		}
 		qStatusState := qrStatusState
 		if qStatusState != "" {
@@ -3750,13 +3750,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -3767,13 +3767,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -3784,13 +3784,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -3801,13 +3801,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.VvolBindingsIDQueryParameter != nil {
+	if o.VvolBindingsID != nil {
 
 		// query param vvol.bindings.id
 		var qrVvolBindingsID int64
 
-		if o.VvolBindingsIDQueryParameter != nil {
-			qrVvolBindingsID = *o.VvolBindingsIDQueryParameter
+		if o.VvolBindingsID != nil {
+			qrVvolBindingsID = *o.VvolBindingsID
 		}
 		qVvolBindingsID := swag.FormatInt64(qrVvolBindingsID)
 		if qVvolBindingsID != "" {
@@ -3818,13 +3818,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.VvolBindingsPartnerNameQueryParameter != nil {
+	if o.VvolBindingsPartnerName != nil {
 
 		// query param vvol.bindings.partner.name
 		var qrVvolBindingsPartnerName string
 
-		if o.VvolBindingsPartnerNameQueryParameter != nil {
-			qrVvolBindingsPartnerName = *o.VvolBindingsPartnerNameQueryParameter
+		if o.VvolBindingsPartnerName != nil {
+			qrVvolBindingsPartnerName = *o.VvolBindingsPartnerName
 		}
 		qVvolBindingsPartnerName := qrVvolBindingsPartnerName
 		if qVvolBindingsPartnerName != "" {
@@ -3835,13 +3835,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.VvolBindingsPartnerUUIDQueryParameter != nil {
+	if o.VvolBindingsPartnerUUID != nil {
 
 		// query param vvol.bindings.partner.uuid
 		var qrVvolBindingsPartnerUUID string
 
-		if o.VvolBindingsPartnerUUIDQueryParameter != nil {
-			qrVvolBindingsPartnerUUID = *o.VvolBindingsPartnerUUIDQueryParameter
+		if o.VvolBindingsPartnerUUID != nil {
+			qrVvolBindingsPartnerUUID = *o.VvolBindingsPartnerUUID
 		}
 		qVvolBindingsPartnerUUID := qrVvolBindingsPartnerUUID
 		if qVvolBindingsPartnerUUID != "" {
@@ -3852,13 +3852,13 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.VvolIsBoundQueryParameter != nil {
+	if o.VvolIsBound != nil {
 
 		// query param vvol.is_bound
 		var qrVvolIsBound bool
 
-		if o.VvolIsBoundQueryParameter != nil {
-			qrVvolIsBound = *o.VvolIsBoundQueryParameter
+		if o.VvolIsBound != nil {
+			qrVvolIsBound = *o.VvolIsBound
 		}
 		qVvolIsBound := swag.FormatBool(qrVvolIsBound)
 		if qVvolIsBound != "" {
@@ -3877,7 +3877,7 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamLunCollectionGet binds the parameter fields
 func (o *LunCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -3894,7 +3894,7 @@ func (o *LunCollectionGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamLunCollectionGet binds the parameter order_by
 func (o *LunCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

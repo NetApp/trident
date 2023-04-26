@@ -68,13 +68,13 @@ type NameMappingModifyParams struct {
 
 	   Direction
 	*/
-	DirectionPathParameter string
+	Direction string
 
 	/* Index.
 
 	   Position of the entry in the list
 	*/
-	IndexPathParameter int64
+	Index int64
 
 	/* Info.
 
@@ -86,13 +86,13 @@ type NameMappingModifyParams struct {
 
 	   New position of the Index after a swap is completed.
 	*/
-	NewIndexQueryParameter *int64
+	NewIndex *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -147,26 +147,26 @@ func (o *NameMappingModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDirectionPathParameter adds the direction to the name mapping modify params
-func (o *NameMappingModifyParams) WithDirectionPathParameter(direction string) *NameMappingModifyParams {
-	o.SetDirectionPathParameter(direction)
+// WithDirection adds the direction to the name mapping modify params
+func (o *NameMappingModifyParams) WithDirection(direction string) *NameMappingModifyParams {
+	o.SetDirection(direction)
 	return o
 }
 
-// SetDirectionPathParameter adds the direction to the name mapping modify params
-func (o *NameMappingModifyParams) SetDirectionPathParameter(direction string) {
-	o.DirectionPathParameter = direction
+// SetDirection adds the direction to the name mapping modify params
+func (o *NameMappingModifyParams) SetDirection(direction string) {
+	o.Direction = direction
 }
 
-// WithIndexPathParameter adds the index to the name mapping modify params
-func (o *NameMappingModifyParams) WithIndexPathParameter(index int64) *NameMappingModifyParams {
-	o.SetIndexPathParameter(index)
+// WithIndex adds the index to the name mapping modify params
+func (o *NameMappingModifyParams) WithIndex(index int64) *NameMappingModifyParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexPathParameter adds the index to the name mapping modify params
-func (o *NameMappingModifyParams) SetIndexPathParameter(index int64) {
-	o.IndexPathParameter = index
+// SetIndex adds the index to the name mapping modify params
+func (o *NameMappingModifyParams) SetIndex(index int64) {
+	o.Index = index
 }
 
 // WithInfo adds the info to the name mapping modify params
@@ -180,26 +180,26 @@ func (o *NameMappingModifyParams) SetInfo(info *models.NameMapping) {
 	o.Info = info
 }
 
-// WithNewIndexQueryParameter adds the newIndex to the name mapping modify params
-func (o *NameMappingModifyParams) WithNewIndexQueryParameter(newIndex *int64) *NameMappingModifyParams {
-	o.SetNewIndexQueryParameter(newIndex)
+// WithNewIndex adds the newIndex to the name mapping modify params
+func (o *NameMappingModifyParams) WithNewIndex(newIndex *int64) *NameMappingModifyParams {
+	o.SetNewIndex(newIndex)
 	return o
 }
 
-// SetNewIndexQueryParameter adds the newIndex to the name mapping modify params
-func (o *NameMappingModifyParams) SetNewIndexQueryParameter(newIndex *int64) {
-	o.NewIndexQueryParameter = newIndex
+// SetNewIndex adds the newIndex to the name mapping modify params
+func (o *NameMappingModifyParams) SetNewIndex(newIndex *int64) {
+	o.NewIndex = newIndex
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the name mapping modify params
-func (o *NameMappingModifyParams) WithSVMUUIDPathParameter(svmUUID string) *NameMappingModifyParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the name mapping modify params
+func (o *NameMappingModifyParams) WithSvmUUID(svmUUID string) *NameMappingModifyParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the name mapping modify params
-func (o *NameMappingModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the name mapping modify params
+func (o *NameMappingModifyParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -211,12 +211,12 @@ func (o *NameMappingModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	var res []error
 
 	// path param direction
-	if err := r.SetPathParam("direction", o.DirectionPathParameter); err != nil {
+	if err := r.SetPathParam("direction", o.Direction); err != nil {
 		return err
 	}
 
 	// path param index
-	if err := r.SetPathParam("index", swag.FormatInt64(o.IndexPathParameter)); err != nil {
+	if err := r.SetPathParam("index", swag.FormatInt64(o.Index)); err != nil {
 		return err
 	}
 	if o.Info != nil {
@@ -225,13 +225,13 @@ func (o *NameMappingModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.NewIndexQueryParameter != nil {
+	if o.NewIndex != nil {
 
 		// query param new_index
 		var qrNewIndex int64
 
-		if o.NewIndexQueryParameter != nil {
-			qrNewIndex = *o.NewIndexQueryParameter
+		if o.NewIndex != nil {
+			qrNewIndex = *o.NewIndex
 		}
 		qNewIndex := swag.FormatInt64(qrNewIndex)
 		if qNewIndex != "" {
@@ -243,7 +243,7 @@ func (o *NameMappingModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

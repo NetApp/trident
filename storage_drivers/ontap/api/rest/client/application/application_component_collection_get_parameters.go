@@ -66,31 +66,31 @@ type ApplicationComponentCollectionGetParams struct {
 
 	   Application UUID
 	*/
-	ApplicationUUIDPathParameter string
+	ApplicationUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -98,7 +98,7 @@ type ApplicationComponentCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -106,25 +106,25 @@ type ApplicationComponentCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StorageServiceName.
 
 	   Filter by storage_service.name
 	*/
-	StorageServiceNameQueryParameter *string
+	StorageServiceName *string
 
 	/* StorageServiceUUID.
 
 	   Filter by storage_service.uuid
 	*/
-	StorageServiceUUIDQueryParameter *string
+	StorageServiceUUID *string
 
 	/* UUID.
 
 	   Filter by UUID
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -144,14 +144,14 @@ func (o *ApplicationComponentCollectionGetParams) WithDefaults() *ApplicationCom
 // All values with no default are reset to their zero value.
 func (o *ApplicationComponentCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := ApplicationComponentCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -193,114 +193,114 @@ func (o *ApplicationComponentCollectionGetParams) SetHTTPClient(client *http.Cli
 	o.HTTPClient = client
 }
 
-// WithApplicationUUIDPathParameter adds the applicationUUID to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithApplicationUUIDPathParameter(applicationUUID string) *ApplicationComponentCollectionGetParams {
-	o.SetApplicationUUIDPathParameter(applicationUUID)
+// WithApplicationUUID adds the applicationUUID to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithApplicationUUID(applicationUUID string) *ApplicationComponentCollectionGetParams {
+	o.SetApplicationUUID(applicationUUID)
 	return o
 }
 
-// SetApplicationUUIDPathParameter adds the applicationUuid to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetApplicationUUIDPathParameter(applicationUUID string) {
-	o.ApplicationUUIDPathParameter = applicationUUID
+// SetApplicationUUID adds the applicationUuid to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetApplicationUUID(applicationUUID string) {
+	o.ApplicationUUID = applicationUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithFieldsQueryParameter(fields []string) *ApplicationComponentCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithFields(fields []string) *ApplicationComponentCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ApplicationComponentCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithMaxRecords(maxRecords *int64) *ApplicationComponentCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithNameQueryParameter(name *string) *ApplicationComponentCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithName(name *string) *ApplicationComponentCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ApplicationComponentCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithOrderBy(orderBy []string) *ApplicationComponentCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationComponentCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithReturnRecords(returnRecords *bool) *ApplicationComponentCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationComponentCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ApplicationComponentCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStorageServiceNameQueryParameter adds the storageServiceName to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithStorageServiceNameQueryParameter(storageServiceName *string) *ApplicationComponentCollectionGetParams {
-	o.SetStorageServiceNameQueryParameter(storageServiceName)
+// WithStorageServiceName adds the storageServiceName to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithStorageServiceName(storageServiceName *string) *ApplicationComponentCollectionGetParams {
+	o.SetStorageServiceName(storageServiceName)
 	return o
 }
 
-// SetStorageServiceNameQueryParameter adds the storageServiceName to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetStorageServiceNameQueryParameter(storageServiceName *string) {
-	o.StorageServiceNameQueryParameter = storageServiceName
+// SetStorageServiceName adds the storageServiceName to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetStorageServiceName(storageServiceName *string) {
+	o.StorageServiceName = storageServiceName
 }
 
-// WithStorageServiceUUIDQueryParameter adds the storageServiceUUID to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithStorageServiceUUIDQueryParameter(storageServiceUUID *string) *ApplicationComponentCollectionGetParams {
-	o.SetStorageServiceUUIDQueryParameter(storageServiceUUID)
+// WithStorageServiceUUID adds the storageServiceUUID to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithStorageServiceUUID(storageServiceUUID *string) *ApplicationComponentCollectionGetParams {
+	o.SetStorageServiceUUID(storageServiceUUID)
 	return o
 }
 
-// SetStorageServiceUUIDQueryParameter adds the storageServiceUuid to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetStorageServiceUUIDQueryParameter(storageServiceUUID *string) {
-	o.StorageServiceUUIDQueryParameter = storageServiceUUID
+// SetStorageServiceUUID adds the storageServiceUuid to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetStorageServiceUUID(storageServiceUUID *string) {
+	o.StorageServiceUUID = storageServiceUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) WithUUIDQueryParameter(uuid *string) *ApplicationComponentCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) WithUUID(uuid *string) *ApplicationComponentCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the application component collection get params
-func (o *ApplicationComponentCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the application component collection get params
+func (o *ApplicationComponentCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -312,11 +312,11 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 	var res []error
 
 	// path param application.uuid
-	if err := r.SetPathParam("application.uuid", o.ApplicationUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("application.uuid", o.ApplicationUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -327,13 +327,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -344,13 +344,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -361,7 +361,7 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -372,13 +372,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -389,13 +389,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -406,13 +406,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.StorageServiceNameQueryParameter != nil {
+	if o.StorageServiceName != nil {
 
 		// query param storage_service.name
 		var qrStorageServiceName string
 
-		if o.StorageServiceNameQueryParameter != nil {
-			qrStorageServiceName = *o.StorageServiceNameQueryParameter
+		if o.StorageServiceName != nil {
+			qrStorageServiceName = *o.StorageServiceName
 		}
 		qStorageServiceName := qrStorageServiceName
 		if qStorageServiceName != "" {
@@ -423,13 +423,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.StorageServiceUUIDQueryParameter != nil {
+	if o.StorageServiceUUID != nil {
 
 		// query param storage_service.uuid
 		var qrStorageServiceUUID string
 
-		if o.StorageServiceUUIDQueryParameter != nil {
-			qrStorageServiceUUID = *o.StorageServiceUUIDQueryParameter
+		if o.StorageServiceUUID != nil {
+			qrStorageServiceUUID = *o.StorageServiceUUID
 		}
 		qStorageServiceUUID := qrStorageServiceUUID
 		if qStorageServiceUUID != "" {
@@ -440,13 +440,13 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -465,7 +465,7 @@ func (o *ApplicationComponentCollectionGetParams) WriteToRequest(r runtime.Clien
 
 // bindParamApplicationComponentCollectionGet binds the parameter fields
 func (o *ApplicationComponentCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -482,7 +482,7 @@ func (o *ApplicationComponentCollectionGetParams) bindParamFields(formats strfmt
 
 // bindParamApplicationComponentCollectionGet binds the parameter order_by
 func (o *ApplicationComponentCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

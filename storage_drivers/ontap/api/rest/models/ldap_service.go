@@ -21,16 +21,16 @@ import (
 type LdapService struct {
 
 	// links
-	Links *LdapServiceLinks `json:"_links,omitempty"`
+	Links *LdapServiceInlineLinks `json:"_links,omitempty"`
 
 	// This parameter specifies the name of the Active Directory domain
 	// used to discover LDAP servers for use by this client.
 	// This is mutually exclusive with `servers` during POST and PATCH.
 	//
-	AdDomain string `json:"ad_domain,omitempty"`
+	AdDomain *string `json:"ad_domain,omitempty"`
 
 	// Specifies the default base DN for all searches.
-	BaseDn string `json:"base_dn,omitempty"`
+	BaseDn *string `json:"base_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP queries:
 	// * base - search the named entry only
@@ -42,20 +42,20 @@ type LdapService struct {
 
 	// Specifies whether or not CIFS server's credentials are used to bind to the LDAP server.
 	//
-	BindAsCifsServer bool `json:"bind_as_cifs_server,omitempty"`
+	BindAsCifsServer *bool `json:"bind_as_cifs_server,omitempty"`
 
 	// Specifies the user that binds to the LDAP servers.
-	BindDn string `json:"bind_dn,omitempty"`
+	BindDn *string `json:"bind_dn,omitempty"`
 
 	// Specifies the bind password for the LDAP servers.
-	BindPassword string `json:"bind_password,omitempty"`
+	BindPassword *string `json:"bind_password,omitempty"`
 
 	// Specifies the group Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for group lookups.
-	GroupDn string `json:"group_dn,omitempty"`
+	GroupDn *string `json:"group_dn,omitempty"`
 
 	// Specifies the custom filter used for group membership lookups from an LDAP server.
 	//
-	GroupMembershipFilter string `json:"group_membership_filter,omitempty"`
+	GroupMembershipFilter *string `json:"group_membership_filter,omitempty"`
 
 	// Specifies the default search scope for LDAP for group lookups:
 	// * base - search the named entry only
@@ -74,6 +74,12 @@ type LdapService struct {
 	// Read Only: true
 	IsOwner *bool `json:"is_owner,omitempty"`
 
+	// ldap service inline preferred ad servers
+	LdapServiceInlinePreferredAdServers []*string `json:"preferred_ad_servers,omitempty"`
+
+	// ldap service inline servers
+	LdapServiceInlineServers []*string `json:"servers,omitempty"`
+
 	// Specifies whether or not LDAPS is enabled.
 	//
 	LdapsEnabled *bool `json:"ldaps_enabled,omitempty"`
@@ -87,7 +93,7 @@ type LdapService struct {
 	MinBindLevel *string `json:"min_bind_level,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup by host lookups.
-	NetgroupByhostDn string `json:"netgroup_byhost_dn,omitempty"`
+	NetgroupByhostDn *string `json:"netgroup_byhost_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for netgroup by host lookups:
 	// * base - search the named entry only
@@ -98,7 +104,7 @@ type LdapService struct {
 	NetgroupByhostScope *string `json:"netgroup_byhost_scope,omitempty"`
 
 	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup lookups.
-	NetgroupDn string `json:"netgroup_dn,omitempty"`
+	NetgroupDn *string `json:"netgroup_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for netgroup lookups:
 	// * base - search the named entry only
@@ -112,10 +118,7 @@ type LdapService struct {
 	// Example: 389
 	// Maximum: 65535
 	// Minimum: 1
-	Port int64 `json:"port,omitempty"`
-
-	// preferred ad servers
-	PreferredAdServers []string `json:"preferred_ad_servers,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Specifies the maximum time to wait for a query response from the LDAP server, in seconds.
 	//
@@ -134,9 +137,6 @@ type LdapService struct {
 	//
 	Schema *string `json:"schema,omitempty"`
 
-	// servers
-	Servers []string `json:"servers,omitempty"`
-
 	// Specifies the level of security to be used for LDAP communications:
 	// * none - no signing or sealing
 	// * sign - sign LDAP traffic
@@ -150,10 +150,10 @@ type LdapService struct {
 	SkipConfigValidation *bool `json:"skip_config_validation,omitempty"`
 
 	// status
-	Status *LdapServiceStatus `json:"status,omitempty"`
+	Status *LdapServiceInlineStatus `json:"status,omitempty"`
 
 	// svm
-	Svm *LdapServiceSvm `json:"svm,omitempty"`
+	Svm *LdapServiceInlineSvm `json:"svm,omitempty"`
 
 	// Specifies whether or not channel binding is attempted in the case of TLS/LDAPS.
 	//
@@ -164,7 +164,7 @@ type LdapService struct {
 	UseStartTLS *bool `json:"use_start_tls,omitempty"`
 
 	// Specifies the user Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for user lookups.
-	UserDn string `json:"user_dn,omitempty"`
+	UserDn *string `json:"user_dn,omitempty"`
 
 	// Specifies the default search scope for LDAP for user lookups:
 	// * base - search the named entry only
@@ -581,11 +581,11 @@ func (m *LdapService) validatePort(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("port", "body", m.Port, 1, false); err != nil {
+	if err := validate.MinimumInt("port", "body", *m.Port, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("port", "body", m.Port, 65535, false); err != nil {
+	if err := validate.MaximumInt("port", "body", *m.Port, 65535, false); err != nil {
 		return err
 	}
 
@@ -853,17 +853,17 @@ func (m *LdapService) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapServiceLinks ldap service links
+// LdapServiceInlineLinks ldap service inline links
 //
-// swagger:model LdapServiceLinks
-type LdapServiceLinks struct {
+// swagger:model ldap_service_inline__links
+type LdapServiceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ldap service links
-func (m *LdapServiceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap service inline links
+func (m *LdapServiceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -876,7 +876,7 @@ func (m *LdapServiceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapServiceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LdapServiceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -893,8 +893,8 @@ func (m *LdapServiceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap service links based on the context it is used
-func (m *LdapServiceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap service inline links based on the context it is used
+func (m *LdapServiceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -907,7 +907,7 @@ func (m *LdapServiceLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *LdapServiceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapServiceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -922,7 +922,7 @@ func (m *LdapServiceLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *LdapServiceLinks) MarshalBinary() ([]byte, error) {
+func (m *LdapServiceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -930,8 +930,8 @@ func (m *LdapServiceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapServiceLinks) UnmarshalBinary(b []byte) error {
-	var res LdapServiceLinks
+func (m *LdapServiceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LdapServiceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -939,31 +939,31 @@ func (m *LdapServiceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapServiceStatus ldap service status
+// LdapServiceInlineStatus ldap service inline status
 //
-// swagger:model LdapServiceStatus
-type LdapServiceStatus struct {
+// swagger:model ldap_service_inline_status
+type LdapServiceInlineStatus struct {
 
 	// Code corresponding to the status message.
 	//
 	// Example: 65537300
-	Code int64 `json:"code,omitempty"`
+	Code *int64 `json:"code,omitempty"`
 
 	// dn message
-	DnMessage []string `json:"dn_message,omitempty"`
+	DnMessage []*string `json:"dn_message,omitempty"`
 
 	// Provides additional details on the status of the LDAP service.
 	//
-	Message string `json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 
 	// Specifies the status of the LDAP service.
 	//
 	// Enum: [up down]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 }
 
-// Validate validates this ldap service status
-func (m *LdapServiceStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap service inline status
+func (m *LdapServiceInlineStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -976,7 +976,7 @@ func (m *LdapServiceStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var ldapServiceStatusTypeStatePropEnum []interface{}
+var ldapServiceInlineStatusTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -984,56 +984,56 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		ldapServiceStatusTypeStatePropEnum = append(ldapServiceStatusTypeStatePropEnum, v)
+		ldapServiceInlineStatusTypeStatePropEnum = append(ldapServiceInlineStatusTypeStatePropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// LdapServiceStatus
-	// LdapServiceStatus
+	// ldap_service_inline_status
+	// LdapServiceInlineStatus
 	// state
 	// State
 	// up
 	// END DEBUGGING
-	// LdapServiceStatusStateUp captures enum value "up"
-	LdapServiceStatusStateUp string = "up"
+	// LdapServiceInlineStatusStateUp captures enum value "up"
+	LdapServiceInlineStatusStateUp string = "up"
 
 	// BEGIN DEBUGGING
-	// LdapServiceStatus
-	// LdapServiceStatus
+	// ldap_service_inline_status
+	// LdapServiceInlineStatus
 	// state
 	// State
 	// down
 	// END DEBUGGING
-	// LdapServiceStatusStateDown captures enum value "down"
-	LdapServiceStatusStateDown string = "down"
+	// LdapServiceInlineStatusStateDown captures enum value "down"
+	LdapServiceInlineStatusStateDown string = "down"
 )
 
 // prop value enum
-func (m *LdapServiceStatus) validateStateEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, ldapServiceStatusTypeStatePropEnum, true); err != nil {
+func (m *LdapServiceInlineStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceInlineStatusTypeStatePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *LdapServiceStatus) validateState(formats strfmt.Registry) error {
+func (m *LdapServiceInlineStatus) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStateEnum("status"+"."+"state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("status"+"."+"state", "body", *m.State); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this ldap service status based on the context it is used
-func (m *LdapServiceStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap service inline status based on the context it is used
+func (m *LdapServiceInlineStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1043,7 +1043,7 @@ func (m *LdapServiceStatus) ContextValidate(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *LdapServiceStatus) MarshalBinary() ([]byte, error) {
+func (m *LdapServiceInlineStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1051,8 +1051,8 @@ func (m *LdapServiceStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapServiceStatus) UnmarshalBinary(b []byte) error {
-	var res LdapServiceStatus
+func (m *LdapServiceInlineStatus) UnmarshalBinary(b []byte) error {
+	var res LdapServiceInlineStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1060,27 +1060,27 @@ func (m *LdapServiceStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapServiceSvm ldap service svm
+// LdapServiceInlineSvm ldap service inline svm
 //
-// swagger:model LdapServiceSvm
-type LdapServiceSvm struct {
+// swagger:model ldap_service_inline_svm
+type LdapServiceInlineSvm struct {
 
 	// links
-	Links *LdapServiceSvmLinks `json:"_links,omitempty"`
+	Links *LdapServiceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ldap service svm
-func (m *LdapServiceSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap service inline svm
+func (m *LdapServiceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1093,7 +1093,7 @@ func (m *LdapServiceSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapServiceSvm) validateLinks(formats strfmt.Registry) error {
+func (m *LdapServiceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1110,8 +1110,8 @@ func (m *LdapServiceSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap service svm based on the context it is used
-func (m *LdapServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap service inline svm based on the context it is used
+func (m *LdapServiceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1124,7 +1124,7 @@ func (m *LdapServiceSvm) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *LdapServiceSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapServiceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1139,7 +1139,7 @@ func (m *LdapServiceSvm) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *LdapServiceSvm) MarshalBinary() ([]byte, error) {
+func (m *LdapServiceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1147,8 +1147,8 @@ func (m *LdapServiceSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapServiceSvm) UnmarshalBinary(b []byte) error {
-	var res LdapServiceSvm
+func (m *LdapServiceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res LdapServiceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1156,17 +1156,17 @@ func (m *LdapServiceSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LdapServiceSvmLinks ldap service svm links
+// LdapServiceInlineSvmInlineLinks ldap service inline svm inline links
 //
-// swagger:model LdapServiceSvmLinks
-type LdapServiceSvmLinks struct {
+// swagger:model ldap_service_inline_svm_inline__links
+type LdapServiceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ldap service svm links
-func (m *LdapServiceSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ldap service inline svm inline links
+func (m *LdapServiceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1179,7 +1179,7 @@ func (m *LdapServiceSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LdapServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *LdapServiceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1196,8 +1196,8 @@ func (m *LdapServiceSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ldap service svm links based on the context it is used
-func (m *LdapServiceSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ldap service inline svm inline links based on the context it is used
+func (m *LdapServiceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1210,7 +1210,7 @@ func (m *LdapServiceSvmLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *LdapServiceSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *LdapServiceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1225,7 +1225,7 @@ func (m *LdapServiceSvmLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *LdapServiceSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *LdapServiceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1233,8 +1233,8 @@ func (m *LdapServiceSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *LdapServiceSvmLinks) UnmarshalBinary(b []byte) error {
-	var res LdapServiceSvmLinks
+func (m *LdapServiceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res LdapServiceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

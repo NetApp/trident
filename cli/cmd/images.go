@@ -10,13 +10,13 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	operatorconfig "github.com/netapp/trident/operator/config"
-	"github.com/netapp/trident/utils"
+	versionutils "github.com/netapp/trident/utils/version"
 )
 
 var (
@@ -51,12 +51,14 @@ var getImageCmd = &cobra.Command{
 			return nil
 		} else {
 
-			log.SetLevel(log.WarnLevel)
+			if err := InitLogLevel("warn"); err != nil {
+				return err
+			}
 
 			// Create the Kubernetes client
 			var err error
 			if client, err = initClient(); err != nil {
-				log.Fatalf("could not initialize Kubernetes client; %v", err)
+				Log().Fatalf("could not initialize Kubernetes client; %v", err)
 			}
 			return printImages()
 		}
@@ -67,9 +69,9 @@ func printImages() error {
 	err := listImages()
 	if err != nil {
 		if err.Error() == versionNotSupported {
-			log.Fatal(fmt.Sprintln(versionNotSupported, K8sVersion))
+			Log().Fatal(fmt.Sprintln(versionNotSupported, K8sVersion))
 		} else {
-			log.Fatal(fmt.Sprintln(versionNotSemantic, K8sVersion))
+			Log().Fatal(fmt.Sprintln(versionNotSemantic, K8sVersion))
 		}
 	}
 
@@ -78,26 +80,26 @@ func printImages() error {
 
 func listImages() error {
 	var err error
-	var semVersion *utils.Version
+	var semVersion *versionutils.Version
 	k8sVersions := make([]string, 0)
 	imageMap := make(map[string][]string)
 	var installYaml string
 	var yamlErr error
 
 	if K8sVersion == "all" {
-		minMinorVersion := utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
-		maxMinorVersion := utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion()
+		minMinorVersion := versionutils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
+		maxMinorVersion := versionutils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion()
 		for i := minMinorVersion; i <= maxMinorVersion; i++ {
 			semVersion := fmt.Sprintf("v1.%d.0", i)
 			k8sVersions = append(k8sVersions, semVersion)
-			installYaml, yamlErr = getInstallYaml(utils.MustParseSemantic(semVersion))
+			installYaml, yamlErr = getInstallYaml(versionutils.MustParseSemantic(semVersion))
 			if yamlErr != nil {
 				return yamlErr
 			}
 			imageMap[semVersion] = getImageNames(installYaml)
 		}
 	} else {
-		semVersion, err = utils.ParseSemantic(K8sVersion)
+		semVersion, err = versionutils.ParseSemantic(K8sVersion)
 		if err != nil {
 			return err
 		}
@@ -112,10 +114,10 @@ func listImages() error {
 	return nil
 }
 
-func getInstallYaml(semVersion *utils.Version) (string, error) {
+func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 	minorVersion := semVersion.ToMajorMinorVersion().MinorVersion()
-	isSupportedVersion := minorVersion <= utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion() &&
-		minorVersion >= utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
+	isSupportedVersion := minorVersion <= versionutils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion() &&
+		minorVersion >= versionutils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
 
 	if !isSupportedVersion {
 		return "", errors.New(versionNotSupported)
@@ -136,11 +138,11 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		AutosupportHostname:     "",
 		ImageRegistry:           "",
 		LogFormat:               "",
+		LogLevel:                "info",
 		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        []string{},
 		Labels:                  map[string]string{},
 		ControllingCRDetails:    map[string]string{},
-		Debug:                   false,
 		UseIPv6:                 false,
 		SilenceAutosupport:      true,
 		Version:                 semVersion,
@@ -156,11 +158,11 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		ImageRegistry:        "",
 		KubeletDir:           "",
 		LogFormat:            "",
+		LogLevel:             "info",
 		ProbePort:            "",
 		ImagePullSecrets:     []string{},
 		Labels:               map[string]string{},
 		ControllingCRDetails: map[string]string{},
-		Debug:                false,
 		Version:              semVersion,
 		HTTPRequestTimeout:   tridentconfig.HTTPTimeoutString,
 		ServiceAccountName:   getNodeRBACResourceName(false),

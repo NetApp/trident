@@ -66,115 +66,115 @@ type AzureKeyVaultCollectionGetParams struct {
 
 	   Filter by authentication_method
 	*/
-	AuthenticationMethodQueryParameter *string
+	AuthenticationMethod *string
 
 	/* AzureReachabilityCode.
 
 	   Filter by azure_reachability.code
 	*/
-	AzureReachabilityCodeQueryParameter *int64
+	AzureReachabilityCode *string
 
 	/* AzureReachabilityMessage.
 
 	   Filter by azure_reachability.message
 	*/
-	AzureReachabilityMessageQueryParameter *string
+	AzureReachabilityMessage *string
 
 	/* AzureReachabilityReachable.
 
 	   Filter by azure_reachability.reachable
 	*/
-	AzureReachabilityReachableQueryParameter *bool
+	AzureReachabilityReachable *bool
 
 	/* ClientID.
 
 	   Filter by client_id
 	*/
-	ClientIDQueryParameter *string
+	ClientID *string
 
 	/* EkmipReachabilityCode.
 
 	   Filter by ekmip_reachability.code
 	*/
-	EkmIPReachabilityCodeQueryParameter *int64
+	EkmipReachabilityCode *string
 
 	/* EkmipReachabilityMessage.
 
 	   Filter by ekmip_reachability.message
 	*/
-	EkmIPReachabilityMessageQueryParameter *string
+	EkmipReachabilityMessage *string
 
 	/* EkmipReachabilityNodeName.
 
 	   Filter by ekmip_reachability.node.name
 	*/
-	EkmIPReachabilityNodeNameQueryParameter *string
+	EkmipReachabilityNodeName *string
 
 	/* EkmipReachabilityNodeUUID.
 
 	   Filter by ekmip_reachability.node.uuid
 	*/
-	EkmIPReachabilityNodeUUIDQueryParameter *string
+	EkmipReachabilityNodeUUID *string
 
 	/* EkmipReachabilityReachable.
 
 	   Filter by ekmip_reachability.reachable
 	*/
-	EkmIPReachabilityReachableQueryParameter *bool
+	EkmipReachabilityReachable *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* KeyID.
 
 	   Filter by key_id
 	*/
-	KeyIDQueryParameter *string
+	KeyID *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ProxyHost.
 
 	   Filter by proxy_host
 	*/
-	ProxyHostQueryParameter *string
+	ProxyHost *string
 
 	/* ProxyPort.
 
 	   Filter by proxy_port
 	*/
-	ProxyPortQueryParameter *int64
+	ProxyPort *int64
 
 	/* ProxyType.
 
 	   Filter by proxy_type
 	*/
-	ProxyTypeQueryParameter *string
+	ProxyType *string
 
 	/* ProxyUsername.
 
 	   Filter by proxy_username
 	*/
-	ProxyUsernameQueryParameter *string
+	ProxyUsername *string
 
 	/* ReturnRecords.
 
@@ -182,7 +182,7 @@ type AzureKeyVaultCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -190,55 +190,55 @@ type AzureKeyVaultCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* StateAvailable.
 
 	   Filter by state.available
 	*/
-	StateAvailableQueryParameter *bool
+	StateAvailable *bool
 
 	/* StateCode.
 
 	   Filter by state.code
 	*/
-	StateCodeQueryParameter *int64
+	StateCode *string
 
 	/* StateMessage.
 
 	   Filter by state.message
 	*/
-	StateMessageQueryParameter *string
+	StateMessage *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* TenantID.
 
 	   Filter by tenant_id
 	*/
-	TenantIDQueryParameter *string
+	TenantID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -258,14 +258,14 @@ func (o *AzureKeyVaultCollectionGetParams) WithDefaults() *AzureKeyVaultCollecti
 // All values with no default are reset to their zero value.
 func (o *AzureKeyVaultCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := AzureKeyVaultCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -307,323 +307,323 @@ func (o *AzureKeyVaultCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationMethodQueryParameter adds the authenticationMethod to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithAuthenticationMethodQueryParameter(authenticationMethod *string) *AzureKeyVaultCollectionGetParams {
-	o.SetAuthenticationMethodQueryParameter(authenticationMethod)
+// WithAuthenticationMethod adds the authenticationMethod to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithAuthenticationMethod(authenticationMethod *string) *AzureKeyVaultCollectionGetParams {
+	o.SetAuthenticationMethod(authenticationMethod)
 	return o
 }
 
-// SetAuthenticationMethodQueryParameter adds the authenticationMethod to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetAuthenticationMethodQueryParameter(authenticationMethod *string) {
-	o.AuthenticationMethodQueryParameter = authenticationMethod
+// SetAuthenticationMethod adds the authenticationMethod to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetAuthenticationMethod(authenticationMethod *string) {
+	o.AuthenticationMethod = authenticationMethod
 }
 
-// WithAzureReachabilityCodeQueryParameter adds the azureReachabilityCode to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithAzureReachabilityCodeQueryParameter(azureReachabilityCode *int64) *AzureKeyVaultCollectionGetParams {
-	o.SetAzureReachabilityCodeQueryParameter(azureReachabilityCode)
+// WithAzureReachabilityCode adds the azureReachabilityCode to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithAzureReachabilityCode(azureReachabilityCode *string) *AzureKeyVaultCollectionGetParams {
+	o.SetAzureReachabilityCode(azureReachabilityCode)
 	return o
 }
 
-// SetAzureReachabilityCodeQueryParameter adds the azureReachabilityCode to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetAzureReachabilityCodeQueryParameter(azureReachabilityCode *int64) {
-	o.AzureReachabilityCodeQueryParameter = azureReachabilityCode
+// SetAzureReachabilityCode adds the azureReachabilityCode to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetAzureReachabilityCode(azureReachabilityCode *string) {
+	o.AzureReachabilityCode = azureReachabilityCode
 }
 
-// WithAzureReachabilityMessageQueryParameter adds the azureReachabilityMessage to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithAzureReachabilityMessageQueryParameter(azureReachabilityMessage *string) *AzureKeyVaultCollectionGetParams {
-	o.SetAzureReachabilityMessageQueryParameter(azureReachabilityMessage)
+// WithAzureReachabilityMessage adds the azureReachabilityMessage to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithAzureReachabilityMessage(azureReachabilityMessage *string) *AzureKeyVaultCollectionGetParams {
+	o.SetAzureReachabilityMessage(azureReachabilityMessage)
 	return o
 }
 
-// SetAzureReachabilityMessageQueryParameter adds the azureReachabilityMessage to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetAzureReachabilityMessageQueryParameter(azureReachabilityMessage *string) {
-	o.AzureReachabilityMessageQueryParameter = azureReachabilityMessage
+// SetAzureReachabilityMessage adds the azureReachabilityMessage to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetAzureReachabilityMessage(azureReachabilityMessage *string) {
+	o.AzureReachabilityMessage = azureReachabilityMessage
 }
 
-// WithAzureReachabilityReachableQueryParameter adds the azureReachabilityReachable to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithAzureReachabilityReachableQueryParameter(azureReachabilityReachable *bool) *AzureKeyVaultCollectionGetParams {
-	o.SetAzureReachabilityReachableQueryParameter(azureReachabilityReachable)
+// WithAzureReachabilityReachable adds the azureReachabilityReachable to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithAzureReachabilityReachable(azureReachabilityReachable *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetAzureReachabilityReachable(azureReachabilityReachable)
 	return o
 }
 
-// SetAzureReachabilityReachableQueryParameter adds the azureReachabilityReachable to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetAzureReachabilityReachableQueryParameter(azureReachabilityReachable *bool) {
-	o.AzureReachabilityReachableQueryParameter = azureReachabilityReachable
+// SetAzureReachabilityReachable adds the azureReachabilityReachable to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetAzureReachabilityReachable(azureReachabilityReachable *bool) {
+	o.AzureReachabilityReachable = azureReachabilityReachable
 }
 
-// WithClientIDQueryParameter adds the clientID to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithClientIDQueryParameter(clientID *string) *AzureKeyVaultCollectionGetParams {
-	o.SetClientIDQueryParameter(clientID)
+// WithClientID adds the clientID to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithClientID(clientID *string) *AzureKeyVaultCollectionGetParams {
+	o.SetClientID(clientID)
 	return o
 }
 
-// SetClientIDQueryParameter adds the clientId to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetClientIDQueryParameter(clientID *string) {
-	o.ClientIDQueryParameter = clientID
+// SetClientID adds the clientId to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetClientID(clientID *string) {
+	o.ClientID = clientID
 }
 
-// WithEkmIPReachabilityCodeQueryParameter adds the ekmipReachabilityCode to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithEkmIPReachabilityCodeQueryParameter(ekmipReachabilityCode *int64) *AzureKeyVaultCollectionGetParams {
-	o.SetEkmIPReachabilityCodeQueryParameter(ekmipReachabilityCode)
+// WithEkmipReachabilityCode adds the ekmipReachabilityCode to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithEkmipReachabilityCode(ekmipReachabilityCode *string) *AzureKeyVaultCollectionGetParams {
+	o.SetEkmipReachabilityCode(ekmipReachabilityCode)
 	return o
 }
 
-// SetEkmIPReachabilityCodeQueryParameter adds the ekmipReachabilityCode to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetEkmIPReachabilityCodeQueryParameter(ekmipReachabilityCode *int64) {
-	o.EkmIPReachabilityCodeQueryParameter = ekmipReachabilityCode
+// SetEkmipReachabilityCode adds the ekmipReachabilityCode to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetEkmipReachabilityCode(ekmipReachabilityCode *string) {
+	o.EkmipReachabilityCode = ekmipReachabilityCode
 }
 
-// WithEkmIPReachabilityMessageQueryParameter adds the ekmipReachabilityMessage to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithEkmIPReachabilityMessageQueryParameter(ekmipReachabilityMessage *string) *AzureKeyVaultCollectionGetParams {
-	o.SetEkmIPReachabilityMessageQueryParameter(ekmipReachabilityMessage)
+// WithEkmipReachabilityMessage adds the ekmipReachabilityMessage to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithEkmipReachabilityMessage(ekmipReachabilityMessage *string) *AzureKeyVaultCollectionGetParams {
+	o.SetEkmipReachabilityMessage(ekmipReachabilityMessage)
 	return o
 }
 
-// SetEkmIPReachabilityMessageQueryParameter adds the ekmipReachabilityMessage to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetEkmIPReachabilityMessageQueryParameter(ekmipReachabilityMessage *string) {
-	o.EkmIPReachabilityMessageQueryParameter = ekmipReachabilityMessage
+// SetEkmipReachabilityMessage adds the ekmipReachabilityMessage to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetEkmipReachabilityMessage(ekmipReachabilityMessage *string) {
+	o.EkmipReachabilityMessage = ekmipReachabilityMessage
 }
 
-// WithEkmIPReachabilityNodeNameQueryParameter adds the ekmipReachabilityNodeName to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithEkmIPReachabilityNodeNameQueryParameter(ekmipReachabilityNodeName *string) *AzureKeyVaultCollectionGetParams {
-	o.SetEkmIPReachabilityNodeNameQueryParameter(ekmipReachabilityNodeName)
+// WithEkmipReachabilityNodeName adds the ekmipReachabilityNodeName to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithEkmipReachabilityNodeName(ekmipReachabilityNodeName *string) *AzureKeyVaultCollectionGetParams {
+	o.SetEkmipReachabilityNodeName(ekmipReachabilityNodeName)
 	return o
 }
 
-// SetEkmIPReachabilityNodeNameQueryParameter adds the ekmipReachabilityNodeName to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetEkmIPReachabilityNodeNameQueryParameter(ekmipReachabilityNodeName *string) {
-	o.EkmIPReachabilityNodeNameQueryParameter = ekmipReachabilityNodeName
+// SetEkmipReachabilityNodeName adds the ekmipReachabilityNodeName to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetEkmipReachabilityNodeName(ekmipReachabilityNodeName *string) {
+	o.EkmipReachabilityNodeName = ekmipReachabilityNodeName
 }
 
-// WithEkmIPReachabilityNodeUUIDQueryParameter adds the ekmipReachabilityNodeUUID to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithEkmIPReachabilityNodeUUIDQueryParameter(ekmipReachabilityNodeUUID *string) *AzureKeyVaultCollectionGetParams {
-	o.SetEkmIPReachabilityNodeUUIDQueryParameter(ekmipReachabilityNodeUUID)
+// WithEkmipReachabilityNodeUUID adds the ekmipReachabilityNodeUUID to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithEkmipReachabilityNodeUUID(ekmipReachabilityNodeUUID *string) *AzureKeyVaultCollectionGetParams {
+	o.SetEkmipReachabilityNodeUUID(ekmipReachabilityNodeUUID)
 	return o
 }
 
-// SetEkmIPReachabilityNodeUUIDQueryParameter adds the ekmipReachabilityNodeUuid to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetEkmIPReachabilityNodeUUIDQueryParameter(ekmipReachabilityNodeUUID *string) {
-	o.EkmIPReachabilityNodeUUIDQueryParameter = ekmipReachabilityNodeUUID
+// SetEkmipReachabilityNodeUUID adds the ekmipReachabilityNodeUuid to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetEkmipReachabilityNodeUUID(ekmipReachabilityNodeUUID *string) {
+	o.EkmipReachabilityNodeUUID = ekmipReachabilityNodeUUID
 }
 
-// WithEkmIPReachabilityReachableQueryParameter adds the ekmipReachabilityReachable to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithEkmIPReachabilityReachableQueryParameter(ekmipReachabilityReachable *bool) *AzureKeyVaultCollectionGetParams {
-	o.SetEkmIPReachabilityReachableQueryParameter(ekmipReachabilityReachable)
+// WithEkmipReachabilityReachable adds the ekmipReachabilityReachable to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithEkmipReachabilityReachable(ekmipReachabilityReachable *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetEkmipReachabilityReachable(ekmipReachabilityReachable)
 	return o
 }
 
-// SetEkmIPReachabilityReachableQueryParameter adds the ekmipReachabilityReachable to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetEkmIPReachabilityReachableQueryParameter(ekmipReachabilityReachable *bool) {
-	o.EkmIPReachabilityReachableQueryParameter = ekmipReachabilityReachable
+// SetEkmipReachabilityReachable adds the ekmipReachabilityReachable to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetEkmipReachabilityReachable(ekmipReachabilityReachable *bool) {
+	o.EkmipReachabilityReachable = ekmipReachabilityReachable
 }
 
-// WithFieldsQueryParameter adds the fields to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithFieldsQueryParameter(fields []string) *AzureKeyVaultCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithFields(fields []string) *AzureKeyVaultCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithKeyIDQueryParameter adds the keyID to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithKeyIDQueryParameter(keyID *string) *AzureKeyVaultCollectionGetParams {
-	o.SetKeyIDQueryParameter(keyID)
+// WithKeyID adds the keyID to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithKeyID(keyID *string) *AzureKeyVaultCollectionGetParams {
+	o.SetKeyID(keyID)
 	return o
 }
 
-// SetKeyIDQueryParameter adds the keyId to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetKeyIDQueryParameter(keyID *string) {
-	o.KeyIDQueryParameter = keyID
+// SetKeyID adds the keyId to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetKeyID(keyID *string) {
+	o.KeyID = keyID
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AzureKeyVaultCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithMaxRecords(maxRecords *int64) *AzureKeyVaultCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithNameQueryParameter(name *string) *AzureKeyVaultCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithName(name *string) *AzureKeyVaultCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AzureKeyVaultCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithOrderBy(orderBy []string) *AzureKeyVaultCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProxyHostQueryParameter adds the proxyHost to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithProxyHostQueryParameter(proxyHost *string) *AzureKeyVaultCollectionGetParams {
-	o.SetProxyHostQueryParameter(proxyHost)
+// WithProxyHost adds the proxyHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithProxyHost(proxyHost *string) *AzureKeyVaultCollectionGetParams {
+	o.SetProxyHost(proxyHost)
 	return o
 }
 
-// SetProxyHostQueryParameter adds the proxyHost to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetProxyHostQueryParameter(proxyHost *string) {
-	o.ProxyHostQueryParameter = proxyHost
+// SetProxyHost adds the proxyHost to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetProxyHost(proxyHost *string) {
+	o.ProxyHost = proxyHost
 }
 
-// WithProxyPortQueryParameter adds the proxyPort to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithProxyPortQueryParameter(proxyPort *int64) *AzureKeyVaultCollectionGetParams {
-	o.SetProxyPortQueryParameter(proxyPort)
+// WithProxyPort adds the proxyPort to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithProxyPort(proxyPort *int64) *AzureKeyVaultCollectionGetParams {
+	o.SetProxyPort(proxyPort)
 	return o
 }
 
-// SetProxyPortQueryParameter adds the proxyPort to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetProxyPortQueryParameter(proxyPort *int64) {
-	o.ProxyPortQueryParameter = proxyPort
+// SetProxyPort adds the proxyPort to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetProxyPort(proxyPort *int64) {
+	o.ProxyPort = proxyPort
 }
 
-// WithProxyTypeQueryParameter adds the proxyType to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithProxyTypeQueryParameter(proxyType *string) *AzureKeyVaultCollectionGetParams {
-	o.SetProxyTypeQueryParameter(proxyType)
+// WithProxyType adds the proxyType to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithProxyType(proxyType *string) *AzureKeyVaultCollectionGetParams {
+	o.SetProxyType(proxyType)
 	return o
 }
 
-// SetProxyTypeQueryParameter adds the proxyType to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetProxyTypeQueryParameter(proxyType *string) {
-	o.ProxyTypeQueryParameter = proxyType
+// SetProxyType adds the proxyType to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetProxyType(proxyType *string) {
+	o.ProxyType = proxyType
 }
 
-// WithProxyUsernameQueryParameter adds the proxyUsername to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithProxyUsernameQueryParameter(proxyUsername *string) *AzureKeyVaultCollectionGetParams {
-	o.SetProxyUsernameQueryParameter(proxyUsername)
+// WithProxyUsername adds the proxyUsername to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithProxyUsername(proxyUsername *string) *AzureKeyVaultCollectionGetParams {
+	o.SetProxyUsername(proxyUsername)
 	return o
 }
 
-// SetProxyUsernameQueryParameter adds the proxyUsername to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetProxyUsernameQueryParameter(proxyUsername *string) {
-	o.ProxyUsernameQueryParameter = proxyUsername
+// SetProxyUsername adds the proxyUsername to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetProxyUsername(proxyUsername *string) {
+	o.ProxyUsername = proxyUsername
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AzureKeyVaultCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithReturnRecords(returnRecords *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AzureKeyVaultCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AzureKeyVaultCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithScopeQueryParameter(scope *string) *AzureKeyVaultCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithScope(scope *string) *AzureKeyVaultCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithStateAvailableQueryParameter adds the stateAvailable to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithStateAvailableQueryParameter(stateAvailable *bool) *AzureKeyVaultCollectionGetParams {
-	o.SetStateAvailableQueryParameter(stateAvailable)
+// WithStateAvailable adds the stateAvailable to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithStateAvailable(stateAvailable *bool) *AzureKeyVaultCollectionGetParams {
+	o.SetStateAvailable(stateAvailable)
 	return o
 }
 
-// SetStateAvailableQueryParameter adds the stateAvailable to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetStateAvailableQueryParameter(stateAvailable *bool) {
-	o.StateAvailableQueryParameter = stateAvailable
+// SetStateAvailable adds the stateAvailable to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetStateAvailable(stateAvailable *bool) {
+	o.StateAvailable = stateAvailable
 }
 
-// WithStateCodeQueryParameter adds the stateCode to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithStateCodeQueryParameter(stateCode *int64) *AzureKeyVaultCollectionGetParams {
-	o.SetStateCodeQueryParameter(stateCode)
+// WithStateCode adds the stateCode to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithStateCode(stateCode *string) *AzureKeyVaultCollectionGetParams {
+	o.SetStateCode(stateCode)
 	return o
 }
 
-// SetStateCodeQueryParameter adds the stateCode to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetStateCodeQueryParameter(stateCode *int64) {
-	o.StateCodeQueryParameter = stateCode
+// SetStateCode adds the stateCode to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetStateCode(stateCode *string) {
+	o.StateCode = stateCode
 }
 
-// WithStateMessageQueryParameter adds the stateMessage to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithStateMessageQueryParameter(stateMessage *string) *AzureKeyVaultCollectionGetParams {
-	o.SetStateMessageQueryParameter(stateMessage)
+// WithStateMessage adds the stateMessage to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithStateMessage(stateMessage *string) *AzureKeyVaultCollectionGetParams {
+	o.SetStateMessage(stateMessage)
 	return o
 }
 
-// SetStateMessageQueryParameter adds the stateMessage to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetStateMessageQueryParameter(stateMessage *string) {
-	o.StateMessageQueryParameter = stateMessage
+// SetStateMessage adds the stateMessage to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetStateMessage(stateMessage *string) {
+	o.StateMessage = stateMessage
 }
 
-// WithSVMNameQueryParameter adds the svmName to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *AzureKeyVaultCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithSvmName(svmName *string) *AzureKeyVaultCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *AzureKeyVaultCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithSvmUUID(svmUUID *string) *AzureKeyVaultCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTenantIDQueryParameter adds the tenantID to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithTenantIDQueryParameter(tenantID *string) *AzureKeyVaultCollectionGetParams {
-	o.SetTenantIDQueryParameter(tenantID)
+// WithTenantID adds the tenantID to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithTenantID(tenantID *string) *AzureKeyVaultCollectionGetParams {
+	o.SetTenantID(tenantID)
 	return o
 }
 
-// SetTenantIDQueryParameter adds the tenantId to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetTenantIDQueryParameter(tenantID *string) {
-	o.TenantIDQueryParameter = tenantID
+// SetTenantID adds the tenantId to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetTenantID(tenantID *string) {
+	o.TenantID = tenantID
 }
 
-// WithUUIDQueryParameter adds the uuid to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) WithUUIDQueryParameter(uuid *string) *AzureKeyVaultCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithUUID(uuid *string) *AzureKeyVaultCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the azure key vault collection get params
-func (o *AzureKeyVaultCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -634,13 +634,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.AuthenticationMethodQueryParameter != nil {
+	if o.AuthenticationMethod != nil {
 
 		// query param authentication_method
 		var qrAuthenticationMethod string
 
-		if o.AuthenticationMethodQueryParameter != nil {
-			qrAuthenticationMethod = *o.AuthenticationMethodQueryParameter
+		if o.AuthenticationMethod != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethod
 		}
 		qAuthenticationMethod := qrAuthenticationMethod
 		if qAuthenticationMethod != "" {
@@ -651,15 +651,15 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.AzureReachabilityCodeQueryParameter != nil {
+	if o.AzureReachabilityCode != nil {
 
 		// query param azure_reachability.code
-		var qrAzureReachabilityCode int64
+		var qrAzureReachabilityCode string
 
-		if o.AzureReachabilityCodeQueryParameter != nil {
-			qrAzureReachabilityCode = *o.AzureReachabilityCodeQueryParameter
+		if o.AzureReachabilityCode != nil {
+			qrAzureReachabilityCode = *o.AzureReachabilityCode
 		}
-		qAzureReachabilityCode := swag.FormatInt64(qrAzureReachabilityCode)
+		qAzureReachabilityCode := qrAzureReachabilityCode
 		if qAzureReachabilityCode != "" {
 
 			if err := r.SetQueryParam("azure_reachability.code", qAzureReachabilityCode); err != nil {
@@ -668,13 +668,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.AzureReachabilityMessageQueryParameter != nil {
+	if o.AzureReachabilityMessage != nil {
 
 		// query param azure_reachability.message
 		var qrAzureReachabilityMessage string
 
-		if o.AzureReachabilityMessageQueryParameter != nil {
-			qrAzureReachabilityMessage = *o.AzureReachabilityMessageQueryParameter
+		if o.AzureReachabilityMessage != nil {
+			qrAzureReachabilityMessage = *o.AzureReachabilityMessage
 		}
 		qAzureReachabilityMessage := qrAzureReachabilityMessage
 		if qAzureReachabilityMessage != "" {
@@ -685,13 +685,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.AzureReachabilityReachableQueryParameter != nil {
+	if o.AzureReachabilityReachable != nil {
 
 		// query param azure_reachability.reachable
 		var qrAzureReachabilityReachable bool
 
-		if o.AzureReachabilityReachableQueryParameter != nil {
-			qrAzureReachabilityReachable = *o.AzureReachabilityReachableQueryParameter
+		if o.AzureReachabilityReachable != nil {
+			qrAzureReachabilityReachable = *o.AzureReachabilityReachable
 		}
 		qAzureReachabilityReachable := swag.FormatBool(qrAzureReachabilityReachable)
 		if qAzureReachabilityReachable != "" {
@@ -702,13 +702,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ClientIDQueryParameter != nil {
+	if o.ClientID != nil {
 
 		// query param client_id
 		var qrClientID string
 
-		if o.ClientIDQueryParameter != nil {
-			qrClientID = *o.ClientIDQueryParameter
+		if o.ClientID != nil {
+			qrClientID = *o.ClientID
 		}
 		qClientID := qrClientID
 		if qClientID != "" {
@@ -719,15 +719,15 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EkmIPReachabilityCodeQueryParameter != nil {
+	if o.EkmipReachabilityCode != nil {
 
 		// query param ekmip_reachability.code
-		var qrEkmipReachabilityCode int64
+		var qrEkmipReachabilityCode string
 
-		if o.EkmIPReachabilityCodeQueryParameter != nil {
-			qrEkmipReachabilityCode = *o.EkmIPReachabilityCodeQueryParameter
+		if o.EkmipReachabilityCode != nil {
+			qrEkmipReachabilityCode = *o.EkmipReachabilityCode
 		}
-		qEkmipReachabilityCode := swag.FormatInt64(qrEkmipReachabilityCode)
+		qEkmipReachabilityCode := qrEkmipReachabilityCode
 		if qEkmipReachabilityCode != "" {
 
 			if err := r.SetQueryParam("ekmip_reachability.code", qEkmipReachabilityCode); err != nil {
@@ -736,13 +736,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EkmIPReachabilityMessageQueryParameter != nil {
+	if o.EkmipReachabilityMessage != nil {
 
 		// query param ekmip_reachability.message
 		var qrEkmipReachabilityMessage string
 
-		if o.EkmIPReachabilityMessageQueryParameter != nil {
-			qrEkmipReachabilityMessage = *o.EkmIPReachabilityMessageQueryParameter
+		if o.EkmipReachabilityMessage != nil {
+			qrEkmipReachabilityMessage = *o.EkmipReachabilityMessage
 		}
 		qEkmipReachabilityMessage := qrEkmipReachabilityMessage
 		if qEkmipReachabilityMessage != "" {
@@ -753,13 +753,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EkmIPReachabilityNodeNameQueryParameter != nil {
+	if o.EkmipReachabilityNodeName != nil {
 
 		// query param ekmip_reachability.node.name
 		var qrEkmipReachabilityNodeName string
 
-		if o.EkmIPReachabilityNodeNameQueryParameter != nil {
-			qrEkmipReachabilityNodeName = *o.EkmIPReachabilityNodeNameQueryParameter
+		if o.EkmipReachabilityNodeName != nil {
+			qrEkmipReachabilityNodeName = *o.EkmipReachabilityNodeName
 		}
 		qEkmipReachabilityNodeName := qrEkmipReachabilityNodeName
 		if qEkmipReachabilityNodeName != "" {
@@ -770,13 +770,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EkmIPReachabilityNodeUUIDQueryParameter != nil {
+	if o.EkmipReachabilityNodeUUID != nil {
 
 		// query param ekmip_reachability.node.uuid
 		var qrEkmipReachabilityNodeUUID string
 
-		if o.EkmIPReachabilityNodeUUIDQueryParameter != nil {
-			qrEkmipReachabilityNodeUUID = *o.EkmIPReachabilityNodeUUIDQueryParameter
+		if o.EkmipReachabilityNodeUUID != nil {
+			qrEkmipReachabilityNodeUUID = *o.EkmipReachabilityNodeUUID
 		}
 		qEkmipReachabilityNodeUUID := qrEkmipReachabilityNodeUUID
 		if qEkmipReachabilityNodeUUID != "" {
@@ -787,13 +787,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.EkmIPReachabilityReachableQueryParameter != nil {
+	if o.EkmipReachabilityReachable != nil {
 
 		// query param ekmip_reachability.reachable
 		var qrEkmipReachabilityReachable bool
 
-		if o.EkmIPReachabilityReachableQueryParameter != nil {
-			qrEkmipReachabilityReachable = *o.EkmIPReachabilityReachableQueryParameter
+		if o.EkmipReachabilityReachable != nil {
+			qrEkmipReachabilityReachable = *o.EkmipReachabilityReachable
 		}
 		qEkmipReachabilityReachable := swag.FormatBool(qrEkmipReachabilityReachable)
 		if qEkmipReachabilityReachable != "" {
@@ -804,7 +804,7 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -815,13 +815,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.KeyIDQueryParameter != nil {
+	if o.KeyID != nil {
 
 		// query param key_id
 		var qrKeyID string
 
-		if o.KeyIDQueryParameter != nil {
-			qrKeyID = *o.KeyIDQueryParameter
+		if o.KeyID != nil {
+			qrKeyID = *o.KeyID
 		}
 		qKeyID := qrKeyID
 		if qKeyID != "" {
@@ -832,13 +832,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -849,13 +849,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -866,7 +866,7 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -877,13 +877,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ProxyHostQueryParameter != nil {
+	if o.ProxyHost != nil {
 
 		// query param proxy_host
 		var qrProxyHost string
 
-		if o.ProxyHostQueryParameter != nil {
-			qrProxyHost = *o.ProxyHostQueryParameter
+		if o.ProxyHost != nil {
+			qrProxyHost = *o.ProxyHost
 		}
 		qProxyHost := qrProxyHost
 		if qProxyHost != "" {
@@ -894,13 +894,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ProxyPortQueryParameter != nil {
+	if o.ProxyPort != nil {
 
 		// query param proxy_port
 		var qrProxyPort int64
 
-		if o.ProxyPortQueryParameter != nil {
-			qrProxyPort = *o.ProxyPortQueryParameter
+		if o.ProxyPort != nil {
+			qrProxyPort = *o.ProxyPort
 		}
 		qProxyPort := swag.FormatInt64(qrProxyPort)
 		if qProxyPort != "" {
@@ -911,13 +911,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ProxyTypeQueryParameter != nil {
+	if o.ProxyType != nil {
 
 		// query param proxy_type
 		var qrProxyType string
 
-		if o.ProxyTypeQueryParameter != nil {
-			qrProxyType = *o.ProxyTypeQueryParameter
+		if o.ProxyType != nil {
+			qrProxyType = *o.ProxyType
 		}
 		qProxyType := qrProxyType
 		if qProxyType != "" {
@@ -928,13 +928,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ProxyUsernameQueryParameter != nil {
+	if o.ProxyUsername != nil {
 
 		// query param proxy_username
 		var qrProxyUsername string
 
-		if o.ProxyUsernameQueryParameter != nil {
-			qrProxyUsername = *o.ProxyUsernameQueryParameter
+		if o.ProxyUsername != nil {
+			qrProxyUsername = *o.ProxyUsername
 		}
 		qProxyUsername := qrProxyUsername
 		if qProxyUsername != "" {
@@ -945,13 +945,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -962,13 +962,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -979,13 +979,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -996,13 +996,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StateAvailableQueryParameter != nil {
+	if o.StateAvailable != nil {
 
 		// query param state.available
 		var qrStateAvailable bool
 
-		if o.StateAvailableQueryParameter != nil {
-			qrStateAvailable = *o.StateAvailableQueryParameter
+		if o.StateAvailable != nil {
+			qrStateAvailable = *o.StateAvailable
 		}
 		qStateAvailable := swag.FormatBool(qrStateAvailable)
 		if qStateAvailable != "" {
@@ -1013,15 +1013,15 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StateCodeQueryParameter != nil {
+	if o.StateCode != nil {
 
 		// query param state.code
-		var qrStateCode int64
+		var qrStateCode string
 
-		if o.StateCodeQueryParameter != nil {
-			qrStateCode = *o.StateCodeQueryParameter
+		if o.StateCode != nil {
+			qrStateCode = *o.StateCode
 		}
-		qStateCode := swag.FormatInt64(qrStateCode)
+		qStateCode := qrStateCode
 		if qStateCode != "" {
 
 			if err := r.SetQueryParam("state.code", qStateCode); err != nil {
@@ -1030,13 +1030,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.StateMessageQueryParameter != nil {
+	if o.StateMessage != nil {
 
 		// query param state.message
 		var qrStateMessage string
 
-		if o.StateMessageQueryParameter != nil {
-			qrStateMessage = *o.StateMessageQueryParameter
+		if o.StateMessage != nil {
+			qrStateMessage = *o.StateMessage
 		}
 		qStateMessage := qrStateMessage
 		if qStateMessage != "" {
@@ -1047,13 +1047,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1064,13 +1064,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1081,13 +1081,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.TenantIDQueryParameter != nil {
+	if o.TenantID != nil {
 
 		// query param tenant_id
 		var qrTenantID string
 
-		if o.TenantIDQueryParameter != nil {
-			qrTenantID = *o.TenantIDQueryParameter
+		if o.TenantID != nil {
+			qrTenantID = *o.TenantID
 		}
 		qTenantID := qrTenantID
 		if qTenantID != "" {
@@ -1098,13 +1098,13 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1123,7 +1123,7 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamAzureKeyVaultCollectionGet binds the parameter fields
 func (o *AzureKeyVaultCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1140,7 +1140,7 @@ func (o *AzureKeyVaultCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamAzureKeyVaultCollectionGet binds the parameter order_by
 func (o *AzureKeyVaultCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

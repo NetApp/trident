@@ -20,13 +20,14 @@ import (
 type RoleResponse struct {
 
 	// links
-	Links *RoleResponseLinks `json:"_links,omitempty"`
+	Links *RoleResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*Role `json:"records,omitempty"`
+	// role response inline records
+	RoleResponseInlineRecords []*Role `json:"records,omitempty"`
 }
 
 // Validate validates this role response
@@ -37,7 +38,7 @@ func (m *RoleResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateRoleResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *RoleResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *RoleResponse) validateRoleResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.RoleResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.RoleResponseInlineRecords); i++ {
+		if swag.IsZero(m.RoleResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.RoleResponseInlineRecords[i] != nil {
+			if err := m.RoleResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *RoleResponse) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateRoleResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *RoleResponse) contextValidateLinks(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *RoleResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleResponse) contextValidateRoleResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.RoleResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.RoleResponseInlineRecords[i] != nil {
+			if err := m.RoleResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *RoleResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// RoleResponseLinks role response links
+// RoleResponseInlineLinks role response inline links
 //
-// swagger:model RoleResponseLinks
-type RoleResponseLinks struct {
+// swagger:model role_response_inline__links
+type RoleResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type RoleResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this role response links
-func (m *RoleResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this role response inline links
+func (m *RoleResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *RoleResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *RoleResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *RoleResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *RoleResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *RoleResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *RoleResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this role response links based on the context it is used
-func (m *RoleResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this role response inline links based on the context it is used
+func (m *RoleResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *RoleResponseLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *RoleResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *RoleResponseLinks) contextValidateNext(ctx context.Context, formats str
 	return nil
 }
 
-func (m *RoleResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *RoleResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *RoleResponseLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *RoleResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *RoleResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *RoleResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *RoleResponseLinks) UnmarshalBinary(b []byte) error {
-	var res RoleResponseLinks
+func (m *RoleResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res RoleResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

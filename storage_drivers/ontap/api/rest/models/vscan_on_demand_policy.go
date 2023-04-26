@@ -21,23 +21,23 @@ type VscanOnDemandPolicy struct {
 
 	// The path from the Vserver root where the task report is created.
 	// Example: /vol0/report_dir
-	LogPath string `json:"log_path,omitempty"`
+	LogPath *string `json:"log_path,omitempty"`
 
 	// On-Demand task name
 	// Example: task-1
 	// Max Length: 256
 	// Min Length: 1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// schedule
+	Schedule *VscanOnDemandPolicyInlineSchedule `json:"schedule,omitempty"`
+
+	// scope
+	Scope *VscanOnDemandPolicyInlineScope `json:"scope,omitempty"`
 
 	// List of paths that need to be scanned.
 	// Example: ["/vol1/","/vol2/cifs/"]
-	ScanPaths []string `json:"scan_paths,omitempty"`
-
-	// schedule
-	Schedule *VscanOnDemandPolicySchedule `json:"schedule,omitempty"`
-
-	// scope
-	Scope *VscanOnDemandPolicyScope `json:"scope,omitempty"`
+	VscanOnDemandPolicyInlineScanPaths []*string `json:"scan_paths,omitempty"`
 }
 
 // Validate validates this vscan on demand policy
@@ -67,11 +67,11 @@ func (m *VscanOnDemandPolicy) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
 		return err
 	}
 
@@ -176,25 +176,25 @@ func (m *VscanOnDemandPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandPolicySchedule Schedule of the task.
+// VscanOnDemandPolicyInlineSchedule Schedule of the task.
 //
-// swagger:model VscanOnDemandPolicySchedule
-type VscanOnDemandPolicySchedule struct {
+// swagger:model vscan_on_demand_policy_inline_schedule
+type VscanOnDemandPolicyInlineSchedule struct {
 
 	// links
-	Links *VscanOnDemandPolicyScheduleLinks `json:"_links,omitempty"`
+	Links *VscanOnDemandPolicyInlineScheduleInlineLinks `json:"_links,omitempty"`
 
 	// Job schedule name
 	// Example: weekly
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Job schedule UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan on demand policy schedule
-func (m *VscanOnDemandPolicySchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand policy inline schedule
+func (m *VscanOnDemandPolicyInlineSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -207,7 +207,7 @@ func (m *VscanOnDemandPolicySchedule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandPolicySchedule) validateLinks(formats strfmt.Registry) error {
+func (m *VscanOnDemandPolicyInlineSchedule) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -224,8 +224,8 @@ func (m *VscanOnDemandPolicySchedule) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this vscan on demand policy schedule based on the context it is used
-func (m *VscanOnDemandPolicySchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand policy inline schedule based on the context it is used
+func (m *VscanOnDemandPolicyInlineSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -238,7 +238,7 @@ func (m *VscanOnDemandPolicySchedule) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *VscanOnDemandPolicySchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandPolicyInlineSchedule) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -253,7 +253,7 @@ func (m *VscanOnDemandPolicySchedule) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandPolicySchedule) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandPolicyInlineSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -261,8 +261,8 @@ func (m *VscanOnDemandPolicySchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandPolicySchedule) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandPolicySchedule
+func (m *VscanOnDemandPolicyInlineSchedule) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandPolicyInlineSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -270,17 +270,17 @@ func (m *VscanOnDemandPolicySchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandPolicyScheduleLinks vscan on demand policy schedule links
+// VscanOnDemandPolicyInlineScheduleInlineLinks vscan on demand policy inline schedule inline links
 //
-// swagger:model VscanOnDemandPolicyScheduleLinks
-type VscanOnDemandPolicyScheduleLinks struct {
+// swagger:model vscan_on_demand_policy_inline_schedule_inline__links
+type VscanOnDemandPolicyInlineScheduleInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan on demand policy schedule links
-func (m *VscanOnDemandPolicyScheduleLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand policy inline schedule inline links
+func (m *VscanOnDemandPolicyInlineScheduleInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -293,7 +293,7 @@ func (m *VscanOnDemandPolicyScheduleLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *VscanOnDemandPolicyScheduleLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanOnDemandPolicyInlineScheduleInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -310,8 +310,8 @@ func (m *VscanOnDemandPolicyScheduleLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this vscan on demand policy schedule links based on the context it is used
-func (m *VscanOnDemandPolicyScheduleLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan on demand policy inline schedule inline links based on the context it is used
+func (m *VscanOnDemandPolicyInlineScheduleInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -324,7 +324,7 @@ func (m *VscanOnDemandPolicyScheduleLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *VscanOnDemandPolicyScheduleLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanOnDemandPolicyInlineScheduleInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -339,7 +339,7 @@ func (m *VscanOnDemandPolicyScheduleLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandPolicyScheduleLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandPolicyInlineScheduleInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -347,8 +347,8 @@ func (m *VscanOnDemandPolicyScheduleLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandPolicyScheduleLinks) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandPolicyScheduleLinks
+func (m *VscanOnDemandPolicyInlineScheduleInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandPolicyInlineScheduleInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -356,37 +356,37 @@ func (m *VscanOnDemandPolicyScheduleLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanOnDemandPolicyScope vscan on demand policy scope
+// VscanOnDemandPolicyInlineScope vscan on demand policy inline scope
 //
-// swagger:model VscanOnDemandPolicyScope
-type VscanOnDemandPolicyScope struct {
+// swagger:model vscan_on_demand_policy_inline_scope
+type VscanOnDemandPolicyInlineScope struct {
 
 	// List of file extensions for which scanning is not performed.
 	// Example: ["mp3","mp4"]
-	ExcludeExtensions []string `json:"exclude_extensions,omitempty"`
+	ExcludeExtensions []*string `json:"exclude_extensions,omitempty"`
 
 	// List of file paths for which scanning must not be performed.
 	// Example: ["/vol1/cold-files/","/vol1/cifs/names"]
-	ExcludePaths []string `json:"exclude_paths,omitempty"`
+	ExcludePaths []*string `json:"exclude_paths,omitempty"`
 
 	// List of file extensions to be scanned.
 	// Example: ["vmdk","mp*"]
 	// Max Items: 16
 	// Min Items: 1
-	IncludeExtensions []string `json:"include_extensions,omitempty"`
+	IncludeExtensions []*string `json:"include_extensions,omitempty"`
 
 	// Maximum file size, in bytes, allowed for scanning.
 	// Example: 10737418240
 	// Maximum: 1.099511627776e+12
 	// Minimum: 1024
-	MaxFileSize int64 `json:"max_file_size,omitempty"`
+	MaxFileSize *int64 `json:"max_file_size,omitempty"`
 
 	// Specifies whether or not files without any extension can be scanned.
 	ScanWithoutExtension *bool `json:"scan_without_extension,omitempty"`
 }
 
-// Validate validates this vscan on demand policy scope
-func (m *VscanOnDemandPolicyScope) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan on demand policy inline scope
+func (m *VscanOnDemandPolicyInlineScope) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateIncludeExtensions(formats); err != nil {
@@ -403,7 +403,7 @@ func (m *VscanOnDemandPolicyScope) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanOnDemandPolicyScope) validateIncludeExtensions(formats strfmt.Registry) error {
+func (m *VscanOnDemandPolicyInlineScope) validateIncludeExtensions(formats strfmt.Registry) error {
 	if swag.IsZero(m.IncludeExtensions) { // not required
 		return nil
 	}
@@ -421,29 +421,29 @@ func (m *VscanOnDemandPolicyScope) validateIncludeExtensions(formats strfmt.Regi
 	return nil
 }
 
-func (m *VscanOnDemandPolicyScope) validateMaxFileSize(formats strfmt.Registry) error {
+func (m *VscanOnDemandPolicyInlineScope) validateMaxFileSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.MaxFileSize) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("scope"+"."+"max_file_size", "body", m.MaxFileSize, 1024, false); err != nil {
+	if err := validate.MinimumInt("scope"+"."+"max_file_size", "body", *m.MaxFileSize, 1024, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("scope"+"."+"max_file_size", "body", m.MaxFileSize, 1.099511627776e+12, false); err != nil {
+	if err := validate.MaximumInt("scope"+"."+"max_file_size", "body", *m.MaxFileSize, 1.099511627776e+12, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validates this vscan on demand policy scope based on context it is used
-func (m *VscanOnDemandPolicyScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this vscan on demand policy inline scope based on context it is used
+func (m *VscanOnDemandPolicyInlineScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VscanOnDemandPolicyScope) MarshalBinary() ([]byte, error) {
+func (m *VscanOnDemandPolicyInlineScope) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -451,8 +451,8 @@ func (m *VscanOnDemandPolicyScope) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanOnDemandPolicyScope) UnmarshalBinary(b []byte) error {
-	var res VscanOnDemandPolicyScope
+func (m *VscanOnDemandPolicyInlineScope) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandPolicyInlineScope
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -22,50 +22,50 @@ import (
 type AdvancedRights struct {
 
 	// Append DAta
-	AppendData bool `json:"append_data,omitempty"`
+	AppendData *bool `json:"append_data,omitempty"`
 
 	// Delete
-	Delete bool `json:"delete,omitempty"`
+	Delete *bool `json:"delete,omitempty"`
 
 	// Delete Child
-	DeleteChild bool `json:"delete_child,omitempty"`
+	DeleteChild *bool `json:"delete_child,omitempty"`
 
 	// Execute File
-	ExecuteFile bool `json:"execute_file,omitempty"`
+	ExecuteFile *bool `json:"execute_file,omitempty"`
 
 	// Full Control
-	FullControl bool `json:"full_control,omitempty"`
+	FullControl *bool `json:"full_control,omitempty"`
 
 	// Read Attributes
-	ReadAttr bool `json:"read_attr,omitempty"`
+	ReadAttr *bool `json:"read_attr,omitempty"`
 
 	// Read Data
-	ReadData bool `json:"read_data,omitempty"`
+	ReadData *bool `json:"read_data,omitempty"`
 
 	// Read Extended Attributes
-	ReadEa bool `json:"read_ea,omitempty"`
+	ReadEa *bool `json:"read_ea,omitempty"`
 
 	// Read Permissions
-	ReadPerm bool `json:"read_perm,omitempty"`
+	ReadPerm *bool `json:"read_perm,omitempty"`
 
 	// Synchronize
 	// Read Only: true
 	Synchronize *bool `json:"synchronize,omitempty"`
 
 	// Write Attributes
-	WriteAttr bool `json:"write_attr,omitempty"`
+	WriteAttr *bool `json:"write_attr,omitempty"`
 
 	// Write Data
-	WriteData bool `json:"write_data,omitempty"`
+	WriteData *bool `json:"write_data,omitempty"`
 
 	// Write Extended Attributes
-	WriteEa bool `json:"write_ea,omitempty"`
+	WriteEa *bool `json:"write_ea,omitempty"`
 
 	// Write Owner
-	WriteOwner bool `json:"write_owner,omitempty"`
+	WriteOwner *bool `json:"write_owner,omitempty"`
 
 	// Write Permission
-	WritePerm bool `json:"write_perm,omitempty"`
+	WritePerm *bool `json:"write_perm,omitempty"`
 }
 
 // Validate validates this advanced rights

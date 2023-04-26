@@ -66,13 +66,13 @@ type SvmMigrationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   Migration UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *SvmMigrationGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the svm migration get params
-func (o *SvmMigrationGetParams) WithFieldsQueryParameter(fields []string) *SvmMigrationGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the svm migration get params
+func (o *SvmMigrationGetParams) WithFields(fields []string) *SvmMigrationGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the svm migration get params
-func (o *SvmMigrationGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the svm migration get params
+func (o *SvmMigrationGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the svm migration get params
-func (o *SvmMigrationGetParams) WithUUIDPathParameter(uuid string) *SvmMigrationGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the svm migration get params
+func (o *SvmMigrationGetParams) WithUUID(uuid string) *SvmMigrationGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the svm migration get params
-func (o *SvmMigrationGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the svm migration get params
+func (o *SvmMigrationGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,7 +157,7 @@ func (o *SvmMigrationGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -169,7 +169,7 @@ func (o *SvmMigrationGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (o *SvmMigrationGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamSvmMigrationGet binds the parameter fields
 func (o *SvmMigrationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

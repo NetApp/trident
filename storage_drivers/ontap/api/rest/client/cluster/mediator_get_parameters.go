@@ -66,12 +66,12 @@ type MediatorGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// UUID.
 	//
 	// Format: uuid
-	UUIDPathParameter strfmt.UUID
+	UUID strfmt.UUID
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *MediatorGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the mediator get params
-func (o *MediatorGetParams) WithFieldsQueryParameter(fields []string) *MediatorGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the mediator get params
+func (o *MediatorGetParams) WithFields(fields []string) *MediatorGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the mediator get params
-func (o *MediatorGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the mediator get params
+func (o *MediatorGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the mediator get params
-func (o *MediatorGetParams) WithUUIDPathParameter(uuid strfmt.UUID) *MediatorGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the mediator get params
+func (o *MediatorGetParams) WithUUID(uuid strfmt.UUID) *MediatorGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the mediator get params
-func (o *MediatorGetParams) SetUUIDPathParameter(uuid strfmt.UUID) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the mediator get params
+func (o *MediatorGetParams) SetUUID(uuid strfmt.UUID) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -156,7 +156,7 @@ func (o *MediatorGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -168,7 +168,7 @@ func (o *MediatorGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter.String()); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID.String()); err != nil {
 		return err
 	}
 
@@ -180,7 +180,7 @@ func (o *MediatorGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamMediatorGet binds the parameter fields
 func (o *MediatorGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

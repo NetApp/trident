@@ -25,7 +25,7 @@ type AutosupportIssues struct {
 	Issue *AutosupportConnectivityIssue `json:"issue,omitempty"`
 
 	// node
-	Node *AutosupportIssuesNode `json:"node,omitempty"`
+	Node *AutosupportIssuesInlineNode `json:"node,omitempty"`
 }
 
 // Validate validates this autosupport issues
@@ -183,25 +183,25 @@ func (m *AutosupportIssues) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutosupportIssuesNode autosupport issues node
+// AutosupportIssuesInlineNode autosupport issues inline node
 //
-// swagger:model AutosupportIssuesNode
-type AutosupportIssuesNode struct {
+// swagger:model autosupport_issues_inline_node
+type AutosupportIssuesInlineNode struct {
 
 	// links
-	Links *AutosupportIssuesNodeLinks `json:"_links,omitempty"`
+	Links *AutosupportIssuesInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this autosupport issues node
-func (m *AutosupportIssuesNode) Validate(formats strfmt.Registry) error {
+// Validate validates this autosupport issues inline node
+func (m *AutosupportIssuesInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -214,7 +214,7 @@ func (m *AutosupportIssuesNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutosupportIssuesNode) validateLinks(formats strfmt.Registry) error {
+func (m *AutosupportIssuesInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -231,8 +231,8 @@ func (m *AutosupportIssuesNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this autosupport issues node based on the context it is used
-func (m *AutosupportIssuesNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this autosupport issues inline node based on the context it is used
+func (m *AutosupportIssuesInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -245,7 +245,7 @@ func (m *AutosupportIssuesNode) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *AutosupportIssuesNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutosupportIssuesInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -260,7 +260,7 @@ func (m *AutosupportIssuesNode) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *AutosupportIssuesNode) MarshalBinary() ([]byte, error) {
+func (m *AutosupportIssuesInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -268,8 +268,8 @@ func (m *AutosupportIssuesNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutosupportIssuesNode) UnmarshalBinary(b []byte) error {
-	var res AutosupportIssuesNode
+func (m *AutosupportIssuesInlineNode) UnmarshalBinary(b []byte) error {
+	var res AutosupportIssuesInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -277,17 +277,17 @@ func (m *AutosupportIssuesNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AutosupportIssuesNodeLinks autosupport issues node links
+// AutosupportIssuesInlineNodeInlineLinks autosupport issues inline node inline links
 //
-// swagger:model AutosupportIssuesNodeLinks
-type AutosupportIssuesNodeLinks struct {
+// swagger:model autosupport_issues_inline_node_inline__links
+type AutosupportIssuesInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this autosupport issues node links
-func (m *AutosupportIssuesNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this autosupport issues inline node inline links
+func (m *AutosupportIssuesInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -300,7 +300,7 @@ func (m *AutosupportIssuesNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *AutosupportIssuesNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *AutosupportIssuesInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -317,8 +317,8 @@ func (m *AutosupportIssuesNodeLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this autosupport issues node links based on the context it is used
-func (m *AutosupportIssuesNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this autosupport issues inline node inline links based on the context it is used
+func (m *AutosupportIssuesInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -331,7 +331,7 @@ func (m *AutosupportIssuesNodeLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *AutosupportIssuesNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *AutosupportIssuesInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -346,7 +346,7 @@ func (m *AutosupportIssuesNodeLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *AutosupportIssuesNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *AutosupportIssuesInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -354,8 +354,8 @@ func (m *AutosupportIssuesNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AutosupportIssuesNodeLinks) UnmarshalBinary(b []byte) error {
-	var res AutosupportIssuesNodeLinks
+func (m *AutosupportIssuesInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res AutosupportIssuesInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

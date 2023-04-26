@@ -19,16 +19,16 @@ import (
 type SecurityAudit struct {
 
 	// links
-	Links *SecurityAuditLinks `json:"_links,omitempty"`
+	Links *SecurityAuditInlineLinks `json:"_links,omitempty"`
 
 	// Enable auditing of CLI GET Operations. Valid in PATCH
-	Cli bool `json:"cli,omitempty"`
+	Cli *bool `json:"cli,omitempty"`
 
 	// Enable auditing of HTTP GET Operations. Valid in PATCH
-	HTTP bool `json:"http,omitempty"`
+	HTTP *bool `json:"http,omitempty"`
 
 	// Enable auditing of ONTAP API GET operations. Valid in PATCH
-	Ontapi bool `json:"ontapi,omitempty"`
+	Ontapi *bool `json:"ontapi,omitempty"`
 }
 
 // Validate validates this security audit
@@ -108,17 +108,17 @@ func (m *SecurityAudit) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SecurityAuditLinks security audit links
+// SecurityAuditInlineLinks security audit inline links
 //
-// swagger:model SecurityAuditLinks
-type SecurityAuditLinks struct {
+// swagger:model security_audit_inline__links
+type SecurityAuditInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this security audit links
-func (m *SecurityAuditLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this security audit inline links
+func (m *SecurityAuditInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -131,7 +131,7 @@ func (m *SecurityAuditLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SecurityAuditLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SecurityAuditInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -148,8 +148,8 @@ func (m *SecurityAuditLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security audit links based on the context it is used
-func (m *SecurityAuditLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this security audit inline links based on the context it is used
+func (m *SecurityAuditInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -162,7 +162,7 @@ func (m *SecurityAuditLinks) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *SecurityAuditLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SecurityAuditInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -177,7 +177,7 @@ func (m *SecurityAuditLinks) contextValidateSelf(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *SecurityAuditLinks) MarshalBinary() ([]byte, error) {
+func (m *SecurityAuditInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -185,8 +185,8 @@ func (m *SecurityAuditLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SecurityAuditLinks) UnmarshalBinary(b []byte) error {
-	var res SecurityAuditLinks
+func (m *SecurityAuditInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SecurityAuditInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

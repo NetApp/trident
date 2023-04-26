@@ -66,14 +66,14 @@ type FcPortGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   The unique identifier for the FC port.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *FcPortGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fc port get params
-func (o *FcPortGetParams) WithFieldsQueryParameter(fields []string) *FcPortGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc port get params
+func (o *FcPortGetParams) WithFields(fields []string) *FcPortGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc port get params
-func (o *FcPortGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc port get params
+func (o *FcPortGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the fc port get params
-func (o *FcPortGetParams) WithUUIDPathParameter(uuid string) *FcPortGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the fc port get params
+func (o *FcPortGetParams) WithUUID(uuid string) *FcPortGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the fc port get params
-func (o *FcPortGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the fc port get params
+func (o *FcPortGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,7 +158,7 @@ func (o *FcPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -170,7 +170,7 @@ func (o *FcPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (o *FcPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamFcPortGet binds the parameter fields
 func (o *FcPortGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

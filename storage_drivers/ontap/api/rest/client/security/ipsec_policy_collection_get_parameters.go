@@ -66,127 +66,127 @@ type IpsecPolicyCollectionGetParams struct {
 
 	   Filter by authentication_method
 	*/
-	AuthenticationMethodQueryParameter *string
+	AuthenticationMethod *string
 
 	/* CertificateName.
 
 	   Filter by certificate.name
 	*/
-	CertificateNameQueryParameter *string
+	CertificateName *string
 
 	/* CertificateUUID.
 
 	   Filter by certificate.uuid
 	*/
-	CertificateUUIDQueryParameter *string
+	CertificateUUID *string
 
 	/* Enabled.
 
 	   Filter by enabled
 	*/
-	EnabledQueryParameter *bool
+	Enabled *bool
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IpspaceName.
 
 	   Filter by ipspace.name
 	*/
-	IpspaceNameQueryParameter *string
+	IpspaceName *string
 
 	/* IpspaceUUID.
 
 	   Filter by ipspace.uuid
 	*/
-	IpspaceUUIDQueryParameter *string
+	IpspaceUUID *string
 
 	/* LocalEndpointAddress.
 
 	   Filter by local_endpoint.address
 	*/
-	LocalEndpointAddressQueryParameter *string
+	LocalEndpointAddress *string
 
 	/* LocalEndpointFamily.
 
 	   Filter by local_endpoint.family
 	*/
-	LocalEndpointFamilyQueryParameter *string
+	LocalEndpointFamily *string
 
 	/* LocalEndpointNetmask.
 
 	   Filter by local_endpoint.netmask
 	*/
-	LocalEndpointNetmaskQueryParameter *string
+	LocalEndpointNetmask *string
 
 	/* LocalEndpointPort.
 
 	   Filter by local_endpoint.port
 	*/
-	LocalEndpointPortQueryParameter *string
+	LocalEndpointPort *string
 
 	/* LocalIdentity.
 
 	   Filter by local_identity
 	*/
-	LocalIDentityQueryParameter *string
+	LocalIdentity *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* Protocol.
 
 	   Filter by protocol
 	*/
-	ProtocolQueryParameter *string
+	Protocol *string
 
 	/* RemoteEndpointAddress.
 
 	   Filter by remote_endpoint.address
 	*/
-	RemoteEndpointAddressQueryParameter *string
+	RemoteEndpointAddress *string
 
 	/* RemoteEndpointFamily.
 
 	   Filter by remote_endpoint.family
 	*/
-	RemoteEndpointFamilyQueryParameter *string
+	RemoteEndpointFamily *string
 
 	/* RemoteEndpointNetmask.
 
 	   Filter by remote_endpoint.netmask
 	*/
-	RemoteEndpointNetmaskQueryParameter *string
+	RemoteEndpointNetmask *string
 
 	/* RemoteEndpointPort.
 
 	   Filter by remote_endpoint.port
 	*/
-	RemoteEndpointPortQueryParameter *string
+	RemoteEndpointPort *string
 
 	/* RemoteIdentity.
 
 	   Filter by remote_identity
 	*/
-	RemoteIDentityQueryParameter *string
+	RemoteIdentity *string
 
 	/* ReturnRecords.
 
@@ -194,7 +194,7 @@ type IpsecPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -202,31 +202,31 @@ type IpsecPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Scope.
 
 	   Filter by scope
 	*/
-	ScopeQueryParameter *string
+	Scope *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -246,14 +246,14 @@ func (o *IpsecPolicyCollectionGetParams) WithDefaults() *IpsecPolicyCollectionGe
 // All values with no default are reset to their zero value.
 func (o *IpsecPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := IpsecPolicyCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -295,301 +295,301 @@ func (o *IpsecPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAuthenticationMethodQueryParameter adds the authenticationMethod to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithAuthenticationMethodQueryParameter(authenticationMethod *string) *IpsecPolicyCollectionGetParams {
-	o.SetAuthenticationMethodQueryParameter(authenticationMethod)
+// WithAuthenticationMethod adds the authenticationMethod to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithAuthenticationMethod(authenticationMethod *string) *IpsecPolicyCollectionGetParams {
+	o.SetAuthenticationMethod(authenticationMethod)
 	return o
 }
 
-// SetAuthenticationMethodQueryParameter adds the authenticationMethod to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetAuthenticationMethodQueryParameter(authenticationMethod *string) {
-	o.AuthenticationMethodQueryParameter = authenticationMethod
+// SetAuthenticationMethod adds the authenticationMethod to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetAuthenticationMethod(authenticationMethod *string) {
+	o.AuthenticationMethod = authenticationMethod
 }
 
-// WithCertificateNameQueryParameter adds the certificateName to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *IpsecPolicyCollectionGetParams {
-	o.SetCertificateNameQueryParameter(certificateName)
+// WithCertificateName adds the certificateName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithCertificateName(certificateName *string) *IpsecPolicyCollectionGetParams {
+	o.SetCertificateName(certificateName)
 	return o
 }
 
-// SetCertificateNameQueryParameter adds the certificateName to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
-	o.CertificateNameQueryParameter = certificateName
+// SetCertificateName adds the certificateName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetCertificateName(certificateName *string) {
+	o.CertificateName = certificateName
 }
 
-// WithCertificateUUIDQueryParameter adds the certificateUUID to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithCertificateUUIDQueryParameter(certificateUUID *string) *IpsecPolicyCollectionGetParams {
-	o.SetCertificateUUIDQueryParameter(certificateUUID)
+// WithCertificateUUID adds the certificateUUID to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithCertificateUUID(certificateUUID *string) *IpsecPolicyCollectionGetParams {
+	o.SetCertificateUUID(certificateUUID)
 	return o
 }
 
-// SetCertificateUUIDQueryParameter adds the certificateUuid to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetCertificateUUIDQueryParameter(certificateUUID *string) {
-	o.CertificateUUIDQueryParameter = certificateUUID
+// SetCertificateUUID adds the certificateUuid to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetCertificateUUID(certificateUUID *string) {
+	o.CertificateUUID = certificateUUID
 }
 
-// WithEnabledQueryParameter adds the enabled to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *IpsecPolicyCollectionGetParams {
-	o.SetEnabledQueryParameter(enabled)
+// WithEnabled adds the enabled to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithEnabled(enabled *bool) *IpsecPolicyCollectionGetParams {
+	o.SetEnabled(enabled)
 	return o
 }
 
-// SetEnabledQueryParameter adds the enabled to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
-	o.EnabledQueryParameter = enabled
+// SetEnabled adds the enabled to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetEnabled(enabled *bool) {
+	o.Enabled = enabled
 }
 
-// WithFieldsQueryParameter adds the fields to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *IpsecPolicyCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithFields(fields []string) *IpsecPolicyCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIpspaceNameQueryParameter adds the ipspaceName to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithIpspaceNameQueryParameter(ipspaceName *string) *IpsecPolicyCollectionGetParams {
-	o.SetIpspaceNameQueryParameter(ipspaceName)
+// WithIpspaceName adds the ipspaceName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithIpspaceName(ipspaceName *string) *IpsecPolicyCollectionGetParams {
+	o.SetIpspaceName(ipspaceName)
 	return o
 }
 
-// SetIpspaceNameQueryParameter adds the ipspaceName to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetIpspaceNameQueryParameter(ipspaceName *string) {
-	o.IpspaceNameQueryParameter = ipspaceName
+// SetIpspaceName adds the ipspaceName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
 }
 
-// WithIpspaceUUIDQueryParameter adds the ipspaceUUID to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *string) *IpsecPolicyCollectionGetParams {
-	o.SetIpspaceUUIDQueryParameter(ipspaceUUID)
+// WithIpspaceUUID adds the ipspaceUUID to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithIpspaceUUID(ipspaceUUID *string) *IpsecPolicyCollectionGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
 	return o
 }
 
-// SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
-	o.IpspaceUUIDQueryParameter = ipspaceUUID
+// SetIpspaceUUID adds the ipspaceUuid to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
-// WithLocalEndpointAddressQueryParameter adds the localEndpointAddress to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointAddressQueryParameter(localEndpointAddress *string) *IpsecPolicyCollectionGetParams {
-	o.SetLocalEndpointAddressQueryParameter(localEndpointAddress)
+// WithLocalEndpointAddress adds the localEndpointAddress to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointAddress(localEndpointAddress *string) *IpsecPolicyCollectionGetParams {
+	o.SetLocalEndpointAddress(localEndpointAddress)
 	return o
 }
 
-// SetLocalEndpointAddressQueryParameter adds the localEndpointAddress to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointAddressQueryParameter(localEndpointAddress *string) {
-	o.LocalEndpointAddressQueryParameter = localEndpointAddress
+// SetLocalEndpointAddress adds the localEndpointAddress to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointAddress(localEndpointAddress *string) {
+	o.LocalEndpointAddress = localEndpointAddress
 }
 
-// WithLocalEndpointFamilyQueryParameter adds the localEndpointFamily to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointFamilyQueryParameter(localEndpointFamily *string) *IpsecPolicyCollectionGetParams {
-	o.SetLocalEndpointFamilyQueryParameter(localEndpointFamily)
+// WithLocalEndpointFamily adds the localEndpointFamily to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointFamily(localEndpointFamily *string) *IpsecPolicyCollectionGetParams {
+	o.SetLocalEndpointFamily(localEndpointFamily)
 	return o
 }
 
-// SetLocalEndpointFamilyQueryParameter adds the localEndpointFamily to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointFamilyQueryParameter(localEndpointFamily *string) {
-	o.LocalEndpointFamilyQueryParameter = localEndpointFamily
+// SetLocalEndpointFamily adds the localEndpointFamily to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointFamily(localEndpointFamily *string) {
+	o.LocalEndpointFamily = localEndpointFamily
 }
 
-// WithLocalEndpointNetmaskQueryParameter adds the localEndpointNetmask to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointNetmaskQueryParameter(localEndpointNetmask *string) *IpsecPolicyCollectionGetParams {
-	o.SetLocalEndpointNetmaskQueryParameter(localEndpointNetmask)
+// WithLocalEndpointNetmask adds the localEndpointNetmask to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointNetmask(localEndpointNetmask *string) *IpsecPolicyCollectionGetParams {
+	o.SetLocalEndpointNetmask(localEndpointNetmask)
 	return o
 }
 
-// SetLocalEndpointNetmaskQueryParameter adds the localEndpointNetmask to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointNetmaskQueryParameter(localEndpointNetmask *string) {
-	o.LocalEndpointNetmaskQueryParameter = localEndpointNetmask
+// SetLocalEndpointNetmask adds the localEndpointNetmask to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointNetmask(localEndpointNetmask *string) {
+	o.LocalEndpointNetmask = localEndpointNetmask
 }
 
-// WithLocalEndpointPortQueryParameter adds the localEndpointPort to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointPortQueryParameter(localEndpointPort *string) *IpsecPolicyCollectionGetParams {
-	o.SetLocalEndpointPortQueryParameter(localEndpointPort)
+// WithLocalEndpointPort adds the localEndpointPort to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithLocalEndpointPort(localEndpointPort *string) *IpsecPolicyCollectionGetParams {
+	o.SetLocalEndpointPort(localEndpointPort)
 	return o
 }
 
-// SetLocalEndpointPortQueryParameter adds the localEndpointPort to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointPortQueryParameter(localEndpointPort *string) {
-	o.LocalEndpointPortQueryParameter = localEndpointPort
+// SetLocalEndpointPort adds the localEndpointPort to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetLocalEndpointPort(localEndpointPort *string) {
+	o.LocalEndpointPort = localEndpointPort
 }
 
-// WithLocalIDentityQueryParameter adds the localIdentity to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithLocalIDentityQueryParameter(localIdentity *string) *IpsecPolicyCollectionGetParams {
-	o.SetLocalIDentityQueryParameter(localIdentity)
+// WithLocalIdentity adds the localIdentity to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithLocalIdentity(localIdentity *string) *IpsecPolicyCollectionGetParams {
+	o.SetLocalIdentity(localIdentity)
 	return o
 }
 
-// SetLocalIDentityQueryParameter adds the localIdentity to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetLocalIDentityQueryParameter(localIdentity *string) {
-	o.LocalIDentityQueryParameter = localIdentity
+// SetLocalIdentity adds the localIdentity to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetLocalIdentity(localIdentity *string) {
+	o.LocalIdentity = localIdentity
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IpsecPolicyCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *IpsecPolicyCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithNameQueryParameter(name *string) *IpsecPolicyCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithName(name *string) *IpsecPolicyCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithOrderByQueryParameter adds the orderBy to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IpsecPolicyCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithOrderBy(orderBy []string) *IpsecPolicyCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithProtocolQueryParameter adds the protocol to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithProtocolQueryParameter(protocol *string) *IpsecPolicyCollectionGetParams {
-	o.SetProtocolQueryParameter(protocol)
+// WithProtocol adds the protocol to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithProtocol(protocol *string) *IpsecPolicyCollectionGetParams {
+	o.SetProtocol(protocol)
 	return o
 }
 
-// SetProtocolQueryParameter adds the protocol to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetProtocolQueryParameter(protocol *string) {
-	o.ProtocolQueryParameter = protocol
+// SetProtocol adds the protocol to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
-// WithRemoteEndpointAddressQueryParameter adds the remoteEndpointAddress to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointAddressQueryParameter(remoteEndpointAddress *string) *IpsecPolicyCollectionGetParams {
-	o.SetRemoteEndpointAddressQueryParameter(remoteEndpointAddress)
+// WithRemoteEndpointAddress adds the remoteEndpointAddress to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointAddress(remoteEndpointAddress *string) *IpsecPolicyCollectionGetParams {
+	o.SetRemoteEndpointAddress(remoteEndpointAddress)
 	return o
 }
 
-// SetRemoteEndpointAddressQueryParameter adds the remoteEndpointAddress to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointAddressQueryParameter(remoteEndpointAddress *string) {
-	o.RemoteEndpointAddressQueryParameter = remoteEndpointAddress
+// SetRemoteEndpointAddress adds the remoteEndpointAddress to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointAddress(remoteEndpointAddress *string) {
+	o.RemoteEndpointAddress = remoteEndpointAddress
 }
 
-// WithRemoteEndpointFamilyQueryParameter adds the remoteEndpointFamily to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointFamilyQueryParameter(remoteEndpointFamily *string) *IpsecPolicyCollectionGetParams {
-	o.SetRemoteEndpointFamilyQueryParameter(remoteEndpointFamily)
+// WithRemoteEndpointFamily adds the remoteEndpointFamily to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointFamily(remoteEndpointFamily *string) *IpsecPolicyCollectionGetParams {
+	o.SetRemoteEndpointFamily(remoteEndpointFamily)
 	return o
 }
 
-// SetRemoteEndpointFamilyQueryParameter adds the remoteEndpointFamily to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointFamilyQueryParameter(remoteEndpointFamily *string) {
-	o.RemoteEndpointFamilyQueryParameter = remoteEndpointFamily
+// SetRemoteEndpointFamily adds the remoteEndpointFamily to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointFamily(remoteEndpointFamily *string) {
+	o.RemoteEndpointFamily = remoteEndpointFamily
 }
 
-// WithRemoteEndpointNetmaskQueryParameter adds the remoteEndpointNetmask to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointNetmaskQueryParameter(remoteEndpointNetmask *string) *IpsecPolicyCollectionGetParams {
-	o.SetRemoteEndpointNetmaskQueryParameter(remoteEndpointNetmask)
+// WithRemoteEndpointNetmask adds the remoteEndpointNetmask to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointNetmask(remoteEndpointNetmask *string) *IpsecPolicyCollectionGetParams {
+	o.SetRemoteEndpointNetmask(remoteEndpointNetmask)
 	return o
 }
 
-// SetRemoteEndpointNetmaskQueryParameter adds the remoteEndpointNetmask to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointNetmaskQueryParameter(remoteEndpointNetmask *string) {
-	o.RemoteEndpointNetmaskQueryParameter = remoteEndpointNetmask
+// SetRemoteEndpointNetmask adds the remoteEndpointNetmask to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointNetmask(remoteEndpointNetmask *string) {
+	o.RemoteEndpointNetmask = remoteEndpointNetmask
 }
 
-// WithRemoteEndpointPortQueryParameter adds the remoteEndpointPort to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointPortQueryParameter(remoteEndpointPort *string) *IpsecPolicyCollectionGetParams {
-	o.SetRemoteEndpointPortQueryParameter(remoteEndpointPort)
+// WithRemoteEndpointPort adds the remoteEndpointPort to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithRemoteEndpointPort(remoteEndpointPort *string) *IpsecPolicyCollectionGetParams {
+	o.SetRemoteEndpointPort(remoteEndpointPort)
 	return o
 }
 
-// SetRemoteEndpointPortQueryParameter adds the remoteEndpointPort to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointPortQueryParameter(remoteEndpointPort *string) {
-	o.RemoteEndpointPortQueryParameter = remoteEndpointPort
+// SetRemoteEndpointPort adds the remoteEndpointPort to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetRemoteEndpointPort(remoteEndpointPort *string) {
+	o.RemoteEndpointPort = remoteEndpointPort
 }
 
-// WithRemoteIDentityQueryParameter adds the remoteIdentity to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithRemoteIDentityQueryParameter(remoteIdentity *string) *IpsecPolicyCollectionGetParams {
-	o.SetRemoteIDentityQueryParameter(remoteIdentity)
+// WithRemoteIdentity adds the remoteIdentity to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithRemoteIdentity(remoteIdentity *string) *IpsecPolicyCollectionGetParams {
+	o.SetRemoteIdentity(remoteIdentity)
 	return o
 }
 
-// SetRemoteIDentityQueryParameter adds the remoteIdentity to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetRemoteIDentityQueryParameter(remoteIdentity *string) {
-	o.RemoteIDentityQueryParameter = remoteIdentity
+// SetRemoteIdentity adds the remoteIdentity to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetRemoteIdentity(remoteIdentity *string) {
+	o.RemoteIdentity = remoteIdentity
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IpsecPolicyCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *IpsecPolicyCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IpsecPolicyCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IpsecPolicyCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithScopeQueryParameter adds the scope to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithScopeQueryParameter(scope *string) *IpsecPolicyCollectionGetParams {
-	o.SetScopeQueryParameter(scope)
+// WithScope adds the scope to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithScope(scope *string) *IpsecPolicyCollectionGetParams {
+	o.SetScope(scope)
 	return o
 }
 
-// SetScopeQueryParameter adds the scope to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetScopeQueryParameter(scope *string) {
-	o.ScopeQueryParameter = scope
+// SetScope adds the scope to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetScope(scope *string) {
+	o.Scope = scope
 }
 
-// WithSVMNameQueryParameter adds the svmName to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *IpsecPolicyCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithSvmName(svmName *string) *IpsecPolicyCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *IpsecPolicyCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithSvmUUID(svmUUID *string) *IpsecPolicyCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithUUIDQueryParameter adds the uuid to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) WithUUIDQueryParameter(uuid *string) *IpsecPolicyCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithUUID(uuid *string) *IpsecPolicyCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the ipsec policy collection get params
-func (o *IpsecPolicyCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -600,13 +600,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.AuthenticationMethodQueryParameter != nil {
+	if o.AuthenticationMethod != nil {
 
 		// query param authentication_method
 		var qrAuthenticationMethod string
 
-		if o.AuthenticationMethodQueryParameter != nil {
-			qrAuthenticationMethod = *o.AuthenticationMethodQueryParameter
+		if o.AuthenticationMethod != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethod
 		}
 		qAuthenticationMethod := qrAuthenticationMethod
 		if qAuthenticationMethod != "" {
@@ -617,13 +617,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CertificateNameQueryParameter != nil {
+	if o.CertificateName != nil {
 
 		// query param certificate.name
 		var qrCertificateName string
 
-		if o.CertificateNameQueryParameter != nil {
-			qrCertificateName = *o.CertificateNameQueryParameter
+		if o.CertificateName != nil {
+			qrCertificateName = *o.CertificateName
 		}
 		qCertificateName := qrCertificateName
 		if qCertificateName != "" {
@@ -634,13 +634,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CertificateUUIDQueryParameter != nil {
+	if o.CertificateUUID != nil {
 
 		// query param certificate.uuid
 		var qrCertificateUUID string
 
-		if o.CertificateUUIDQueryParameter != nil {
-			qrCertificateUUID = *o.CertificateUUIDQueryParameter
+		if o.CertificateUUID != nil {
+			qrCertificateUUID = *o.CertificateUUID
 		}
 		qCertificateUUID := qrCertificateUUID
 		if qCertificateUUID != "" {
@@ -651,13 +651,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.EnabledQueryParameter != nil {
+	if o.Enabled != nil {
 
 		// query param enabled
 		var qrEnabled bool
 
-		if o.EnabledQueryParameter != nil {
-			qrEnabled = *o.EnabledQueryParameter
+		if o.Enabled != nil {
+			qrEnabled = *o.Enabled
 		}
 		qEnabled := swag.FormatBool(qrEnabled)
 		if qEnabled != "" {
@@ -668,7 +668,7 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -679,13 +679,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IpspaceNameQueryParameter != nil {
+	if o.IpspaceName != nil {
 
 		// query param ipspace.name
 		var qrIpspaceName string
 
-		if o.IpspaceNameQueryParameter != nil {
-			qrIpspaceName = *o.IpspaceNameQueryParameter
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
 		}
 		qIpspaceName := qrIpspaceName
 		if qIpspaceName != "" {
@@ -696,13 +696,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IpspaceUUIDQueryParameter != nil {
+	if o.IpspaceUUID != nil {
 
 		// query param ipspace.uuid
 		var qrIpspaceUUID string
 
-		if o.IpspaceUUIDQueryParameter != nil {
-			qrIpspaceUUID = *o.IpspaceUUIDQueryParameter
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
 		}
 		qIpspaceUUID := qrIpspaceUUID
 		if qIpspaceUUID != "" {
@@ -713,13 +713,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LocalEndpointAddressQueryParameter != nil {
+	if o.LocalEndpointAddress != nil {
 
 		// query param local_endpoint.address
 		var qrLocalEndpointAddress string
 
-		if o.LocalEndpointAddressQueryParameter != nil {
-			qrLocalEndpointAddress = *o.LocalEndpointAddressQueryParameter
+		if o.LocalEndpointAddress != nil {
+			qrLocalEndpointAddress = *o.LocalEndpointAddress
 		}
 		qLocalEndpointAddress := qrLocalEndpointAddress
 		if qLocalEndpointAddress != "" {
@@ -730,13 +730,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LocalEndpointFamilyQueryParameter != nil {
+	if o.LocalEndpointFamily != nil {
 
 		// query param local_endpoint.family
 		var qrLocalEndpointFamily string
 
-		if o.LocalEndpointFamilyQueryParameter != nil {
-			qrLocalEndpointFamily = *o.LocalEndpointFamilyQueryParameter
+		if o.LocalEndpointFamily != nil {
+			qrLocalEndpointFamily = *o.LocalEndpointFamily
 		}
 		qLocalEndpointFamily := qrLocalEndpointFamily
 		if qLocalEndpointFamily != "" {
@@ -747,13 +747,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LocalEndpointNetmaskQueryParameter != nil {
+	if o.LocalEndpointNetmask != nil {
 
 		// query param local_endpoint.netmask
 		var qrLocalEndpointNetmask string
 
-		if o.LocalEndpointNetmaskQueryParameter != nil {
-			qrLocalEndpointNetmask = *o.LocalEndpointNetmaskQueryParameter
+		if o.LocalEndpointNetmask != nil {
+			qrLocalEndpointNetmask = *o.LocalEndpointNetmask
 		}
 		qLocalEndpointNetmask := qrLocalEndpointNetmask
 		if qLocalEndpointNetmask != "" {
@@ -764,13 +764,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LocalEndpointPortQueryParameter != nil {
+	if o.LocalEndpointPort != nil {
 
 		// query param local_endpoint.port
 		var qrLocalEndpointPort string
 
-		if o.LocalEndpointPortQueryParameter != nil {
-			qrLocalEndpointPort = *o.LocalEndpointPortQueryParameter
+		if o.LocalEndpointPort != nil {
+			qrLocalEndpointPort = *o.LocalEndpointPort
 		}
 		qLocalEndpointPort := qrLocalEndpointPort
 		if qLocalEndpointPort != "" {
@@ -781,13 +781,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.LocalIDentityQueryParameter != nil {
+	if o.LocalIdentity != nil {
 
 		// query param local_identity
 		var qrLocalIdentity string
 
-		if o.LocalIDentityQueryParameter != nil {
-			qrLocalIdentity = *o.LocalIDentityQueryParameter
+		if o.LocalIdentity != nil {
+			qrLocalIdentity = *o.LocalIdentity
 		}
 		qLocalIdentity := qrLocalIdentity
 		if qLocalIdentity != "" {
@@ -798,13 +798,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -815,13 +815,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -832,7 +832,7 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -843,13 +843,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ProtocolQueryParameter != nil {
+	if o.Protocol != nil {
 
 		// query param protocol
 		var qrProtocol string
 
-		if o.ProtocolQueryParameter != nil {
-			qrProtocol = *o.ProtocolQueryParameter
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
 		}
 		qProtocol := qrProtocol
 		if qProtocol != "" {
@@ -860,13 +860,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RemoteEndpointAddressQueryParameter != nil {
+	if o.RemoteEndpointAddress != nil {
 
 		// query param remote_endpoint.address
 		var qrRemoteEndpointAddress string
 
-		if o.RemoteEndpointAddressQueryParameter != nil {
-			qrRemoteEndpointAddress = *o.RemoteEndpointAddressQueryParameter
+		if o.RemoteEndpointAddress != nil {
+			qrRemoteEndpointAddress = *o.RemoteEndpointAddress
 		}
 		qRemoteEndpointAddress := qrRemoteEndpointAddress
 		if qRemoteEndpointAddress != "" {
@@ -877,13 +877,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RemoteEndpointFamilyQueryParameter != nil {
+	if o.RemoteEndpointFamily != nil {
 
 		// query param remote_endpoint.family
 		var qrRemoteEndpointFamily string
 
-		if o.RemoteEndpointFamilyQueryParameter != nil {
-			qrRemoteEndpointFamily = *o.RemoteEndpointFamilyQueryParameter
+		if o.RemoteEndpointFamily != nil {
+			qrRemoteEndpointFamily = *o.RemoteEndpointFamily
 		}
 		qRemoteEndpointFamily := qrRemoteEndpointFamily
 		if qRemoteEndpointFamily != "" {
@@ -894,13 +894,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RemoteEndpointNetmaskQueryParameter != nil {
+	if o.RemoteEndpointNetmask != nil {
 
 		// query param remote_endpoint.netmask
 		var qrRemoteEndpointNetmask string
 
-		if o.RemoteEndpointNetmaskQueryParameter != nil {
-			qrRemoteEndpointNetmask = *o.RemoteEndpointNetmaskQueryParameter
+		if o.RemoteEndpointNetmask != nil {
+			qrRemoteEndpointNetmask = *o.RemoteEndpointNetmask
 		}
 		qRemoteEndpointNetmask := qrRemoteEndpointNetmask
 		if qRemoteEndpointNetmask != "" {
@@ -911,13 +911,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RemoteEndpointPortQueryParameter != nil {
+	if o.RemoteEndpointPort != nil {
 
 		// query param remote_endpoint.port
 		var qrRemoteEndpointPort string
 
-		if o.RemoteEndpointPortQueryParameter != nil {
-			qrRemoteEndpointPort = *o.RemoteEndpointPortQueryParameter
+		if o.RemoteEndpointPort != nil {
+			qrRemoteEndpointPort = *o.RemoteEndpointPort
 		}
 		qRemoteEndpointPort := qrRemoteEndpointPort
 		if qRemoteEndpointPort != "" {
@@ -928,13 +928,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.RemoteIDentityQueryParameter != nil {
+	if o.RemoteIdentity != nil {
 
 		// query param remote_identity
 		var qrRemoteIdentity string
 
-		if o.RemoteIDentityQueryParameter != nil {
-			qrRemoteIdentity = *o.RemoteIDentityQueryParameter
+		if o.RemoteIdentity != nil {
+			qrRemoteIdentity = *o.RemoteIdentity
 		}
 		qRemoteIdentity := qrRemoteIdentity
 		if qRemoteIdentity != "" {
@@ -945,13 +945,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -962,13 +962,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -979,13 +979,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ScopeQueryParameter != nil {
+	if o.Scope != nil {
 
 		// query param scope
 		var qrScope string
 
-		if o.ScopeQueryParameter != nil {
-			qrScope = *o.ScopeQueryParameter
+		if o.Scope != nil {
+			qrScope = *o.Scope
 		}
 		qScope := qrScope
 		if qScope != "" {
@@ -996,13 +996,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1013,13 +1013,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1030,13 +1030,13 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1055,7 +1055,7 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamIpsecPolicyCollectionGet binds the parameter fields
 func (o *IpsecPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1072,7 +1072,7 @@ func (o *IpsecPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamIpsecPolicyCollectionGet binds the parameter order_by
 func (o *IpsecPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

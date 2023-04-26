@@ -75,7 +75,7 @@ func backendList(backendNames []string) error {
 func GetBackends() ([]string, error) {
 	url := BaseURL() + "/backend"
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode != http.StatusOK {
@@ -95,7 +95,7 @@ func GetBackends() ([]string, error) {
 func GetBackend(backendName string) (storage.BackendExternal, error) {
 	url := BaseURL() + "/backend/" + backendName
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return storage.BackendExternal{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -121,7 +121,7 @@ func GetBackend(backendName string) (storage.BackendExternal, error) {
 func GetBackendByBackendUUID(backendUUID string) (storage.BackendExternal, error) {
 	url := BaseURL() + "/backend/" + backendUUID
 
-	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
+	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
 	if err != nil {
 		return storage.BackendExternal{}, err
 	} else if response.StatusCode != http.StatusOK {

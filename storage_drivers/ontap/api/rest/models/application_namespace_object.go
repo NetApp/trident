@@ -20,7 +20,7 @@ import (
 type ApplicationNamespaceObject struct {
 
 	// links
-	Links *ApplicationNamespaceObjectLinks `json:"_links,omitempty"`
+	Links *ApplicationNamespaceObjectInlineLinks `json:"_links,omitempty"`
 
 	// Namespace creation time
 	// Read Only: true
@@ -29,15 +29,15 @@ type ApplicationNamespaceObject struct {
 
 	// Namespace name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Namespace size
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// Namespace UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application namespace object
@@ -142,7 +142,7 @@ func (m *ApplicationNamespaceObject) contextValidateCreationTimestamp(ctx contex
 
 func (m *ApplicationNamespaceObject) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -151,7 +151,7 @@ func (m *ApplicationNamespaceObject) contextValidateName(ctx context.Context, fo
 
 func (m *ApplicationNamespaceObject) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -160,7 +160,7 @@ func (m *ApplicationNamespaceObject) contextValidateSize(ctx context.Context, fo
 
 func (m *ApplicationNamespaceObject) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -185,17 +185,17 @@ func (m *ApplicationNamespaceObject) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ApplicationNamespaceObjectLinks application namespace object links
+// ApplicationNamespaceObjectInlineLinks application namespace object inline links
 //
-// swagger:model ApplicationNamespaceObjectLinks
-type ApplicationNamespaceObjectLinks struct {
+// swagger:model application_namespace_object_inline__links
+type ApplicationNamespaceObjectInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this application namespace object links
-func (m *ApplicationNamespaceObjectLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this application namespace object inline links
+func (m *ApplicationNamespaceObjectInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -208,7 +208,7 @@ func (m *ApplicationNamespaceObjectLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ApplicationNamespaceObjectLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ApplicationNamespaceObjectInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -225,8 +225,8 @@ func (m *ApplicationNamespaceObjectLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this application namespace object links based on the context it is used
-func (m *ApplicationNamespaceObjectLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this application namespace object inline links based on the context it is used
+func (m *ApplicationNamespaceObjectInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -239,7 +239,7 @@ func (m *ApplicationNamespaceObjectLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *ApplicationNamespaceObjectLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ApplicationNamespaceObjectInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -254,7 +254,7 @@ func (m *ApplicationNamespaceObjectLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *ApplicationNamespaceObjectLinks) MarshalBinary() ([]byte, error) {
+func (m *ApplicationNamespaceObjectInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -262,8 +262,8 @@ func (m *ApplicationNamespaceObjectLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ApplicationNamespaceObjectLinks) UnmarshalBinary(b []byte) error {
-	var res ApplicationNamespaceObjectLinks
+func (m *ApplicationNamespaceObjectInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ApplicationNamespaceObjectInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

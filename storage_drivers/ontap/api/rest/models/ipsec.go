@@ -24,11 +24,11 @@ type Ipsec struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// Indicates whether or not IPsec is enabled.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// Replay window size in packets, where 0 indicates that the relay window is disabled.
 	// Enum: [0 64 128 256 512 1024]
-	ReplayWindow int64 `json:"replay_window,omitempty"`
+	ReplayWindow *int64 `json:"replay_window,omitempty"`
 }
 
 // Validate validates this ipsec
@@ -92,7 +92,7 @@ func (m *Ipsec) validateReplayWindow(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateReplayWindowEnum("replay_window", "body", m.ReplayWindow); err != nil {
+	if err := m.validateReplayWindowEnum("replay_window", "body", *m.ReplayWindow); err != nil {
 		return err
 	}
 

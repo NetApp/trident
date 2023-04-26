@@ -66,19 +66,19 @@ type UnixUserGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Name.
 
 	   UNIX user name
 	*/
-	NamePathParameter string
+	Name string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -133,37 +133,37 @@ func (o *UnixUserGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the unix user get params
-func (o *UnixUserGetParams) WithFieldsQueryParameter(fields []string) *UnixUserGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the unix user get params
+func (o *UnixUserGetParams) WithFields(fields []string) *UnixUserGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the unix user get params
-func (o *UnixUserGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the unix user get params
+func (o *UnixUserGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the unix user get params
-func (o *UnixUserGetParams) WithNamePathParameter(name string) *UnixUserGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the unix user get params
+func (o *UnixUserGetParams) WithName(name string) *UnixUserGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the unix user get params
-func (o *UnixUserGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the unix user get params
+func (o *UnixUserGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the unix user get params
-func (o *UnixUserGetParams) WithSVMUUIDPathParameter(svmUUID string) *UnixUserGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the unix user get params
+func (o *UnixUserGetParams) WithSvmUUID(svmUUID string) *UnixUserGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the unix user get params
-func (o *UnixUserGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the unix user get params
+func (o *UnixUserGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,7 +174,7 @@ func (o *UnixUserGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,12 +186,12 @@ func (o *UnixUserGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -203,7 +203,7 @@ func (o *UnixUserGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamUnixUserGet binds the parameter fields
 func (o *UnixUserGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

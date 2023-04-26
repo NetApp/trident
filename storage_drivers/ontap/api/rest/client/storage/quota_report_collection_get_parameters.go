@@ -66,79 +66,79 @@ type QuotaReportCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* FilesHardLimit.
 
 	   Filter by files.hard_limit
 	*/
-	FilesHardLimitQueryParameter *int64
+	FilesHardLimit *int64
 
 	/* FilesSoftLimit.
 
 	   Filter by files.soft_limit
 	*/
-	FilesSoftLimitQueryParameter *int64
+	FilesSoftLimit *int64
 
 	/* FilesUsedHardLimitPercent.
 
 	   Filter by files.used.hard_limit_percent
 	*/
-	FilesUsedHardLimitPercentQueryParameter *int64
+	FilesUsedHardLimitPercent *int64
 
 	/* FilesUsedSoftLimitPercent.
 
 	   Filter by files.used.soft_limit_percent
 	*/
-	FilesUsedSoftLimitPercentQueryParameter *int64
+	FilesUsedSoftLimitPercent *int64
 
 	/* FilesUsedTotal.
 
 	   Filter by files.used.total
 	*/
-	FilesUsedTotalQueryParameter *int64
+	FilesUsedTotal *int64
 
 	/* GroupID.
 
 	   Filter by group.id
 	*/
-	GroupIDQueryParameter *string
+	GroupID *string
 
 	/* GroupName.
 
 	   Filter by group.name
 	*/
-	GroupNameQueryParameter *string
+	GroupName *string
 
 	/* Index.
 
 	   Filter by index
 	*/
-	IndexQueryParameter *int64
+	Index *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* QtreeID.
 
 	   Filter by qtree.id
 	*/
-	QtreeIDQueryParameter *int64
+	QtreeID *int64
 
 	/* QtreeName.
 
 	   Filter by qtree.name
 	*/
-	QtreeNameQueryParameter *string
+	QtreeName *string
 
 	/* ReturnRecords.
 
@@ -146,7 +146,7 @@ type QuotaReportCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -154,7 +154,7 @@ type QuotaReportCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* ShowDefaultRecords.
 
@@ -162,85 +162,85 @@ type QuotaReportCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ShowDefaultRecordsQueryParameter *bool
+	ShowDefaultRecords *bool
 
 	/* SpaceHardLimit.
 
 	   Filter by space.hard_limit
 	*/
-	SpaceHardLimitQueryParameter *int64
+	SpaceHardLimit *int64
 
 	/* SpaceSoftLimit.
 
 	   Filter by space.soft_limit
 	*/
-	SpaceSoftLimitQueryParameter *int64
+	SpaceSoftLimit *int64
 
 	/* SpaceUsedHardLimitPercent.
 
 	   Filter by space.used.hard_limit_percent
 	*/
-	SpaceUsedHardLimitPercentQueryParameter *int64
+	SpaceUsedHardLimitPercent *int64
 
 	/* SpaceUsedSoftLimitPercent.
 
 	   Filter by space.used.soft_limit_percent
 	*/
-	SpaceUsedSoftLimitPercentQueryParameter *int64
+	SpaceUsedSoftLimitPercent *int64
 
 	/* SpaceUsedTotal.
 
 	   Filter by space.used.total
 	*/
-	SpaceUsedTotalQueryParameter *int64
+	SpaceUsedTotal *int64
 
 	/* Specifier.
 
 	   Filter by specifier
 	*/
-	SpecifierQueryParameter *string
+	Specifier *string
 
 	/* SvmName.
 
 	   Filter by svm.name
 	*/
-	SVMNameQueryParameter *string
+	SvmName *string
 
 	/* SvmUUID.
 
 	   Filter by svm.uuid
 	*/
-	SVMUUIDQueryParameter *string
+	SvmUUID *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* UsersID.
 
 	   Filter by users.id
 	*/
-	UsersIDQueryParameter *string
+	UsersID *string
 
 	/* UsersName.
 
 	   Filter by users.name
 	*/
-	UsersNameQueryParameter *string
+	UsersName *string
 
 	/* VolumeName.
 
 	   Filter by volume.name
 	*/
-	VolumeNameQueryParameter *string
+	VolumeName *string
 
 	/* VolumeUUID.
 
 	   Filter by volume.uuid
 	*/
-	VolumeUUIDQueryParameter *string
+	VolumeUUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -260,17 +260,17 @@ func (o *QuotaReportCollectionGetParams) WithDefaults() *QuotaReportCollectionGe
 // All values with no default are reset to their zero value.
 func (o *QuotaReportCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 
-		showDefaultRecordsQueryParameterDefault = bool(true)
+		showDefaultRecordsDefault = bool(true)
 	)
 
 	val := QuotaReportCollectionGetParams{
-		ReturnRecordsQueryParameter:      &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter:      &returnTimeoutQueryParameterDefault,
-		ShowDefaultRecordsQueryParameter: &showDefaultRecordsQueryParameterDefault,
+		ReturnRecords:      &returnRecordsDefault,
+		ReturnTimeout:      &returnTimeoutDefault,
+		ShowDefaultRecords: &showDefaultRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -312,323 +312,323 @@ func (o *QuotaReportCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFieldsQueryParameter(fields []string) *QuotaReportCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFields(fields []string) *QuotaReportCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithFilesHardLimitQueryParameter adds the filesHardLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFilesHardLimitQueryParameter(filesHardLimit *int64) *QuotaReportCollectionGetParams {
-	o.SetFilesHardLimitQueryParameter(filesHardLimit)
+// WithFilesHardLimit adds the filesHardLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFilesHardLimit(filesHardLimit *int64) *QuotaReportCollectionGetParams {
+	o.SetFilesHardLimit(filesHardLimit)
 	return o
 }
 
-// SetFilesHardLimitQueryParameter adds the filesHardLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFilesHardLimitQueryParameter(filesHardLimit *int64) {
-	o.FilesHardLimitQueryParameter = filesHardLimit
+// SetFilesHardLimit adds the filesHardLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFilesHardLimit(filesHardLimit *int64) {
+	o.FilesHardLimit = filesHardLimit
 }
 
-// WithFilesSoftLimitQueryParameter adds the filesSoftLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFilesSoftLimitQueryParameter(filesSoftLimit *int64) *QuotaReportCollectionGetParams {
-	o.SetFilesSoftLimitQueryParameter(filesSoftLimit)
+// WithFilesSoftLimit adds the filesSoftLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFilesSoftLimit(filesSoftLimit *int64) *QuotaReportCollectionGetParams {
+	o.SetFilesSoftLimit(filesSoftLimit)
 	return o
 }
 
-// SetFilesSoftLimitQueryParameter adds the filesSoftLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFilesSoftLimitQueryParameter(filesSoftLimit *int64) {
-	o.FilesSoftLimitQueryParameter = filesSoftLimit
+// SetFilesSoftLimit adds the filesSoftLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFilesSoftLimit(filesSoftLimit *int64) {
+	o.FilesSoftLimit = filesSoftLimit
 }
 
-// WithFilesUsedHardLimitPercentQueryParameter adds the filesUsedHardLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFilesUsedHardLimitPercentQueryParameter(filesUsedHardLimitPercent *int64) *QuotaReportCollectionGetParams {
-	o.SetFilesUsedHardLimitPercentQueryParameter(filesUsedHardLimitPercent)
+// WithFilesUsedHardLimitPercent adds the filesUsedHardLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFilesUsedHardLimitPercent(filesUsedHardLimitPercent *int64) *QuotaReportCollectionGetParams {
+	o.SetFilesUsedHardLimitPercent(filesUsedHardLimitPercent)
 	return o
 }
 
-// SetFilesUsedHardLimitPercentQueryParameter adds the filesUsedHardLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFilesUsedHardLimitPercentQueryParameter(filesUsedHardLimitPercent *int64) {
-	o.FilesUsedHardLimitPercentQueryParameter = filesUsedHardLimitPercent
+// SetFilesUsedHardLimitPercent adds the filesUsedHardLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFilesUsedHardLimitPercent(filesUsedHardLimitPercent *int64) {
+	o.FilesUsedHardLimitPercent = filesUsedHardLimitPercent
 }
 
-// WithFilesUsedSoftLimitPercentQueryParameter adds the filesUsedSoftLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFilesUsedSoftLimitPercentQueryParameter(filesUsedSoftLimitPercent *int64) *QuotaReportCollectionGetParams {
-	o.SetFilesUsedSoftLimitPercentQueryParameter(filesUsedSoftLimitPercent)
+// WithFilesUsedSoftLimitPercent adds the filesUsedSoftLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFilesUsedSoftLimitPercent(filesUsedSoftLimitPercent *int64) *QuotaReportCollectionGetParams {
+	o.SetFilesUsedSoftLimitPercent(filesUsedSoftLimitPercent)
 	return o
 }
 
-// SetFilesUsedSoftLimitPercentQueryParameter adds the filesUsedSoftLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFilesUsedSoftLimitPercentQueryParameter(filesUsedSoftLimitPercent *int64) {
-	o.FilesUsedSoftLimitPercentQueryParameter = filesUsedSoftLimitPercent
+// SetFilesUsedSoftLimitPercent adds the filesUsedSoftLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFilesUsedSoftLimitPercent(filesUsedSoftLimitPercent *int64) {
+	o.FilesUsedSoftLimitPercent = filesUsedSoftLimitPercent
 }
 
-// WithFilesUsedTotalQueryParameter adds the filesUsedTotal to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFilesUsedTotalQueryParameter(filesUsedTotal *int64) *QuotaReportCollectionGetParams {
-	o.SetFilesUsedTotalQueryParameter(filesUsedTotal)
+// WithFilesUsedTotal adds the filesUsedTotal to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFilesUsedTotal(filesUsedTotal *int64) *QuotaReportCollectionGetParams {
+	o.SetFilesUsedTotal(filesUsedTotal)
 	return o
 }
 
-// SetFilesUsedTotalQueryParameter adds the filesUsedTotal to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFilesUsedTotalQueryParameter(filesUsedTotal *int64) {
-	o.FilesUsedTotalQueryParameter = filesUsedTotal
+// SetFilesUsedTotal adds the filesUsedTotal to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFilesUsedTotal(filesUsedTotal *int64) {
+	o.FilesUsedTotal = filesUsedTotal
 }
 
-// WithGroupIDQueryParameter adds the groupID to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithGroupIDQueryParameter(groupID *string) *QuotaReportCollectionGetParams {
-	o.SetGroupIDQueryParameter(groupID)
+// WithGroupID adds the groupID to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithGroupID(groupID *string) *QuotaReportCollectionGetParams {
+	o.SetGroupID(groupID)
 	return o
 }
 
-// SetGroupIDQueryParameter adds the groupId to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetGroupIDQueryParameter(groupID *string) {
-	o.GroupIDQueryParameter = groupID
+// SetGroupID adds the groupId to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetGroupID(groupID *string) {
+	o.GroupID = groupID
 }
 
-// WithGroupNameQueryParameter adds the groupName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithGroupNameQueryParameter(groupName *string) *QuotaReportCollectionGetParams {
-	o.SetGroupNameQueryParameter(groupName)
+// WithGroupName adds the groupName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithGroupName(groupName *string) *QuotaReportCollectionGetParams {
+	o.SetGroupName(groupName)
 	return o
 }
 
-// SetGroupNameQueryParameter adds the groupName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetGroupNameQueryParameter(groupName *string) {
-	o.GroupNameQueryParameter = groupName
+// SetGroupName adds the groupName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetGroupName(groupName *string) {
+	o.GroupName = groupName
 }
 
-// WithIndexQueryParameter adds the index to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithIndexQueryParameter(index *int64) *QuotaReportCollectionGetParams {
-	o.SetIndexQueryParameter(index)
+// WithIndex adds the index to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithIndex(index *int64) *QuotaReportCollectionGetParams {
+	o.SetIndex(index)
 	return o
 }
 
-// SetIndexQueryParameter adds the index to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetIndexQueryParameter(index *int64) {
-	o.IndexQueryParameter = index
+// SetIndex adds the index to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetIndex(index *int64) {
+	o.Index = index
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QuotaReportCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithMaxRecords(maxRecords *int64) *QuotaReportCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithOrderByQueryParameter adds the orderBy to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QuotaReportCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithOrderBy(orderBy []string) *QuotaReportCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithQtreeIDQueryParameter adds the qtreeID to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithQtreeIDQueryParameter(qtreeID *int64) *QuotaReportCollectionGetParams {
-	o.SetQtreeIDQueryParameter(qtreeID)
+// WithQtreeID adds the qtreeID to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithQtreeID(qtreeID *int64) *QuotaReportCollectionGetParams {
+	o.SetQtreeID(qtreeID)
 	return o
 }
 
-// SetQtreeIDQueryParameter adds the qtreeId to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetQtreeIDQueryParameter(qtreeID *int64) {
-	o.QtreeIDQueryParameter = qtreeID
+// SetQtreeID adds the qtreeId to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetQtreeID(qtreeID *int64) {
+	o.QtreeID = qtreeID
 }
 
-// WithQtreeNameQueryParameter adds the qtreeName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithQtreeNameQueryParameter(qtreeName *string) *QuotaReportCollectionGetParams {
-	o.SetQtreeNameQueryParameter(qtreeName)
+// WithQtreeName adds the qtreeName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithQtreeName(qtreeName *string) *QuotaReportCollectionGetParams {
+	o.SetQtreeName(qtreeName)
 	return o
 }
 
-// SetQtreeNameQueryParameter adds the qtreeName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetQtreeNameQueryParameter(qtreeName *string) {
-	o.QtreeNameQueryParameter = qtreeName
+// SetQtreeName adds the qtreeName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetQtreeName(qtreeName *string) {
+	o.QtreeName = qtreeName
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QuotaReportCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithReturnRecords(returnRecords *bool) *QuotaReportCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QuotaReportCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QuotaReportCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithShowDefaultRecordsQueryParameter adds the showDefaultRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithShowDefaultRecordsQueryParameter(showDefaultRecords *bool) *QuotaReportCollectionGetParams {
-	o.SetShowDefaultRecordsQueryParameter(showDefaultRecords)
+// WithShowDefaultRecords adds the showDefaultRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithShowDefaultRecords(showDefaultRecords *bool) *QuotaReportCollectionGetParams {
+	o.SetShowDefaultRecords(showDefaultRecords)
 	return o
 }
 
-// SetShowDefaultRecordsQueryParameter adds the showDefaultRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetShowDefaultRecordsQueryParameter(showDefaultRecords *bool) {
-	o.ShowDefaultRecordsQueryParameter = showDefaultRecords
+// SetShowDefaultRecords adds the showDefaultRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetShowDefaultRecords(showDefaultRecords *bool) {
+	o.ShowDefaultRecords = showDefaultRecords
 }
 
-// WithSpaceHardLimitQueryParameter adds the spaceHardLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpaceHardLimitQueryParameter(spaceHardLimit *int64) *QuotaReportCollectionGetParams {
-	o.SetSpaceHardLimitQueryParameter(spaceHardLimit)
+// WithSpaceHardLimit adds the spaceHardLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSpaceHardLimit(spaceHardLimit *int64) *QuotaReportCollectionGetParams {
+	o.SetSpaceHardLimit(spaceHardLimit)
 	return o
 }
 
-// SetSpaceHardLimitQueryParameter adds the spaceHardLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpaceHardLimitQueryParameter(spaceHardLimit *int64) {
-	o.SpaceHardLimitQueryParameter = spaceHardLimit
+// SetSpaceHardLimit adds the spaceHardLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSpaceHardLimit(spaceHardLimit *int64) {
+	o.SpaceHardLimit = spaceHardLimit
 }
 
-// WithSpaceSoftLimitQueryParameter adds the spaceSoftLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpaceSoftLimitQueryParameter(spaceSoftLimit *int64) *QuotaReportCollectionGetParams {
-	o.SetSpaceSoftLimitQueryParameter(spaceSoftLimit)
+// WithSpaceSoftLimit adds the spaceSoftLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSpaceSoftLimit(spaceSoftLimit *int64) *QuotaReportCollectionGetParams {
+	o.SetSpaceSoftLimit(spaceSoftLimit)
 	return o
 }
 
-// SetSpaceSoftLimitQueryParameter adds the spaceSoftLimit to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpaceSoftLimitQueryParameter(spaceSoftLimit *int64) {
-	o.SpaceSoftLimitQueryParameter = spaceSoftLimit
+// SetSpaceSoftLimit adds the spaceSoftLimit to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSpaceSoftLimit(spaceSoftLimit *int64) {
+	o.SpaceSoftLimit = spaceSoftLimit
 }
 
-// WithSpaceUsedHardLimitPercentQueryParameter adds the spaceUsedHardLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpaceUsedHardLimitPercentQueryParameter(spaceUsedHardLimitPercent *int64) *QuotaReportCollectionGetParams {
-	o.SetSpaceUsedHardLimitPercentQueryParameter(spaceUsedHardLimitPercent)
+// WithSpaceUsedHardLimitPercent adds the spaceUsedHardLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSpaceUsedHardLimitPercent(spaceUsedHardLimitPercent *int64) *QuotaReportCollectionGetParams {
+	o.SetSpaceUsedHardLimitPercent(spaceUsedHardLimitPercent)
 	return o
 }
 
-// SetSpaceUsedHardLimitPercentQueryParameter adds the spaceUsedHardLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpaceUsedHardLimitPercentQueryParameter(spaceUsedHardLimitPercent *int64) {
-	o.SpaceUsedHardLimitPercentQueryParameter = spaceUsedHardLimitPercent
+// SetSpaceUsedHardLimitPercent adds the spaceUsedHardLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSpaceUsedHardLimitPercent(spaceUsedHardLimitPercent *int64) {
+	o.SpaceUsedHardLimitPercent = spaceUsedHardLimitPercent
 }
 
-// WithSpaceUsedSoftLimitPercentQueryParameter adds the spaceUsedSoftLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpaceUsedSoftLimitPercentQueryParameter(spaceUsedSoftLimitPercent *int64) *QuotaReportCollectionGetParams {
-	o.SetSpaceUsedSoftLimitPercentQueryParameter(spaceUsedSoftLimitPercent)
+// WithSpaceUsedSoftLimitPercent adds the spaceUsedSoftLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSpaceUsedSoftLimitPercent(spaceUsedSoftLimitPercent *int64) *QuotaReportCollectionGetParams {
+	o.SetSpaceUsedSoftLimitPercent(spaceUsedSoftLimitPercent)
 	return o
 }
 
-// SetSpaceUsedSoftLimitPercentQueryParameter adds the spaceUsedSoftLimitPercent to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpaceUsedSoftLimitPercentQueryParameter(spaceUsedSoftLimitPercent *int64) {
-	o.SpaceUsedSoftLimitPercentQueryParameter = spaceUsedSoftLimitPercent
+// SetSpaceUsedSoftLimitPercent adds the spaceUsedSoftLimitPercent to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSpaceUsedSoftLimitPercent(spaceUsedSoftLimitPercent *int64) {
+	o.SpaceUsedSoftLimitPercent = spaceUsedSoftLimitPercent
 }
 
-// WithSpaceUsedTotalQueryParameter adds the spaceUsedTotal to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpaceUsedTotalQueryParameter(spaceUsedTotal *int64) *QuotaReportCollectionGetParams {
-	o.SetSpaceUsedTotalQueryParameter(spaceUsedTotal)
+// WithSpaceUsedTotal adds the spaceUsedTotal to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSpaceUsedTotal(spaceUsedTotal *int64) *QuotaReportCollectionGetParams {
+	o.SetSpaceUsedTotal(spaceUsedTotal)
 	return o
 }
 
-// SetSpaceUsedTotalQueryParameter adds the spaceUsedTotal to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpaceUsedTotalQueryParameter(spaceUsedTotal *int64) {
-	o.SpaceUsedTotalQueryParameter = spaceUsedTotal
+// SetSpaceUsedTotal adds the spaceUsedTotal to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSpaceUsedTotal(spaceUsedTotal *int64) {
+	o.SpaceUsedTotal = spaceUsedTotal
 }
 
-// WithSpecifierQueryParameter adds the specifier to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSpecifierQueryParameter(specifier *string) *QuotaReportCollectionGetParams {
-	o.SetSpecifierQueryParameter(specifier)
+// WithSpecifier adds the specifier to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSpecifier(specifier *string) *QuotaReportCollectionGetParams {
+	o.SetSpecifier(specifier)
 	return o
 }
 
-// SetSpecifierQueryParameter adds the specifier to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSpecifierQueryParameter(specifier *string) {
-	o.SpecifierQueryParameter = specifier
+// SetSpecifier adds the specifier to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSpecifier(specifier *string) {
+	o.Specifier = specifier
 }
 
-// WithSVMNameQueryParameter adds the svmName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *QuotaReportCollectionGetParams {
-	o.SetSVMNameQueryParameter(svmName)
+// WithSvmName adds the svmName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSvmName(svmName *string) *QuotaReportCollectionGetParams {
+	o.SetSvmName(svmName)
 	return o
 }
 
-// SetSVMNameQueryParameter adds the svmName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
-	o.SVMNameQueryParameter = svmName
+// SetSvmName adds the svmName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSvmName(svmName *string) {
+	o.SvmName = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *QuotaReportCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithSvmUUID(svmUUID *string) *QuotaReportCollectionGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDQueryParameter adds the svmUuid to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetSvmUUID(svmUUID *string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypeQueryParameter adds the typeVar to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithTypeQueryParameter(typeVar *string) *QuotaReportCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithType adds the typeVar to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithType(typeVar *string) *QuotaReportCollectionGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetType adds the type to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
 }
 
-// WithUsersIDQueryParameter adds the usersID to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithUsersIDQueryParameter(usersID *string) *QuotaReportCollectionGetParams {
-	o.SetUsersIDQueryParameter(usersID)
+// WithUsersID adds the usersID to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithUsersID(usersID *string) *QuotaReportCollectionGetParams {
+	o.SetUsersID(usersID)
 	return o
 }
 
-// SetUsersIDQueryParameter adds the usersId to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetUsersIDQueryParameter(usersID *string) {
-	o.UsersIDQueryParameter = usersID
+// SetUsersID adds the usersId to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetUsersID(usersID *string) {
+	o.UsersID = usersID
 }
 
-// WithUsersNameQueryParameter adds the usersName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithUsersNameQueryParameter(usersName *string) *QuotaReportCollectionGetParams {
-	o.SetUsersNameQueryParameter(usersName)
+// WithUsersName adds the usersName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithUsersName(usersName *string) *QuotaReportCollectionGetParams {
+	o.SetUsersName(usersName)
 	return o
 }
 
-// SetUsersNameQueryParameter adds the usersName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetUsersNameQueryParameter(usersName *string) {
-	o.UsersNameQueryParameter = usersName
+// SetUsersName adds the usersName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetUsersName(usersName *string) {
+	o.UsersName = usersName
 }
 
-// WithVolumeNameQueryParameter adds the volumeName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithVolumeNameQueryParameter(volumeName *string) *QuotaReportCollectionGetParams {
-	o.SetVolumeNameQueryParameter(volumeName)
+// WithVolumeName adds the volumeName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithVolumeName(volumeName *string) *QuotaReportCollectionGetParams {
+	o.SetVolumeName(volumeName)
 	return o
 }
 
-// SetVolumeNameQueryParameter adds the volumeName to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetVolumeNameQueryParameter(volumeName *string) {
-	o.VolumeNameQueryParameter = volumeName
+// SetVolumeName adds the volumeName to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetVolumeName(volumeName *string) {
+	o.VolumeName = volumeName
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *QuotaReportCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
+// WithVolumeUUID adds the volumeUUID to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithVolumeUUID(volumeUUID *string) *QuotaReportCollectionGetParams {
+	o.SetVolumeUUID(volumeUUID)
 	return o
 }
 
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
+// SetVolumeUUID adds the volumeUuid to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetVolumeUUID(volumeUUID *string) {
+	o.VolumeUUID = volumeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -639,7 +639,7 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -650,13 +650,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FilesHardLimitQueryParameter != nil {
+	if o.FilesHardLimit != nil {
 
 		// query param files.hard_limit
 		var qrFilesHardLimit int64
 
-		if o.FilesHardLimitQueryParameter != nil {
-			qrFilesHardLimit = *o.FilesHardLimitQueryParameter
+		if o.FilesHardLimit != nil {
+			qrFilesHardLimit = *o.FilesHardLimit
 		}
 		qFilesHardLimit := swag.FormatInt64(qrFilesHardLimit)
 		if qFilesHardLimit != "" {
@@ -667,13 +667,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FilesSoftLimitQueryParameter != nil {
+	if o.FilesSoftLimit != nil {
 
 		// query param files.soft_limit
 		var qrFilesSoftLimit int64
 
-		if o.FilesSoftLimitQueryParameter != nil {
-			qrFilesSoftLimit = *o.FilesSoftLimitQueryParameter
+		if o.FilesSoftLimit != nil {
+			qrFilesSoftLimit = *o.FilesSoftLimit
 		}
 		qFilesSoftLimit := swag.FormatInt64(qrFilesSoftLimit)
 		if qFilesSoftLimit != "" {
@@ -684,13 +684,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FilesUsedHardLimitPercentQueryParameter != nil {
+	if o.FilesUsedHardLimitPercent != nil {
 
 		// query param files.used.hard_limit_percent
 		var qrFilesUsedHardLimitPercent int64
 
-		if o.FilesUsedHardLimitPercentQueryParameter != nil {
-			qrFilesUsedHardLimitPercent = *o.FilesUsedHardLimitPercentQueryParameter
+		if o.FilesUsedHardLimitPercent != nil {
+			qrFilesUsedHardLimitPercent = *o.FilesUsedHardLimitPercent
 		}
 		qFilesUsedHardLimitPercent := swag.FormatInt64(qrFilesUsedHardLimitPercent)
 		if qFilesUsedHardLimitPercent != "" {
@@ -701,13 +701,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FilesUsedSoftLimitPercentQueryParameter != nil {
+	if o.FilesUsedSoftLimitPercent != nil {
 
 		// query param files.used.soft_limit_percent
 		var qrFilesUsedSoftLimitPercent int64
 
-		if o.FilesUsedSoftLimitPercentQueryParameter != nil {
-			qrFilesUsedSoftLimitPercent = *o.FilesUsedSoftLimitPercentQueryParameter
+		if o.FilesUsedSoftLimitPercent != nil {
+			qrFilesUsedSoftLimitPercent = *o.FilesUsedSoftLimitPercent
 		}
 		qFilesUsedSoftLimitPercent := swag.FormatInt64(qrFilesUsedSoftLimitPercent)
 		if qFilesUsedSoftLimitPercent != "" {
@@ -718,13 +718,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FilesUsedTotalQueryParameter != nil {
+	if o.FilesUsedTotal != nil {
 
 		// query param files.used.total
 		var qrFilesUsedTotal int64
 
-		if o.FilesUsedTotalQueryParameter != nil {
-			qrFilesUsedTotal = *o.FilesUsedTotalQueryParameter
+		if o.FilesUsedTotal != nil {
+			qrFilesUsedTotal = *o.FilesUsedTotal
 		}
 		qFilesUsedTotal := swag.FormatInt64(qrFilesUsedTotal)
 		if qFilesUsedTotal != "" {
@@ -735,13 +735,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.GroupIDQueryParameter != nil {
+	if o.GroupID != nil {
 
 		// query param group.id
 		var qrGroupID string
 
-		if o.GroupIDQueryParameter != nil {
-			qrGroupID = *o.GroupIDQueryParameter
+		if o.GroupID != nil {
+			qrGroupID = *o.GroupID
 		}
 		qGroupID := qrGroupID
 		if qGroupID != "" {
@@ -752,13 +752,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.GroupNameQueryParameter != nil {
+	if o.GroupName != nil {
 
 		// query param group.name
 		var qrGroupName string
 
-		if o.GroupNameQueryParameter != nil {
-			qrGroupName = *o.GroupNameQueryParameter
+		if o.GroupName != nil {
+			qrGroupName = *o.GroupName
 		}
 		qGroupName := qrGroupName
 		if qGroupName != "" {
@@ -769,13 +769,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.IndexQueryParameter != nil {
+	if o.Index != nil {
 
 		// query param index
 		var qrIndex int64
 
-		if o.IndexQueryParameter != nil {
-			qrIndex = *o.IndexQueryParameter
+		if o.Index != nil {
+			qrIndex = *o.Index
 		}
 		qIndex := swag.FormatInt64(qrIndex)
 		if qIndex != "" {
@@ -786,13 +786,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -803,7 +803,7 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -814,13 +814,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.QtreeIDQueryParameter != nil {
+	if o.QtreeID != nil {
 
 		// query param qtree.id
 		var qrQtreeID int64
 
-		if o.QtreeIDQueryParameter != nil {
-			qrQtreeID = *o.QtreeIDQueryParameter
+		if o.QtreeID != nil {
+			qrQtreeID = *o.QtreeID
 		}
 		qQtreeID := swag.FormatInt64(qrQtreeID)
 		if qQtreeID != "" {
@@ -831,13 +831,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.QtreeNameQueryParameter != nil {
+	if o.QtreeName != nil {
 
 		// query param qtree.name
 		var qrQtreeName string
 
-		if o.QtreeNameQueryParameter != nil {
-			qrQtreeName = *o.QtreeNameQueryParameter
+		if o.QtreeName != nil {
+			qrQtreeName = *o.QtreeName
 		}
 		qQtreeName := qrQtreeName
 		if qQtreeName != "" {
@@ -848,13 +848,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -865,13 +865,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -882,13 +882,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ShowDefaultRecordsQueryParameter != nil {
+	if o.ShowDefaultRecords != nil {
 
 		// query param show_default_records
 		var qrShowDefaultRecords bool
 
-		if o.ShowDefaultRecordsQueryParameter != nil {
-			qrShowDefaultRecords = *o.ShowDefaultRecordsQueryParameter
+		if o.ShowDefaultRecords != nil {
+			qrShowDefaultRecords = *o.ShowDefaultRecords
 		}
 		qShowDefaultRecords := swag.FormatBool(qrShowDefaultRecords)
 		if qShowDefaultRecords != "" {
@@ -899,13 +899,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SpaceHardLimitQueryParameter != nil {
+	if o.SpaceHardLimit != nil {
 
 		// query param space.hard_limit
 		var qrSpaceHardLimit int64
 
-		if o.SpaceHardLimitQueryParameter != nil {
-			qrSpaceHardLimit = *o.SpaceHardLimitQueryParameter
+		if o.SpaceHardLimit != nil {
+			qrSpaceHardLimit = *o.SpaceHardLimit
 		}
 		qSpaceHardLimit := swag.FormatInt64(qrSpaceHardLimit)
 		if qSpaceHardLimit != "" {
@@ -916,13 +916,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SpaceSoftLimitQueryParameter != nil {
+	if o.SpaceSoftLimit != nil {
 
 		// query param space.soft_limit
 		var qrSpaceSoftLimit int64
 
-		if o.SpaceSoftLimitQueryParameter != nil {
-			qrSpaceSoftLimit = *o.SpaceSoftLimitQueryParameter
+		if o.SpaceSoftLimit != nil {
+			qrSpaceSoftLimit = *o.SpaceSoftLimit
 		}
 		qSpaceSoftLimit := swag.FormatInt64(qrSpaceSoftLimit)
 		if qSpaceSoftLimit != "" {
@@ -933,13 +933,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SpaceUsedHardLimitPercentQueryParameter != nil {
+	if o.SpaceUsedHardLimitPercent != nil {
 
 		// query param space.used.hard_limit_percent
 		var qrSpaceUsedHardLimitPercent int64
 
-		if o.SpaceUsedHardLimitPercentQueryParameter != nil {
-			qrSpaceUsedHardLimitPercent = *o.SpaceUsedHardLimitPercentQueryParameter
+		if o.SpaceUsedHardLimitPercent != nil {
+			qrSpaceUsedHardLimitPercent = *o.SpaceUsedHardLimitPercent
 		}
 		qSpaceUsedHardLimitPercent := swag.FormatInt64(qrSpaceUsedHardLimitPercent)
 		if qSpaceUsedHardLimitPercent != "" {
@@ -950,13 +950,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SpaceUsedSoftLimitPercentQueryParameter != nil {
+	if o.SpaceUsedSoftLimitPercent != nil {
 
 		// query param space.used.soft_limit_percent
 		var qrSpaceUsedSoftLimitPercent int64
 
-		if o.SpaceUsedSoftLimitPercentQueryParameter != nil {
-			qrSpaceUsedSoftLimitPercent = *o.SpaceUsedSoftLimitPercentQueryParameter
+		if o.SpaceUsedSoftLimitPercent != nil {
+			qrSpaceUsedSoftLimitPercent = *o.SpaceUsedSoftLimitPercent
 		}
 		qSpaceUsedSoftLimitPercent := swag.FormatInt64(qrSpaceUsedSoftLimitPercent)
 		if qSpaceUsedSoftLimitPercent != "" {
@@ -967,13 +967,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SpaceUsedTotalQueryParameter != nil {
+	if o.SpaceUsedTotal != nil {
 
 		// query param space.used.total
 		var qrSpaceUsedTotal int64
 
-		if o.SpaceUsedTotalQueryParameter != nil {
-			qrSpaceUsedTotal = *o.SpaceUsedTotalQueryParameter
+		if o.SpaceUsedTotal != nil {
+			qrSpaceUsedTotal = *o.SpaceUsedTotal
 		}
 		qSpaceUsedTotal := swag.FormatInt64(qrSpaceUsedTotal)
 		if qSpaceUsedTotal != "" {
@@ -984,13 +984,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SpecifierQueryParameter != nil {
+	if o.Specifier != nil {
 
 		// query param specifier
 		var qrSpecifier string
 
-		if o.SpecifierQueryParameter != nil {
-			qrSpecifier = *o.SpecifierQueryParameter
+		if o.Specifier != nil {
+			qrSpecifier = *o.Specifier
 		}
 		qSpecifier := qrSpecifier
 		if qSpecifier != "" {
@@ -1001,13 +1001,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMNameQueryParameter != nil {
+	if o.SvmName != nil {
 
 		// query param svm.name
 		var qrSvmName string
 
-		if o.SVMNameQueryParameter != nil {
-			qrSvmName = *o.SVMNameQueryParameter
+		if o.SvmName != nil {
+			qrSvmName = *o.SvmName
 		}
 		qSvmName := qrSvmName
 		if qSvmName != "" {
@@ -1018,13 +1018,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SVMUUIDQueryParameter != nil {
+	if o.SvmUUID != nil {
 
 		// query param svm.uuid
 		var qrSvmUUID string
 
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
+		if o.SvmUUID != nil {
+			qrSvmUUID = *o.SvmUUID
 		}
 		qSvmUUID := qrSvmUUID
 		if qSvmUUID != "" {
@@ -1035,13 +1035,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -1052,13 +1052,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UsersIDQueryParameter != nil {
+	if o.UsersID != nil {
 
 		// query param users.id
 		var qrUsersID string
 
-		if o.UsersIDQueryParameter != nil {
-			qrUsersID = *o.UsersIDQueryParameter
+		if o.UsersID != nil {
+			qrUsersID = *o.UsersID
 		}
 		qUsersID := qrUsersID
 		if qUsersID != "" {
@@ -1069,13 +1069,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UsersNameQueryParameter != nil {
+	if o.UsersName != nil {
 
 		// query param users.name
 		var qrUsersName string
 
-		if o.UsersNameQueryParameter != nil {
-			qrUsersName = *o.UsersNameQueryParameter
+		if o.UsersName != nil {
+			qrUsersName = *o.UsersName
 		}
 		qUsersName := qrUsersName
 		if qUsersName != "" {
@@ -1086,13 +1086,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumeNameQueryParameter != nil {
+	if o.VolumeName != nil {
 
 		// query param volume.name
 		var qrVolumeName string
 
-		if o.VolumeNameQueryParameter != nil {
-			qrVolumeName = *o.VolumeNameQueryParameter
+		if o.VolumeName != nil {
+			qrVolumeName = *o.VolumeName
 		}
 		qVolumeName := qrVolumeName
 		if qVolumeName != "" {
@@ -1103,13 +1103,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
+	if o.VolumeUUID != nil {
 
 		// query param volume.uuid
 		var qrVolumeUUID string
 
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
+		if o.VolumeUUID != nil {
+			qrVolumeUUID = *o.VolumeUUID
 		}
 		qVolumeUUID := qrVolumeUUID
 		if qVolumeUUID != "" {
@@ -1128,7 +1128,7 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamQuotaReportCollectionGet binds the parameter fields
 func (o *QuotaReportCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1145,7 +1145,7 @@ func (o *QuotaReportCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamQuotaReportCollectionGet binds the parameter order_by
 func (o *QuotaReportCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

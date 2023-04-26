@@ -26,15 +26,15 @@ type ApplicationVolumeObject struct {
 
 	// Name
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Size
 	// Read Only: true
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// UUID
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
 // Validate validates this application volume object
@@ -100,7 +100,7 @@ func (m *ApplicationVolumeObject) contextValidateCreationTimestamp(ctx context.C
 
 func (m *ApplicationVolumeObject) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -109,7 +109,7 @@ func (m *ApplicationVolumeObject) contextValidateName(ctx context.Context, forma
 
 func (m *ApplicationVolumeObject) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func (m *ApplicationVolumeObject) contextValidateSize(ctx context.Context, forma
 
 func (m *ApplicationVolumeObject) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 

@@ -8,7 +8,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/netapp/trident/frontend/csi"
-	. "github.com/netapp/trident/logger"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -21,7 +21,7 @@ import (
 // updateLegacyPV handles deletion of Trident-created legacy (non-CSI) PVs.  This method specifically
 // handles the case where the PV transitions to the Released or Failed state after a PVC is deleted.
 func (h *helper) updateLegacyPV(oldObj, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowVolumeUpdate, LogLayerCSIFrontend)
 
 	// Ensure we got PV objects
 	pv, ok := newObj.(*v1.PersistentVolume)

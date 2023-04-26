@@ -25,54 +25,54 @@ type KeyManagerKeys struct {
 
 	// Cloud resource name.
 	// Example: CRN=v1:bluemix:public:containers-kubernetes
-	Crn string `json:"crn,omitempty"`
+	Crn *string `json:"crn,omitempty"`
 
 	// Encryption algorithm for the key
 	// Example: XTS-AES-256
-	EncryptionAlgorithm string `json:"encryption_algorithm,omitempty"`
+	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
 
 	// Key identifier.
 	// Example: 00000000000000000100000000000123456789asdfghjklqwertyuio123456780000000000000090
-	KeyID string `json:"key_id,omitempty"`
+	KeyID *string `json:"key_id,omitempty"`
 
 	// Key manager key server managing the key. Indicates the external key server when external key manager is configured.
 	// Example: keyserver1.local:5696
-	KeyManager string `json:"key_manager,omitempty"`
+	KeyManager *string `json:"key_manager,omitempty"`
 
 	// External key server for key management.
 	// Example: keyserver1.com:5698
-	KeyServer string `json:"key_server,omitempty"`
+	KeyServer *string `json:"key_server,omitempty"`
 
 	// Security key manager configured for the given key manager UUID. Key manager keystore value can be onboard or external.
 	// Enum: [onboard external]
-	KeyStore string `json:"key_store,omitempty"`
+	KeyStore *string `json:"key_store,omitempty"`
 
 	// Security key manager keystore type. Keystore type can be onboard, external, or supported cloud key manager.
-	// Enum: [okm kmip akv unset gcp aws]
-	KeyStoreType string `json:"key_store_type,omitempty"`
+	// Enum: [okm kmip akv unset gcp aws ikp]
+	KeyStoreType *string `json:"key_store_type,omitempty"`
 
 	// Additional information associated with the key.
 	// Example: key#
-	KeyTag string `json:"key_tag,omitempty"`
+	KeyTag *string `json:"key_tag,omitempty"`
 
 	// Encryption Key type.
 	// Enum: [nse_ak aek vek nek svm_kek]
-	KeyType string `json:"key_type,omitempty"`
+	KeyType *string `json:"key_type,omitempty"`
 
 	// SVM associated with the key.
 	// Example: vs1
-	KeyUser string `json:"key_user,omitempty"`
+	KeyUser *string `json:"key_user,omitempty"`
 
 	// node
-	Node *KeyManagerKeysNode `json:"node,omitempty"`
+	Node *KeyManagerKeysInlineNode `json:"node,omitempty"`
 
 	// Key store policy.
 	// Example: IBM_Key_Lore
-	Policy string `json:"policy,omitempty"`
+	Policy *string `json:"policy,omitempty"`
 
 	// Indicates whether the key is present locally on the node.
 	// Example: true
-	Restored bool `json:"restored,omitempty"`
+	Restored *bool `json:"restored,omitempty"`
 }
 
 // Validate validates this key manager keys
@@ -171,7 +171,7 @@ func (m *KeyManagerKeys) validateKeyStore(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateKeyStoreEnum("key_store", "body", m.KeyStore); err != nil {
+	if err := m.validateKeyStoreEnum("key_store", "body", *m.KeyStore); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ var keyManagerKeysTypeKeyStoreTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["okm","kmip","akv","unset","gcp","aws"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["okm","kmip","akv","unset","gcp","aws","ikp"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -251,6 +251,16 @@ const (
 	// END DEBUGGING
 	// KeyManagerKeysKeyStoreTypeAws captures enum value "aws"
 	KeyManagerKeysKeyStoreTypeAws string = "aws"
+
+	// BEGIN DEBUGGING
+	// key_manager_keys
+	// KeyManagerKeys
+	// key_store_type
+	// KeyStoreType
+	// ikp
+	// END DEBUGGING
+	// KeyManagerKeysKeyStoreTypeIkp captures enum value "ikp"
+	KeyManagerKeysKeyStoreTypeIkp string = "ikp"
 )
 
 // prop value enum
@@ -267,7 +277,7 @@ func (m *KeyManagerKeys) validateKeyStoreType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateKeyStoreTypeEnum("key_store_type", "body", m.KeyStoreType); err != nil {
+	if err := m.validateKeyStoreTypeEnum("key_store_type", "body", *m.KeyStoreType); err != nil {
 		return err
 	}
 
@@ -353,7 +363,7 @@ func (m *KeyManagerKeys) validateKeyType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateKeyTypeEnum("key_type", "body", m.KeyType); err != nil {
+	if err := m.validateKeyTypeEnum("key_type", "body", *m.KeyType); err != nil {
 		return err
 	}
 
@@ -441,25 +451,25 @@ func (m *KeyManagerKeys) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KeyManagerKeysNode key manager keys node
+// KeyManagerKeysInlineNode key manager keys inline node
 //
-// swagger:model KeyManagerKeysNode
-type KeyManagerKeysNode struct {
+// swagger:model key_manager_keys_inline_node
+type KeyManagerKeysInlineNode struct {
 
 	// links
-	Links *KeyManagerKeysNodeLinks `json:"_links,omitempty"`
+	Links *KeyManagerKeysInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this key manager keys node
-func (m *KeyManagerKeysNode) Validate(formats strfmt.Registry) error {
+// Validate validates this key manager keys inline node
+func (m *KeyManagerKeysInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -472,7 +482,7 @@ func (m *KeyManagerKeysNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyManagerKeysNode) validateLinks(formats strfmt.Registry) error {
+func (m *KeyManagerKeysInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -489,8 +499,8 @@ func (m *KeyManagerKeysNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this key manager keys node based on the context it is used
-func (m *KeyManagerKeysNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this key manager keys inline node based on the context it is used
+func (m *KeyManagerKeysInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -503,7 +513,7 @@ func (m *KeyManagerKeysNode) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *KeyManagerKeysNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *KeyManagerKeysInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -518,7 +528,7 @@ func (m *KeyManagerKeysNode) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *KeyManagerKeysNode) MarshalBinary() ([]byte, error) {
+func (m *KeyManagerKeysInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -526,8 +536,8 @@ func (m *KeyManagerKeysNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KeyManagerKeysNode) UnmarshalBinary(b []byte) error {
-	var res KeyManagerKeysNode
+func (m *KeyManagerKeysInlineNode) UnmarshalBinary(b []byte) error {
+	var res KeyManagerKeysInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -535,17 +545,17 @@ func (m *KeyManagerKeysNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// KeyManagerKeysNodeLinks key manager keys node links
+// KeyManagerKeysInlineNodeInlineLinks key manager keys inline node inline links
 //
-// swagger:model KeyManagerKeysNodeLinks
-type KeyManagerKeysNodeLinks struct {
+// swagger:model key_manager_keys_inline_node_inline__links
+type KeyManagerKeysInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this key manager keys node links
-func (m *KeyManagerKeysNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this key manager keys inline node inline links
+func (m *KeyManagerKeysInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -558,7 +568,7 @@ func (m *KeyManagerKeysNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KeyManagerKeysNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *KeyManagerKeysInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -575,8 +585,8 @@ func (m *KeyManagerKeysNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this key manager keys node links based on the context it is used
-func (m *KeyManagerKeysNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this key manager keys inline node inline links based on the context it is used
+func (m *KeyManagerKeysInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -589,7 +599,7 @@ func (m *KeyManagerKeysNodeLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *KeyManagerKeysNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *KeyManagerKeysInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -604,7 +614,7 @@ func (m *KeyManagerKeysNodeLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *KeyManagerKeysNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *KeyManagerKeysInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -612,8 +622,8 @@ func (m *KeyManagerKeysNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KeyManagerKeysNodeLinks) UnmarshalBinary(b []byte) error {
-	var res KeyManagerKeysNodeLinks
+func (m *KeyManagerKeysInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res KeyManagerKeysInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

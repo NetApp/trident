@@ -65,13 +65,13 @@ type SvmPeerPermissionDeleteParams struct {
 
 	   Peer cluster UUID
 	*/
-	ClusterPeerUUIDPathParameter string
+	ClusterPeerUUID string
 
 	/* SvmUUID.
 
 	   SVM UUID
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -126,26 +126,26 @@ func (o *SvmPeerPermissionDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithClusterPeerUUIDPathParameter adds the clusterPeerUUID to the svm peer permission delete params
-func (o *SvmPeerPermissionDeleteParams) WithClusterPeerUUIDPathParameter(clusterPeerUUID string) *SvmPeerPermissionDeleteParams {
-	o.SetClusterPeerUUIDPathParameter(clusterPeerUUID)
+// WithClusterPeerUUID adds the clusterPeerUUID to the svm peer permission delete params
+func (o *SvmPeerPermissionDeleteParams) WithClusterPeerUUID(clusterPeerUUID string) *SvmPeerPermissionDeleteParams {
+	o.SetClusterPeerUUID(clusterPeerUUID)
 	return o
 }
 
-// SetClusterPeerUUIDPathParameter adds the clusterPeerUuid to the svm peer permission delete params
-func (o *SvmPeerPermissionDeleteParams) SetClusterPeerUUIDPathParameter(clusterPeerUUID string) {
-	o.ClusterPeerUUIDPathParameter = clusterPeerUUID
+// SetClusterPeerUUID adds the clusterPeerUuid to the svm peer permission delete params
+func (o *SvmPeerPermissionDeleteParams) SetClusterPeerUUID(clusterPeerUUID string) {
+	o.ClusterPeerUUID = clusterPeerUUID
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the svm peer permission delete params
-func (o *SvmPeerPermissionDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *SvmPeerPermissionDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the svm peer permission delete params
+func (o *SvmPeerPermissionDeleteParams) WithSvmUUID(svmUUID string) *SvmPeerPermissionDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the svm peer permission delete params
-func (o *SvmPeerPermissionDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the svm peer permission delete params
+func (o *SvmPeerPermissionDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -157,12 +157,12 @@ func (o *SvmPeerPermissionDeleteParams) WriteToRequest(r runtime.ClientRequest, 
 	var res []error
 
 	// path param cluster_peer.uuid
-	if err := r.SetPathParam("cluster_peer.uuid", o.ClusterPeerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("cluster_peer.uuid", o.ClusterPeerUUID); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

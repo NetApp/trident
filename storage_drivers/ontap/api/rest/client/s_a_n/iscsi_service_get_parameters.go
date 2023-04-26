@@ -66,14 +66,14 @@ type IscsiServiceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM for which to retrieve the iSCSI service.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *IscsiServiceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the iscsi service get params
-func (o *IscsiServiceGetParams) WithFieldsQueryParameter(fields []string) *IscsiServiceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the iscsi service get params
+func (o *IscsiServiceGetParams) WithFields(fields []string) *IscsiServiceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the iscsi service get params
-func (o *IscsiServiceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the iscsi service get params
+func (o *IscsiServiceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the iscsi service get params
-func (o *IscsiServiceGetParams) WithSVMUUIDPathParameter(svmUUID string) *IscsiServiceGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the iscsi service get params
+func (o *IscsiServiceGetParams) WithSvmUUID(svmUUID string) *IscsiServiceGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the iscsi service get params
-func (o *IscsiServiceGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the iscsi service get params
+func (o *IscsiServiceGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,7 +158,7 @@ func (o *IscsiServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -170,7 +170,7 @@ func (o *IscsiServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (o *IscsiServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamIscsiServiceGet binds the parameter fields
 func (o *IscsiServiceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

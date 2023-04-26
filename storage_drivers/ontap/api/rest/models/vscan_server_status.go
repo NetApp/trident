@@ -44,16 +44,16 @@ type VscanServerStatus struct {
 	//   - invalid_user
 	//   - server_removed
 	//
-	DisconnectedReason string `json:"disconnected_reason,omitempty"`
+	DisconnectedReason *string `json:"disconnected_reason,omitempty"`
 
 	// interface
-	Interface *VscanServerStatusInterface `json:"interface,omitempty"`
+	Interface *VscanServerStatusInlineInterface `json:"interface,omitempty"`
 
 	// IP address of the Vscan server.
-	IP string `json:"ip,omitempty"`
+	IP *string `json:"ip,omitempty"`
 
 	// node
-	Node *VscanServerStatusNode `json:"node,omitempty"`
+	Node *VscanServerStatusInlineNode `json:"node,omitempty"`
 
 	// Specifies the server connection state indicating if it is in the connected or disconnected state.
 	// The following is a list of the possible states:
@@ -63,27 +63,27 @@ type VscanServerStatus struct {
 	//   - connected
 	//   - disconnected
 	//
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// svm
-	Svm *VscanServerStatusSvm `json:"svm,omitempty"`
+	Svm *VscanServerStatusInlineSvm `json:"svm,omitempty"`
 
 	// Server type. The possible values are:
 	//   * primary - Primary server
 	//   * backup  - Backup server
 	//
 	// Enum: [primary backup]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Specifies the time the server is in the connected or disconnected state.
 	// Format: date-time
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
 
 	// Name of the connected virus-scanner vendor.
-	Vendor string `json:"vendor,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 
 	// Version of the connected virus-scanner.
-	Version string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // Validate validates this vscan server status
@@ -216,7 +216,7 @@ func (m *VscanServerStatus) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -317,30 +317,30 @@ func (m *VscanServerStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusInterface Address of the interface used for the Vscan connection.
+// VscanServerStatusInlineInterface Address of the interface used for the Vscan connection.
 //
-// swagger:model VscanServerStatusInterface
-type VscanServerStatusInterface struct {
+// swagger:model vscan_server_status_inline_interface
+type VscanServerStatusInlineInterface struct {
 
 	// links
-	Links *VscanServerStatusInterfaceLinks `json:"_links,omitempty"`
+	Links *VscanServerStatusInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *VscanServerStatusInterfaceIP `json:"ip,omitempty"`
+	IP *VscanServerStatusInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface. If only the name is provided, the SVM scope
 	// must be provided by the object this object is embedded in.
 	//
 	// Example: lif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan server status interface
-func (m *VscanServerStatusInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline interface
+func (m *VscanServerStatusInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -357,7 +357,7 @@ func (m *VscanServerStatusInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanServerStatusInterface) validateLinks(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -374,7 +374,7 @@ func (m *VscanServerStatusInterface) validateLinks(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *VscanServerStatusInterface) validateIP(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -391,8 +391,8 @@ func (m *VscanServerStatusInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan server status interface based on the context it is used
-func (m *VscanServerStatusInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline interface based on the context it is used
+func (m *VscanServerStatusInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -409,7 +409,7 @@ func (m *VscanServerStatusInterface) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanServerStatusInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -423,7 +423,7 @@ func (m *VscanServerStatusInterface) contextValidateLinks(ctx context.Context, f
 	return nil
 }
 
-func (m *VscanServerStatusInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -438,7 +438,7 @@ func (m *VscanServerStatusInterface) contextValidateIP(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusInterface) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -446,8 +446,8 @@ func (m *VscanServerStatusInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusInterface) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusInterface
+func (m *VscanServerStatusInlineInterface) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -455,17 +455,17 @@ func (m *VscanServerStatusInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusInterfaceIP IP information
+// VscanServerStatusInlineInterfaceInlineIP IP information
 //
-// swagger:model VscanServerStatusInterfaceIP
-type VscanServerStatusInterfaceIP struct {
+// swagger:model vscan_server_status_inline_interface_inline_ip
+type VscanServerStatusInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 }
 
-// Validate validates this vscan server status interface IP
-func (m *VscanServerStatusInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline interface inline ip
+func (m *VscanServerStatusInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -478,23 +478,25 @@ func (m *VscanServerStatusInterfaceIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanServerStatusInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this vscan server status interface IP based on the context it is used
-func (m *VscanServerStatusInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline interface inline ip based on the context it is used
+func (m *VscanServerStatusInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -507,20 +509,22 @@ func (m *VscanServerStatusInterfaceIP) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *VscanServerStatusInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -528,8 +532,8 @@ func (m *VscanServerStatusInterfaceIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusInterfaceIP
+func (m *VscanServerStatusInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -537,17 +541,17 @@ func (m *VscanServerStatusInterfaceIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusInterfaceLinks vscan server status interface links
+// VscanServerStatusInlineInterfaceInlineLinks vscan server status inline interface inline links
 //
-// swagger:model VscanServerStatusInterfaceLinks
-type VscanServerStatusInterfaceLinks struct {
+// swagger:model vscan_server_status_inline_interface_inline__links
+type VscanServerStatusInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan server status interface links
-func (m *VscanServerStatusInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline interface inline links
+func (m *VscanServerStatusInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -560,7 +564,7 @@ func (m *VscanServerStatusInterfaceLinks) Validate(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *VscanServerStatusInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -577,8 +581,8 @@ func (m *VscanServerStatusInterfaceLinks) validateSelf(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this vscan server status interface links based on the context it is used
-func (m *VscanServerStatusInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline interface inline links based on the context it is used
+func (m *VscanServerStatusInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -591,7 +595,7 @@ func (m *VscanServerStatusInterfaceLinks) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *VscanServerStatusInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -606,7 +610,7 @@ func (m *VscanServerStatusInterfaceLinks) contextValidateSelf(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -614,8 +618,8 @@ func (m *VscanServerStatusInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusInterfaceLinks
+func (m *VscanServerStatusInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -623,25 +627,25 @@ func (m *VscanServerStatusInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusNode vscan server status node
+// VscanServerStatusInlineNode vscan server status inline node
 //
-// swagger:model VscanServerStatusNode
-type VscanServerStatusNode struct {
+// swagger:model vscan_server_status_inline_node
+type VscanServerStatusInlineNode struct {
 
 	// links
-	Links *VscanServerStatusNodeLinks `json:"_links,omitempty"`
+	Links *VscanServerStatusInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan server status node
-func (m *VscanServerStatusNode) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline node
+func (m *VscanServerStatusInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -654,7 +658,7 @@ func (m *VscanServerStatusNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanServerStatusNode) validateLinks(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -671,8 +675,8 @@ func (m *VscanServerStatusNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan server status node based on the context it is used
-func (m *VscanServerStatusNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline node based on the context it is used
+func (m *VscanServerStatusInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -685,7 +689,7 @@ func (m *VscanServerStatusNode) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *VscanServerStatusNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -700,7 +704,7 @@ func (m *VscanServerStatusNode) contextValidateLinks(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusNode) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -708,8 +712,8 @@ func (m *VscanServerStatusNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusNode) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusNode
+func (m *VscanServerStatusInlineNode) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -717,17 +721,17 @@ func (m *VscanServerStatusNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusNodeLinks vscan server status node links
+// VscanServerStatusInlineNodeInlineLinks vscan server status inline node inline links
 //
-// swagger:model VscanServerStatusNodeLinks
-type VscanServerStatusNodeLinks struct {
+// swagger:model vscan_server_status_inline_node_inline__links
+type VscanServerStatusInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan server status node links
-func (m *VscanServerStatusNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline node inline links
+func (m *VscanServerStatusInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -740,7 +744,7 @@ func (m *VscanServerStatusNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanServerStatusNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -757,8 +761,8 @@ func (m *VscanServerStatusNodeLinks) validateSelf(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this vscan server status node links based on the context it is used
-func (m *VscanServerStatusNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline node inline links based on the context it is used
+func (m *VscanServerStatusInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -771,7 +775,7 @@ func (m *VscanServerStatusNodeLinks) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *VscanServerStatusNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -786,7 +790,7 @@ func (m *VscanServerStatusNodeLinks) contextValidateSelf(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -794,8 +798,8 @@ func (m *VscanServerStatusNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusNodeLinks) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusNodeLinks
+func (m *VscanServerStatusInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -803,27 +807,27 @@ func (m *VscanServerStatusNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusSvm vscan server status svm
+// VscanServerStatusInlineSvm vscan server status inline svm
 //
-// swagger:model VscanServerStatusSvm
-type VscanServerStatusSvm struct {
+// swagger:model vscan_server_status_inline_svm
+type VscanServerStatusInlineSvm struct {
 
 	// links
-	Links *VscanServerStatusSvmLinks `json:"_links,omitempty"`
+	Links *VscanServerStatusInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this vscan server status svm
-func (m *VscanServerStatusSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline svm
+func (m *VscanServerStatusInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -836,7 +840,7 @@ func (m *VscanServerStatusSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanServerStatusSvm) validateLinks(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -853,8 +857,8 @@ func (m *VscanServerStatusSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this vscan server status svm based on the context it is used
-func (m *VscanServerStatusSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline svm based on the context it is used
+func (m *VscanServerStatusInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -867,7 +871,7 @@ func (m *VscanServerStatusSvm) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *VscanServerStatusSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -882,7 +886,7 @@ func (m *VscanServerStatusSvm) contextValidateLinks(ctx context.Context, formats
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusSvm) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -890,8 +894,8 @@ func (m *VscanServerStatusSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusSvm) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusSvm
+func (m *VscanServerStatusInlineSvm) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -899,17 +903,17 @@ func (m *VscanServerStatusSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusSvmLinks vscan server status svm links
+// VscanServerStatusInlineSvmInlineLinks vscan server status inline svm inline links
 //
-// swagger:model VscanServerStatusSvmLinks
-type VscanServerStatusSvmLinks struct {
+// swagger:model vscan_server_status_inline_svm_inline__links
+type VscanServerStatusInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this vscan server status svm links
-func (m *VscanServerStatusSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this vscan server status inline svm inline links
+func (m *VscanServerStatusInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -922,7 +926,7 @@ func (m *VscanServerStatusSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VscanServerStatusSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -939,8 +943,8 @@ func (m *VscanServerStatusSvmLinks) validateSelf(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this vscan server status svm links based on the context it is used
-func (m *VscanServerStatusSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this vscan server status inline svm inline links based on the context it is used
+func (m *VscanServerStatusInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -953,7 +957,7 @@ func (m *VscanServerStatusSvmLinks) ContextValidate(ctx context.Context, formats
 	return nil
 }
 
-func (m *VscanServerStatusSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *VscanServerStatusInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -968,7 +972,7 @@ func (m *VscanServerStatusSvmLinks) contextValidateSelf(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *VscanServerStatusSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *VscanServerStatusInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -976,8 +980,8 @@ func (m *VscanServerStatusSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VscanServerStatusSvmLinks) UnmarshalBinary(b []byte) error {
-	var res VscanServerStatusSvmLinks
+func (m *VscanServerStatusInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

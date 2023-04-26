@@ -20,17 +20,18 @@ import (
 type S3ServiceDeleteResponse struct {
 
 	// Number of Records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*S3ServiceDeleteResponseRecordsItems0 `json:"records,omitempty"`
+	// s3 service delete response inline records
+	S3ServiceDeleteResponseInlineRecords []*S3ServiceDeleteResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 }
 
 // Validate validates this s3 service delete response
 func (m *S3ServiceDeleteResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateS3ServiceDeleteResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -40,18 +41,18 @@ func (m *S3ServiceDeleteResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3ServiceDeleteResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *S3ServiceDeleteResponse) validateS3ServiceDeleteResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3ServiceDeleteResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.S3ServiceDeleteResponseInlineRecords); i++ {
+		if swag.IsZero(m.S3ServiceDeleteResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.S3ServiceDeleteResponseInlineRecords[i] != nil {
+			if err := m.S3ServiceDeleteResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -68,7 +69,7 @@ func (m *S3ServiceDeleteResponse) validateRecords(formats strfmt.Registry) error
 func (m *S3ServiceDeleteResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateS3ServiceDeleteResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,12 +79,12 @@ func (m *S3ServiceDeleteResponse) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *S3ServiceDeleteResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceDeleteResponse) contextValidateS3ServiceDeleteResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.S3ServiceDeleteResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.S3ServiceDeleteResponseInlineRecords[i] != nil {
+			if err := m.S3ServiceDeleteResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -114,17 +115,17 @@ func (m *S3ServiceDeleteResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3ServiceDeleteResponseRecordsItems0 s3 service delete response records items0
+// S3ServiceDeleteResponseInlineRecordsInlineArrayItem s3 service delete response inline records inline array item
 //
-// swagger:model S3ServiceDeleteResponseRecordsItems0
-type S3ServiceDeleteResponseRecordsItems0 struct {
+// swagger:model s3_service_delete_response_inline_records_inline_array_item
+type S3ServiceDeleteResponseInlineRecordsInlineArrayItem struct {
 
 	// job
 	Job *JobLink `json:"job,omitempty"`
 }
 
-// Validate validates this s3 service delete response records items0
-func (m *S3ServiceDeleteResponseRecordsItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 service delete response inline records inline array item
+func (m *S3ServiceDeleteResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateJob(formats); err != nil {
@@ -137,7 +138,7 @@ func (m *S3ServiceDeleteResponseRecordsItems0) Validate(formats strfmt.Registry)
 	return nil
 }
 
-func (m *S3ServiceDeleteResponseRecordsItems0) validateJob(formats strfmt.Registry) error {
+func (m *S3ServiceDeleteResponseInlineRecordsInlineArrayItem) validateJob(formats strfmt.Registry) error {
 	if swag.IsZero(m.Job) { // not required
 		return nil
 	}
@@ -154,8 +155,8 @@ func (m *S3ServiceDeleteResponseRecordsItems0) validateJob(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this s3 service delete response records items0 based on the context it is used
-func (m *S3ServiceDeleteResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 service delete response inline records inline array item based on the context it is used
+func (m *S3ServiceDeleteResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateJob(ctx, formats); err != nil {
@@ -168,7 +169,7 @@ func (m *S3ServiceDeleteResponseRecordsItems0) ContextValidate(ctx context.Conte
 	return nil
 }
 
-func (m *S3ServiceDeleteResponseRecordsItems0) contextValidateJob(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3ServiceDeleteResponseInlineRecordsInlineArrayItem) contextValidateJob(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Job != nil {
 		if err := m.Job.ContextValidate(ctx, formats); err != nil {
@@ -183,7 +184,7 @@ func (m *S3ServiceDeleteResponseRecordsItems0) contextValidateJob(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *S3ServiceDeleteResponseRecordsItems0) MarshalBinary() ([]byte, error) {
+func (m *S3ServiceDeleteResponseInlineRecordsInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -191,8 +192,8 @@ func (m *S3ServiceDeleteResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3ServiceDeleteResponseRecordsItems0) UnmarshalBinary(b []byte) error {
-	var res S3ServiceDeleteResponseRecordsItems0
+func (m *S3ServiceDeleteResponseInlineRecordsInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res S3ServiceDeleteResponseInlineRecordsInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

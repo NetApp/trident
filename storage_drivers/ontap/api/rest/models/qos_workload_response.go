@@ -20,16 +20,17 @@ import (
 type QosWorkloadResponse struct {
 
 	// links
-	Links *QosWorkloadResponseLinks `json:"_links,omitempty"`
+	Links *QosWorkloadResponseInlineLinks `json:"_links,omitempty"`
 
 	// error
 	Error *Error `json:"error,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*QosWorkload `json:"records,omitempty"`
+	// qos workload response inline records
+	QosWorkloadResponseInlineRecords []*QosWorkload `json:"records,omitempty"`
 }
 
 // Validate validates this qos workload response
@@ -44,7 +45,7 @@ func (m *QosWorkloadResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateQosWorkloadResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,18 +89,18 @@ func (m *QosWorkloadResponse) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *QosWorkloadResponse) validateQosWorkloadResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosWorkloadResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.QosWorkloadResponseInlineRecords); i++ {
+		if swag.IsZero(m.QosWorkloadResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.QosWorkloadResponseInlineRecords[i] != nil {
+			if err := m.QosWorkloadResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -124,7 +125,7 @@ func (m *QosWorkloadResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateQosWorkloadResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -162,12 +163,12 @@ func (m *QosWorkloadResponse) contextValidateError(ctx context.Context, formats 
 	return nil
 }
 
-func (m *QosWorkloadResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadResponse) contextValidateQosWorkloadResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.QosWorkloadResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.QosWorkloadResponseInlineRecords[i] != nil {
+			if err := m.QosWorkloadResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -198,10 +199,10 @@ func (m *QosWorkloadResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosWorkloadResponseLinks qos workload response links
+// QosWorkloadResponseInlineLinks qos workload response inline links
 //
-// swagger:model QosWorkloadResponseLinks
-type QosWorkloadResponseLinks struct {
+// swagger:model qos_workload_response_inline__links
+type QosWorkloadResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -210,8 +211,8 @@ type QosWorkloadResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos workload response links
-func (m *QosWorkloadResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos workload response inline links
+func (m *QosWorkloadResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -228,7 +229,7 @@ func (m *QosWorkloadResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *QosWorkloadResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -245,7 +246,7 @@ func (m *QosWorkloadResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosWorkloadResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosWorkloadResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -262,8 +263,8 @@ func (m *QosWorkloadResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos workload response links based on the context it is used
-func (m *QosWorkloadResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos workload response inline links based on the context it is used
+func (m *QosWorkloadResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -280,7 +281,7 @@ func (m *QosWorkloadResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *QosWorkloadResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -294,7 +295,7 @@ func (m *QosWorkloadResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *QosWorkloadResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosWorkloadResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -309,7 +310,7 @@ func (m *QosWorkloadResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *QosWorkloadResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *QosWorkloadResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -317,8 +318,8 @@ func (m *QosWorkloadResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosWorkloadResponseLinks) UnmarshalBinary(b []byte) error {
-	var res QosWorkloadResponseLinks
+func (m *QosWorkloadResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosWorkloadResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

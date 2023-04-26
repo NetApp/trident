@@ -52,6 +52,11 @@ HTTPProxyCreateCreated describes a response with status code 201, with default h
 Created
 */
 type HTTPProxyCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.NetworkHTTPProxyResponse
 }
 
@@ -93,6 +98,13 @@ func (o *HTTPProxyCreateCreated) GetPayload() *models.NetworkHTTPProxyResponse {
 }
 
 func (o *HTTPProxyCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
 
 	o.Payload = new(models.NetworkHTTPProxyResponse)
 

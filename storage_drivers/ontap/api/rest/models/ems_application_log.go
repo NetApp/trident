@@ -22,36 +22,36 @@ type EmsApplicationLog struct {
 
 	// Client application version.
 	// Example: 3.0.0.2373
-	AppVersion string `json:"app_version,omitempty"`
+	AppVersion *string `json:"app_version,omitempty"`
 
 	// Indicates whether AutoSupport generation is required.
 	// Example: false
-	AutosupportRequired bool `json:"autosupport_required"`
+	AutosupportRequired *bool `json:"autosupport_required,omitempty"`
 
 	// Event category.
 	// Example: Error
-	Category string `json:"category,omitempty"`
+	Category *string `json:"category,omitempty"`
 
 	// Client computer connected to the cluster.
 	// Example: W12-R2-DC
-	ComputerName string `json:"computer_name,omitempty"`
+	ComputerName *string `json:"computer_name,omitempty"`
 
 	// Event description, which corresponds to the subject parameter in the generated event.
 	// Example: Clone split job failed
-	EventDescription string `json:"event_description,omitempty"`
+	EventDescription *string `json:"event_description,omitempty"`
 
 	// Application eventID.
 	// Example: 10001
-	EventID int64 `json:"event_id,omitempty"`
+	EventID *int64 `json:"event_id,omitempty"`
 
 	// Client application that generated this event.
 	// Example: SnapCenter Software
-	EventSource string `json:"event_source,omitempty"`
+	EventSource *string `json:"event_source,omitempty"`
 
 	// Severity
 	// Example: error
 	// Enum: [emergency alert error notice]
-	Severity string `json:"severity,omitempty"`
+	Severity *string `json:"severity,omitempty"`
 }
 
 // Validate validates this ems application log
@@ -137,7 +137,7 @@ func (m *EmsApplicationLog) validateSeverity(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateSeverityEnum("severity", "body", m.Severity); err != nil {
+	if err := m.validateSeverityEnum("severity", "body", *m.Severity); err != nil {
 		return err
 	}
 

@@ -29,10 +29,10 @@ type SoftwareHistory struct {
 	// Previous version of node
 	// Example: ONTAP_X1
 	// Read Only: true
-	FromVersion string `json:"from_version,omitempty"`
+	FromVersion *string `json:"from_version,omitempty"`
 
 	// node
-	Node *SoftwareHistoryNode `json:"node,omitempty"`
+	Node *SoftwareHistoryInlineNode `json:"node,omitempty"`
 
 	// Start time of this installation request.
 	// Example: 2019-02-02T19:00:00Z
@@ -44,12 +44,12 @@ type SoftwareHistory struct {
 	// Example: successful
 	// Read Only: true
 	// Enum: [successful canceled]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// Updated version of node
 	// Example: ONTAP_X2
 	// Read Only: true
-	ToVersion string `json:"to_version,omitempty"`
+	ToVersion *string `json:"to_version,omitempty"`
 }
 
 // Validate validates this software history
@@ -168,7 +168,7 @@ func (m *SoftwareHistory) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -220,7 +220,7 @@ func (m *SoftwareHistory) contextValidateEndTime(ctx context.Context, formats st
 
 func (m *SoftwareHistory) contextValidateFromVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "from_version", "body", string(m.FromVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "from_version", "body", m.FromVersion); err != nil {
 		return err
 	}
 
@@ -252,7 +252,7 @@ func (m *SoftwareHistory) contextValidateStartTime(ctx context.Context, formats 
 
 func (m *SoftwareHistory) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -261,7 +261,7 @@ func (m *SoftwareHistory) contextValidateState(ctx context.Context, formats strf
 
 func (m *SoftwareHistory) contextValidateToVersion(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "to_version", "body", string(m.ToVersion)); err != nil {
+	if err := validate.ReadOnly(ctx, "to_version", "body", m.ToVersion); err != nil {
 		return err
 	}
 
@@ -286,25 +286,25 @@ func (m *SoftwareHistory) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareHistoryNode software history node
+// SoftwareHistoryInlineNode software history inline node
 //
-// swagger:model SoftwareHistoryNode
-type SoftwareHistoryNode struct {
+// swagger:model software_history_inline_node
+type SoftwareHistoryInlineNode struct {
 
 	// links
-	Links *SoftwareHistoryNodeLinks `json:"_links,omitempty"`
+	Links *SoftwareHistoryInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this software history node
-func (m *SoftwareHistoryNode) Validate(formats strfmt.Registry) error {
+// Validate validates this software history inline node
+func (m *SoftwareHistoryInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -317,7 +317,7 @@ func (m *SoftwareHistoryNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SoftwareHistoryNode) validateLinks(formats strfmt.Registry) error {
+func (m *SoftwareHistoryInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -334,8 +334,8 @@ func (m *SoftwareHistoryNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software history node based on the context it is used
-func (m *SoftwareHistoryNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software history inline node based on the context it is used
+func (m *SoftwareHistoryInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -348,7 +348,7 @@ func (m *SoftwareHistoryNode) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *SoftwareHistoryNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareHistoryInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -363,7 +363,7 @@ func (m *SoftwareHistoryNode) contextValidateLinks(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareHistoryNode) MarshalBinary() ([]byte, error) {
+func (m *SoftwareHistoryInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -371,8 +371,8 @@ func (m *SoftwareHistoryNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareHistoryNode) UnmarshalBinary(b []byte) error {
-	var res SoftwareHistoryNode
+func (m *SoftwareHistoryInlineNode) UnmarshalBinary(b []byte) error {
+	var res SoftwareHistoryInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -380,17 +380,17 @@ func (m *SoftwareHistoryNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SoftwareHistoryNodeLinks software history node links
+// SoftwareHistoryInlineNodeInlineLinks software history inline node inline links
 //
-// swagger:model SoftwareHistoryNodeLinks
-type SoftwareHistoryNodeLinks struct {
+// swagger:model software_history_inline_node_inline__links
+type SoftwareHistoryInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this software history node links
-func (m *SoftwareHistoryNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this software history inline node inline links
+func (m *SoftwareHistoryInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -403,7 +403,7 @@ func (m *SoftwareHistoryNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *SoftwareHistoryNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *SoftwareHistoryInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -420,8 +420,8 @@ func (m *SoftwareHistoryNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this software history node links based on the context it is used
-func (m *SoftwareHistoryNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this software history inline node inline links based on the context it is used
+func (m *SoftwareHistoryInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -434,7 +434,7 @@ func (m *SoftwareHistoryNodeLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *SoftwareHistoryNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *SoftwareHistoryInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -449,7 +449,7 @@ func (m *SoftwareHistoryNodeLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *SoftwareHistoryNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *SoftwareHistoryInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -457,8 +457,8 @@ func (m *SoftwareHistoryNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *SoftwareHistoryNodeLinks) UnmarshalBinary(b []byte) error {
-	var res SoftwareHistoryNodeLinks
+func (m *SoftwareHistoryInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SoftwareHistoryInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

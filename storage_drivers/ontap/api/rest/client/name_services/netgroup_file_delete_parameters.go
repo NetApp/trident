@@ -65,7 +65,7 @@ type NetgroupFileDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *NetgroupFileDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the netgroup file delete params
-func (o *NetgroupFileDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *NetgroupFileDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the netgroup file delete params
+func (o *NetgroupFileDeleteParams) WithSvmUUID(svmUUID string) *NetgroupFileDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the netgroup file delete params
-func (o *NetgroupFileDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the netgroup file delete params
+func (o *NetgroupFileDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -140,7 +140,7 @@ func (o *NetgroupFileDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

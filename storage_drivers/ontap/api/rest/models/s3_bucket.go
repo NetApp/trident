@@ -21,11 +21,11 @@ import (
 // swagger:model s3_bucket
 type S3Bucket struct {
 
-	// A list of aggregates for FlexGroup volume constituents where the bucket is hosted. If this option is not specified, the bucket is auto-provisioned as a FlexGroup volume.
-	Aggregates []*S3BucketAggregatesItems0 `json:"aggregates,omitempty"`
+	// If this is set to true, an SVM administrator can manage the S3 service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
 
 	// audit event selector
-	AuditEventSelector *S3BucketAuditEventSelector `json:"audit_event_selector,omitempty"`
+	AuditEventSelector *S3BucketInlineAuditEventSelector `json:"audit_event_selector,omitempty"`
 
 	// Can contain any additional information about the bucket being created or modified.
 	// Example: S3 bucket.
@@ -37,54 +37,66 @@ type S3Bucket struct {
 	// Example: 4
 	// Maximum: 1000
 	// Minimum: 1
-	ConstituentsPerAggregate int64 `json:"constituents_per_aggregate,omitempty"`
+	ConstituentsPerAggregate *int64 `json:"constituents_per_aggregate,omitempty"`
 
 	// encryption
-	Encryption *S3BucketEncryption `json:"encryption,omitempty"`
+	Encryption *S3BucketInlineEncryption `json:"encryption,omitempty"`
 
 	// Specifies the bucket logical used size up to this point.
 	// Read Only: true
-	LogicalUsedSize int64 `json:"logical_used_size,omitempty"`
+	LogicalUsedSize *int64 `json:"logical_used_size,omitempty"`
 
 	// Specifies the name of the bucket. Bucket name is a string that can only contain the following combination of ASCII-range alphanumeric characters 0-9, a-z, ".", and "-".
 	// Example: bucket1
 	// Max Length: 63
 	// Min Length: 3
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// Specifies the NAS path to which the nas bucket corresponds to.
+	// Example: /
+	NasPath *string `json:"nas_path,omitempty"`
 
 	// policy
-	Policy *S3BucketPolicy `json:"policy,omitempty"`
+	Policy *S3BucketInlinePolicy `json:"policy,omitempty"`
 
 	// protection status
-	ProtectionStatus *S3BucketProtectionStatus `json:"protection_status,omitempty"`
+	ProtectionStatus *S3BucketInlineProtectionStatus `json:"protection_status,omitempty"`
 
 	// qos policy
-	QosPolicy *S3BucketQosPolicy `json:"qos_policy,omitempty"`
+	QosPolicy *S3BucketInlineQosPolicy `json:"qos_policy,omitempty"`
 
 	// Specifies the role of the bucket.
 	// Read Only: true
 	// Enum: [standalone active passive]
-	Role string `json:"role,omitempty"`
+	Role *string `json:"role,omitempty"`
+
+	// A list of aggregates for FlexGroup volume constituents where the bucket is hosted. If this option is not specified, the bucket is auto-provisioned as a FlexGroup volume.
+	S3BucketInlineAggregates []*S3BucketInlineAggregatesInlineArrayItem `json:"aggregates,omitempty"`
 
 	// Specifies the bucket size in bytes; ranges from 80MB to 64TB.
 	// Example: 1677721600
 	// Maximum: 7.0368744177664e+13
 	// Minimum: 8.388608e+07
-	Size int64 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 
 	// Specifies the storage service level of the FlexGroup volume on which the bucket should be created. Valid values are "value", "performance" or "extreme".
 	// Example: value
 	// Enum: [value performance extreme]
-	StorageServiceLevel string `json:"storage_service_level,omitempty"`
+	StorageServiceLevel *string `json:"storage_service_level,omitempty"`
 
 	// svm
-	Svm *S3BucketSvmType `json:"svm,omitempty"`
+	Svm *S3BucketInlineSvm `json:"svm,omitempty"`
+
+	// Specifies the bucket type. Valid values are "s3"and "nas".
+	// Example: s3
+	// Enum: [s3 nas]
+	Type *string `json:"type,omitempty"`
 
 	// Specifies the unique identifier of the bucket.
 	// Example: 414b29a1-3b26-11e9-bd58-0050568ea055
 	// Read Only: true
 	// Format: uuid
-	UUID strfmt.UUID `json:"uuid,omitempty"`
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
 
 	// Specifies the versioning state of the bucket. Valid values are "disabled", "enabled" or "suspended". Note that the versioning state cannot be modified to 'disabled' from any other state.
 	// Example: enabled
@@ -92,16 +104,12 @@ type S3Bucket struct {
 	VersioningState *string `json:"versioning_state,omitempty"`
 
 	// volume
-	Volume *S3BucketVolume `json:"volume,omitempty"`
+	Volume *S3BucketInlineVolume `json:"volume,omitempty"`
 }
 
 // Validate validates this s3 bucket
 func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateAggregates(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateAuditEventSelector(formats); err != nil {
 		res = append(res, err)
@@ -139,6 +147,10 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateS3BucketInlineAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSize(formats); err != nil {
 		res = append(res, err)
 	}
@@ -148,6 +160,10 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -166,30 +182,6 @@ func (m *S3Bucket) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *S3Bucket) validateAggregates(formats strfmt.Registry) error {
-	if swag.IsZero(m.Aggregates) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Aggregates); i++ {
-		if swag.IsZero(m.Aggregates[i]) { // not required
-			continue
-		}
-
-		if m.Aggregates[i] != nil {
-			if err := m.Aggregates[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -231,11 +223,11 @@ func (m *S3Bucket) validateConstituentsPerAggregate(formats strfmt.Registry) err
 		return nil
 	}
 
-	if err := validate.MinimumInt("constituents_per_aggregate", "body", m.ConstituentsPerAggregate, 1, false); err != nil {
+	if err := validate.MinimumInt("constituents_per_aggregate", "body", *m.ConstituentsPerAggregate, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("constituents_per_aggregate", "body", m.ConstituentsPerAggregate, 1000, false); err != nil {
+	if err := validate.MaximumInt("constituents_per_aggregate", "body", *m.ConstituentsPerAggregate, 1000, false); err != nil {
 		return err
 	}
 
@@ -264,11 +256,11 @@ func (m *S3Bucket) validateName(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", m.Name, 3); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 3); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 63); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 63); err != nil {
 		return err
 	}
 
@@ -385,8 +377,32 @@ func (m *S3Bucket) validateRole(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateRoleEnum("role", "body", m.Role); err != nil {
+	if err := m.validateRoleEnum("role", "body", *m.Role); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) validateS3BucketInlineAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3BucketInlineAggregates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.S3BucketInlineAggregates); i++ {
+		if swag.IsZero(m.S3BucketInlineAggregates[i]) { // not required
+			continue
+		}
+
+		if m.S3BucketInlineAggregates[i] != nil {
+			if err := m.S3BucketInlineAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -397,11 +413,11 @@ func (m *S3Bucket) validateSize(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("size", "body", m.Size, 8.388608e+07, false); err != nil {
+	if err := validate.MinimumInt("size", "body", *m.Size, 8.388608e+07, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("size", "body", m.Size, 7.0368744177664e+13, false); err != nil {
+	if err := validate.MaximumInt("size", "body", *m.Size, 7.0368744177664e+13, false); err != nil {
 		return err
 	}
 
@@ -467,7 +483,7 @@ func (m *S3Bucket) validateStorageServiceLevel(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStorageServiceLevelEnum("storage_service_level", "body", m.StorageServiceLevel); err != nil {
+	if err := m.validateStorageServiceLevelEnum("storage_service_level", "body", *m.StorageServiceLevel); err != nil {
 		return err
 	}
 
@@ -486,6 +502,62 @@ func (m *S3Bucket) validateSvm(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var s3BucketTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["s3","nas"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketTypeTypePropEnum = append(s3BucketTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// s3_bucket
+	// S3Bucket
+	// type
+	// Type
+	// s3
+	// END DEBUGGING
+	// S3BucketTypeS3 captures enum value "s3"
+	S3BucketTypeS3 string = "s3"
+
+	// BEGIN DEBUGGING
+	// s3_bucket
+	// S3Bucket
+	// type
+	// Type
+	// nas
+	// END DEBUGGING
+	// S3BucketTypeNas captures enum value "nas"
+	S3BucketTypeNas string = "nas"
+)
+
+// prop value enum
+func (m *S3Bucket) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3Bucket) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
+		return err
 	}
 
 	return nil
@@ -590,10 +662,6 @@ func (m *S3Bucket) validateVolume(formats strfmt.Registry) error {
 func (m *S3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateAggregates(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateAuditEventSelector(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -622,6 +690,10 @@ func (m *S3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateS3BucketInlineAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -637,24 +709,6 @@ func (m *S3Bucket) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *S3Bucket) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Aggregates); i++ {
-
-		if m.Aggregates[i] != nil {
-			if err := m.Aggregates[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -688,7 +742,7 @@ func (m *S3Bucket) contextValidateEncryption(ctx context.Context, formats strfmt
 
 func (m *S3Bucket) contextValidateLogicalUsedSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "logical_used_size", "body", int64(m.LogicalUsedSize)); err != nil {
+	if err := validate.ReadOnly(ctx, "logical_used_size", "body", m.LogicalUsedSize); err != nil {
 		return err
 	}
 
@@ -739,8 +793,26 @@ func (m *S3Bucket) contextValidateQosPolicy(ctx context.Context, formats strfmt.
 
 func (m *S3Bucket) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "role", "body", string(m.Role)); err != nil {
+	if err := validate.ReadOnly(ctx, "role", "body", m.Role); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3Bucket) contextValidateS3BucketInlineAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.S3BucketInlineAggregates); i++ {
+
+		if m.S3BucketInlineAggregates[i] != nil {
+			if err := m.S3BucketInlineAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -762,7 +834,7 @@ func (m *S3Bucket) contextValidateSvm(ctx context.Context, formats strfmt.Regist
 
 func (m *S3Bucket) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -801,25 +873,25 @@ func (m *S3Bucket) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketAggregatesItems0 s3 bucket aggregates items0
+// S3BucketInlineAggregatesInlineArrayItem s3 bucket inline aggregates inline array item
 //
-// swagger:model S3BucketAggregatesItems0
-type S3BucketAggregatesItems0 struct {
+// swagger:model s3_bucket_inline_aggregates_inline_array_item
+type S3BucketInlineAggregatesInlineArrayItem struct {
 
 	// links
-	Links *S3BucketAggregatesItems0Links `json:"_links,omitempty"`
+	Links *S3BucketInlineAggregatesInlineArrayItemInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: aggr1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 bucket aggregates items0
-func (m *S3BucketAggregatesItems0) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline aggregates inline array item
+func (m *S3BucketInlineAggregatesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -832,7 +904,7 @@ func (m *S3BucketAggregatesItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketAggregatesItems0) validateLinks(formats strfmt.Registry) error {
+func (m *S3BucketInlineAggregatesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -849,8 +921,8 @@ func (m *S3BucketAggregatesItems0) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this s3 bucket aggregates items0 based on the context it is used
-func (m *S3BucketAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline aggregates inline array item based on the context it is used
+func (m *S3BucketInlineAggregatesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -863,7 +935,7 @@ func (m *S3BucketAggregatesItems0) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *S3BucketAggregatesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineAggregatesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -878,7 +950,7 @@ func (m *S3BucketAggregatesItems0) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketAggregatesItems0) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineAggregatesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -886,8 +958,8 @@ func (m *S3BucketAggregatesItems0) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketAggregatesItems0) UnmarshalBinary(b []byte) error {
-	var res S3BucketAggregatesItems0
+func (m *S3BucketInlineAggregatesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineAggregatesInlineArrayItem
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -895,17 +967,17 @@ func (m *S3BucketAggregatesItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketAggregatesItems0Links s3 bucket aggregates items0 links
+// S3BucketInlineAggregatesInlineArrayItemInlineLinks s3 bucket inline aggregates inline array item inline links
 //
-// swagger:model S3BucketAggregatesItems0Links
-type S3BucketAggregatesItems0Links struct {
+// swagger:model s3_bucket_inline_aggregates_inline_array_item_inline__links
+type S3BucketInlineAggregatesInlineArrayItemInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 bucket aggregates items0 links
-func (m *S3BucketAggregatesItems0Links) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline aggregates inline array item inline links
+func (m *S3BucketInlineAggregatesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -918,7 +990,7 @@ func (m *S3BucketAggregatesItems0Links) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *S3BucketAggregatesItems0Links) validateSelf(formats strfmt.Registry) error {
+func (m *S3BucketInlineAggregatesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -935,8 +1007,8 @@ func (m *S3BucketAggregatesItems0Links) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this s3 bucket aggregates items0 links based on the context it is used
-func (m *S3BucketAggregatesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline aggregates inline array item inline links based on the context it is used
+func (m *S3BucketInlineAggregatesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -949,7 +1021,7 @@ func (m *S3BucketAggregatesItems0Links) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *S3BucketAggregatesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineAggregatesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -964,7 +1036,7 @@ func (m *S3BucketAggregatesItems0Links) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketAggregatesItems0Links) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineAggregatesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -972,8 +1044,8 @@ func (m *S3BucketAggregatesItems0Links) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketAggregatesItems0Links) UnmarshalBinary(b []byte) error {
-	var res S3BucketAggregatesItems0Links
+func (m *S3BucketInlineAggregatesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineAggregatesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -981,10 +1053,10 @@ func (m *S3BucketAggregatesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketAuditEventSelector Audit event selector allows you to specify access and permission types to audit.
+// S3BucketInlineAuditEventSelector Audit event selector allows you to specify access and permission types to audit.
 //
-// swagger:model S3BucketAuditEventSelector
-type S3BucketAuditEventSelector struct {
+// swagger:model s3_bucket_inline_audit_event_selector
+type S3BucketInlineAuditEventSelector struct {
 
 	// Specifies read and write access types.
 	//
@@ -997,8 +1069,8 @@ type S3BucketAuditEventSelector struct {
 	Permission *string `json:"permission,omitempty"`
 }
 
-// Validate validates this s3 bucket audit event selector
-func (m *S3BucketAuditEventSelector) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline audit event selector
+func (m *S3BucketInlineAuditEventSelector) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccess(formats); err != nil {
@@ -1015,7 +1087,7 @@ func (m *S3BucketAuditEventSelector) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var s3BucketAuditEventSelectorTypeAccessPropEnum []interface{}
+var s3BucketInlineAuditEventSelectorTypeAccessPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1023,52 +1095,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		s3BucketAuditEventSelectorTypeAccessPropEnum = append(s3BucketAuditEventSelectorTypeAccessPropEnum, v)
+		s3BucketInlineAuditEventSelectorTypeAccessPropEnum = append(s3BucketInlineAuditEventSelectorTypeAccessPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// S3BucketAuditEventSelector
-	// S3BucketAuditEventSelector
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
 	// access
 	// Access
 	// read
 	// END DEBUGGING
-	// S3BucketAuditEventSelectorAccessRead captures enum value "read"
-	S3BucketAuditEventSelectorAccessRead string = "read"
+	// S3BucketInlineAuditEventSelectorAccessRead captures enum value "read"
+	S3BucketInlineAuditEventSelectorAccessRead string = "read"
 
 	// BEGIN DEBUGGING
-	// S3BucketAuditEventSelector
-	// S3BucketAuditEventSelector
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
 	// access
 	// Access
 	// write
 	// END DEBUGGING
-	// S3BucketAuditEventSelectorAccessWrite captures enum value "write"
-	S3BucketAuditEventSelectorAccessWrite string = "write"
+	// S3BucketInlineAuditEventSelectorAccessWrite captures enum value "write"
+	S3BucketInlineAuditEventSelectorAccessWrite string = "write"
 
 	// BEGIN DEBUGGING
-	// S3BucketAuditEventSelector
-	// S3BucketAuditEventSelector
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
 	// access
 	// Access
 	// all
 	// END DEBUGGING
-	// S3BucketAuditEventSelectorAccessAll captures enum value "all"
-	S3BucketAuditEventSelectorAccessAll string = "all"
+	// S3BucketInlineAuditEventSelectorAccessAll captures enum value "all"
+	S3BucketInlineAuditEventSelectorAccessAll string = "all"
 )
 
 // prop value enum
-func (m *S3BucketAuditEventSelector) validateAccessEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, s3BucketAuditEventSelectorTypeAccessPropEnum, true); err != nil {
+func (m *S3BucketInlineAuditEventSelector) validateAccessEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketInlineAuditEventSelectorTypeAccessPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *S3BucketAuditEventSelector) validateAccess(formats strfmt.Registry) error {
+func (m *S3BucketInlineAuditEventSelector) validateAccess(formats strfmt.Registry) error {
 	if swag.IsZero(m.Access) { // not required
 		return nil
 	}
@@ -1081,7 +1153,7 @@ func (m *S3BucketAuditEventSelector) validateAccess(formats strfmt.Registry) err
 	return nil
 }
 
-var s3BucketAuditEventSelectorTypePermissionPropEnum []interface{}
+var s3BucketInlineAuditEventSelectorTypePermissionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -1089,52 +1161,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		s3BucketAuditEventSelectorTypePermissionPropEnum = append(s3BucketAuditEventSelectorTypePermissionPropEnum, v)
+		s3BucketInlineAuditEventSelectorTypePermissionPropEnum = append(s3BucketInlineAuditEventSelectorTypePermissionPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// S3BucketAuditEventSelector
-	// S3BucketAuditEventSelector
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
 	// permission
 	// Permission
 	// deny
 	// END DEBUGGING
-	// S3BucketAuditEventSelectorPermissionDeny captures enum value "deny"
-	S3BucketAuditEventSelectorPermissionDeny string = "deny"
+	// S3BucketInlineAuditEventSelectorPermissionDeny captures enum value "deny"
+	S3BucketInlineAuditEventSelectorPermissionDeny string = "deny"
 
 	// BEGIN DEBUGGING
-	// S3BucketAuditEventSelector
-	// S3BucketAuditEventSelector
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
 	// permission
 	// Permission
 	// allow
 	// END DEBUGGING
-	// S3BucketAuditEventSelectorPermissionAllow captures enum value "allow"
-	S3BucketAuditEventSelectorPermissionAllow string = "allow"
+	// S3BucketInlineAuditEventSelectorPermissionAllow captures enum value "allow"
+	S3BucketInlineAuditEventSelectorPermissionAllow string = "allow"
 
 	// BEGIN DEBUGGING
-	// S3BucketAuditEventSelector
-	// S3BucketAuditEventSelector
+	// s3_bucket_inline_audit_event_selector
+	// S3BucketInlineAuditEventSelector
 	// permission
 	// Permission
 	// all
 	// END DEBUGGING
-	// S3BucketAuditEventSelectorPermissionAll captures enum value "all"
-	S3BucketAuditEventSelectorPermissionAll string = "all"
+	// S3BucketInlineAuditEventSelectorPermissionAll captures enum value "all"
+	S3BucketInlineAuditEventSelectorPermissionAll string = "all"
 )
 
 // prop value enum
-func (m *S3BucketAuditEventSelector) validatePermissionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, s3BucketAuditEventSelectorTypePermissionPropEnum, true); err != nil {
+func (m *S3BucketInlineAuditEventSelector) validatePermissionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketInlineAuditEventSelectorTypePermissionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *S3BucketAuditEventSelector) validatePermission(formats strfmt.Registry) error {
+func (m *S3BucketInlineAuditEventSelector) validatePermission(formats strfmt.Registry) error {
 	if swag.IsZero(m.Permission) { // not required
 		return nil
 	}
@@ -1147,13 +1219,13 @@ func (m *S3BucketAuditEventSelector) validatePermission(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this s3 bucket audit event selector based on context it is used
-func (m *S3BucketAuditEventSelector) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this s3 bucket inline audit event selector based on context it is used
+func (m *S3BucketInlineAuditEventSelector) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketAuditEventSelector) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineAuditEventSelector) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1161,8 +1233,8 @@ func (m *S3BucketAuditEventSelector) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketAuditEventSelector) UnmarshalBinary(b []byte) error {
-	var res S3BucketAuditEventSelector
+func (m *S3BucketInlineAuditEventSelector) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineAuditEventSelector
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1170,22 +1242,22 @@ func (m *S3BucketAuditEventSelector) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketEncryption s3 bucket encryption
+// S3BucketInlineEncryption s3 bucket inline encryption
 //
-// swagger:model S3BucketEncryption
-type S3BucketEncryption struct {
+// swagger:model s3_bucket_inline_encryption
+type S3BucketInlineEncryption struct {
 
 	// Specifies whether encryption is enabled on the bucket. By default, encryption is disabled on a bucket.
 	Enabled *bool `json:"enabled,omitempty"`
 }
 
-// Validate validates this s3 bucket encryption
-func (m *S3BucketEncryption) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline encryption
+func (m *S3BucketInlineEncryption) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket encryption based on the context it is used
-func (m *S3BucketEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline encryption based on the context it is used
+func (m *S3BucketInlineEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -1195,7 +1267,7 @@ func (m *S3BucketEncryption) ContextValidate(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketEncryption) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineEncryption) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1203,8 +1275,8 @@ func (m *S3BucketEncryption) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketEncryption) UnmarshalBinary(b []byte) error {
-	var res S3BucketEncryption
+func (m *S3BucketInlineEncryption) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineEncryption
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1212,17 +1284,17 @@ func (m *S3BucketEncryption) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketPolicy A policy is an object associated with a bucket. It defines resource (bucket, folder, or object) permissions. These policies get evaluated when an S3 user makes a request by executing a specific command. The user must be part of the principal (user or group) specified in the policy. Permissions in the policies determine whether the request is allowed or denied.
+// S3BucketInlinePolicy A policy is an object associated with a bucket. It defines resource (bucket, folder, or object) permissions. These policies get evaluated when an S3 user makes a request by executing a specific command. The user must be part of the principal (user or group) specified in the policy. Permissions in the policies determine whether the request is allowed or denied.
 //
-// swagger:model S3BucketPolicy
-type S3BucketPolicy struct {
+// swagger:model s3_bucket_inline_policy
+type S3BucketInlinePolicy struct {
 
 	// Specifies bucket access policy statement.
 	Statements []*S3BucketPolicyStatement `json:"statements,omitempty"`
 }
 
-// Validate validates this s3 bucket policy
-func (m *S3BucketPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline policy
+func (m *S3BucketInlinePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStatements(formats); err != nil {
@@ -1235,7 +1307,7 @@ func (m *S3BucketPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketPolicy) validateStatements(formats strfmt.Registry) error {
+func (m *S3BucketInlinePolicy) validateStatements(formats strfmt.Registry) error {
 	if swag.IsZero(m.Statements) { // not required
 		return nil
 	}
@@ -1259,8 +1331,8 @@ func (m *S3BucketPolicy) validateStatements(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket policy based on the context it is used
-func (m *S3BucketPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline policy based on the context it is used
+func (m *S3BucketInlinePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateStatements(ctx, formats); err != nil {
@@ -1273,7 +1345,7 @@ func (m *S3BucketPolicy) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *S3BucketPolicy) contextValidateStatements(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlinePolicy) contextValidateStatements(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Statements); i++ {
 
@@ -1292,7 +1364,7 @@ func (m *S3BucketPolicy) contextValidateStatements(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketPolicy) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlinePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1300,8 +1372,8 @@ func (m *S3BucketPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketPolicy) UnmarshalBinary(b []byte) error {
-	var res S3BucketPolicy
+func (m *S3BucketInlinePolicy) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlinePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1309,21 +1381,21 @@ func (m *S3BucketPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketProtectionStatus Specifies attributes of bucket protection.
+// S3BucketInlineProtectionStatus Specifies attributes of bucket protection.
 //
-// swagger:model S3BucketProtectionStatus
-type S3BucketProtectionStatus struct {
+// swagger:model s3_bucket_inline_protection_status
+type S3BucketInlineProtectionStatus struct {
 
 	// destination
-	Destination *S3BucketProtectionStatusDestination `json:"destination,omitempty"`
+	Destination *S3BucketInlineProtectionStatusInlineDestination `json:"destination,omitempty"`
 
 	// Specifies whether a bucket is a source and if it is protected within ONTAP and/or an external cloud.
 	// Read Only: true
 	IsProtected *bool `json:"is_protected,omitempty"`
 }
 
-// Validate validates this s3 bucket protection status
-func (m *S3BucketProtectionStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline protection status
+func (m *S3BucketInlineProtectionStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDestination(formats); err != nil {
@@ -1336,7 +1408,7 @@ func (m *S3BucketProtectionStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketProtectionStatus) validateDestination(formats strfmt.Registry) error {
+func (m *S3BucketInlineProtectionStatus) validateDestination(formats strfmt.Registry) error {
 	if swag.IsZero(m.Destination) { // not required
 		return nil
 	}
@@ -1353,8 +1425,8 @@ func (m *S3BucketProtectionStatus) validateDestination(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this s3 bucket protection status based on the context it is used
-func (m *S3BucketProtectionStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline protection status based on the context it is used
+func (m *S3BucketInlineProtectionStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDestination(ctx, formats); err != nil {
@@ -1371,7 +1443,7 @@ func (m *S3BucketProtectionStatus) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *S3BucketProtectionStatus) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineProtectionStatus) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Destination != nil {
 		if err := m.Destination.ContextValidate(ctx, formats); err != nil {
@@ -1385,7 +1457,7 @@ func (m *S3BucketProtectionStatus) contextValidateDestination(ctx context.Contex
 	return nil
 }
 
-func (m *S3BucketProtectionStatus) contextValidateIsProtected(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineProtectionStatus) contextValidateIsProtected(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "protection_status"+"."+"is_protected", "body", m.IsProtected); err != nil {
 		return err
@@ -1395,7 +1467,7 @@ func (m *S3BucketProtectionStatus) contextValidateIsProtected(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketProtectionStatus) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineProtectionStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1403,8 +1475,8 @@ func (m *S3BucketProtectionStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketProtectionStatus) UnmarshalBinary(b []byte) error {
-	var res S3BucketProtectionStatus
+func (m *S3BucketInlineProtectionStatus) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineProtectionStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1412,30 +1484,38 @@ func (m *S3BucketProtectionStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketProtectionStatusDestination s3 bucket protection status destination
+// S3BucketInlineProtectionStatusInlineDestination s3 bucket inline protection status inline destination
 //
-// swagger:model S3BucketProtectionStatusDestination
-type S3BucketProtectionStatusDestination struct {
+// swagger:model s3_bucket_inline_protection_status_inline_destination
+type S3BucketInlineProtectionStatusInlineDestination struct {
 
 	// Specifies whether a bucket is protected within the Cloud.
 	// Read Only: true
 	IsCloud *bool `json:"is_cloud,omitempty"`
+
+	// Specifies whether a bucket is protected on external Cloud providers.
+	// Read Only: true
+	IsExternalCloud *bool `json:"is_external_cloud,omitempty"`
 
 	// Specifies whether a bucket is protected within ONTAP.
 	// Read Only: true
 	IsOntap *bool `json:"is_ontap,omitempty"`
 }
 
-// Validate validates this s3 bucket protection status destination
-func (m *S3BucketProtectionStatusDestination) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline protection status inline destination
+func (m *S3BucketInlineProtectionStatusInlineDestination) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket protection status destination based on the context it is used
-func (m *S3BucketProtectionStatusDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline protection status inline destination based on the context it is used
+func (m *S3BucketInlineProtectionStatusInlineDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateIsCloud(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsExternalCloud(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1449,7 +1529,7 @@ func (m *S3BucketProtectionStatusDestination) ContextValidate(ctx context.Contex
 	return nil
 }
 
-func (m *S3BucketProtectionStatusDestination) contextValidateIsCloud(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineProtectionStatusInlineDestination) contextValidateIsCloud(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "protection_status"+"."+"destination"+"."+"is_cloud", "body", m.IsCloud); err != nil {
 		return err
@@ -1458,7 +1538,16 @@ func (m *S3BucketProtectionStatusDestination) contextValidateIsCloud(ctx context
 	return nil
 }
 
-func (m *S3BucketProtectionStatusDestination) contextValidateIsOntap(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineProtectionStatusInlineDestination) contextValidateIsExternalCloud(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protection_status"+"."+"destination"+"."+"is_external_cloud", "body", m.IsExternalCloud); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketInlineProtectionStatusInlineDestination) contextValidateIsOntap(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "protection_status"+"."+"destination"+"."+"is_ontap", "body", m.IsOntap); err != nil {
 		return err
@@ -1468,7 +1557,7 @@ func (m *S3BucketProtectionStatusDestination) contextValidateIsOntap(ctx context
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketProtectionStatusDestination) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineProtectionStatusInlineDestination) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1476,8 +1565,8 @@ func (m *S3BucketProtectionStatusDestination) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketProtectionStatusDestination) UnmarshalBinary(b []byte) error {
-	var res S3BucketProtectionStatusDestination
+func (m *S3BucketInlineProtectionStatusInlineDestination) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineProtectionStatusInlineDestination
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1485,41 +1574,41 @@ func (m *S3BucketProtectionStatusDestination) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketQosPolicy Specifes "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops" and/or "qos_policy.min_throughput_mbps". Specifying "min_throughput_iops" or "min_throughput_mbps" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
+// S3BucketInlineQosPolicy Specifes "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops" and/or "qos_policy.min_throughput_mbps". Specifying "min_throughput_iops" or "min_throughput_mbps" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
 //
-// swagger:model S3BucketQosPolicy
-type S3BucketQosPolicy struct {
+// swagger:model s3_bucket_inline_qos_policy
+type S3BucketInlineQosPolicy struct {
 
 	// links
-	Links *S3BucketQosPolicyLinks `json:"_links,omitempty"`
+	Links *S3BucketInlineQosPolicyInlineLinks `json:"_links,omitempty"`
 
 	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 10000
-	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
 	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
-	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
 	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
-	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 bucket qos policy
-func (m *S3BucketQosPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline qos policy
+func (m *S3BucketInlineQosPolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1532,7 +1621,7 @@ func (m *S3BucketQosPolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketQosPolicy) validateLinks(formats strfmt.Registry) error {
+func (m *S3BucketInlineQosPolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1549,8 +1638,8 @@ func (m *S3BucketQosPolicy) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket qos policy based on the context it is used
-func (m *S3BucketQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline qos policy based on the context it is used
+func (m *S3BucketInlineQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1563,7 +1652,7 @@ func (m *S3BucketQosPolicy) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *S3BucketQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1578,7 +1667,7 @@ func (m *S3BucketQosPolicy) contextValidateLinks(ctx context.Context, formats st
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketQosPolicy) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineQosPolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1586,8 +1675,8 @@ func (m *S3BucketQosPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketQosPolicy) UnmarshalBinary(b []byte) error {
-	var res S3BucketQosPolicy
+func (m *S3BucketInlineQosPolicy) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineQosPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1595,17 +1684,17 @@ func (m *S3BucketQosPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketQosPolicyLinks s3 bucket qos policy links
+// S3BucketInlineQosPolicyInlineLinks s3 bucket inline qos policy inline links
 //
-// swagger:model S3BucketQosPolicyLinks
-type S3BucketQosPolicyLinks struct {
+// swagger:model s3_bucket_inline_qos_policy_inline__links
+type S3BucketInlineQosPolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 bucket qos policy links
-func (m *S3BucketQosPolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline qos policy inline links
+func (m *S3BucketInlineQosPolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1618,7 +1707,7 @@ func (m *S3BucketQosPolicyLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3BucketInlineQosPolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1635,8 +1724,8 @@ func (m *S3BucketQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket qos policy links based on the context it is used
-func (m *S3BucketQosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline qos policy inline links based on the context it is used
+func (m *S3BucketInlineQosPolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1649,7 +1738,7 @@ func (m *S3BucketQosPolicyLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *S3BucketQosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineQosPolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1664,7 +1753,7 @@ func (m *S3BucketQosPolicyLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketQosPolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineQosPolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1672,8 +1761,8 @@ func (m *S3BucketQosPolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketQosPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res S3BucketQosPolicyLinks
+func (m *S3BucketInlineQosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineQosPolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1681,27 +1770,27 @@ func (m *S3BucketQosPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketSvmType s3 bucket svm type
+// S3BucketInlineSvm s3 bucket inline svm
 //
-// swagger:model S3BucketSvmType
-type S3BucketSvmType struct {
+// swagger:model s3_bucket_inline_svm
+type S3BucketInlineSvm struct {
 
 	// links
-	Links *S3BucketSvmLinks `json:"_links,omitempty"`
+	Links *S3BucketInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 bucket svm type
-func (m *S3BucketSvmType) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline svm
+func (m *S3BucketInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1714,7 +1803,7 @@ func (m *S3BucketSvmType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketSvmType) validateLinks(formats strfmt.Registry) error {
+func (m *S3BucketInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1731,8 +1820,8 @@ func (m *S3BucketSvmType) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket svm type based on the context it is used
-func (m *S3BucketSvmType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline svm based on the context it is used
+func (m *S3BucketInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1745,7 +1834,7 @@ func (m *S3BucketSvmType) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *S3BucketSvmType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1760,7 +1849,7 @@ func (m *S3BucketSvmType) contextValidateLinks(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketSvmType) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1768,8 +1857,8 @@ func (m *S3BucketSvmType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketSvmType) UnmarshalBinary(b []byte) error {
-	var res S3BucketSvmType
+func (m *S3BucketInlineSvm) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1777,17 +1866,17 @@ func (m *S3BucketSvmType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketSvmLinks s3 bucket svm links
+// S3BucketInlineSvmInlineLinks s3 bucket inline svm inline links
 //
-// swagger:model S3BucketSvmLinks
-type S3BucketSvmLinks struct {
+// swagger:model s3_bucket_inline_svm_inline__links
+type S3BucketInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 bucket svm links
-func (m *S3BucketSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline svm inline links
+func (m *S3BucketInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1800,7 +1889,7 @@ func (m *S3BucketSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3BucketInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1817,8 +1906,8 @@ func (m *S3BucketSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket svm links based on the context it is used
-func (m *S3BucketSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline svm inline links based on the context it is used
+func (m *S3BucketInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1831,7 +1920,7 @@ func (m *S3BucketSvmLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *S3BucketSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1846,7 +1935,7 @@ func (m *S3BucketSvmLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1854,8 +1943,8 @@ func (m *S3BucketSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketSvmLinks) UnmarshalBinary(b []byte) error {
-	var res S3BucketSvmLinks
+func (m *S3BucketInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1863,25 +1952,25 @@ func (m *S3BucketSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketVolume Specifies the FlexGroup volume name and UUID where the bucket is hosted.
+// S3BucketInlineVolume Specifies the FlexGroup volume name and UUID where the bucket is hosted.
 //
-// swagger:model S3BucketVolume
-type S3BucketVolume struct {
+// swagger:model s3_bucket_inline_volume
+type S3BucketInlineVolume struct {
 
 	// links
-	Links *S3BucketVolumeLinks `json:"_links,omitempty"`
+	Links *S3BucketInlineVolumeInlineLinks `json:"_links,omitempty"`
 
 	// The name of the volume.
 	// Example: volume1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this s3 bucket volume
-func (m *S3BucketVolume) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline volume
+func (m *S3BucketInlineVolume) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1894,7 +1983,7 @@ func (m *S3BucketVolume) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketVolume) validateLinks(formats strfmt.Registry) error {
+func (m *S3BucketInlineVolume) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1911,8 +2000,8 @@ func (m *S3BucketVolume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket volume based on the context it is used
-func (m *S3BucketVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline volume based on the context it is used
+func (m *S3BucketInlineVolume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1925,7 +2014,7 @@ func (m *S3BucketVolume) ContextValidate(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
-func (m *S3BucketVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineVolume) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1940,7 +2029,7 @@ func (m *S3BucketVolume) contextValidateLinks(ctx context.Context, formats strfm
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketVolume) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineVolume) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1948,8 +2037,8 @@ func (m *S3BucketVolume) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketVolume) UnmarshalBinary(b []byte) error {
-	var res S3BucketVolume
+func (m *S3BucketInlineVolume) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineVolume
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1957,17 +2046,17 @@ func (m *S3BucketVolume) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketVolumeLinks s3 bucket volume links
+// S3BucketInlineVolumeInlineLinks s3 bucket inline volume inline links
 //
-// swagger:model S3BucketVolumeLinks
-type S3BucketVolumeLinks struct {
+// swagger:model s3_bucket_inline_volume_inline__links
+type S3BucketInlineVolumeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this s3 bucket volume links
-func (m *S3BucketVolumeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this s3 bucket inline volume inline links
+func (m *S3BucketInlineVolumeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1980,7 +2069,7 @@ func (m *S3BucketVolumeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *S3BucketVolumeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *S3BucketInlineVolumeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1997,8 +2086,8 @@ func (m *S3BucketVolumeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this s3 bucket volume links based on the context it is used
-func (m *S3BucketVolumeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this s3 bucket inline volume inline links based on the context it is used
+func (m *S3BucketInlineVolumeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2011,7 +2100,7 @@ func (m *S3BucketVolumeLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *S3BucketVolumeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *S3BucketInlineVolumeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2026,7 +2115,7 @@ func (m *S3BucketVolumeLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *S3BucketVolumeLinks) MarshalBinary() ([]byte, error) {
+func (m *S3BucketInlineVolumeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2034,8 +2123,8 @@ func (m *S3BucketVolumeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *S3BucketVolumeLinks) UnmarshalBinary(b []byte) error {
-	var res S3BucketVolumeLinks
+func (m *S3BucketInlineVolumeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketInlineVolumeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

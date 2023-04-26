@@ -66,13 +66,13 @@ type MultiAdminVerifyApprovalGroupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// Name.
-	NamePathParameter string
+	Name string
 
 	// OwnerUUID.
-	OwnerUUIDPathParameter string
+	OwnerUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,37 +127,37 @@ func (o *MultiAdminVerifyApprovalGroupGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the multi admin verify approval group get params
-func (o *MultiAdminVerifyApprovalGroupGetParams) WithFieldsQueryParameter(fields []string) *MultiAdminVerifyApprovalGroupGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the multi admin verify approval group get params
+func (o *MultiAdminVerifyApprovalGroupGetParams) WithFields(fields []string) *MultiAdminVerifyApprovalGroupGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the multi admin verify approval group get params
-func (o *MultiAdminVerifyApprovalGroupGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the multi admin verify approval group get params
+func (o *MultiAdminVerifyApprovalGroupGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithNamePathParameter adds the name to the multi admin verify approval group get params
-func (o *MultiAdminVerifyApprovalGroupGetParams) WithNamePathParameter(name string) *MultiAdminVerifyApprovalGroupGetParams {
-	o.SetNamePathParameter(name)
+// WithName adds the name to the multi admin verify approval group get params
+func (o *MultiAdminVerifyApprovalGroupGetParams) WithName(name string) *MultiAdminVerifyApprovalGroupGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNamePathParameter adds the name to the multi admin verify approval group get params
-func (o *MultiAdminVerifyApprovalGroupGetParams) SetNamePathParameter(name string) {
-	o.NamePathParameter = name
+// SetName adds the name to the multi admin verify approval group get params
+func (o *MultiAdminVerifyApprovalGroupGetParams) SetName(name string) {
+	o.Name = name
 }
 
-// WithOwnerUUIDPathParameter adds the ownerUUID to the multi admin verify approval group get params
-func (o *MultiAdminVerifyApprovalGroupGetParams) WithOwnerUUIDPathParameter(ownerUUID string) *MultiAdminVerifyApprovalGroupGetParams {
-	o.SetOwnerUUIDPathParameter(ownerUUID)
+// WithOwnerUUID adds the ownerUUID to the multi admin verify approval group get params
+func (o *MultiAdminVerifyApprovalGroupGetParams) WithOwnerUUID(ownerUUID string) *MultiAdminVerifyApprovalGroupGetParams {
+	o.SetOwnerUUID(ownerUUID)
 	return o
 }
 
-// SetOwnerUUIDPathParameter adds the ownerUuid to the multi admin verify approval group get params
-func (o *MultiAdminVerifyApprovalGroupGetParams) SetOwnerUUIDPathParameter(ownerUUID string) {
-	o.OwnerUUIDPathParameter = ownerUUID
+// SetOwnerUUID adds the ownerUuid to the multi admin verify approval group get params
+func (o *MultiAdminVerifyApprovalGroupGetParams) SetOwnerUUID(ownerUUID string) {
+	o.OwnerUUID = ownerUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,7 +168,7 @@ func (o *MultiAdminVerifyApprovalGroupGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -180,12 +180,12 @@ func (o *MultiAdminVerifyApprovalGroupGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param name
-	if err := r.SetPathParam("name", o.NamePathParameter); err != nil {
+	if err := r.SetPathParam("name", o.Name); err != nil {
 		return err
 	}
 
 	// path param owner.uuid
-	if err := r.SetPathParam("owner.uuid", o.OwnerUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("owner.uuid", o.OwnerUUID); err != nil {
 		return err
 	}
 
@@ -197,7 +197,7 @@ func (o *MultiAdminVerifyApprovalGroupGetParams) WriteToRequest(r runtime.Client
 
 // bindParamMultiAdminVerifyApprovalGroupGet binds the parameter fields
 func (o *MultiAdminVerifyApprovalGroupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

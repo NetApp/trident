@@ -66,10 +66,10 @@ type NfsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	// SvmUUID.
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,26 +124,26 @@ func (o *NfsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the nfs get params
-func (o *NfsGetParams) WithFieldsQueryParameter(fields []string) *NfsGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the nfs get params
+func (o *NfsGetParams) WithFields(fields []string) *NfsGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the nfs get params
-func (o *NfsGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the nfs get params
+func (o *NfsGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the nfs get params
-func (o *NfsGetParams) WithSVMUUIDPathParameter(svmUUID string) *NfsGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the nfs get params
+func (o *NfsGetParams) WithSvmUUID(svmUUID string) *NfsGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the nfs get params
-func (o *NfsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the nfs get params
+func (o *NfsGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -154,7 +154,7 @@ func (o *NfsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -166,7 +166,7 @@ func (o *NfsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func (o *NfsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 
 // bindParamNfsGet binds the parameter fields
 func (o *NfsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

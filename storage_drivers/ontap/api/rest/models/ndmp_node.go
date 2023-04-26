@@ -20,25 +20,25 @@ import (
 type NdmpNode struct {
 
 	// links
-	Links *NdmpNodeLinks `json:"_links,omitempty"`
-
-	// NDMP authentication types.
-	// Example: ["plaintext","challenge"]
-	AuthenticationTypes []NdmpAuthType `json:"authentication_types,omitempty"`
+	Links *NdmpNodeInlineLinks `json:"_links,omitempty"`
 
 	// Is the NDMP service enabled?
 	// Example: true
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// NDMP authentication types.
+	// Example: ["plaintext","challenge"]
+	NdmpNodeInlineAuthenticationTypes []*NdmpAuthType `json:"authentication_types,omitempty"`
 
 	// node
-	Node *NdmpNodeNode `json:"node,omitempty"`
+	Node *NdmpNodeInlineNode `json:"node,omitempty"`
 
 	// NDMP password. This can only be set and cannot be read back.
-	Password string `json:"password,omitempty"`
+	Password *string `json:"password,omitempty"`
 
 	// NDMP user ID
 	// Example: ndmp_user
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this ndmp node
@@ -49,7 +49,7 @@ func (m *NdmpNode) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAuthenticationTypes(formats); err != nil {
+	if err := m.validateNdmpNodeInlineAuthenticationTypes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -80,18 +80,23 @@ func (m *NdmpNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpNode) validateAuthenticationTypes(formats strfmt.Registry) error {
-	if swag.IsZero(m.AuthenticationTypes) { // not required
+func (m *NdmpNode) validateNdmpNodeInlineAuthenticationTypes(formats strfmt.Registry) error {
+	if swag.IsZero(m.NdmpNodeInlineAuthenticationTypes) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.AuthenticationTypes); i++ {
+	for i := 0; i < len(m.NdmpNodeInlineAuthenticationTypes); i++ {
+		if swag.IsZero(m.NdmpNodeInlineAuthenticationTypes[i]) { // not required
+			continue
+		}
 
-		if err := m.AuthenticationTypes[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+		if m.NdmpNodeInlineAuthenticationTypes[i] != nil {
+			if err := m.NdmpNodeInlineAuthenticationTypes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -124,7 +129,7 @@ func (m *NdmpNode) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateAuthenticationTypes(ctx, formats); err != nil {
+	if err := m.contextValidateNdmpNodeInlineAuthenticationTypes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -152,15 +157,17 @@ func (m *NdmpNode) contextValidateLinks(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *NdmpNode) contextValidateAuthenticationTypes(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpNode) contextValidateNdmpNodeInlineAuthenticationTypes(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.AuthenticationTypes); i++ {
+	for i := 0; i < len(m.NdmpNodeInlineAuthenticationTypes); i++ {
 
-		if err := m.AuthenticationTypes[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+		if m.NdmpNodeInlineAuthenticationTypes[i] != nil {
+			if err := m.NdmpNodeInlineAuthenticationTypes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("authentication_types" + "." + strconv.Itoa(i))
+				}
+				return err
 			}
-			return err
 		}
 
 	}
@@ -200,17 +207,17 @@ func (m *NdmpNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpNodeLinks ndmp node links
+// NdmpNodeInlineLinks ndmp node inline links
 //
-// swagger:model NdmpNodeLinks
-type NdmpNodeLinks struct {
+// swagger:model ndmp_node_inline__links
+type NdmpNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp node links
-func (m *NdmpNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp node inline links
+func (m *NdmpNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -223,7 +230,7 @@ func (m *NdmpNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -240,8 +247,8 @@ func (m *NdmpNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp node links based on the context it is used
-func (m *NdmpNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp node inline links based on the context it is used
+func (m *NdmpNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -254,7 +261,7 @@ func (m *NdmpNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *NdmpNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -269,7 +276,7 @@ func (m *NdmpNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -277,8 +284,8 @@ func (m *NdmpNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpNodeLinks
+func (m *NdmpNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -286,25 +293,25 @@ func (m *NdmpNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpNodeNode Storage system node
+// NdmpNodeInlineNode Storage system node
 //
-// swagger:model NdmpNodeNode
-type NdmpNodeNode struct {
+// swagger:model ndmp_node_inline_node
+type NdmpNodeInlineNode struct {
 
 	// links
-	Links *NdmpNodeNodeLinks `json:"_links,omitempty"`
+	Links *NdmpNodeInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this ndmp node node
-func (m *NdmpNodeNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp node inline node
+func (m *NdmpNodeInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -317,7 +324,7 @@ func (m *NdmpNodeNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpNodeNode) validateLinks(formats strfmt.Registry) error {
+func (m *NdmpNodeInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -334,8 +341,8 @@ func (m *NdmpNodeNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp node node based on the context it is used
-func (m *NdmpNodeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp node inline node based on the context it is used
+func (m *NdmpNodeInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -348,7 +355,7 @@ func (m *NdmpNodeNode) ContextValidate(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
-func (m *NdmpNodeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpNodeInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -363,7 +370,7 @@ func (m *NdmpNodeNode) contextValidateLinks(ctx context.Context, formats strfmt.
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpNodeNode) MarshalBinary() ([]byte, error) {
+func (m *NdmpNodeInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -371,8 +378,8 @@ func (m *NdmpNodeNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpNodeNode) UnmarshalBinary(b []byte) error {
-	var res NdmpNodeNode
+func (m *NdmpNodeInlineNode) UnmarshalBinary(b []byte) error {
+	var res NdmpNodeInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -380,17 +387,17 @@ func (m *NdmpNodeNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NdmpNodeNodeLinks ndmp node node links
+// NdmpNodeInlineNodeInlineLinks ndmp node inline node inline links
 //
-// swagger:model NdmpNodeNodeLinks
-type NdmpNodeNodeLinks struct {
+// swagger:model ndmp_node_inline_node_inline__links
+type NdmpNodeInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this ndmp node node links
-func (m *NdmpNodeNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ndmp node inline node inline links
+func (m *NdmpNodeInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -403,7 +410,7 @@ func (m *NdmpNodeNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *NdmpNodeNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *NdmpNodeInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -420,8 +427,8 @@ func (m *NdmpNodeNodeLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ndmp node node links based on the context it is used
-func (m *NdmpNodeNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ndmp node inline node inline links based on the context it is used
+func (m *NdmpNodeInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -434,7 +441,7 @@ func (m *NdmpNodeNodeLinks) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *NdmpNodeNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *NdmpNodeInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -449,7 +456,7 @@ func (m *NdmpNodeNodeLinks) contextValidateSelf(ctx context.Context, formats str
 }
 
 // MarshalBinary interface implementation
-func (m *NdmpNodeNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *NdmpNodeInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -457,8 +464,8 @@ func (m *NdmpNodeNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NdmpNodeNodeLinks) UnmarshalBinary(b []byte) error {
-	var res NdmpNodeNodeLinks
+func (m *NdmpNodeInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NdmpNodeInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -22,16 +22,16 @@ type NodeStatistics struct {
 
 	// Base counter for CPU Utilization.
 	// Example: 12345123
-	ProcessorUtilizationBase int64 `json:"processor_utilization_base,omitempty"`
+	ProcessorUtilizationBase *int64 `json:"processor_utilization_base,omitempty"`
 
 	// Raw CPU Utilization for the node. This should be divided by the processor_utilization_base to calculate the percentage CPU utilization for the node.
 	// Example: 13
-	ProcessorUtilizationRaw int64 `json:"processor_utilization_raw,omitempty"`
+	ProcessorUtilizationRaw *int64 `json:"processor_utilization_raw,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -186,7 +186,7 @@ func (m *NodeStatistics) validateStatus(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 

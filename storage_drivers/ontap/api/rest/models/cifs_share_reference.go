@@ -19,11 +19,11 @@ import (
 type CifsShareReference struct {
 
 	// links
-	Links *CifsShareReferenceLinks `json:"_links,omitempty"`
+	Links *CifsShareReferenceInlineLinks `json:"_links,omitempty"`
 
 	// Share name
 	// Example: sh1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // Validate validates this cifs share reference
@@ -103,17 +103,17 @@ func (m *CifsShareReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CifsShareReferenceLinks cifs share reference links
+// CifsShareReferenceInlineLinks cifs share reference inline links
 //
-// swagger:model CifsShareReferenceLinks
-type CifsShareReferenceLinks struct {
+// swagger:model cifs_share_reference_inline__links
+type CifsShareReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this cifs share reference links
-func (m *CifsShareReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this cifs share reference inline links
+func (m *CifsShareReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *CifsShareReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CifsShareReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *CifsShareReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *CifsShareReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this cifs share reference links based on the context it is used
-func (m *CifsShareReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this cifs share reference inline links based on the context it is used
+func (m *CifsShareReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *CifsShareReferenceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *CifsShareReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *CifsShareReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *CifsShareReferenceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *CifsShareReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *CifsShareReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *CifsShareReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CifsShareReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res CifsShareReferenceLinks
+func (m *CifsShareReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res CifsShareReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

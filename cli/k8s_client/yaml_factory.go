@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	commonconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 )
 
@@ -24,10 +25,6 @@ func isControllerRBACResource(labels map[string]string) bool {
 	return strings.HasPrefix(labels[TridentAppLabelKey], "controller")
 }
 
-func isNodeRBACResource(labels map[string]string) bool {
-	return strings.HasPrefix(labels[TridentAppLabelKey], "node")
-}
-
 const namespaceYAMLTemplate = `---
 apiVersion: v1
 kind: Namespace
@@ -41,10 +38,15 @@ func GetServiceAccountYAML(
 	serviceAccountName string, secrets []string, labels, controllingCRDetails map[string]string,
 ) string {
 	var saYAML string
+	Log().WithFields(LogFields{
+		"ServiceAccountName":   serviceAccountName,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetServiceAccountYAML")
+	defer func() { Log().Trace("<<<< GetServiceAccountYAML") }()
 
 	if len(secrets) > 0 {
 		saYAML = serviceAccountWithSecretYAML
-		saYAML = strings.Replace(saYAML, "{SECRETS}", constructServiceAccountSecrets(secrets), 1)
 	} else {
 		saYAML = serviceAccountYAML
 	}
@@ -53,6 +55,9 @@ func GetServiceAccountYAML(
 	saYAML = replaceMultilineYAMLTag(saYAML, "LABELS", constructLabels(labels))
 	saYAML = replaceMultilineYAMLTag(saYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
+	// Log().ervice account YAML before the secrets are added.
+	Log().WithField("yaml", saYAML).Trace("Service account YAML.")
+	saYAML = strings.Replace(saYAML, "{SECRETS}", constructServiceAccountSecrets(secrets), 1)
 	return saYAML
 }
 
@@ -79,6 +84,13 @@ func GetClusterRoleYAML(
 	flavor OrchestratorFlavor, clusterRoleName string, labels, controllingCRDetails map[string]string, csi bool,
 ) string {
 	var clusterRoleYAML string
+	Log().WithFields(LogFields{
+		"ClusterRoleName":      clusterRoleName,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+		"CSI":                  csi,
+	}).Trace(">>>> GetClusterRoleYAML")
+	defer func() { Log().Trace("<<<< GetClusterRoleYAML") }()
 
 	if csi {
 		clusterRoleYAML = controllerClusterRoleCSIYAMLTemplate
@@ -96,7 +108,7 @@ func GetClusterRoleYAML(
 	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
 	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "LABELS", constructLabels(labels))
 	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
-
+	Log().WithField("yaml", clusterRoleYAML).Trace("Cluster role YAML.")
 	return clusterRoleYAML
 }
 
@@ -215,7 +227,8 @@ rules:
       - {CLUSTER_ROLE_NAME}
 `
 
-func GetRoleYAML(flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
+func GetRoleYAML(
+	flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
 	csi bool,
 ) string {
 	var roleYAML string
@@ -268,7 +281,8 @@ rules:
       - {ROLE_NAME}
 `
 
-func GetRoleBindingYAML(flavor OrchestratorFlavor, namespace, name string,
+func GetRoleBindingYAML(
+	flavor OrchestratorFlavor, namespace, name string,
 	labels, controllingCRDetails map[string]string, csi bool,
 ) string {
 	rbYAML := roleBindingKubernetesV1YAMLTemplate
@@ -302,6 +316,15 @@ func GetClusterRoleBindingYAML(
 	labels, controllingCRDetails map[string]string, csi bool,
 ) string {
 	var crbYAML string
+	Log().WithFields(LogFields{
+		"Namespace":            namespace,
+		"Name":                 name,
+		"Flavor":               flavor,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+		"CSI":                  csi,
+	}).Trace(">>>> GetClusterRoleBindingYAML")
+	defer func() { Log().Trace("<<<< GetClusterRoleBindingYAML") }()
 
 	// authorization.openshift.io/v1 is applicable to OCP 3.x only
 	if flavor == FlavorOpenShift && !csi {
@@ -314,6 +337,8 @@ func GetClusterRoleBindingYAML(
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAME}", name)
 	crbYAML = replaceMultilineYAMLTag(crbYAML, "LABELS", constructLabels(labels))
 	crbYAML = replaceMultilineYAMLTag(crbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", crbYAML).Trace("Cluster role binding YAML.")
 	return crbYAML
 }
 
@@ -350,10 +375,19 @@ roleRef:
 `
 
 func GetCSIServiceYAML(serviceName string, labels, controllingCRDetails map[string]string) string {
+	Log().WithFields(LogFields{
+		"ServiceName":          serviceName,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetCSIServiceYAML")
+	defer func() { Log().Trace("<<<< GetCSIServiceYAML") }()
+
 	serviceYAML := strings.ReplaceAll(serviceYAMLTemplate, "{LABEL_APP}", labels[TridentAppLabelKey])
 	serviceYAML = strings.ReplaceAll(serviceYAML, "{SERVICE_NAME}", serviceName)
 	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "LABELS", constructLabels(labels))
 	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", serviceYAML).Trace("CSI Service YAML.")
 	return serviceYAML
 }
 
@@ -379,10 +413,20 @@ spec:
 `
 
 func GetResourceQuotaYAML(resourceQuotaName, namespace string, labels, controllingCRDetails map[string]string) string {
+	Log().WithFields(LogFields{
+		"ResourceQuotaName":    resourceQuotaName,
+		"Namespace":            namespace,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetResourceQuotaYAML")
+	defer func() { Log().Trace("<<<< GetResourceQuotaYAML") }()
+
 	resourceQuotaYAML := strings.ReplaceAll(resourceQuotaYAMLTemplate, "{RESOURCEQUOTA_NAME}", resourceQuotaName)
 	resourceQuotaYAML = strings.ReplaceAll(resourceQuotaYAML, "{NAMESPACE}", namespace)
 	resourceQuotaYAML = replaceMultilineYAMLTag(resourceQuotaYAML, "LABELS", constructLabels(labels))
 	resourceQuotaYAML = replaceMultilineYAMLTag(resourceQuotaYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", resourceQuotaYAML).Trace("Resource Quota YAML.")
 	return resourceQuotaYAML
 }
 
@@ -403,15 +447,30 @@ spec:
 `
 
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
-	var debugLine, logLevel, ipLocalhost string
+	var debugLine, sideCarLogLevel, ipLocalhost string
+	Log().WithFields(LogFields{
+		"Args": args,
+	}).Trace(">>>> GetCSIDeploymentYAML")
+	defer func() { Log().Trace("<<<< GetCSIDeploymentYAML") }()
+
+	if args.LogLevel == "" && !args.Debug {
+		args.LogLevel = "info"
+	} else if args.LogLevel == "" {
+		args.LogLevel = "debug"
+	}
 
 	if args.Debug {
 		debugLine = "- -debug"
-		logLevel = "8"
 	} else {
 		debugLine = "#- -debug"
-		logLevel = "2"
 	}
+
+	if IsLogLevelDebugOrHigher(args.LogLevel) || args.Debug {
+		sideCarLogLevel = "8"
+	} else {
+		sideCarLogLevel = "2"
+	}
+
 	if args.UseIPv6 {
 		ipLocalhost = "[::1]"
 	} else {
@@ -422,7 +481,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	csiSnapshotterVersion := "v3.0.3"
 	if args.SnapshotCRDVersion == "v1" {
-		csiSnapshotterVersion = "v6.1.0"
+		csiSnapshotterVersion = "v6.2.1"
 	}
 
 	if args.ImageRegistry == "" {
@@ -462,14 +521,22 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	}
 	args.Labels[DefaultContainerLabelKey] = "trident-main"
 
+	autosupportDebugLine := "- -debug"
+	if !IsLogLevelDebugOrHigher(args.LogLevel) {
+		autosupportDebugLine = "#" + autosupportDebugLine
+	}
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SNAPSHOTTER_VERSION}", csiSnapshotterVersion)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", logLevel)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SIDECAR_LOG_LEVEL}", sideCarLogLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", args.LogLevel)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_WORKFLOWS}", args.LogWorkflows)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LAYERS}", args.LogLayers)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
@@ -477,6 +544,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_DEBUG}", autosupportDebugLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}",
 		strconv.FormatBool(args.SilenceAutosupport))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
@@ -485,10 +553,14 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
-	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS",
-		constructImagePullSecrets(args.ImagePullSecrets))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
+
+	// Log before secrets are inserted into YAML.
+	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
+	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS",
+		constructImagePullSecrets(args.ImagePullSecrets))
 
 	return deploymentYAML
 }
@@ -531,9 +603,13 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
+        - "--log_level={LOG_LEVEL}"
+        - "--log_workflows={LOG_WORKFLOWS}"
+        - "--log_layers={LOG_LAYERS}"
         - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
+        - "--enable_force_detach={ENABLE_FORCE_DETACH}"
         - "--metrics"
         {DEBUG}
         livenessProbe:
@@ -576,7 +652,7 @@ spec:
         {AUTOSUPPORT_CUSTOM_URL}
         {AUTOSUPPORT_SERIAL_NUMBER}
         {AUTOSUPPORT_HOSTNAME}
-        {DEBUG}
+        {AUTOSUPPORT_DEBUG}
         resources:
           limits:
             memory: 1Gi
@@ -584,10 +660,10 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.3.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
-        - "--v={LOG_LEVEL}"
+        - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
@@ -600,10 +676,10 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.0.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.2.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
-        - "--v={LOG_LEVEL}"
+        - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
         - "--csi-address=$(ADDRESS)"
@@ -614,10 +690,10 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.6.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.7.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
-        - "--v={LOG_LEVEL}"
+        - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -630,7 +706,7 @@ spec:
         image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
-        - "--v={LOG_LEVEL}"
+        - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
         env:
@@ -640,10 +716,21 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       {IMAGE_PULL_SECRETS}
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+                  {NODE_SELECTOR}
       {NODE_TOLERATIONS}
       volumes:
       - name: socket-dir
@@ -662,14 +749,29 @@ spec:
 `
 
 func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
-	var debugLine, logLevel, daemonSetYAML string
+	var debugLine, sidecarLogLevel, daemonSetYAML string
 	var version int
+	Log().WithFields(LogFields{
+		"Args": args,
+	}).Trace(">>>> GetCSIDaemonSetYAMLWindows")
+	defer func() { Log().Trace("<<<< GetCSIDaemonSetYAMLWindows") }()
+
+	if args.LogLevel == "" && !args.Debug {
+		args.LogLevel = "info"
+	} else if args.LogLevel == "" {
+		args.LogLevel = "debug"
+	}
+
 	if args.Debug {
 		debugLine = "- -debug"
-		logLevel = "8"
 	} else {
 		debugLine = "#- -debug"
-		logLevel = "2"
+	}
+
+	if IsLogLevelDebugOrHigher(args.LogLevel) || args.Debug {
+		sidecarLogLevel = "8"
+	} else {
+		sidecarLogLevel = "2"
 	}
 
 	if args.Version != nil {
@@ -703,9 +805,12 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SIDECAR_LOG_LEVEL}", sidecarLogLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", args.LogLevel)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_WORKFLOWS}", args.LogWorkflows)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LAYERS}", args.LogLayers)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
@@ -715,6 +820,8 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	// Log before secrets are inserted into YAML.
+	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Windows YAML.")
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(args.ImagePullSecrets))
 
@@ -722,14 +829,28 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 }
 
 func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
-	var debugLine, logLevel string
+	var debugLine, sidecarLogLevel string
+	Log().WithFields(LogFields{
+		"Args": args,
+	}).Trace(">>>> GetCSIDaemonSetYAMLLinux")
+	defer func() { Log().Trace("<<<< GetCSIDaemonSetYAMLLinux") }()
+
+	if args.LogLevel == "" && !args.Debug {
+		args.LogLevel = "info"
+	} else if args.LogLevel == "" {
+		args.LogLevel = "debug"
+	}
 
 	if args.Debug {
 		debugLine = "- -debug"
-		logLevel = "8"
 	} else {
 		debugLine = "#- -debug"
-		logLevel = "2"
+	}
+
+	if IsLogLevelDebugOrHigher(args.LogLevel) || args.Debug {
+		sidecarLogLevel = "8"
+	} else {
+		sidecarLogLevel = "2"
 	}
 
 	daemonSetYAML := daemonSet120YAMLTemplateLinux
@@ -758,10 +879,13 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{FORCE_DETACH_BOOL}", strconv.FormatBool(args.EnableForceDetach))
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SIDECAR_LOG_LEVEL}", sidecarLogLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", args.LogLevel)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_WORKFLOWS}", args.LogWorkflows)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LAYERS}", args.LogLayers)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
@@ -770,6 +894,9 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+
+	// Log before secrets are inserted into YAML.
+	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Linux YAML.")
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(args.ImagePullSecrets))
 
@@ -815,6 +942,9 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
+        - "--log_level={LOG_LEVEL}"
+        - "--log_workflows={LOG_WORKFLOWS}"
+        - "--log_layers={LOG_LAYERS}"
         - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
@@ -880,10 +1010,10 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.5.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.7.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
-        - "--v={LOG_LEVEL}"
+        - "--v={SIDECAR_LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
         env:
@@ -901,10 +1031,21 @@ spec:
         - name: registration-dir
           mountPath: /registration
       {IMAGE_PULL_SECRETS}
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
+                  {NODE_SELECTOR}
       {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
@@ -984,6 +1125,9 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
+        - "--log_level={LOG_LEVEL}"
+        - "--log_workflows={LOG_WORKFLOWS}"
+        - "--log_layers={LOG_LAYERS}"
         - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
@@ -1059,7 +1203,7 @@ spec:
             cpu: 10m
             memory: 20Mi
       - name: node-driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.5.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.7.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - --v=2
@@ -1114,10 +1258,20 @@ spec:
           requests:
             cpu: 10m
             memory: 40Mi
-      nodeSelector:
-        kubernetes.io/os: windows
-        kubernetes.io/arch: amd64
-        {NODE_SELECTOR}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - windows
+                  {NODE_SELECTOR}
       volumes:
         - name: trident-tracking-dir
           hostPath:
@@ -1166,11 +1320,23 @@ func GetTridentVersionPodYAML(
 	name, tridentImage, serviceAccountName, imagePullPolicy string, imagePullSecrets []string, labels,
 	controllingCRDetails map[string]string,
 ) string {
+	Log().WithFields(LogFields{
+		"Name":                 name,
+		"TridentImae":          tridentImage,
+		"ServiceAccountName":   serviceAccountName,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetTridentVersionPodYAML")
+	defer func() { Log().Trace("<<<< GetTridentVersionPodYAML") }()
+
 	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(labels))
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	// Log before secrets are inserted into YAML.
+	Log().WithField("yaml", versionPodYAML).Trace("Trident Version Pod YAML.")
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(imagePullSecrets))
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", imagePullPolicy)
@@ -1195,12 +1361,25 @@ spec:
     command: ["tridentctl"]
     args: ["pause"]
   {IMAGE_PULL_SECRETS}
-  nodeSelector:
-    beta.kubernetes.io/os: linux
-    beta.kubernetes.io/arch: amd64
+  affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator : In
+                    values:
+                    - linux
 `
 
-func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool) string {
+func GetOpenShiftSCCYAML(
+	sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool,
+) string {
 	sccYAML := openShiftUnprivilegedSCCYAML
 	// Only linux node pod needs an privileged SCC (i.e. privileged set to true)
 	if privileged {
@@ -1211,6 +1390,8 @@ func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRD
 	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
 	sccYAML = replaceMultilineYAMLTag(sccYAML, "LABELS", constructLabels(labels))
 	sccYAML = replaceMultilineYAMLTag(sccYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", sccYAML).Trace("OpenShift SCC YAML.")
 	return sccYAML
 }
 
@@ -1295,7 +1476,15 @@ volumes:
 `
 
 func GetOpenShiftSCCQueryYAML(scc string) string {
-	return strings.ReplaceAll(openShiftSCCQueryYAMLTemplate, "{SCC}", scc)
+	Log().WithFields(LogFields{
+		"SCC": scc,
+	}).Trace(">>>> GetOpenShiftSCCQueryYAML")
+	defer func() { Log().Trace("<<<< GetOpenShiftSCCQueryYAML") }()
+
+	yaml := strings.ReplaceAll(openShiftSCCQueryYAMLTemplate, "{SCC}", scc)
+
+	Log().WithField("yaml", yaml).Trace("OpenShift SCC Query YAML.")
+	return yaml
 }
 
 const openShiftSCCQueryYAMLTemplate = `
@@ -1308,10 +1497,21 @@ metadata:
 func GetSecretYAML(
 	secretName, namespace string, labels, controllingCRDetails, data, stringData map[string]string,
 ) string {
+	Log().WithFields(LogFields{
+		"SecretName":           secretName,
+		"Namespace":            namespace,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetSecretYAML")
+	defer func() { Log().Trace("<<<< GetSecretYAML") }()
+
 	secretYAML := strings.ReplaceAll(secretYAMLTemplate, "{SECRET_NAME}", secretName)
 	secretYAML = strings.ReplaceAll(secretYAML, "{NAMESPACE}", namespace)
 	secretYAML = replaceMultilineYAMLTag(secretYAML, "LABELS", constructLabels(labels))
 	secretYAML = replaceMultilineYAMLTag(secretYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	// Log before actual secrets are inserted into YAML.
+	Log().WithField("yaml", secretYAML).Trace("(Redacted) Secret YAML.")
 
 	if data != nil {
 		secretYAML += "data:\n"
@@ -1342,58 +1542,86 @@ metadata:
 `
 
 func GetCRDsYAML() string {
+	Log().Trace(">>>> GetCRDsYAML")
+	defer func() { Log().Trace("<<<< GetCRDsYAML") }()
 	return customResourceDefinitionYAMLv1
 }
 
 func GetVersionCRDYAML() string {
+	Log().Trace(">>>> GetVersionCRDYAML")
+	defer func() { Log().Trace("<<<< GetVersionCRDYAML") }()
 	return tridentVersionCRDYAMLv1
 }
 
 func GetBackendCRDYAML() string {
+	Log().Trace(">>>> GetBackendCRDYAML")
+	defer func() { Log().Trace("<<<< GetBackendCRDYAML") }()
 	return tridentBackendCRDYAMLv1
 }
 
 func GetBackendConfigCRDYAML() string {
+	Log().Trace(">>>> GetBackendConfigCRDYAML")
+	defer func() { Log().Trace("<<<< GetBackendConfigCRDYAML") }()
 	return tridentBackendConfigCRDYAMLv1
 }
 
 func GetMirrorRelationshipCRDYAML() string {
+	Log().Trace(">>>> GetMirrorRelationshipCRDYAML")
+	defer func() { Log().Trace("<<<< GetMirrorRelationshipCRDYAML") }()
 	return tridentMirrorRelationshipCRDYAMLv1
 }
 
 func GetSnapshotInfoCRDYAML() string {
+	Log().Trace(">>>> GetSnapshotInfoCRDYAML")
+	defer func() { Log().Trace("<<<< GetSnapshotInfoCRDYAML") }()
 	return tridentSnapshotInfoCRDYAMLv1
 }
 
 func GetStorageClassCRDYAML() string {
+	Log().Trace(">>>> GetStorageClassCRDYAML")
+	defer func() { Log().Trace("<<<< GetStorageClassCRDYAML") }()
 	return tridentStorageClassCRDYAMLv1
 }
 
 func GetVolumeCRDYAML() string {
+	Log().Trace(">>>> GetVolumeCRDYAML")
+	defer func() { Log().Trace("<<<< GetVolumeCRDYAML") }()
 	return tridentVolumeCRDYAMLv1
 }
 
 func GetVolumePublicationCRDYAML() string {
+	Log().Trace(">>>> GetVolumePublicationCRDYAML")
+	defer func() { Log().Trace("<<<< GetVolumePublicationCRDYAML") }()
 	return tridentVolumePublicationCRDYAMLv1
 }
 
 func GetNodeCRDYAML() string {
+	Log().Trace(">>>> GetNodeCRDYAML")
+	defer func() { Log().Trace("<<<< GetNodeCRDYAML") }()
 	return tridentNodeCRDYAMLv1
 }
 
 func GetTransactionCRDYAML() string {
+	Log().Trace(">>>> GetTransactionCRDYAML")
+	defer func() { Log().Trace("<<<< GetTransactionCRDYAML") }()
 	return tridentTransactionCRDYAMLv1
 }
 
 func GetSnapshotCRDYAML() string {
+	Log().Trace(">>>> GetSnapshotCRDYAML")
+	defer func() { Log().Trace("<<<< GetSnapshotCRDYAML") }()
 	return tridentSnapshotCRDYAMLv1
 }
 
 func GetVolumeReferenceCRDYAML() string {
+	Log().Trace(">>>> GetVolumeReferenceCRDYAML")
+	defer func() { Log().Trace("<<<< GetVolumeReferenceCRDYAML") }()
 	return tridentVolumeReferenceCRDYAMLv1
 }
 
 func GetOrchestratorCRDYAML() string {
+	Log().Trace(">>>> GetOrchestratorCRDYAML")
+	defer func() { Log().Trace("<<<< GetOrchestratorCRDYAML") }()
 	return tridentOrchestratorCRDYAMLv1
 }
 
@@ -1840,10 +2068,6 @@ spec:
             accessMode:
               type: integer
               format: int32
-            notSafeToAttach:
-              type: boolean
-            unpublished:
-              type: boolean
           required:
               - volumeID
               - nodeID
@@ -2042,9 +2266,18 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentVolumeReferenceCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
+	Log().WithFields(LogFields{
+		"Name":                 name,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetCSIDriverYAML")
+	defer func() { Log().Trace("<<<< GetCSIDriverYAML") }()
+
 	csiDriver := strings.ReplaceAll(CSIDriverYAMLv1, "{NAME}", name)
 	csiDriver = replaceMultilineYAMLTag(csiDriver, "LABELS", constructLabels(labels))
 	csiDriver = replaceMultilineYAMLTag(csiDriver, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", csiDriver).Trace("CSI Driver YAML")
 	return csiDriver
 }
 
@@ -2060,9 +2293,18 @@ spec:
 `
 
 func GetPrivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
+	Log().WithFields(LogFields{
+		"Name":                 pspName,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetPrivilegedPodSecurityPolicyYAML")
+	defer func() { Log().Trace("<<<< GetPrivilegedPodSecurityPolicyYAML") }()
+
 	pspYAML := strings.ReplaceAll(PrivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", pspYAML).Trace("Privileged Pod Security Policy YAML")
 	return pspYAML
 }
 
@@ -2094,9 +2336,18 @@ spec:
 `
 
 func GetUnprivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
+	Log().WithFields(LogFields{
+		"Name":                 pspName,
+		"Labels":               labels,
+		"ControllingCRDetails": controllingCRDetails,
+	}).Trace(">>>> GetUnprivilegedPodSecurityPolicyYAML")
+	defer func() { Log().Trace("<<<< GetUnprivilegedPodSecurityPolicyYAML") }()
+
 	pspYAML := strings.ReplaceAll(UnprivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+
+	Log().WithField("yaml", pspYAML).Trace("Unprivileged Pod Security Policy YAML")
 	return pspYAML
 }
 
@@ -2157,10 +2408,9 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 
 	if nodeLabels != nil {
 		for key, value := range nodeLabels {
-			nodeSelector += fmt.Sprintf("%s: '%s'\n", key, value)
+			nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - %s\n", key, value)
 		}
 	}
-
 	return nodeSelector
 }
 

@@ -20,13 +20,14 @@ import (
 type StoragePortResponse struct {
 
 	// links
-	Links *StoragePortResponseLinks `json:"_links,omitempty"`
+	Links *StoragePortResponseInlineLinks `json:"_links,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*StoragePort `json:"records,omitempty"`
+	// storage port response inline records
+	StoragePortResponseInlineRecords []*StoragePort `json:"records,omitempty"`
 }
 
 // Validate validates this storage port response
@@ -37,7 +38,7 @@ func (m *StoragePortResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateStoragePortResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,18 +65,18 @@ func (m *StoragePortResponse) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *StoragePortResponse) validateStoragePortResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.StoragePortResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.StoragePortResponseInlineRecords); i++ {
+		if swag.IsZero(m.StoragePortResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.StoragePortResponseInlineRecords[i] != nil {
+			if err := m.StoragePortResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -96,7 +97,7 @@ func (m *StoragePortResponse) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateStoragePortResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -120,12 +121,12 @@ func (m *StoragePortResponse) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StoragePortResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortResponse) contextValidateStoragePortResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.StoragePortResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.StoragePortResponseInlineRecords[i] != nil {
+			if err := m.StoragePortResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -156,10 +157,10 @@ func (m *StoragePortResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// StoragePortResponseLinks storage port response links
+// StoragePortResponseInlineLinks storage port response inline links
 //
-// swagger:model StoragePortResponseLinks
-type StoragePortResponseLinks struct {
+// swagger:model storage_port_response_inline__links
+type StoragePortResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -168,8 +169,8 @@ type StoragePortResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this storage port response links
-func (m *StoragePortResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this storage port response inline links
+func (m *StoragePortResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -186,7 +187,7 @@ func (m *StoragePortResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *StoragePortResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -203,7 +204,7 @@ func (m *StoragePortResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *StoragePortResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *StoragePortResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -220,8 +221,8 @@ func (m *StoragePortResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this storage port response links based on the context it is used
-func (m *StoragePortResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage port response inline links based on the context it is used
+func (m *StoragePortResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -238,7 +239,7 @@ func (m *StoragePortResponseLinks) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *StoragePortResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -252,7 +253,7 @@ func (m *StoragePortResponseLinks) contextValidateNext(ctx context.Context, form
 	return nil
 }
 
-func (m *StoragePortResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *StoragePortResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -267,7 +268,7 @@ func (m *StoragePortResponseLinks) contextValidateSelf(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *StoragePortResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *StoragePortResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -275,8 +276,8 @@ func (m *StoragePortResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StoragePortResponseLinks) UnmarshalBinary(b []byte) error {
-	var res StoragePortResponseLinks
+func (m *StoragePortResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res StoragePortResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

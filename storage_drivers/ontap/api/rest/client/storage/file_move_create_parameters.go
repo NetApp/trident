@@ -68,13 +68,19 @@ type FileMoveCreateParams struct {
 
 	   If true, the FlexGroup volume file move operation selects the destination constituent automatically.
 	*/
-	AutomaticQueryParameter *bool
+	Automatic *bool
+
+	/* Disruptive.
+
+	   If true, the FlexGroup volume file move operation is disruptive to the clients. The file handle of the file being moved changes. If false, the file handle remains the same. The non-disruptive file move operation is only available on FlexGroup volumes with granular data property enabled.
+	*/
+	Disruptive *bool
 
 	/* Force.
 
 	   If true, the FlexGroup volume file move operation breaks the existing lock state on the file being moved. Breaking the lock state may cause a disruption for some client applications.
 	*/
-	ForceQueryParameter *bool
+	Force *bool
 
 	/* Info.
 
@@ -86,7 +92,7 @@ type FileMoveCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,17 +112,20 @@ func (o *FileMoveCreateParams) WithDefaults() *FileMoveCreateParams {
 // All values with no default are reset to their zero value.
 func (o *FileMoveCreateParams) SetDefaults() {
 	var (
-		automaticQueryParameterDefault = bool(false)
+		automaticDefault = bool(false)
 
-		forceQueryParameterDefault = bool(false)
+		disruptiveDefault = bool(false)
 
-		returnRecordsQueryParameterDefault = bool(false)
+		forceDefault = bool(false)
+
+		returnRecordsDefault = bool(false)
 	)
 
 	val := FileMoveCreateParams{
-		AutomaticQueryParameter:     &automaticQueryParameterDefault,
-		ForceQueryParameter:         &forceQueryParameterDefault,
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		Automatic:     &automaticDefault,
+		Disruptive:    &disruptiveDefault,
+		Force:         &forceDefault,
+		ReturnRecords: &returnRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -158,26 +167,37 @@ func (o *FileMoveCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAutomaticQueryParameter adds the automatic to the file move create params
-func (o *FileMoveCreateParams) WithAutomaticQueryParameter(automatic *bool) *FileMoveCreateParams {
-	o.SetAutomaticQueryParameter(automatic)
+// WithAutomatic adds the automatic to the file move create params
+func (o *FileMoveCreateParams) WithAutomatic(automatic *bool) *FileMoveCreateParams {
+	o.SetAutomatic(automatic)
 	return o
 }
 
-// SetAutomaticQueryParameter adds the automatic to the file move create params
-func (o *FileMoveCreateParams) SetAutomaticQueryParameter(automatic *bool) {
-	o.AutomaticQueryParameter = automatic
+// SetAutomatic adds the automatic to the file move create params
+func (o *FileMoveCreateParams) SetAutomatic(automatic *bool) {
+	o.Automatic = automatic
 }
 
-// WithForceQueryParameter adds the force to the file move create params
-func (o *FileMoveCreateParams) WithForceQueryParameter(force *bool) *FileMoveCreateParams {
-	o.SetForceQueryParameter(force)
+// WithDisruptive adds the disruptive to the file move create params
+func (o *FileMoveCreateParams) WithDisruptive(disruptive *bool) *FileMoveCreateParams {
+	o.SetDisruptive(disruptive)
 	return o
 }
 
-// SetForceQueryParameter adds the force to the file move create params
-func (o *FileMoveCreateParams) SetForceQueryParameter(force *bool) {
-	o.ForceQueryParameter = force
+// SetDisruptive adds the disruptive to the file move create params
+func (o *FileMoveCreateParams) SetDisruptive(disruptive *bool) {
+	o.Disruptive = disruptive
+}
+
+// WithForce adds the force to the file move create params
+func (o *FileMoveCreateParams) WithForce(force *bool) *FileMoveCreateParams {
+	o.SetForce(force)
+	return o
+}
+
+// SetForce adds the force to the file move create params
+func (o *FileMoveCreateParams) SetForce(force *bool) {
+	o.Force = force
 }
 
 // WithInfo adds the info to the file move create params
@@ -191,15 +211,15 @@ func (o *FileMoveCreateParams) SetInfo(info *models.FileMove) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the file move create params
-func (o *FileMoveCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileMoveCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the file move create params
+func (o *FileMoveCreateParams) WithReturnRecords(returnRecords *bool) *FileMoveCreateParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the file move create params
-func (o *FileMoveCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the file move create params
+func (o *FileMoveCreateParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -210,13 +230,13 @@ func (o *FileMoveCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.AutomaticQueryParameter != nil {
+	if o.Automatic != nil {
 
 		// query param automatic
 		var qrAutomatic bool
 
-		if o.AutomaticQueryParameter != nil {
-			qrAutomatic = *o.AutomaticQueryParameter
+		if o.Automatic != nil {
+			qrAutomatic = *o.Automatic
 		}
 		qAutomatic := swag.FormatBool(qrAutomatic)
 		if qAutomatic != "" {
@@ -227,13 +247,30 @@ func (o *FileMoveCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ForceQueryParameter != nil {
+	if o.Disruptive != nil {
+
+		// query param disruptive
+		var qrDisruptive bool
+
+		if o.Disruptive != nil {
+			qrDisruptive = *o.Disruptive
+		}
+		qDisruptive := swag.FormatBool(qrDisruptive)
+		if qDisruptive != "" {
+
+			if err := r.SetQueryParam("disruptive", qDisruptive); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Force != nil {
 
 		// query param force
 		var qrForce bool
 
-		if o.ForceQueryParameter != nil {
-			qrForce = *o.ForceQueryParameter
+		if o.Force != nil {
+			qrForce = *o.Force
 		}
 		qForce := swag.FormatBool(qrForce)
 		if qForce != "" {
@@ -249,13 +286,13 @@ func (o *FileMoveCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

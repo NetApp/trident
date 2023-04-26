@@ -66,187 +66,187 @@ type StoragePoolCollectionGetParams struct {
 
 	   Filter by capacity.disk_count
 	*/
-	CapacityDiskCountQueryParameter *int64
+	CapacityDiskCount *int64
 
 	/* CapacityDisksDiskName.
 
 	   Filter by capacity.disks.disk.name
 	*/
-	CapacityDisksDiskNameQueryParameter *string
+	CapacityDisksDiskName *string
 
 	/* CapacityDisksTotalSize.
 
 	   Filter by capacity.disks.total_size
 	*/
-	CapacityDisksTotalSizeQueryParameter *int64
+	CapacityDisksTotalSize *int64
 
 	/* CapacityDisksUsableSize.
 
 	   Filter by capacity.disks.usable_size
 	*/
-	CapacityDisksUsableSizeQueryParameter *int64
+	CapacityDisksUsableSize *int64
 
 	/* CapacityRemaining.
 
 	   Filter by capacity.remaining
 	*/
-	CapacityRemainingQueryParameter *int64
+	CapacityRemaining *int64
 
 	/* CapacitySpareAllocationUnitsAvailableSize.
 
 	   Filter by capacity.spare_allocation_units.available_size
 	*/
-	CapacitySpareAllocationUnitsAvailableSizeQueryParameter *int64
+	CapacitySpareAllocationUnitsAvailableSize *int64
 
 	/* CapacitySpareAllocationUnitsCount.
 
 	   Filter by capacity.spare_allocation_units.count
 	*/
-	CapacitySpareAllocationUnitsCountQueryParameter *int64
+	CapacitySpareAllocationUnitsCount *int64
 
 	/* CapacitySpareAllocationUnitsNodeName.
 
 	   Filter by capacity.spare_allocation_units.node.name
 	*/
-	CapacitySpareAllocationUnitsNodeNameQueryParameter *string
+	CapacitySpareAllocationUnitsNodeName *string
 
 	/* CapacitySpareAllocationUnitsNodeUUID.
 
 	   Filter by capacity.spare_allocation_units.node.uuid
 	*/
-	CapacitySpareAllocationUnitsNodeUUIDQueryParameter *string
+	CapacitySpareAllocationUnitsNodeUUID *string
 
 	/* CapacitySpareAllocationUnitsSize.
 
 	   Filter by capacity.spare_allocation_units.size
 	*/
-	CapacitySpareAllocationUnitsSizeQueryParameter *int64
+	CapacitySpareAllocationUnitsSize *int64
 
 	/* CapacitySpareAllocationUnitsSyncmirrorPool.
 
 	   Filter by capacity.spare_allocation_units.syncmirror_pool
 	*/
-	CapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter *string
+	CapacitySpareAllocationUnitsSyncmirrorPool *string
 
 	/* CapacityTotal.
 
 	   Filter by capacity.total
 	*/
-	CapacityTotalQueryParameter *int64
+	CapacityTotal *int64
 
 	/* CapacityUsedAllocationUnitsAggregateName.
 
 	   Filter by capacity.used_allocation_units.aggregate.name
 	*/
-	CapacityUsedAllocationUnitsAggregateNameQueryParameter *string
+	CapacityUsedAllocationUnitsAggregateName *string
 
 	/* CapacityUsedAllocationUnitsAggregateUUID.
 
 	   Filter by capacity.used_allocation_units.aggregate.uuid
 	*/
-	CapacityUsedAllocationUnitsAggregateUUIDQueryParameter *string
+	CapacityUsedAllocationUnitsAggregateUUID *string
 
 	/* CapacityUsedAllocationUnitsCount.
 
 	   Filter by capacity.used_allocation_units.count
 	*/
-	CapacityUsedAllocationUnitsCountQueryParameter *int64
+	CapacityUsedAllocationUnitsCount *int64
 
 	/* CapacityUsedAllocationUnitsCurrentUsage.
 
 	   Filter by capacity.used_allocation_units.current_usage
 	*/
-	CapacityUsedAllocationUnitsCurrentUsageQueryParameter *int64
+	CapacityUsedAllocationUnitsCurrentUsage *int64
 
 	/* CapacityUsedAllocationUnitsNodeName.
 
 	   Filter by capacity.used_allocation_units.node.name
 	*/
-	CapacityUsedAllocationUnitsNodeNameQueryParameter *string
+	CapacityUsedAllocationUnitsNodeName *string
 
 	/* CapacityUsedAllocationUnitsNodeUUID.
 
 	   Filter by capacity.used_allocation_units.node.uuid
 	*/
-	CapacityUsedAllocationUnitsNodeUUIDQueryParameter *string
+	CapacityUsedAllocationUnitsNodeUUID *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* HealthIsHealthy.
 
 	   Filter by health.is_healthy
 	*/
-	HealthIsHealthyQueryParameter *bool
+	HealthIsHealthy *bool
 
 	/* HealthState.
 
 	   Filter by health.state
 	*/
-	HealthStateQueryParameter *string
+	HealthState *string
 
 	/* HealthUnhealthyReasonArgumentsCode.
 
 	   Filter by health.unhealthy_reason.arguments.code
 	*/
-	HealthUnhealthyReasonArgumentsCodeQueryParameter *string
+	HealthUnhealthyReasonArgumentsCode *string
 
 	/* HealthUnhealthyReasonArgumentsMessage.
 
 	   Filter by health.unhealthy_reason.arguments.message
 	*/
-	HealthUnhealthyReasonArgumentsMessageQueryParameter *string
+	HealthUnhealthyReasonArgumentsMessage *string
 
 	/* HealthUnhealthyReasonCode.
 
 	   Filter by health.unhealthy_reason.code
 	*/
-	HealthUnhealthyReasonCodeQueryParameter *string
+	HealthUnhealthyReasonCode *string
 
 	/* HealthUnhealthyReasonMessage.
 
 	   Filter by health.unhealthy_reason.message
 	*/
-	HealthUnhealthyReasonMessageQueryParameter *string
+	HealthUnhealthyReasonMessage *string
 
 	/* HealthUnhealthyReasonTarget.
 
 	   Filter by health.unhealthy_reason.target
 	*/
-	HealthUnhealthyReasonTargetQueryParameter *string
+	HealthUnhealthyReasonTarget *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Name.
 
 	   Filter by name
 	*/
-	NameQueryParameter *string
+	Name *string
 
 	/* NodesName.
 
 	   Filter by nodes.name
 	*/
-	NodesNameQueryParameter *string
+	NodesName *string
 
 	/* NodesUUID.
 
 	   Filter by nodes.uuid
 	*/
-	NodesUUIDQueryParameter *string
+	NodesUUID *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* ReturnRecords.
 
@@ -254,7 +254,7 @@ type StoragePoolCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -262,19 +262,19 @@ type StoragePoolCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* StorageType.
 
 	   Filter by storage_type
 	*/
-	StorageTypeQueryParameter *string
+	StorageType *string
 
 	/* UUID.
 
 	   Filter by uuid
 	*/
-	UUIDQueryParameter *string
+	UUID *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -294,14 +294,14 @@ func (o *StoragePoolCollectionGetParams) WithDefaults() *StoragePoolCollectionGe
 // All values with no default are reset to their zero value.
 func (o *StoragePoolCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := StoragePoolCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -343,389 +343,389 @@ func (o *StoragePoolCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCapacityDiskCountQueryParameter adds the capacityDiskCount to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityDiskCountQueryParameter(capacityDiskCount *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityDiskCountQueryParameter(capacityDiskCount)
+// WithCapacityDiskCount adds the capacityDiskCount to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityDiskCount(capacityDiskCount *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityDiskCount(capacityDiskCount)
 	return o
 }
 
-// SetCapacityDiskCountQueryParameter adds the capacityDiskCount to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityDiskCountQueryParameter(capacityDiskCount *int64) {
-	o.CapacityDiskCountQueryParameter = capacityDiskCount
+// SetCapacityDiskCount adds the capacityDiskCount to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityDiskCount(capacityDiskCount *int64) {
+	o.CapacityDiskCount = capacityDiskCount
 }
 
-// WithCapacityDisksDiskNameQueryParameter adds the capacityDisksDiskName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityDisksDiskNameQueryParameter(capacityDisksDiskName *string) *StoragePoolCollectionGetParams {
-	o.SetCapacityDisksDiskNameQueryParameter(capacityDisksDiskName)
+// WithCapacityDisksDiskName adds the capacityDisksDiskName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityDisksDiskName(capacityDisksDiskName *string) *StoragePoolCollectionGetParams {
+	o.SetCapacityDisksDiskName(capacityDisksDiskName)
 	return o
 }
 
-// SetCapacityDisksDiskNameQueryParameter adds the capacityDisksDiskName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityDisksDiskNameQueryParameter(capacityDisksDiskName *string) {
-	o.CapacityDisksDiskNameQueryParameter = capacityDisksDiskName
+// SetCapacityDisksDiskName adds the capacityDisksDiskName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityDisksDiskName(capacityDisksDiskName *string) {
+	o.CapacityDisksDiskName = capacityDisksDiskName
 }
 
-// WithCapacityDisksTotalSizeQueryParameter adds the capacityDisksTotalSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityDisksTotalSizeQueryParameter(capacityDisksTotalSize *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityDisksTotalSizeQueryParameter(capacityDisksTotalSize)
+// WithCapacityDisksTotalSize adds the capacityDisksTotalSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityDisksTotalSize(capacityDisksTotalSize *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityDisksTotalSize(capacityDisksTotalSize)
 	return o
 }
 
-// SetCapacityDisksTotalSizeQueryParameter adds the capacityDisksTotalSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityDisksTotalSizeQueryParameter(capacityDisksTotalSize *int64) {
-	o.CapacityDisksTotalSizeQueryParameter = capacityDisksTotalSize
+// SetCapacityDisksTotalSize adds the capacityDisksTotalSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityDisksTotalSize(capacityDisksTotalSize *int64) {
+	o.CapacityDisksTotalSize = capacityDisksTotalSize
 }
 
-// WithCapacityDisksUsableSizeQueryParameter adds the capacityDisksUsableSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityDisksUsableSizeQueryParameter(capacityDisksUsableSize *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityDisksUsableSizeQueryParameter(capacityDisksUsableSize)
+// WithCapacityDisksUsableSize adds the capacityDisksUsableSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityDisksUsableSize(capacityDisksUsableSize *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityDisksUsableSize(capacityDisksUsableSize)
 	return o
 }
 
-// SetCapacityDisksUsableSizeQueryParameter adds the capacityDisksUsableSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityDisksUsableSizeQueryParameter(capacityDisksUsableSize *int64) {
-	o.CapacityDisksUsableSizeQueryParameter = capacityDisksUsableSize
+// SetCapacityDisksUsableSize adds the capacityDisksUsableSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityDisksUsableSize(capacityDisksUsableSize *int64) {
+	o.CapacityDisksUsableSize = capacityDisksUsableSize
 }
 
-// WithCapacityRemainingQueryParameter adds the capacityRemaining to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityRemainingQueryParameter(capacityRemaining *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityRemainingQueryParameter(capacityRemaining)
+// WithCapacityRemaining adds the capacityRemaining to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityRemaining(capacityRemaining *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityRemaining(capacityRemaining)
 	return o
 }
 
-// SetCapacityRemainingQueryParameter adds the capacityRemaining to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityRemainingQueryParameter(capacityRemaining *int64) {
-	o.CapacityRemainingQueryParameter = capacityRemaining
+// SetCapacityRemaining adds the capacityRemaining to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityRemaining(capacityRemaining *int64) {
+	o.CapacityRemaining = capacityRemaining
 }
 
-// WithCapacitySpareAllocationUnitsAvailableSizeQueryParameter adds the capacitySpareAllocationUnitsAvailableSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsAvailableSizeQueryParameter(capacitySpareAllocationUnitsAvailableSize *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacitySpareAllocationUnitsAvailableSizeQueryParameter(capacitySpareAllocationUnitsAvailableSize)
+// WithCapacitySpareAllocationUnitsAvailableSize adds the capacitySpareAllocationUnitsAvailableSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsAvailableSize(capacitySpareAllocationUnitsAvailableSize *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacitySpareAllocationUnitsAvailableSize(capacitySpareAllocationUnitsAvailableSize)
 	return o
 }
 
-// SetCapacitySpareAllocationUnitsAvailableSizeQueryParameter adds the capacitySpareAllocationUnitsAvailableSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsAvailableSizeQueryParameter(capacitySpareAllocationUnitsAvailableSize *int64) {
-	o.CapacitySpareAllocationUnitsAvailableSizeQueryParameter = capacitySpareAllocationUnitsAvailableSize
+// SetCapacitySpareAllocationUnitsAvailableSize adds the capacitySpareAllocationUnitsAvailableSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsAvailableSize(capacitySpareAllocationUnitsAvailableSize *int64) {
+	o.CapacitySpareAllocationUnitsAvailableSize = capacitySpareAllocationUnitsAvailableSize
 }
 
-// WithCapacitySpareAllocationUnitsCountQueryParameter adds the capacitySpareAllocationUnitsCount to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsCountQueryParameter(capacitySpareAllocationUnitsCount *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacitySpareAllocationUnitsCountQueryParameter(capacitySpareAllocationUnitsCount)
+// WithCapacitySpareAllocationUnitsCount adds the capacitySpareAllocationUnitsCount to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsCount(capacitySpareAllocationUnitsCount *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacitySpareAllocationUnitsCount(capacitySpareAllocationUnitsCount)
 	return o
 }
 
-// SetCapacitySpareAllocationUnitsCountQueryParameter adds the capacitySpareAllocationUnitsCount to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsCountQueryParameter(capacitySpareAllocationUnitsCount *int64) {
-	o.CapacitySpareAllocationUnitsCountQueryParameter = capacitySpareAllocationUnitsCount
+// SetCapacitySpareAllocationUnitsCount adds the capacitySpareAllocationUnitsCount to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsCount(capacitySpareAllocationUnitsCount *int64) {
+	o.CapacitySpareAllocationUnitsCount = capacitySpareAllocationUnitsCount
 }
 
-// WithCapacitySpareAllocationUnitsNodeNameQueryParameter adds the capacitySpareAllocationUnitsNodeName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsNodeNameQueryParameter(capacitySpareAllocationUnitsNodeName *string) *StoragePoolCollectionGetParams {
-	o.SetCapacitySpareAllocationUnitsNodeNameQueryParameter(capacitySpareAllocationUnitsNodeName)
+// WithCapacitySpareAllocationUnitsNodeName adds the capacitySpareAllocationUnitsNodeName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsNodeName(capacitySpareAllocationUnitsNodeName *string) *StoragePoolCollectionGetParams {
+	o.SetCapacitySpareAllocationUnitsNodeName(capacitySpareAllocationUnitsNodeName)
 	return o
 }
 
-// SetCapacitySpareAllocationUnitsNodeNameQueryParameter adds the capacitySpareAllocationUnitsNodeName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsNodeNameQueryParameter(capacitySpareAllocationUnitsNodeName *string) {
-	o.CapacitySpareAllocationUnitsNodeNameQueryParameter = capacitySpareAllocationUnitsNodeName
+// SetCapacitySpareAllocationUnitsNodeName adds the capacitySpareAllocationUnitsNodeName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsNodeName(capacitySpareAllocationUnitsNodeName *string) {
+	o.CapacitySpareAllocationUnitsNodeName = capacitySpareAllocationUnitsNodeName
 }
 
-// WithCapacitySpareAllocationUnitsNodeUUIDQueryParameter adds the capacitySpareAllocationUnitsNodeUUID to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsNodeUUIDQueryParameter(capacitySpareAllocationUnitsNodeUUID *string) *StoragePoolCollectionGetParams {
-	o.SetCapacitySpareAllocationUnitsNodeUUIDQueryParameter(capacitySpareAllocationUnitsNodeUUID)
+// WithCapacitySpareAllocationUnitsNodeUUID adds the capacitySpareAllocationUnitsNodeUUID to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsNodeUUID(capacitySpareAllocationUnitsNodeUUID *string) *StoragePoolCollectionGetParams {
+	o.SetCapacitySpareAllocationUnitsNodeUUID(capacitySpareAllocationUnitsNodeUUID)
 	return o
 }
 
-// SetCapacitySpareAllocationUnitsNodeUUIDQueryParameter adds the capacitySpareAllocationUnitsNodeUuid to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsNodeUUIDQueryParameter(capacitySpareAllocationUnitsNodeUUID *string) {
-	o.CapacitySpareAllocationUnitsNodeUUIDQueryParameter = capacitySpareAllocationUnitsNodeUUID
+// SetCapacitySpareAllocationUnitsNodeUUID adds the capacitySpareAllocationUnitsNodeUuid to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsNodeUUID(capacitySpareAllocationUnitsNodeUUID *string) {
+	o.CapacitySpareAllocationUnitsNodeUUID = capacitySpareAllocationUnitsNodeUUID
 }
 
-// WithCapacitySpareAllocationUnitsSizeQueryParameter adds the capacitySpareAllocationUnitsSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsSizeQueryParameter(capacitySpareAllocationUnitsSize *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacitySpareAllocationUnitsSizeQueryParameter(capacitySpareAllocationUnitsSize)
+// WithCapacitySpareAllocationUnitsSize adds the capacitySpareAllocationUnitsSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsSize(capacitySpareAllocationUnitsSize *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacitySpareAllocationUnitsSize(capacitySpareAllocationUnitsSize)
 	return o
 }
 
-// SetCapacitySpareAllocationUnitsSizeQueryParameter adds the capacitySpareAllocationUnitsSize to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsSizeQueryParameter(capacitySpareAllocationUnitsSize *int64) {
-	o.CapacitySpareAllocationUnitsSizeQueryParameter = capacitySpareAllocationUnitsSize
+// SetCapacitySpareAllocationUnitsSize adds the capacitySpareAllocationUnitsSize to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsSize(capacitySpareAllocationUnitsSize *int64) {
+	o.CapacitySpareAllocationUnitsSize = capacitySpareAllocationUnitsSize
 }
 
-// WithCapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter adds the capacitySpareAllocationUnitsSyncmirrorPool to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter(capacitySpareAllocationUnitsSyncmirrorPool *string) *StoragePoolCollectionGetParams {
-	o.SetCapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter(capacitySpareAllocationUnitsSyncmirrorPool)
+// WithCapacitySpareAllocationUnitsSyncmirrorPool adds the capacitySpareAllocationUnitsSyncmirrorPool to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacitySpareAllocationUnitsSyncmirrorPool(capacitySpareAllocationUnitsSyncmirrorPool *string) *StoragePoolCollectionGetParams {
+	o.SetCapacitySpareAllocationUnitsSyncmirrorPool(capacitySpareAllocationUnitsSyncmirrorPool)
 	return o
 }
 
-// SetCapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter adds the capacitySpareAllocationUnitsSyncmirrorPool to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter(capacitySpareAllocationUnitsSyncmirrorPool *string) {
-	o.CapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter = capacitySpareAllocationUnitsSyncmirrorPool
+// SetCapacitySpareAllocationUnitsSyncmirrorPool adds the capacitySpareAllocationUnitsSyncmirrorPool to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacitySpareAllocationUnitsSyncmirrorPool(capacitySpareAllocationUnitsSyncmirrorPool *string) {
+	o.CapacitySpareAllocationUnitsSyncmirrorPool = capacitySpareAllocationUnitsSyncmirrorPool
 }
 
-// WithCapacityTotalQueryParameter adds the capacityTotal to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityTotalQueryParameter(capacityTotal *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityTotalQueryParameter(capacityTotal)
+// WithCapacityTotal adds the capacityTotal to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityTotal(capacityTotal *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityTotal(capacityTotal)
 	return o
 }
 
-// SetCapacityTotalQueryParameter adds the capacityTotal to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityTotalQueryParameter(capacityTotal *int64) {
-	o.CapacityTotalQueryParameter = capacityTotal
+// SetCapacityTotal adds the capacityTotal to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityTotal(capacityTotal *int64) {
+	o.CapacityTotal = capacityTotal
 }
 
-// WithCapacityUsedAllocationUnitsAggregateNameQueryParameter adds the capacityUsedAllocationUnitsAggregateName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsAggregateNameQueryParameter(capacityUsedAllocationUnitsAggregateName *string) *StoragePoolCollectionGetParams {
-	o.SetCapacityUsedAllocationUnitsAggregateNameQueryParameter(capacityUsedAllocationUnitsAggregateName)
+// WithCapacityUsedAllocationUnitsAggregateName adds the capacityUsedAllocationUnitsAggregateName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsAggregateName(capacityUsedAllocationUnitsAggregateName *string) *StoragePoolCollectionGetParams {
+	o.SetCapacityUsedAllocationUnitsAggregateName(capacityUsedAllocationUnitsAggregateName)
 	return o
 }
 
-// SetCapacityUsedAllocationUnitsAggregateNameQueryParameter adds the capacityUsedAllocationUnitsAggregateName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsAggregateNameQueryParameter(capacityUsedAllocationUnitsAggregateName *string) {
-	o.CapacityUsedAllocationUnitsAggregateNameQueryParameter = capacityUsedAllocationUnitsAggregateName
+// SetCapacityUsedAllocationUnitsAggregateName adds the capacityUsedAllocationUnitsAggregateName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsAggregateName(capacityUsedAllocationUnitsAggregateName *string) {
+	o.CapacityUsedAllocationUnitsAggregateName = capacityUsedAllocationUnitsAggregateName
 }
 
-// WithCapacityUsedAllocationUnitsAggregateUUIDQueryParameter adds the capacityUsedAllocationUnitsAggregateUUID to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsAggregateUUIDQueryParameter(capacityUsedAllocationUnitsAggregateUUID *string) *StoragePoolCollectionGetParams {
-	o.SetCapacityUsedAllocationUnitsAggregateUUIDQueryParameter(capacityUsedAllocationUnitsAggregateUUID)
+// WithCapacityUsedAllocationUnitsAggregateUUID adds the capacityUsedAllocationUnitsAggregateUUID to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsAggregateUUID(capacityUsedAllocationUnitsAggregateUUID *string) *StoragePoolCollectionGetParams {
+	o.SetCapacityUsedAllocationUnitsAggregateUUID(capacityUsedAllocationUnitsAggregateUUID)
 	return o
 }
 
-// SetCapacityUsedAllocationUnitsAggregateUUIDQueryParameter adds the capacityUsedAllocationUnitsAggregateUuid to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsAggregateUUIDQueryParameter(capacityUsedAllocationUnitsAggregateUUID *string) {
-	o.CapacityUsedAllocationUnitsAggregateUUIDQueryParameter = capacityUsedAllocationUnitsAggregateUUID
+// SetCapacityUsedAllocationUnitsAggregateUUID adds the capacityUsedAllocationUnitsAggregateUuid to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsAggregateUUID(capacityUsedAllocationUnitsAggregateUUID *string) {
+	o.CapacityUsedAllocationUnitsAggregateUUID = capacityUsedAllocationUnitsAggregateUUID
 }
 
-// WithCapacityUsedAllocationUnitsCountQueryParameter adds the capacityUsedAllocationUnitsCount to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsCountQueryParameter(capacityUsedAllocationUnitsCount *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityUsedAllocationUnitsCountQueryParameter(capacityUsedAllocationUnitsCount)
+// WithCapacityUsedAllocationUnitsCount adds the capacityUsedAllocationUnitsCount to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsCount(capacityUsedAllocationUnitsCount *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityUsedAllocationUnitsCount(capacityUsedAllocationUnitsCount)
 	return o
 }
 
-// SetCapacityUsedAllocationUnitsCountQueryParameter adds the capacityUsedAllocationUnitsCount to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsCountQueryParameter(capacityUsedAllocationUnitsCount *int64) {
-	o.CapacityUsedAllocationUnitsCountQueryParameter = capacityUsedAllocationUnitsCount
+// SetCapacityUsedAllocationUnitsCount adds the capacityUsedAllocationUnitsCount to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsCount(capacityUsedAllocationUnitsCount *int64) {
+	o.CapacityUsedAllocationUnitsCount = capacityUsedAllocationUnitsCount
 }
 
-// WithCapacityUsedAllocationUnitsCurrentUsageQueryParameter adds the capacityUsedAllocationUnitsCurrentUsage to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsCurrentUsageQueryParameter(capacityUsedAllocationUnitsCurrentUsage *int64) *StoragePoolCollectionGetParams {
-	o.SetCapacityUsedAllocationUnitsCurrentUsageQueryParameter(capacityUsedAllocationUnitsCurrentUsage)
+// WithCapacityUsedAllocationUnitsCurrentUsage adds the capacityUsedAllocationUnitsCurrentUsage to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsCurrentUsage(capacityUsedAllocationUnitsCurrentUsage *int64) *StoragePoolCollectionGetParams {
+	o.SetCapacityUsedAllocationUnitsCurrentUsage(capacityUsedAllocationUnitsCurrentUsage)
 	return o
 }
 
-// SetCapacityUsedAllocationUnitsCurrentUsageQueryParameter adds the capacityUsedAllocationUnitsCurrentUsage to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsCurrentUsageQueryParameter(capacityUsedAllocationUnitsCurrentUsage *int64) {
-	o.CapacityUsedAllocationUnitsCurrentUsageQueryParameter = capacityUsedAllocationUnitsCurrentUsage
+// SetCapacityUsedAllocationUnitsCurrentUsage adds the capacityUsedAllocationUnitsCurrentUsage to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsCurrentUsage(capacityUsedAllocationUnitsCurrentUsage *int64) {
+	o.CapacityUsedAllocationUnitsCurrentUsage = capacityUsedAllocationUnitsCurrentUsage
 }
 
-// WithCapacityUsedAllocationUnitsNodeNameQueryParameter adds the capacityUsedAllocationUnitsNodeName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsNodeNameQueryParameter(capacityUsedAllocationUnitsNodeName *string) *StoragePoolCollectionGetParams {
-	o.SetCapacityUsedAllocationUnitsNodeNameQueryParameter(capacityUsedAllocationUnitsNodeName)
+// WithCapacityUsedAllocationUnitsNodeName adds the capacityUsedAllocationUnitsNodeName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsNodeName(capacityUsedAllocationUnitsNodeName *string) *StoragePoolCollectionGetParams {
+	o.SetCapacityUsedAllocationUnitsNodeName(capacityUsedAllocationUnitsNodeName)
 	return o
 }
 
-// SetCapacityUsedAllocationUnitsNodeNameQueryParameter adds the capacityUsedAllocationUnitsNodeName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsNodeNameQueryParameter(capacityUsedAllocationUnitsNodeName *string) {
-	o.CapacityUsedAllocationUnitsNodeNameQueryParameter = capacityUsedAllocationUnitsNodeName
+// SetCapacityUsedAllocationUnitsNodeName adds the capacityUsedAllocationUnitsNodeName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsNodeName(capacityUsedAllocationUnitsNodeName *string) {
+	o.CapacityUsedAllocationUnitsNodeName = capacityUsedAllocationUnitsNodeName
 }
 
-// WithCapacityUsedAllocationUnitsNodeUUIDQueryParameter adds the capacityUsedAllocationUnitsNodeUUID to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsNodeUUIDQueryParameter(capacityUsedAllocationUnitsNodeUUID *string) *StoragePoolCollectionGetParams {
-	o.SetCapacityUsedAllocationUnitsNodeUUIDQueryParameter(capacityUsedAllocationUnitsNodeUUID)
+// WithCapacityUsedAllocationUnitsNodeUUID adds the capacityUsedAllocationUnitsNodeUUID to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithCapacityUsedAllocationUnitsNodeUUID(capacityUsedAllocationUnitsNodeUUID *string) *StoragePoolCollectionGetParams {
+	o.SetCapacityUsedAllocationUnitsNodeUUID(capacityUsedAllocationUnitsNodeUUID)
 	return o
 }
 
-// SetCapacityUsedAllocationUnitsNodeUUIDQueryParameter adds the capacityUsedAllocationUnitsNodeUuid to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsNodeUUIDQueryParameter(capacityUsedAllocationUnitsNodeUUID *string) {
-	o.CapacityUsedAllocationUnitsNodeUUIDQueryParameter = capacityUsedAllocationUnitsNodeUUID
+// SetCapacityUsedAllocationUnitsNodeUUID adds the capacityUsedAllocationUnitsNodeUuid to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetCapacityUsedAllocationUnitsNodeUUID(capacityUsedAllocationUnitsNodeUUID *string) {
+	o.CapacityUsedAllocationUnitsNodeUUID = capacityUsedAllocationUnitsNodeUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithFieldsQueryParameter(fields []string) *StoragePoolCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithFields(fields []string) *StoragePoolCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithHealthIsHealthyQueryParameter adds the healthIsHealthy to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthIsHealthyQueryParameter(healthIsHealthy *bool) *StoragePoolCollectionGetParams {
-	o.SetHealthIsHealthyQueryParameter(healthIsHealthy)
+// WithHealthIsHealthy adds the healthIsHealthy to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthIsHealthy(healthIsHealthy *bool) *StoragePoolCollectionGetParams {
+	o.SetHealthIsHealthy(healthIsHealthy)
 	return o
 }
 
-// SetHealthIsHealthyQueryParameter adds the healthIsHealthy to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthIsHealthyQueryParameter(healthIsHealthy *bool) {
-	o.HealthIsHealthyQueryParameter = healthIsHealthy
+// SetHealthIsHealthy adds the healthIsHealthy to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthIsHealthy(healthIsHealthy *bool) {
+	o.HealthIsHealthy = healthIsHealthy
 }
 
-// WithHealthStateQueryParameter adds the healthState to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthStateQueryParameter(healthState *string) *StoragePoolCollectionGetParams {
-	o.SetHealthStateQueryParameter(healthState)
+// WithHealthState adds the healthState to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthState(healthState *string) *StoragePoolCollectionGetParams {
+	o.SetHealthState(healthState)
 	return o
 }
 
-// SetHealthStateQueryParameter adds the healthState to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthStateQueryParameter(healthState *string) {
-	o.HealthStateQueryParameter = healthState
+// SetHealthState adds the healthState to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthState(healthState *string) {
+	o.HealthState = healthState
 }
 
-// WithHealthUnhealthyReasonArgumentsCodeQueryParameter adds the healthUnhealthyReasonArgumentsCode to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonArgumentsCodeQueryParameter(healthUnhealthyReasonArgumentsCode *string) *StoragePoolCollectionGetParams {
-	o.SetHealthUnhealthyReasonArgumentsCodeQueryParameter(healthUnhealthyReasonArgumentsCode)
+// WithHealthUnhealthyReasonArgumentsCode adds the healthUnhealthyReasonArgumentsCode to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonArgumentsCode(healthUnhealthyReasonArgumentsCode *string) *StoragePoolCollectionGetParams {
+	o.SetHealthUnhealthyReasonArgumentsCode(healthUnhealthyReasonArgumentsCode)
 	return o
 }
 
-// SetHealthUnhealthyReasonArgumentsCodeQueryParameter adds the healthUnhealthyReasonArgumentsCode to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonArgumentsCodeQueryParameter(healthUnhealthyReasonArgumentsCode *string) {
-	o.HealthUnhealthyReasonArgumentsCodeQueryParameter = healthUnhealthyReasonArgumentsCode
+// SetHealthUnhealthyReasonArgumentsCode adds the healthUnhealthyReasonArgumentsCode to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonArgumentsCode(healthUnhealthyReasonArgumentsCode *string) {
+	o.HealthUnhealthyReasonArgumentsCode = healthUnhealthyReasonArgumentsCode
 }
 
-// WithHealthUnhealthyReasonArgumentsMessageQueryParameter adds the healthUnhealthyReasonArgumentsMessage to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonArgumentsMessageQueryParameter(healthUnhealthyReasonArgumentsMessage *string) *StoragePoolCollectionGetParams {
-	o.SetHealthUnhealthyReasonArgumentsMessageQueryParameter(healthUnhealthyReasonArgumentsMessage)
+// WithHealthUnhealthyReasonArgumentsMessage adds the healthUnhealthyReasonArgumentsMessage to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonArgumentsMessage(healthUnhealthyReasonArgumentsMessage *string) *StoragePoolCollectionGetParams {
+	o.SetHealthUnhealthyReasonArgumentsMessage(healthUnhealthyReasonArgumentsMessage)
 	return o
 }
 
-// SetHealthUnhealthyReasonArgumentsMessageQueryParameter adds the healthUnhealthyReasonArgumentsMessage to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonArgumentsMessageQueryParameter(healthUnhealthyReasonArgumentsMessage *string) {
-	o.HealthUnhealthyReasonArgumentsMessageQueryParameter = healthUnhealthyReasonArgumentsMessage
+// SetHealthUnhealthyReasonArgumentsMessage adds the healthUnhealthyReasonArgumentsMessage to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonArgumentsMessage(healthUnhealthyReasonArgumentsMessage *string) {
+	o.HealthUnhealthyReasonArgumentsMessage = healthUnhealthyReasonArgumentsMessage
 }
 
-// WithHealthUnhealthyReasonCodeQueryParameter adds the healthUnhealthyReasonCode to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonCodeQueryParameter(healthUnhealthyReasonCode *string) *StoragePoolCollectionGetParams {
-	o.SetHealthUnhealthyReasonCodeQueryParameter(healthUnhealthyReasonCode)
+// WithHealthUnhealthyReasonCode adds the healthUnhealthyReasonCode to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonCode(healthUnhealthyReasonCode *string) *StoragePoolCollectionGetParams {
+	o.SetHealthUnhealthyReasonCode(healthUnhealthyReasonCode)
 	return o
 }
 
-// SetHealthUnhealthyReasonCodeQueryParameter adds the healthUnhealthyReasonCode to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonCodeQueryParameter(healthUnhealthyReasonCode *string) {
-	o.HealthUnhealthyReasonCodeQueryParameter = healthUnhealthyReasonCode
+// SetHealthUnhealthyReasonCode adds the healthUnhealthyReasonCode to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonCode(healthUnhealthyReasonCode *string) {
+	o.HealthUnhealthyReasonCode = healthUnhealthyReasonCode
 }
 
-// WithHealthUnhealthyReasonMessageQueryParameter adds the healthUnhealthyReasonMessage to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonMessageQueryParameter(healthUnhealthyReasonMessage *string) *StoragePoolCollectionGetParams {
-	o.SetHealthUnhealthyReasonMessageQueryParameter(healthUnhealthyReasonMessage)
+// WithHealthUnhealthyReasonMessage adds the healthUnhealthyReasonMessage to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonMessage(healthUnhealthyReasonMessage *string) *StoragePoolCollectionGetParams {
+	o.SetHealthUnhealthyReasonMessage(healthUnhealthyReasonMessage)
 	return o
 }
 
-// SetHealthUnhealthyReasonMessageQueryParameter adds the healthUnhealthyReasonMessage to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonMessageQueryParameter(healthUnhealthyReasonMessage *string) {
-	o.HealthUnhealthyReasonMessageQueryParameter = healthUnhealthyReasonMessage
+// SetHealthUnhealthyReasonMessage adds the healthUnhealthyReasonMessage to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonMessage(healthUnhealthyReasonMessage *string) {
+	o.HealthUnhealthyReasonMessage = healthUnhealthyReasonMessage
 }
 
-// WithHealthUnhealthyReasonTargetQueryParameter adds the healthUnhealthyReasonTarget to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonTargetQueryParameter(healthUnhealthyReasonTarget *string) *StoragePoolCollectionGetParams {
-	o.SetHealthUnhealthyReasonTargetQueryParameter(healthUnhealthyReasonTarget)
+// WithHealthUnhealthyReasonTarget adds the healthUnhealthyReasonTarget to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithHealthUnhealthyReasonTarget(healthUnhealthyReasonTarget *string) *StoragePoolCollectionGetParams {
+	o.SetHealthUnhealthyReasonTarget(healthUnhealthyReasonTarget)
 	return o
 }
 
-// SetHealthUnhealthyReasonTargetQueryParameter adds the healthUnhealthyReasonTarget to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonTargetQueryParameter(healthUnhealthyReasonTarget *string) {
-	o.HealthUnhealthyReasonTargetQueryParameter = healthUnhealthyReasonTarget
+// SetHealthUnhealthyReasonTarget adds the healthUnhealthyReasonTarget to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetHealthUnhealthyReasonTarget(healthUnhealthyReasonTarget *string) {
+	o.HealthUnhealthyReasonTarget = healthUnhealthyReasonTarget
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *StoragePoolCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithMaxRecords(maxRecords *int64) *StoragePoolCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithNameQueryParameter adds the name to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithNameQueryParameter(name *string) *StoragePoolCollectionGetParams {
-	o.SetNameQueryParameter(name)
+// WithName adds the name to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithName(name *string) *StoragePoolCollectionGetParams {
+	o.SetName(name)
 	return o
 }
 
-// SetNameQueryParameter adds the name to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
+// SetName adds the name to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetName(name *string) {
+	o.Name = name
 }
 
-// WithNodesNameQueryParameter adds the nodesName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithNodesNameQueryParameter(nodesName *string) *StoragePoolCollectionGetParams {
-	o.SetNodesNameQueryParameter(nodesName)
+// WithNodesName adds the nodesName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithNodesName(nodesName *string) *StoragePoolCollectionGetParams {
+	o.SetNodesName(nodesName)
 	return o
 }
 
-// SetNodesNameQueryParameter adds the nodesName to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetNodesNameQueryParameter(nodesName *string) {
-	o.NodesNameQueryParameter = nodesName
+// SetNodesName adds the nodesName to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetNodesName(nodesName *string) {
+	o.NodesName = nodesName
 }
 
-// WithNodesUUIDQueryParameter adds the nodesUUID to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithNodesUUIDQueryParameter(nodesUUID *string) *StoragePoolCollectionGetParams {
-	o.SetNodesUUIDQueryParameter(nodesUUID)
+// WithNodesUUID adds the nodesUUID to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithNodesUUID(nodesUUID *string) *StoragePoolCollectionGetParams {
+	o.SetNodesUUID(nodesUUID)
 	return o
 }
 
-// SetNodesUUIDQueryParameter adds the nodesUuid to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetNodesUUIDQueryParameter(nodesUUID *string) {
-	o.NodesUUIDQueryParameter = nodesUUID
+// SetNodesUUID adds the nodesUuid to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetNodesUUID(nodesUUID *string) {
+	o.NodesUUID = nodesUUID
 }
 
-// WithOrderByQueryParameter adds the orderBy to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *StoragePoolCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithOrderBy(orderBy []string) *StoragePoolCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *StoragePoolCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithReturnRecords adds the returnRecords to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithReturnRecords(returnRecords *bool) *StoragePoolCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetReturnRecords adds the returnRecords to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *StoragePoolCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *StoragePoolCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStorageTypeQueryParameter adds the storageType to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithStorageTypeQueryParameter(storageType *string) *StoragePoolCollectionGetParams {
-	o.SetStorageTypeQueryParameter(storageType)
+// WithStorageType adds the storageType to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithStorageType(storageType *string) *StoragePoolCollectionGetParams {
+	o.SetStorageType(storageType)
 	return o
 }
 
-// SetStorageTypeQueryParameter adds the storageType to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetStorageTypeQueryParameter(storageType *string) {
-	o.StorageTypeQueryParameter = storageType
+// SetStorageType adds the storageType to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetStorageType(storageType *string) {
+	o.StorageType = storageType
 }
 
-// WithUUIDQueryParameter adds the uuid to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) WithUUIDQueryParameter(uuid *string) *StoragePoolCollectionGetParams {
-	o.SetUUIDQueryParameter(uuid)
+// WithUUID adds the uuid to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) WithUUID(uuid *string) *StoragePoolCollectionGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDQueryParameter adds the uuid to the storage pool collection get params
-func (o *StoragePoolCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
-	o.UUIDQueryParameter = uuid
+// SetUUID adds the uuid to the storage pool collection get params
+func (o *StoragePoolCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -736,13 +736,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.CapacityDiskCountQueryParameter != nil {
+	if o.CapacityDiskCount != nil {
 
 		// query param capacity.disk_count
 		var qrCapacityDiskCount int64
 
-		if o.CapacityDiskCountQueryParameter != nil {
-			qrCapacityDiskCount = *o.CapacityDiskCountQueryParameter
+		if o.CapacityDiskCount != nil {
+			qrCapacityDiskCount = *o.CapacityDiskCount
 		}
 		qCapacityDiskCount := swag.FormatInt64(qrCapacityDiskCount)
 		if qCapacityDiskCount != "" {
@@ -753,13 +753,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityDisksDiskNameQueryParameter != nil {
+	if o.CapacityDisksDiskName != nil {
 
 		// query param capacity.disks.disk.name
 		var qrCapacityDisksDiskName string
 
-		if o.CapacityDisksDiskNameQueryParameter != nil {
-			qrCapacityDisksDiskName = *o.CapacityDisksDiskNameQueryParameter
+		if o.CapacityDisksDiskName != nil {
+			qrCapacityDisksDiskName = *o.CapacityDisksDiskName
 		}
 		qCapacityDisksDiskName := qrCapacityDisksDiskName
 		if qCapacityDisksDiskName != "" {
@@ -770,13 +770,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityDisksTotalSizeQueryParameter != nil {
+	if o.CapacityDisksTotalSize != nil {
 
 		// query param capacity.disks.total_size
 		var qrCapacityDisksTotalSize int64
 
-		if o.CapacityDisksTotalSizeQueryParameter != nil {
-			qrCapacityDisksTotalSize = *o.CapacityDisksTotalSizeQueryParameter
+		if o.CapacityDisksTotalSize != nil {
+			qrCapacityDisksTotalSize = *o.CapacityDisksTotalSize
 		}
 		qCapacityDisksTotalSize := swag.FormatInt64(qrCapacityDisksTotalSize)
 		if qCapacityDisksTotalSize != "" {
@@ -787,13 +787,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityDisksUsableSizeQueryParameter != nil {
+	if o.CapacityDisksUsableSize != nil {
 
 		// query param capacity.disks.usable_size
 		var qrCapacityDisksUsableSize int64
 
-		if o.CapacityDisksUsableSizeQueryParameter != nil {
-			qrCapacityDisksUsableSize = *o.CapacityDisksUsableSizeQueryParameter
+		if o.CapacityDisksUsableSize != nil {
+			qrCapacityDisksUsableSize = *o.CapacityDisksUsableSize
 		}
 		qCapacityDisksUsableSize := swag.FormatInt64(qrCapacityDisksUsableSize)
 		if qCapacityDisksUsableSize != "" {
@@ -804,13 +804,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityRemainingQueryParameter != nil {
+	if o.CapacityRemaining != nil {
 
 		// query param capacity.remaining
 		var qrCapacityRemaining int64
 
-		if o.CapacityRemainingQueryParameter != nil {
-			qrCapacityRemaining = *o.CapacityRemainingQueryParameter
+		if o.CapacityRemaining != nil {
+			qrCapacityRemaining = *o.CapacityRemaining
 		}
 		qCapacityRemaining := swag.FormatInt64(qrCapacityRemaining)
 		if qCapacityRemaining != "" {
@@ -821,13 +821,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacitySpareAllocationUnitsAvailableSizeQueryParameter != nil {
+	if o.CapacitySpareAllocationUnitsAvailableSize != nil {
 
 		// query param capacity.spare_allocation_units.available_size
 		var qrCapacitySpareAllocationUnitsAvailableSize int64
 
-		if o.CapacitySpareAllocationUnitsAvailableSizeQueryParameter != nil {
-			qrCapacitySpareAllocationUnitsAvailableSize = *o.CapacitySpareAllocationUnitsAvailableSizeQueryParameter
+		if o.CapacitySpareAllocationUnitsAvailableSize != nil {
+			qrCapacitySpareAllocationUnitsAvailableSize = *o.CapacitySpareAllocationUnitsAvailableSize
 		}
 		qCapacitySpareAllocationUnitsAvailableSize := swag.FormatInt64(qrCapacitySpareAllocationUnitsAvailableSize)
 		if qCapacitySpareAllocationUnitsAvailableSize != "" {
@@ -838,13 +838,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacitySpareAllocationUnitsCountQueryParameter != nil {
+	if o.CapacitySpareAllocationUnitsCount != nil {
 
 		// query param capacity.spare_allocation_units.count
 		var qrCapacitySpareAllocationUnitsCount int64
 
-		if o.CapacitySpareAllocationUnitsCountQueryParameter != nil {
-			qrCapacitySpareAllocationUnitsCount = *o.CapacitySpareAllocationUnitsCountQueryParameter
+		if o.CapacitySpareAllocationUnitsCount != nil {
+			qrCapacitySpareAllocationUnitsCount = *o.CapacitySpareAllocationUnitsCount
 		}
 		qCapacitySpareAllocationUnitsCount := swag.FormatInt64(qrCapacitySpareAllocationUnitsCount)
 		if qCapacitySpareAllocationUnitsCount != "" {
@@ -855,13 +855,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacitySpareAllocationUnitsNodeNameQueryParameter != nil {
+	if o.CapacitySpareAllocationUnitsNodeName != nil {
 
 		// query param capacity.spare_allocation_units.node.name
 		var qrCapacitySpareAllocationUnitsNodeName string
 
-		if o.CapacitySpareAllocationUnitsNodeNameQueryParameter != nil {
-			qrCapacitySpareAllocationUnitsNodeName = *o.CapacitySpareAllocationUnitsNodeNameQueryParameter
+		if o.CapacitySpareAllocationUnitsNodeName != nil {
+			qrCapacitySpareAllocationUnitsNodeName = *o.CapacitySpareAllocationUnitsNodeName
 		}
 		qCapacitySpareAllocationUnitsNodeName := qrCapacitySpareAllocationUnitsNodeName
 		if qCapacitySpareAllocationUnitsNodeName != "" {
@@ -872,13 +872,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacitySpareAllocationUnitsNodeUUIDQueryParameter != nil {
+	if o.CapacitySpareAllocationUnitsNodeUUID != nil {
 
 		// query param capacity.spare_allocation_units.node.uuid
 		var qrCapacitySpareAllocationUnitsNodeUUID string
 
-		if o.CapacitySpareAllocationUnitsNodeUUIDQueryParameter != nil {
-			qrCapacitySpareAllocationUnitsNodeUUID = *o.CapacitySpareAllocationUnitsNodeUUIDQueryParameter
+		if o.CapacitySpareAllocationUnitsNodeUUID != nil {
+			qrCapacitySpareAllocationUnitsNodeUUID = *o.CapacitySpareAllocationUnitsNodeUUID
 		}
 		qCapacitySpareAllocationUnitsNodeUUID := qrCapacitySpareAllocationUnitsNodeUUID
 		if qCapacitySpareAllocationUnitsNodeUUID != "" {
@@ -889,13 +889,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacitySpareAllocationUnitsSizeQueryParameter != nil {
+	if o.CapacitySpareAllocationUnitsSize != nil {
 
 		// query param capacity.spare_allocation_units.size
 		var qrCapacitySpareAllocationUnitsSize int64
 
-		if o.CapacitySpareAllocationUnitsSizeQueryParameter != nil {
-			qrCapacitySpareAllocationUnitsSize = *o.CapacitySpareAllocationUnitsSizeQueryParameter
+		if o.CapacitySpareAllocationUnitsSize != nil {
+			qrCapacitySpareAllocationUnitsSize = *o.CapacitySpareAllocationUnitsSize
 		}
 		qCapacitySpareAllocationUnitsSize := swag.FormatInt64(qrCapacitySpareAllocationUnitsSize)
 		if qCapacitySpareAllocationUnitsSize != "" {
@@ -906,13 +906,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter != nil {
+	if o.CapacitySpareAllocationUnitsSyncmirrorPool != nil {
 
 		// query param capacity.spare_allocation_units.syncmirror_pool
 		var qrCapacitySpareAllocationUnitsSyncmirrorPool string
 
-		if o.CapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter != nil {
-			qrCapacitySpareAllocationUnitsSyncmirrorPool = *o.CapacitySpareAllocationUnitsSyncmirrorPoolQueryParameter
+		if o.CapacitySpareAllocationUnitsSyncmirrorPool != nil {
+			qrCapacitySpareAllocationUnitsSyncmirrorPool = *o.CapacitySpareAllocationUnitsSyncmirrorPool
 		}
 		qCapacitySpareAllocationUnitsSyncmirrorPool := qrCapacitySpareAllocationUnitsSyncmirrorPool
 		if qCapacitySpareAllocationUnitsSyncmirrorPool != "" {
@@ -923,13 +923,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityTotalQueryParameter != nil {
+	if o.CapacityTotal != nil {
 
 		// query param capacity.total
 		var qrCapacityTotal int64
 
-		if o.CapacityTotalQueryParameter != nil {
-			qrCapacityTotal = *o.CapacityTotalQueryParameter
+		if o.CapacityTotal != nil {
+			qrCapacityTotal = *o.CapacityTotal
 		}
 		qCapacityTotal := swag.FormatInt64(qrCapacityTotal)
 		if qCapacityTotal != "" {
@@ -940,13 +940,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityUsedAllocationUnitsAggregateNameQueryParameter != nil {
+	if o.CapacityUsedAllocationUnitsAggregateName != nil {
 
 		// query param capacity.used_allocation_units.aggregate.name
 		var qrCapacityUsedAllocationUnitsAggregateName string
 
-		if o.CapacityUsedAllocationUnitsAggregateNameQueryParameter != nil {
-			qrCapacityUsedAllocationUnitsAggregateName = *o.CapacityUsedAllocationUnitsAggregateNameQueryParameter
+		if o.CapacityUsedAllocationUnitsAggregateName != nil {
+			qrCapacityUsedAllocationUnitsAggregateName = *o.CapacityUsedAllocationUnitsAggregateName
 		}
 		qCapacityUsedAllocationUnitsAggregateName := qrCapacityUsedAllocationUnitsAggregateName
 		if qCapacityUsedAllocationUnitsAggregateName != "" {
@@ -957,13 +957,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityUsedAllocationUnitsAggregateUUIDQueryParameter != nil {
+	if o.CapacityUsedAllocationUnitsAggregateUUID != nil {
 
 		// query param capacity.used_allocation_units.aggregate.uuid
 		var qrCapacityUsedAllocationUnitsAggregateUUID string
 
-		if o.CapacityUsedAllocationUnitsAggregateUUIDQueryParameter != nil {
-			qrCapacityUsedAllocationUnitsAggregateUUID = *o.CapacityUsedAllocationUnitsAggregateUUIDQueryParameter
+		if o.CapacityUsedAllocationUnitsAggregateUUID != nil {
+			qrCapacityUsedAllocationUnitsAggregateUUID = *o.CapacityUsedAllocationUnitsAggregateUUID
 		}
 		qCapacityUsedAllocationUnitsAggregateUUID := qrCapacityUsedAllocationUnitsAggregateUUID
 		if qCapacityUsedAllocationUnitsAggregateUUID != "" {
@@ -974,13 +974,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityUsedAllocationUnitsCountQueryParameter != nil {
+	if o.CapacityUsedAllocationUnitsCount != nil {
 
 		// query param capacity.used_allocation_units.count
 		var qrCapacityUsedAllocationUnitsCount int64
 
-		if o.CapacityUsedAllocationUnitsCountQueryParameter != nil {
-			qrCapacityUsedAllocationUnitsCount = *o.CapacityUsedAllocationUnitsCountQueryParameter
+		if o.CapacityUsedAllocationUnitsCount != nil {
+			qrCapacityUsedAllocationUnitsCount = *o.CapacityUsedAllocationUnitsCount
 		}
 		qCapacityUsedAllocationUnitsCount := swag.FormatInt64(qrCapacityUsedAllocationUnitsCount)
 		if qCapacityUsedAllocationUnitsCount != "" {
@@ -991,13 +991,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityUsedAllocationUnitsCurrentUsageQueryParameter != nil {
+	if o.CapacityUsedAllocationUnitsCurrentUsage != nil {
 
 		// query param capacity.used_allocation_units.current_usage
 		var qrCapacityUsedAllocationUnitsCurrentUsage int64
 
-		if o.CapacityUsedAllocationUnitsCurrentUsageQueryParameter != nil {
-			qrCapacityUsedAllocationUnitsCurrentUsage = *o.CapacityUsedAllocationUnitsCurrentUsageQueryParameter
+		if o.CapacityUsedAllocationUnitsCurrentUsage != nil {
+			qrCapacityUsedAllocationUnitsCurrentUsage = *o.CapacityUsedAllocationUnitsCurrentUsage
 		}
 		qCapacityUsedAllocationUnitsCurrentUsage := swag.FormatInt64(qrCapacityUsedAllocationUnitsCurrentUsage)
 		if qCapacityUsedAllocationUnitsCurrentUsage != "" {
@@ -1008,13 +1008,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityUsedAllocationUnitsNodeNameQueryParameter != nil {
+	if o.CapacityUsedAllocationUnitsNodeName != nil {
 
 		// query param capacity.used_allocation_units.node.name
 		var qrCapacityUsedAllocationUnitsNodeName string
 
-		if o.CapacityUsedAllocationUnitsNodeNameQueryParameter != nil {
-			qrCapacityUsedAllocationUnitsNodeName = *o.CapacityUsedAllocationUnitsNodeNameQueryParameter
+		if o.CapacityUsedAllocationUnitsNodeName != nil {
+			qrCapacityUsedAllocationUnitsNodeName = *o.CapacityUsedAllocationUnitsNodeName
 		}
 		qCapacityUsedAllocationUnitsNodeName := qrCapacityUsedAllocationUnitsNodeName
 		if qCapacityUsedAllocationUnitsNodeName != "" {
@@ -1025,13 +1025,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.CapacityUsedAllocationUnitsNodeUUIDQueryParameter != nil {
+	if o.CapacityUsedAllocationUnitsNodeUUID != nil {
 
 		// query param capacity.used_allocation_units.node.uuid
 		var qrCapacityUsedAllocationUnitsNodeUUID string
 
-		if o.CapacityUsedAllocationUnitsNodeUUIDQueryParameter != nil {
-			qrCapacityUsedAllocationUnitsNodeUUID = *o.CapacityUsedAllocationUnitsNodeUUIDQueryParameter
+		if o.CapacityUsedAllocationUnitsNodeUUID != nil {
+			qrCapacityUsedAllocationUnitsNodeUUID = *o.CapacityUsedAllocationUnitsNodeUUID
 		}
 		qCapacityUsedAllocationUnitsNodeUUID := qrCapacityUsedAllocationUnitsNodeUUID
 		if qCapacityUsedAllocationUnitsNodeUUID != "" {
@@ -1042,7 +1042,7 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1053,13 +1053,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthIsHealthyQueryParameter != nil {
+	if o.HealthIsHealthy != nil {
 
 		// query param health.is_healthy
 		var qrHealthIsHealthy bool
 
-		if o.HealthIsHealthyQueryParameter != nil {
-			qrHealthIsHealthy = *o.HealthIsHealthyQueryParameter
+		if o.HealthIsHealthy != nil {
+			qrHealthIsHealthy = *o.HealthIsHealthy
 		}
 		qHealthIsHealthy := swag.FormatBool(qrHealthIsHealthy)
 		if qHealthIsHealthy != "" {
@@ -1070,13 +1070,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthStateQueryParameter != nil {
+	if o.HealthState != nil {
 
 		// query param health.state
 		var qrHealthState string
 
-		if o.HealthStateQueryParameter != nil {
-			qrHealthState = *o.HealthStateQueryParameter
+		if o.HealthState != nil {
+			qrHealthState = *o.HealthState
 		}
 		qHealthState := qrHealthState
 		if qHealthState != "" {
@@ -1087,13 +1087,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthUnhealthyReasonArgumentsCodeQueryParameter != nil {
+	if o.HealthUnhealthyReasonArgumentsCode != nil {
 
 		// query param health.unhealthy_reason.arguments.code
 		var qrHealthUnhealthyReasonArgumentsCode string
 
-		if o.HealthUnhealthyReasonArgumentsCodeQueryParameter != nil {
-			qrHealthUnhealthyReasonArgumentsCode = *o.HealthUnhealthyReasonArgumentsCodeQueryParameter
+		if o.HealthUnhealthyReasonArgumentsCode != nil {
+			qrHealthUnhealthyReasonArgumentsCode = *o.HealthUnhealthyReasonArgumentsCode
 		}
 		qHealthUnhealthyReasonArgumentsCode := qrHealthUnhealthyReasonArgumentsCode
 		if qHealthUnhealthyReasonArgumentsCode != "" {
@@ -1104,13 +1104,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthUnhealthyReasonArgumentsMessageQueryParameter != nil {
+	if o.HealthUnhealthyReasonArgumentsMessage != nil {
 
 		// query param health.unhealthy_reason.arguments.message
 		var qrHealthUnhealthyReasonArgumentsMessage string
 
-		if o.HealthUnhealthyReasonArgumentsMessageQueryParameter != nil {
-			qrHealthUnhealthyReasonArgumentsMessage = *o.HealthUnhealthyReasonArgumentsMessageQueryParameter
+		if o.HealthUnhealthyReasonArgumentsMessage != nil {
+			qrHealthUnhealthyReasonArgumentsMessage = *o.HealthUnhealthyReasonArgumentsMessage
 		}
 		qHealthUnhealthyReasonArgumentsMessage := qrHealthUnhealthyReasonArgumentsMessage
 		if qHealthUnhealthyReasonArgumentsMessage != "" {
@@ -1121,13 +1121,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthUnhealthyReasonCodeQueryParameter != nil {
+	if o.HealthUnhealthyReasonCode != nil {
 
 		// query param health.unhealthy_reason.code
 		var qrHealthUnhealthyReasonCode string
 
-		if o.HealthUnhealthyReasonCodeQueryParameter != nil {
-			qrHealthUnhealthyReasonCode = *o.HealthUnhealthyReasonCodeQueryParameter
+		if o.HealthUnhealthyReasonCode != nil {
+			qrHealthUnhealthyReasonCode = *o.HealthUnhealthyReasonCode
 		}
 		qHealthUnhealthyReasonCode := qrHealthUnhealthyReasonCode
 		if qHealthUnhealthyReasonCode != "" {
@@ -1138,13 +1138,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthUnhealthyReasonMessageQueryParameter != nil {
+	if o.HealthUnhealthyReasonMessage != nil {
 
 		// query param health.unhealthy_reason.message
 		var qrHealthUnhealthyReasonMessage string
 
-		if o.HealthUnhealthyReasonMessageQueryParameter != nil {
-			qrHealthUnhealthyReasonMessage = *o.HealthUnhealthyReasonMessageQueryParameter
+		if o.HealthUnhealthyReasonMessage != nil {
+			qrHealthUnhealthyReasonMessage = *o.HealthUnhealthyReasonMessage
 		}
 		qHealthUnhealthyReasonMessage := qrHealthUnhealthyReasonMessage
 		if qHealthUnhealthyReasonMessage != "" {
@@ -1155,13 +1155,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.HealthUnhealthyReasonTargetQueryParameter != nil {
+	if o.HealthUnhealthyReasonTarget != nil {
 
 		// query param health.unhealthy_reason.target
 		var qrHealthUnhealthyReasonTarget string
 
-		if o.HealthUnhealthyReasonTargetQueryParameter != nil {
-			qrHealthUnhealthyReasonTarget = *o.HealthUnhealthyReasonTargetQueryParameter
+		if o.HealthUnhealthyReasonTarget != nil {
+			qrHealthUnhealthyReasonTarget = *o.HealthUnhealthyReasonTarget
 		}
 		qHealthUnhealthyReasonTarget := qrHealthUnhealthyReasonTarget
 		if qHealthUnhealthyReasonTarget != "" {
@@ -1172,13 +1172,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1189,13 +1189,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NameQueryParameter != nil {
+	if o.Name != nil {
 
 		// query param name
 		var qrName string
 
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
+		if o.Name != nil {
+			qrName = *o.Name
 		}
 		qName := qrName
 		if qName != "" {
@@ -1206,13 +1206,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NodesNameQueryParameter != nil {
+	if o.NodesName != nil {
 
 		// query param nodes.name
 		var qrNodesName string
 
-		if o.NodesNameQueryParameter != nil {
-			qrNodesName = *o.NodesNameQueryParameter
+		if o.NodesName != nil {
+			qrNodesName = *o.NodesName
 		}
 		qNodesName := qrNodesName
 		if qNodesName != "" {
@@ -1223,13 +1223,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.NodesUUIDQueryParameter != nil {
+	if o.NodesUUID != nil {
 
 		// query param nodes.uuid
 		var qrNodesUUID string
 
-		if o.NodesUUIDQueryParameter != nil {
-			qrNodesUUID = *o.NodesUUIDQueryParameter
+		if o.NodesUUID != nil {
+			qrNodesUUID = *o.NodesUUID
 		}
 		qNodesUUID := qrNodesUUID
 		if qNodesUUID != "" {
@@ -1240,7 +1240,7 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1251,13 +1251,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1268,13 +1268,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1285,13 +1285,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.StorageTypeQueryParameter != nil {
+	if o.StorageType != nil {
 
 		// query param storage_type
 		var qrStorageType string
 
-		if o.StorageTypeQueryParameter != nil {
-			qrStorageType = *o.StorageTypeQueryParameter
+		if o.StorageType != nil {
+			qrStorageType = *o.StorageType
 		}
 		qStorageType := qrStorageType
 		if qStorageType != "" {
@@ -1302,13 +1302,13 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.UUIDQueryParameter != nil {
+	if o.UUID != nil {
 
 		// query param uuid
 		var qrUUID string
 
-		if o.UUIDQueryParameter != nil {
-			qrUUID = *o.UUIDQueryParameter
+		if o.UUID != nil {
+			qrUUID = *o.UUID
 		}
 		qUUID := qrUUID
 		if qUUID != "" {
@@ -1327,7 +1327,7 @@ func (o *StoragePoolCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamStoragePoolCollectionGet binds the parameter fields
 func (o *StoragePoolCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1344,7 +1344,7 @@ func (o *StoragePoolCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamStoragePoolCollectionGet binds the parameter order_by
 func (o *StoragePoolCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

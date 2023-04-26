@@ -20,16 +20,17 @@ import (
 type QosPolicyResponse struct {
 
 	// links
-	Links *QosPolicyResponseLinks `json:"_links,omitempty"`
+	Links *QosPolicyResponseInlineLinks `json:"_links,omitempty"`
 
 	// error
 	Error *Error `json:"error,omitempty"`
 
 	// Number of records
-	NumRecords int64 `json:"num_records,omitempty"`
+	// Example: 1
+	NumRecords *int64 `json:"num_records,omitempty"`
 
-	// records
-	Records []*QosPolicy `json:"records,omitempty"`
+	// qos policy response inline records
+	QosPolicyResponseInlineRecords []*QosPolicy `json:"records,omitempty"`
 }
 
 // Validate validates this qos policy response
@@ -44,7 +45,7 @@ func (m *QosPolicyResponse) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateRecords(formats); err != nil {
+	if err := m.validateQosPolicyResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,18 +89,18 @@ func (m *QosPolicyResponse) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicyResponse) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
+func (m *QosPolicyResponse) validateQosPolicyResponseInlineRecords(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosPolicyResponseInlineRecords) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
+	for i := 0; i < len(m.QosPolicyResponseInlineRecords); i++ {
+		if swag.IsZero(m.QosPolicyResponseInlineRecords[i]) { // not required
 			continue
 		}
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
+		if m.QosPolicyResponseInlineRecords[i] != nil {
+			if err := m.QosPolicyResponseInlineRecords[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -124,7 +125,7 @@ func (m *QosPolicyResponse) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
+	if err := m.contextValidateQosPolicyResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -162,12 +163,12 @@ func (m *QosPolicyResponse) contextValidateError(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QosPolicyResponse) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyResponse) contextValidateQosPolicyResponseInlineRecords(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Records); i++ {
+	for i := 0; i < len(m.QosPolicyResponseInlineRecords); i++ {
 
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
+		if m.QosPolicyResponseInlineRecords[i] != nil {
+			if err := m.QosPolicyResponseInlineRecords[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("records" + "." + strconv.Itoa(i))
 				}
@@ -198,10 +199,10 @@ func (m *QosPolicyResponse) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QosPolicyResponseLinks qos policy response links
+// QosPolicyResponseInlineLinks qos policy response inline links
 //
-// swagger:model QosPolicyResponseLinks
-type QosPolicyResponseLinks struct {
+// swagger:model qos_policy_response_inline__links
+type QosPolicyResponseInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -210,8 +211,8 @@ type QosPolicyResponseLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this qos policy response links
-func (m *QosPolicyResponseLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this qos policy response inline links
+func (m *QosPolicyResponseInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -228,7 +229,7 @@ func (m *QosPolicyResponseLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicyResponseLinks) validateNext(formats strfmt.Registry) error {
+func (m *QosPolicyResponseInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -245,7 +246,7 @@ func (m *QosPolicyResponseLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QosPolicyResponseLinks) validateSelf(formats strfmt.Registry) error {
+func (m *QosPolicyResponseInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -262,8 +263,8 @@ func (m *QosPolicyResponseLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this qos policy response links based on the context it is used
-func (m *QosPolicyResponseLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this qos policy response inline links based on the context it is used
+func (m *QosPolicyResponseInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -280,7 +281,7 @@ func (m *QosPolicyResponseLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *QosPolicyResponseLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyResponseInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -294,7 +295,7 @@ func (m *QosPolicyResponseLinks) contextValidateNext(ctx context.Context, format
 	return nil
 }
 
-func (m *QosPolicyResponseLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *QosPolicyResponseInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -309,7 +310,7 @@ func (m *QosPolicyResponseLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *QosPolicyResponseLinks) MarshalBinary() ([]byte, error) {
+func (m *QosPolicyResponseInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -317,8 +318,8 @@ func (m *QosPolicyResponseLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *QosPolicyResponseLinks) UnmarshalBinary(b []byte) error {
-	var res QosPolicyResponseLinks
+func (m *QosPolicyResponseInlineLinks) UnmarshalBinary(b []byte) error {
+	var res QosPolicyResponseInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

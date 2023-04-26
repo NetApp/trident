@@ -66,13 +66,13 @@ type IpsecCaCertificateGetParams struct {
 
 	   UUID of the IPsec CA certificate.
 	*/
-	CertificateUUIDPathParameter string
+	CertificateUUID string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,26 +127,26 @@ func (o *IpsecCaCertificateGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCertificateUUIDPathParameter adds the certificateUUID to the ipsec ca certificate get params
-func (o *IpsecCaCertificateGetParams) WithCertificateUUIDPathParameter(certificateUUID string) *IpsecCaCertificateGetParams {
-	o.SetCertificateUUIDPathParameter(certificateUUID)
+// WithCertificateUUID adds the certificateUUID to the ipsec ca certificate get params
+func (o *IpsecCaCertificateGetParams) WithCertificateUUID(certificateUUID string) *IpsecCaCertificateGetParams {
+	o.SetCertificateUUID(certificateUUID)
 	return o
 }
 
-// SetCertificateUUIDPathParameter adds the certificateUuid to the ipsec ca certificate get params
-func (o *IpsecCaCertificateGetParams) SetCertificateUUIDPathParameter(certificateUUID string) {
-	o.CertificateUUIDPathParameter = certificateUUID
+// SetCertificateUUID adds the certificateUuid to the ipsec ca certificate get params
+func (o *IpsecCaCertificateGetParams) SetCertificateUUID(certificateUUID string) {
+	o.CertificateUUID = certificateUUID
 }
 
-// WithFieldsQueryParameter adds the fields to the ipsec ca certificate get params
-func (o *IpsecCaCertificateGetParams) WithFieldsQueryParameter(fields []string) *IpsecCaCertificateGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the ipsec ca certificate get params
+func (o *IpsecCaCertificateGetParams) WithFields(fields []string) *IpsecCaCertificateGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the ipsec ca certificate get params
-func (o *IpsecCaCertificateGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the ipsec ca certificate get params
+func (o *IpsecCaCertificateGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,11 +158,11 @@ func (o *IpsecCaCertificateGetParams) WriteToRequest(r runtime.ClientRequest, re
 	var res []error
 
 	// path param certificate.uuid
-	if err := r.SetPathParam("certificate.uuid", o.CertificateUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("certificate.uuid", o.CertificateUUID); err != nil {
 		return err
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -181,7 +181,7 @@ func (o *IpsecCaCertificateGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamIpsecCaCertificateGet binds the parameter fields
 func (o *IpsecCaCertificateGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

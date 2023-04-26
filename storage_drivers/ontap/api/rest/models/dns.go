@@ -22,19 +22,23 @@ import (
 type DNS struct {
 
 	// links
-	Links *DNSLinks `json:"_links,omitempty"`
+	Links *DNSInlineLinks `json:"_links,omitempty"`
 
 	// Number of attempts allowed when querying the DNS name servers.
 	//
 	// Maximum: 4
 	// Minimum: 1
-	Attempts int64 `json:"attempts,omitempty"`
+	Attempts *int64 `json:"attempts,omitempty"`
+
+	// Status of all the DNS name servers configured for the specified SVM.
+	//
+	DNSInlineStatus []*Status `json:"status,omitempty"`
 
 	// domains
-	Domains DNSDomains `json:"domains,omitempty"`
+	Domains DNSDomainsArrayInline `json:"domains,omitempty"`
 
 	// dynamic dns
-	DynamicDNS *DNSDynamicDNS `json:"dynamic_dns,omitempty"`
+	DynamicDNS *DNSInlineDynamicDNS `json:"dynamic_dns,omitempty"`
 
 	// Indicates whether or not the query section of the reply packet is equal to that of the query packet.
 	//
@@ -46,7 +50,7 @@ type DNS struct {
 	Scope *string `json:"scope,omitempty"`
 
 	// servers
-	Servers NameServers `json:"servers,omitempty"`
+	Servers NameServersArrayInline `json:"servers,omitempty"`
 
 	// Indicates whether or not the validation for the specified DNS configuration is disabled.
 	//
@@ -56,18 +60,14 @@ type DNS struct {
 	//
 	SourceAddressMatch *bool `json:"source_address_match,omitempty"`
 
-	// Status of all the DNS name servers configured for the specified SVM.
-	//
-	Status []*Status `json:"status,omitempty"`
-
 	// svm
-	Svm *DNSSvm `json:"svm,omitempty"`
+	Svm *DNSInlineSvm `json:"svm,omitempty"`
 
 	// Timeout values for queries to the name servers, in seconds.
 	//
 	// Maximum: 5
 	// Minimum: 1
-	Timeout int64 `json:"timeout,omitempty"`
+	Timeout *int64 `json:"timeout,omitempty"`
 
 	// Enable or disable top-level domain (TLD) queries.
 	//
@@ -86,6 +86,10 @@ func (m *DNS) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateDNSInlineStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDomains(formats); err != nil {
 		res = append(res, err)
 	}
@@ -99,10 +103,6 @@ func (m *DNS) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateServers(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -142,12 +142,36 @@ func (m *DNS) validateAttempts(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("attempts", "body", m.Attempts, 1, false); err != nil {
+	if err := validate.MinimumInt("attempts", "body", *m.Attempts, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("attempts", "body", m.Attempts, 4, false); err != nil {
+	if err := validate.MaximumInt("attempts", "body", *m.Attempts, 4, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *DNS) validateDNSInlineStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.DNSInlineStatus) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.DNSInlineStatus); i++ {
+		if swag.IsZero(m.DNSInlineStatus[i]) { // not required
+			continue
+		}
+
+		if m.DNSInlineStatus[i] != nil {
+			if err := m.DNSInlineStatus[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -256,30 +280,6 @@ func (m *DNS) validateServers(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNS) validateStatus(formats strfmt.Registry) error {
-	if swag.IsZero(m.Status) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Status); i++ {
-		if swag.IsZero(m.Status[i]) { // not required
-			continue
-		}
-
-		if m.Status[i] != nil {
-			if err := m.Status[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("status" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DNS) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -302,11 +302,11 @@ func (m *DNS) validateTimeout(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("timeout", "body", m.Timeout, 1, false); err != nil {
+	if err := validate.MinimumInt("timeout", "body", *m.Timeout, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("timeout", "body", m.Timeout, 5, false); err != nil {
+	if err := validate.MaximumInt("timeout", "body", *m.Timeout, 5, false); err != nil {
 		return err
 	}
 
@@ -321,6 +321,10 @@ func (m *DNS) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDNSInlineStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDomains(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -330,10 +334,6 @@ func (m *DNS) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateServers(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -356,6 +356,24 @@ func (m *DNS) contextValidateLinks(ctx context.Context, formats strfmt.Registry)
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *DNS) contextValidateDNSInlineStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.DNSInlineStatus); i++ {
+
+		if m.DNSInlineStatus[i] != nil {
+			if err := m.DNSInlineStatus[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -399,24 +417,6 @@ func (m *DNS) contextValidateServers(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
-func (m *DNS) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Status); i++ {
-
-		if m.Status[i] != nil {
-			if err := m.Status[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("status" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DNS) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -449,10 +449,10 @@ func (m *DNS) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DNSDynamicDNS DNS dynamic DNS
+// DNSInlineDynamicDNS dns inline dynamic dns
 //
-// swagger:model DNSDynamicDNS
-type DNSDynamicDNS struct {
+// swagger:model dns_inline_dynamic_dns
+type DNSInlineDynamicDNS struct {
 
 	// Enable or disable Dynamic DNS (DDNS) updates for the specified SVM.
 	//
@@ -461,7 +461,7 @@ type DNSDynamicDNS struct {
 	// Fully Qualified Domain Name (FQDN) to be used for dynamic DNS updates.
 	//
 	// Example: example.com
-	Fqdn string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn,omitempty"`
 
 	// Enable or disable FQDN validation.
 	//
@@ -478,18 +478,18 @@ type DNSDynamicDNS struct {
 	UseSecure *bool `json:"use_secure,omitempty"`
 }
 
-// Validate validates this DNS dynamic DNS
-func (m *DNSDynamicDNS) Validate(formats strfmt.Registry) error {
+// Validate validates this dns inline dynamic dns
+func (m *DNSInlineDynamicDNS) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this DNS dynamic DNS based on context it is used
-func (m *DNSDynamicDNS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this dns inline dynamic dns based on context it is used
+func (m *DNSInlineDynamicDNS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *DNSDynamicDNS) MarshalBinary() ([]byte, error) {
+func (m *DNSInlineDynamicDNS) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -497,8 +497,8 @@ func (m *DNSDynamicDNS) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DNSDynamicDNS) UnmarshalBinary(b []byte) error {
-	var res DNSDynamicDNS
+func (m *DNSInlineDynamicDNS) UnmarshalBinary(b []byte) error {
+	var res DNSInlineDynamicDNS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -506,17 +506,17 @@ func (m *DNSDynamicDNS) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DNSLinks DNS links
+// DNSInlineLinks dns inline links
 //
-// swagger:model DNSLinks
-type DNSLinks struct {
+// swagger:model dns_inline__links
+type DNSInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this DNS links
-func (m *DNSLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this dns inline links
+func (m *DNSInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -529,7 +529,7 @@ func (m *DNSLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNSLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DNSInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -546,8 +546,8 @@ func (m *DNSLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this DNS links based on the context it is used
-func (m *DNSLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dns inline links based on the context it is used
+func (m *DNSInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -560,7 +560,7 @@ func (m *DNSLinks) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *DNSLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DNSInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -575,7 +575,7 @@ func (m *DNSLinks) contextValidateSelf(ctx context.Context, formats strfmt.Regis
 }
 
 // MarshalBinary interface implementation
-func (m *DNSLinks) MarshalBinary() ([]byte, error) {
+func (m *DNSInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -583,8 +583,8 @@ func (m *DNSLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DNSLinks) UnmarshalBinary(b []byte) error {
-	var res DNSLinks
+func (m *DNSInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DNSInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -592,27 +592,27 @@ func (m *DNSLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DNSSvm DNS svm
+// DNSInlineSvm dns inline svm
 //
-// swagger:model DNSSvm
-type DNSSvm struct {
+// swagger:model dns_inline_svm
+type DNSInlineSvm struct {
 
 	// links
-	Links *DNSSvmLinks `json:"_links,omitempty"`
+	Links *DNSInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this DNS svm
-func (m *DNSSvm) Validate(formats strfmt.Registry) error {
+// Validate validates this dns inline svm
+func (m *DNSInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -625,7 +625,7 @@ func (m *DNSSvm) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNSSvm) validateLinks(formats strfmt.Registry) error {
+func (m *DNSInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -642,8 +642,8 @@ func (m *DNSSvm) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this DNS svm based on the context it is used
-func (m *DNSSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dns inline svm based on the context it is used
+func (m *DNSInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -656,7 +656,7 @@ func (m *DNSSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	return nil
 }
 
-func (m *DNSSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *DNSInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -671,7 +671,7 @@ func (m *DNSSvm) contextValidateLinks(ctx context.Context, formats strfmt.Regist
 }
 
 // MarshalBinary interface implementation
-func (m *DNSSvm) MarshalBinary() ([]byte, error) {
+func (m *DNSInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -679,8 +679,8 @@ func (m *DNSSvm) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DNSSvm) UnmarshalBinary(b []byte) error {
-	var res DNSSvm
+func (m *DNSInlineSvm) UnmarshalBinary(b []byte) error {
+	var res DNSInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -688,17 +688,17 @@ func (m *DNSSvm) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// DNSSvmLinks DNS svm links
+// DNSInlineSvmInlineLinks dns inline svm inline links
 //
-// swagger:model DNSSvmLinks
-type DNSSvmLinks struct {
+// swagger:model dns_inline_svm_inline__links
+type DNSInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this DNS svm links
-func (m *DNSSvmLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this dns inline svm inline links
+func (m *DNSInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -711,7 +711,7 @@ func (m *DNSSvmLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DNSSvmLinks) validateSelf(formats strfmt.Registry) error {
+func (m *DNSInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -728,8 +728,8 @@ func (m *DNSSvmLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this DNS svm links based on the context it is used
-func (m *DNSSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this dns inline svm inline links based on the context it is used
+func (m *DNSInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -742,7 +742,7 @@ func (m *DNSSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *DNSSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *DNSInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -757,7 +757,7 @@ func (m *DNSSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Re
 }
 
 // MarshalBinary interface implementation
-func (m *DNSSvmLinks) MarshalBinary() ([]byte, error) {
+func (m *DNSInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -765,8 +765,8 @@ func (m *DNSSvmLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DNSSvmLinks) UnmarshalBinary(b []byte) error {
-	var res DNSSvmLinks
+func (m *DNSInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res DNSInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

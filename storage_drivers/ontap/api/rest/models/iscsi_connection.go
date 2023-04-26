@@ -21,24 +21,24 @@ import (
 type IscsiConnection struct {
 
 	// links
-	Links *IscsiConnectionLinks `json:"_links,omitempty"`
+	Links *IscsiConnectionInlineLinks `json:"_links,omitempty"`
 
 	// The iSCSI authentication type used to establish the connection.
 	//
 	// Read Only: true
 	// Enum: [chap none]
-	AuthenticationType string `json:"authentication_type,omitempty"`
+	AuthenticationType *string `json:"authentication_type,omitempty"`
 
 	// The identifier of the connection within the session.
 	//
 	// Read Only: true
-	Cid int64 `json:"cid,omitempty"`
+	Cid *int64 `json:"cid,omitempty"`
 
 	// initiator address
-	InitiatorAddress *IscsiConnectionInitiatorAddress `json:"initiator_address,omitempty"`
+	InitiatorAddress *IscsiConnectionInlineInitiatorAddress `json:"initiator_address,omitempty"`
 
 	// interface
-	Interface *IscsiConnectionInterface `json:"interface,omitempty"`
+	Interface *IscsiConnectionInlineInterface `json:"interface,omitempty"`
 }
 
 // Validate validates this iscsi connection
@@ -133,7 +133,7 @@ func (m *IscsiConnection) validateAuthenticationType(formats strfmt.Registry) er
 	}
 
 	// value enum
-	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", m.AuthenticationType); err != nil {
+	if err := m.validateAuthenticationTypeEnum("authentication_type", "body", *m.AuthenticationType); err != nil {
 		return err
 	}
 
@@ -220,7 +220,7 @@ func (m *IscsiConnection) contextValidateLinks(ctx context.Context, formats strf
 
 func (m *IscsiConnection) contextValidateAuthenticationType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "authentication_type", "body", string(m.AuthenticationType)); err != nil {
+	if err := validate.ReadOnly(ctx, "authentication_type", "body", m.AuthenticationType); err != nil {
 		return err
 	}
 
@@ -229,7 +229,7 @@ func (m *IscsiConnection) contextValidateAuthenticationType(ctx context.Context,
 
 func (m *IscsiConnection) contextValidateCid(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "cid", "body", int64(m.Cid)); err != nil {
+	if err := validate.ReadOnly(ctx, "cid", "body", m.Cid); err != nil {
 		return err
 	}
 
@@ -282,31 +282,31 @@ func (m *IscsiConnection) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiConnectionInitiatorAddress The TCP socket information for the initiator end of the connection. This is useful for network packet debugging.
+// IscsiConnectionInlineInitiatorAddress The TCP socket information for the initiator end of the connection. This is useful for network packet debugging.
 //
-// swagger:model IscsiConnectionInitiatorAddress
-type IscsiConnectionInitiatorAddress struct {
+// swagger:model iscsi_connection_inline_initiator_address
+type IscsiConnectionInlineInitiatorAddress struct {
 
 	// The TCP IPv4 or IPv6 address of the initiator end of the iSCSI connection.
 	//
 	// Example: 10.10.10.7
 	// Read Only: true
-	Address string `json:"address,omitempty"`
+	Address *string `json:"address,omitempty"`
 
 	// The TCP port number of the initiator end of the iSCSI connection.
 	//
 	// Example: 55432
 	// Read Only: true
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 }
 
-// Validate validates this iscsi connection initiator address
-func (m *IscsiConnectionInitiatorAddress) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi connection inline initiator address
+func (m *IscsiConnectionInlineInitiatorAddress) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi connection initiator address based on the context it is used
-func (m *IscsiConnectionInitiatorAddress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi connection inline initiator address based on the context it is used
+func (m *IscsiConnectionInlineInitiatorAddress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -323,18 +323,18 @@ func (m *IscsiConnectionInitiatorAddress) ContextValidate(ctx context.Context, f
 	return nil
 }
 
-func (m *IscsiConnectionInitiatorAddress) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInitiatorAddress) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator_address"+"."+"address", "body", string(m.Address)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator_address"+"."+"address", "body", m.Address); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiConnectionInitiatorAddress) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInitiatorAddress) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "initiator_address"+"."+"port", "body", int64(m.Port)); err != nil {
+	if err := validate.ReadOnly(ctx, "initiator_address"+"."+"port", "body", m.Port); err != nil {
 		return err
 	}
 
@@ -342,7 +342,7 @@ func (m *IscsiConnectionInitiatorAddress) contextValidatePort(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiConnectionInitiatorAddress) MarshalBinary() ([]byte, error) {
+func (m *IscsiConnectionInlineInitiatorAddress) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -350,8 +350,8 @@ func (m *IscsiConnectionInitiatorAddress) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiConnectionInitiatorAddress) UnmarshalBinary(b []byte) error {
-	var res IscsiConnectionInitiatorAddress
+func (m *IscsiConnectionInlineInitiatorAddress) UnmarshalBinary(b []byte) error {
+	var res IscsiConnectionInlineInitiatorAddress
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -359,30 +359,30 @@ func (m *IscsiConnectionInitiatorAddress) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiConnectionInterface The network interface information for the target end of the connection.
+// IscsiConnectionInlineInterface The network interface information for the target end of the connection.
 //
-// swagger:model IscsiConnectionInterface
-type IscsiConnectionInterface struct {
+// swagger:model iscsi_connection_inline_interface
+type IscsiConnectionInlineInterface struct {
 
 	// links
-	Links *IscsiConnectionInterfaceLinks `json:"_links,omitempty"`
+	Links *IscsiConnectionInlineInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// ip
-	IP *IscsiConnectionInterfaceIP `json:"ip,omitempty"`
+	IP *IscsiConnectionInlineInterfaceInlineIP `json:"ip,omitempty"`
 
 	// The name of the interface.
 	// Example: lif1
 	// Read Only: true
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this iscsi connection interface
-func (m *IscsiConnectionInterface) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi connection inline interface
+func (m *IscsiConnectionInlineInterface) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -399,7 +399,7 @@ func (m *IscsiConnectionInterface) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiConnectionInterface) validateLinks(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterface) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -416,7 +416,7 @@ func (m *IscsiConnectionInterface) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IscsiConnectionInterface) validateIP(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterface) validateIP(formats strfmt.Registry) error {
 	if swag.IsZero(m.IP) { // not required
 		return nil
 	}
@@ -433,8 +433,8 @@ func (m *IscsiConnectionInterface) validateIP(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi connection interface based on the context it is used
-func (m *IscsiConnectionInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi connection inline interface based on the context it is used
+func (m *IscsiConnectionInlineInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -459,7 +459,7 @@ func (m *IscsiConnectionInterface) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IscsiConnectionInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -473,7 +473,7 @@ func (m *IscsiConnectionInterface) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *IscsiConnectionInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IP != nil {
 		if err := m.IP.ContextValidate(ctx, formats); err != nil {
@@ -487,18 +487,18 @@ func (m *IscsiConnectionInterface) contextValidateIP(ctx context.Context, format
 	return nil
 }
 
-func (m *IscsiConnectionInterface) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterface) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "interface"+"."+"name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "interface"+"."+"name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiConnectionInterface) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterface) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "interface"+"."+"uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "interface"+"."+"uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -506,7 +506,7 @@ func (m *IscsiConnectionInterface) contextValidateUUID(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiConnectionInterface) MarshalBinary() ([]byte, error) {
+func (m *IscsiConnectionInlineInterface) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -514,8 +514,8 @@ func (m *IscsiConnectionInterface) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiConnectionInterface) UnmarshalBinary(b []byte) error {
-	var res IscsiConnectionInterface
+func (m *IscsiConnectionInlineInterface) UnmarshalBinary(b []byte) error {
+	var res IscsiConnectionInlineInterface
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -523,24 +523,24 @@ func (m *IscsiConnectionInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiConnectionInterfaceIP The IP information. ONTAP only supports port 3260.
+// IscsiConnectionInlineInterfaceInlineIP The IP information. ONTAP only supports port 3260.
 //
-// swagger:model IscsiConnectionInterfaceIP
-type IscsiConnectionInterfaceIP struct {
+// swagger:model iscsi_connection_inline_interface_inline_ip
+type IscsiConnectionInlineInterfaceInlineIP struct {
 
 	// address
-	Address IPAddressReadonly `json:"address,omitempty"`
+	Address *IPAddressReadonly `json:"address,omitempty"`
 
 	// The TCP port number of the iSCSI access endpoint.
 	// Example: 3260
 	// Read Only: true
 	// Maximum: 65536
 	// Minimum: 1
-	Port int64 `json:"port,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 }
 
-// Validate validates this iscsi connection interface IP
-func (m *IscsiConnectionInterfaceIP) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi connection inline interface inline ip
+func (m *IscsiConnectionInlineInterfaceInlineIP) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAddress(formats); err != nil {
@@ -557,39 +557,41 @@ func (m *IscsiConnectionInterfaceIP) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiConnectionInterfaceIP) validateAddress(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterfaceInlineIP) validateAddress(formats strfmt.Registry) error {
 	if swag.IsZero(m.Address) { // not required
 		return nil
 	}
 
-	if err := m.Address.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiConnectionInterfaceIP) validatePort(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterfaceInlineIP) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("interface"+"."+"ip"+"."+"port", "body", m.Port, 1, false); err != nil {
+	if err := validate.MinimumInt("interface"+"."+"ip"+"."+"port", "body", *m.Port, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("interface"+"."+"ip"+"."+"port", "body", m.Port, 65536, false); err != nil {
+	if err := validate.MaximumInt("interface"+"."+"ip"+"."+"port", "body", *m.Port, 65536, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this iscsi connection interface IP based on the context it is used
-func (m *IscsiConnectionInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi connection inline interface inline ip based on the context it is used
+func (m *IscsiConnectionInlineInterfaceInlineIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateAddress(ctx, formats); err != nil {
@@ -606,21 +608,23 @@ func (m *IscsiConnectionInterfaceIP) ContextValidate(ctx context.Context, format
 	return nil
 }
 
-func (m *IscsiConnectionInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterfaceInlineIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Address.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+	if m.Address != nil {
+		if err := m.Address.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IscsiConnectionInterfaceIP) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterfaceInlineIP) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "interface"+"."+"ip"+"."+"port", "body", int64(m.Port)); err != nil {
+	if err := validate.ReadOnly(ctx, "interface"+"."+"ip"+"."+"port", "body", m.Port); err != nil {
 		return err
 	}
 
@@ -628,7 +632,7 @@ func (m *IscsiConnectionInterfaceIP) contextValidatePort(ctx context.Context, fo
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiConnectionInterfaceIP) MarshalBinary() ([]byte, error) {
+func (m *IscsiConnectionInlineInterfaceInlineIP) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -636,8 +640,8 @@ func (m *IscsiConnectionInterfaceIP) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiConnectionInterfaceIP) UnmarshalBinary(b []byte) error {
-	var res IscsiConnectionInterfaceIP
+func (m *IscsiConnectionInlineInterfaceInlineIP) UnmarshalBinary(b []byte) error {
+	var res IscsiConnectionInlineInterfaceInlineIP
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -645,17 +649,17 @@ func (m *IscsiConnectionInterfaceIP) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiConnectionInterfaceLinks iscsi connection interface links
+// IscsiConnectionInlineInterfaceInlineLinks iscsi connection inline interface inline links
 //
-// swagger:model IscsiConnectionInterfaceLinks
-type IscsiConnectionInterfaceLinks struct {
+// swagger:model iscsi_connection_inline_interface_inline__links
+type IscsiConnectionInlineInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi connection interface links
-func (m *IscsiConnectionInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi connection inline interface inline links
+func (m *IscsiConnectionInlineInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -668,7 +672,7 @@ func (m *IscsiConnectionInterfaceLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IscsiConnectionInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -685,8 +689,8 @@ func (m *IscsiConnectionInterfaceLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this iscsi connection interface links based on the context it is used
-func (m *IscsiConnectionInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi connection inline interface inline links based on the context it is used
+func (m *IscsiConnectionInlineInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -699,7 +703,7 @@ func (m *IscsiConnectionInterfaceLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *IscsiConnectionInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -714,7 +718,7 @@ func (m *IscsiConnectionInterfaceLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiConnectionInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiConnectionInlineInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -722,8 +726,8 @@ func (m *IscsiConnectionInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiConnectionInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiConnectionInterfaceLinks
+func (m *IscsiConnectionInlineInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiConnectionInlineInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -731,10 +735,10 @@ func (m *IscsiConnectionInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IscsiConnectionLinks iscsi connection links
+// IscsiConnectionInlineLinks iscsi connection inline links
 //
-// swagger:model IscsiConnectionLinks
-type IscsiConnectionLinks struct {
+// swagger:model iscsi_connection_inline__links
+type IscsiConnectionInlineLinks struct {
 
 	// next
 	Next *Href `json:"next,omitempty"`
@@ -743,8 +747,8 @@ type IscsiConnectionLinks struct {
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this iscsi connection links
-func (m *IscsiConnectionLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this iscsi connection inline links
+func (m *IscsiConnectionInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNext(formats); err != nil {
@@ -761,7 +765,7 @@ func (m *IscsiConnectionLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiConnectionLinks) validateNext(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineLinks) validateNext(formats strfmt.Registry) error {
 	if swag.IsZero(m.Next) { // not required
 		return nil
 	}
@@ -778,7 +782,7 @@ func (m *IscsiConnectionLinks) validateNext(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IscsiConnectionLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -795,8 +799,8 @@ func (m *IscsiConnectionLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this iscsi connection links based on the context it is used
-func (m *IscsiConnectionLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this iscsi connection inline links based on the context it is used
+func (m *IscsiConnectionInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateNext(ctx, formats); err != nil {
@@ -813,7 +817,7 @@ func (m *IscsiConnectionLinks) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *IscsiConnectionLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineLinks) contextValidateNext(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Next != nil {
 		if err := m.Next.ContextValidate(ctx, formats); err != nil {
@@ -827,7 +831,7 @@ func (m *IscsiConnectionLinks) contextValidateNext(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IscsiConnectionLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IscsiConnectionInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -842,7 +846,7 @@ func (m *IscsiConnectionLinks) contextValidateSelf(ctx context.Context, formats 
 }
 
 // MarshalBinary interface implementation
-func (m *IscsiConnectionLinks) MarshalBinary() ([]byte, error) {
+func (m *IscsiConnectionInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -850,8 +854,8 @@ func (m *IscsiConnectionLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IscsiConnectionLinks) UnmarshalBinary(b []byte) error {
-	var res IscsiConnectionLinks
+func (m *IscsiConnectionInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IscsiConnectionInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

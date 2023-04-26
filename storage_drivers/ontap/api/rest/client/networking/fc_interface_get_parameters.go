@@ -66,14 +66,14 @@ type FcInterfaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* UUID.
 
 	   The unique identifier for the FC interface.
 
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *FcInterfaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the fc interface get params
-func (o *FcInterfaceGetParams) WithFieldsQueryParameter(fields []string) *FcInterfaceGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the fc interface get params
+func (o *FcInterfaceGetParams) WithFields(fields []string) *FcInterfaceGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the fc interface get params
-func (o *FcInterfaceGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the fc interface get params
+func (o *FcInterfaceGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithUUIDPathParameter adds the uuid to the fc interface get params
-func (o *FcInterfaceGetParams) WithUUIDPathParameter(uuid string) *FcInterfaceGetParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the fc interface get params
+func (o *FcInterfaceGetParams) WithUUID(uuid string) *FcInterfaceGetParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the fc interface get params
-func (o *FcInterfaceGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the fc interface get params
+func (o *FcInterfaceGetParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -158,7 +158,7 @@ func (o *FcInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -170,7 +170,7 @@ func (o *FcInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (o *FcInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamFcInterfaceGet binds the parameter fields
 func (o *FcInterfaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

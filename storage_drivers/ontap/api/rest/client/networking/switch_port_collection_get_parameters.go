@@ -66,97 +66,109 @@ type SwitchPortCollectionGetParams struct {
 
 	   Filter by configured
 	*/
-	ConfiguredQueryParameter *string
+	Configured *string
 
 	/* DuplexType.
 
 	   Filter by duplex_type
 	*/
-	DuplexTypeQueryParameter *string
+	DuplexType *string
 
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* IdentityIndex.
 
 	   Filter by identity.index
 	*/
-	IdentityIndexQueryParameter *int64
+	IdentityIndex *int64
 
 	/* IdentityName.
 
 	   Filter by identity.name
 	*/
-	IdentityNameQueryParameter *string
+	IdentityName *string
 
 	/* IdentityNumber.
 
 	   Filter by identity.number
 	*/
-	IdentityNumberQueryParameter *int64
+	IdentityNumber *int64
 
 	/* Isl.
 
 	   Filter by isl
 	*/
-	IslQueryParameter *bool
+	Isl *bool
 
 	/* MacAddress.
 
 	   Filter by mac_address
 	*/
-	MacAddressQueryParameter *string
+	MacAddress *string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecordsQueryParameter *int64
+	MaxRecords *int64
 
 	/* Mtu.
 
 	   Filter by mtu
 	*/
-	MtuQueryParameter *int64
+	Mtu *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderByQueryParameter []string
+	OrderBy []string
 
 	/* RemotePortDeviceNodeName.
 
 	   Filter by remote_port.device.node.name
 	*/
-	RemotePortDeviceNodeNameQueryParameter *string
+	RemotePortDeviceNodeName *string
 
 	/* RemotePortDeviceNodeUUID.
 
 	   Filter by remote_port.device.node.uuid
 	*/
-	RemotePortDeviceNodeUUIDQueryParameter *string
+	RemotePortDeviceNodeUUID *string
+
+	/* RemotePortDeviceShelfModule.
+
+	   Filter by remote_port.device.shelf.module
+	*/
+	RemotePortDeviceShelfModule *string
+
+	/* RemotePortDeviceShelfName.
+
+	   Filter by remote_port.device.shelf.name
+	*/
+	RemotePortDeviceShelfName *string
 
 	/* RemotePortDeviceShelfUID.
 
 	   Filter by remote_port.device.shelf.uid
 	*/
-	RemotePortDeviceShelfUIDQueryParameter *string
+	RemotePortDeviceShelfUID *string
 
 	/* RemotePortMtu.
 
 	   Filter by remote_port.mtu
 	*/
-	RemotePortMtuQueryParameter *int64
+	RemotePortMtu *int64
 
 	/* RemotePortName.
 
 	   Filter by remote_port.name
 	*/
-	RemotePortNameQueryParameter *string
+	RemotePortName *string
 
 	/* ReturnRecords.
 
@@ -164,7 +176,7 @@ type SwitchPortCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecordsQueryParameter *bool
+	ReturnRecords *bool
 
 	/* ReturnTimeout.
 
@@ -172,73 +184,73 @@ type SwitchPortCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* Speed.
 
 	   Filter by speed
 	*/
-	SpeedQueryParameter *int64
+	Speed *int64
 
 	/* State.
 
 	   Filter by state
 	*/
-	StateQueryParameter *string
+	State *string
 
 	/* StatisticsReceiveRawDiscards.
 
 	   Filter by statistics.receive_raw.discards
 	*/
-	StatisticsReceiveRawDiscardsQueryParameter *int64
+	StatisticsReceiveRawDiscards *int64
 
 	/* StatisticsReceiveRawErrors.
 
 	   Filter by statistics.receive_raw.errors
 	*/
-	StatisticsReceiveRawErrorsQueryParameter *int64
+	StatisticsReceiveRawErrors *int64
 
 	/* StatisticsReceiveRawPackets.
 
 	   Filter by statistics.receive_raw.packets
 	*/
-	StatisticsReceiveRawPacketsQueryParameter *int64
+	StatisticsReceiveRawPackets *int64
 
 	/* StatisticsTransmitRawDiscards.
 
 	   Filter by statistics.transmit_raw.discards
 	*/
-	StatisticsTransmitRawDiscardsQueryParameter *int64
+	StatisticsTransmitRawDiscards *int64
 
 	/* StatisticsTransmitRawErrors.
 
 	   Filter by statistics.transmit_raw.errors
 	*/
-	StatisticsTransmitRawErrorsQueryParameter *int64
+	StatisticsTransmitRawErrors *int64
 
 	/* StatisticsTransmitRawPackets.
 
 	   Filter by statistics.transmit_raw.packets
 	*/
-	StatisticsTransmitRawPacketsQueryParameter *int64
+	StatisticsTransmitRawPackets *int64
 
 	/* SwitchName.
 
 	   Filter by switch.name
 	*/
-	SwitchNameQueryParameter *string
+	SwitchName *string
 
 	/* Type.
 
 	   Filter by type
 	*/
-	TypeQueryParameter *string
+	Type *string
 
 	/* VlanID.
 
 	   Filter by vlan_id
 	*/
-	VlanIDQueryParameter *int64
+	VlanID *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -258,14 +270,14 @@ func (o *SwitchPortCollectionGetParams) WithDefaults() *SwitchPortCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *SwitchPortCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
+		returnRecordsDefault = bool(true)
 
-		returnTimeoutQueryParameterDefault = int64(15)
+		returnTimeoutDefault = int64(15)
 	)
 
 	val := SwitchPortCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -307,323 +319,345 @@ func (o *SwitchPortCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithConfiguredQueryParameter adds the configured to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithConfiguredQueryParameter(configured *string) *SwitchPortCollectionGetParams {
-	o.SetConfiguredQueryParameter(configured)
+// WithConfigured adds the configured to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithConfigured(configured *string) *SwitchPortCollectionGetParams {
+	o.SetConfigured(configured)
 	return o
 }
 
-// SetConfiguredQueryParameter adds the configured to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetConfiguredQueryParameter(configured *string) {
-	o.ConfiguredQueryParameter = configured
+// SetConfigured adds the configured to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetConfigured(configured *string) {
+	o.Configured = configured
 }
 
-// WithDuplexTypeQueryParameter adds the duplexType to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithDuplexTypeQueryParameter(duplexType *string) *SwitchPortCollectionGetParams {
-	o.SetDuplexTypeQueryParameter(duplexType)
+// WithDuplexType adds the duplexType to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithDuplexType(duplexType *string) *SwitchPortCollectionGetParams {
+	o.SetDuplexType(duplexType)
 	return o
 }
 
-// SetDuplexTypeQueryParameter adds the duplexType to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetDuplexTypeQueryParameter(duplexType *string) {
-	o.DuplexTypeQueryParameter = duplexType
+// SetDuplexType adds the duplexType to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetDuplexType(duplexType *string) {
+	o.DuplexType = duplexType
 }
 
-// WithFieldsQueryParameter adds the fields to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithFieldsQueryParameter(fields []string) *SwitchPortCollectionGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithFields(fields []string) *SwitchPortCollectionGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithIdentityIndexQueryParameter adds the identityIndex to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithIdentityIndexQueryParameter(identityIndex *int64) *SwitchPortCollectionGetParams {
-	o.SetIdentityIndexQueryParameter(identityIndex)
+// WithIdentityIndex adds the identityIndex to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithIdentityIndex(identityIndex *int64) *SwitchPortCollectionGetParams {
+	o.SetIdentityIndex(identityIndex)
 	return o
 }
 
-// SetIdentityIndexQueryParameter adds the identityIndex to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetIdentityIndexQueryParameter(identityIndex *int64) {
-	o.IdentityIndexQueryParameter = identityIndex
+// SetIdentityIndex adds the identityIndex to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetIdentityIndex(identityIndex *int64) {
+	o.IdentityIndex = identityIndex
 }
 
-// WithIdentityNameQueryParameter adds the identityName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithIdentityNameQueryParameter(identityName *string) *SwitchPortCollectionGetParams {
-	o.SetIdentityNameQueryParameter(identityName)
+// WithIdentityName adds the identityName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithIdentityName(identityName *string) *SwitchPortCollectionGetParams {
+	o.SetIdentityName(identityName)
 	return o
 }
 
-// SetIdentityNameQueryParameter adds the identityName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetIdentityNameQueryParameter(identityName *string) {
-	o.IdentityNameQueryParameter = identityName
+// SetIdentityName adds the identityName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetIdentityName(identityName *string) {
+	o.IdentityName = identityName
 }
 
-// WithIdentityNumberQueryParameter adds the identityNumber to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithIdentityNumberQueryParameter(identityNumber *int64) *SwitchPortCollectionGetParams {
-	o.SetIdentityNumberQueryParameter(identityNumber)
+// WithIdentityNumber adds the identityNumber to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithIdentityNumber(identityNumber *int64) *SwitchPortCollectionGetParams {
+	o.SetIdentityNumber(identityNumber)
 	return o
 }
 
-// SetIdentityNumberQueryParameter adds the identityNumber to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetIdentityNumberQueryParameter(identityNumber *int64) {
-	o.IdentityNumberQueryParameter = identityNumber
+// SetIdentityNumber adds the identityNumber to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetIdentityNumber(identityNumber *int64) {
+	o.IdentityNumber = identityNumber
 }
 
-// WithIslQueryParameter adds the isl to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithIslQueryParameter(isl *bool) *SwitchPortCollectionGetParams {
-	o.SetIslQueryParameter(isl)
+// WithIsl adds the isl to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithIsl(isl *bool) *SwitchPortCollectionGetParams {
+	o.SetIsl(isl)
 	return o
 }
 
-// SetIslQueryParameter adds the isl to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetIslQueryParameter(isl *bool) {
-	o.IslQueryParameter = isl
+// SetIsl adds the isl to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetIsl(isl *bool) {
+	o.Isl = isl
 }
 
-// WithMacAddressQueryParameter adds the macAddress to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithMacAddressQueryParameter(macAddress *string) *SwitchPortCollectionGetParams {
-	o.SetMacAddressQueryParameter(macAddress)
+// WithMacAddress adds the macAddress to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithMacAddress(macAddress *string) *SwitchPortCollectionGetParams {
+	o.SetMacAddress(macAddress)
 	return o
 }
 
-// SetMacAddressQueryParameter adds the macAddress to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetMacAddressQueryParameter(macAddress *string) {
-	o.MacAddressQueryParameter = macAddress
+// SetMacAddress adds the macAddress to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetMacAddress(macAddress *string) {
+	o.MacAddress = macAddress
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SwitchPortCollectionGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
+// WithMaxRecords adds the maxRecords to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithMaxRecords(maxRecords *int64) *SwitchPortCollectionGetParams {
+	o.SetMaxRecords(maxRecords)
 	return o
 }
 
-// SetMaxRecordsQueryParameter adds the maxRecords to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
+// SetMaxRecords adds the maxRecords to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetMaxRecords(maxRecords *int64) {
+	o.MaxRecords = maxRecords
 }
 
-// WithMtuQueryParameter adds the mtu to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithMtuQueryParameter(mtu *int64) *SwitchPortCollectionGetParams {
-	o.SetMtuQueryParameter(mtu)
+// WithMtu adds the mtu to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithMtu(mtu *int64) *SwitchPortCollectionGetParams {
+	o.SetMtu(mtu)
 	return o
 }
 
-// SetMtuQueryParameter adds the mtu to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetMtuQueryParameter(mtu *int64) {
-	o.MtuQueryParameter = mtu
+// SetMtu adds the mtu to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetMtu(mtu *int64) {
+	o.Mtu = mtu
 }
 
-// WithOrderByQueryParameter adds the orderBy to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SwitchPortCollectionGetParams {
-	o.SetOrderByQueryParameter(orderBy)
+// WithOrderBy adds the orderBy to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithOrderBy(orderBy []string) *SwitchPortCollectionGetParams {
+	o.SetOrderBy(orderBy)
 	return o
 }
 
-// SetOrderByQueryParameter adds the orderBy to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
+// SetOrderBy adds the orderBy to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetOrderBy(orderBy []string) {
+	o.OrderBy = orderBy
 }
 
-// WithRemotePortDeviceNodeNameQueryParameter adds the remotePortDeviceNodeName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceNodeNameQueryParameter(remotePortDeviceNodeName *string) *SwitchPortCollectionGetParams {
-	o.SetRemotePortDeviceNodeNameQueryParameter(remotePortDeviceNodeName)
+// WithRemotePortDeviceNodeName adds the remotePortDeviceNodeName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceNodeName(remotePortDeviceNodeName *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceNodeName(remotePortDeviceNodeName)
 	return o
 }
 
-// SetRemotePortDeviceNodeNameQueryParameter adds the remotePortDeviceNodeName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceNodeNameQueryParameter(remotePortDeviceNodeName *string) {
-	o.RemotePortDeviceNodeNameQueryParameter = remotePortDeviceNodeName
+// SetRemotePortDeviceNodeName adds the remotePortDeviceNodeName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceNodeName(remotePortDeviceNodeName *string) {
+	o.RemotePortDeviceNodeName = remotePortDeviceNodeName
 }
 
-// WithRemotePortDeviceNodeUUIDQueryParameter adds the remotePortDeviceNodeUUID to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceNodeUUIDQueryParameter(remotePortDeviceNodeUUID *string) *SwitchPortCollectionGetParams {
-	o.SetRemotePortDeviceNodeUUIDQueryParameter(remotePortDeviceNodeUUID)
+// WithRemotePortDeviceNodeUUID adds the remotePortDeviceNodeUUID to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceNodeUUID(remotePortDeviceNodeUUID *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceNodeUUID(remotePortDeviceNodeUUID)
 	return o
 }
 
-// SetRemotePortDeviceNodeUUIDQueryParameter adds the remotePortDeviceNodeUuid to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceNodeUUIDQueryParameter(remotePortDeviceNodeUUID *string) {
-	o.RemotePortDeviceNodeUUIDQueryParameter = remotePortDeviceNodeUUID
+// SetRemotePortDeviceNodeUUID adds the remotePortDeviceNodeUuid to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceNodeUUID(remotePortDeviceNodeUUID *string) {
+	o.RemotePortDeviceNodeUUID = remotePortDeviceNodeUUID
 }
 
-// WithRemotePortDeviceShelfUIDQueryParameter adds the remotePortDeviceShelfUID to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceShelfUIDQueryParameter(remotePortDeviceShelfUID *string) *SwitchPortCollectionGetParams {
-	o.SetRemotePortDeviceShelfUIDQueryParameter(remotePortDeviceShelfUID)
+// WithRemotePortDeviceShelfModule adds the remotePortDeviceShelfModule to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceShelfModule(remotePortDeviceShelfModule *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceShelfModule(remotePortDeviceShelfModule)
 	return o
 }
 
-// SetRemotePortDeviceShelfUIDQueryParameter adds the remotePortDeviceShelfUid to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceShelfUIDQueryParameter(remotePortDeviceShelfUID *string) {
-	o.RemotePortDeviceShelfUIDQueryParameter = remotePortDeviceShelfUID
+// SetRemotePortDeviceShelfModule adds the remotePortDeviceShelfModule to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceShelfModule(remotePortDeviceShelfModule *string) {
+	o.RemotePortDeviceShelfModule = remotePortDeviceShelfModule
 }
 
-// WithRemotePortMtuQueryParameter adds the remotePortMtu to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithRemotePortMtuQueryParameter(remotePortMtu *int64) *SwitchPortCollectionGetParams {
-	o.SetRemotePortMtuQueryParameter(remotePortMtu)
+// WithRemotePortDeviceShelfName adds the remotePortDeviceShelfName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceShelfName(remotePortDeviceShelfName *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceShelfName(remotePortDeviceShelfName)
 	return o
 }
 
-// SetRemotePortMtuQueryParameter adds the remotePortMtu to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetRemotePortMtuQueryParameter(remotePortMtu *int64) {
-	o.RemotePortMtuQueryParameter = remotePortMtu
+// SetRemotePortDeviceShelfName adds the remotePortDeviceShelfName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceShelfName(remotePortDeviceShelfName *string) {
+	o.RemotePortDeviceShelfName = remotePortDeviceShelfName
 }
 
-// WithRemotePortNameQueryParameter adds the remotePortName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithRemotePortNameQueryParameter(remotePortName *string) *SwitchPortCollectionGetParams {
-	o.SetRemotePortNameQueryParameter(remotePortName)
+// WithRemotePortDeviceShelfUID adds the remotePortDeviceShelfUID to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceShelfUID(remotePortDeviceShelfUID *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceShelfUID(remotePortDeviceShelfUID)
 	return o
 }
 
-// SetRemotePortNameQueryParameter adds the remotePortName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetRemotePortNameQueryParameter(remotePortName *string) {
-	o.RemotePortNameQueryParameter = remotePortName
+// SetRemotePortDeviceShelfUID adds the remotePortDeviceShelfUid to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceShelfUID(remotePortDeviceShelfUID *string) {
+	o.RemotePortDeviceShelfUID = remotePortDeviceShelfUID
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SwitchPortCollectionGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
+// WithRemotePortMtu adds the remotePortMtu to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortMtu(remotePortMtu *int64) *SwitchPortCollectionGetParams {
+	o.SetRemotePortMtu(remotePortMtu)
 	return o
 }
 
-// SetReturnRecordsQueryParameter adds the returnRecords to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
+// SetRemotePortMtu adds the remotePortMtu to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortMtu(remotePortMtu *int64) {
+	o.RemotePortMtu = remotePortMtu
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SwitchPortCollectionGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithRemotePortName adds the remotePortName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortName(remotePortName *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortName(remotePortName)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetRemotePortName adds the remotePortName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortName(remotePortName *string) {
+	o.RemotePortName = remotePortName
 }
 
-// WithSpeedQueryParameter adds the speed to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithSpeedQueryParameter(speed *int64) *SwitchPortCollectionGetParams {
-	o.SetSpeedQueryParameter(speed)
+// WithReturnRecords adds the returnRecords to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithReturnRecords(returnRecords *bool) *SwitchPortCollectionGetParams {
+	o.SetReturnRecords(returnRecords)
 	return o
 }
 
-// SetSpeedQueryParameter adds the speed to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetSpeedQueryParameter(speed *int64) {
-	o.SpeedQueryParameter = speed
+// SetReturnRecords adds the returnRecords to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetReturnRecords(returnRecords *bool) {
+	o.ReturnRecords = returnRecords
 }
 
-// WithStateQueryParameter adds the state to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStateQueryParameter(state *string) *SwitchPortCollectionGetParams {
-	o.SetStateQueryParameter(state)
+// WithReturnTimeout adds the returnTimeout to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SwitchPortCollectionGetParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetStateQueryParameter adds the state to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStateQueryParameter(state *string) {
-	o.StateQueryParameter = state
+// SetReturnTimeout adds the returnTimeout to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithStatisticsReceiveRawDiscardsQueryParameter adds the statisticsReceiveRawDiscards to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawDiscardsQueryParameter(statisticsReceiveRawDiscards *int64) *SwitchPortCollectionGetParams {
-	o.SetStatisticsReceiveRawDiscardsQueryParameter(statisticsReceiveRawDiscards)
+// WithSpeed adds the speed to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithSpeed(speed *int64) *SwitchPortCollectionGetParams {
+	o.SetSpeed(speed)
 	return o
 }
 
-// SetStatisticsReceiveRawDiscardsQueryParameter adds the statisticsReceiveRawDiscards to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawDiscardsQueryParameter(statisticsReceiveRawDiscards *int64) {
-	o.StatisticsReceiveRawDiscardsQueryParameter = statisticsReceiveRawDiscards
+// SetSpeed adds the speed to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetSpeed(speed *int64) {
+	o.Speed = speed
 }
 
-// WithStatisticsReceiveRawErrorsQueryParameter adds the statisticsReceiveRawErrors to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawErrorsQueryParameter(statisticsReceiveRawErrors *int64) *SwitchPortCollectionGetParams {
-	o.SetStatisticsReceiveRawErrorsQueryParameter(statisticsReceiveRawErrors)
+// WithState adds the state to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithState(state *string) *SwitchPortCollectionGetParams {
+	o.SetState(state)
 	return o
 }
 
-// SetStatisticsReceiveRawErrorsQueryParameter adds the statisticsReceiveRawErrors to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawErrorsQueryParameter(statisticsReceiveRawErrors *int64) {
-	o.StatisticsReceiveRawErrorsQueryParameter = statisticsReceiveRawErrors
+// SetState adds the state to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetState(state *string) {
+	o.State = state
 }
 
-// WithStatisticsReceiveRawPacketsQueryParameter adds the statisticsReceiveRawPackets to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawPacketsQueryParameter(statisticsReceiveRawPackets *int64) *SwitchPortCollectionGetParams {
-	o.SetStatisticsReceiveRawPacketsQueryParameter(statisticsReceiveRawPackets)
+// WithStatisticsReceiveRawDiscards adds the statisticsReceiveRawDiscards to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawDiscards(statisticsReceiveRawDiscards *int64) *SwitchPortCollectionGetParams {
+	o.SetStatisticsReceiveRawDiscards(statisticsReceiveRawDiscards)
 	return o
 }
 
-// SetStatisticsReceiveRawPacketsQueryParameter adds the statisticsReceiveRawPackets to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawPacketsQueryParameter(statisticsReceiveRawPackets *int64) {
-	o.StatisticsReceiveRawPacketsQueryParameter = statisticsReceiveRawPackets
+// SetStatisticsReceiveRawDiscards adds the statisticsReceiveRawDiscards to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawDiscards(statisticsReceiveRawDiscards *int64) {
+	o.StatisticsReceiveRawDiscards = statisticsReceiveRawDiscards
 }
 
-// WithStatisticsTransmitRawDiscardsQueryParameter adds the statisticsTransmitRawDiscards to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStatisticsTransmitRawDiscardsQueryParameter(statisticsTransmitRawDiscards *int64) *SwitchPortCollectionGetParams {
-	o.SetStatisticsTransmitRawDiscardsQueryParameter(statisticsTransmitRawDiscards)
+// WithStatisticsReceiveRawErrors adds the statisticsReceiveRawErrors to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawErrors(statisticsReceiveRawErrors *int64) *SwitchPortCollectionGetParams {
+	o.SetStatisticsReceiveRawErrors(statisticsReceiveRawErrors)
 	return o
 }
 
-// SetStatisticsTransmitRawDiscardsQueryParameter adds the statisticsTransmitRawDiscards to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStatisticsTransmitRawDiscardsQueryParameter(statisticsTransmitRawDiscards *int64) {
-	o.StatisticsTransmitRawDiscardsQueryParameter = statisticsTransmitRawDiscards
+// SetStatisticsReceiveRawErrors adds the statisticsReceiveRawErrors to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawErrors(statisticsReceiveRawErrors *int64) {
+	o.StatisticsReceiveRawErrors = statisticsReceiveRawErrors
 }
 
-// WithStatisticsTransmitRawErrorsQueryParameter adds the statisticsTransmitRawErrors to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStatisticsTransmitRawErrorsQueryParameter(statisticsTransmitRawErrors *int64) *SwitchPortCollectionGetParams {
-	o.SetStatisticsTransmitRawErrorsQueryParameter(statisticsTransmitRawErrors)
+// WithStatisticsReceiveRawPackets adds the statisticsReceiveRawPackets to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawPackets(statisticsReceiveRawPackets *int64) *SwitchPortCollectionGetParams {
+	o.SetStatisticsReceiveRawPackets(statisticsReceiveRawPackets)
 	return o
 }
 
-// SetStatisticsTransmitRawErrorsQueryParameter adds the statisticsTransmitRawErrors to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStatisticsTransmitRawErrorsQueryParameter(statisticsTransmitRawErrors *int64) {
-	o.StatisticsTransmitRawErrorsQueryParameter = statisticsTransmitRawErrors
+// SetStatisticsReceiveRawPackets adds the statisticsReceiveRawPackets to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawPackets(statisticsReceiveRawPackets *int64) {
+	o.StatisticsReceiveRawPackets = statisticsReceiveRawPackets
 }
 
-// WithStatisticsTransmitRawPacketsQueryParameter adds the statisticsTransmitRawPackets to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithStatisticsTransmitRawPacketsQueryParameter(statisticsTransmitRawPackets *int64) *SwitchPortCollectionGetParams {
-	o.SetStatisticsTransmitRawPacketsQueryParameter(statisticsTransmitRawPackets)
+// WithStatisticsTransmitRawDiscards adds the statisticsTransmitRawDiscards to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsTransmitRawDiscards(statisticsTransmitRawDiscards *int64) *SwitchPortCollectionGetParams {
+	o.SetStatisticsTransmitRawDiscards(statisticsTransmitRawDiscards)
 	return o
 }
 
-// SetStatisticsTransmitRawPacketsQueryParameter adds the statisticsTransmitRawPackets to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetStatisticsTransmitRawPacketsQueryParameter(statisticsTransmitRawPackets *int64) {
-	o.StatisticsTransmitRawPacketsQueryParameter = statisticsTransmitRawPackets
+// SetStatisticsTransmitRawDiscards adds the statisticsTransmitRawDiscards to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsTransmitRawDiscards(statisticsTransmitRawDiscards *int64) {
+	o.StatisticsTransmitRawDiscards = statisticsTransmitRawDiscards
 }
 
-// WithSwitchNameQueryParameter adds the switchName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithSwitchNameQueryParameter(switchName *string) *SwitchPortCollectionGetParams {
-	o.SetSwitchNameQueryParameter(switchName)
+// WithStatisticsTransmitRawErrors adds the statisticsTransmitRawErrors to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsTransmitRawErrors(statisticsTransmitRawErrors *int64) *SwitchPortCollectionGetParams {
+	o.SetStatisticsTransmitRawErrors(statisticsTransmitRawErrors)
 	return o
 }
 
-// SetSwitchNameQueryParameter adds the switchName to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetSwitchNameQueryParameter(switchName *string) {
-	o.SwitchNameQueryParameter = switchName
+// SetStatisticsTransmitRawErrors adds the statisticsTransmitRawErrors to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsTransmitRawErrors(statisticsTransmitRawErrors *int64) {
+	o.StatisticsTransmitRawErrors = statisticsTransmitRawErrors
 }
 
-// WithTypeQueryParameter adds the typeVar to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithTypeQueryParameter(typeVar *string) *SwitchPortCollectionGetParams {
-	o.SetTypeQueryParameter(typeVar)
+// WithStatisticsTransmitRawPackets adds the statisticsTransmitRawPackets to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsTransmitRawPackets(statisticsTransmitRawPackets *int64) *SwitchPortCollectionGetParams {
+	o.SetStatisticsTransmitRawPackets(statisticsTransmitRawPackets)
 	return o
 }
 
-// SetTypeQueryParameter adds the type to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
-	o.TypeQueryParameter = typeVar
+// SetStatisticsTransmitRawPackets adds the statisticsTransmitRawPackets to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsTransmitRawPackets(statisticsTransmitRawPackets *int64) {
+	o.StatisticsTransmitRawPackets = statisticsTransmitRawPackets
 }
 
-// WithVlanIDQueryParameter adds the vlanID to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) WithVlanIDQueryParameter(vlanID *int64) *SwitchPortCollectionGetParams {
-	o.SetVlanIDQueryParameter(vlanID)
+// WithSwitchName adds the switchName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithSwitchName(switchName *string) *SwitchPortCollectionGetParams {
+	o.SetSwitchName(switchName)
 	return o
 }
 
-// SetVlanIDQueryParameter adds the vlanId to the switch port collection get params
-func (o *SwitchPortCollectionGetParams) SetVlanIDQueryParameter(vlanID *int64) {
-	o.VlanIDQueryParameter = vlanID
+// SetSwitchName adds the switchName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetSwitchName(switchName *string) {
+	o.SwitchName = switchName
+}
+
+// WithType adds the typeVar to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithType(typeVar *string) *SwitchPortCollectionGetParams {
+	o.SetType(typeVar)
+	return o
+}
+
+// SetType adds the type to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
+}
+
+// WithVlanID adds the vlanID to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithVlanID(vlanID *int64) *SwitchPortCollectionGetParams {
+	o.SetVlanID(vlanID)
+	return o
+}
+
+// SetVlanID adds the vlanId to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetVlanID(vlanID *int64) {
+	o.VlanID = vlanID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -634,13 +668,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
-	if o.ConfiguredQueryParameter != nil {
+	if o.Configured != nil {
 
 		// query param configured
 		var qrConfigured string
 
-		if o.ConfiguredQueryParameter != nil {
-			qrConfigured = *o.ConfiguredQueryParameter
+		if o.Configured != nil {
+			qrConfigured = *o.Configured
 		}
 		qConfigured := qrConfigured
 		if qConfigured != "" {
@@ -651,13 +685,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.DuplexTypeQueryParameter != nil {
+	if o.DuplexType != nil {
 
 		// query param duplex_type
 		var qrDuplexType string
 
-		if o.DuplexTypeQueryParameter != nil {
-			qrDuplexType = *o.DuplexTypeQueryParameter
+		if o.DuplexType != nil {
+			qrDuplexType = *o.DuplexType
 		}
 		qDuplexType := qrDuplexType
 		if qDuplexType != "" {
@@ -668,7 +702,7 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -679,13 +713,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.IdentityIndexQueryParameter != nil {
+	if o.IdentityIndex != nil {
 
 		// query param identity.index
 		var qrIdentityIndex int64
 
-		if o.IdentityIndexQueryParameter != nil {
-			qrIdentityIndex = *o.IdentityIndexQueryParameter
+		if o.IdentityIndex != nil {
+			qrIdentityIndex = *o.IdentityIndex
 		}
 		qIdentityIndex := swag.FormatInt64(qrIdentityIndex)
 		if qIdentityIndex != "" {
@@ -696,13 +730,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.IdentityNameQueryParameter != nil {
+	if o.IdentityName != nil {
 
 		// query param identity.name
 		var qrIdentityName string
 
-		if o.IdentityNameQueryParameter != nil {
-			qrIdentityName = *o.IdentityNameQueryParameter
+		if o.IdentityName != nil {
+			qrIdentityName = *o.IdentityName
 		}
 		qIdentityName := qrIdentityName
 		if qIdentityName != "" {
@@ -713,13 +747,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.IdentityNumberQueryParameter != nil {
+	if o.IdentityNumber != nil {
 
 		// query param identity.number
 		var qrIdentityNumber int64
 
-		if o.IdentityNumberQueryParameter != nil {
-			qrIdentityNumber = *o.IdentityNumberQueryParameter
+		if o.IdentityNumber != nil {
+			qrIdentityNumber = *o.IdentityNumber
 		}
 		qIdentityNumber := swag.FormatInt64(qrIdentityNumber)
 		if qIdentityNumber != "" {
@@ -730,13 +764,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.IslQueryParameter != nil {
+	if o.Isl != nil {
 
 		// query param isl
 		var qrIsl bool
 
-		if o.IslQueryParameter != nil {
-			qrIsl = *o.IslQueryParameter
+		if o.Isl != nil {
+			qrIsl = *o.Isl
 		}
 		qIsl := swag.FormatBool(qrIsl)
 		if qIsl != "" {
@@ -747,13 +781,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MacAddressQueryParameter != nil {
+	if o.MacAddress != nil {
 
 		// query param mac_address
 		var qrMacAddress string
 
-		if o.MacAddressQueryParameter != nil {
-			qrMacAddress = *o.MacAddressQueryParameter
+		if o.MacAddress != nil {
+			qrMacAddress = *o.MacAddress
 		}
 		qMacAddress := qrMacAddress
 		if qMacAddress != "" {
@@ -764,13 +798,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecordsQueryParameter != nil {
+	if o.MaxRecords != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
+		if o.MaxRecords != nil {
+			qrMaxRecords = *o.MaxRecords
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -781,13 +815,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MtuQueryParameter != nil {
+	if o.Mtu != nil {
 
 		// query param mtu
 		var qrMtu int64
 
-		if o.MtuQueryParameter != nil {
-			qrMtu = *o.MtuQueryParameter
+		if o.Mtu != nil {
+			qrMtu = *o.Mtu
 		}
 		qMtu := swag.FormatInt64(qrMtu)
 		if qMtu != "" {
@@ -798,7 +832,7 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderByQueryParameter != nil {
+	if o.OrderBy != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -809,13 +843,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.RemotePortDeviceNodeNameQueryParameter != nil {
+	if o.RemotePortDeviceNodeName != nil {
 
 		// query param remote_port.device.node.name
 		var qrRemotePortDeviceNodeName string
 
-		if o.RemotePortDeviceNodeNameQueryParameter != nil {
-			qrRemotePortDeviceNodeName = *o.RemotePortDeviceNodeNameQueryParameter
+		if o.RemotePortDeviceNodeName != nil {
+			qrRemotePortDeviceNodeName = *o.RemotePortDeviceNodeName
 		}
 		qRemotePortDeviceNodeName := qrRemotePortDeviceNodeName
 		if qRemotePortDeviceNodeName != "" {
@@ -826,13 +860,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.RemotePortDeviceNodeUUIDQueryParameter != nil {
+	if o.RemotePortDeviceNodeUUID != nil {
 
 		// query param remote_port.device.node.uuid
 		var qrRemotePortDeviceNodeUUID string
 
-		if o.RemotePortDeviceNodeUUIDQueryParameter != nil {
-			qrRemotePortDeviceNodeUUID = *o.RemotePortDeviceNodeUUIDQueryParameter
+		if o.RemotePortDeviceNodeUUID != nil {
+			qrRemotePortDeviceNodeUUID = *o.RemotePortDeviceNodeUUID
 		}
 		qRemotePortDeviceNodeUUID := qrRemotePortDeviceNodeUUID
 		if qRemotePortDeviceNodeUUID != "" {
@@ -843,13 +877,47 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.RemotePortDeviceShelfUIDQueryParameter != nil {
+	if o.RemotePortDeviceShelfModule != nil {
+
+		// query param remote_port.device.shelf.module
+		var qrRemotePortDeviceShelfModule string
+
+		if o.RemotePortDeviceShelfModule != nil {
+			qrRemotePortDeviceShelfModule = *o.RemotePortDeviceShelfModule
+		}
+		qRemotePortDeviceShelfModule := qrRemotePortDeviceShelfModule
+		if qRemotePortDeviceShelfModule != "" {
+
+			if err := r.SetQueryParam("remote_port.device.shelf.module", qRemotePortDeviceShelfModule); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemotePortDeviceShelfName != nil {
+
+		// query param remote_port.device.shelf.name
+		var qrRemotePortDeviceShelfName string
+
+		if o.RemotePortDeviceShelfName != nil {
+			qrRemotePortDeviceShelfName = *o.RemotePortDeviceShelfName
+		}
+		qRemotePortDeviceShelfName := qrRemotePortDeviceShelfName
+		if qRemotePortDeviceShelfName != "" {
+
+			if err := r.SetQueryParam("remote_port.device.shelf.name", qRemotePortDeviceShelfName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemotePortDeviceShelfUID != nil {
 
 		// query param remote_port.device.shelf.uid
 		var qrRemotePortDeviceShelfUID string
 
-		if o.RemotePortDeviceShelfUIDQueryParameter != nil {
-			qrRemotePortDeviceShelfUID = *o.RemotePortDeviceShelfUIDQueryParameter
+		if o.RemotePortDeviceShelfUID != nil {
+			qrRemotePortDeviceShelfUID = *o.RemotePortDeviceShelfUID
 		}
 		qRemotePortDeviceShelfUID := qrRemotePortDeviceShelfUID
 		if qRemotePortDeviceShelfUID != "" {
@@ -860,13 +928,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.RemotePortMtuQueryParameter != nil {
+	if o.RemotePortMtu != nil {
 
 		// query param remote_port.mtu
 		var qrRemotePortMtu int64
 
-		if o.RemotePortMtuQueryParameter != nil {
-			qrRemotePortMtu = *o.RemotePortMtuQueryParameter
+		if o.RemotePortMtu != nil {
+			qrRemotePortMtu = *o.RemotePortMtu
 		}
 		qRemotePortMtu := swag.FormatInt64(qrRemotePortMtu)
 		if qRemotePortMtu != "" {
@@ -877,13 +945,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.RemotePortNameQueryParameter != nil {
+	if o.RemotePortName != nil {
 
 		// query param remote_port.name
 		var qrRemotePortName string
 
-		if o.RemotePortNameQueryParameter != nil {
-			qrRemotePortName = *o.RemotePortNameQueryParameter
+		if o.RemotePortName != nil {
+			qrRemotePortName = *o.RemotePortName
 		}
 		qRemotePortName := qrRemotePortName
 		if qRemotePortName != "" {
@@ -894,13 +962,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecordsQueryParameter != nil {
+	if o.ReturnRecords != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		if o.ReturnRecords != nil {
+			qrReturnRecords = *o.ReturnRecords
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -911,13 +979,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -928,13 +996,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SpeedQueryParameter != nil {
+	if o.Speed != nil {
 
 		// query param speed
 		var qrSpeed int64
 
-		if o.SpeedQueryParameter != nil {
-			qrSpeed = *o.SpeedQueryParameter
+		if o.Speed != nil {
+			qrSpeed = *o.Speed
 		}
 		qSpeed := swag.FormatInt64(qrSpeed)
 		if qSpeed != "" {
@@ -945,13 +1013,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StateQueryParameter != nil {
+	if o.State != nil {
 
 		// query param state
 		var qrState string
 
-		if o.StateQueryParameter != nil {
-			qrState = *o.StateQueryParameter
+		if o.State != nil {
+			qrState = *o.State
 		}
 		qState := qrState
 		if qState != "" {
@@ -962,13 +1030,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsReceiveRawDiscardsQueryParameter != nil {
+	if o.StatisticsReceiveRawDiscards != nil {
 
 		// query param statistics.receive_raw.discards
 		var qrStatisticsReceiveRawDiscards int64
 
-		if o.StatisticsReceiveRawDiscardsQueryParameter != nil {
-			qrStatisticsReceiveRawDiscards = *o.StatisticsReceiveRawDiscardsQueryParameter
+		if o.StatisticsReceiveRawDiscards != nil {
+			qrStatisticsReceiveRawDiscards = *o.StatisticsReceiveRawDiscards
 		}
 		qStatisticsReceiveRawDiscards := swag.FormatInt64(qrStatisticsReceiveRawDiscards)
 		if qStatisticsReceiveRawDiscards != "" {
@@ -979,13 +1047,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsReceiveRawErrorsQueryParameter != nil {
+	if o.StatisticsReceiveRawErrors != nil {
 
 		// query param statistics.receive_raw.errors
 		var qrStatisticsReceiveRawErrors int64
 
-		if o.StatisticsReceiveRawErrorsQueryParameter != nil {
-			qrStatisticsReceiveRawErrors = *o.StatisticsReceiveRawErrorsQueryParameter
+		if o.StatisticsReceiveRawErrors != nil {
+			qrStatisticsReceiveRawErrors = *o.StatisticsReceiveRawErrors
 		}
 		qStatisticsReceiveRawErrors := swag.FormatInt64(qrStatisticsReceiveRawErrors)
 		if qStatisticsReceiveRawErrors != "" {
@@ -996,13 +1064,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsReceiveRawPacketsQueryParameter != nil {
+	if o.StatisticsReceiveRawPackets != nil {
 
 		// query param statistics.receive_raw.packets
 		var qrStatisticsReceiveRawPackets int64
 
-		if o.StatisticsReceiveRawPacketsQueryParameter != nil {
-			qrStatisticsReceiveRawPackets = *o.StatisticsReceiveRawPacketsQueryParameter
+		if o.StatisticsReceiveRawPackets != nil {
+			qrStatisticsReceiveRawPackets = *o.StatisticsReceiveRawPackets
 		}
 		qStatisticsReceiveRawPackets := swag.FormatInt64(qrStatisticsReceiveRawPackets)
 		if qStatisticsReceiveRawPackets != "" {
@@ -1013,13 +1081,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsTransmitRawDiscardsQueryParameter != nil {
+	if o.StatisticsTransmitRawDiscards != nil {
 
 		// query param statistics.transmit_raw.discards
 		var qrStatisticsTransmitRawDiscards int64
 
-		if o.StatisticsTransmitRawDiscardsQueryParameter != nil {
-			qrStatisticsTransmitRawDiscards = *o.StatisticsTransmitRawDiscardsQueryParameter
+		if o.StatisticsTransmitRawDiscards != nil {
+			qrStatisticsTransmitRawDiscards = *o.StatisticsTransmitRawDiscards
 		}
 		qStatisticsTransmitRawDiscards := swag.FormatInt64(qrStatisticsTransmitRawDiscards)
 		if qStatisticsTransmitRawDiscards != "" {
@@ -1030,13 +1098,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsTransmitRawErrorsQueryParameter != nil {
+	if o.StatisticsTransmitRawErrors != nil {
 
 		// query param statistics.transmit_raw.errors
 		var qrStatisticsTransmitRawErrors int64
 
-		if o.StatisticsTransmitRawErrorsQueryParameter != nil {
-			qrStatisticsTransmitRawErrors = *o.StatisticsTransmitRawErrorsQueryParameter
+		if o.StatisticsTransmitRawErrors != nil {
+			qrStatisticsTransmitRawErrors = *o.StatisticsTransmitRawErrors
 		}
 		qStatisticsTransmitRawErrors := swag.FormatInt64(qrStatisticsTransmitRawErrors)
 		if qStatisticsTransmitRawErrors != "" {
@@ -1047,13 +1115,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.StatisticsTransmitRawPacketsQueryParameter != nil {
+	if o.StatisticsTransmitRawPackets != nil {
 
 		// query param statistics.transmit_raw.packets
 		var qrStatisticsTransmitRawPackets int64
 
-		if o.StatisticsTransmitRawPacketsQueryParameter != nil {
-			qrStatisticsTransmitRawPackets = *o.StatisticsTransmitRawPacketsQueryParameter
+		if o.StatisticsTransmitRawPackets != nil {
+			qrStatisticsTransmitRawPackets = *o.StatisticsTransmitRawPackets
 		}
 		qStatisticsTransmitRawPackets := swag.FormatInt64(qrStatisticsTransmitRawPackets)
 		if qStatisticsTransmitRawPackets != "" {
@@ -1064,13 +1132,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.SwitchNameQueryParameter != nil {
+	if o.SwitchName != nil {
 
 		// query param switch.name
 		var qrSwitchName string
 
-		if o.SwitchNameQueryParameter != nil {
-			qrSwitchName = *o.SwitchNameQueryParameter
+		if o.SwitchName != nil {
+			qrSwitchName = *o.SwitchName
 		}
 		qSwitchName := qrSwitchName
 		if qSwitchName != "" {
@@ -1081,13 +1149,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.TypeQueryParameter != nil {
+	if o.Type != nil {
 
 		// query param type
 		var qrType string
 
-		if o.TypeQueryParameter != nil {
-			qrType = *o.TypeQueryParameter
+		if o.Type != nil {
+			qrType = *o.Type
 		}
 		qType := qrType
 		if qType != "" {
@@ -1098,13 +1166,13 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.VlanIDQueryParameter != nil {
+	if o.VlanID != nil {
 
 		// query param vlan_id
 		var qrVlanID int64
 
-		if o.VlanIDQueryParameter != nil {
-			qrVlanID = *o.VlanIDQueryParameter
+		if o.VlanID != nil {
+			qrVlanID = *o.VlanID
 		}
 		qVlanID := swag.FormatInt64(qrVlanID)
 		if qVlanID != "" {
@@ -1123,7 +1191,7 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamSwitchPortCollectionGet binds the parameter fields
 func (o *SwitchPortCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1140,7 +1208,7 @@ func (o *SwitchPortCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamSwitchPortCollectionGet binds the parameter order_by
 func (o *SwitchPortCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
+	orderByIR := o.OrderBy
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -66,14 +66,14 @@ type WwpnAliasDeleteParams struct {
 	   The name of FC WWPN alias.
 
 	*/
-	AliasPathParameter string
+	Alias string
 
 	/* SvmUUID.
 
 	   The unique identifier of the SVM.
 
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,26 +128,26 @@ func (o *WwpnAliasDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAliasPathParameter adds the alias to the wwpn alias delete params
-func (o *WwpnAliasDeleteParams) WithAliasPathParameter(alias string) *WwpnAliasDeleteParams {
-	o.SetAliasPathParameter(alias)
+// WithAlias adds the alias to the wwpn alias delete params
+func (o *WwpnAliasDeleteParams) WithAlias(alias string) *WwpnAliasDeleteParams {
+	o.SetAlias(alias)
 	return o
 }
 
-// SetAliasPathParameter adds the alias to the wwpn alias delete params
-func (o *WwpnAliasDeleteParams) SetAliasPathParameter(alias string) {
-	o.AliasPathParameter = alias
+// SetAlias adds the alias to the wwpn alias delete params
+func (o *WwpnAliasDeleteParams) SetAlias(alias string) {
+	o.Alias = alias
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the wwpn alias delete params
-func (o *WwpnAliasDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *WwpnAliasDeleteParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the wwpn alias delete params
+func (o *WwpnAliasDeleteParams) WithSvmUUID(svmUUID string) *WwpnAliasDeleteParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the wwpn alias delete params
-func (o *WwpnAliasDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the wwpn alias delete params
+func (o *WwpnAliasDeleteParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -159,12 +159,12 @@ func (o *WwpnAliasDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	var res []error
 
 	// path param alias
-	if err := r.SetPathParam("alias", o.AliasPathParameter); err != nil {
+	if err := r.SetPathParam("alias", o.Alias); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 

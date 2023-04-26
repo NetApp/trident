@@ -19,11 +19,11 @@ import (
 type ShelfReference struct {
 
 	// links
-	Links *ShelfReferenceLinks `json:"_links,omitempty"`
+	Links *ShelfReferenceInlineLinks `json:"_links,omitempty"`
 
 	// uid
 	// Example: 7777841915827391056
-	UID string `json:"uid,omitempty"`
+	UID *string `json:"uid,omitempty"`
 }
 
 // Validate validates this shelf reference
@@ -103,17 +103,17 @@ func (m *ShelfReference) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ShelfReferenceLinks shelf reference links
+// ShelfReferenceInlineLinks shelf reference inline links
 //
-// swagger:model ShelfReferenceLinks
-type ShelfReferenceLinks struct {
+// swagger:model shelf_reference_inline__links
+type ShelfReferenceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this shelf reference links
-func (m *ShelfReferenceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this shelf reference inline links
+func (m *ShelfReferenceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -126,7 +126,7 @@ func (m *ShelfReferenceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ShelfReferenceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *ShelfReferenceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -143,8 +143,8 @@ func (m *ShelfReferenceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this shelf reference links based on the context it is used
-func (m *ShelfReferenceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this shelf reference inline links based on the context it is used
+func (m *ShelfReferenceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -157,7 +157,7 @@ func (m *ShelfReferenceLinks) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *ShelfReferenceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *ShelfReferenceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -172,7 +172,7 @@ func (m *ShelfReferenceLinks) contextValidateSelf(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *ShelfReferenceLinks) MarshalBinary() ([]byte, error) {
+func (m *ShelfReferenceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -180,8 +180,8 @@ func (m *ShelfReferenceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ShelfReferenceLinks) UnmarshalBinary(b []byte) error {
-	var res ShelfReferenceLinks
+func (m *ShelfReferenceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ShelfReferenceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

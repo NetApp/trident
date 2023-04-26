@@ -66,31 +66,31 @@ type SnapmirrorRelationshipDeleteParams struct {
 
 	   Deletes a relationship on the destination only. This parameter is applicable only when the call is executed on the cluster that contains the destination endpoint.
 	*/
-	DestinationOnlyQueryParameter *bool
+	DestinationOnly *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeoutQueryParameter *int64
+	ReturnTimeout *int64
 
 	/* SourceInfoOnly.
 
 	   Deletes relationship information on the source only. This parameter is applicable only when the call is executed on the cluster that contains the source endpoint.
 	*/
-	SourceInfoOnlyQueryParameter *bool
+	SourceInfoOnly *bool
 
 	/* SourceOnly.
 
 	   Deletes a relationship on the source only. This parameter is applicable only when the call is executed on the cluster that contains the source endpoint. In the case of a relationship that uses SnapMirror policy of type 'continuous', this parameter is used to delete the source end of the relationship while ignoring errors when the destination endpoint is not reachable.
 	*/
-	SourceOnlyQueryParameter *bool
+	SourceOnly *bool
 
 	/* UUID.
 
 	   Relationship UUID
 	*/
-	UUIDPathParameter string
+	UUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -110,11 +110,11 @@ func (o *SnapmirrorRelationshipDeleteParams) WithDefaults() *SnapmirrorRelations
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutQueryParameterDefault = int64(0)
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := SnapmirrorRelationshipDeleteParams{
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -156,59 +156,59 @@ func (o *SnapmirrorRelationshipDeleteParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
-// WithDestinationOnlyQueryParameter adds the destinationOnly to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) WithDestinationOnlyQueryParameter(destinationOnly *bool) *SnapmirrorRelationshipDeleteParams {
-	o.SetDestinationOnlyQueryParameter(destinationOnly)
+// WithDestinationOnly adds the destinationOnly to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithDestinationOnly(destinationOnly *bool) *SnapmirrorRelationshipDeleteParams {
+	o.SetDestinationOnly(destinationOnly)
 	return o
 }
 
-// SetDestinationOnlyQueryParameter adds the destinationOnly to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) SetDestinationOnlyQueryParameter(destinationOnly *bool) {
-	o.DestinationOnlyQueryParameter = destinationOnly
+// SetDestinationOnly adds the destinationOnly to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetDestinationOnly(destinationOnly *bool) {
+	o.DestinationOnly = destinationOnly
 }
 
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipDeleteParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
+// WithReturnTimeout adds the returnTimeout to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
 	return o
 }
 
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
+// SetReturnTimeout adds the returnTimeout to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
 }
 
-// WithSourceInfoOnlyQueryParameter adds the sourceInfoOnly to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) WithSourceInfoOnlyQueryParameter(sourceInfoOnly *bool) *SnapmirrorRelationshipDeleteParams {
-	o.SetSourceInfoOnlyQueryParameter(sourceInfoOnly)
+// WithSourceInfoOnly adds the sourceInfoOnly to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithSourceInfoOnly(sourceInfoOnly *bool) *SnapmirrorRelationshipDeleteParams {
+	o.SetSourceInfoOnly(sourceInfoOnly)
 	return o
 }
 
-// SetSourceInfoOnlyQueryParameter adds the sourceInfoOnly to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) SetSourceInfoOnlyQueryParameter(sourceInfoOnly *bool) {
-	o.SourceInfoOnlyQueryParameter = sourceInfoOnly
+// SetSourceInfoOnly adds the sourceInfoOnly to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetSourceInfoOnly(sourceInfoOnly *bool) {
+	o.SourceInfoOnly = sourceInfoOnly
 }
 
-// WithSourceOnlyQueryParameter adds the sourceOnly to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) WithSourceOnlyQueryParameter(sourceOnly *bool) *SnapmirrorRelationshipDeleteParams {
-	o.SetSourceOnlyQueryParameter(sourceOnly)
+// WithSourceOnly adds the sourceOnly to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithSourceOnly(sourceOnly *bool) *SnapmirrorRelationshipDeleteParams {
+	o.SetSourceOnly(sourceOnly)
 	return o
 }
 
-// SetSourceOnlyQueryParameter adds the sourceOnly to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) SetSourceOnlyQueryParameter(sourceOnly *bool) {
-	o.SourceOnlyQueryParameter = sourceOnly
+// SetSourceOnly adds the sourceOnly to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetSourceOnly(sourceOnly *bool) {
+	o.SourceOnly = sourceOnly
 }
 
-// WithUUIDPathParameter adds the uuid to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) WithUUIDPathParameter(uuid string) *SnapmirrorRelationshipDeleteParams {
-	o.SetUUIDPathParameter(uuid)
+// WithUUID adds the uuid to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithUUID(uuid string) *SnapmirrorRelationshipDeleteParams {
+	o.SetUUID(uuid)
 	return o
 }
 
-// SetUUIDPathParameter adds the uuid to the snapmirror relationship delete params
-func (o *SnapmirrorRelationshipDeleteParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
+// SetUUID adds the uuid to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetUUID(uuid string) {
+	o.UUID = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -219,13 +219,13 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 	}
 	var res []error
 
-	if o.DestinationOnlyQueryParameter != nil {
+	if o.DestinationOnly != nil {
 
 		// query param destination_only
 		var qrDestinationOnly bool
 
-		if o.DestinationOnlyQueryParameter != nil {
-			qrDestinationOnly = *o.DestinationOnlyQueryParameter
+		if o.DestinationOnly != nil {
+			qrDestinationOnly = *o.DestinationOnly
 		}
 		qDestinationOnly := swag.FormatBool(qrDestinationOnly)
 		if qDestinationOnly != "" {
@@ -236,13 +236,13 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeoutQueryParameter != nil {
+	if o.ReturnTimeout != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -253,13 +253,13 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.SourceInfoOnlyQueryParameter != nil {
+	if o.SourceInfoOnly != nil {
 
 		// query param source_info_only
 		var qrSourceInfoOnly bool
 
-		if o.SourceInfoOnlyQueryParameter != nil {
-			qrSourceInfoOnly = *o.SourceInfoOnlyQueryParameter
+		if o.SourceInfoOnly != nil {
+			qrSourceInfoOnly = *o.SourceInfoOnly
 		}
 		qSourceInfoOnly := swag.FormatBool(qrSourceInfoOnly)
 		if qSourceInfoOnly != "" {
@@ -270,13 +270,13 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.SourceOnlyQueryParameter != nil {
+	if o.SourceOnly != nil {
 
 		// query param source_only
 		var qrSourceOnly bool
 
-		if o.SourceOnlyQueryParameter != nil {
-			qrSourceOnly = *o.SourceOnlyQueryParameter
+		if o.SourceOnly != nil {
+			qrSourceOnly = *o.SourceOnly
 		}
 		qSourceOnly := swag.FormatBool(qrSourceOnly)
 		if qSourceOnly != "" {
@@ -288,7 +288,7 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 	}
 
 	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	if err := r.SetPathParam("uuid", o.UUID); err != nil {
 		return err
 	}
 

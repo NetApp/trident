@@ -66,31 +66,31 @@ type CifsShareACLGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	FieldsQueryParameter []string
+	Fields []string
 
 	/* Share.
 
 	   Share name
 	*/
-	SharePathParameter string
+	Share string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SVMUUIDPathParameter string
+	SvmUUID string
 
 	/* Type.
 
 	   User or group type
 	*/
-	TypePathParameter string
+	Type string
 
 	/* UserOrGroup.
 
 	   User or group name
 	*/
-	UserOrGroupPathParameter string
+	UserOrGroup string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,59 +145,59 @@ func (o *CifsShareACLGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFieldsQueryParameter adds the fields to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithFieldsQueryParameter(fields []string) *CifsShareACLGetParams {
-	o.SetFieldsQueryParameter(fields)
+// WithFields adds the fields to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithFields(fields []string) *CifsShareACLGetParams {
+	o.SetFields(fields)
 	return o
 }
 
-// SetFieldsQueryParameter adds the fields to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetFieldsQueryParameter(fields []string) {
-	o.FieldsQueryParameter = fields
+// SetFields adds the fields to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetFields(fields []string) {
+	o.Fields = fields
 }
 
-// WithSharePathParameter adds the share to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithSharePathParameter(share string) *CifsShareACLGetParams {
-	o.SetSharePathParameter(share)
+// WithShare adds the share to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithShare(share string) *CifsShareACLGetParams {
+	o.SetShare(share)
 	return o
 }
 
-// SetSharePathParameter adds the share to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetSharePathParameter(share string) {
-	o.SharePathParameter = share
+// SetShare adds the share to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetShare(share string) {
+	o.Share = share
 }
 
-// WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLGetParams {
-	o.SetSVMUUIDPathParameter(svmUUID)
+// WithSvmUUID adds the svmUUID to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithSvmUUID(svmUUID string) *CifsShareACLGetParams {
+	o.SetSvmUUID(svmUUID)
 	return o
 }
 
-// SetSVMUUIDPathParameter adds the svmUuid to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetSVMUUIDPathParameter(svmUUID string) {
-	o.SVMUUIDPathParameter = svmUUID
+// SetSvmUUID adds the svmUuid to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetSvmUUID(svmUUID string) {
+	o.SvmUUID = svmUUID
 }
 
-// WithTypePathParameter adds the typeVar to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithTypePathParameter(typeVar string) *CifsShareACLGetParams {
-	o.SetTypePathParameter(typeVar)
+// WithType adds the typeVar to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithType(typeVar string) *CifsShareACLGetParams {
+	o.SetType(typeVar)
 	return o
 }
 
-// SetTypePathParameter adds the type to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetTypePathParameter(typeVar string) {
-	o.TypePathParameter = typeVar
+// SetType adds the type to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetType(typeVar string) {
+	o.Type = typeVar
 }
 
-// WithUserOrGroupPathParameter adds the userOrGroup to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithUserOrGroupPathParameter(userOrGroup string) *CifsShareACLGetParams {
-	o.SetUserOrGroupPathParameter(userOrGroup)
+// WithUserOrGroup adds the userOrGroup to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithUserOrGroup(userOrGroup string) *CifsShareACLGetParams {
+	o.SetUserOrGroup(userOrGroup)
 	return o
 }
 
-// SetUserOrGroupPathParameter adds the userOrGroup to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetUserOrGroupPathParameter(userOrGroup string) {
-	o.UserOrGroupPathParameter = userOrGroup
+// SetUserOrGroup adds the userOrGroup to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetUserOrGroup(userOrGroup string) {
+	o.UserOrGroup = userOrGroup
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -208,7 +208,7 @@ func (o *CifsShareACLGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.FieldsQueryParameter != nil {
+	if o.Fields != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -220,22 +220,22 @@ func (o *CifsShareACLGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param share
-	if err := r.SetPathParam("share", o.SharePathParameter); err != nil {
+	if err := r.SetPathParam("share", o.Share); err != nil {
 		return err
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
 		return err
 	}
 
 	// path param type
-	if err := r.SetPathParam("type", o.TypePathParameter); err != nil {
+	if err := r.SetPathParam("type", o.Type); err != nil {
 		return err
 	}
 
 	// path param user_or_group
-	if err := r.SetPathParam("user_or_group", o.UserOrGroupPathParameter); err != nil {
+	if err := r.SetPathParam("user_or_group", o.UserOrGroup); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func (o *CifsShareACLGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamCifsShareACLGet binds the parameter fields
 func (o *CifsShareACLGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.FieldsQueryParameter
+	fieldsIR := o.Fields
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

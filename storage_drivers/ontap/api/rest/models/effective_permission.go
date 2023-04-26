@@ -22,19 +22,19 @@ import (
 type EffectivePermission struct {
 
 	// Specifies the effective permission granted to a user on the specified file or folder path.
-	FilePermissions []string `json:"file_permissions,omitempty"`
+	FilePermissions []*string `json:"file_permissions,omitempty"`
 
 	// Specifies the path of the file or the folder for which you want to display effective permissions.
 	// The path is relative to the SVM root volume. If "-share-name" is specified then path will be relative to the share path.
 	//
 	// Example: /dir1/dir2
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// share
 	Share *Share `json:"share,omitempty"`
 
 	// Specifies the effective permission granted to a user on the specified file or folder path.
-	SharePermissions []string `json:"share_permissions,omitempty"`
+	SharePermissions []*string `json:"share_permissions,omitempty"`
 
 	// svm
 	Svm *SvmReference `json:"svm,omitempty"`
@@ -48,7 +48,7 @@ type EffectivePermission struct {
 
 	// Specifies the user for which effective permission needs to be displayed for the specified path.
 	// Example: cifs1/administrator
-	User string `json:"user,omitempty"`
+	User *string `json:"user,omitempty"`
 }
 
 // Validate validates this effective permission
@@ -106,9 +106,12 @@ func (m *EffectivePermission) validateFilePermissions(formats strfmt.Registry) e
 	}
 
 	for i := 0; i < len(m.FilePermissions); i++ {
+		if swag.IsZero(m.FilePermissions[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateFilePermissionsItemsEnum("file_permissions"+"."+strconv.Itoa(i), "body", m.FilePermissions[i]); err != nil {
+		if err := m.validateFilePermissionsItemsEnum("file_permissions"+"."+strconv.Itoa(i), "body", *m.FilePermissions[i]); err != nil {
 			return err
 		}
 
@@ -159,9 +162,12 @@ func (m *EffectivePermission) validateSharePermissions(formats strfmt.Registry) 
 	}
 
 	for i := 0; i < len(m.SharePermissions); i++ {
+		if swag.IsZero(m.SharePermissions[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateSharePermissionsItemsEnum("share_permissions"+"."+strconv.Itoa(i), "body", m.SharePermissions[i]); err != nil {
+		if err := m.validateSharePermissionsItemsEnum("share_permissions"+"."+strconv.Itoa(i), "body", *m.SharePermissions[i]); err != nil {
 			return err
 		}
 

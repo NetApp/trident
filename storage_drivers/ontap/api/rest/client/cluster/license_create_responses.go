@@ -52,6 +52,11 @@ LicenseCreateCreated describes a response with status code 201, with default hea
 Created
 */
 type LicenseCreateCreated struct {
+
+	/* Useful for tracking the resource location
+	 */
+	Location string
+
 	Payload *models.LicensePackageResponse
 }
 
@@ -94,6 +99,13 @@ func (o *LicenseCreateCreated) GetPayload() *models.LicensePackageResponse {
 
 func (o *LicenseCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		o.Location = hdrLocation
+	}
+
 	o.Payload = new(models.LicensePackageResponse)
 
 	// response payload
@@ -118,45 +130,47 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 1115117    | Generic licensing error |
-| 1115122    | No cluster serial number found |
-| 1115124    | No node serial number found |
-| 1115130    | No license code was provided |
-| 1115131    | Installation of the license failed |
-| 1115132    | License already exists on system |
-| 1115134    | Serial number does not belong to node |
-| 1115141    | License data is invalid |
-| 1115142    | License signature is invalid |
-| 1115143    | Internal error applying the requested license |
-| 1115152    | License does not apply to the platform |
-| 1115154    | Unable to retrieve cluster ID |
-| 1115155    | Invalid cluster ID found |
-| 1115159    | License is not in an acceptable format |
-| 1115160    | License has already expired |
-| 1115164    | Minimum ONTAP version requirements not met |
-| 1115165    | Minimum ONTAP version requirements are not met for license type enabled |
-| 1115166    | Minimum ONTAP version requirements are not met for license protocol SEC-COMP-BNDL-ENBLD |
-| 1115179    | FlexCache is not supported on this system |
-| 1115180    | FlexCache is not supported on cloud systems |
-| 1115407    | Capacity pool licenses cannot be installed directly |
-| 1115427    | License is incompatible with capacity pools licensing mode |
-| 1115562    | One or more errors occurred when installing a NLFv2 license |
-| 1115563    | Package details and serial number of license contained within the NLFv2 failure |
-| 1115564    | Package cannot be deleted individually as it part of a bundle |
-| 1115565    | NLFv2 install failed as the license serial number is already in use |
-| 1115616    | Package details and serial number of license included in the install conflict |
-| 1115617    | NLFv2 license install failed with summary of conflicting licenses |
-| 1115618    | NLFv2 license install failed as a license with newer timestamp already exists |
-| 66846818   | Failed to interpret FlexCache license information |
-| 66846821   | FlexCache is not supported on cloud systems |
-| 66846822   | Invalid FlexCache capacity information provided |
-| 655294464  | Failed to extract license contents |
-| 655294465  | License key is invalid |
-| 655294466  | Serial number is invalid |
-| 655294467  | Version number is invalid |
-| 655294468  | Expired license |
-| 655294469  | License does not apply to the platform |
-| 655294470  | License does not apply to the product  |
+| 1115117 | Generic licensing error |
+| 1115122 | No cluster serial number found |
+| 1115124 | No node serial number found |
+| 1115130 | No license code was provided |
+| 1115131 | Installation of the license failed |
+| 1115132 | License already exists on system |
+| 1115134 | Serial number does not belong to node |
+| 1115141 | License data is invalid |
+| 1115142 | License signature is invalid |
+| 1115143 | Internal error applying the requested license |
+| 1115152 | License does not apply to the platform |
+| 1115154 | Unable to retrieve cluster ID |
+| 1115155 | Invalid cluster ID found |
+| 1115159 | License is not in an acceptable format |
+| 1115160 | License has already expired |
+| 1115164 | Minimum ONTAP version requirements not met |
+| 1115165 | Minimum ONTAP version requirements are not met for license type enabled |
+| 1115166 | Minimum ONTAP version requirements are not met for license protocol SEC-COMP-BNDL-ENBLD |
+| 1115179 | FlexCache is not supported on this system |
+| 1115180 | FlexCache is not supported on cloud systems |
+| 1115407 | Capacity pool licenses cannot be installed directly |
+| 1115427 | License is incompatible with capacity pools licensing mode |
+| 1115562 | One or more errors occurred when installing a NLFv2 license |
+| 1115563 | Package details and serial number of license contained within the NLFv2 failure |
+| 1115564 | Package cannot be deleted individually as it is part of a bundle |
+| 1115565 | NLFv2 install failed as the license serial number is already in use |
+| 1115616 | Package details and serial number of license included in the install conflict |
+| 1115617 | NLFv2 license install failed with summary of conflicting licenses |
+| 1115618 | NLFv2 license install failed as a license with newer timestamp already exists |
+| 5375355 | The cluster has more nodes than are supported by All SAN Array. |
+| 5375366 | The cluster has one or more nodes that do not support All SAN Array. |
+| 66846818 | Failed to interpret FlexCache license information |
+| 66846821 | FlexCache is not supported on cloud systems |
+| 66846822 | Invalid FlexCache capacity information provided |
+| 655294464 | Failed to extract license contents |
+| 655294465 | License key is invalid |
+| 655294466 | Serial number is invalid |
+| 655294467 | Version number is invalid |
+| 655294468 | Expired license |
+| 655294469 | License does not apply to the platform |
+| 655294470 | License does not apply to the product |
 */
 type LicenseCreateDefault struct {
 	_statusCode int

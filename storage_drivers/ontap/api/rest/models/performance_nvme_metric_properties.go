@@ -25,22 +25,22 @@ type PerformanceNvmeMetricProperties struct {
 	// Example: PT15S
 	// Read Only: true
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// iops
-	Iops *PerformanceNvmeMetricPropertiesIops `json:"iops,omitempty"`
+	Iops *PerformanceNvmeMetricPropertiesInlineIops `json:"iops,omitempty"`
 
 	// latency
-	Latency *PerformanceNvmeMetricPropertiesLatency `json:"latency,omitempty"`
+	Latency *PerformanceNvmeMetricPropertiesInlineLatency `json:"latency,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
 	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *PerformanceNvmeMetricPropertiesThroughput `json:"throughput,omitempty"`
+	Throughput *PerformanceNvmeMetricPropertiesInlineThroughput `json:"throughput,omitempty"`
 }
 
 // Validate validates this performance nvme metric properties
@@ -162,7 +162,7 @@ func (m *PerformanceNvmeMetricProperties) validateDuration(formats strfmt.Regist
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
@@ -342,7 +342,7 @@ func (m *PerformanceNvmeMetricProperties) validateStatus(formats strfmt.Registry
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("status", "body", *m.Status); err != nil {
 		return err
 	}
 
@@ -398,7 +398,7 @@ func (m *PerformanceNvmeMetricProperties) ContextValidate(ctx context.Context, f
 
 func (m *PerformanceNvmeMetricProperties) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
+	if err := validate.ReadOnly(ctx, "duration", "body", m.Duration); err != nil {
 		return err
 	}
 
@@ -435,7 +435,7 @@ func (m *PerformanceNvmeMetricProperties) contextValidateLatency(ctx context.Con
 
 func (m *PerformanceNvmeMetricProperties) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+	if err := validate.ReadOnly(ctx, "status", "body", m.Status); err != nil {
 		return err
 	}
 
@@ -474,34 +474,34 @@ func (m *PerformanceNvmeMetricProperties) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceNvmeMetricPropertiesIops The rate of I/O operations observed at the storage object.
+// PerformanceNvmeMetricPropertiesInlineIops The rate of I/O operations observed at the storage object.
 //
-// swagger:model PerformanceNvmeMetricPropertiesIops
-type PerformanceNvmeMetricPropertiesIops struct {
+// swagger:model performance_nvme_metric_properties_inline_iops
+type PerformanceNvmeMetricPropertiesInlineIops struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance nvme metric properties iops
-func (m *PerformanceNvmeMetricPropertiesIops) Validate(formats strfmt.Registry) error {
+// Validate validates this performance nvme metric properties inline iops
+func (m *PerformanceNvmeMetricPropertiesInlineIops) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance nvme metric properties iops based on the context it is used
-func (m *PerformanceNvmeMetricPropertiesIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance nvme metric properties inline iops based on the context it is used
+func (m *PerformanceNvmeMetricPropertiesInlineIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -511,7 +511,7 @@ func (m *PerformanceNvmeMetricPropertiesIops) ContextValidate(ctx context.Contex
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceNvmeMetricPropertiesIops) MarshalBinary() ([]byte, error) {
+func (m *PerformanceNvmeMetricPropertiesInlineIops) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -519,8 +519,8 @@ func (m *PerformanceNvmeMetricPropertiesIops) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceNvmeMetricPropertiesIops) UnmarshalBinary(b []byte) error {
-	var res PerformanceNvmeMetricPropertiesIops
+func (m *PerformanceNvmeMetricPropertiesInlineIops) UnmarshalBinary(b []byte) error {
+	var res PerformanceNvmeMetricPropertiesInlineIops
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -528,34 +528,34 @@ func (m *PerformanceNvmeMetricPropertiesIops) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceNvmeMetricPropertiesLatency The round trip latency in microseconds observed at the storage object.
+// PerformanceNvmeMetricPropertiesInlineLatency The round trip latency in microseconds observed at the storage object.
 //
-// swagger:model PerformanceNvmeMetricPropertiesLatency
-type PerformanceNvmeMetricPropertiesLatency struct {
+// swagger:model performance_nvme_metric_properties_inline_latency
+type PerformanceNvmeMetricPropertiesInlineLatency struct {
 
 	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
+	Other *int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance nvme metric properties latency
-func (m *PerformanceNvmeMetricPropertiesLatency) Validate(formats strfmt.Registry) error {
+// Validate validates this performance nvme metric properties inline latency
+func (m *PerformanceNvmeMetricPropertiesInlineLatency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance nvme metric properties latency based on the context it is used
-func (m *PerformanceNvmeMetricPropertiesLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance nvme metric properties inline latency based on the context it is used
+func (m *PerformanceNvmeMetricPropertiesInlineLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -565,7 +565,7 @@ func (m *PerformanceNvmeMetricPropertiesLatency) ContextValidate(ctx context.Con
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceNvmeMetricPropertiesLatency) MarshalBinary() ([]byte, error) {
+func (m *PerformanceNvmeMetricPropertiesInlineLatency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -573,8 +573,8 @@ func (m *PerformanceNvmeMetricPropertiesLatency) MarshalBinary() ([]byte, error)
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceNvmeMetricPropertiesLatency) UnmarshalBinary(b []byte) error {
-	var res PerformanceNvmeMetricPropertiesLatency
+func (m *PerformanceNvmeMetricPropertiesInlineLatency) UnmarshalBinary(b []byte) error {
+	var res PerformanceNvmeMetricPropertiesInlineLatency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -582,31 +582,31 @@ func (m *PerformanceNvmeMetricPropertiesLatency) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// PerformanceNvmeMetricPropertiesThroughput The rate of throughput bytes per second observed at the storage object.
+// PerformanceNvmeMetricPropertiesInlineThroughput The rate of throughput bytes per second observed at the storage object.
 //
-// swagger:model PerformanceNvmeMetricPropertiesThroughput
-type PerformanceNvmeMetricPropertiesThroughput struct {
+// swagger:model performance_nvme_metric_properties_inline_throughput
+type PerformanceNvmeMetricPropertiesInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this performance nvme metric properties throughput
-func (m *PerformanceNvmeMetricPropertiesThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this performance nvme metric properties inline throughput
+func (m *PerformanceNvmeMetricPropertiesInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this performance nvme metric properties throughput based on the context it is used
-func (m *PerformanceNvmeMetricPropertiesThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this performance nvme metric properties inline throughput based on the context it is used
+func (m *PerformanceNvmeMetricPropertiesInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -616,7 +616,7 @@ func (m *PerformanceNvmeMetricPropertiesThroughput) ContextValidate(ctx context.
 }
 
 // MarshalBinary interface implementation
-func (m *PerformanceNvmeMetricPropertiesThroughput) MarshalBinary() ([]byte, error) {
+func (m *PerformanceNvmeMetricPropertiesInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -624,8 +624,8 @@ func (m *PerformanceNvmeMetricPropertiesThroughput) MarshalBinary() ([]byte, err
 }
 
 // UnmarshalBinary interface implementation
-func (m *PerformanceNvmeMetricPropertiesThroughput) UnmarshalBinary(b []byte) error {
-	var res PerformanceNvmeMetricPropertiesThroughput
+func (m *PerformanceNvmeMetricPropertiesInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res PerformanceNvmeMetricPropertiesInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

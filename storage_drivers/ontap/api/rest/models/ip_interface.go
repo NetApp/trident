@@ -22,14 +22,14 @@ import (
 type IPInterface struct {
 
 	// links
-	Links *IPInterfaceLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineLinks `json:"_links,omitempty"`
 
 	// Indicates whether or not dynamic DNS updates are enabled. Defaults to true if the interface supports "data_nfs" or "data_cifs" services, otherwise false.
-	DdnsEnabled bool `json:"ddns_enabled,omitempty"`
+	DdnsEnabled *bool `json:"ddns_enabled,omitempty"`
 
 	// Fully qualified DNS zone name
 	// Example: storage.company.com
-	DNSZone string `json:"dns_zone,omitempty"`
+	DNSZone *string `json:"dns_zone,omitempty"`
 
 	// The administrative state of the interface.
 	Enabled *bool `json:"enabled,omitempty"`
@@ -40,55 +40,55 @@ type IPInterface struct {
 	// ip
 	IP *IPInfo `json:"ip,omitempty"`
 
+	// The services associated with the interface.
+	// Read Only: true
+	IPInterfaceInlineServices []*IPService `json:"services,omitempty"`
+
 	// ipspace
-	Ipspace *IPInterfaceIpspace `json:"ipspace,omitempty"`
+	Ipspace *IPInterfaceInlineIpspace `json:"ipspace,omitempty"`
 
 	// location
-	Location *IPInterfaceLocation `json:"location,omitempty"`
+	Location *IPInterfaceInlineLocation `json:"location,omitempty"`
 
 	// metric
-	Metric *IPInterfaceMetric `json:"metric,omitempty"`
+	Metric *IPInterfaceInlineMetric `json:"metric,omitempty"`
 
 	// Interface name
 	// Example: dataLif1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Probe port for Cloud load balancer
 	// Example: 64001
-	ProbePort int64 `json:"probe_port,omitempty"`
+	ProbePort *int64 `json:"probe_port,omitempty"`
 
 	// Supported RDMA offload protocols
-	RdmaProtocols []string `json:"rdma_protocols,omitempty"`
+	RdmaProtocols []*string `json:"rdma_protocols,omitempty"`
 
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
 	// Enum: [svm cluster]
-	Scope string `json:"scope,omitempty"`
+	Scope *string `json:"scope,omitempty"`
 
 	// service policy
-	ServicePolicy *IPInterfaceServicePolicy `json:"service_policy,omitempty"`
-
-	// The services associated with the interface.
-	// Read Only: true
-	Services []IPService `json:"services,omitempty"`
+	ServicePolicy *IPInterfaceInlineServicePolicy `json:"service_policy,omitempty"`
 
 	// The operational state of the interface.
 	// Read Only: true
 	// Enum: [up down]
-	State string `json:"state,omitempty"`
+	State *string `json:"state,omitempty"`
 
 	// statistics
-	Statistics *IPInterfaceStatistics `json:"statistics,omitempty"`
+	Statistics *IPInterfaceInlineStatistics `json:"statistics,omitempty"`
 
 	// Use this field to allocate an interface address from a subnet. If needed, a default route is created for this subnet.
 	Subnet *IPSubnetReference `json:"subnet,omitempty"`
 
 	// svm
-	Svm *IPInterfaceSvmType `json:"svm,omitempty"`
+	Svm *IPInterfaceInlineSvm `json:"svm,omitempty"`
 
 	// The UUID that uniquely identifies the interface.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 
 	// True for a VIP interface, whose location is announced via BGP.
 	Vip *bool `json:"vip,omitempty"`
@@ -103,6 +103,10 @@ func (m *IPInterface) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateIP(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPInterfaceInlineServices(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -127,10 +131,6 @@ func (m *IPInterface) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateServicePolicy(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateServices(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +185,30 @@ func (m *IPInterface) validateIP(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *IPInterface) validateIPInterfaceInlineServices(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPInterfaceInlineServices) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.IPInterfaceInlineServices); i++ {
+		if swag.IsZero(m.IPInterfaceInlineServices[i]) { // not required
+			continue
+		}
+
+		if m.IPInterfaceInlineServices[i] != nil {
+			if err := m.IPInterfaceInlineServices[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("services" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -266,9 +290,12 @@ func (m *IPInterface) validateRdmaProtocols(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.RdmaProtocols); i++ {
+		if swag.IsZero(m.RdmaProtocols[i]) { // not required
+			continue
+		}
 
 		// value enum
-		if err := m.validateRdmaProtocolsItemsEnum("rdma_protocols"+"."+strconv.Itoa(i), "body", m.RdmaProtocols[i]); err != nil {
+		if err := m.validateRdmaProtocolsItemsEnum("rdma_protocols"+"."+strconv.Itoa(i), "body", *m.RdmaProtocols[i]); err != nil {
 			return err
 		}
 
@@ -326,7 +353,7 @@ func (m *IPInterface) validateScope(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -345,25 +372,6 @@ func (m *IPInterface) validateServicePolicy(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *IPInterface) validateServices(formats strfmt.Registry) error {
-	if swag.IsZero(m.Services) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Services); i++ {
-
-		if err := m.Services[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("services" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
 	}
 
 	return nil
@@ -418,7 +426,7 @@ func (m *IPInterface) validateState(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
 		return err
 	}
 
@@ -488,6 +496,10 @@ func (m *IPInterface) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIPInterfaceInlineServices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIpspace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -501,10 +513,6 @@ func (m *IPInterface) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateServicePolicy(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateServices(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -557,6 +565,28 @@ func (m *IPInterface) contextValidateIP(ctx context.Context, formats strfmt.Regi
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *IPInterface) contextValidateIPInterfaceInlineServices(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "services", "body", []*IPService(m.IPInterfaceInlineServices)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.IPInterfaceInlineServices); i++ {
+
+		if m.IPInterfaceInlineServices[i] != nil {
+			if err := m.IPInterfaceInlineServices[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("services" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -618,29 +648,9 @@ func (m *IPInterface) contextValidateServicePolicy(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IPInterface) contextValidateServices(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "services", "body", []IPService(m.Services)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Services); i++ {
-
-		if err := m.Services[i].ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("services" + "." + strconv.Itoa(i))
-			}
-			return err
-		}
-
-	}
-
-	return nil
-}
-
 func (m *IPInterface) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
 		return err
 	}
 
@@ -691,7 +701,7 @@ func (m *IPInterface) contextValidateSvm(ctx context.Context, formats strfmt.Reg
 
 func (m *IPInterface) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
 		return err
 	}
 
@@ -716,25 +726,25 @@ func (m *IPInterface) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceIpspace Either the UUID or name must be supplied on POST for cluster-scoped objects.
+// IPInterfaceInlineIpspace Either the UUID or name must be supplied on POST for cluster-scoped objects.
 //
-// swagger:model IPInterfaceIpspace
-type IPInterfaceIpspace struct {
+// swagger:model ip_interface_inline_ipspace
+type IPInterfaceInlineIpspace struct {
 
 	// links
-	Links *IPInterfaceIpspaceLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineIpspaceInlineLinks `json:"_links,omitempty"`
 
 	// IPspace name
 	// Example: exchange
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// IPspace UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface ipspace
-func (m *IPInterfaceIpspace) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline ipspace
+func (m *IPInterfaceInlineIpspace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -747,7 +757,7 @@ func (m *IPInterfaceIpspace) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceIpspace) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineIpspace) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -764,8 +774,8 @@ func (m *IPInterfaceIpspace) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface ipspace based on the context it is used
-func (m *IPInterfaceIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline ipspace based on the context it is used
+func (m *IPInterfaceInlineIpspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -778,7 +788,7 @@ func (m *IPInterfaceIpspace) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IPInterfaceIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineIpspace) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -793,7 +803,7 @@ func (m *IPInterfaceIpspace) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceIpspace) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineIpspace) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -801,8 +811,8 @@ func (m *IPInterfaceIpspace) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceIpspace) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceIpspace
+func (m *IPInterfaceInlineIpspace) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineIpspace
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -810,17 +820,17 @@ func (m *IPInterfaceIpspace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceIpspaceLinks IP interface ipspace links
+// IPInterfaceInlineIpspaceInlineLinks ip interface inline ipspace inline links
 //
-// swagger:model IPInterfaceIpspaceLinks
-type IPInterfaceIpspaceLinks struct {
+// swagger:model ip_interface_inline_ipspace_inline__links
+type IPInterfaceInlineIpspaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface ipspace links
-func (m *IPInterfaceIpspaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline ipspace inline links
+func (m *IPInterfaceInlineIpspaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -833,7 +843,7 @@ func (m *IPInterfaceIpspaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceIpspaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineIpspaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -850,8 +860,8 @@ func (m *IPInterfaceIpspaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface ipspace links based on the context it is used
-func (m *IPInterfaceIpspaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline ipspace inline links based on the context it is used
+func (m *IPInterfaceInlineIpspaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -864,7 +874,7 @@ func (m *IPInterfaceIpspaceLinks) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IPInterfaceIpspaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineIpspaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -879,7 +889,7 @@ func (m *IPInterfaceIpspaceLinks) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceIpspaceLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineIpspaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -887,8 +897,8 @@ func (m *IPInterfaceIpspaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceIpspaceLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceIpspaceLinks
+func (m *IPInterfaceInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineIpspaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -896,17 +906,17 @@ func (m *IPInterfaceIpspaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLinks IP interface links
+// IPInterfaceInlineLinks ip interface inline links
 //
-// swagger:model IPInterfaceLinks
-type IPInterfaceLinks struct {
+// swagger:model ip_interface_inline__links
+type IPInterfaceInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface links
-func (m *IPInterfaceLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline links
+func (m *IPInterfaceInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -919,7 +929,7 @@ func (m *IPInterfaceLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -936,8 +946,8 @@ func (m *IPInterfaceLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface links based on the context it is used
-func (m *IPInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline links based on the context it is used
+func (m *IPInterfaceInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -950,7 +960,7 @@ func (m *IPInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *IPInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -965,7 +975,7 @@ func (m *IPInterfaceLinks) contextValidateSelf(ctx context.Context, formats strf
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -973,8 +983,8 @@ func (m *IPInterfaceLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLinks
+func (m *IPInterfaceInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -982,38 +992,38 @@ func (m *IPInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocation Current or home location can be modified. Specifying a port implies a node. Specifying a node allows an appropriate port to be automatically selected. Ports are not valid and not shown for VIP interfaces. For POST, broadcast_domain can be specified alone or with home_node.  For PATCH, set is_home to true to revert a LIF back to its home port.
+// IPInterfaceInlineLocation Current or home location can be modified. Specifying a port implies a node. Specifying a node allows an appropriate port to be automatically selected. Ports are not valid and not shown for VIP interfaces. For POST, broadcast_domain can be specified alone or with home_node.  For PATCH, set is_home to true to revert a LIF back to its home port.
 //
-// swagger:model IPInterfaceLocation
-type IPInterfaceLocation struct {
+// swagger:model ip_interface_inline_location
+type IPInterfaceInlineLocation struct {
 
 	// auto revert
-	AutoRevert bool `json:"auto_revert,omitempty"`
+	AutoRevert *bool `json:"auto_revert,omitempty"`
 
 	// broadcast domain
-	BroadcastDomain *IPInterfaceLocationBroadcastDomain `json:"broadcast_domain,omitempty"`
+	BroadcastDomain *IPInterfaceInlineLocationInlineBroadcastDomain `json:"broadcast_domain,omitempty"`
 
 	// failover
-	Failover FailoverScope `json:"failover,omitempty"`
+	Failover *FailoverScope `json:"failover,omitempty"`
 
 	// home node
-	HomeNode *IPInterfaceLocationHomeNode `json:"home_node,omitempty"`
+	HomeNode *IPInterfaceInlineLocationInlineHomeNode `json:"home_node,omitempty"`
 
 	// home port
-	HomePort *IPInterfaceLocationHomePort `json:"home_port,omitempty"`
+	HomePort *IPInterfaceInlineLocationInlineHomePort `json:"home_port,omitempty"`
 
 	// is home
-	IsHome bool `json:"is_home,omitempty"`
+	IsHome *bool `json:"is_home,omitempty"`
 
 	// node
-	Node *IPInterfaceLocationNode `json:"node,omitempty"`
+	Node *IPInterfaceInlineLocationInlineNode `json:"node,omitempty"`
 
 	// port
-	Port *IPInterfaceLocationPort `json:"port,omitempty"`
+	Port *IPInterfaceInlineLocationInlinePort `json:"port,omitempty"`
 }
 
-// Validate validates this IP interface location
-func (m *IPInterfaceLocation) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location
+func (m *IPInterfaceInlineLocation) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBroadcastDomain(formats); err != nil {
@@ -1046,7 +1056,7 @@ func (m *IPInterfaceLocation) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocation) validateBroadcastDomain(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) validateBroadcastDomain(formats strfmt.Registry) error {
 	if swag.IsZero(m.BroadcastDomain) { // not required
 		return nil
 	}
@@ -1063,22 +1073,24 @@ func (m *IPInterfaceLocation) validateBroadcastDomain(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *IPInterfaceLocation) validateFailover(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) validateFailover(formats strfmt.Registry) error {
 	if swag.IsZero(m.Failover) { // not required
 		return nil
 	}
 
-	if err := m.Failover.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("location" + "." + "failover")
+	if m.Failover != nil {
+		if err := m.Failover.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "failover")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IPInterfaceLocation) validateHomeNode(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) validateHomeNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.HomeNode) { // not required
 		return nil
 	}
@@ -1095,7 +1107,7 @@ func (m *IPInterfaceLocation) validateHomeNode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocation) validateHomePort(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) validateHomePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.HomePort) { // not required
 		return nil
 	}
@@ -1112,7 +1124,7 @@ func (m *IPInterfaceLocation) validateHomePort(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocation) validateNode(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1129,7 +1141,7 @@ func (m *IPInterfaceLocation) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocation) validatePort(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) validatePort(formats strfmt.Registry) error {
 	if swag.IsZero(m.Port) { // not required
 		return nil
 	}
@@ -1146,8 +1158,8 @@ func (m *IPInterfaceLocation) validatePort(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface location based on the context it is used
-func (m *IPInterfaceLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location based on the context it is used
+func (m *IPInterfaceInlineLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateBroadcastDomain(ctx, formats); err != nil {
@@ -1180,7 +1192,7 @@ func (m *IPInterfaceLocation) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *IPInterfaceLocation) contextValidateBroadcastDomain(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) contextValidateBroadcastDomain(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BroadcastDomain != nil {
 		if err := m.BroadcastDomain.ContextValidate(ctx, formats); err != nil {
@@ -1194,19 +1206,21 @@ func (m *IPInterfaceLocation) contextValidateBroadcastDomain(ctx context.Context
 	return nil
 }
 
-func (m *IPInterfaceLocation) contextValidateFailover(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) contextValidateFailover(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := m.Failover.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("location" + "." + "failover")
+	if m.Failover != nil {
+		if err := m.Failover.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "failover")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil
 }
 
-func (m *IPInterfaceLocation) contextValidateHomeNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) contextValidateHomeNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.HomeNode != nil {
 		if err := m.HomeNode.ContextValidate(ctx, formats); err != nil {
@@ -1220,7 +1234,7 @@ func (m *IPInterfaceLocation) contextValidateHomeNode(ctx context.Context, forma
 	return nil
 }
 
-func (m *IPInterfaceLocation) contextValidateHomePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) contextValidateHomePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.HomePort != nil {
 		if err := m.HomePort.ContextValidate(ctx, formats); err != nil {
@@ -1234,7 +1248,7 @@ func (m *IPInterfaceLocation) contextValidateHomePort(ctx context.Context, forma
 	return nil
 }
 
-func (m *IPInterfaceLocation) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1248,7 +1262,7 @@ func (m *IPInterfaceLocation) contextValidateNode(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IPInterfaceLocation) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocation) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Port != nil {
 		if err := m.Port.ContextValidate(ctx, formats); err != nil {
@@ -1263,7 +1277,7 @@ func (m *IPInterfaceLocation) contextValidatePort(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocation) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocation) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1271,8 +1285,8 @@ func (m *IPInterfaceLocation) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocation) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocation
+func (m *IPInterfaceInlineLocation) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocation
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1280,25 +1294,25 @@ func (m *IPInterfaceLocation) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationBroadcastDomain IP interface location broadcast domain
+// IPInterfaceInlineLocationInlineBroadcastDomain ip interface inline location inline broadcast domain
 //
-// swagger:model IPInterfaceLocationBroadcastDomain
-type IPInterfaceLocationBroadcastDomain struct {
+// swagger:model ip_interface_inline_location_inline_broadcast_domain
+type IPInterfaceInlineLocationInlineBroadcastDomain struct {
 
 	// links
-	Links *IPInterfaceLocationBroadcastDomainLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks `json:"_links,omitempty"`
 
 	// Name of the broadcast domain, scoped to its IPspace
 	// Example: bd1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Broadcast domain UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface location broadcast domain
-func (m *IPInterfaceLocationBroadcastDomain) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline broadcast domain
+func (m *IPInterfaceInlineLocationInlineBroadcastDomain) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1311,7 +1325,7 @@ func (m *IPInterfaceLocationBroadcastDomain) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *IPInterfaceLocationBroadcastDomain) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineBroadcastDomain) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1328,8 +1342,8 @@ func (m *IPInterfaceLocationBroadcastDomain) validateLinks(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validate this IP interface location broadcast domain based on the context it is used
-func (m *IPInterfaceLocationBroadcastDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline broadcast domain based on the context it is used
+func (m *IPInterfaceInlineLocationInlineBroadcastDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1342,7 +1356,7 @@ func (m *IPInterfaceLocationBroadcastDomain) ContextValidate(ctx context.Context
 	return nil
 }
 
-func (m *IPInterfaceLocationBroadcastDomain) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineBroadcastDomain) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1357,7 +1371,7 @@ func (m *IPInterfaceLocationBroadcastDomain) contextValidateLinks(ctx context.Co
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationBroadcastDomain) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineBroadcastDomain) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1365,8 +1379,8 @@ func (m *IPInterfaceLocationBroadcastDomain) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationBroadcastDomain) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationBroadcastDomain
+func (m *IPInterfaceInlineLocationInlineBroadcastDomain) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineBroadcastDomain
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1374,17 +1388,17 @@ func (m *IPInterfaceLocationBroadcastDomain) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationBroadcastDomainLinks IP interface location broadcast domain links
+// IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks ip interface inline location inline broadcast domain inline links
 //
-// swagger:model IPInterfaceLocationBroadcastDomainLinks
-type IPInterfaceLocationBroadcastDomainLinks struct {
+// swagger:model ip_interface_inline_location_inline_broadcast_domain_inline__links
+type IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface location broadcast domain links
-func (m *IPInterfaceLocationBroadcastDomainLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline broadcast domain inline links
+func (m *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1397,7 +1411,7 @@ func (m *IPInterfaceLocationBroadcastDomainLinks) Validate(formats strfmt.Regist
 	return nil
 }
 
-func (m *IPInterfaceLocationBroadcastDomainLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1414,8 +1428,8 @@ func (m *IPInterfaceLocationBroadcastDomainLinks) validateSelf(formats strfmt.Re
 	return nil
 }
 
-// ContextValidate validate this IP interface location broadcast domain links based on the context it is used
-func (m *IPInterfaceLocationBroadcastDomainLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline broadcast domain inline links based on the context it is used
+func (m *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1428,7 +1442,7 @@ func (m *IPInterfaceLocationBroadcastDomainLinks) ContextValidate(ctx context.Co
 	return nil
 }
 
-func (m *IPInterfaceLocationBroadcastDomainLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1443,7 +1457,7 @@ func (m *IPInterfaceLocationBroadcastDomainLinks) contextValidateSelf(ctx contex
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationBroadcastDomainLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1451,8 +1465,8 @@ func (m *IPInterfaceLocationBroadcastDomainLinks) MarshalBinary() ([]byte, error
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationBroadcastDomainLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationBroadcastDomainLinks
+func (m *IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineBroadcastDomainInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1460,25 +1474,25 @@ func (m *IPInterfaceLocationBroadcastDomainLinks) UnmarshalBinary(b []byte) erro
 	return nil
 }
 
-// IPInterfaceLocationHomeNode IP interface location home node
+// IPInterfaceInlineLocationInlineHomeNode ip interface inline location inline home node
 //
-// swagger:model IPInterfaceLocationHomeNode
-type IPInterfaceLocationHomeNode struct {
+// swagger:model ip_interface_inline_location_inline_home_node
+type IPInterfaceInlineLocationInlineHomeNode struct {
 
 	// links
-	Links *IPInterfaceLocationHomeNodeLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineLocationInlineHomeNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface location home node
-func (m *IPInterfaceLocationHomeNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline home node
+func (m *IPInterfaceInlineLocationInlineHomeNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1491,7 +1505,7 @@ func (m *IPInterfaceLocationHomeNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationHomeNode) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomeNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1508,8 +1522,8 @@ func (m *IPInterfaceLocationHomeNode) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this IP interface location home node based on the context it is used
-func (m *IPInterfaceLocationHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline home node based on the context it is used
+func (m *IPInterfaceInlineLocationInlineHomeNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1522,7 +1536,7 @@ func (m *IPInterfaceLocationHomeNode) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *IPInterfaceLocationHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomeNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1537,7 +1551,7 @@ func (m *IPInterfaceLocationHomeNode) contextValidateLinks(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationHomeNode) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineHomeNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1545,8 +1559,8 @@ func (m *IPInterfaceLocationHomeNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationHomeNode) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationHomeNode
+func (m *IPInterfaceInlineLocationInlineHomeNode) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineHomeNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1554,17 +1568,17 @@ func (m *IPInterfaceLocationHomeNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationHomeNodeLinks IP interface location home node links
+// IPInterfaceInlineLocationInlineHomeNodeInlineLinks ip interface inline location inline home node inline links
 //
-// swagger:model IPInterfaceLocationHomeNodeLinks
-type IPInterfaceLocationHomeNodeLinks struct {
+// swagger:model ip_interface_inline_location_inline_home_node_inline__links
+type IPInterfaceInlineLocationInlineHomeNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface location home node links
-func (m *IPInterfaceLocationHomeNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline home node inline links
+func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1577,7 +1591,7 @@ func (m *IPInterfaceLocationHomeNodeLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *IPInterfaceLocationHomeNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1594,8 +1608,8 @@ func (m *IPInterfaceLocationHomeNodeLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this IP interface location home node links based on the context it is used
-func (m *IPInterfaceLocationHomeNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline home node inline links based on the context it is used
+func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1608,7 +1622,7 @@ func (m *IPInterfaceLocationHomeNodeLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *IPInterfaceLocationHomeNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1623,7 +1637,7 @@ func (m *IPInterfaceLocationHomeNodeLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationHomeNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1631,8 +1645,8 @@ func (m *IPInterfaceLocationHomeNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationHomeNodeLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationHomeNodeLinks
+func (m *IPInterfaceInlineLocationInlineHomeNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineHomeNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1640,28 +1654,28 @@ func (m *IPInterfaceLocationHomeNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationHomePort IP interface location home port
+// IPInterfaceInlineLocationInlineHomePort ip interface inline location inline home port
 //
-// swagger:model IPInterfaceLocationHomePort
-type IPInterfaceLocationHomePort struct {
+// swagger:model ip_interface_inline_location_inline_home_port
+type IPInterfaceInlineLocationInlineHomePort struct {
 
 	// links
-	Links *IPInterfaceLocationHomePortLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineLocationInlineHomePortInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *IPInterfaceLocationHomePortNode `json:"node,omitempty"`
+	Node *IPInterfaceInlineLocationInlineHomePortInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface location home port
-func (m *IPInterfaceLocationHomePort) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline home port
+func (m *IPInterfaceInlineLocationInlineHomePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1678,7 +1692,7 @@ func (m *IPInterfaceLocationHomePort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationHomePort) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomePort) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1695,7 +1709,7 @@ func (m *IPInterfaceLocationHomePort) validateLinks(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *IPInterfaceLocationHomePort) validateNode(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomePort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -1712,8 +1726,8 @@ func (m *IPInterfaceLocationHomePort) validateNode(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this IP interface location home port based on the context it is used
-func (m *IPInterfaceLocationHomePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline home port based on the context it is used
+func (m *IPInterfaceInlineLocationInlineHomePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1730,7 +1744,7 @@ func (m *IPInterfaceLocationHomePort) ContextValidate(ctx context.Context, forma
 	return nil
 }
 
-func (m *IPInterfaceLocationHomePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1744,7 +1758,7 @@ func (m *IPInterfaceLocationHomePort) contextValidateLinks(ctx context.Context, 
 	return nil
 }
 
-func (m *IPInterfaceLocationHomePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -1759,7 +1773,7 @@ func (m *IPInterfaceLocationHomePort) contextValidateNode(ctx context.Context, f
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationHomePort) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineHomePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1767,8 +1781,8 @@ func (m *IPInterfaceLocationHomePort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationHomePort) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationHomePort
+func (m *IPInterfaceInlineLocationInlineHomePort) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineHomePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1776,17 +1790,17 @@ func (m *IPInterfaceLocationHomePort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationHomePortLinks IP interface location home port links
+// IPInterfaceInlineLocationInlineHomePortInlineLinks ip interface inline location inline home port inline links
 //
-// swagger:model IPInterfaceLocationHomePortLinks
-type IPInterfaceLocationHomePortLinks struct {
+// swagger:model ip_interface_inline_location_inline_home_port_inline__links
+type IPInterfaceInlineLocationInlineHomePortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface location home port links
-func (m *IPInterfaceLocationHomePortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline home port inline links
+func (m *IPInterfaceInlineLocationInlineHomePortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -1799,7 +1813,7 @@ func (m *IPInterfaceLocationHomePortLinks) Validate(formats strfmt.Registry) err
 	return nil
 }
 
-func (m *IPInterfaceLocationHomePortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomePortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -1816,8 +1830,8 @@ func (m *IPInterfaceLocationHomePortLinks) validateSelf(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this IP interface location home port links based on the context it is used
-func (m *IPInterfaceLocationHomePortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline home port inline links based on the context it is used
+func (m *IPInterfaceInlineLocationInlineHomePortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -1830,7 +1844,7 @@ func (m *IPInterfaceLocationHomePortLinks) ContextValidate(ctx context.Context, 
 	return nil
 }
 
-func (m *IPInterfaceLocationHomePortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineHomePortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -1845,7 +1859,7 @@ func (m *IPInterfaceLocationHomePortLinks) contextValidateSelf(ctx context.Conte
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationHomePortLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineHomePortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1853,8 +1867,8 @@ func (m *IPInterfaceLocationHomePortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationHomePortLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationHomePortLinks
+func (m *IPInterfaceInlineLocationInlineHomePortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineHomePortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1862,28 +1876,28 @@ func (m *IPInterfaceLocationHomePortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationHomePortNode IP interface location home port node
+// IPInterfaceInlineLocationInlineHomePortInlineNode ip interface inline location inline home port inline node
 //
-// swagger:model IPInterfaceLocationHomePortNode
-type IPInterfaceLocationHomePortNode struct {
+// swagger:model ip_interface_inline_location_inline_home_port_inline_node
+type IPInterfaceInlineLocationInlineHomePortInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this IP interface location home port node
-func (m *IPInterfaceLocationHomePortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline home port inline node
+func (m *IPInterfaceInlineLocationInlineHomePortInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this IP interface location home port node based on context it is used
-func (m *IPInterfaceLocationHomePortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this ip interface inline location inline home port inline node based on context it is used
+func (m *IPInterfaceInlineLocationInlineHomePortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationHomePortNode) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineHomePortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1891,8 +1905,8 @@ func (m *IPInterfaceLocationHomePortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationHomePortNode) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationHomePortNode
+func (m *IPInterfaceInlineLocationInlineHomePortInlineNode) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineHomePortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1900,25 +1914,25 @@ func (m *IPInterfaceLocationHomePortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationNode IP interface location node
+// IPInterfaceInlineLocationInlineNode ip interface inline location inline node
 //
-// swagger:model IPInterfaceLocationNode
-type IPInterfaceLocationNode struct {
+// swagger:model ip_interface_inline_location_inline_node
+type IPInterfaceInlineLocationInlineNode struct {
 
 	// links
-	Links *IPInterfaceLocationNodeLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineLocationInlineNodeInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface location node
-func (m *IPInterfaceLocationNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline node
+func (m *IPInterfaceInlineLocationInlineNode) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -1931,7 +1945,7 @@ func (m *IPInterfaceLocationNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationNode) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineNode) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -1948,8 +1962,8 @@ func (m *IPInterfaceLocationNode) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface location node based on the context it is used
-func (m *IPInterfaceLocationNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline node based on the context it is used
+func (m *IPInterfaceInlineLocationInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -1962,7 +1976,7 @@ func (m *IPInterfaceLocationNode) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IPInterfaceLocationNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -1977,7 +1991,7 @@ func (m *IPInterfaceLocationNode) contextValidateLinks(ctx context.Context, form
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationNode) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -1985,8 +1999,8 @@ func (m *IPInterfaceLocationNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationNode) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationNode
+func (m *IPInterfaceInlineLocationInlineNode) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1994,17 +2008,17 @@ func (m *IPInterfaceLocationNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationNodeLinks IP interface location node links
+// IPInterfaceInlineLocationInlineNodeInlineLinks ip interface inline location inline node inline links
 //
-// swagger:model IPInterfaceLocationNodeLinks
-type IPInterfaceLocationNodeLinks struct {
+// swagger:model ip_interface_inline_location_inline_node_inline__links
+type IPInterfaceInlineLocationInlineNodeInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface location node links
-func (m *IPInterfaceLocationNodeLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline node inline links
+func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2017,7 +2031,7 @@ func (m *IPInterfaceLocationNodeLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationNodeLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2034,8 +2048,8 @@ func (m *IPInterfaceLocationNodeLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this IP interface location node links based on the context it is used
-func (m *IPInterfaceLocationNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline node inline links based on the context it is used
+func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2048,7 +2062,7 @@ func (m *IPInterfaceLocationNodeLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *IPInterfaceLocationNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2063,7 +2077,7 @@ func (m *IPInterfaceLocationNodeLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationNodeLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2071,8 +2085,8 @@ func (m *IPInterfaceLocationNodeLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationNodeLinks
+func (m *IPInterfaceInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlineNodeInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2080,28 +2094,28 @@ func (m *IPInterfaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationPort IP interface location port
+// IPInterfaceInlineLocationInlinePort ip interface inline location inline port
 //
-// swagger:model IPInterfaceLocationPort
-type IPInterfaceLocationPort struct {
+// swagger:model ip_interface_inline_location_inline_port
+type IPInterfaceInlineLocationInlinePort struct {
 
 	// links
-	Links *IPInterfaceLocationPortLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineLocationInlinePortInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: e1b
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// node
-	Node *IPInterfaceLocationPortNode `json:"node,omitempty"`
+	Node *IPInterfaceInlineLocationInlinePortInlineNode `json:"node,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface location port
-func (m *IPInterfaceLocationPort) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline port
+func (m *IPInterfaceInlineLocationInlinePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2118,7 +2132,7 @@ func (m *IPInterfaceLocationPort) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationPort) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlinePort) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2135,7 +2149,7 @@ func (m *IPInterfaceLocationPort) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationPort) validateNode(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlinePort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
 	}
@@ -2152,8 +2166,8 @@ func (m *IPInterfaceLocationPort) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface location port based on the context it is used
-func (m *IPInterfaceLocationPort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline port based on the context it is used
+func (m *IPInterfaceInlineLocationInlinePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2170,7 +2184,7 @@ func (m *IPInterfaceLocationPort) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IPInterfaceLocationPort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlinePort) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2184,7 +2198,7 @@ func (m *IPInterfaceLocationPort) contextValidateLinks(ctx context.Context, form
 	return nil
 }
 
-func (m *IPInterfaceLocationPort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlinePort) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
 		if err := m.Node.ContextValidate(ctx, formats); err != nil {
@@ -2199,7 +2213,7 @@ func (m *IPInterfaceLocationPort) contextValidateNode(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationPort) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlinePort) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2207,8 +2221,8 @@ func (m *IPInterfaceLocationPort) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationPort) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationPort
+func (m *IPInterfaceInlineLocationInlinePort) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlinePort
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2216,17 +2230,17 @@ func (m *IPInterfaceLocationPort) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationPortLinks IP interface location port links
+// IPInterfaceInlineLocationInlinePortInlineLinks ip interface inline location inline port inline links
 //
-// swagger:model IPInterfaceLocationPortLinks
-type IPInterfaceLocationPortLinks struct {
+// swagger:model ip_interface_inline_location_inline_port_inline__links
+type IPInterfaceInlineLocationInlinePortInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface location port links
-func (m *IPInterfaceLocationPortLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline port inline links
+func (m *IPInterfaceInlineLocationInlinePortInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2239,7 +2253,7 @@ func (m *IPInterfaceLocationPortLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceLocationPortLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlinePortInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2256,8 +2270,8 @@ func (m *IPInterfaceLocationPortLinks) validateSelf(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validate this IP interface location port links based on the context it is used
-func (m *IPInterfaceLocationPortLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline location inline port inline links based on the context it is used
+func (m *IPInterfaceInlineLocationInlinePortInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2270,7 +2284,7 @@ func (m *IPInterfaceLocationPortLinks) ContextValidate(ctx context.Context, form
 	return nil
 }
 
-func (m *IPInterfaceLocationPortLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineLocationInlinePortInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2285,7 +2299,7 @@ func (m *IPInterfaceLocationPortLinks) contextValidateSelf(ctx context.Context, 
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationPortLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlinePortInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2293,8 +2307,8 @@ func (m *IPInterfaceLocationPortLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationPortLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationPortLinks
+func (m *IPInterfaceInlineLocationInlinePortInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlinePortInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2302,28 +2316,28 @@ func (m *IPInterfaceLocationPortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocationPortNode IP interface location port node
+// IPInterfaceInlineLocationInlinePortInlineNode ip interface inline location inline port inline node
 //
-// swagger:model IPInterfaceLocationPortNode
-type IPInterfaceLocationPortNode struct {
+// swagger:model ip_interface_inline_location_inline_port_inline_node
+type IPInterfaceInlineLocationInlinePortInlineNode struct {
 
 	// Name of node on which the port is located.
 	// Example: node1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
-// Validate validates this IP interface location port node
-func (m *IPInterfaceLocationPortNode) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline location inline port inline node
+func (m *IPInterfaceInlineLocationInlinePortInlineNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this IP interface location port node based on context it is used
-func (m *IPInterfaceLocationPortNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this ip interface inline location inline port inline node based on context it is used
+func (m *IPInterfaceInlineLocationInlinePortInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceLocationPortNode) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineLocationInlinePortInlineNode) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2331,8 +2345,8 @@ func (m *IPInterfaceLocationPortNode) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceLocationPortNode) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceLocationPortNode
+func (m *IPInterfaceInlineLocationInlinePortInlineNode) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineLocationInlinePortInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2340,27 +2354,27 @@ func (m *IPInterfaceLocationPortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceMetric The most recent sample of I/O metrics for the interface.
+// IPInterfaceInlineMetric The most recent sample of I/O metrics for the interface.
 //
-// swagger:model IPInterfaceMetric
-type IPInterfaceMetric struct {
+// swagger:model ip_interface_inline_metric
+type IPInterfaceInlineMetric struct {
 
 	// links
-	Links *IPInterfaceMetricLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineMetricInlineLinks `json:"_links,omitempty"`
 
 	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
 	//
 	// Example: PT15S
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
-	Duration string `json:"duration,omitempty"`
+	Duration *string `json:"duration,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput
-	Throughput *IPInterfaceMetricThroughput `json:"throughput,omitempty"`
+	Throughput *IPInterfaceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -2368,8 +2382,8 @@ type IPInterfaceMetric struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this IP interface metric
-func (m *IPInterfaceMetric) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline metric
+func (m *IPInterfaceInlineMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2398,7 +2412,7 @@ func (m *IPInterfaceMetric) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceMetric) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2415,7 +2429,7 @@ func (m *IPInterfaceMetric) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-var ipInterfaceMetricTypeDurationPropEnum []interface{}
+var ipInterfaceInlineMetricTypeDurationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2423,95 +2437,95 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		ipInterfaceMetricTypeDurationPropEnum = append(ipInterfaceMetricTypeDurationPropEnum, v)
+		ipInterfaceInlineMetricTypeDurationPropEnum = append(ipInterfaceInlineMetricTypeDurationPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// duration
 	// Duration
 	// PT15S
 	// END DEBUGGING
-	// IPInterfaceMetricDurationPT15S captures enum value "PT15S"
-	IPInterfaceMetricDurationPT15S string = "PT15S"
+	// IPInterfaceInlineMetricDurationPT15S captures enum value "PT15S"
+	IPInterfaceInlineMetricDurationPT15S string = "PT15S"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// duration
 	// Duration
 	// PT4M
 	// END DEBUGGING
-	// IPInterfaceMetricDurationPT4M captures enum value "PT4M"
-	IPInterfaceMetricDurationPT4M string = "PT4M"
+	// IPInterfaceInlineMetricDurationPT4M captures enum value "PT4M"
+	IPInterfaceInlineMetricDurationPT4M string = "PT4M"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// duration
 	// Duration
 	// PT30M
 	// END DEBUGGING
-	// IPInterfaceMetricDurationPT30M captures enum value "PT30M"
-	IPInterfaceMetricDurationPT30M string = "PT30M"
+	// IPInterfaceInlineMetricDurationPT30M captures enum value "PT30M"
+	IPInterfaceInlineMetricDurationPT30M string = "PT30M"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// duration
 	// Duration
 	// PT2H
 	// END DEBUGGING
-	// IPInterfaceMetricDurationPT2H captures enum value "PT2H"
-	IPInterfaceMetricDurationPT2H string = "PT2H"
+	// IPInterfaceInlineMetricDurationPT2H captures enum value "PT2H"
+	IPInterfaceInlineMetricDurationPT2H string = "PT2H"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// duration
 	// Duration
 	// P1D
 	// END DEBUGGING
-	// IPInterfaceMetricDurationP1D captures enum value "P1D"
-	IPInterfaceMetricDurationP1D string = "P1D"
+	// IPInterfaceInlineMetricDurationP1D captures enum value "P1D"
+	IPInterfaceInlineMetricDurationP1D string = "P1D"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// duration
 	// Duration
 	// PT5M
 	// END DEBUGGING
-	// IPInterfaceMetricDurationPT5M captures enum value "PT5M"
-	IPInterfaceMetricDurationPT5M string = "PT5M"
+	// IPInterfaceInlineMetricDurationPT5M captures enum value "PT5M"
+	IPInterfaceInlineMetricDurationPT5M string = "PT5M"
 )
 
 // prop value enum
-func (m *IPInterfaceMetric) validateDurationEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, ipInterfaceMetricTypeDurationPropEnum, true); err != nil {
+func (m *IPInterfaceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceInlineMetricTypeDurationPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *IPInterfaceMetric) validateDuration(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) validateDuration(formats strfmt.Registry) error {
 	if swag.IsZero(m.Duration) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var ipInterfaceMetricTypeStatusPropEnum []interface{}
+var ipInterfaceInlineMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -2519,135 +2533,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		ipInterfaceMetricTypeStatusPropEnum = append(ipInterfaceMetricTypeStatusPropEnum, v)
+		ipInterfaceInlineMetricTypeStatusPropEnum = append(ipInterfaceInlineMetricTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// IPInterfaceMetricStatusOk captures enum value "ok"
-	IPInterfaceMetricStatusOk string = "ok"
+	// IPInterfaceInlineMetricStatusOk captures enum value "ok"
+	IPInterfaceInlineMetricStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// IPInterfaceMetricStatusError captures enum value "error"
-	IPInterfaceMetricStatusError string = "error"
+	// IPInterfaceInlineMetricStatusError captures enum value "error"
+	IPInterfaceInlineMetricStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// IPInterfaceMetricStatusPartialNoData captures enum value "partial_no_data"
-	IPInterfaceMetricStatusPartialNoData string = "partial_no_data"
+	// IPInterfaceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	IPInterfaceInlineMetricStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// IPInterfaceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	IPInterfaceMetricStatusPartialNoUUID string = "partial_no_uuid"
+	// IPInterfaceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IPInterfaceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// IPInterfaceMetricStatusPartialNoResponse captures enum value "partial_no_response"
-	IPInterfaceMetricStatusPartialNoResponse string = "partial_no_response"
+	// IPInterfaceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	IPInterfaceInlineMetricStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// IPInterfaceMetricStatusPartialOtherError captures enum value "partial_other_error"
-	IPInterfaceMetricStatusPartialOtherError string = "partial_other_error"
+	// IPInterfaceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	IPInterfaceInlineMetricStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// IPInterfaceMetricStatusNegativeDelta captures enum value "negative_delta"
-	IPInterfaceMetricStatusNegativeDelta string = "negative_delta"
+	// IPInterfaceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	IPInterfaceInlineMetricStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// IPInterfaceMetricStatusBackfilledData captures enum value "backfilled_data"
-	IPInterfaceMetricStatusBackfilledData string = "backfilled_data"
+	// IPInterfaceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	IPInterfaceInlineMetricStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// IPInterfaceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	IPInterfaceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// IPInterfaceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	IPInterfaceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceMetric
-	// IPInterfaceMetric
+	// ip_interface_inline_metric
+	// IPInterfaceInlineMetric
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// IPInterfaceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	IPInterfaceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+	// IPInterfaceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	IPInterfaceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *IPInterfaceMetric) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, ipInterfaceMetricTypeStatusPropEnum, true); err != nil {
+func (m *IPInterfaceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceInlineMetricTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *IPInterfaceMetric) validateStatus(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IPInterfaceMetric) validateThroughput(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) validateThroughput(formats strfmt.Registry) error {
 	if swag.IsZero(m.Throughput) { // not required
 		return nil
 	}
@@ -2664,7 +2678,7 @@ func (m *IPInterfaceMetric) validateThroughput(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceMetric) validateTimestamp(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -2676,8 +2690,8 @@ func (m *IPInterfaceMetric) validateTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface metric based on the context it is used
-func (m *IPInterfaceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline metric based on the context it is used
+func (m *IPInterfaceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2694,7 +2708,7 @@ func (m *IPInterfaceMetric) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *IPInterfaceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2708,7 +2722,7 @@ func (m *IPInterfaceMetric) contextValidateLinks(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IPInterfaceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Throughput != nil {
 		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
@@ -2723,7 +2737,7 @@ func (m *IPInterfaceMetric) contextValidateThroughput(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceMetric) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineMetric) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2731,8 +2745,8 @@ func (m *IPInterfaceMetric) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceMetric) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceMetric
+func (m *IPInterfaceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineMetric
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2740,17 +2754,17 @@ func (m *IPInterfaceMetric) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceMetricLinks IP interface metric links
+// IPInterfaceInlineMetricInlineLinks ip interface inline metric inline links
 //
-// swagger:model IPInterfaceMetricLinks
-type IPInterfaceMetricLinks struct {
+// swagger:model ip_interface_inline_metric_inline__links
+type IPInterfaceInlineMetricInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface metric links
-func (m *IPInterfaceMetricLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline metric inline links
+func (m *IPInterfaceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2763,7 +2777,7 @@ func (m *IPInterfaceMetricLinks) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceMetricLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -2780,8 +2794,8 @@ func (m *IPInterfaceMetricLinks) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface metric links based on the context it is used
-func (m *IPInterfaceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline metric inline links based on the context it is used
+func (m *IPInterfaceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -2794,7 +2808,7 @@ func (m *IPInterfaceMetricLinks) ContextValidate(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IPInterfaceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -2809,7 +2823,7 @@ func (m *IPInterfaceMetricLinks) contextValidateSelf(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceMetricLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2817,8 +2831,8 @@ func (m *IPInterfaceMetricLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceMetricLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceMetricLinks
+func (m *IPInterfaceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2826,36 +2840,36 @@ func (m *IPInterfaceMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceMetricThroughput The rate of throughput bytes per second observed at the interface.
+// IPInterfaceInlineMetricInlineThroughput The rate of throughput bytes per second observed at the interface.
 //
-// swagger:model IPInterfaceMetricThroughput
-type IPInterfaceMetricThroughput struct {
+// swagger:model ip_interface_inline_metric_inline_throughput
+type IPInterfaceInlineMetricInlineThroughput struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this IP interface metric throughput
-func (m *IPInterfaceMetricThroughput) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline metric inline throughput
+func (m *IPInterfaceInlineMetricInlineThroughput) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this IP interface metric throughput based on context it is used
-func (m *IPInterfaceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this ip interface inline metric inline throughput based on context it is used
+func (m *IPInterfaceInlineMetricInlineThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceMetricThroughput) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineMetricInlineThroughput) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2863,8 +2877,8 @@ func (m *IPInterfaceMetricThroughput) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceMetricThroughput) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceMetricThroughput
+func (m *IPInterfaceInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineMetricInlineThroughput
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2872,25 +2886,25 @@ func (m *IPInterfaceMetricThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceServicePolicy IP interface service policy
+// IPInterfaceInlineServicePolicy ip interface inline service policy
 //
-// swagger:model IPInterfaceServicePolicy
-type IPInterfaceServicePolicy struct {
+// swagger:model ip_interface_inline_service_policy
+type IPInterfaceInlineServicePolicy struct {
 
 	// links
-	Links *IPInterfaceServicePolicyLinks `json:"_links,omitempty"`
+	Links *IPInterfaceInlineServicePolicyInlineLinks `json:"_links,omitempty"`
 
 	// name
 	// Example: default-intercluster
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface service policy
-func (m *IPInterfaceServicePolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline service policy
+func (m *IPInterfaceInlineServicePolicy) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -2903,7 +2917,7 @@ func (m *IPInterfaceServicePolicy) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceServicePolicy) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineServicePolicy) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -2920,8 +2934,8 @@ func (m *IPInterfaceServicePolicy) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validate this IP interface service policy based on the context it is used
-func (m *IPInterfaceServicePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline service policy based on the context it is used
+func (m *IPInterfaceInlineServicePolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -2934,7 +2948,7 @@ func (m *IPInterfaceServicePolicy) ContextValidate(ctx context.Context, formats 
 	return nil
 }
 
-func (m *IPInterfaceServicePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineServicePolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -2949,7 +2963,7 @@ func (m *IPInterfaceServicePolicy) contextValidateLinks(ctx context.Context, for
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceServicePolicy) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineServicePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2957,8 +2971,8 @@ func (m *IPInterfaceServicePolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceServicePolicy) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceServicePolicy
+func (m *IPInterfaceInlineServicePolicy) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineServicePolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2966,17 +2980,17 @@ func (m *IPInterfaceServicePolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceServicePolicyLinks IP interface service policy links
+// IPInterfaceInlineServicePolicyInlineLinks ip interface inline service policy inline links
 //
-// swagger:model IPInterfaceServicePolicyLinks
-type IPInterfaceServicePolicyLinks struct {
+// swagger:model ip_interface_inline_service_policy_inline__links
+type IPInterfaceInlineServicePolicyInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface service policy links
-func (m *IPInterfaceServicePolicyLinks) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline service policy inline links
+func (m *IPInterfaceInlineServicePolicyInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -2989,7 +3003,7 @@ func (m *IPInterfaceServicePolicyLinks) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IPInterfaceServicePolicyLinks) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineServicePolicyInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3006,8 +3020,8 @@ func (m *IPInterfaceServicePolicyLinks) validateSelf(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validate this IP interface service policy links based on the context it is used
-func (m *IPInterfaceServicePolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline service policy inline links based on the context it is used
+func (m *IPInterfaceInlineServicePolicyInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3020,7 +3034,7 @@ func (m *IPInterfaceServicePolicyLinks) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *IPInterfaceServicePolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineServicePolicyInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3035,7 +3049,7 @@ func (m *IPInterfaceServicePolicyLinks) contextValidateSelf(ctx context.Context,
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceServicePolicyLinks) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineServicePolicyInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3043,8 +3057,8 @@ func (m *IPInterfaceServicePolicyLinks) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceServicePolicyLinks) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceServicePolicyLinks
+func (m *IPInterfaceInlineServicePolicyInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineServicePolicyInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3052,18 +3066,18 @@ func (m *IPInterfaceServicePolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceStatistics The real time I/O statistics for the interface.
+// IPInterfaceInlineStatistics The real time I/O statistics for the interface.
 //
-// swagger:model IPInterfaceStatistics
-type IPInterfaceStatistics struct {
+// swagger:model ip_interface_inline_statistics
+type IPInterfaceInlineStatistics struct {
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *IPInterfaceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *IPInterfaceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
 	// Example: 2017-01-25T11:20:13Z
@@ -3071,8 +3085,8 @@ type IPInterfaceStatistics struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
 
-// Validate validates this IP interface statistics
-func (m *IPInterfaceStatistics) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline statistics
+func (m *IPInterfaceInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateStatus(formats); err != nil {
@@ -3093,7 +3107,7 @@ func (m *IPInterfaceStatistics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var ipInterfaceStatisticsTypeStatusPropEnum []interface{}
+var ipInterfaceInlineStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3101,135 +3115,135 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		ipInterfaceStatisticsTypeStatusPropEnum = append(ipInterfaceStatisticsTypeStatusPropEnum, v)
+		ipInterfaceInlineStatisticsTypeStatusPropEnum = append(ipInterfaceInlineStatisticsTypeStatusPropEnum, v)
 	}
 }
 
 const (
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// ok
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusOk captures enum value "ok"
-	IPInterfaceStatisticsStatusOk string = "ok"
+	// IPInterfaceInlineStatisticsStatusOk captures enum value "ok"
+	IPInterfaceInlineStatisticsStatusOk string = "ok"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// error
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusError captures enum value "error"
-	IPInterfaceStatisticsStatusError string = "error"
+	// IPInterfaceInlineStatisticsStatusError captures enum value "error"
+	IPInterfaceInlineStatisticsStatusError string = "error"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// partial_no_data
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusPartialNoData captures enum value "partial_no_data"
-	IPInterfaceStatisticsStatusPartialNoData string = "partial_no_data"
+	// IPInterfaceInlineStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	IPInterfaceInlineStatisticsStatusPartialNoData string = "partial_no_data"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// partial_no_uuid
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	IPInterfaceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+	// IPInterfaceInlineStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IPInterfaceInlineStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// partial_no_response
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
-	IPInterfaceStatisticsStatusPartialNoResponse string = "partial_no_response"
+	// IPInterfaceInlineStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	IPInterfaceInlineStatisticsStatusPartialNoResponse string = "partial_no_response"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// partial_other_error
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
-	IPInterfaceStatisticsStatusPartialOtherError string = "partial_other_error"
+	// IPInterfaceInlineStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	IPInterfaceInlineStatisticsStatusPartialOtherError string = "partial_other_error"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// negative_delta
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusNegativeDelta captures enum value "negative_delta"
-	IPInterfaceStatisticsStatusNegativeDelta string = "negative_delta"
+	// IPInterfaceInlineStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	IPInterfaceInlineStatisticsStatusNegativeDelta string = "negative_delta"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// backfilled_data
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusBackfilledData captures enum value "backfilled_data"
-	IPInterfaceStatisticsStatusBackfilledData string = "backfilled_data"
+	// IPInterfaceInlineStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	IPInterfaceInlineStatisticsStatusBackfilledData string = "backfilled_data"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
-	IPInterfaceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+	// IPInterfaceInlineStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	IPInterfaceInlineStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
 	// BEGIN DEBUGGING
-	// IPInterfaceStatistics
-	// IPInterfaceStatistics
+	// ip_interface_inline_statistics
+	// IPInterfaceInlineStatistics
 	// status
 	// Status
 	// inconsistent_old_data
 	// END DEBUGGING
-	// IPInterfaceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
-	IPInterfaceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+	// IPInterfaceInlineStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	IPInterfaceInlineStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 )
 
 // prop value enum
-func (m *IPInterfaceStatistics) validateStatusEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, ipInterfaceStatisticsTypeStatusPropEnum, true); err != nil {
+func (m *IPInterfaceInlineStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceInlineStatisticsTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *IPInterfaceStatistics) validateStatus(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineStatistics) validateStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
 
 	// value enum
-	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", *m.Status); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *IPInterfaceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineStatistics) validateThroughputRaw(formats strfmt.Registry) error {
 	if swag.IsZero(m.ThroughputRaw) { // not required
 		return nil
 	}
@@ -3246,7 +3260,7 @@ func (m *IPInterfaceStatistics) validateThroughputRaw(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *IPInterfaceStatistics) validateTimestamp(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
 	if swag.IsZero(m.Timestamp) { // not required
 		return nil
 	}
@@ -3258,8 +3272,8 @@ func (m *IPInterfaceStatistics) validateTimestamp(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validate this IP interface statistics based on the context it is used
-func (m *IPInterfaceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline statistics based on the context it is used
+func (m *IPInterfaceInlineStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
@@ -3272,7 +3286,7 @@ func (m *IPInterfaceStatistics) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *IPInterfaceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ThroughputRaw != nil {
 		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
@@ -3287,7 +3301,7 @@ func (m *IPInterfaceStatistics) contextValidateThroughputRaw(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceStatistics) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineStatistics) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3295,8 +3309,8 @@ func (m *IPInterfaceStatistics) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceStatistics) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceStatistics
+func (m *IPInterfaceInlineStatistics) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineStatistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3304,36 +3318,36 @@ func (m *IPInterfaceStatistics) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceStatisticsThroughputRaw Throughput bytes observed at the interface. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+// IPInterfaceInlineStatisticsInlineThroughputRaw Throughput bytes observed at the interface. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
 //
-// swagger:model IPInterfaceStatisticsThroughputRaw
-type IPInterfaceStatisticsThroughputRaw struct {
+// swagger:model ip_interface_inline_statistics_inline_throughput_raw
+type IPInterfaceInlineStatisticsInlineThroughputRaw struct {
 
 	// Performance metric for read I/O operations.
 	// Example: 200
-	Read int64 `json:"read,omitempty"`
+	Read *int64 `json:"read,omitempty"`
 
 	// Performance metric aggregated over all types of I/O operations.
 	// Example: 1000
-	Total int64 `json:"total,omitempty"`
+	Total *int64 `json:"total,omitempty"`
 
 	// Peformance metric for write I/O operations.
 	// Example: 100
-	Write int64 `json:"write,omitempty"`
+	Write *int64 `json:"write,omitempty"`
 }
 
-// Validate validates this IP interface statistics throughput raw
-func (m *IPInterfaceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline statistics inline throughput raw
+func (m *IPInterfaceInlineStatisticsInlineThroughputRaw) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this IP interface statistics throughput raw based on context it is used
-func (m *IPInterfaceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this ip interface inline statistics inline throughput raw based on context it is used
+func (m *IPInterfaceInlineStatisticsInlineThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineStatisticsInlineThroughputRaw) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3341,8 +3355,8 @@ func (m *IPInterfaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceStatisticsThroughputRaw
+func (m *IPInterfaceInlineStatisticsInlineThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineStatisticsInlineThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3350,27 +3364,27 @@ func (m *IPInterfaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceSvmType Applies only to SVM-scoped objects. Either the UUID or name must be supplied on POST.
+// IPInterfaceInlineSvm Applies only to SVM-scoped objects. Either the UUID or name must be supplied on POST.
 //
-// swagger:model IPInterfaceSvmType
-type IPInterfaceSvmType struct {
+// swagger:model ip_interface_inline_svm
+type IPInterfaceInlineSvm struct {
 
 	// links
-	Links *IPInterfaceSvmLinksType `json:"_links,omitempty"`
+	Links *IPInterfaceInlineSvmInlineLinks `json:"_links,omitempty"`
 
 	// The name of the SVM.
 	//
 	// Example: svm1
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the SVM.
 	//
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
+	UUID *string `json:"uuid,omitempty"`
 }
 
-// Validate validates this IP interface svm type
-func (m *IPInterfaceSvmType) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline svm
+func (m *IPInterfaceInlineSvm) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
@@ -3383,7 +3397,7 @@ func (m *IPInterfaceSvmType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceSvmType) validateLinks(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineSvm) validateLinks(formats strfmt.Registry) error {
 	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
@@ -3400,8 +3414,8 @@ func (m *IPInterfaceSvmType) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface svm type based on the context it is used
-func (m *IPInterfaceSvmType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline svm based on the context it is used
+func (m *IPInterfaceInlineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
@@ -3414,7 +3428,7 @@ func (m *IPInterfaceSvmType) ContextValidate(ctx context.Context, formats strfmt
 	return nil
 }
 
-func (m *IPInterfaceSvmType) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Links != nil {
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
@@ -3429,7 +3443,7 @@ func (m *IPInterfaceSvmType) contextValidateLinks(ctx context.Context, formats s
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceSvmType) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineSvm) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3437,8 +3451,8 @@ func (m *IPInterfaceSvmType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceSvmType) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceSvmType
+func (m *IPInterfaceInlineSvm) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3446,17 +3460,17 @@ func (m *IPInterfaceSvmType) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceSvmLinksType IP interface svm links type
+// IPInterfaceInlineSvmInlineLinks ip interface inline svm inline links
 //
-// swagger:model IPInterfaceSvmLinksType
-type IPInterfaceSvmLinksType struct {
+// swagger:model ip_interface_inline_svm_inline__links
+type IPInterfaceInlineSvmInlineLinks struct {
 
 	// self
 	Self *Href `json:"self,omitempty"`
 }
 
-// Validate validates this IP interface svm links type
-func (m *IPInterfaceSvmLinksType) Validate(formats strfmt.Registry) error {
+// Validate validates this ip interface inline svm inline links
+func (m *IPInterfaceInlineSvmInlineLinks) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSelf(formats); err != nil {
@@ -3469,7 +3483,7 @@ func (m *IPInterfaceSvmLinksType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *IPInterfaceSvmLinksType) validateSelf(formats strfmt.Registry) error {
+func (m *IPInterfaceInlineSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
 	if swag.IsZero(m.Self) { // not required
 		return nil
 	}
@@ -3486,8 +3500,8 @@ func (m *IPInterfaceSvmLinksType) validateSelf(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this IP interface svm links type based on the context it is used
-func (m *IPInterfaceSvmLinksType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this ip interface inline svm inline links based on the context it is used
+func (m *IPInterfaceInlineSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateSelf(ctx, formats); err != nil {
@@ -3500,7 +3514,7 @@ func (m *IPInterfaceSvmLinksType) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *IPInterfaceSvmLinksType) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+func (m *IPInterfaceInlineSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Self != nil {
 		if err := m.Self.ContextValidate(ctx, formats); err != nil {
@@ -3515,7 +3529,7 @@ func (m *IPInterfaceSvmLinksType) contextValidateSelf(ctx context.Context, forma
 }
 
 // MarshalBinary interface implementation
-func (m *IPInterfaceSvmLinksType) MarshalBinary() ([]byte, error) {
+func (m *IPInterfaceInlineSvmInlineLinks) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3523,8 +3537,8 @@ func (m *IPInterfaceSvmLinksType) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *IPInterfaceSvmLinksType) UnmarshalBinary(b []byte) error {
-	var res IPInterfaceSvmLinksType
+func (m *IPInterfaceInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceInlineSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

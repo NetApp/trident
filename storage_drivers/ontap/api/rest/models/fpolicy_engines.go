@@ -21,10 +21,10 @@ import (
 type FpolicyEngines struct {
 
 	// buffer size
-	BufferSize *FpolicyEnginesBufferSize `json:"buffer_size,omitempty"`
+	BufferSize *FpolicyEnginesInlineBufferSize `json:"buffer_size,omitempty"`
 
 	// certificate
-	Certificate *FpolicyEnginesCertificate `json:"certificate,omitempty"`
+	Certificate *FpolicyEnginesInlineCertificate `json:"certificate,omitempty"`
 
 	// The format for the notification messages sent to the FPolicy servers.
 	//   The possible values are:
@@ -34,23 +34,27 @@ type FpolicyEngines struct {
 	// Enum: [xml protobuf]
 	Format *string `json:"format,omitempty"`
 
-	// Specifies the maximum number of outstanding requests for the FPolicy server. It is used to specify maximum outstanding requests that will be queued up for the FPolicy server. The value for this field must be between 1 and 10000. The default value can be 500 , 1000 or 2000 depending on the hardware platform.
+	// fpolicy engines inline primary servers
+	// Example: ["10.132.145.20","10.140.101.109"]
+	FpolicyEnginesInlinePrimaryServers []*string `json:"primary_servers,omitempty"`
+
+	// fpolicy engines inline secondary servers
+	// Example: ["10.132.145.20","10.132.145.21"]
+	FpolicyEnginesInlineSecondaryServers []*string `json:"secondary_servers,omitempty"`
+
+	// Specifies the maximum number of outstanding requests for the FPolicy server. It is used to specify maximum outstanding requests that will be queued up for the FPolicy server. The value for this field must be between 1 and 10000.  The default values are 500, 1000 or 2000 for Low-end(<64 GB memory), Mid-end(>=64 GB memory) and High-end(>=128 GB memory) Platforms respectively.
 	// Example: 500
 	// Maximum: 10000
 	// Minimum: 1
-	MaxServerRequests int64 `json:"max_server_requests,omitempty"`
+	MaxServerRequests *int64 `json:"max_server_requests,omitempty"`
 
 	// Specifies the name to assign to the external server configuration.
 	// Example: fp_ex_eng
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Port number of the FPolicy server application.
 	// Example: 9876
-	Port int64 `json:"port,omitempty"`
-
-	// primary servers
-	// Example: ["10.132.145.20","10.140.101.109"]
-	PrimaryServers []string `json:"primary_servers,omitempty"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Specifies the ISO-8601 timeout duration for a screen request to be aborted by a storage appliance. The allowed range is between 0 to 200 seconds.
 	// Example: PT40S
@@ -61,11 +65,7 @@ type FpolicyEngines struct {
 	RequestCancelTimeout *string `json:"request_cancel_timeout,omitempty"`
 
 	// resiliency
-	Resiliency *FpolicyEnginesResiliency `json:"resiliency,omitempty"`
-
-	// secondary servers
-	// Example: ["10.132.145.20","10.132.145.21"]
-	SecondaryServers []string `json:"secondary_servers,omitempty"`
+	Resiliency *FpolicyEnginesInlineResiliency `json:"resiliency,omitempty"`
 
 	// Specifies the ISO-8601 timeout duration in which a throttled FPolicy server must complete at least one screen request. If no request is processed within the timeout, connection to the FPolicy server is terminated. The allowed range is between 0 to 100 seconds.
 	// Example: PT1M
@@ -225,11 +225,11 @@ func (m *FpolicyEngines) validateMaxServerRequests(formats strfmt.Registry) erro
 		return nil
 	}
 
-	if err := validate.MinimumInt("max_server_requests", "body", m.MaxServerRequests, 1, false); err != nil {
+	if err := validate.MinimumInt("max_server_requests", "body", *m.MaxServerRequests, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("max_server_requests", "body", m.MaxServerRequests, 10000, false); err != nil {
+	if err := validate.MaximumInt("max_server_requests", "body", *m.MaxServerRequests, 10000, false); err != nil {
 		return err
 	}
 
@@ -457,30 +457,79 @@ func (m *FpolicyEngines) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEnginesBufferSize Specifies the send and recieve buffer size of the connected socket for the FPolicy server.
+// FpolicyEnginesInlineBufferSize Specifies the send and recieve buffer size of the connected socket for the FPolicy server.
 //
-// swagger:model FpolicyEnginesBufferSize
-type FpolicyEnginesBufferSize struct {
+// swagger:model fpolicy_engines_inline_buffer_size
+type FpolicyEnginesInlineBufferSize struct {
 
 	// Specifies the receive buffer size of the connected socket for the FPolicy server. Default value is 256KB.
+	// Maximum: 7.89516e+06
+	// Minimum: 0
 	RecvBuffer *int64 `json:"recv_buffer,omitempty"`
 
 	// Specifies the send buffer size of the connected socket for the FPolicy server. Default value 1MB.
+	// Maximum: 7.89516e+06
+	// Minimum: 0
 	SendBuffer *int64 `json:"send_buffer,omitempty"`
 }
 
-// Validate validates this fpolicy engines buffer size
-func (m *FpolicyEnginesBufferSize) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy engines inline buffer size
+func (m *FpolicyEnginesInlineBufferSize) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRecvBuffer(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSendBuffer(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this fpolicy engines buffer size based on context it is used
-func (m *FpolicyEnginesBufferSize) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *FpolicyEnginesInlineBufferSize) validateRecvBuffer(formats strfmt.Registry) error {
+	if swag.IsZero(m.RecvBuffer) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("buffer_size"+"."+"recv_buffer", "body", *m.RecvBuffer, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("buffer_size"+"."+"recv_buffer", "body", *m.RecvBuffer, 7.89516e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FpolicyEnginesInlineBufferSize) validateSendBuffer(formats strfmt.Registry) error {
+	if swag.IsZero(m.SendBuffer) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("buffer_size"+"."+"send_buffer", "body", *m.SendBuffer, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("buffer_size"+"."+"send_buffer", "body", *m.SendBuffer, 7.89516e+06, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this fpolicy engines inline buffer size based on context it is used
+func (m *FpolicyEnginesInlineBufferSize) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEnginesBufferSize) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEnginesInlineBufferSize) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -488,8 +537,8 @@ func (m *FpolicyEnginesBufferSize) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEnginesBufferSize) UnmarshalBinary(b []byte) error {
-	var res FpolicyEnginesBufferSize
+func (m *FpolicyEnginesInlineBufferSize) UnmarshalBinary(b []byte) error {
+	var res FpolicyEnginesInlineBufferSize
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -497,45 +546,45 @@ func (m *FpolicyEnginesBufferSize) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEnginesCertificate Provides details about certificate used to authenticate the Fpolicy server.
+// FpolicyEnginesInlineCertificate Provides details about certificate used to authenticate the Fpolicy server.
 //
-// swagger:model FpolicyEnginesCertificate
-type FpolicyEnginesCertificate struct {
+// swagger:model fpolicy_engines_inline_certificate
+type FpolicyEnginesInlineCertificate struct {
 
 	// Specifies the certificate authority (CA) name of the certificate
 	// used for authentication if SSL authentication between the SVM and the FPolicy
 	// server is configured.
 	//
 	// Example: TASample1
-	Ca string `json:"ca,omitempty"`
+	Ca *string `json:"ca,omitempty"`
 
 	// Specifies the certificate name as a fully qualified domain
 	// name (FQDN) or custom common name. The certificate is used if SSL authentication
 	// between the SVM and the FPolicy server is configured.
 	//
 	// Example: Sample1-FPolicy-Client
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 
 	// Specifies the serial number of the certificate used for
 	// authentication if SSL authentication between the SVM and the FPolicy
 	// server is configured.
 	//
 	// Example: 8DDE112A114D1FBC
-	SerialNumber string `json:"serial_number,omitempty"`
+	SerialNumber *string `json:"serial_number,omitempty"`
 }
 
-// Validate validates this fpolicy engines certificate
-func (m *FpolicyEnginesCertificate) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy engines inline certificate
+func (m *FpolicyEnginesInlineCertificate) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fpolicy engines certificate based on context it is used
-func (m *FpolicyEnginesCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this fpolicy engines inline certificate based on context it is used
+func (m *FpolicyEnginesInlineCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEnginesCertificate) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEnginesInlineCertificate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -543,8 +592,8 @@ func (m *FpolicyEnginesCertificate) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEnginesCertificate) UnmarshalBinary(b []byte) error {
-	var res FpolicyEnginesCertificate
+func (m *FpolicyEnginesInlineCertificate) UnmarshalBinary(b []byte) error {
+	var res FpolicyEnginesInlineCertificate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -552,16 +601,16 @@ func (m *FpolicyEnginesCertificate) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// FpolicyEnginesResiliency If all primary and secondary servers are down, or if no response is received from the FPolicy servers, file access events are stored inside the storage controller under the specified resiliency-directory-path.
+// FpolicyEnginesInlineResiliency If all primary and secondary servers are down, or if no response is received from the FPolicy servers, file access events are stored inside the storage controller under the specified resiliency-directory-path.
 //
-// swagger:model FpolicyEnginesResiliency
-type FpolicyEnginesResiliency struct {
+// swagger:model fpolicy_engines_inline_resiliency
+type FpolicyEnginesInlineResiliency struct {
 
 	// Specifies the directory path under the SVM namespace,
 	// where notifications are stored in the files whenever a network outage happens.
 	//
 	// Example: /dir1
-	DirectoryPath string `json:"directory_path,omitempty"`
+	DirectoryPath *string `json:"directory_path,omitempty"`
 
 	// Specifies whether the resiliency feature is enabled or not.
 	// Default is false.
@@ -573,21 +622,21 @@ type FpolicyEnginesResiliency struct {
 	// this field must be between 0 and 600 seconds. Default is 180 seconds.
 	//
 	// Example: PT3M
-	RetentionDuration string `json:"retention_duration,omitempty"`
+	RetentionDuration *string `json:"retention_duration,omitempty"`
 }
 
-// Validate validates this fpolicy engines resiliency
-func (m *FpolicyEnginesResiliency) Validate(formats strfmt.Registry) error {
+// Validate validates this fpolicy engines inline resiliency
+func (m *FpolicyEnginesInlineResiliency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fpolicy engines resiliency based on context it is used
-func (m *FpolicyEnginesResiliency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this fpolicy engines inline resiliency based on context it is used
+func (m *FpolicyEnginesInlineResiliency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *FpolicyEnginesResiliency) MarshalBinary() ([]byte, error) {
+func (m *FpolicyEnginesInlineResiliency) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -595,8 +644,8 @@ func (m *FpolicyEnginesResiliency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *FpolicyEnginesResiliency) UnmarshalBinary(b []byte) error {
-	var res FpolicyEnginesResiliency
+func (m *FpolicyEnginesInlineResiliency) UnmarshalBinary(b []byte) error {
+	var res FpolicyEnginesInlineResiliency
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
