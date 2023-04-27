@@ -174,7 +174,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.01"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.04"
 
 	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically
 	IscsiSelfHealingInterval = 300 * time.Second
