@@ -431,14 +431,8 @@ func reconcileSANNodeAccess(
 		"backendUUID":   backendUUID,
 	}).Debug("Attempting to delete unused igroups")
 	for _, igroup := range igroups {
-		luns, err := clientAPI.IgroupListLUNsMapped(ctx, igroup)
-		if err != nil {
+		if err := DestroyUnmappedIgroup(ctx, clientAPI, igroup); err != nil {
 			return err
-		}
-		if len(luns) == 0 {
-			if err := clientAPI.IgroupDestroy(ctx, igroup); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -649,7 +643,7 @@ func PublishLUN(
 	}
 
 	// Map LUN (it may already be mapped)
-	lunID, err := clientAPI.EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged)
+	lunID, err := clientAPI.EnsureLunMapped(ctx, igroupName, lunPath)
 	if err != nil {
 		return err
 	}

@@ -82,13 +82,13 @@ func TestEnsureLunMapped(t *testing.T) {
 
 	// lunMapInfo returning error
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, errors.New("error"))
-	resultLun, err := oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
+	resultLun, err := oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "problem reading maps for LUN /dev/sda: error")
 	assert.Equal(t, -1, resultLun)
 
 	// lunMapInfo returning nil lun collection
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(nil, nil)
-	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
+	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "problem reading maps for LUN /dev/sda")
 	assert.Equal(t, -1, resultLun)
 
@@ -96,14 +96,14 @@ func TestEnsureLunMapped(t *testing.T) {
 	lun := &models.Lun{LunInlineLunMaps: []*models.LunInlineLunMapsInlineArrayItem{{LogicalUnitNumber: number}}}
 	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(lun, nil)
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
-	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
+	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
 	assert.Equal(t, int(*number), resultLun)
 
 	// record.LogicalUnitNumber == nil and lunGetByName returns error
 	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(nil, errors.New("error getting LUN by name"))
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
-	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
+	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "error getting LUN by name")
 	assert.Equal(t, -1, resultLun)
 
@@ -114,7 +114,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(nil, nil)
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
-	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
+	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.NoError(t, err)
 	// As LogicalUnitNumber == nil currently, -1 is returned
 	assert.Equal(t, -1, resultLun)
@@ -122,7 +122,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	// positive test case where record.LogicalUnitNumber != nil
 	lunMapCollection.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber = number
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
-	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, true)
+	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
 	assert.Equal(t, int(*number), resultLun)
 
@@ -130,7 +130,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = utils.Ptr("tmp")
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
-	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath, false)
+	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
 	assert.Equal(t, int(*number), resultLun)
 }

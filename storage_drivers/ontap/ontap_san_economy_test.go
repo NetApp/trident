@@ -1594,7 +1594,7 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"1.1.1.1"}, nil)
 
@@ -1626,7 +1626,7 @@ func TestOntapSanEconomyVolumePublishSLMError(t *testing.T) {
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
+	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{}, nil)
 
@@ -3408,148 +3408,6 @@ func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed2(t *testing.T) {
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
 	assert.NoError(t, result)
-}
-
-func TestOntapSanEconomyCreateFollowup(t *testing.T) {
-	mockAPI, d := newMockOntapSanEcoDriver(t)
-	d.Config.IgroupName = "igroup"
-	d.ips = []string{"10.2.0.1"}
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: "vol1",
-	}
-
-	lun := api.Lun{
-		Size: "1g", Name: "lun_vol1",
-		VolumeName: "volumeName",
-	}
-	luns := []api.Lun{lun}
-
-	mockAPI.EXPECT().LunList(ctx, "/vol/*/vol1").Return(luns, nil)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, "igroup", "/vol/volumeName/vol1", false).Return(123, nil)
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("iscsiNode", nil)
-	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/vol1").Return(&lun, nil)
-	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, "igroup", "/vol/volumeName/vol1").Return([]string{"iscsiNode"}, nil)
-	mockAPI.EXPECT().GetSLMDataLifs(ctx, []string{"10.2.0.1"}, []string{"iscsiNode"}).Return([]string{"10.2.0.2"}, nil)
-
-	result := d.CreateFollowup(ctx, volConfig)
-
-	assert.NoError(t, result)
-}
-
-func TestOntapSanEconomyCreateFollowup_DockerContext(t *testing.T) {
-	_, d := newMockOntapSanEcoDriver(t)
-	d.Config.DriverContext = "docker"
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: "vol1",
-	}
-
-	result := d.CreateFollowup(ctx, volConfig)
-
-	assert.NoError(t, result)
-}
-
-func TestOntapSanEconomyCreateFollowup_PublishEnforcedCSIContext(t *testing.T) {
-	_, d := newMockOntapSanEcoDriver(t)
-	d.Config.DriverContext = "csi"
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: "vol1",
-		AccessInfo: utils.VolumeAccessInfo{
-			PublishEnforcement: true,
-		},
-	}
-
-	result := d.CreateFollowup(ctx, volConfig)
-
-	assert.NoError(t, result)
-}
-
-func TestOntapSanEconomyCreateFollowup_LunDoesNotExist(t *testing.T) {
-	mockAPI, d := newMockOntapSanEcoDriver(t)
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: "vol1",
-	}
-
-	tests := []struct {
-		message     string
-		expectError bool
-	}{
-		{"error fetching info", true},
-		{"no luns found", false},
-	}
-	for _, test := range tests {
-		t.Run(test.message, func(t *testing.T) {
-			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, "/vol/*/vol1").Return(nil, fmt.Errorf(test.message))
-			} else {
-				mockAPI.EXPECT().LunList(ctx, "/vol/*/vol1").Return(nil, nil)
-			}
-
-			result := d.CreateFollowup(ctx, volConfig)
-
-			assert.Error(t, result)
-		})
-	}
-}
-
-func TestOntapSanEconomyCreateFollowup_LunNotMapped(t *testing.T) {
-	mockAPI, d := newMockOntapSanEcoDriver(t)
-	d.Config.IgroupName = "igroup"
-	d.ips = []string{"10.2.0.1"}
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: "vol1",
-	}
-	luns := []api.Lun{
-		{Size: "1g", Name: "lun_vol1", VolumeName: "volumeName"},
-	}
-
-	mockAPI.EXPECT().LunList(ctx, "/vol/*/vol1").Return(luns, nil)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, "igroup", "/vol/volumeName/vol1", false).Return(0,
-		fmt.Errorf("lun not mapped"))
-
-	result := d.CreateFollowup(ctx, volConfig)
-
-	assert.Error(t, result)
-}
-
-func TestOntapSanEconomyCreateFollowup_GetLunFailed(t *testing.T) {
-	mockAPI, d := newMockOntapSanEcoDriver(t)
-	d.Config.IgroupName = "igroup"
-	d.ips = []string{"10.2.0.1"}
-	volConfig := &storage.VolumeConfig{
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "nfs",
-		InternalName: "vol1",
-	}
-	lun := api.Lun{
-		Size: "1g", Name: "lun_vol1",
-		VolumeName: "volumeName",
-	}
-	luns := []api.Lun{lun}
-
-	mockAPI.EXPECT().LunList(ctx, "/vol/*/vol1").Return(luns, nil)
-	mockAPI.EXPECT().EnsureLunMapped(ctx, "igroup", "/vol/volumeName/vol1", false).Return(123, nil)
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("iscsiNode", nil)
-	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/vol1").Return(&lun, fmt.Errorf("couldn't get lun"))
-
-	result := d.CreateFollowup(ctx, volConfig)
-
-	assert.Error(t, result)
 }
 
 func TestOntapSanEconomyInitialize(t *testing.T) {

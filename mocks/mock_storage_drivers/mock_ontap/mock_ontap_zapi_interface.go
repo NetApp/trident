@@ -950,18 +950,18 @@ func (mr *MockZapiClientInterfaceMockRecorder) LunMapGet(arg0, arg1 interface{})
 }
 
 // LunMapIfNotMapped mocks base method.
-func (m *MockZapiClientInterface) LunMapIfNotMapped(arg0 context.Context, arg1, arg2 string, arg3 bool) (int, error) {
+func (m *MockZapiClientInterface) LunMapIfNotMapped(arg0 context.Context, arg1, arg2 string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapIfNotMapped", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "LunMapIfNotMapped", arg0, arg1, arg2)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapIfNotMapped indicates an expected call of LunMapIfNotMapped.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapIfNotMapped(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapIfNotMapped(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapIfNotMapped", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapIfNotMapped), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapIfNotMapped", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapIfNotMapped), arg0, arg1, arg2)
 }
 
 // LunMapListInfo mocks base method.

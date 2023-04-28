@@ -1648,41 +1648,7 @@ func (d *SANEconomyStorageDriver) CreateFollowup(ctx context.Context, volConfig 
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
-
-	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		Logc(ctx).Debug("No follow-up create actions for Docker.")
-		return nil
-	}
-
-	// Don't map at create time if publish enforcement is enabled.
-	if volConfig.AccessInfo.PublishEnforcement {
-		Logc(ctx).Debug("No follow-up create actions for published enforced CSI volume.")
-		return nil
-	}
-
-	return d.mapOntapSANLUN(ctx, volConfig)
-}
-
-func (d *SANEconomyStorageDriver) mapOntapSANLUN(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	// Determine which flexvol contains the LUN
-	exists, flexvol, err := d.LUNExists(ctx, volConfig.InternalName, d.FlexvolNamePrefix())
-	if err != nil {
-		return fmt.Errorf("could not determine if LUN %s exists: %v", volConfig.InternalName, err)
-	}
-	if !exists {
-		return fmt.Errorf("could not find LUN %s", volConfig.InternalName)
-	}
-	// Map LUN
-	lunPath := GetLUNPathEconomy(flexvol, volConfig.InternalName)
-	lunID, err := d.API.EnsureLunMapped(ctx, d.Config.IgroupName, lunPath, volConfig.ImportNotManaged)
-	if err != nil {
-		return err
-	}
-
-	err = PopulateOntapLunMapping(ctx, d.API, d.ips, volConfig, lunID, lunPath, d.Config.IgroupName)
-	if err != nil {
-		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
-	}
+	Logc(ctx).Debug("No follow-up create actions for ontap-san-economy volume.")
 
 	return nil
 }

@@ -72,7 +72,7 @@ type ZapiClientInterface interface {
 	// LunMapAutoID maps a LUN in an initiator group, allowing ONTAP to choose an available LUN ID
 	// equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker
 	LunMapAutoID(initiatorGroupName, lunPath string) (*azgo.LunMapResponse, error)
-	LunMapIfNotMapped(ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool) (int, error)
+	LunMapIfNotMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
 	// LunMapListInfo returns lun mapping information for the specified lun
 	// equivalent to filer::> lun mapped show -vserver iscsi_vs -path /vol/v/lun0
 	LunMapListInfo(lunPath string) (*azgo.LunMapListInfoResponse, error)
