@@ -5,7 +5,6 @@ package csi
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -74,8 +73,9 @@ func NewControllerPlugin(
 	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *controllerhelpers.ControllerHelper,
 	enableForceDetach bool,
 ) (*Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
+
+	Logc(ctx).Info("Initializing CSI controller frontend.")
 
 	p := &Plugin{
 		orchestrator:      orchestrator,
@@ -127,8 +127,9 @@ func NewNodePlugin(
 	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
 	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
+
+	Logc(ctx).Info("Initializing CSI node frontend.")
 
 	msg := "Force detach feature %s"
 	if enableForceDetach {
@@ -216,8 +217,9 @@ func NewAllInOnePlugin(
 	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
 	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
 ) (*Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
+
+	Logc(ctx).Info("Initializing CSI all-in-one frontend.")
 
 	p := &Plugin{
 		orchestrator:             orchestrator,
@@ -289,18 +291,16 @@ func NewAllInOnePlugin(
 
 func (p *Plugin) Activate() error {
 	go func() {
-		ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginActivate,
-			LogLayerCSIFrontend)
+		ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
 		p.grpc = NewNonBlockingGRPCServer()
 
 		Logc(ctx).Info("Activating CSI frontend.")
+
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
 			p.startISCSISelfHealingThread(ctx)
 			if p.enableForceDetach {
-				backgroundCtx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic,
-					WorkflowPluginActivate, LogLayerCSIFrontend)
-				p.startReconcilingNodePublications(backgroundCtx)
+				p.startReconcilingNodePublications(ctx)
 			}
 		}
 		p.grpc.Start(p.endpoint, p, p, p)
@@ -309,8 +309,7 @@ func (p *Plugin) Activate() error {
 }
 
 func (p *Plugin) Deactivate() error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginDeactivate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginDeactivate, LogLayerCSIFrontend)
 
 	// stopReconcilingNodePublications
 	if p.role == CSINode || p.role == CSIAllInOne {
@@ -398,7 +397,7 @@ func ReadAESKey(ctx context.Context, aesKeyFile string) ([]byte, error) {
 	var err error
 
 	if "" != aesKeyFile {
-		aesKey, err = ioutil.ReadFile(aesKeyFile)
+		aesKey, err = os.ReadFile(aesKeyFile)
 		if err != nil {
 			return nil, err
 		}
@@ -416,7 +415,7 @@ func (p *Plugin) IsReady() bool {
 func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 	// provision to disable the iSCSI self-healing feature
 	if p.iSCSISelfHealingInterval <= 0 {
-		Logc(ctx).Debugf("Iscsi self-healing is disabled.")
+		Logc(ctx).Info("iSCSI self-healing is disabled.")
 		return
 	}
 	if p.iSCSISelfHealingWaitTime < p.iSCSISelfHealingInterval {
@@ -427,22 +426,23 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 	Logc(ctx).WithFields(LogFields{
 		"iSCSISelfHealingInterval": p.iSCSISelfHealingInterval,
 		"iSCSISelfHealingWaitTime": p.iSCSISelfHealingWaitTime,
-	}).Debugf(
-		"iSCSI self-healing is enabled.")
+	}).Info("iSCSI self-healing is enabled.")
 	p.iSCSISelfHealingTicker = time.NewTicker(p.iSCSISelfHealingInterval)
 	p.iSCSISelfHealingChannel = make(chan struct{})
 
 	p.populatePublishedISCSISessions(ctx)
 
 	go func() {
+		ctx = GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeHealISCSI, LogLayerCSIFrontend)
+
 		for {
 			select {
 			case tick := <-p.iSCSISelfHealingTicker.C:
-				Logc(ctx).WithField("tick", tick).Debug("ISCSI self-healing is running.")
+				Logc(ctx).WithField("tick", tick).Debug("iSCSI self-healing is running.")
 				// perform self healing here
 				p.performISCSISelfHealing(ctx)
 			case <-p.iSCSISelfHealingChannel:
-				Logc(ctx).Debugf("ISCSI self-healing stopped.")
+				Logc(ctx).Info("iSCSI self-healing stopped.")
 				return
 			}
 		}
@@ -452,7 +452,7 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 }
 
 // stopISCSISelfHealingThread stops the iSCSI self-healing thread.
-func (p *Plugin) stopISCSISelfHealingThread(ctx context.Context) {
+func (p *Plugin) stopISCSISelfHealingThread(_ context.Context) {
 	if p.iSCSISelfHealingTicker != nil {
 		p.iSCSISelfHealingTicker.Stop()
 	}

@@ -1,4 +1,5 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
@@ -30,7 +31,7 @@ func (h *helper) UpgradeVolume(
 	Logc(ctx).WithFields(LogFields{
 		"volume": request.Volume,
 		"type":   request.Type,
-	}).Infof("PV upgrade: workflow started.")
+	}).Info("PV upgrade: workflow started.")
 
 	// Check volume exists in Trident
 	volume, err := h.orchestrator.GetVolume(ctx, request.Volume)
@@ -61,7 +62,7 @@ func (h *helper) UpgradeVolume(
 	// Set the volume to upgrading state to prevent other operations from running against it
 	if err = h.orchestrator.SetVolumeState(ctx, volume.Config.Name, storage.VolumeStateUpgrading); err != nil {
 		msg := fmt.Sprintf("PV upgrade: error setting volume to upgrading state; %v", err)
-		Logc(ctx).WithField("volume", volume.Config.Name).Errorf(msg)
+		Logc(ctx).WithField("volume", volume.Config.Name).Error(msg)
 		return nil, fmt.Errorf(msg)
 	}
 	Logc(ctx).WithField("volume", volume.Config.Name).Debug("PV upgrade: Trident volume set to upgrading.")
@@ -237,7 +238,7 @@ func (h *helper) UpgradeVolume(
 			Logc(ctx).Errorf("PV upgrade: error verifying upgrade completed; %v", getErr)
 		}
 		if upgradeTxn != nil && upgradeTxn.Op == storage.UpgradeVolume {
-			Logc(ctx).Warningf("PV upgrade: error during upgrade; rolling back changes")
+			Logc(ctx).Warning("PV upgrade: error during upgrade; rolling back changes.")
 			if cleanupErr := h.rollBackPVUpgrade(ctx, upgradeTxn); cleanupErr != nil {
 				Logc(ctx).Errorf("PV upgrade: error during rollback; %v", cleanupErr)
 			}
@@ -259,7 +260,7 @@ func (h *helper) UpgradeVolume(
 		}).Errorf("%s.", message)
 		return nil, fmt.Errorf("%s: %v", message, err)
 	}
-	Logc(ctx).WithField("PV", pv.Name).Infof("PV upgrade: PV deleted.")
+	Logc(ctx).WithField("PV", pv.Name).Info("PV upgrade: PV deleted.")
 
 	// Wait for PVC to become Lost or Pending
 	lostOrPending := []v1.PersistentVolumeClaimPhase{v1.ClaimLost, v1.ClaimPending}
@@ -276,7 +277,7 @@ func (h *helper) UpgradeVolume(
 	Logc(ctx).WithFields(LogFields{
 		"PV":  pv.Name,
 		"PVC": pvcDisplayName,
-	}).Infof("PV upgrade: PVC reached the Lost or Pending state.")
+	}).Info("PV upgrade: PVC reached the Lost or Pending state.")
 
 	// Trigger failure based on PVC name for testing rollback
 	if pvc.Name == "failure-65ca482e-d013-454f-bb4f-5c340fb835ac" {
@@ -301,7 +302,7 @@ func (h *helper) UpgradeVolume(
 				"PV":  pv.Name,
 				"PVC": pvcDisplayName,
 				"pod": podName,
-			}).Infof("PV upgrade: Owned pod deleted.")
+			}).Info("PV upgrade: Owned pod deleted.")
 		}
 	}
 
@@ -379,7 +380,7 @@ func (h *helper) UpgradeVolume(
 		Logc(ctx).WithFields(LogFields{
 			"PV":  csiPV.Name,
 			"PVC": pvcDisplayName,
-		}).Infof("PV upgrade: PVC bound.")
+		}).Info("PV upgrade: PVC bound.")
 	}
 
 	// Trigger failure based on PVC name for testing rollback
@@ -409,7 +410,7 @@ func (h *helper) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 	}
 	Logc(ctx).WithFields(LogFields{
 		"volume": volume.Config.Name,
-	}).Infof("PV rollback: volume found.")
+	}).Info("PV rollback: volume found.")
 
 	// Check volume state is upgrading
 	if volume.State != storage.VolumeStateUpgrading {
@@ -482,7 +483,7 @@ func (h *helper) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 			}).Errorf("%s.", message)
 			return fmt.Errorf("%s: %v", message, err)
 		}
-		Logc(ctx).WithField("PV", pv.Name).Infof("PV rollback: PV deleted.")
+		Logc(ctx).WithField("PV", pv.Name).Info("PV rollback: PV deleted.")
 
 		// Wait for PVC to become Lost
 		lostOrPending := []v1.PersistentVolumeClaimPhase{v1.ClaimLost, v1.ClaimPending}
@@ -499,7 +500,7 @@ func (h *helper) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 		Logc(ctx).WithFields(LogFields{
 			"PV":  pv.Name,
 			"PVC": pvcDisplayName,
-		}).Infof("PV rollback: PVC reached the Lost or Pending state.")
+		}).Info("PV rollback: PVC reached the Lost or Pending state.")
 	}
 
 	// Load the original PV config
@@ -521,7 +522,7 @@ func (h *helper) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 				"PV":  pv.Name,
 				"PVC": pvcDisplayName,
 				"pod": podName,
-			}).Infof("PV rollback: Owned pod deleted.")
+			}).Info("PV rollback: Owned pod deleted.")
 		}
 	}
 
@@ -588,7 +589,7 @@ func (h *helper) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 		Logc(ctx).WithFields(LogFields{
 			"PV":  oldPV.Name,
 			"PVC": pvcDisplayName,
-		}).Infof("PV rollback: PVC bound.")
+		}).Info("PV rollback: PVC bound.")
 	}
 
 	// Set volume state to online
@@ -672,7 +673,7 @@ func (h *helper) waitForDeletedPV(
 		Logc(ctx).WithFields(LogFields{
 			"pv":        name,
 			"increment": duration,
-		}).Debugf("PV not yet deleted, waiting.")
+		}).Debug("PV not yet deleted, waiting.")
 	}
 	pvBackoff := backoff.NewExponentialBackOff()
 	pvBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -705,7 +706,7 @@ func (h *helper) waitForPVDisappearance(ctx context.Context, name string, maxEla
 		Logc(ctx).WithFields(LogFields{
 			"pv":        name,
 			"increment": duration,
-		}).Debugf("PV not yet fully deleted, waiting.")
+		}).Debug("PV not yet fully deleted, waiting.")
 	}
 	pvBackoff := backoff.NewExponentialBackOff()
 	pvBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -917,7 +918,7 @@ func (h *helper) waitForDeletedOrNonRunningPod(
 			"pod":       name,
 			"namespace": namespace,
 			"increment": duration,
-		}).Debugf("Pod not yet deleted, waiting.")
+		}).Debug("Pod not yet deleted, waiting.")
 	}
 	podBackoff := backoff.NewExponentialBackOff()
 	podBackoff.InitialInterval = CacheBackoffInitialInterval

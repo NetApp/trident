@@ -204,8 +204,8 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 // Nothing is done for NFS because NodeUnstageVolume for NFS only checks for the staging path. The ISCSI and Block on
 // File conditions are the same conditions that are checked in NodeUnstageVolume.
 func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *utils.VolumeTrackingInfo) (bool, error) {
-	Logc(ctx).Debug(">>>> performProtocolSpecificReconciliation")
-	defer Logc(ctx).Debug("<<<< performProtocolSpecificReconciliation")
+	Logc(ctx).Trace(">>>> performProtocolSpecificReconciliation")
+	defer Logc(ctx).Trace("<<<< performProtocolSpecificReconciliation")
 
 	atLeastOneConditionMet := false
 	protocol, err := getVolumeProtocolFromPublishInfo(&trackingInfo.VolumePublishInfo)

@@ -258,8 +258,7 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowCoreInit,
-		LogLayerCore)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowCoreInit, LogLayerCore)
 
 	// These features are only supported on Linux.
 	if runtime.GOOS == "linux" {

@@ -74,8 +74,6 @@ var (
 	getOpts    = metav1.GetOptions{}
 	createOpts = metav1.CreateOptions{}
 	updateOpts = metav1.UpdateOptions{}
-
-	ctx = context.Background
 )
 
 func Logx(ctx context.Context) LogEntry {
@@ -167,8 +165,7 @@ type TridentCrdController struct {
 func NewTridentCrdController(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal,
-		WorkflowCRDControllerCreate, LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCRDControllerCreate, LogLayerCRDFrontend)
 
 	Logx(ctx).Trace("Creating CRDv1 controller.")
 
@@ -187,8 +184,7 @@ func newTridentCrdControllerImpl(
 	kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
 	crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).WithFields(LogFields{
 		"namespace": tridentNamespace,
 	}).Trace("Initializing Trident CRD controller frontend.")
@@ -319,8 +315,7 @@ func newTridentCrdControllerImpl(
 	for _, informer := range informers {
 		_, _ = informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldCrd, newCrd interface{}) {
-				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD,
-					WorkflowCRReconcile, LogLayerCRDFrontend)
+				ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 				if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
 					Logx(ctx).WithError(err).Error("Error removing finalizers")
 				}
@@ -332,8 +327,8 @@ func newTridentCrdControllerImpl(
 }
 
 func (c *TridentCrdController) Activate() error {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone, LogLayerCRDFrontend)
-	Logx(ctx).Trace("Activating CRD frontend.")
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Info("Activating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		c.crdInformerFactory.Start(c.crdControllerStopChan)
 		c.txnInformerFactory.Start(c.crdControllerStopChan)
@@ -344,9 +339,8 @@ func (c *TridentCrdController) Activate() error {
 }
 
 func (c *TridentCrdController) Deactivate() error {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
-		LogLayerCRDFrontend)
-	Logx(ctx).Trace("Deactivating CRD frontend.")
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Info("Deactivating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		close(c.crdControllerStopChan)
 	}
@@ -411,8 +405,7 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 // processNextWorkItem function in order to read and process a message on the
 // workqueue.
 func (c *TridentCrdController) runWorker() {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).Trace("TridentCrdController runWorker started.")
 	for c.processNextWorkItem() {
 	}
@@ -437,8 +430,7 @@ func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, 
 
 // addCRHandler is the add handler for CR watchers.
 func (c *TridentCrdController) addCRHandler(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
 
 	Logx(ctx).Debug("TridentCrdController#addCRHandler")
@@ -461,8 +453,7 @@ func (c *TridentCrdController) addCRHandler(obj interface{}) {
 
 // updateCRHandler is the update handler for CR watchers.
 func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Debug("TridentCrdController#updateCRHandler")
@@ -512,8 +503,7 @@ func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
 
 // deleteCRHandler is the delete handler for CR watchers.
 func (c *TridentCrdController) deleteCRHandler(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Debug("TridentCrdController#deleteCRHandler")
@@ -537,8 +527,7 @@ func (c *TridentCrdController) deleteCRHandler(obj interface{}) {
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the reconcileBackendConfig.
 func (c *TridentCrdController) processNextWorkItem() bool {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	Logx(ctx).Trace("TridentCrdController#processNextWorkItem")
 
 	obj, shutdown := c.workqueue.Get()

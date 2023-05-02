@@ -112,9 +112,10 @@ type helper struct {
 }
 
 // NewHelper instantiates this plugin when running outside a pod.
-func NewHelper(orchestrator core.Orchestrator, masterURL, kubeConfigPath string, enableForceDetach bool) (frontend.Plugin, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+func NewHelper(
+	orchestrator core.Orchestrator, masterURL, kubeConfigPath string, enableForceDetach bool,
+) (frontend.Plugin, error) {
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
 
@@ -402,8 +403,7 @@ func TridentVolumeReferenceKeyFunc(obj interface{}) ([]string, error) {
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
 
@@ -440,7 +440,7 @@ func (h *helper) Activate() error {
 		return fmt.Errorf("error cleaning up previously failed PV upgrades; %v", err)
 	}
 
-	Logc(ctx).Info("Activated K8S helper frontend.")
+	Logc(ctx).Debug("Activated K8S helper frontend.")
 
 	return nil
 }
@@ -453,7 +453,7 @@ func (h *helper) Deactivate() error {
 	close(h.nodeControllerStopChan)
 	close(h.mrControllerStopChan)
 	close(h.vrefControllerStopChan)
-	Log().Info("Deactivated K8S helper frontend.")
+	Log().Debug("Deactivated K8S helper frontend.")
 	return nil
 }
 
@@ -489,30 +489,26 @@ func (h *helper) reconcileNodes(ctx context.Context) {
 	Logc(ctx).Debug("Performing node reconciliation.")
 	clusterNodes, err := h.listClusterNodes(ctx)
 	if err != nil {
-		Logc(ctx).WithField("err", err).Errorf("unable to list nodes in Kubernetes; aborting node reconciliation")
+		Logc(ctx).WithError(err).Error("Unable to list nodes in Kubernetes; aborting node reconciliation.")
 		return
 	}
 	tridentNodes, err := h.orchestrator.ListNodes(ctx)
 	if err != nil {
-		Logc(ctx).WithField("err", err).Errorf("unable to list nodes in Trident; aborting node reconciliation")
+		Logc(ctx).WithError(err).Error("Unable to list nodes in Trident; aborting node reconciliation.")
 		return
 	}
 
 	for _, node := range tridentNodes {
 		if _, ok := clusterNodes[node.Name]; !ok {
 			// Trident node no longer exists in cluster, remove it
-			Logc(ctx).WithField("node", node.Name).
-				Debug("Node not found in Kubernetes; removing from Trident.")
+			Logc(ctx).WithField("node", node.Name).Debug("Node not found in Kubernetes; removing from Trident.")
 			err = h.orchestrator.DeleteNode(ctx, node.Name)
 			if err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"node": node.Name,
-					"err":  err,
-				}).Error("error removing node from Trident")
+				Logc(ctx).WithField("node", node.Name).WithError(err).Error("Error removing node from Trident.")
 			}
 		}
 	}
-	Logc(ctx).Debug("Node reconciliation complete.")
+	Logc(ctx).Info("Node reconciliation complete.")
 }
 
 // isPublicationReconcileRequired looks at Trident's persistent TridentVersion CR and checks if publications are synced.
@@ -785,7 +781,7 @@ func (h *helper) waitForCachedPVCByName(
 			"name":      name,
 			"namespace": namespace,
 			"increment": duration,
-		}).Tracef("PVC not yet in cache, waiting.")
+		}).Trace("PVC not yet in cache, waiting.")
 	}
 	pvcBackoff := backoff.NewExponentialBackOff()
 	pvcBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -850,7 +846,7 @@ func (h *helper) waitForCachedPVCByUID(
 		Logc(ctx).WithFields(LogFields{
 			"uid":       uid,
 			"increment": duration,
-		}).Debugf("PVC not yet in cache, waiting.")
+		}).Debug("PVC not yet in cache, waiting.")
 	}
 	pvcBackoff := backoff.NewExponentialBackOff()
 	pvcBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -868,7 +864,6 @@ func (h *helper) waitForCachedPVCByUID(
 
 func (h *helper) getCachedPVByName(ctx context.Context, name string) (*v1.PersistentVolume, error) {
 	logFields := LogFields{"name": name}
-
 	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedPVByName")
 	defer Logc(ctx).Trace("<<<< getCachedPVByName")
 
@@ -890,8 +885,8 @@ func (h *helper) getCachedPVByName(ctx context.Context, name string) (*v1.Persis
 
 func (h *helper) isPVInCache(ctx context.Context, name string) (bool, error) {
 	logFields := LogFields{"name": name}
-	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedPVByName")
-	defer Logc(ctx).Trace("<<<< getCachedPVByName")
+	Logc(ctx).WithFields(logFields).Trace(">>>> isPVInCache")
+	defer Logc(ctx).Trace("<<<< isPVInCache")
 
 	item, exists, err := h.pvIndexer.GetByKey(name)
 	if err != nil {
@@ -929,7 +924,7 @@ func (h *helper) waitForCachedPVByName(
 		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"increment": duration,
-		}).Tracef("PV not yet in cache, waiting.")
+		}).Trace("PV not yet in cache, waiting.")
 	}
 	pvBackoff := backoff.NewExponentialBackOff()
 	pvBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -947,8 +942,7 @@ func (h *helper) waitForCachedPVByName(
 
 // addStorageClass is the add handler for the storage class watcher.
 func (h *helper) addStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate, LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> addStorageClass")
 	defer Logc(ctx).Trace("<<<< addStorageClass")
 
@@ -964,8 +958,7 @@ func (h *helper) addStorageClass(obj interface{}) {
 
 // updateStorageClass is the update handler for the storage class watcher.
 func (h *helper) updateStorageClass(_, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate, LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> updateStorageClass")
 	defer Logc(ctx).Trace("<<<< updateStorageClass")
 
@@ -982,8 +975,7 @@ func (h *helper) updateStorageClass(_, newObj interface{}) {
 
 // deleteStorageClass is the delete handler for the storage class watcher.
 func (h *helper) deleteStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassDelete,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassDelete, LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> deleteStorageClass")
 	defer Logc(ctx).Trace("<<<< deleteStorageClass")
 
@@ -1020,7 +1012,7 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 		Logc(ctx).WithFields(logFields).Trace("Storage class updated in cache.")
 		// Make sure Trident has a record of this storage class.
 		if storageClass, _ := h.orchestrator.GetStorageClass(ctx, sc.Name); storageClass == nil {
-			Logc(ctx).WithFields(logFields).Warn("K8S helper has no record of the updated " +
+			Logc(ctx).WithFields(logFields).Warning("K8S helper has no record of the updated " +
 				"storage class; instead it will try to create it.")
 			h.processAddedStorageClass(ctx, sc)
 		}
@@ -1037,7 +1029,7 @@ func removeSCParameterPrefix(key string) string {
 	if strings.HasPrefix(key, annPrefix) {
 		scParamKV := strings.SplitN(key, "/", 2)
 		if len(scParamKV) != 2 || scParamKV[0] == "" || scParamKV[1] == "" {
-			Log().Errorf("the storage class parameter %s does not have the right format", key)
+			Log().Errorf("Storage class parameter %s does not have the right format.", key)
 			return key
 		}
 		key = scParamKV[1]
@@ -1133,7 +1125,7 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 		"name":        sc.Name,
 		"provisioner": sc.Provisioner,
 		"parameters":  sc.Parameters,
-	}).Debug("K8S helper added a storage class.")
+	}).Trace("K8S helper added a storage class.")
 }
 
 // processDeletedStorageClass informs the orchestrator of a deleted storage class.
@@ -1147,7 +1139,7 @@ func (h *helper) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev
 	if err != nil {
 		Logc(ctx).WithFields(logFields).Errorf("K8S helper could not delete the storage class: %v", err)
 	} else {
-		Logc(ctx).WithFields(logFields).Info("K8S helper deleted the storage class.")
+		Logc(ctx).WithFields(logFields).Trace("K8S helper deleted the storage class.")
 	}
 }
 
@@ -1196,7 +1188,7 @@ func (h *helper) waitForCachedStorageClassByName(
 		Logc(ctx).WithFields(LogFields{
 			"name":      name,
 			"increment": duration,
-		}).Tracef("Storage class not yet in cache, waiting.")
+		}).Trace("Storage class not yet in cache, waiting.")
 	}
 	scBackoff := backoff.NewExponentialBackOff()
 	scBackoff.InitialInterval = CacheBackoffInitialInterval
@@ -1230,8 +1222,7 @@ func (h *helper) addNode(obj interface{}) {
 
 // updateNode is the update handler for the node watcher.
 func (h *helper) updateNode(_, obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowNodeUpdate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowNodeUpdate, LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> updateNode")
 	defer Logc(ctx).Trace("<<<< updateNode")
 
@@ -1275,9 +1266,7 @@ func (h *helper) deleteNode(obj interface{}) {
 
 // processNode logs and handles the add/update/delete node events.
 func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType string) {
-	logFields := LogFields{
-		"name": node.Name,
-	}
+	logFields := LogFields{"name": node.Name}
 	Logc(ctx).WithFields(logFields).Trace(">>>> processNode")
 	defer Logc(ctx).Trace("<<<< processNode")
 
@@ -1400,10 +1389,8 @@ func (h *helper) SupportsFeature(ctx context.Context, feature controllerhelpers.
 
 	kubeSemVersion, err := versionutils.ParseSemantic(h.kubeVersion.GitVersion)
 	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"version": h.kubeVersion.GitVersion,
-			"error":   err,
-		}).Errorf("unable to parse Kubernetes version")
+		Logc(ctx).WithField("version", h.kubeVersion.GitVersion).WithError(err).Errorf(
+			"Unable to parse Kubernetes version.")
 		return false
 	}
 

@@ -1,11 +1,13 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
 	"fmt"
-	"strings"
 
 	v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
@@ -62,12 +64,12 @@ func (h *helper) updateLegacyPV(oldObj, newObj interface{}) {
 	}
 
 	// Delete the PV
-	err := h.kubeClient.CoreV1().PersistentVolumes().Delete(ctx, pv.Name, deleteOpts)
-	if err != nil {
-		if !strings.HasSuffix(err.Error(), "not found") {
+	if err := h.kubeClient.CoreV1().PersistentVolumes().Delete(ctx, pv.Name, deleteOpts); err != nil {
+		statusErr, ok := err.(*apierrors.StatusError)
+		if !ok || statusErr.Status().Reason != metav1.StatusReasonNotFound {
 			// PVs provisioned by external provisioners seem to end up in
 			// the failed state as Kubernetes doesn't recognize them.
-			Logc(ctx).Errorf("K8S helper failed to delete a PV: %s", err.Error())
+			Logc(ctx).WithError(err).Error("K8S helper failed to delete a PV.")
 		}
 		return
 	}

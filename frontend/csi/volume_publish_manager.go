@@ -53,8 +53,8 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 	ctx context.Context, volumeID string, trackingInfo *utils.VolumeTrackingInfo,
 ) error {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> WriteTrackingInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< WriteTrackingInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> WriteTrackingInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< WriteTrackingInfo")
 
 	filename := volumeID + ".json"
 	tmpFile := "tmp-" + filename
@@ -80,8 +80,8 @@ func (v *VolumePublishManager) ReadTrackingInfo(
 	ctx context.Context, volumeID string,
 ) (*utils.VolumeTrackingInfo, error) {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> ReadTrackingInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< ReadTrackingInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> ReadTrackingInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< ReadTrackingInfo")
 
 	return v.readTrackingInfo(ctx, volumeID)
 }
@@ -136,8 +136,8 @@ func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[
 // no error is generated.
 func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID string) error {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> DeleteTrackingInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteTrackingInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> DeleteTrackingInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< DeleteTrackingInfo")
 
 	filename, err := fileDeleter(ctx, path.Join(v.volumeTrackingInfoPath, volumeID+".json"), "tracking")
 	if err != nil {
@@ -157,8 +157,8 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 ) (bool, error) {
 	var err error
 	fields := LogFields{"volumeId": volumeId}
-	Logc(ctx).WithFields(fields).Debug(">>>> UpgradeVolumeTrackingFile")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< UpgradeVolumeTrackingFile")
+	Logc(ctx).WithFields(fields).Trace(">>>> UpgradeVolumeTrackingFile")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< UpgradeVolumeTrackingFile")
 
 	volumeTrackingInfo := &utils.VolumeTrackingInfo{}
 	publishInfo := &utils.VolumePublishInfo{}
@@ -220,8 +220,8 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeId string) (bool, error) {
 	var trackingInfo utils.VolumeTrackingInfo
 	fields := LogFields{"volumeId": volumeId}
-	Logc(ctx).WithFields(fields).Debug(">>>> ValidateTrackingFile")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateTrackingFile")
+	Logc(ctx).WithFields(fields).Trace(">>>> ValidateTrackingFile")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< ValidateTrackingFile")
 	filename := path.Join(v.volumeTrackingInfoPath, volumeId+".json")
 
 	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &trackingInfo, filename, "volume tracking")
@@ -286,8 +286,8 @@ func (v *VolumePublishManager) DeleteFailedUpgradeTrackingFile(ctx context.Conte
 // in that if the file doesn't exist, no error is generated.
 func clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId string) error {
 	fields := LogFields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
-	Logc(ctx).WithFields(fields).Debug(">>>> clearStagedDeviceInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< clearStagedDeviceInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> clearStagedDeviceInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< clearStagedDeviceInfo")
 
 	stagingFilename := path.Join(stagingTargetPath, volumePublishInfoFilename)
 

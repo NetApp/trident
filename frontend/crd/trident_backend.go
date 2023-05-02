@@ -16,8 +16,7 @@ func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{})
 	// When a CR has a finalizer those come as update events and not deletes,
 	// Do not handle any other update events other than backend deletion
 	// otherwise it may result in continuous reconcile loops.
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	if err := c.removeFinalizers(ctx, new, false); err != nil {
 		Logx(ctx).WithError(err).Error("Error removing finalizers")
 	}
@@ -27,8 +26,7 @@ func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{})
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackend.
 func (c *TridentCrdController) deleteTridentBackendHandler(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Trace("TridentCrdController#deleteTridentBackendHandler")

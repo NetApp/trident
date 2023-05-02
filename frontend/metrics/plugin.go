@@ -19,6 +19,8 @@ type Server struct {
 
 // NewMetricsServer see also: https://godoc.org/github.com/prometheus/client_golang/prometheus/promauto
 func NewMetricsServer(address, port string) *Server {
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerMetricsFrontend)
+
 	metricsServer := &Server{
 		server: &http.Server{
 			Addr:         fmt.Sprintf("%s:%s", address, port),
@@ -28,29 +30,33 @@ func NewMetricsServer(address, port string) *Server {
 		},
 	}
 
-	Log().WithField("address", metricsServer.server.Addr).Info("Initializing metrics frontend.")
+	Logc(ctx).WithField("address", metricsServer.server.Addr).Info("Initializing metrics frontend.")
 
 	return metricsServer
 }
 
 func (s *Server) Activate() error {
 	go func() {
-		Log().WithField("address", s.server.Addr).Info("Activating metrics frontend.")
-		http.Handle("/metrics", s.server.Handler)
+		ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerMetricsFrontend)
 
+		Logc(ctx).WithField("address", s.server.Addr).Info("Activating metrics frontend.")
+
+		http.Handle("/metrics", s.server.Handler)
 		err := s.server.ListenAndServe()
 		if err == http.ErrServerClosed {
-			Log().WithField("address", s.server.Addr).Info("Metrics frontend server has closed.")
+			Logc(ctx).WithField("address", s.server.Addr).Info("Metrics frontend server has closed.")
 		} else if err != nil {
-			Log().Fatal(err)
+			Logc(ctx).Fatal(err)
 		}
 	}()
 	return nil
 }
 
 func (s *Server) Deactivate() error {
-	Log().WithField("address", s.server.Addr).Info("Deactivating metrics frontend.")
-	ctx, cancel := context.WithTimeout(context.Background(), config.HTTPTimeout)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginDeactivate, LogLayerMetricsFrontend)
+
+	Logc(ctx).WithField("address", s.server.Addr).Info("Deactivating metrics frontend.")
+	ctx, cancel := context.WithTimeout(ctx, config.HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)
 }

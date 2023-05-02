@@ -1,4 +1,5 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
@@ -39,8 +40,8 @@ func (h *helper) GetVolumeConfig(
 	pvName := name
 
 	fields := LogFields{"Method": "GetVolumeConfig", "Type": "K8S helper", "name": pvName}
-	Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeConfig")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeConfig")
+	Logc(ctx).WithFields(fields).Trace(">>>> GetVolumeConfig")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< GetVolumeConfig")
 
 	// Get the PVC corresponding to the new PV being provisioned
 	pvc, err := h.getPVCForCSIVolume(ctx, pvName)
@@ -190,7 +191,7 @@ func (h *helper) getPVCForCSIVolume(ctx context.Context, name string) (*v1.Persi
 	// Get the cached PVC that started this workflow
 	pvc, err := h.waitForCachedPVCByUID(ctx, pvcUID, PreSyncCacheWaitPeriod)
 	if err != nil {
-		Logc(ctx).WithField("uid", pvcUID).Warningf("PVC not found in local cache: %v", err)
+		Logc(ctx).WithError(err).WithField("uid", pvcUID).Warning("PVC not found in local cache.")
 
 		// Not found immediately, so re-sync and try again
 		if err = h.pvcIndexer.Resync(); err != nil {
@@ -198,7 +199,7 @@ func (h *helper) getPVCForCSIVolume(ctx context.Context, name string) (*v1.Persi
 		}
 
 		if pvc, err = h.waitForCachedPVCByUID(ctx, pvcUID, PostSyncCacheWaitPeriod); err != nil {
-			Logc(ctx).WithField("uid", pvcUID).Errorf("PVC not found in local cache after resync: %v", err)
+			Logc(ctx).WithError(err).WithField("uid", pvcUID).Error("PVC not found in local cache after resync.")
 			return nil, fmt.Errorf("could not find PVC with UID %s: %v", pvcUID, err)
 		}
 	}
@@ -232,7 +233,7 @@ func getPVCUIDFromCSIVolumeName(volumeName string) (string, error) {
 func (h *helper) getStorageClass(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
 	sc, err := h.waitForCachedStorageClassByName(ctx, name, PreSyncCacheWaitPeriod)
 	if err != nil {
-		Logc(ctx).WithField("name", name).Warningf("Storage class not found in local cache: %v", err)
+		Logc(ctx).WithError(err).WithField("name", name).Warning("Storage class not found in local cache.")
 
 		// Not found immediately, so re-sync and try again
 		if err = h.scIndexer.Resync(); err != nil {
@@ -240,7 +241,8 @@ func (h *helper) getStorageClass(ctx context.Context, name string) (*k8sstoragev
 		}
 
 		if sc, err = h.waitForCachedStorageClassByName(ctx, name, PostSyncCacheWaitPeriod); err != nil {
-			Logc(ctx).WithField("name", name).Errorf("Storage class not found in local cache after resync: %v", err)
+			Logc(ctx).WithError(err).WithField("name", name).Error(
+				"Storage class not found in local cache after resync.")
 			return nil, fmt.Errorf("could not find storage class %s: %v", name, err)
 		}
 	}
@@ -402,7 +404,7 @@ func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 	}).Debug("Volume event.")
 
 	if pvc, err := h.getPVCForCSIVolume(ctx, name); err != nil {
-		Logc(ctx).WithField("error", err).Debug("Failed to find PVC for event.")
+		Logc(ctx).WithError(err).Debug("Failed to find PVC for event.")
 	} else {
 		h.eventRecorder.Event(pvc, mapEventType(eventType), reason, message)
 	}
@@ -419,7 +421,7 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 	}).Debug("Node event.")
 
 	if node, err := h.GetNode(ctx, name); err != nil {
-		Logc(ctx).WithField("error", err).Debug("Failed to find Node for event.")
+		Logc(ctx).WithError(err).Debug("Failed to find Node for event.")
 	} else {
 		h.eventRecorder.Event(node, mapEventType(eventType), reason, message)
 	}
@@ -468,7 +470,7 @@ func getVolumeConfig(
 	}
 	notManaged, err := strconv.ParseBool(getAnnotation(annotations, AnnNotManaged))
 	if err != nil {
-		Logc(ctx).Warnf("unable to parse notManaged annotation into bool; %v", err)
+		Logc(ctx).WithError(err).Warning("Unable to parse notManaged annotation into bool.")
 	}
 
 	return &storage.VolumeConfig{

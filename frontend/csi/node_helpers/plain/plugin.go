@@ -20,8 +20,8 @@ type helper struct {
 
 // NewHelper instantiates this plugin.
 func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
+
 	Logc(ctx).Info("Initializing plain CSI helper frontend.")
 
 	volPubManager := csi.NewVolumePublishManager("")
@@ -34,8 +34,7 @@ func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginActivate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating plain CSI helper frontend.")
 

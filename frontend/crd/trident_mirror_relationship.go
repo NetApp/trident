@@ -27,8 +27,7 @@ type (
 // updateTMRHandler is the update handler for the TridentMirrorRelationship watcher
 // validates that the update of the TMR is allowed and if so, adds it to the workqueue
 func (c *TridentCrdController) updateTMRHandler(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Debug("TridentCrdController#updateTMRHandler")

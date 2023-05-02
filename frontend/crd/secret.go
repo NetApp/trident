@@ -16,8 +16,7 @@ import (
 // into a namespace/name string which is then put onto the work queue.
 // This method should *not* be passed resources of any type other than Secrets.
 func (c *TridentCrdController) updateSecretHandler(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Trace("TridentCrdController#updateSecretHandler")

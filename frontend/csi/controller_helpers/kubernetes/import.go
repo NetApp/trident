@@ -94,7 +94,7 @@ func (h *helper) ImportVolume(
 	Logc(ctx).WithFields(LogFields{
 		"size":      volExternal.Config.Size,
 		"claimSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
-	}).Debug("Volume import determined volume size")
+	}).Debug("Volume import determined volume size.")
 
 	pvc, pvcErr := h.createImportPVC(ctx, claim)
 	if pvcErr != nil {

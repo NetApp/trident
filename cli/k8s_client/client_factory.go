@@ -52,8 +52,7 @@ var cachedClients *Clients
 // using `kubectl config view --raw` and we attempt to discern the namespace from the kubeconfig context.  The
 // namespace may be overridden, and if the namespace may not be determined by any other means, it is set to 'default'.
 func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowK8sClientFactory,
-		LogLayerNone)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowK8sClientFactory, LogLayerNone)
 	Logc(ctx).WithFields(LogFields{
 		"MasterURL":         masterURL,
 		"KubeConfigPath":    kubeConfigPath,

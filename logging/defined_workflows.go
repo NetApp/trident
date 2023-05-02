@@ -5,22 +5,23 @@ const (
 	workflowCategorySeparator  = "="
 	workflowOperationSeparator = ","
 
-	CategoryCore          = WorkflowCategory("core")
-	CategoryCRDController = WorkflowCategory("crd_controller")
-	CategoryCR            = WorkflowCategory("cr")
-	CategoryStorageClient = WorkflowCategory("storage_client")
-	CategoryPlugin        = WorkflowCategory("plugin")
-	CategoryVolume        = WorkflowCategory("volume")
-	CategoryStorageClass  = WorkflowCategory("storage_class")
-	CategoryNode          = WorkflowCategory("node")
-	CategoryBackend       = WorkflowCategory("backend")
-	CategorySnapshot      = WorkflowCategory("snapshot")
-	CategoryController    = WorkflowCategory("controller")
-	CategoryNodeServer    = WorkflowCategory("node_server")
-	CategoryGRPC          = WorkflowCategory("grpc")
-	CategoryTridentREST   = WorkflowCategory("trident_rest")
-	CategoryK8sClient     = WorkflowCategory("k8s_client")
-	CategoryNone          = WorkflowCategory("none")
+	CategoryCore           = WorkflowCategory("core")
+	CategoryCRDController  = WorkflowCategory("crd_controller")
+	CategoryCR             = WorkflowCategory("cr")
+	CategoryStorageClient  = WorkflowCategory("storage_client")
+	CategoryPlugin         = WorkflowCategory("plugin")
+	CategoryVolume         = WorkflowCategory("volume")
+	CategoryStorageClass   = WorkflowCategory("storage_class")
+	CategoryNode           = WorkflowCategory("node")
+	CategoryBackend        = WorkflowCategory("backend")
+	CategorySnapshot       = WorkflowCategory("snapshot")
+	CategoryController     = WorkflowCategory("controller")
+	CategoryNodeServer     = WorkflowCategory("node_server")
+	CategoryIdentityServer = WorkflowCategory("identity_server")
+	CategoryGRPC           = WorkflowCategory("grpc")
+	CategoryTridentREST    = WorkflowCategory("trident_rest")
+	CategoryK8sClient      = WorkflowCategory("k8s_client")
+	CategoryNone           = WorkflowCategory("none")
 
 	OpBootstrap      = WorkflowOperation("bootstrap")
 	OpVersion        = WorkflowOperation("version")
@@ -46,11 +47,14 @@ const (
 	OpMount          = WorkflowOperation("mount")
 	OpUnmount        = WorkflowOperation("unmount")
 	OpGetCapabilties = WorkflowOperation("get_capabilities")
+	OpProbe          = WorkflowOperation("probe")
 	OpGetResponse    = WorkflowOperation("get_response")
 	OpPublish        = WorkflowOperation("publish")
 	OpUnpublish      = WorkflowOperation("unpublish")
 	OpStage          = WorkflowOperation("stage")
 	OpUnstage        = WorkflowOperation("unstage")
+	OpHealISCSI      = WorkflowOperation("heal_iscsi")
+	OpReconcilePubs  = WorkflowOperation("reconcile_publications")
 	OpTraceFactory   = WorkflowOperation("trace_factory")
 	OpTraceAPI       = WorkflowOperation("trace_api")
 	OpInit           = WorkflowOperation("init")
@@ -113,6 +117,10 @@ var (
 	WorkflowNodeList            = Workflow{CategoryNode, OpList}
 	WorkflowNodeDelete          = Workflow{CategoryNode, OpDelete}
 
+	WorkflowIdentityProbe           = Workflow{CategoryIdentityServer, OpProbe}
+	WorkflowIdentityGetInfo         = Workflow{CategoryIdentityServer, OpGetInfo}
+	WorkflowIdentityGetCapabilities = Workflow{CategoryIdentityServer, OpGetCapabilties}
+
 	WorkflowBackendCreate = Workflow{CategoryBackend, OpCreate}
 	WorkflowBackendDelete = Workflow{CategoryBackend, OpDelete}
 	WorkflowBackendGet    = Workflow{CategoryBackend, OpGet}
@@ -130,10 +138,12 @@ var (
 	WorkflowControllerUnpublish       = Workflow{CategoryController, OpUnpublish}
 	WorkflowControllerGetCapabilities = Workflow{CategoryController, OpGetCapabilties}
 
-	WorkflowNodeStage     = Workflow{CategoryNodeServer, OpStage}
-	WorkflowNodeUnstage   = Workflow{CategoryNodeServer, OpUnstage}
-	WorkflowNodePublish   = Workflow{CategoryNodeServer, OpPublish}
-	WorkflowNodeUnpublish = Workflow{CategoryNodeServer, OpUnpublish}
+	WorkflowNodeStage         = Workflow{CategoryNodeServer, OpStage}
+	WorkflowNodeUnstage       = Workflow{CategoryNodeServer, OpUnstage}
+	WorkflowNodePublish       = Workflow{CategoryNodeServer, OpPublish}
+	WorkflowNodeUnpublish     = Workflow{CategoryNodeServer, OpUnpublish}
+	WorkflowNodeHealISCSI     = Workflow{CategoryNodeServer, OpHealISCSI}
+	WorkflowNodeReconcilePubs = Workflow{CategoryNodeServer, OpReconcilePubs}
 
 	WorkflowNone = Workflow{CategoryNone, OpNone}
 

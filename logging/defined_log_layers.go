@@ -16,6 +16,7 @@ const (
 	LogLayerRESTFrontend            = LogLayer("rest_frontend")
 	LogLayerCRDFrontend             = LogLayer("crd_frontend")
 	LogLayerDockerFrontend          = LogLayer("docker_frontend")
+	LogLayerMetricsFrontend         = LogLayer("metrics_frontend")
 	LogLayerPersistentStore         = LogLayer("persistent_store")
 	LogLayerANFNASDriver            = LogLayer(AzureNASStorageDriverName)
 	LogLayerANFSubvolumeDriver      = LogLayer(AzureNASBlockStorageDriverName)

@@ -3,6 +3,7 @@
 package crd
 
 import (
+	"context"
 	"io"
 	"os"
 	"testing"
@@ -26,6 +27,7 @@ import (
 var (
 	crdScheme = runtime.NewScheme()
 	codecs    = serializer.NewCodecFactory(crdScheme)
+	ctx       = context.Background
 )
 
 func init() {

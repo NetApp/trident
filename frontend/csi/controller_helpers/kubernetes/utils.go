@@ -25,7 +25,7 @@ func (h *helper) validateKubeVersion() error {
 	if version, err := versionutils.ParseSemantic(h.kubeVersion.GitVersion); err != nil {
 		return err
 	} else if !version.AtLeast(versionutils.MustParseMajorMinorVersion(config.KubernetesVersionMin)) {
-		Log().Warnf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
+		Log().Warningf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
 			"Kubernetes versions are %s-%s. K8S helper frontend proceeds as if you are running Kubernetes %s!",
 			config.OrchestratorName, config.OrchestratorVersion, h.kubeVersion.Major, h.kubeVersion.Minor,
 			h.kubeVersion.GitVersion, config.KubernetesVersionMin, config.KubernetesVersionMax,
@@ -169,7 +169,7 @@ func isPVNotManaged(ctx context.Context, pv *v1.PersistentVolume) bool {
 func isNotManaged(ctx context.Context, annotations map[string]string, name, kind string) bool {
 	if value, ok := annotations[AnnNotManaged]; ok {
 		if notManaged, err := strconv.ParseBool(value); err != nil {
-			Logc(ctx).WithField(kind, name).Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
+			Logc(ctx).WithError(err).WithField(kind, name).Errorf("Invalid value for %s annotation.", AnnNotManaged)
 			return true
 		} else if notManaged {
 			Logc(ctx).WithField(kind, name).Debugf("K8S helper ignored this notManaged %s.", kind)
@@ -213,9 +213,7 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 func (h *helper) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
 	// Filter unrelated claims
 	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
-		Logc(ctx).WithFields(LogFields{
-			"PVC": claim.Name,
-		}).Error("PVC has no storage class specified")
+		Logc(ctx).WithField("PVC", claim.Name).Error("PVC has no storage class specified.")
 		return fmt.Errorf("PVC %s has no storage class specified", claim.Name)
 	}
 

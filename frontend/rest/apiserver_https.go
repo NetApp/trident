@@ -67,7 +67,7 @@ func NewHTTPSServer(
 
 func (s *APIServerHTTPS) Activate() error {
 	go func() {
-		Log().WithField("address", s.server.Addr).Infof("Activating HTTPS REST frontend.")
+		Log().WithField("address", s.server.Addr).Info("Activating HTTPS REST frontend.")
 
 		err := s.server.ListenAndServeTLS(s.serverCertFile, s.serverKeyFile)
 		if err == http.ErrServerClosed {
@@ -80,7 +80,7 @@ func (s *APIServerHTTPS) Activate() error {
 }
 
 func (s *APIServerHTTPS) Deactivate() error {
-	Log().WithField("address", s.server.Addr).Infof("Deactivating HTTPS REST frontend.")
+	Log().WithField("address", s.server.Addr).Info("Deactivating HTTPS REST frontend.")
 	ctx, cancel := context.WithTimeout(context.Background(), config.HTTPTimeout)
 	defer cancel()
 	return s.server.Shutdown(ctx)

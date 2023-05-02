@@ -36,8 +36,7 @@ type helper struct {
 
 // NewHelper instantiates this helper when running outside a pod.
 func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForceDetach bool) (frontend.Plugin, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
 
@@ -58,8 +57,7 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 
 // Activate starts this Trident frontend.
 func (h *helper) Activate() error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowPluginActivate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
 
@@ -95,8 +93,8 @@ func (h *helper) Version() string {
 // whether they are still valid. This lives here and not on the VolumePublishTracker because Reconciliation
 // needs to be container orchestrator specific.
 func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
-	Logc(ctx).Debug(">>>> ReconcileVolumeTrackingInfo")
-	defer Logc(ctx).Debug("<<<< ReconcileVolumeTrackingInfo")
+	Logc(ctx).Trace(">>>> ReconcileVolumeTrackingInfo")
+	defer Logc(ctx).Trace("<<<< ReconcileVolumeTrackingInfo")
 
 	files, err := h.VolumePublishManager.GetVolumeTrackingFiles()
 	if err != nil {
@@ -137,7 +135,7 @@ func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string
 
 	shouldDelete, err := h.VolumePublishManager.UpgradeVolumeTrackingFile(ctx, volumeId, paths)
 	if err != nil {
-		Log().Info(fmt.Sprintf("Volume tracking file upgrade failed for volume: %s .", volumeId))
+		Log().Infof("Volume tracking file upgrade failed for volume: %s .", volumeId)
 		return err
 	}
 
@@ -154,8 +152,7 @@ func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string
 	// volume is present or that a forced NodeUnstage (which is part of a force detach) needs to occur to ensure
 	// everything is cleaned up properly.
 	if shouldDelete {
-		err = h.VolumePublishManager.DeleteTrackingInfo(ctx, volumeId)
-		if err != nil {
+		if err = h.VolumePublishManager.DeleteTrackingInfo(ctx, volumeId); err != nil {
 			return csi.TerminalReconciliationError(fmt.Sprintf("could not delete the tracking file: %v", err))
 		}
 	}
@@ -166,8 +163,8 @@ func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string
 // AddPublishedPath adds a new published path to the tracking file when called by NodePublishVolume.
 func (h *helper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd string) error {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> AddPublishedPath")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< AddPublishedPath")
+	Logc(ctx).WithFields(fields).Trace(">>>> AddPublishedPath")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< AddPublishedPath")
 
 	volTrackingInfo, err := h.ReadTrackingInfo(ctx, volumeID)
 	if err != nil {
@@ -188,8 +185,8 @@ func (h *helper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd strin
 // leaving all other published paths unmodified.
 func (h *helper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove string) error {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> RemovePublishedPath")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< RemovePublishedPath")
+	Logc(ctx).WithFields(fields).Trace(">>>> RemovePublishedPath")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< RemovePublishedPath")
 
 	volTrackingInfo, err := h.ReadTrackingInfo(ctx, volumeID)
 	if err != nil {
@@ -215,7 +212,7 @@ func (h *helper) discoverPVCsToPublishedPaths(ctx context.Context) (map[string]m
 	pods, err := afero.ReadDir(osFs, h.podsPath)
 	if err != nil {
 		fields := LogFields{"helperPodsPath": h.podsPath}
-		Logc(ctx).WithFields(fields).Errorf("Error reading pods path: %v", err)
+		Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %v", err)
 		return nil, err
 	}
 
@@ -225,7 +222,7 @@ func (h *helper) discoverPVCsToPublishedPaths(ctx context.Context) (map[string]m
 		Logc(ctx).WithFields(fields).Debug("Current pod UUID path.")
 		volumes, err := afero.ReadDir(osFs, podUUIDPath)
 		if err != nil && !os.IsNotExist(err) {
-			Logc(ctx).WithFields(fields).Errorf("Error reading pod UUID directory: %v", err)
+			Logc(ctx).WithFields(fields).Errorf("Error reading pod UUID directory; %v", err)
 			return mapping, err
 		}
 

@@ -158,7 +158,7 @@ func (o *TridentOrchestrator) transformPersistentState(ctx context.Context) erro
 }
 
 func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal, WorkflowCoreBootstrap, LogLayerCore)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCoreBootstrap, LogLayerCore)
 	var err error
 
 	if len(o.frontends) == 0 {
@@ -4795,8 +4795,7 @@ func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Conte
 // safeReconcileNodeAccessOnBackend for each backend in the orchestrator
 func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
 	o.stopNodeAccessLoop = make(chan bool)
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic, WorkflowCoreNodeReconcile,
-		LogLayerCore)
+	ctx := GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowCoreNodeReconcile, LogLayerCore)
 
 	Logc(ctx).Info("Starting periodic node access reconciliation service.")
 	defer Logc(ctx).Info("Stopping periodic node access reconciliation service.")
@@ -5164,8 +5163,8 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	fields := LogFields{"volumeName": volumeName}
-	Logc(ctx).WithFields(fields).Debug(">>>>>> ListVolumePublicationsForVolume")
-	defer Logc(ctx).Debug("<<<<<< ListVolumePublicationsForVolume")
+	Logc(ctx).WithFields(fields).Trace(">>>> ListVolumePublicationsForVolume")
+	defer Logc(ctx).Trace("<<<< ListVolumePublicationsForVolume")
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError

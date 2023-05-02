@@ -72,8 +72,7 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	patchOpts  = metav1.PatchOptions{}
 
-	ctx = GenerateRequestContext(context.Background(), "", "", WorkflowK8sClientAPI,
-		LogLayerNone)
+	ctx    = GenerateRequestContext(nil, "", "", WorkflowK8sClientAPI, LogLayerNone)
 	reqCtx = context.Background
 
 	yamlToJSON     = yaml.YAMLToJSON

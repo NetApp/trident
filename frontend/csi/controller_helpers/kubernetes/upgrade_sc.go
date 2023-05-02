@@ -1,4 +1,5 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
@@ -19,8 +20,7 @@ import (
 
 // addLegacyStorageClass is the add handler for the legacy storage class watcher.
 func (h *helper) addLegacyStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate, LogLayerCSIFrontend)
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -34,8 +34,7 @@ func (h *helper) addLegacyStorageClass(obj interface{}) {
 
 // updateLegacyStorageClass is the update handler for the legacy storage class watcher.
 func (h *helper) updateLegacyStorageClass(_, newObj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate, LogLayerCSIFrontend)
 
 	switch sc := newObj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -49,8 +48,7 @@ func (h *helper) updateLegacyStorageClass(_, newObj interface{}) {
 
 // deleteStorageClass is the delete handler for the storage class watcher.
 func (h *helper) deleteLegacyStorageClass(obj interface{}) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassDelete,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassDelete, LogLayerCSIFrontend)
 
 	switch sc := obj.(type) {
 	case *k8sstoragev1beta.StorageClass:
@@ -79,13 +77,13 @@ func (h *helper) processLegacyStorageClass(ctx context.Context, sc *k8sstoragev1
 
 	switch eventType {
 	case eventAdd:
-		Logc(ctx).WithFields(logFields).Debug("Legacy storage class added to cache.")
+		Logc(ctx).WithFields(logFields).Trace("Legacy storage class added to cache.")
 		h.replaceLegacyStorageClass(ctx, sc)
 	case eventUpdate:
-		Logc(ctx).WithFields(logFields).Debug("Legacy storage class updated in cache.")
+		Logc(ctx).WithFields(logFields).Trace("Legacy storage class updated in cache.")
 		h.replaceLegacyStorageClass(ctx, sc)
 	case eventDelete:
-		Logc(ctx).WithFields(logFields).Debug("Legacy storage class deleted from cache.")
+		Logc(ctx).WithFields(logFields).Trace("Legacy storage class deleted from cache.")
 	}
 }
 

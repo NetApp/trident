@@ -25,8 +25,7 @@ type helper struct {
 
 // NewHelper instantiates this plugin.
 func NewHelper(orchestrator core.Orchestrator) frontend.Plugin {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 	Logc(ctx).Info("Initializing plain CSI helper frontend.")
 
 	return &helper{
@@ -54,15 +53,14 @@ func (h *helper) Activate() error {
 
 // Deactivate stops this Trident frontend.
 func (h *helper) Deactivate() error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginDeactivate,
-		LogLayerCSIFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginDeactivate, LogLayerCSIFrontend)
 	Logc(ctx).Info("Deactivating plain CSI helper frontend.")
 	return nil
 }
 
 // GetName returns the name of this Trident frontend.
 func (h *helper) GetName() string {
-	return string(controllerhelpers.PlainCSIHelper)
+	return controllerhelpers.PlainCSIHelper
 }
 
 // Version returns the version of this Trident frontend (the Trident version).
@@ -76,7 +74,7 @@ func (h *helper) Version() string {
 func (h *helper) GetVolumeConfig(
 	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
-	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
+	requisiteTopology, preferredTopology, _ []map[string]string,
 ) (*storage.VolumeConfig, error) {
 	accessMode := frontendcommon.CombineAccessModes(ctx, accessModes)
 
@@ -95,8 +93,8 @@ func (h *helper) GetVolumeConfig(
 	}
 
 	// Create the volume config from all available info from the CSI request
-	return frontendcommon.GetVolumeConfig(ctx, name, scConfig.Name, sizeBytes, parameters, protocol, accessMode, volumeMode,
-		requisiteTopology, preferredTopology)
+	return frontendcommon.GetVolumeConfig(ctx, name, scConfig.Name, sizeBytes, parameters, protocol, accessMode,
+		volumeMode, requisiteTopology, preferredTopology)
 }
 
 // GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
@@ -109,7 +107,7 @@ func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 	}, nil
 }
 
-func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
+func (h *helper) GetNodeTopologyLabels(_ context.Context, _ string) (map[string]string, error) {
 	return map[string]string{}, nil
 }
 

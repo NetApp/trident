@@ -42,8 +42,7 @@ type Plugin struct {
 }
 
 func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*Plugin, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowPluginCreate,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowPluginCreate, LogLayerDockerFrontend)
 
 	Logc(ctx).Debug(">>>> docker.NewPlugin")
 	defer Logc(ctx).Debug("<<<< docker.NewPlugin")
@@ -177,6 +176,8 @@ func registerDockerVolumePlugin(ctx context.Context, root string) error {
 }
 
 func (p *Plugin) initDockerVersion() {
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerDockerFrontend)
+
 	time.Sleep(5 * time.Second)
 
 	// Get Docker version
@@ -190,12 +191,11 @@ func (p *Plugin) initDockerVersion() {
 	versionJSON = strings.TrimSuffix(versionJSON, "'")
 
 	var version Version
-	err = json.Unmarshal([]byte(versionJSON), &version)
-	if err != nil {
-		Log().Errorf("could not parse Docker version: %v", err)
+	if err = json.Unmarshal([]byte(versionJSON), &version); err != nil {
+		Logc(ctx).WithError(err).Error("Could not parse Docker version.")
 	}
 
-	Log().WithFields(LogFields{
+	Logc(ctx).WithFields(LogFields{
 		"serverVersion":    version.Server.Version,
 		"serverAPIVersion": version.Server.APIVersion,
 		"serverArch":       version.Server.Arch,
@@ -218,9 +218,11 @@ func (p *Plugin) Activate() error {
 
 	// Start serving requests on a different thread
 	go func() {
+		ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerDockerFrontend)
+
 		var err error
 		if p.driverPort != "" {
-			Log().WithFields(LogFields{
+			Logc(ctx).WithFields(LogFields{
 				"driverName": p.driverName,
 				"driverPort": p.driverPort,
 				"volumePath": p.volumePath,
@@ -228,14 +230,14 @@ func (p *Plugin) Activate() error {
 			err = handler.ServeTCP(p.driverName, ":"+p.driverPort, "",
 				&tls.Config{InsecureSkipVerify: true, MinVersion: config.MinServerTLSVersion})
 		} else {
-			Log().WithFields(LogFields{
+			Logc(ctx).WithFields(LogFields{
 				"driverName": p.driverName,
 				"volumePath": p.volumePath,
 			}).Info("Activating Docker frontend.")
 			err = handler.ServeUnix(p.driverName, 0) // start as root unix group
 		}
 		if err != nil {
-			Log().Fatalf("Failed to activate Docker frontend: %v", err)
+			Logc(ctx).WithError(err).Fatal("Failed to activate Docker frontend.")
 		}
 	}()
 
@@ -246,7 +248,9 @@ func (p *Plugin) Activate() error {
 }
 
 func (p *Plugin) Deactivate() error {
-	Log().Info("Deactivating Docker frontend.")
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginDeactivate, LogLayerDockerFrontend)
+
+	Logc(ctx).Info("Deactivating Docker frontend.")
 	return nil
 }
 
@@ -263,14 +267,17 @@ func (p *Plugin) Version() string {
 }
 
 func (p *Plugin) Create(request *volume.CreateRequest) error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeCreate,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeCreate, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method":  "Create",
 		"name":    request.Name,
 		"options": request.Options,
 	}, "Docker frontend method is invoked.")
+
+	fields := LogFields{"Method": "Create", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Create")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Create")
 
 	// Find a matching storage class, or register a new one
 	scConfig, err := frontendcommon.GetStorageClass(ctx, request.Options, p.orchestrator)
@@ -302,12 +309,15 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 }
 
 func (p *Plugin) List() (*volume.ListResponse, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeList,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeList, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "List",
 	}, "Docker frontend method is invoked.")
+
+	fields := LogFields{"Method": "List", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> List")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< List")
 
 	err := p.reloadVolumes(ctx)
 	if err != nil {
@@ -330,13 +340,16 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 }
 
 func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGet,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGet, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Get",
 		"name":   request.Name,
 	}, "Docker frontend method is invoked")
+
+	fields := LogFields{"Method": "Get", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Get")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Get")
 
 	// Get is called at the start of every 'docker volume' workflow except List & Unmount,
 	// so refresh the volume list here.
@@ -380,32 +393,38 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 }
 
 func (p *Plugin) Remove(request *volume.RemoveRequest) error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeDelete,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeDelete, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Remove",
 		"name":   request.Name,
 	}, "Docker frontend method is invoked.")
 
+	fields := LogFields{"Method": "Remove", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Remove")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Remove")
+
 	err := p.orchestrator.DeleteVolume(ctx, request.Name)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"volume": request.Name,
 			"error":  err,
-		}).Warn("Could not delete volume.")
+		}).Warning("Could not delete volume.")
 	}
 	return p.dockerError(ctx, err)
 }
 
 func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGetPath,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGetPath, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Path",
 		"name":   request.Name,
 	}, "Docker frontend method is invoked.")
+
+	fields := LogFields{"Method": "Path", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Path")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Path")
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
@@ -421,14 +440,17 @@ func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error)
 }
 
 func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeMount,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeMount, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Mount",
 		"name":   request.Name,
 		"id":     request.ID,
 	}, "Docker frontend method is invoked.")
+
+	fields := LogFields{"Method": "Mount", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Mount")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Mount")
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
@@ -459,14 +481,17 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 }
 
 func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeUnmount,
-		LogLayerDockerFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeUnmount, LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Unmount",
 		"name":   request.Name,
 		"id":     request.ID,
 	}, "Docker frontend method is invoked.")
+
+	fields := LogFields{"Method": "Unmount", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Unmount")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Unmount")
 
 	tridentVol, err := p.orchestrator.GetVolume(ctx, request.Name)
 	if err != nil {
@@ -489,12 +514,16 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 }
 
 func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
-	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowVolumeGetCapabilities,
+	ctx := GenerateRequestContext(nil, "", ContextSourceDocker, WorkflowControllerGetCapabilities,
 		LogLayerDockerFrontend)
 
 	Audit().Logln(ctx, AuditDockerAccess, LogFields{
 		"method": "Capabilities",
 	}, "Docker frontend method is invoked.")
+
+	fields := LogFields{"Method": "Capabilities", "Type": "Docker"}
+	Logc(ctx).WithFields(fields).Trace(">>>> Capabilities")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< Capabilities")
 
 	return &volume.CapabilitiesResponse{Capabilities: volume.Capability{Scope: "global"}}
 }
@@ -535,11 +564,11 @@ func (p *Plugin) hostMountpoint(name string) string {
 
 func (p *Plugin) dockerError(ctx context.Context, err error) error {
 	if err != nil {
-		Logc(ctx).Errorf("Docker frontend method returning error: %v", err)
+		Logc(ctx).WithError(err).Error("Docker frontend method returning error.")
 	}
 
 	if utils.IsBootstrapError(err) {
-		return fmt.Errorf("%s: use 'journalctl -fu docker' to learn more", err.Error())
+		return fmt.Errorf("%s; use 'journalctl -fu docker' to learn more", err.Error())
 	} else {
 		return err
 	}
@@ -564,7 +593,7 @@ func (p *Plugin) reloadVolumes(ctx context.Context) error {
 		Logc(ctx).WithFields(LogFields{
 			"increment": duration,
 			"message":   err.Error(),
-		}).Debugf("Docker frontend waiting to reload volumes.")
+		}).Debug("Docker frontend waiting to reload volumes.")
 	}
 	reloadBackoff := backoff.NewExponentialBackOff()
 	reloadBackoff.InitialInterval = 1 * time.Second

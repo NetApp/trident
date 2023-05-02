@@ -46,14 +46,14 @@ var (
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
+	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	lockContext := "NodeStageVolume-" + req.GetVolumeId()
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
 	fields := LogFields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
-	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeStageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeStageVolume")
 
@@ -78,6 +78,7 @@ func (p *Plugin) NodeUnstageVolume(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	ctx = SetContextWorkflow(ctx, WorkflowNodeUnstage)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	return p.nodeUnstageVolume(ctx, req, false)
 }
 
@@ -164,12 +165,12 @@ func (p *Plugin) nodeUnstageVolume(
 func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	lockContext := "NodePublishVolume-" + req.GetVolumeId()
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
-
-	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
 	fields := LogFields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodePublishVolume")
@@ -202,11 +203,13 @@ func (p *Plugin) NodePublishVolume(
 func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
+	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
-	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
 	fields := LogFields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnpublishVolume")
@@ -286,6 +289,9 @@ func (p *Plugin) NodeUnpublishVolume(
 func (p *Plugin) NodeGetVolumeStats(
 	ctx context.Context, req *csi.NodeGetVolumeStatsRequest,
 ) (*csi.NodeGetVolumeStatsResponse, error) {
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeGetStats)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	if req.GetVolumeId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty volume id provided")
 	}
@@ -293,8 +299,6 @@ func (p *Plugin) NodeGetVolumeStats(
 	if req.GetVolumePath() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty volume path provided")
 	}
-
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeGetStats)
 
 	// Ensure volume is published at path
 	exists, err := utils.PathExists(req.GetVolumePath())
@@ -355,6 +359,9 @@ func (p *Plugin) NodeGetVolumeStats(
 func (p *Plugin) NodeExpandVolume(
 	ctx context.Context, req *csi.NodeExpandVolumeRequest,
 ) (*csi.NodeExpandVolumeResponse, error) {
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeResize)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+
 	fields := LogFields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeExpandVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeExpandVolume")
@@ -570,11 +577,12 @@ func nodePrepareBlockOnFileVolumeForExpansion(
 func (p *Plugin) NodeGetCapabilities(
 	ctx context.Context, _ *csi.NodeGetCapabilitiesRequest,
 ) (*csi.NodeGetCapabilitiesResponse, error) {
-	fields := LogFields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
 	ctx = SetContextWorkflow(ctx, WorkflowNodeGetCapabilities)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
-	Logc(ctx).WithFields(fields).Debug(">>>> NodeGetCapabilities")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeGetCapabilities")
+	fields := LogFields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
+	Logc(ctx).WithFields(fields).Trace(">>>> NodeGetCapabilities")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< NodeGetCapabilities")
 
 	return &csi.NodeGetCapabilitiesResponse{Capabilities: p.nsCap}, nil
 }
@@ -582,17 +590,19 @@ func (p *Plugin) NodeGetCapabilities(
 func (p *Plugin) NodeGetInfo(
 	ctx context.Context, _ *csi.NodeGetInfoRequest,
 ) (*csi.NodeGetInfoResponse, error) {
-	fields := LogFields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
 	ctx = SetContextWorkflow(ctx, WorkflowNodeGetInfo)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
-	Logc(ctx).WithFields(fields).Debug(">>>> NodeGetInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeGetInfo")
+	fields := LogFields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
+	Logc(ctx).WithFields(fields).Trace(">>>> NodeGetInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< NodeGetInfo")
 
-	topology := &csi.Topology{
-		Segments: topologyLabels,
-	}
-
-	return &csi.NodeGetInfoResponse{NodeId: p.nodeName, AccessibleTopology: topology}, nil
+	return &csi.NodeGetInfoResponse{
+		NodeId: p.nodeName,
+		AccessibleTopology: &csi.Topology{
+			Segments: topologyLabels,
+		},
+	}, nil
 }
 
 func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
@@ -1083,7 +1093,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	if err = p.EnsureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort); err != nil {
+	if err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort); err != nil {
 		return nil, err
 	}
 
@@ -1122,8 +1132,9 @@ func (p *Plugin) nodeStageISCSIVolume(
 	return &csi.NodeStageVolumeResponse{}, nil
 }
 
-// EnsureAttachISCSIVolume to ensure that iSCSI volume attachment is through.
-func (p *Plugin) EnsureAttachISCSIVolume(ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
+// ensureAttachISCSIVolume to ensure that iSCSI volume attachment is through.
+func (p *Plugin) ensureAttachISCSIVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
 	publishInfo *utils.VolumePublishInfo, attachTimeout time.Duration,
 ) error {
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
@@ -1608,6 +1619,8 @@ func (p *Plugin) startReconcilingNodePublications(ctx context.Context) {
 	p.nodePublicationTimer = time.NewTimer(defaultNodeReconciliationPeriod)
 
 	go func() {
+		ctx = GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeReconcilePubs, LogLayerCSIFrontend)
+
 		for {
 			select {
 			case <-p.stopNodePublicationLoop:
@@ -1873,7 +1886,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 
 		publishedCHAPCredentials := publishInfo.IscsiChapInfo
 
-		if err = p.EnsureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
+		if err = p.ensureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
 			return fmt.Errorf("failed to login to the target")
 		}
 
