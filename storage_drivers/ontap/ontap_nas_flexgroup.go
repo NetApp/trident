@@ -84,10 +84,14 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API, err = InitializeOntapDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
 	}
+
 	d.Config = *config
 
 	// Identify Virtual Pools
