@@ -25,6 +25,8 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+const flexgroupCreateTimeout = 60 * time.Second
+
 // NASFlexGroupStorageDriver is for NFS and SMB FlexGroup storage provisioning
 type NASFlexGroupStorageDriver struct {
 	initialized bool
@@ -34,6 +36,7 @@ type NASFlexGroupStorageDriver struct {
 
 	physicalPool storage.Pool
 	virtualPools map[string]storage.Pool
+	timeout      time.Duration
 }
 
 func (d *NASFlexGroupStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -630,11 +633,15 @@ func (d *NASFlexGroupStorageDriver) Create(
 		}).Debug("FlexGroup not yet created, waiting.")
 	}
 
+	if d.timeout == 0 {
+		d.timeout = flexgroupCreateTimeout
+	}
+
 	volumeBackoff := backoff.NewExponentialBackOff()
 	volumeBackoff.InitialInterval = 3 * time.Second
 	volumeBackoff.Multiplier = 1.414
 	volumeBackoff.RandomizationFactor = 0.1
-	volumeBackoff.MaxElapsedTime = 60 * time.Second
+	volumeBackoff.MaxElapsedTime = d.timeout
 	volumeBackoff.MaxInterval = 10 * time.Second
 
 	// Run the volume check using an exponential backoff

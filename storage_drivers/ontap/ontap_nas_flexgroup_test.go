@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
@@ -796,6 +797,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 	})
 	driver.physicalPool = pool1
 	driver.Config.AutoExportPolicy = true
+	driver.timeout = 1 * time.Second
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
