@@ -73,6 +73,7 @@ func (in *TridentBackend) Apply(ctx context.Context, persistent *storage.Backend
 	in.Online = persistent.Online
 	in.Version = persistent.Version
 	in.State = string(persistent.State)
+	in.StateReason = persistent.StateReason
 	in.ConfigRef = persistent.ConfigRef
 	if in.BackendUUID == "" && persistent.BackendUUID != "" {
 		in.BackendUUID = persistent.BackendUUID
@@ -90,6 +91,7 @@ func (in *TridentBackend) Persistent() (*storage.BackendPersistent, error) {
 		Version:     in.Version,
 		Online:      in.Online,
 		State:       storage.BackendState(in.State),
+		StateReason: in.StateReason,
 		ConfigRef:   in.ConfigRef,
 	}
 

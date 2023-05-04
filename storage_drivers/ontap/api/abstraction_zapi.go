@@ -2085,6 +2085,10 @@ func (d OntapAPIZAPI) SVMUUID() string {
 	return d.api.SVMUUID()
 }
 
+func (d OntapAPIZAPI) GetSVMState(ctx context.Context) (string, error) {
+	return d.api.GetSVMState(ctx)
+}
+
 func (d OntapAPIZAPI) SnapmirrorCreate(
 	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName, replicationPolicy, replicationSchedule string,

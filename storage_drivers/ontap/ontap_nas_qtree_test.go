@@ -385,3 +385,13 @@ func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
 	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
 	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 }
+
+func TestNASQtreeStorageDriverGetBackendState(t *testing.T) {
+	mockApi, mockDriver := newMockOntapNasQtreeDriver(t)
+
+	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+
+	reason, changeMap := mockDriver.GetBackendState(ctx)
+	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
+	assert.NotNil(t, changeMap, "should not be nil")
+}

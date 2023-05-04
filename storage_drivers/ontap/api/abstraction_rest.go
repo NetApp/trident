@@ -2489,6 +2489,10 @@ func (d OntapAPIREST) GetSVMUUID() string {
 	return d.api.SVMUUID()
 }
 
+func (d OntapAPIREST) GetSVMState(ctx context.Context) (string, error) {
+	return d.api.GetSVMState(ctx)
+}
+
 func (d OntapAPIREST) SMBShareCreate(ctx context.Context, shareName, path string) error {
 	if err := d.api.SMBShareCreate(ctx, shareName, path); err != nil {
 		return fmt.Errorf("error while creating SMB share %v : %v", shareName, err)

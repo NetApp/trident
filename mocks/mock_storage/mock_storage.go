@@ -94,6 +94,20 @@ func (mr *MockBackendMockRecorder) CanEnablePublishEnforcement() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanEnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).CanEnablePublishEnforcement))
 }
 
+// CanGetState mocks base method.
+func (m *MockBackend) CanGetState() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CanGetState")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CanGetState indicates an expected call of CanGetState.
+func (mr *MockBackendMockRecorder) CanGetState() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanGetState", reflect.TypeOf((*MockBackend)(nil).CanGetState))
+}
+
 // CanMirror mocks base method.
 func (m *MockBackend) CanMirror() bool {
 	m.ctrl.T.Helper()
@@ -234,6 +248,21 @@ func (m *MockBackend) EnablePublishEnforcement(arg0 context.Context, arg1 *stora
 func (mr *MockBackendMockRecorder) EnablePublishEnforcement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).EnablePublishEnforcement), arg0, arg1)
+}
+
+// GetBackendState mocks base method.
+func (m *MockBackend) GetBackendState(arg0 context.Context) (string, *roaring.Bitmap) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBackendState", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(*roaring.Bitmap)
+	return ret0, ret1
+}
+
+// GetBackendState indicates an expected call of GetBackendState.
+func (mr *MockBackendMockRecorder) GetBackendState(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendState", reflect.TypeOf((*MockBackend)(nil).GetBackendState), arg0)
 }
 
 // GetChapInfo mocks base method.
@@ -653,6 +682,20 @@ func (m *MockBackend) State() storage.BackendState {
 func (mr *MockBackendMockRecorder) State() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "State", reflect.TypeOf((*MockBackend)(nil).State))
+}
+
+// StateReason mocks base method.
+func (m *MockBackend) StateReason() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StateReason")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// StateReason indicates an expected call of StateReason.
+func (mr *MockBackendMockRecorder) StateReason() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StateReason", reflect.TypeOf((*MockBackend)(nil).StateReason))
 }
 
 // Storage mocks base method.

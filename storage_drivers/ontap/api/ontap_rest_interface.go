@@ -25,6 +25,8 @@ type RestClientInterface interface {
 	SVMUUID() string
 	SetSVMName(svmName string)
 	SVMName() string
+	// GetSVMState gets the latest state of associated vserver
+	GetSVMState(ctx context.Context) (string, error)
 	// SupportsFeature returns true if the Ontap version supports the supplied feature
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	// VolumeList returns the names of all Flexvols whose names match the supplied pattern

@@ -13,9 +13,13 @@ import (
 	"reflect"
 	"regexp"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/RoaringBitmap/roaring"
+	"github.com/google/go-cmp/cmp"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -25,6 +29,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
 )
 
@@ -93,6 +98,13 @@ const (
 	artifactPrefixDocker     = "ndvp"
 	artifactPrefixKubernetes = "trident"
 	LUNAttributeFSType       = "com.netapp.ndvp.fstype"
+)
+
+// StateReason, Change in these strings require change in test automation.
+const (
+	StateReasonSVMStopped     = "SVM is not in 'running' state"
+	StateReasonDataLIFsDown   = "No data LIFs present or all of them are 'down'"
+	StateReasonSVMUnreachable = "SVM is not reachable"
 )
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
@@ -379,6 +391,52 @@ func reconcileExportPolicyRules(
 		}
 	}
 	return nil
+}
+
+// getSVMState gets the backend SVM state and reason for offline if any.
+// Input:
+// protocol - to get the data LIFs of similar service from backend.
+// pools - list of known pools to compare with the backend aggregate list and determine the change if any.
+func getSVMState(
+	ctx context.Context, client api.OntapAPI, protocol string, pools []string,
+) (string, *roaring.Bitmap) {
+	changeMap := roaring.New()
+	svmState, err := client.GetSVMState(ctx)
+	if err != nil {
+		// Could not get the SVM info or SVM is unreachable. Just log it.
+		// Set state offline and reason as unreachable.
+		Logc(ctx).WithField("error", err).Debug("Error getting SVM information.")
+		return StateReasonSVMUnreachable, changeMap
+	}
+
+	// Get Aggregates list and verify if there is any change.
+	aggrList, err := client.GetSVMAggregateNames(ctx)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Debug("Error getting the physical pools from backend.")
+	} else {
+		sort.Strings(aggrList)
+		sort.Strings(pools)
+		if !cmp.Equal(pools, aggrList) {
+			changeMap.Add(storage.BackendStatePoolsChange)
+		}
+	}
+
+	if svmState != models.SvmStateRunning {
+		return StateReasonSVMStopped, changeMap
+	}
+
+	// Get data LIFs.
+	upDataLIFs, err := client.NetInterfaceGetDataLIFs(ctx, protocol)
+	if err != nil || len(upDataLIFs) == 0 {
+		if err != nil {
+			// Log error and keep going.
+			Logc(ctx).WithField("error", err).Debug("Error getting list of data LIFs from backend.")
+		}
+		// No data LIFs with state 'up' found.
+		return StateReasonDataLIFsDown, changeMap
+	}
+
+	return "", changeMap
 }
 
 // resizeValidation performs needed validation checks prior to the resize operation.

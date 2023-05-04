@@ -24,6 +24,7 @@ type Backend interface {
 	Online() bool
 	SetOnline(Online bool)
 	State() BackendState
+	StateReason() string
 	SetState(State BackendState)
 	Storage() map[string]Pool
 	SetStorage(Storage map[string]Pool)
@@ -65,6 +66,8 @@ type Backend interface {
 	Terminate(ctx context.Context)
 	InvalidateNodeAccess()
 	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, tridentUUID string) error
+	CanGetState() bool
+	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 	ConstructExternal(ctx context.Context) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool

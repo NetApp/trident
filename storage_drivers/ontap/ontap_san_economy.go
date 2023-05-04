@@ -2047,6 +2047,15 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
 }
 
+// GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change
+// in physical pools list.
+func (d *SANEconomyStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
+	Logc(ctx).Debug(">>>> GetBackendState")
+	defer Logc(ctx).Debugf("<<<< GetBackendState")
+
+	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
+}
+
 // String makes SANEconomyStorageDriver satisfy the Stringer interface.
 func (d SANEconomyStorageDriver) String() string {
 	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))

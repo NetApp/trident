@@ -181,6 +181,9 @@ const (
 
 	// ISCSISelfHealingWaitTime is an interval after which iSCSI self-healing attempts to fix stale sessions.
 	ISCSISelfHealingWaitTime = 420 * time.Second
+
+	// BackendStoragePollInterval is an interval  that core layer attempts to poll storage backend periodically
+	BackendStoragePollInterval = 300 * time.Second
 )
 
 var (

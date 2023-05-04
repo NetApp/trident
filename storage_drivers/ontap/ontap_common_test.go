@@ -5341,3 +5341,74 @@ func TestRemoveIgroupFromList(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSVMState(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	gomock.InOrder(
+		// For Test 1
+		mockAPI.EXPECT().GetSVMState(ctx).Return("TestStateInvalid", fmt.Errorf("GetSVMState returned error")),
+		// For Test 2 [a,b, c]
+		mockAPI.EXPECT().GetSVMState(ctx).Return(models.SvmStateStopped, nil).MaxTimes(3),
+		// For Test 3 [a, b,c]
+		mockAPI.EXPECT().GetSVMState(ctx).Return(models.SvmStateRunning, nil).MaxTimes(3),
+	)
+
+	existingPools := []string{"aggr1", "aggr2", "aggr321"}
+	derivedPools := []string{"aggr2", "aggr321", "aggr1"}
+	var derivedPoolsNil []string
+	var dataLIFsNil []string
+	dataLIFs := []string{"1.2.3.4"}
+
+	gomock.InOrder(
+		// Test 2 a
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPoolsNil, fmt.Errorf("API call returned error")),
+		// Test 2 [b,c], 3 [a,b,c]
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPoolsNil, nil),
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil),
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil),
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil),
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil),
+	)
+	gomock.InOrder(
+		// Test 3 a
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).
+			Return(dataLIFsNil, fmt.Errorf("NetInterfaceGetDataLIFs returned error")),
+		// Test 3 [b,c]
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFsNil, nil),
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil),
+	)
+
+	// Test 1. API.GetSVMState returns error
+	state, code := getSVMState(ctx, mockAPI, "", []string{})
+	assert.Equal(t, StateReasonSVMUnreachable, state, "state returned should be TestStateUnknown")
+	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be any change here")
+
+	// Test 2
+	// a : GetAggregateNames returning error
+	state, code = getSVMState(ctx, mockAPI, "", existingPools)
+	assert.Equal(t, StateReasonSVMStopped, state, "state should be SVM stopped")
+	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should not be pool change")
+	// b : derived aggregate list as nil list.
+	state, code = getSVMState(ctx, mockAPI, "", existingPools)
+	assert.Equal(t, StateReasonSVMStopped, state, "state should be in SVM stopped")
+	assert.True(t, code.Contains(storage.BackendStatePoolsChange), "Should reflect change in pools here")
+	// c : derived aggregate list matching the expected.
+	state, code = getSVMState(ctx, mockAPI, "", existingPools)
+	assert.Equal(t, StateReasonSVMStopped, state, "State should be in 'SVM is not in running state'")
+	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should reflect NO change in pools")
+
+	// Test 3
+	// a: error getting data LIFs
+	state, code = getSVMState(ctx, mockAPI, "", existingPools)
+	assert.Equal(t, StateReasonDataLIFsDown, state, "error in getting data LIFs")
+	// b: no data LIFs in up state
+	state, code = getSVMState(ctx, mockAPI, "", existingPools)
+	assert.Equal(t, StateReasonDataLIFsDown, state, "No data LIFs in up state")
+	// c : all well
+	state, code = getSVMState(ctx, mockAPI, "", existingPools)
+	assert.Empty(t, state, "There should not be any state reason")
+	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should be online and no state reason change")
+}

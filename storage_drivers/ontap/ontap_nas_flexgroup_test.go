@@ -757,6 +757,18 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate(t *testing.T) {
 	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 }
 
+func TestNASFlexGroupStorageDriverGetBackendState(t *testing.T) {
+	mockApi, mockDriver := newMockOntapNASFlexgroupDriver(t)
+
+	// set fake values
+	mockDriver.physicalPool = storage.NewStoragePool(nil, "pool1")
+	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+
+	reason, changeMap := mockDriver.GetBackendState(ctx)
+	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
+	assert.NotNil(t, changeMap, "should not be nil")
+}
+
 func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	volConfig := &storage.VolumeConfig{

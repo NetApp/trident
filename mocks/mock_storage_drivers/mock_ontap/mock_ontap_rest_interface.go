@@ -465,6 +465,21 @@ func (mr *MockRestClientInterfaceMockRecorder) GetPeeredVservers(arg0 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeeredVservers", reflect.TypeOf((*MockRestClientInterface)(nil).GetPeeredVservers), arg0)
 }
 
+// GetSVMState mocks base method.
+func (m *MockRestClientInterface) GetSVMState(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSVMState", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSVMState indicates an expected call of GetSVMState.
+func (mr *MockRestClientInterfaceMockRecorder) GetSVMState(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMState", reflect.TypeOf((*MockRestClientInterface)(nil).GetSVMState), arg0)
+}
+
 // IgroupAdd mocks base method.
 func (m *MockRestClientInterface) IgroupAdd(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()

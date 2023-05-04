@@ -4124,3 +4124,13 @@ func TestOntapSanEconomyEnablePublishEnforcement_EnablesAccessControl(t *testing
 	assert.True(t, volume.Config.AccessInfo.PublishEnforcement)
 	assert.Equal(t, int32(-1), volume.Config.AccessInfo.IscsiAccessInfo.IscsiLunNumber)
 }
+
+func TestSANEconomyStorageDriverGetBackendState(t *testing.T) {
+	mockApi, mockDriver := newMockOntapSanEcoDriver(t)
+
+	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+
+	reason, changeMap := mockDriver.GetBackendState(ctx)
+	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
+	assert.NotNil(t, changeMap, "should not be nil")
+}

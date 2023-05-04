@@ -111,6 +111,10 @@ var (
 		config.ISCSISelfHealingWaitTime,
 		"Wait time after which iSCSI self-healing attempts to fix stale sessions")
 
+	// core
+	backendStoragePollInterval = flag.Duration("backend_storage_poll_interval", config.BackendStoragePollInterval,
+		"Interval at which core polls backend storage for its state")
+
 	storeClient  persistentstore.Client
 	enableDocker bool
 	enableCSI    bool
@@ -523,6 +527,7 @@ func main() {
 	if config.CurrentDriverContext == config.ContextCSI {
 		go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
 	}
+	go orchestrator.PeriodicallyReconcileBackendState(*backendStoragePollInterval)
 
 	// Register and wait for a shutdown signal
 	c := make(chan os.Signal, 1)

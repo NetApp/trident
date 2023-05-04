@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -7397,4 +7398,98 @@ func TestPublishedNodesForBackend(t *testing.T) {
 
 	actual := o.publishedNodesForBackend(mockBackend)
 	assert.Equal(t, expected, actual)
+}
+
+func TestReconcileBackendState(t *testing.T) {
+	// Set fake values
+	backendUUID := "1234"
+	changeMap := roaring.New()
+	changeMap.Add(storage.BackendStateReasonChange)
+	testReason := "Test Reason"
+
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+
+	gomock.InOrder(
+		mockBackend.EXPECT().CanGetState().Return(false),
+		mockBackend.EXPECT().CanGetState().Return(true).AnyTimes(),
+	)
+	gomock.InOrder(
+		// For Test 3
+		mockBackend.EXPECT().GetBackendState(ctx).Return("", nil),
+		// For Test 4
+		mockBackend.EXPECT().GetBackendState(ctx).Return("", changeMap),
+		// For Test 5
+		mockBackend.EXPECT().GetBackendState(ctx).Return(testReason, changeMap),
+	)
+
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("testDriver").AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+
+	mockUpdateError := fmt.Errorf("returning error on UpdateBackend")
+	gomock.InOrder(
+		// For Test 4
+		mockStoreClient.EXPECT().UpdateBackend(ctx, gomock.Any()).Return(mockUpdateError),
+		// For Test 5
+		mockStoreClient.EXPECT().UpdateBackend(ctx, gomock.Any()).Return(nil),
+	)
+
+	// Test 1 - unsupported driver
+	err := o.reconcileBackendState(ctx, mockBackend)
+	assert.NoError(t, err, "should skip un-supportive drivers")
+
+	// Test 2 - bootstrap error
+	o.bootstrapError = fmt.Errorf("returning bootstrap error")
+	err = o.reconcileBackendState(ctx, mockBackend)
+	assert.Error(t, err, "should return bootstrap error")
+
+	o.bootstrapError = nil
+	// Test 3 - changeMap nil
+	err = o.reconcileBackendState(ctx, mockBackend)
+	assert.NoError(t, err, "should be no error")
+
+	// Test 4 - changeMap contains reasonChange, nil reason, error on storeclient.UpdateBackend
+	o.backends[backendUUID] = mockBackend
+	err = o.reconcileBackendState(ctx, mockBackend)
+	assert.Error(t, err, "should be error")
+
+	// Test 5 - changeMap contains reasonChange, non nil reason, no error on UpdateBackend
+	err = o.reconcileBackendState(ctx, mockBackend)
+	assert.NoError(t, err, "should be no error")
+}
+
+// TestPeriodicallyReconcileBackendState is majorly for code coverage, as all other called functions have respective
+// unit tests and no need to test once again here.
+func TestPeriodicallyReconcileBackendState(t *testing.T) {
+	// Set fake values
+	backendUUID := "1234"
+
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+
+	// Test 1: poll interval 0, would not create the loop
+	o.PeriodicallyReconcileBackendState(0)
+	assert.Nil(t, o.stopReconcileBackendLoop, "reconcile backend loop should not have started")
+
+	// Test 2: with one backend added and interval 0.1s
+	mockBackend.EXPECT().CanGetState().Return(true).MinTimes(1)
+	mockBackend.EXPECT().Name().Return(backendUUID).MinTimes(1)
+	o.bootstrapError = fmt.Errorf("test error")
+	o.backends[backendUUID] = mockBackend
+	go o.PeriodicallyReconcileBackendState(100 * time.Millisecond)
+
+	// Wait for loop to run at least once.
+	time.Sleep(1 * time.Second)
+
+	// stop orchestrator
+	o.Stop()
 }

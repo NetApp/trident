@@ -119,6 +119,7 @@ type OntapAPI interface {
 	GetSVMPeers(ctx context.Context) ([]string, error)
 
 	GetSVMUUID() string
+	GetSVMState(ctx context.Context) (string, error)
 
 	QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error)
 	QtreeCreate(

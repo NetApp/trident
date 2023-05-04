@@ -209,6 +209,8 @@ type TridentBackend struct {
 	Online bool `json:"online"`
 	// State records the TridentBackend's state
 	State string `json:"state"`
+	// StateReason records the reason if TridentBackend's state is offline
+	StateReason string `json:"stateReason,omitempty"`
 	// ConfigRef is a reference to the TridentBackendConfig object
 	ConfigRef string `json:"configRef"`
 }

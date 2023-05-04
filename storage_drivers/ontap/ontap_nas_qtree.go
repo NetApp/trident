@@ -1872,6 +1872,15 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
 }
 
+// GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change
+// in physical pools list.
+func (d *NASQtreeStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
+	Logc(ctx).Debug(">>>> GetBackendState")
+	defer Logc(ctx).Debugf("<<<< GetBackendState")
+
+	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
+}
+
 // String makes NASQtreeStorageDriver satisfy the Stringer interface.
 func (d NASQtreeStorageDriver) String() string {
 	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))

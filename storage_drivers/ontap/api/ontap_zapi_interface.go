@@ -21,6 +21,8 @@ type ZapiClientInterface interface {
 	SetSVMMCC(mcc bool)
 	SVMMCC() bool
 	SVMName() string
+	// GetSVMState gets the latest state of the associated vserver
+	GetSVMState(ctx context.Context) (string, error)
 	// GetClonedZapiRunner returns a clone of the ZapiRunner configured on this driver.
 	GetClonedZapiRunner() *azgo.ZapiRunner
 	// GetNontunneledZapiRunner returns a clone of the ZapiRunner configured on this driver with the SVM field cleared so ZAPI calls

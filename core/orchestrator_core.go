@@ -95,6 +95,7 @@ type TridentOrchestrator struct {
 	lastNodeRegistration     time.Time
 	volumePublicationsSynced bool
 	stopNodeAccessLoop       chan bool
+	stopReconcileBackendLoop chan bool
 	uuid                     string
 }
 
@@ -553,9 +554,12 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 
 // Stop stops the orchestrator core.
 func (o *TridentOrchestrator) Stop() {
-	// Stop the node access reconciliation background task
+	// Stop the node access and backends' state reconciliation background tasks
 	if o.stopNodeAccessLoop != nil {
 		o.stopNodeAccessLoop <- true
+	}
+	if o.stopReconcileBackendLoop != nil {
+		o.stopReconcileBackendLoop <- true
 	}
 
 	// Stop transaction monitor
@@ -4783,6 +4787,35 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*uti
 	return nodes
 }
 
+func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b storage.Backend) error {
+	if !b.CanGetState() {
+		// This backend does not support polling backend for state.
+		return nil
+	}
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	reason, changeMap := b.GetBackendState(ctx)
+
+	Logc(ctx).WithField("reason", reason).Debug("reconcileBackendState")
+
+	// For now, skip modifying if there is change in pools list.
+	if changeMap != nil && changeMap.Contains(storage.BackendStateReasonChange) {
+		// Update CR.
+		if err := o.storeClient.UpdateBackend(ctx, b); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // safeReconcileNodeAccessOnBackend wraps reconcileNodeAccessOnBackend in a mutex lock for use in functions that aren't
 // already locked
 func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend) error {
@@ -4825,6 +4858,50 @@ func (o *TridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
 				Logc(ctx).Trace(
 					"Time is too soon since last node registration, delaying node access rule reconciliation.")
 			}
+		}
+	}
+}
+
+// PeriodicallyReconcileBackendState is intended to be run as a goroutine and will periodically run
+// reconcileBackendState for each backend in the orchestrator.
+func (o *TridentOrchestrator) PeriodicallyReconcileBackendState(pollInterval time.Duration) {
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic, WorkflowCoreBackendReconcile,
+		LogLayerCore)
+
+	// Provision to disable reconciling backend state, just in case
+	if pollInterval <= 0 {
+		Logc(ctx).Debug("Periodic reconciliation of backends is disabled.")
+		return
+	}
+
+	Logc(ctx).Info("Starting periodic backend state reconciliation service.")
+	defer Logc(ctx).Info("Stopping periodic backend state reconciliation service.")
+
+	o.stopReconcileBackendLoop = make(chan bool)
+	reconcileBackendTimer := time.NewTimer(pollInterval)
+	defer func(t *time.Timer) {
+		if !t.Stop() {
+			<-t.C
+		}
+	}(reconcileBackendTimer)
+
+	for {
+		select {
+		case <-o.stopReconcileBackendLoop:
+			// Exit on shutdown signal.
+			return
+
+		case <-reconcileBackendTimer.C:
+			Logc(ctx).Trace("Periodic backend state reconciliation loop beginning.")
+			for _, backend := range o.backends {
+				if err := o.reconcileBackendState(ctx, backend); err != nil {
+					// If there is a problem, log an error and keep going.
+					Logc(ctx).WithField("backend", backend.Name()).WithError(err).Errorf(
+						"Problem encountered while reconciling state for backend.")
+				}
+			}
+			// reset the timer so that next poll would start after pollInterval.
+			reconcileBackendTimer.Reset(pollInterval)
 		}
 	}
 }

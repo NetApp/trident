@@ -2289,6 +2289,30 @@ func (c Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterRes
 	return response, err
 }
 
+// GetSVMState returns the state of SVM on the vserver.
+func (c Client) GetSVMState(ctx context.Context) (string, error) {
+	// Get just the SVM of interest
+	query := &azgo.VserverGetIterRequestQuery{}
+	info := azgo.NewVserverInfoType().SetVserverName(c.SVMName())
+	query.SetVserverInfo(*info)
+
+	response, err := azgo.NewVserverGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+	if err != nil {
+		return "", err
+	}
+
+	if response.Result.NumRecords() != 1 ||
+		response.Result.AttributesListPtr == nil ||
+		response.Result.AttributesListPtr.VserverInfoPtr == nil {
+		return "", fmt.Errorf("could not find SVM %s (%s)", c.SVMName(), c.svmUUID)
+	}
+
+	return response.Result.AttributesListPtr.VserverInfoPtr[0].State(), nil
+}
+
 // VSERVER operations END
 // ///////////////////////////////////////////////////////////////////////////
 

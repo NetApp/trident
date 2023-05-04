@@ -6,6 +6,7 @@ package core
 
 import (
 	"context"
+	"time"
 
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
@@ -79,6 +80,7 @@ type Orchestrator interface {
 	ListNodes(ctx context.Context) ([]*utils.NodeExternal, error)
 	DeleteNode(ctx context.Context, nodeName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
+	PeriodicallyReconcileBackendState(duration time.Duration)
 
 	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*utils.VolumePublicationExternal) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)

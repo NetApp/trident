@@ -1772,12 +1772,12 @@ func (c RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetO
 		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
 	}
 
-	svm := svmResult.Payload
+	svmInfo := svmResult.Payload
 
 	params := san.NewIscsiServiceGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.SvmUUID = *svm.UUID
+	params.SvmUUID = *svmInfo.UUID
 
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
@@ -3292,9 +3292,9 @@ func (c RestClient) SVMGetAggregateNames(
 		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
 	}
 
-	svm := result.Payload
+	svmInfo := result.Payload
 	aggrNames := make([]string, 0, 10)
-	for _, aggr := range svm.SvmInlineAggregates {
+	for _, aggr := range svmInfo.SvmInlineAggregates {
 		if aggr != nil && aggr.Name != nil {
 			aggrNames = append(aggrNames, string(*aggr.Name))
 		}
@@ -5356,6 +5356,22 @@ func (c RestClient) JobScheduleExists(ctx context.Context, jobName string) (bool
 	}
 
 	return true, nil
+}
+
+// GetSVMState returns the SVM state from the backend storage.
+func (c *RestClient) GetSVMState(ctx context.Context) (string, error) {
+	svmResult, err := c.SvmGet(ctx, c.svmUUID)
+	if err != nil {
+		return "", err
+	}
+	if svmResult == nil || svmResult.Payload == nil || svmResult.Payload.UUID == nil {
+		return "", fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
+	}
+	if svmResult.Payload.State == nil {
+		return "", fmt.Errorf("could not find operational state of SVM %s", c.svmName)
+	}
+
+	return *svmResult.Payload.State, nil
 }
 
 // SNAPMIRROR operations END

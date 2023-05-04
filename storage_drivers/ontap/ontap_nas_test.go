@@ -2012,6 +2012,16 @@ func TestOntapNasStorageDriverReconcileNodeAccess(t *testing.T) {
 	assert.NoError(t, result)
 }
 
+func TestNASStorageDriverGetBackendState(t *testing.T) {
+	mockApi, mockDriver := newMockOntapNASDriver(t)
+
+	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+
+	reason, changeMap := mockDriver.GetBackendState(ctx)
+	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
+	assert.NotNil(t, changeMap, "should not be nil")
+}
+
 func TestOntapNasStorageDriverResize(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	aggr := make([]string, 0)

@@ -629,3 +629,21 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	err := d.Publish(ctx, volConfig, publishInfo)
 	assert.Errorf(t, err, "no reporting nodes found")
 }
+
+func TestSANStorageDriverGetBackendState(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockApi := mockapi.NewMockOntapAPI(mockCtrl)
+
+	mockApi.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockApi)
+	mockDriver.API = mockApi
+
+	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+
+	reason, changeMap := mockDriver.GetBackendState(ctx)
+	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
+	assert.NotNil(t, changeMap, "should not be nil")
+}

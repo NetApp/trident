@@ -7,6 +7,7 @@ package mock_core
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	core "github.com/netapp/trident/core"
@@ -847,6 +848,18 @@ func (m *MockOrchestrator) ListVolumes(arg0 context.Context) ([]*storage.VolumeE
 func (mr *MockOrchestratorMockRecorder) ListVolumes(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumes", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumes), arg0)
+}
+
+// PeriodicallyReconcileBackendState mocks base method.
+func (m *MockOrchestrator) PeriodicallyReconcileBackendState(arg0 time.Duration) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PeriodicallyReconcileBackendState", arg0)
+}
+
+// PeriodicallyReconcileBackendState indicates an expected call of PeriodicallyReconcileBackendState.
+func (mr *MockOrchestratorMockRecorder) PeriodicallyReconcileBackendState(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeriodicallyReconcileBackendState", reflect.TypeOf((*MockOrchestrator)(nil).PeriodicallyReconcileBackendState), arg0)
 }
 
 // PeriodicallyReconcileNodeAccessOnBackends mocks base method.

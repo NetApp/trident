@@ -2,6 +2,8 @@
 
 package storage
 
+//go:generate mockgen -destination=../mocks/mock_storage/mock_storage_driver.go github.com/netapp/trident/storage Driver
+
 import (
 	"context"
 	"encoding/json"
@@ -21,8 +23,6 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 )
-
-//go:generate mockgen -destination=../mocks/mock_storage/mock_storage_driver.go github.com/netapp/trident/storage Driver
 
 // Driver provides a common interface for storage related operations
 type Driver interface {
@@ -92,12 +92,18 @@ type Mirrorer interface {
 	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
 }
 
+// StateGetter provides a common interface for backends that support polling backend for state information.
+type StateGetter interface {
+	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
+}
+
 type StorageBackend struct {
 	driver             Driver
 	name               string
 	backendUUID        string
 	online             bool
 	state              BackendState
+	stateReason        string
 	storage            map[string]Pool
 	volumes            map[string]*Volume
 	configRef          string
@@ -140,8 +146,18 @@ func (b *StorageBackend) State() BackendState {
 	return b.state
 }
 
-func (b *StorageBackend) SetState(State BackendState) {
-	b.state = State
+func (b *StorageBackend) StateReason() string {
+	return b.stateReason
+}
+
+// SetState sets the 'state' and 'online' fields of StorageBackend accordingly.
+func (b *StorageBackend) SetState(state BackendState) {
+	b.state = state
+	if state.IsOnline() {
+		b.online = true
+	} else {
+		b.online = false
+	}
 }
 
 func (b *StorageBackend) Storage() map[string]Pool {
@@ -854,6 +870,11 @@ const (
 	CredentialsChange
 )
 
+const (
+	BackendStateReasonChange = iota
+	BackendStatePoolsChange
+)
+
 func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap {
 	updateCode := b.driver.GetUpdateType(ctx, origBackend.Driver())
 	if b.name != origBackend.Name() {
@@ -912,6 +933,43 @@ func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils
 	return nil
 }
 
+func (b *StorageBackend) CanGetState() bool {
+	_, ok := b.driver.(StateGetter)
+	return ok
+}
+
+// GetBackendState gets the up-to-date state of SVM and updates associated Trident's data structures.
+func (b *StorageBackend) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
+	stateDriver, ok := b.driver.(StateGetter)
+	if !ok {
+		Logc(ctx).WithError(utils.UnsupportedError(
+			fmt.Sprintf("polling is not implemented by backends of type %v", b.driver.Name())))
+		return "", nil
+	}
+
+	reason, changeMap := stateDriver.GetBackendState(ctx)
+
+	if reason != b.StateReason() || (reason == "" && !b.Online()) {
+		// Inform caller that update is needed as there is change in either state or StateReason.
+		// Being defensive here, as changeMap could never be nil.
+		if changeMap == nil {
+			changeMap = roaring.New()
+		}
+		changeMap.Add(BackendStateReasonChange)
+	}
+
+	if reason == "" {
+		b.state = Online
+		b.online = true
+	} else {
+		b.state = Offline
+		b.online = false
+	}
+	b.stateReason = reason
+
+	return reason, changeMap
+}
+
 func (b *StorageBackend) ensureOnline(ctx context.Context) error {
 	if b.state != Online {
 		Logc(ctx).WithFields(LogFields{
@@ -942,6 +1000,7 @@ type BackendExternal struct {
 	Storage     map[string]interface{} `json:"storage"`
 	State       BackendState           `json:"state"`
 	Online      bool                   `json:"online"`
+	StateReason string                 `json:"StateReason"`
 	Volumes     []string               `json:"volumes"`
 	ConfigRef   string                 `json:"configRef"`
 }
@@ -955,6 +1014,7 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 		Storage:     make(map[string]interface{}),
 		Online:      b.online,
 		State:       b.state,
+		StateReason: b.stateReason,
 		Volumes:     make([]string, 0),
 		ConfigRef:   b.configRef,
 	}
@@ -1007,6 +1067,7 @@ type BackendPersistent struct {
 	BackendUUID string                         `json:"backendUUID"`
 	Online      bool                           `json:"online"`
 	State       BackendState                   `json:"state"`
+	StateReason string                         `json:"stateReason"`
 	ConfigRef   string                         `json:"configRef"`
 }
 
@@ -1017,6 +1078,7 @@ func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersis
 		Name:        b.name,
 		Online:      b.online,
 		State:       b.state,
+		StateReason: b.stateReason,
 		BackendUUID: b.backendUUID,
 		ConfigRef:   b.configRef,
 	}
@@ -1066,7 +1128,7 @@ func (p *BackendPersistent) GetBackendCredentials() (string, string, error) {
 
 // ExtractBackendSecrets clones itself (a BackendPersistent struct), identified if the backend is using
 // trident created secret (tbe-<backendUUID>) or user-provided secret (via credentials field),
-// if these valus are same or not and accordingly sets usingTridentSecretName boolean field.
+// if these values are same or not and accordingly sets usingTridentSecretName boolean field.
 // From the clone it builds a map of secret data it contains (username, password, etc.),
 // replaces those fields with the correct secret name, and returns the clone,
 // the secret data map (or empty map if using credentials field) and usingTridentSecretName field.
